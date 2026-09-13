@@ -1,0 +1,404 @@
+﻿@inject IBrouter brouter
+@inject DemoState demoState
+@implements IDisposable
+
+@code {
+    private int _currentCount;
+    private int _dashboardVisits;
+
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigatingHandler;
+
+    void ChangeCountValue(int value)
+    {
+        _currentCount = value;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // Global hook: analytics, telemetry, page title, ...
+        _onNavigatingHandler = ctx => ValueTask.CompletedTask;
+        brouter.OnNavigating += _onNavigatingHandler;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigatingHandler is not null)
+        {
+            brouter.OnNavigating -= _onNavigatingHandler;
+            _onNavigatingHandler = null;
+        }
+    }
+
+    // ===== guards =====
+
+    private ValueTask GuardEvenSecond(BrouterNavigationContext ctx)
+    {
+        if (DateTime.Now.Second % 2 != 0) ctx.Redirect("/403");
+        return ValueTask.CompletedTask;
+    }
+
+    private async ValueTask CheckEvenMinute(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(1, ctx.CancellationToken);
+        if (DateTime.Now.Minute % 2 != 0) ctx.Redirect("/403");
+    }
+
+    // Leave guard: while the editor is dirty, cancel preventively - the URL never moves.
+    private ValueTask GuardEditorLeave(BrouterNavigationContext ctx)
+    {
+        if (demoState.IsEditorDirty) ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    // /blocked always cancels, so OutcomesPage can show a Cancelled NavigateAsync result.
+    private ValueTask BlockAlways(BrouterNavigationContext ctx)
+    {
+        ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    // Shared guard on the dashboard's pathless group: one declaration covers every child.
+    private ValueTask CountDashboardVisit(BrouterNavigationContext ctx)
+    {
+        _dashboardVisits++;
+        return ValueTask.CompletedTask;
+    }
+
+    // ===== loaders =====
+
+    // Deliberately slow, so the <Navigating> pending UI and the StaleTime cache are both visible.
+    private async ValueTask<object?> LoadData(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(600, ctx.CancellationToken);
+        return new LoadedInfo(DateTime.Now, ctx.IsRevalidation, ctx.To.GetQuery("page") ?? "1");
+    }
+
+    // Deferred data: only the summary blocks navigation; the details task is returned UNAWAITED
+    // and streams into <BrouterAwait> after the page has revealed.
+    private async ValueTask<object?> LoadDeferred(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(300, ctx.CancellationToken);
+        return new DeferredReport($"Report generated at {DateTime.Now:HH:mm:ss}.", LoadSlowDetailsAsync());
+    }
+
+    private static async Task<string[]> LoadSlowDetailsAsync()
+    {
+        await Task.Delay(1500);
+        return ["42 orders in the last hour", "7 new signups", "0 incidents"];
+    }
+
+    // Throws while DemoState.UnstableShouldFail is armed, so the route's ErrorContent can render.
+    private async ValueTask<object?> LoadUnstable(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(300, ctx.CancellationToken);
+        if (demoState.UnstableShouldFail)
+            throw new InvalidOperationException("The upstream service exploded (simulated).");
+        return $"Fresh data loaded at {DateTime.Now:HH:mm:ss}.";
+    }
+
+    // Lazy route loading hook. Nothing to load here, but the shape is: on WebAssembly you would
+    // await LazyAssemblyLoader.LoadAssembliesAsync(...) based on ctx.To.Path and return the
+    // assemblies - their @page components are registered within the SAME navigation.
+    private ValueTask<IEnumerable<System.Reflection.Assembly>?> OnNavigate(BrouterNavigationContext ctx)
+        => ValueTask.FromResult<IEnumerable<System.Reflection.Assembly>?>(null);
+}
+
+@* AppAssembly enables attribute-route discovery: components with @page / [Route] (e.g. DiscoveredPage)
+   are matched alongside the hand-declared routes below, without being listed here. *@
+<Brouter NotFoundUrl="404" AppAssembly="@GetType().Assembly" OnNavigateAsync="OnNavigate">
+    <Routes>
+        <Broute Path="/" Component="@typeof(HomePage)" />
+        <Broute Path="/home" RedirectTo="/" />
+
+        @*=== route templates ===*@
+
+        @* Host state sharing: the count lives here and is passed into the page via <Content>. *@
+        <Broute Path="/counter">
+            <Content>
+                <CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" />
+            </Content>
+        </Broute>
+
+        <Broute Name="counter" Path="/counter/{init:int}">
+            <Content>
+                <CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" />
+            </Content>
+        </Broute>
+
+        @* Chained type constraints: the LAST type constraint decides the bound CLR type. *@
+        <Broute Path="/counter/multi/{id:int:long}/{age:long:decimal:double}/{name}">
+            <Content>
+                <CounterPage @bind-CurrentCount="_currentCount" ChangeCount="@ChangeCountValue" />
+            </Content>
+        </Broute>
+
+        @* Optional parameter: /profile or /profile/saleh both match. *@
+        <Broute Path="/profile/{username?}" Component="@typeof(ProfilePage)" />
+
+        @* Catch-all: /posts/2026/05/hello binds the whole tail. *@
+        <Broute Path="/posts/{**slug}" Component="@typeof(PostPage)" />
+
+        @* Middle optional: parses like the built-in router, but required at match time -
+           /products/en/list matches, /products/list does not. *@
+        <Broute Path="/products/{culture?}/list" Component="@typeof(ProductsListPage)" />
+
+        @* Constrained middle optional: nonfile rejects first segments that look like file names. *@
+        <Broute Path="/{lang:nonfile?}/welcome" Component="@typeof(WelcomePage)" />
+
+        @* Default value: /blog binds action = "Index"; /blog/archive overrides it. *@
+        <Broute Path="/blog/{action=Index}" Component="@typeof(BlogPage)" />
+
+        @* Complex segments: several parameters inside ONE URL segment, matched right-to-left. *@
+        <Broute Path="/files/{name}.{ext?}" Component="@typeof(FileDetailPage)" />
+        <Broute Path="/api/v{major:int}-{minor:int}" Component="@typeof(ApiVersionPage)" />
+
+        @* Constrained catch-all ({*path} == {**path} for matching): the constraint validates the
+           whole remainder; nonfile also accepts the empty remainder, so /assets itself matches. *@
+        <Broute Path="/assets/{*path:nonfile}" Component="@typeof(AssetsPage)" />
+
+        @* A bare * matches any single segment without binding it, and ranks below named parameters. *@
+        <Broute Path="/*/test">
+            <Content>
+                <h1>Wildcard <code>/*/test</code></h1>
+            </Content>
+        </Broute>
+
+        <Broute Path="/{prefix}/test2/{postfix}">
+            <Content Context="p">
+                <h1>Pattern <code>/{prefix}/test2/{postfix}</code></h1>
+                <dl>
+                    <dt>prefix</dt>
+                    <dd>@p["prefix"]</dd>
+                    <dt>postfix</dt>
+                    <dd>@p["postfix"]</dd>
+                </dl>
+            </Content>
+        </Broute>
+
+        @*=== constraints ===*@
+
+        <Broute Path="/constraints" Component="@typeof(ConstraintsPage)" />
+
+        @* One constrained route per catalog entry, plus one unconstrained fallback. Both can match
+           /c/x/y and specificity picks the winner - the fallback only renders when the constrained
+           sibling rejected the value. *@
+        @foreach (var c in ConstraintCatalog.All)
+        {
+            <Broute Path="@($"/c/{c.Kind}/{{v:{c.Token}}}")">
+                <Content Context="p">
+                    <ConstraintResultPage Kind="@c.Kind" Value="@p["v"]" />
+                </Content>
+            </Broute>
+        }
+
+        <Broute Path="/c/{kind}/{value}">
+            <Content Context="p">
+                <ConstraintResultPage Kind="@(p["kind"]?.ToString())" Value="@p["value"]" Rejected="true" />
+            </Content>
+        </Broute>
+
+        @*=== nested routes & outlets ===*@
+
+        @* Component parent: Nested.razor renders the persistent shell and its own <BrouterOutlet>. *@
+        <Broute Path="/nested" Component="@typeof(NestedPage)">
+            <Broute Path="n1/{count:int}">
+                <Content Context="p">
+                    <h2>Child <code>/nested/n1</code> - count @p["count"]</h2>
+                </Content>
+            </Broute>
+            <Broute Path="n2/{count:int}">
+                <Content Context="p">
+                    <h2>Child <code>/nested/n2</code> - count @p["count"]</h2>
+                </Content>
+            </Broute>
+        </Broute>
+
+        @* Inline parent: the same shape without a component, with children in an explicit <Routes>. *@
+        <Broute Path="/nested-inline">
+            <Content>
+                <h1>Inline parent <code>/nested-inline</code></h1>
+                <div class="row">
+                    <BrouterLink Href="/nested-inline/n1/1" class="btn">/n1/1</BrouterLink>
+                    <BrouterLink Href="/nested-inline/n2/2" class="btn">/n2/2</BrouterLink>
+                </div>
+                <div class="card" style="margin-top: 1rem;">
+                    <BrouterOutlet />
+                </div>
+            </Content>
+            <Routes>
+                <Broute Path="n1/{count:int}">
+                    <Content Context="p">
+                        <h2>Child <code>n1</code> - count @p["count"]</h2>
+                    </Content>
+                </Broute>
+                <Broute Path="n2/{count:int}">
+                    <Content Context="p">
+                        <h2>Child <code>n2</code> - count @p["count"]</h2>
+                    </Content>
+                </Broute>
+            </Routes>
+        </Broute>
+
+        @* Named outlets: one child route fills two layout regions. The pathless group attaches a
+           shared guard to every dashboard child without adding a URL segment. *@
+        <Broute Path="/dashboard">
+            <Content>
+                <h1>Named outlets</h1>
+                <p class="muted">Entries counted by the pathless group's shared guard: <strong>@_dashboardVisits</strong></p>
+                <div class="row" style="margin-bottom: 1rem;">
+                    <BrouterLink Href="/dashboard/stats" class="btn">Stats</BrouterLink>
+                    <BrouterLink Href="/dashboard/activity" class="btn">Activity</BrouterLink>
+                </div>
+                <div class="card">
+                    <h2>Primary outlet</h2>
+                    <BrouterOutlet />
+                </div>
+                <div class="card">
+                    <h2>Sidebar (named outlet)</h2>
+                    <BrouterOutlet Name="sidebar" />
+                </div>
+            </Content>
+            <Routes>
+                <Broute Group Path="" Guard="CountDashboardVisit">
+                    <Routes>
+                        <Broute Path="/stats">
+                            <Content>
+                                <p>Stats, rendered by the primary outlet.</p>
+                            </Content>
+                            <Routes>
+                                <BrouterView Name="sidebar" Context="p">
+                                    <p>Stats filters - a <code>&lt;BrouterView Name="sidebar"&gt;</code> picked up by the same-named outlet.</p>
+                                </BrouterView>
+                            </Routes>
+                        </Broute>
+                        <Broute Path="/activity">
+                            <Content>
+                                <p>Activity declares no sidebar view, so the named outlet stays empty.</p>
+                            </Content>
+                        </Broute>
+                    </Routes>
+                </Broute>
+            </Routes>
+        </Broute>
+
+        @*=== guards ===*@
+
+        <Broute Path="/g1" Guard="@GuardEvenSecond">
+            <Content>
+                <h1>Guarded <code>/g1</code></h1>
+                <p>The sync guard let you through - the current second was even.</p>
+            </Content>
+        </Broute>
+
+        <Broute Path="/g2" Guard="@CheckEvenMinute">
+            <Content>
+                <h1>Guarded <code>/g2</code></h1>
+                <p>The async guard let you through - the current minute was even.</p>
+            </Content>
+        </Broute>
+
+        <Broute Path="/blocked" Guard="BlockAlways">
+            <Content>
+                <div>This never renders - the guard always cancels.</div>
+            </Content>
+        </Broute>
+
+        <Broute Path="/editor" LeaveGuard="GuardEditorLeave" Component="@typeof(EditorPage)" />
+
+        @* Component-level lock: the PAGE holds the veto (OnDeactivating/OnRenavigating on
+           BrouterRouteBase), including for /lock/1 -> /lock/2 parameter changes, which a
+           route-declared LeaveGuard can never see. *@
+        <Broute Path="/lock" RedirectTo="/lock/1" />
+        <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" />
+
+        @*=== data loading ===*@
+
+        <Broute Name="data" Path="/data" Loader="LoadData" StaleTime="TimeSpan.FromSeconds(30)"
+                Meta="@("Data & caching sample")" Component="@typeof(DataPage)" />
+
+        <Broute Path="/deferred" Loader="LoadDeferred" Component="@typeof(DeferredPage)" />
+
+        <Broute Path="/unstable" Loader="LoadUnstable">
+            <Content>
+                <UnstablePage />
+            </Content>
+            <ErrorContent Context="err">
+                <div class="card error">
+                    <h1>Route failed to load</h1>
+                    <p>@err.Exception.Message</p>
+                    <button @onclick="@(async () => { demoState.UnstableShouldFail = false; await err.RetryAsync(); })">
+                        Fix the service &amp; retry
+                    </button>
+                </div>
+            </ErrorContent>
+        </Broute>
+
+        @*=== navigation & history ===*@
+
+        <Broute Path="/outcomes" Component="@typeof(OutcomesPage)" />
+        <Broute Path="/history-state" Component="@typeof(HistoryStatePage)" />
+
+        @*=== keep-alive & lifecycle ===*@
+
+        @* /sticky retains its single instance; /fleeting is the control that unmounts. *@
+        <Broute Path="/sticky" KeepAlive="true">
+            <Content>
+                <StickyNotePage KeepAliveDemo="true" />
+            </Content>
+        </Broute>
+
+        <Broute Path="/fleeting">
+            <Content>
+                <StickyNotePage KeepAliveDemo="false" />
+            </Content>
+        </Broute>
+
+        @* Per-parameter caching: each visited id keeps its own instance, LRU-evicted over the budget. *@
+        <Broute Name="notes" Path="/notes/{id:int}" KeepAlive="true" KeepAliveMax="2"
+                Component="@typeof(NotebookPage)" />
+
+        @* Singleton Component route whose page implements IBrouterRoute directly (auto-discovered
+           by the router - no base class needed). *@
+        <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" />
+
+        @*=== view transitions ===*@
+
+        <Broute Name="gallery" Path="/gallery" Component="@typeof(GalleryPage)" />
+        <Broute Path="/gallery/{id:int}" Component="@typeof(GalleryItemPage)" />
+
+        @*=== fallbacks ===*@
+
+        <Broute Path="404">
+            <Content>
+                <h1>404</h1>
+                <p>Nothing matched this address.</p>
+                <BrouterLink Href="/" class="btn">Back to the samples</BrouterLink>
+            </Content>
+        </Broute>
+
+        <Broute Path="/403">
+            <Content>
+                <h1>403</h1>
+                <p>A guard redirected you here.</p>
+                <BrouterLink Href="/" class="btn">Back to the samples</BrouterLink>
+            </Content>
+        </Broute>
+    </Routes>
+
+    @* Shown while a navigation awaits slow loaders (visible on the first, uncached visit to /data). *@
+    <Navigating>
+        <div class="card"><em>Loading route data…</em></div>
+    </Navigating>
+
+    @* Router-level error boundary: failures on routes without their own ErrorContent land here. *@
+    <ErrorContent Context="err">
+        <div class="card error">
+            <h1>Navigation failed</h1>
+            <p>@err.Exception.Message</p>
+            <button @onclick="@(() => err.RetryAsync())">Retry</button>
+        </div>
+    </ErrorContent>
+</Brouter>

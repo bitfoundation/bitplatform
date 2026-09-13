@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-//#if (multitenant == true)
-using Boilerplate.Server.Api.Features.Identity.Services;
-//#endif
 
 namespace Boilerplate.Server.Api.Infrastructure.Controllers;
 

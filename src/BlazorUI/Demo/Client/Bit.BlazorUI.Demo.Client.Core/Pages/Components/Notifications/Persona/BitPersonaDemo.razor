@@ -1,119 +1,871 @@
-@page "/components/persona"
+﻿@page "/components/persona"
 
 <PageOutlet Url="components/persona"
             Title="Persona"
-            Description="A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves." />
+            Description="The Persona is a visual representation of a person: their picture or initials, the name and details beside it, the presence dot that says whether they are around, and a coin that can be a button or a link." />
 
 <DemoPage Name="Persona"
           SecondaryNames="@(["Avatar"])"
-          Description="A BitPersona is a visual representation of a person across products, typically showcasing the image that person has chosen to upload themselves. The control can also be used to show that person's online status. The complete control includes an individual's avatar (an uploaded image or a composition of the person’s initials on a background color), their name or identification, and online status. The BitPersona control is used in the PeoplePicker and Facepile controls."
+          Description="The Persona shows who someone is. Its coin holds their picture, or the initials derived from their name, or an icon when there is neither, in nine sizes from a bare presence dot up to 120px and in any custom size beside them. Up to four lines of detail sit next to the coin, each of them a text or a template of your own, and the size decides how many of them there is room for. A presence dot marks availability across eight statuses, carrying a glyph and a name of your choosing; the coin can be a circle, a rounded square or a sharp one, filled, outlined or bare, colored from the palette or from a stable hash of the person's identity, ringed while they are the one a view is about and pushed back while they are not, and turned into a button that reveals an overlay for changing the picture or into a link that opens their profile."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
           GitHubUrl="Notifications/Persona/BitPersona.razor"
           GitHubDemoUrl="Notifications/Persona/BitPersonaDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>
+            A persona is a coin and the details beside it. <strong>PrimaryText</strong> is the name, and
+            what the coin shows falls back through three steps: the picture at <strong>ImageUrl</strong>,
+            then the initials taken from the name, then a generic person icon when the name gives no
+            initials to take. <strong>SecondaryText</strong> is the second line, usually the role.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
         <BitPersona PrimaryText="Saleh Khafan"
+                    SecondaryText="Developer"
                     Size="BitPersonaSize.Size72" />
         <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    Size="BitPersonaSize.Size72"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Unknown"
-                    SecondaryText="Developer"
-                    Size="BitPersonaSize.Size72"
-                    Unknown />
+        <BitPersona PrimaryText="+1 (555) 016 7788"
+                    SecondaryText="No initials to take"
+                    Size="BitPersonaSize.Size72" />
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
-        <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Developer"
-                    Size="BitPersonaSize.Size72"
-                    CoinVariant="BitVariant.Fill" />
-        <br /><br />
-        <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Developer"
-                    Size="BitPersonaSize.Size72"
-                    CoinVariant="BitVariant.Outline" />
-        <br /><br />
-        <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Developer"
-                    Size="BitPersonaSize.Size72"
-                    CoinVariant="BitVariant.Text" />
-    </DemoExample>
-
-    <DemoExample Title="Squared" RazorCode="@example3RazorCode" Id="example3">
-        <BitPersona PrimaryText="Saleh Xafan"
-                    SecondaryText="Circle"
-                    Size="BitPersonaSize.Size72"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona Squared
-                    PrimaryText="Saleh Xafan"
-                    SecondaryText="Square"
-                    Size="BitPersonaSize.Size72"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoExample>
-
-    <DemoExample Title="Presence" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>None:</div><br />
+    <DemoExample Title="Presence" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <strong>Presence</strong> marks the dot on the coin with one of eight statuses.
+            <strong>Online</strong>, <strong>Away</strong>, <strong>Busy</strong> and
+            <strong>Dnd</strong> say the person is signed in; <strong>Offline</strong>,
+            <strong>Blocked</strong>, <strong>OutOfOffice</strong> and <strong>Unknown</strong> say they
+            are not reachable, each in its own way. The dot names itself to screen readers after its
+            status, and <strong>PresenceTitles</strong> replaces those names - and the tooltip - with your
+            own wording, one entry per status; <strong>PresenceTitle</strong> does the same for a single
+            persona. <strong>PresenceIconNames</strong> puts a glyph inside the dot, and
+            <strong>PresenceIconName</strong> does the same for a persona that only ever shows the one
+            status. The dot is a quarter of the coin, so a coin under 40px across - by its
+            <strong>Size</strong> or by a custom <strong>CoinSize</strong> - has no room left for a glyph and
+            shows none.
+        </div>
+        <br />
         <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.None"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
+                    SecondaryText="Online"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size56"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Offline:</div><br />
+        <br /><br />
         <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
+                    SecondaryText="Away"
+                    Presence="BitPersonaPresence.Away"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Busy"
+                    Presence="BitPersonaPresence.Busy"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Dnd (do not disturb)"
+                    Presence="BitPersonaPresence.Dnd"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Offline"
                     Presence="BitPersonaPresence.Offline"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Blocked"
+                    Presence="BitPersonaPresence.Blocked"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="OutOfOffice"
+                    Presence="BitPersonaPresence.OutOfOffice"
+                    Size="BitPersonaSize.Size56"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Unknown"
+                    Presence="BitPersonaPresence.Unknown"
+                    Size="BitPersonaSize.Size56"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
-        <div>Online:</div><br />
+        <div>With a glyph inside the dot (<b>PresenceIconNames</b>):</div>
+        <br />
         <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Online"
                     PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
+                    Size="BitPersonaSize.Size100"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
-        <div>Away:</div><br />
+        <div>A single status, without a map of all eight (<b>PresenceIconName</b>):</div>
+        <br />
         <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Away"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
+                    SecondaryText="Out of office"
+                    Presence="BitPersonaPresence.OutOfOffice"
+                    PresenceIconName="@BitIconName.Airplane"
+                    Size="BitPersonaSize.Size100"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br /><br /><br /><br />
-        <div>Do not Disturb (Dnd):</div><br />
+        <div>Named for the reader (<b>PresenceTitles</b>) - hover the dot to see the tooltip:</div>
+        <br />
         <BitPersona PrimaryText="Xafan Salina"
                     SecondaryText="Software Engineer"
                     Presence="BitPersonaPresence.Dnd"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Blocked:</div><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Blocked"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br /><br /><br />
-        <div>Busy:</div><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Busy"
-                    PresenceIconNames="_iconNames"
-                    Size="BitPersonaSize.Size120"
+                    PresenceTitles="_presenceTitles"
+                    Size="BitPersonaSize.Size100"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Initials" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            With no picture the coin shows initials, taken from <strong>PrimaryText</strong> by the rule
+            the rest of the industry settled on: two words give the first letter of each, three skip the
+            middle one, and anything else gives the first letter alone. What a display name carries around
+            those words is taken off first - a parenthesized aside, punctuation, an address written for a
+            machine - and a name that has no letters in it at all, a phone number for instance, yields the
+            person icon instead of two arbitrary numerals, unless <strong>AllowPhoneInitials</strong> says
+            the numbers are the name. <strong>ImageInitials</strong> overrides all of
+            it with exactly what you pass - and since the coin is sized for the two letters a name can
+            yield, anything longer is stepped down to fit rather than clipped by it.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Two words" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Ted Alan Randall" SecondaryText="Three words - the middle one is skipped" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Elvia Atkins (Contoso)" SecondaryText="The aside is dropped" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="carlos.slattery@@contoso.com" SecondaryText="An address, not a name" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="+1 (555) 016 7788" SecondaryText="No letters - the icon stands in" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AllowPhoneInitials PrimaryText="+1 (555) 016 7788" SecondaryText="AllowPhoneInitials" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="ImageInitials" ImageInitials="SK!" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Three letters, stepped down to fit" ImageInitials="SKH" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan" SecondaryText="Four letters, stepped down further" ImageInitials="SKHN" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div><b>ShowInitialsUntilImageLoads</b> fills the coin while the picture is on its way, and the initials stay when it never arrives:</div>
+        <br />
+        <BitPersona PrimaryText="Saleh Khafan"
+                    SecondaryText="Broken image url"
+                    Size="BitPersonaSize.Size72"
+                    ShowInitialsUntilImageLoads
+                    ImageUrl="invalid-src" />
+    </DemoExample>
+
+    <DemoExample Title="Coin icon" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            <strong>CoinIconName</strong> puts an icon in the coin in place of the initials, which is how a
+            persona stands for something that is not a person - a team, a room, a service account. Pass a
+            <strong>BitIconInfo</strong> to <strong>CoinIcon</strong> instead to use an icon from outside
+            the built-in set. The icon also stands in when a picture fails and the name gives no initials.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Design Team"
+                    SecondaryText="12 members"
+                    CoinIconName="@BitIconName.Group"
+                    Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Meeting Room 4"
+                    SecondaryText="Second floor"
+                    CoinColor="BitColor.Tertiary"
+                    CoinIconName="@BitIconName.Room"
+                    Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona PrimaryText="Build Bot"
+                    SecondaryText="Service account"
+                    Squared
+                    CoinColor="BitColor.Success"
+                    CoinIconName="@BitIconName.Robot"
+                    Size="BitPersonaSize.Size72" />
+    </DemoExample>
+
+    <DemoExample Title="Unknown" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <strong>Unknown</strong> is the coin for a person nobody has been able to resolve. It takes
+            precedence over the picture and the initials both, and shows a question mark that
+            <strong>UnknownIconName</strong> - or <strong>UnknownIcon</strong>, for an icon from outside
+            the built-in set - replaces with something else.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Unknown"
+                    SecondaryText="Developer"
+                    Size="BitPersonaSize.Size72"
+                    Unknown />
+        <br /><br />
+        <BitPersona PrimaryText="Unresolved"
+                    SecondaryText="Custom unknown icon"
+                    Size="BitPersonaSize.Size72"
+                    UnknownIconName="@BitIconName.StatusErrorFull"
+                    Unknown />
+    </DemoExample>
+
+    <DemoExample Title="Shape" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <strong>Shape</strong> decides the outline of the coin. <strong>Circular</strong> is the default
+            and what a picture of a person belongs in; <strong>Rounded</strong> is the square most design
+            systems reserve for entities rather than people - a team, a room, a service account; and
+            <strong>Square</strong> takes the corners off entirely, for a logo or a tile that has to fill the
+            coin edge to edge. The presence dot follows the corner out so it keeps clearing the coin.
+            <strong>Squared</strong> is the older shorthand for <strong>Rounded</strong>, and a
+            <strong>Shape</strong> of its own wins over it.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Circular (default)"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Shape="BitPersonaShape.Rounded"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Rounded"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Shape="BitPersonaShape.Square"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Square"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Shape="BitPersonaShape.Square"
+                    PrimaryText="Design Team"
+                    SecondaryText="A coin that is not a face"
+                    CoinColor="BitColor.Tertiary"
+                    CoinIconName="@BitIconName.Group"
+                    Size="BitPersonaSize.Size72" />
+    </DemoExample>
+
+    <DemoExample Title="Variant" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            <strong>CoinVariant</strong> decides how the coin color is spent when there is no picture in
+            it: <strong>Fill</strong> paints the whole coin, <strong>Outline</strong> keeps only the ring
+            and the initials, and <strong>Text</strong> drops the ring too and leaves the initials alone
+            on the page.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Saleh Xafan"
+                    SecondaryText="Fill (default)"
+                    Size="BitPersonaSize.Size72"
+                    CoinVariant="BitVariant.Fill" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Xafan"
+                    SecondaryText="Outline"
+                    Size="BitPersonaSize.Size72"
+                    CoinVariant="BitVariant.Outline" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Xafan"
+                    SecondaryText="Text"
+                    Size="BitPersonaSize.Size72"
+                    CoinVariant="BitVariant.Text" />
+    </DemoExample>
+
+    <DemoExample Title="Active" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <strong>Active</strong> points at the one person a view is about - whoever is speaking, whoever
+            wrote the message being read - without moving them out of the list they belong to.
+            <strong>ActiveAppearance</strong> picks how: a <strong>Ring</strong> in the coin color, a
+            <strong>Shadow</strong> under the coin, or <strong>RingShadow</strong> for both. The ring is
+            separated from the coin by a gap cut in the page color, and both are a proportion of the coin
+            rather than a constant, so they stay in scale across the size ramp; a persona sitting on a
+            surface of its own retunes that gap with the <b>--bit-prs-ring-gap-clr</b> variable, and its
+            width with <b>--bit-prs-ring-gap</b> and <b>--bit-prs-ring-width</b>.
+            <strong>Inactive</strong> is the other half of the same idea: it shrinks the coin slightly and
+            fades it back - by <b>--bit-prs-inactive-scale</b> and <b>--bit-prs-inactive-opacity</b> - which
+            is what everyone who is not speaking looks like in a call grid. It stands down while
+            <strong>Active</strong> is true, since a persona cannot be both at once.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Not active"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Active
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Ring (default)"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Active
+                    ActiveAppearance="BitPersonaActiveAppearance.Shadow"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Shadow"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Active
+                    ActiveAppearance="BitPersonaActiveAppearance.RingShadow"
+                    CoinColor="BitColor.Success"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="RingShadow"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>On a surface of its own, with the gap cut in that surface instead of the page:</div>
+        <br />
+        <div class="tinted-box">
+            <BitPersona Active
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Default gap color"
+                        Size="BitPersonaSize.Size72"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <br /><br />
+            <BitPersona Active
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Retuned gap color"
+                        Size="BitPersonaSize.Size72"
+                        Style="--bit-prs-ring-gap-clr: var(--bit-clr-bg-ter);"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+        <br /><br /><br /><br />
+        <div>The speaker and everyone else (<b>Active</b> and <b>Inactive</b>):</div>
+        <br />
+        <BitPersona Active
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Speaking"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona Inactive
+                    PrimaryText="Saleh Khafan"
+                    SecondaryText="Listening"
+                    Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona Inactive
+                    PrimaryText="Ted Randall"
+                    SecondaryText="Listening"
+                    Size="BitPersonaSize.Size72" />
+    </DemoExample>
+
+    <DemoExample Title="Action" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            Two different things can be clicked. <strong>OnActionClick</strong> adds a small button under
+            the coin - <strong>ActionIconName</strong> and <strong>ActionButtonTitle</strong> dress it, and
+            <strong>ActionTemplate</strong> replaces it outright. <strong>OnImageClick</strong> turns the
+            whole coin into a button instead: it reveals the overlay labelled by
+            <strong>ImageOverlayText</strong>, and is a real button element - announced as one, focusable,
+            and answering Enter and Space without the page scrolling underneath it. The overlay belongs to
+            the click rather than to the picture, so a coin carrying initials, an icon or the unknown glyph
+            reveals it just the same. The action button sits at the foot of the coin and the presence dot in
+            its trailing corner, so a persona can carry both. <strong>TabIndex</strong> reaches whichever
+            control the coin has become, and <strong>Href</strong> makes it a link rather than a button -
+            see <a href="#example18">Link</a>.
+        </div>
+        <br />
+        <div>Action button (hover, or tab to it, at the bottom of the coin):</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size120"
+                    Presence="BitPersonaPresence.Online"
+                    OnActionClick="() => actionClickCount++"
+                    ActionIconName="@BitIconName.CloudUpload"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
+        <p>Action Click Count: @actionClickCount</p>
+        <br /><br /><br /><br />
+        <div>Clickable coin (hover or focus it to reveal the overlay):</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size120"
+                    Presence="BitPersonaPresence.Online"
+                    ImageOverlayText="Change photo"
+                    OnImageClick="() => imageClickCount++"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
+        <p>Image Click Count: @imageClickCount</p>
+        <br /><br /><br /><br />
+        <div>A clickable coin with no picture in it reveals the same overlay:</div>
+        <br />
+        <BitPersona PrimaryText="Saleh Khafan"
+                    SecondaryText="Developer"
+                    Size="BitPersonaSize.Size120"
+                    ImageOverlayText="Add photo"
+                    OnImageClick="() => imageClickCount++" />
+        <br /><br /><br /><br />
+        <div>
+            An empty <b>ImageOverlayText</b> leaves the coin a plain button with no veil over it, which is
+            what a coin that opens a profile rather than changing the picture wants:
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Opens the profile"
+                    Size="BitPersonaSize.Size120"
+                    ImageOverlayText=""
+                    OnImageClick="() => imageClickCount++"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>A whole action of your own (<b>ActionTemplate</b>):</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size120"
+                    OnActionClick="() => actionClickCount++"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png">
+            <ActionTemplate>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="() => actionClickCount++">Upload</BitButton>
+            </ActionTemplate>
+        </BitPersona>
+    </DemoExample>
+
+    <DemoExample Title="Disabled" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            <strong>IsEnabled</strong> set to false dims the coin, greys the texts and stops every click and
+            key the persona would otherwise answer - the action button is disabled outright and a clickable
+            coin leaves the tab order.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    IsEnabled="false"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Saleh Khafan"
+                    SecondaryText="Developer"
+                    Size="BitPersonaSize.Size72"
+                    IsEnabled="false" />
+    </DemoExample>
+
+    <DemoExample Title="Image events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <strong>OnImageLoad</strong> and <strong>OnImageError</strong> report what became of the
+            picture. The coin falls back to the initials by itself when the load fails, so the callbacks are
+            there for logging it, or for reaching for a second source. The picture itself is never held back
+            waiting for the load event: a statically rendered page has nothing attached to fire one, and a
+            prerendered page can have the picture in the cache before it does.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Loads"
+                    Size="BitPersonaSize.Size72"
+                    OnImageLoad="() => imageLoadCount++"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
+        <p>Image Load Count: @imageLoadCount</p>
+        <br /><br /><br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Fails"
+                    Size="BitPersonaSize.Size72"
+                    OnImageError="() => imageErrorCount++"
+                    ImageUrl="invalid-image-url" />
+        <br />
+        <p>Image Error Count: @imageErrorCount</p>
+    </DemoExample>
+
+    <DemoExample Title="Image loading" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            <strong>ImageLoading</strong> decides when the browser fetches the picture: <strong>Lazy</strong>
+            holds off until it is nearly in view, which is what a long list of people wants, and
+            <strong>Eager</strong> fetches it straight away. <strong>ImageAttributes</strong> is where any
+            other attribute of the img element goes - <b>crossorigin</b>, <b>referrerpolicy</b>,
+            <b>decoding</b>, <b>fetchpriority</b>, <b>draggable</b>. <strong>ImageFadeIn</strong> holds the
+            picture back until it has loaded and then fades it in, so a long list of faces arrives as
+            something the eye can follow instead of popping in one picture at a time.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Lazy loaded"
+                    Size="BitPersonaSize.Size72"
+                    ImageLoading="BitImageLoading.Lazy"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Eagerly loaded, not draggable"
+                    Size="BitPersonaSize.Size72"
+                    ImageLoading="BitImageLoading.Eager"
+                    ImageAttributes="@(new() { { "draggable", "false" }, { "decoding", "async" } })"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>Faded in on arrival (<b>ImageFadeIn</b>) - hide the persona and show it again to watch the fade:</div>
+        <br />
+        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="() => isFadeInPersonaShown = !isFadeInPersonaShown">
+            @(isFadeInPersonaShown ? "Hide" : "Show")
+        </BitButton>
+        <br /><br />
+        @if (isFadeInPersonaShown)
+        {
+            <BitPersona ImageFadeIn
+                        PrimaryText="Xafan Salina"
+                        SecondaryText="Faded in"
+                        Size="BitPersonaSize.Size72"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        }
+    </DemoExample>
+
+    <DemoExample Title="Responsive image" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            <strong>ImageSrcSet</strong> offers the browser several copies of the picture and
+            <strong>ImageSizes</strong> tells it how much room the coin will take, so a retina screen gets
+            the sharp copy and a phone does not download it. A set of candidates is a picture in its own
+            right: <strong>ImageUrl</strong> is only the source the browser falls back to, and a coin given
+            nothing but candidates still shows one instead of dropping to its initials.
+            <strong>ImageAlt</strong> describes the picture itself; leave it unset and the picture is marked
+            decorative, since the name beside it already says who this is.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageAlt="Xafan Salina smiling at the camera"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
+                    ImageSizes="72px"
+                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
+        <br /><br /><br /><br />
+        <div>Candidates alone, with no <b>ImageUrl</b> behind them:</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageSizes="72px"
+                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png 72w, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 96w" />
+    </DemoExample>
+
+    <DemoExample Title="Templates" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            Every text has a template beside it - <strong>PrimaryTextTemplate</strong>,
+            <strong>SecondaryTextTemplate</strong>, <strong>TertiaryTextTemplate</strong> and
+            <strong>OptionalTextTemplate</strong> - for when a line has to hold more than a string.
+            <strong>ImageOverlayTemplate</strong> replaces the text of the overlay, and
+            <strong>CoinTemplate</strong> replaces the contents of the coin outright, which is the way in
+            for a picture the component would not otherwise know how to render.
+        </div>
+        <br />
+        <div>Text and overlay templates:</div>
+        <br />
+        <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
+            <PrimaryTextTemplate>
+                <BitIcon IconName="@BitIconName.Contact" Class="custom-ico" />
+                Xafan Salina
+            </PrimaryTextTemplate>
+            <SecondaryTextTemplate>
+                <BitIcon IconName="@BitIconName.Suitcase" Class="custom-ico" />
+                Software Engineer
+            </SecondaryTextTemplate>
+            <TertiaryTextTemplate>
+                <BitIcon IconName="@BitIconName.JoinOnlineMeeting" Class="custom-ico" />
+                In a meeting
+            </TertiaryTextTemplate>
+            <OptionalTextTemplate>
+                <BitIcon IconName="@BitIconName.Clock" Class="custom-ico" />
+                Available at 7:00pm
+            </OptionalTextTemplate>
+            <ImageOverlayTemplate>
+                <BitIcon IconName="@BitIconName.Edit" Class="custom-ico" />
+                Edit image
+            </ImageOverlayTemplate>
+        </BitPersona>
+        <br /><br /><br /><br />
+        <div>Coin template:</div>
+        <br />
+        <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
+            <CoinTemplate>
+                <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" width="100" height="100" class="custom-coin" />
+            </CoinTemplate>
+        </BitPersona>
+    </DemoExample>
+
+    <DemoExample Title="AutoCoinColor" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            <strong>AutoCoinColor</strong> picks the coin color by a stable hash, so the same person keeps
+            the same color everywhere and two people in a list are told apart at a glance. What is hashed
+            is <strong>CoinColorSeed</strong> when it is set - a user id or an address, which keeps the
+            color from moving when the displayed name does, and keeps two people who share a name apart -
+            and otherwise <strong>ImageInitials</strong> or <strong>PrimaryText</strong>.
+            <strong>AutoCoinColors</strong> replaces the set the hash picks from - a palette of one pins
+            every persona to that color, and one that leaves the semantic colors out keeps a list of people
+            from reading as a list of statuses. An explicit <strong>CoinColor</strong> wins over all of it.
+        </div>
+        <br />
+        <BitPersona AutoCoinColor PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Carlos Slattery" SecondaryText="Manager" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor PrimaryText="Elvia Atkins" SecondaryText="QA Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>Both of these are the same person under a different display name, held together by <b>CoinColorSeed</b>:</div>
+        <br />
+        <BitPersona AutoCoinColor CoinColorSeed="u-1024" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor CoinColorSeed="u-1024" PrimaryText="X. Salina" SecondaryText="Same seed, same color" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>Hashed out of a palette of your own (<b>AutoCoinColors</b>):</div>
+        <br />
+        <BitPersona AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size72" />
+        <br /><br />
+        <BitPersona AutoCoinColor AutoCoinColors="_coinColors" PrimaryText="Carlos Slattery" SecondaryText="Manager" Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div><b>CoinColor</b> takes precedence over <b>AutoCoinColor</b> when set explicitly:</div>
+        <br />
+        <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Xafan Salina" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
+    </DemoExample>
+
+    <DemoExample Title="Reversed" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <strong>Reversed</strong> puts the coin after the texts instead of before them, which is what a
+            row aligned to the right edge of a panel wants. The presence dot moves to the other corner with
+            it.
+        </div>
+        <br />
+        <BitPersona Reversed
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Presence="BitPersonaPresence.Online"
+                    PresenceIconNames="_iconNames"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="FullWidth" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            A persona is only as wide as it needs to be. <strong>FullWidth</strong> stretches it across its
+            container instead, and the texts take everything the coin leaves - which is what finally gives
+            a long name something to ellipsize against. Each of the four rows carries itself as a native
+            tooltip so the clipped part can still be read; set <strong>ShowOverflowTooltip</strong> to false
+            where the rows are known to be wide enough and the tooltip is only noise.
+        </div>
+        <br />
+        <div class="width-box">
+            <BitPersona PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size48"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+        <br />
+        <div class="width-box">
+            <BitPersona FullWidth PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size48"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+        <br />
+        <div class="width-box">
+            <BitPersona FullWidth PrimaryText="Xafan Salina Abdollahzadeh Yusefnejad" SecondaryText="Principal Software Engineer, Platform and Developer Experience" Size="BitPersonaSize.Size48"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+        <br />
+        <div class="width-box">
+            <BitPersona FullWidth ShowOverflowTooltip="false" PrimaryText="Xafan Salina Abdollahzadeh Yusefnejad" SecondaryText="No tooltip on hover" Size="BitPersonaSize.Size48"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Link" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            <strong>Href</strong> turns the coin into a real link, which is what an avatar that opens a
+            profile is: it is announced as a link, answers Enter, and can be opened in a new tab, copied or
+            previewed the way every other link on the page can - none of which a coin that only runs a
+            handler can offer. <strong>Target</strong> picks the browsing context it opens in, and setting it
+            to <b>_blank</b> adds <b>rel="noopener"</b> of its own accord unless a <strong>Rel</strong> of
+            your own says otherwise. A coin that only navigates takes no <em>Edit image</em> veil - it is not
+            offering to change the picture - so it is named after the person instead; pass
+            <strong>ImageOverlayText</strong> to put one back. <strong>OnImageClick</strong> still fires
+            alongside the navigation where both are given, and a disabled persona drops the href rather than
+            pretending to be a link that goes nowhere.
+        </div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Opens this page"
+                    Presence="BitPersonaPresence.Online"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>In a new tab, with <b>rel="noopener"</b> added for you:</div>
+        <br />
+        <BitPersona Href="https://github.com/bitfoundation/bitplatform"
+                    Target="_blank"
+                    PrimaryText="bit platform"
+                    SecondaryText="Opens in a new tab"
+                    CoinIconName="@BitIconName.Globe"
+                    Size="BitPersonaSize.Size72" />
+        <br /><br /><br /><br />
+        <div>With a veil of its own (<b>ImageOverlayText</b>) and a click handler beside the navigation:</div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    ImageOverlayText="View profile"
+                    OnImageClick="() => imageClickCount++"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br />
+        <p>Image Click Count: @imageClickCount</p>
+        <br /><br /><br /><br />
+        <div>A disabled link coin keeps its place but goes nowhere:</div>
+        <br />
+        <BitPersona Href="/components/persona"
+                    IsEnabled="false"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Disabled"
+                    Size="BitPersonaSize.Size72"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <strong>CoinColor</strong> paints the coin from the general palette. It is what the initials,
+            the coin icon and the overlay are drawn against, so the pairing of background and foreground
+            comes from the theme and stays legible in both schemes.
+        </div>
+        <br />
+        <BitPersona PrimaryText="Primary" CoinColor="BitColor.Primary" />
+        <br /><br />
+        <BitPersona PrimaryText="Secondary" CoinColor="BitColor.Secondary" />
+        <br /><br />
+        <BitPersona PrimaryText="Tertiary" CoinColor="BitColor.Tertiary" />
+        <br /><br />
+        <BitPersona PrimaryText="Info" SecondaryText="(default)" CoinColor="BitColor.Info" />
+        <br /><br />
+        <BitPersona PrimaryText="Success" CoinColor="BitColor.Success" />
+        <br /><br />
+        <BitPersona PrimaryText="Warning" CoinColor="BitColor.Warning" />
+        <br /><br />
+        <BitPersona PrimaryText="SevereWarning" CoinColor="BitColor.SevereWarning" />
+        <br /><br />
+        <BitPersona PrimaryText="Error" CoinColor="BitColor.Error" />
+        <br /><br />
+        <div style="background:var(--bit-clr-fg-ter);padding:1rem;margin: 1rem 0;">
+            <div class="box">
+                <BitPersona PrimaryText="PrimaryBackground" CoinColor="BitColor.PrimaryBackground" />
+                <br /><br />
+                <BitPersona PrimaryText="SecondaryBackground" CoinColor="BitColor.SecondaryBackground" />
+                <br /><br />
+                <BitPersona PrimaryText="TertiaryBackground" CoinColor="BitColor.TertiaryBackground" />
+            </div>
+        </div>
+
+        <br /><br />
+        <BitPersona PrimaryText="PrimaryForeground" CoinColor="BitColor.PrimaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="SecondaryForeground" CoinColor="BitColor.SecondaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="TertiaryForeground" CoinColor="BitColor.TertiaryForeground" />
+        <br /><br />
+        <BitPersona PrimaryText="PrimaryBorder" CoinColor="BitColor.PrimaryBorder" />
+        <br /><br />
+        <BitPersona PrimaryText="SecondaryBorder" CoinColor="BitColor.SecondaryBorder" />
+        <br /><br />
+        <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <div>
+            Every icon of the persona - the action button, the presence glyphs, the coin icon and the
+            unknown coin - accepts a <strong>BitIconInfo</strong> beside its name, which is what lets an
+            icon come from FontAwesome, Bootstrap Icons or any other font instead of the built-in set.
+        </div>
+
+        <br />
+        <br />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+        <div>FontAwesome action icon (hover over the image):</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    TertiaryText="In a meeting"
+                    OptionalText="Available at 4:00pm"
+                    Size="BitPersonaSize.Size120"
+                    Presence="BitPersonaPresence.None"
+                    OnActionClick="() => actionClickCount++"
+                    ActionIcon="@BitIconInfo.Fa("solid camera")"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <p>Action Click Count: @actionClickCount</p>
+
+        <br /><br />
+
+        <div>FontAwesome coin icon:</div>
+        <br />
+        <BitPersona PrimaryText="Design Team"
+                    SecondaryText="12 members"
+                    Size="BitPersonaSize.Size72"
+                    CoinIcon="@BitIconInfo.Fa("solid people-group")" />
+
+        <br /><br /><br /><br />
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div>Bootstrap Icons presence icons:</div>
+        <br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Online"
+                    Presence="BitPersonaPresence.Online"
+                    PresenceIcons="_icons"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Busy"
+                    Presence="BitPersonaPresence.Busy"
+                    PresenceIcons="_icons"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Away"
+                    Presence="BitPersonaPresence.Away"
+                    PresenceIcons="_icons"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Dnd"
+                    Presence="BitPersonaPresence.Dnd"
+                    PresenceIcons="_icons"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Offline"
+                    Presence="BitPersonaPresence.Offline"
+                    PresenceIcons="_icons"
+                    Size="BitPersonaSize.Size100"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <div>
+            <strong>Size</strong> runs from <strong>Size8</strong>, which is a presence dot and a name and
+            no coin at all, up to <strong>Size120</strong>. The size also decides how many of the four
+            texts there is room for: the secondary from 40 up, the tertiary from 72, the optional from 100.
+            <strong>ShowSecondaryText</strong> puts the second line back on the sizes that leave no room for
+            it, which is what a compact list of people with a role under each name wants.
+            <strong>CoinSize</strong> overrides the coin with a pixel size of your own, and scales the
+            initials, the presence dot and the glyph inside it along with it. <strong>HidePersonaDetails</strong>
+            drops the texts and leaves the coin alone, which then names itself after the primary text for
+            anyone who cannot see it - and a persona given no texts at all drops the column of its own
+            accord, so the coin is not left trailing the gap that would have sat between them.
+        </div>
+        <br />
         <BitCheckbox @bind-Value="isDetailsShown" Label="Include BitPersona details" />
         <br /><br /><br /><br />
         <div>Size 8 Persona:</div><br />
@@ -192,280 +944,41 @@
                     TertiaryText="In a meeting"
                     OptionalText="Available at 4:00pm"
                     Size="BitPersonaSize.Size120"
+                    Presence="BitPersonaPresence.Online"
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br /><br /><br />
+        <div>CoinSize 150 with initials:</div><br />
+        <BitPersona CoinSize="150"
+                    PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size120"
+                    HidePersonaDetails="!isDetailsShown" />
+        <br /><br /><br /><br />
+        <div>The second line on a size that has no room for it (<b>ShowSecondaryText</b>):</div><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size24"
+                    ShowSecondaryText
+                    HidePersonaDetails="!isDetailsShown"
+                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+        <br /><br />
+        <BitPersona PrimaryText="Xafan Salina"
+                    SecondaryText="Software Engineer"
+                    Size="BitPersonaSize.Size32"
+                    ShowSecondaryText
                     HidePersonaDetails="!isDetailsShown"
                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
     </DemoExample>
 
-    <DemoExample Title="Reversed" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>Adjust the texts position of BitPersona's image to be reversed.</div>
-        <br />
+    <DemoExample Title="Style &amp; Class" RazorCode="@example22RazorCode" Id="example22">
         <div>
-            <BitPersona Reversed
-                        PrimaryText="Xafan Salina"
-                        SecondaryText="Software Engineer"
-                        Presence="BitPersonaPresence.Online"
-                        PresenceIconNames="_iconNames"
-                        Size="BitPersonaSize.Size120"
-                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
+            <strong>Style</strong> and <strong>Class</strong> reach the root element, while
+            <strong>Styles</strong> and <strong>Classes</strong> reach every part of the persona by name -
+            the coin container, the image, the initials, the presence dot, the overlay, the action button
+            and each of the four text rows.
         </div>
-    </DemoExample>
-
-    <DemoExample Title="Action" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Custom action can be revealed by hovering on the bottom of the image:</div><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size120"
-                    Presence="BitPersonaPresence.None"
-                    OnActionClick="() => actionClickCount++"
-                    ActionIconName="@BitIconName.CloudUpload"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         <br />
-        <p>Action Click Count: @actionClickCount</p>
-        <br /><br /><br /><br />
-        <div>Hover over the image to reveal the image click action:</div><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size120"
-                    Presence="BitPersonaPresence.Online"
-                    OnImageClick="() => imageClickCount++"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br />
-        <p>Image Click Count: @imageClickCount</p>
-    </DemoExample>
-
-    <DemoExample Title="Initials" RazorCode="@example8RazorCode" Id="example8">
-        <div>Invalid ImageUrl:</div><br />
-        <BitPersona PrimaryText="Saleh Khafan"
-                    Size="BitPersonaSize.Size72"
-                    ShowInitialsUntilImageLoads
-                    ImageUrl="invalid-src" />
-        <br /><br /><br /><br />
-        <div>No ImageUrl:</div><br />
-        <BitPersona Size="BitPersonaSize.Size72" PrimaryText="Saleh Xafan" />
-        <br /><br /><br /><br />
-        <div>ImageInitials:</div><br />
-        <BitPersona Size="BitPersonaSize.Size72" PrimaryText="Saleh Khafan" ImageInitials="S" />
-    </DemoExample>
-
-    <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
-        <div>Text templates:</div><br />
-        <div>
-            <BitPersona Size="BitPersonaSize.Size100" ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" OnImageClick="() => {}">
-                <PrimaryTextTemplate>
-                    <BitIcon IconName="@BitIconName.Contact" Class="custom-ico" />
-                    Xafan Salina
-                </PrimaryTextTemplate>
-                <SecondaryTextTemplate>
-                    <BitIcon IconName="@BitIconName.Suitcase" Class="custom-ico" />
-                    Software Engineer
-                </SecondaryTextTemplate>
-                <TertiaryTextTemplate>
-                    <BitIcon IconName="@BitIconName.JoinOnlineMeeting" Class="custom-ico" />
-                    In a meeting
-                </TertiaryTextTemplate>
-                <OptionalTextTemplate>
-                    <BitIcon IconName="@BitIconName.Clock" Class="custom-ico" />
-                    Available at 7:00pm
-                </OptionalTextTemplate>
-                <ImageOverlayTemplate>
-                    <BitIcon IconName="@BitIconName.Edit" Class="custom-ico" />
-                    Edit image
-                </ImageOverlayTemplate>
-            </BitPersona>
-        </div>
-        <br /><br /><br /><br />
-        <div>Coin template:</div><br />
-        <div>
-            <BitPersona Size="BitPersonaSize.Size100" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Presence="BitPersonaPresence.Online" CoinVariant="BitVariant.Text">
-                <CoinTemplate>
-                    <img src="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" width="100px" height="100px" class="custom-coin" />
-                </CoinTemplate>
-            </BitPersona>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
-        <BitPersona PrimaryText="Primary" CoinColor="BitColor.Primary" />
-        <br /><br />
-        <BitPersona PrimaryText="Secondary" CoinColor="BitColor.Secondary" />
-        <br /><br />
-        <BitPersona PrimaryText="Tertiary" CoinColor="BitColor.Tertiary" />
-        <br /><br />
-        <BitPersona PrimaryText="Info" SecondaryText="(default)" CoinColor="BitColor.Info" />
-        <br /><br />
-        <BitPersona PrimaryText="Success" CoinColor="BitColor.Success" />
-        <br /><br />
-        <BitPersona PrimaryText="Warning" CoinColor="BitColor.Warning" />
-        <br /><br />
-        <BitPersona PrimaryText="SevereWarning" CoinColor="BitColor.SevereWarning" />
-        <br /><br />
-        <BitPersona PrimaryText="Error" CoinColor="BitColor.Error" />
-        <br /><br />
-        <div style="background:var(--bit-clr-fg-ter);padding:1rem;margin: 1rem 0;">
-            <div class="box">
-                <BitPersona PrimaryText="PrimaryBackground" CoinColor="BitColor.PrimaryBackground" />
-                <br /><br />
-                <BitPersona PrimaryText="SecondaryBackground" CoinColor="BitColor.SecondaryBackground" />
-                <br /><br />
-                <BitPersona PrimaryText="TertiaryBackground" CoinColor="BitColor.TertiaryBackground" />
-            </div>
-        </div>
-
-        <br /><br />
-        <BitPersona PrimaryText="PrimaryForeground" CoinColor="BitColor.PrimaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="SecondaryForeground" CoinColor="BitColor.SecondaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="TertiaryForeground" CoinColor="BitColor.TertiaryForeground" />
-        <br /><br />
-        <BitPersona PrimaryText="PrimaryBorder" CoinColor="BitColor.PrimaryBorder" />
-        <br /><br />
-        <BitPersona PrimaryText="SecondaryBorder" CoinColor="BitColor.SecondaryBorder" />
-        <br /><br />
-        <BitPersona PrimaryText="TertiaryBorder" CoinColor="BitColor.TertiaryBorder" />
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>
-            Use icons from external libraries like FontAwesome and Bootstrap Icons with the 
-            <b>ActionIcon</b> and <b>PresenceIcons</b> parameters.
-        </div>
-
-        <br />
-        <br />
-
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-        <div>FontAwesome action icon (hover over the image):</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    TertiaryText="In a meeting"
-                    OptionalText="Available at 4:00pm"
-                    Size="BitPersonaSize.Size120"
-                    Presence="BitPersonaPresence.None"
-                    OnActionClick="() => actionClickCount++"
-                    ActionIcon="@BitIconInfo.Fa("solid camera")"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <p>Action Click Count: @actionClickCount</p>
-
-        <br /><br /><br /><br />
-
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-        <div>Bootstrap Icons presence icons:</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Online"
-                    PresenceIcons="_icons"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Busy"
-                    PresenceIcons="_icons"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Away"
-                    PresenceIcons="_icons"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Dnd"
-                    PresenceIcons="_icons"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Presence="BitPersonaPresence.Offline"
-                    PresenceIcons="_icons"
-                    Size="BitPersonaSize.Size120"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoExample>
-
-    <DemoExample Title="AutoCoinColor" RazorCode="@example12RazorCode" Id="example12">
-        <div>Different people each get a distinct, consistent coin color automatically:</div>
-        <br />
-        <BitPersona AutoCoinColor PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
-        <br /><br />
-        <BitPersona AutoCoinColor PrimaryText="Saleh Khafan" SecondaryText="Developer" Size="BitPersonaSize.Size72" />
-        <br /><br />
-        <BitPersona AutoCoinColor PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size72" />
-        <br /><br />
-        <BitPersona AutoCoinColor PrimaryText="Carlos Slattery" SecondaryText="Manager" Size="BitPersonaSize.Size72" />
-        <br /><br />
-        <BitPersona AutoCoinColor PrimaryText="Elvia Atkins" SecondaryText="QA Engineer" Size="BitPersonaSize.Size72" />
-        <br /><br /><br /><br />
-        <div>Custom ImageInitials also influence the generated color:</div>
-        <br />
-        <BitPersona AutoCoinColor ImageInitials="ZZ" PrimaryText="Xafan Salina" SecondaryText="Software Engineer" Size="BitPersonaSize.Size72" />
-        <br /><br /><br /><br />
-        <div>CoinColor takes precedence over AutoCoinColor when set explicitly:</div>
-        <br />
-        <BitPersona AutoCoinColor CoinColor="BitColor.Success" PrimaryText="Xafan Salina" SecondaryText="Always green" Size="BitPersonaSize.Size72" />
-    </DemoExample>
-
-    <DemoExample Title="Image Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>OnImageLoad - callback invoked when the image loads successfully:</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size72"
-                    OnImageLoad="() => imageLoadCount++"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br />
-        <p>Image Load Count: @imageLoadCount</p>
-        <br /><br /><br /><br />
-        <div>OnImageError - callback invoked when the image fails to load:</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size72"
-                    OnImageError="() => imageErrorCount++"
-                    ImageUrl="invalid-image-url" />
-        <br />
-        <p>Image Error Count: @imageErrorCount</p>
-    </DemoExample>
-
-    <DemoExample Title="ImageLoading" RazorCode="@example14RazorCode" Id="example14">
-        <div>ImageLoading controls when the browser fetches the image (maps to the HTML <b>loading</b> attribute):</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Lazy loaded"
-                    Size="BitPersonaSize.Size72"
-                    ImageLoading="BitImageLoading.Lazy"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-        <br /><br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Eagerly loaded"
-                    Size="BitPersonaSize.Size72"
-                    ImageLoading="BitImageLoading.Eager"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
-    </DemoExample>
-
-    <DemoExample Title="ImageSrcSet" RazorCode="@example15RazorCode" Id="example15">
-        <div>ImageSrcSet provides alternate image sources for different screen densities (maps to the HTML <b>srcset</b> attribute):</div>
-        <br />
-        <BitPersona PrimaryText="Xafan Salina"
-                    SecondaryText="Software Engineer"
-                    Size="BitPersonaSize.Size72"
-                    ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"
-                    ImageSrcSet="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 1x, /_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png 2x" />
-    </DemoExample>
-
-    <DemoExample Title="Style &amp; Class" RazorCode="@example16RazorCode" Id="example16">
         <div>Component's Style & Class:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
@@ -478,21 +991,44 @@
         <div><b>Styles</b> & <b>Classes</b>:</div><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
+                    Presence="BitPersonaPresence.Online"
                     Styles="@(new() { ImageContainer = "color: #b6ff00; background-color: #00ff90;",
-                                              PrimaryTextContainer = "color: #ea1919; font-weight: bold; font-style: italic;" })" />
+                                      Presence = "border-color: #b6ff00;",
+                                      PrimaryTextContainer = "color: #ea1919; font-weight: bold; font-style: italic;" })" />
         <br /><br />
         <BitPersona PrimaryText="Saleh Khafan"
                     Size="BitPersonaSize.Size72"
                     Classes="@(new() { ImageContainer = "custom-img-container",
-                                               PrimaryTextContainer = "custom-primary-text" })" />
+                                       PrimaryTextContainer = "custom-primary-text" })" />
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
+        <div>
+            Set <strong>Dir</strong> to <strong>Rtl</strong> to lay the persona out right to left. The coin
+            moves to the right of the texts and the presence dot moves with it. A pair of Latin initials is
+            written back to front so that the layout reads them in the right order, while initials taken
+            from a right-to-left name are already in that order and are left as they are.
+        </div>
+        <br />
         <div dir="rtl">
             <BitPersona Dir="BitDir.Rtl"
                         PrimaryText="صالح یوسف نژاد"
                         SecondaryText="مهندس نرم افزار"
+                        Presence="BitPersonaPresence.Online"
                         Size="@BitPersonaSize.Size56" />
+            <br /><br />
+            <BitPersona Dir="BitDir.Rtl"
+                        PrimaryText="Saleh Khafan"
+                        SecondaryText="یک نام لاتین"
+                        Presence="BitPersonaPresence.Online"
+                        Size="@BitPersonaSize.Size56" />
+            <br /><br />
+            <BitPersona Dir="BitDir.Rtl"
+                        PrimaryText="صالح یوسف نژاد"
+                        SecondaryText="مهندس نرم افزار"
+                        Presence="BitPersonaPresence.Online"
+                        Size="@BitPersonaSize.Size56"
+                        ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png" />
         </div>
     </DemoExample>
 </DemoPage>

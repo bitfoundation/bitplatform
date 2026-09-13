@@ -1,10 +1,9 @@
-using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 
 namespace Boilerplate.Server.Api.Features.Tenants;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class TenantsMapper

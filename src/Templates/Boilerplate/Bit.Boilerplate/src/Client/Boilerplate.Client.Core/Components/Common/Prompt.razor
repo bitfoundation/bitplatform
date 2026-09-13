@@ -11,7 +11,7 @@
 
             <BitSpacer />
 
-            <BitButton OnClick="CloseModal"
+            <BitButton OnClick="WrapHandled(CloseModal)"
                        Color="BitColor.Tertiary"
                        Variant="BitVariant.Text"
                        IconName="@BitIconName.ChromeClose" />
@@ -29,18 +29,18 @@
                              Size="BitSize.Large"
                              Type="BitInputType.Number"
                              Style="justify-content:center"
-                             OnFill="WrapHandled(async (string? otp) => OnOk?.Invoke(value))" />
+                             OnFill="WrapHandled(async (string? otp) => OnOkClick())" />
             }
             else
             {
                 <BitTextField @bind-Value="value"
                               AutoFocus
                               Immediate
-                              OnEnter="WrapHandled(async (KeyboardEventArgs args) => OnOk?.Invoke(value))" />
+                              OnEnter="WrapHandled(async (KeyboardEventArgs args) => OnOkClick())" />
             }
 
             <BitStack Alignment="BitAlignment.Center" AutoHeight>
-                <BitButton OnClick="OnOkClick" Color="BitColor.Tertiary">
+                <BitButton OnClick="WrapHandled(OnOkClick)" Color="BitColor.Tertiary">
                     @Localizer[nameof(AppStrings.Ok)]
                 </BitButton>
             </BitStack>

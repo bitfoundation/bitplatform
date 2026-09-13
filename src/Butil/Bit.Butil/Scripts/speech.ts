@@ -1,4 +1,4 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     butil.speech = {
@@ -32,6 +32,7 @@ var BitButil = BitButil || {};
         pause() { window.speechSynthesis?.pause(); },
         resume() { window.speechSynthesis?.resume(); },
         isSpeaking() { return !!window.speechSynthesis?.speaking; },
-        isPending() { return !!window.speechSynthesis?.pending; }
+        isPending() { return !!window.speechSynthesis?.pending; },
+        isPaused() { return !!window.speechSynthesis?.paused; }
     };
 }(BitButil));

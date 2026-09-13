@@ -16,9 +16,26 @@
         <button @onclick="Browse"
                 type="button"
                 id="@_buttonId"
-                class="bit-fin-lbl">
+                aria-label="@AriaLabel"
+                aria-describedby="@(_HasDescription ? _descriptionId : null)"
+                style="@Styles?.Label"
+                class="bit-fin-lbl @Classes?.Label">
             @(Label ?? "Browse")
         </button>
+    }
+
+    @if (_HasDescription)
+    {
+        <div id="@_descriptionId" style="@Styles?.Description" class="bit-fin-dsc @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
     }
 
     <input @ref="_inputRef"
@@ -26,59 +43,80 @@
            type="file"
            id="@InputId"
            class="bit-fin-fi"
+           capture="@Capture"
            multiple="@Multiple"
+           webkitdirectory="@Directory"
            disabled="@(IsEnabled is false)"
-           aria-labelledby="@(HideLabel ? null : _buttonId)"
-           accept="@(Accept ?? string.Join(",", AllowedExtensions))" />
+           aria-label="@AriaLabel"
+           aria-labelledby="@(AriaLabel is null && LabelTemplate is null && HideLabel is false ? _buttonId : null)"
+           accept="@GetAcceptValue()" />
 
     @if (Files is not null && HideFileList is false)
     {
-        <div class="bit-fin-fl">
-            @for (var i = 0; i < Files.Count; i++)
+        var removeTitle = RemoveButtonTitle ?? "Remove";
+        var removeIcon = ShowRemoveButton ? BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete") : null;
+
+        <div role="list" style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
+            @foreach (var file in Files)
             {
-                var index = i;
-                var file = Files[index];
-                file.Index = index;
-
-                if (HideFileList is false)
+                if (FileViewTemplate is not null)
                 {
-                    if (FileViewTemplate is not null)
-                    {
+                    @* the custom template is wrapped so that every child of the list keeps carrying a listitem role *@
+                    <div @key="file.FileId" role="listitem">
                         @FileViewTemplate(file)
-                    }
-                    else
-                    {
-                        <div class="bit-fin-itm @GetFileElClass(file.IsValid)">
-                            <div class="bit-fin-fic">
-                                <div title="@file.Name" class="bit-fin-fnc">
-                                    <div class="bit-fin-fn">
-                                        @file.Name
-                                    </div>
+                    </div>
+                }
+                else
+                {
+                    <div @key="file.FileId"
+                         role="listitem" style="@Styles?.FileItem" class="bit-fin-itm @GetFileElClass(file.IsValid) @Classes?.FileItem">
+                        @if (ShowPreview && file.PreviewUrl is not null)
+                        {
+                            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+                               the alt is empty on purpose: the thumbnail is decorative and its name is already
+                               right next to it, so announcing it again would just repeat the same text. *@
+                            <img src="@file.PreviewUrl"
+                                 alt=""
+                                 draggable="false"
+                                 decoding="async"
+                                 style="@Styles?.Preview"
+                                 class="bit-fin-prv @Classes?.Preview" />
+                        }
+                        <div class="bit-fin-fic">
+                            <div title="@file.Name" class="bit-fin-fnc">
+                                <div style="@Styles?.FileName" class="bit-fin-fn @Classes?.FileName">
+                                    @file.Name
                                 </div>
-                                <div class="bit-fin-fsc">
-                                    <span class="bit-fin-fs">
-                                        @FileSizeHumanizer.Humanize(file.Size)
-                                    </span>
-                                </div>
-                                @if (file.IsValid is false)
-                                {
-                                    <div class="bit-fin-msg">
-                                        @file.Message
-                                    </div>
-                                }
                             </div>
-                            @if (ShowRemoveButton)
+                            <div class="bit-fin-fsc">
+                                <span style="@Styles?.FileSize" class="bit-fin-fs @Classes?.FileSize">
+                                    @(FileSizeFormatter is null ? FileSizeHumanizer.Humanize(file.Size) : FileSizeFormatter(file.Size))
+                                </span>
+                            </div>
+                            @if (file.IsValid is false)
                             {
-                                var removeIcon = BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete");
-
-                                <button type="button" class="bit-fin-rbt" @onclick="() => RemoveFile(file)">
-                                    <i title="remove" class="@removeIcon?.GetCssClasses()" aria-hidden="true" />
-                                </button>
+                                <div style="@Styles?.ErrorMessage" class="bit-fin-msg @Classes?.ErrorMessage">
+                                    @file.Message
+                                </div>
                             }
                         </div>
-                    }
+                        @if (ShowRemoveButton)
+                        {
+                            <button @onclick="() => RemoveFile(file)"
+                                    type="button"
+                                    title="@removeTitle"
+                                    disabled="@(IsEnabled is false)"
+                                    aria-label="@($"{removeTitle} {file.Name}")"
+                                    style="@Styles?.RemoveButton"
+                                    class="bit-fin-rbt @Classes?.RemoveButton">
+                                <i style="@Styles?.RemoveIcon" class="@removeIcon?.GetCssClasses() @Classes?.RemoveIcon" aria-hidden="true" />
+                            </button>
+                        }
+                    </div>
                 }
             }
         </div>
     }
+
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-fin-lvr">@_announcement</div>
 </div>

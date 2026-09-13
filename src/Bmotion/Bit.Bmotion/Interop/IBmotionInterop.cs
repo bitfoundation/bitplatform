@@ -51,13 +51,38 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask UnobserveViewportAsync(string elementId);
 
     // ── FLIP layout ───────────────────────────────────────────────────────────
-    ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId);
-    ValueTask PlayWaapiFlipAsync(string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr, string? finalTransform);
+    /// <summary>
+    /// Measures the element for a FLIP comparison. <paramref name="options"/> selects the
+    /// coordinate space so a snapshot and the measurement it is compared against agree (see
+    /// <see cref="BmotionMeasureOptions"/>).
+    /// </summary>
+    ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId, BmotionMeasureOptions options = default);
+
+    /// <summary>
+    /// Plays the FLIP animation. <paramref name="originX"/>/<paramref name="originY"/> are the
+    /// projection anchor (0-1 of the element's box) the deltas were measured from, and
+    /// <paramref name="dotnetRef"/> - when given - receives <c>OnLayoutAnimationCompleted</c> once
+    /// the animation finishes or is superseded.
+    /// </summary>
+    ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
+        string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class;
 
     // ── WAAPI compositor offload ──────────────────────────────────────────────
     ValueTask<bool> SupportsLinearEasingAsync();
     ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing);
     ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit);
+
+    // ── Scroll-driven timelines ───────────────────────────────────────────────
+    /// <summary>
+    /// Plays a pre-sampled animation progressed by scroll position. <c>true</c> = a native
+    /// <c>ScrollTimeline</c>/<c>ViewTimeline</c> drove it, <c>false</c> = the scroll-scrub
+    /// fallback did, <c>null</c> = it could not start.
+    /// </summary>
+    ValueTask<bool?> PlayScrollTimelineAsync(string elementId, int token, object keyframes, object timeline);
+
+    /// <summary>Stops a scroll-driven animation and releases any scroll listener behind it.</summary>
+    ValueTask CancelScrollTimelineAsync(string elementId, int token);
 
     // ── Scroll ────────────────────────────────────────────────────────────────
     ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class;

@@ -1,0 +1,54 @@
+﻿@* A DESCENDANT of the routed content (this card sits inside LifecyclePage, it is not the page
+   root) wired to the route lifecycle by hand: it consumes the cascaded BrouterRouteContext and
+   calls Register(this) - the escape hatch for components that cannot derive from
+   BrouterRouteBase. Registration works at any depth and receives the same callbacks as the page. *@
+
+@implements IBrouterRoute
+@implements IDisposable
+
+<div class="card">
+    <h2>Descendant handler (manual registration)</h2>
+    <dl>
+        <dt>RouteContext.IsActive</dt>
+        <dd>@(RouteContext?.IsActive.ToString() ?? "no context")</dd>
+        <dt>activations / renavigations seen</dt>
+        <dd>@_activations / @_renavigations</dd>
+    </dl>
+</div>
+
+@code {
+    [CascadingParameter] private BrouterRouteContext? RouteContext { get; set; }
+
+    // The exact context instance this component registered with, so Dispose unregisters from the
+    // same one even if the cascaded parameter were ever re-assigned.
+    private BrouterRouteContext? _registeredContext;
+    private int _activations;
+    private int _renavigations;
+
+    protected override void OnParametersSet()
+    {
+        // The cascade is a stable, fixed instance - registering once on the first parameter set is
+        // enough, and it happens during the mount render, before the arrival callbacks fire.
+        if (_registeredContext is null && RouteContext is not null)
+        {
+            _registeredContext = RouteContext;
+            _registeredContext.Register(this);
+        }
+    }
+
+    public ValueTask OnActivatedAsync(BrouterRouteActivation activation)
+    {
+        _activations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+    {
+        _renavigations++;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose() => _registeredContext?.Unregister(this);
+}

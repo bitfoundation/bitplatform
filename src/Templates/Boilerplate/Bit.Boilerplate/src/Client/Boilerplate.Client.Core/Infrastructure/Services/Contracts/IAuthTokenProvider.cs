@@ -14,10 +14,19 @@ public interface IAuthTokenProvider
 
     public static ClaimsPrincipal ParseAccessToken(string? accessToken, bool validateExpiry)
     {
-        if (string.IsNullOrEmpty(accessToken) is true)
+        if (string.IsNullOrWhiteSpace(accessToken) is true)
             return Anonymous();
 
-        var claims = ReadClaims(accessToken, validateExpiry);
+        IEnumerable<Claim>? claims;
+
+        try
+        {
+            claims = ReadClaims(accessToken, validateExpiry);
+        }
+        catch (Exception exp) when (exp is FormatException or JsonException or IndexOutOfRangeException or ArgumentException)
+        {
+            return Anonymous();
+        }
 
         if (claims is null)
             return Anonymous();
@@ -33,10 +42,14 @@ public interface IAuthTokenProvider
     {
         var parsedClaims = DeserializeAccessToken(accessToken);
 
-        if (validateExpiry && long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
+        if (parsedClaims is null)
+            return null;
+
+        if (validateExpiry)
         {
-            var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
-            if (expirationDate <= TimeProvider.GetUtcNow())
+            if (parsedClaims.TryGetValue("exp", out var exp) is false ||
+                long.TryParse(exp.ToString(), out var expSeconds) is false ||
+                DateTimeOffset.FromUnixTimeSeconds(expSeconds) <= TimeProvider.GetUtcNow())
                 return null;
         }
 
@@ -56,23 +69,13 @@ public interface IAuthTokenProvider
             }
         }
 
-        if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.GlobalAdmin))
-        {
-            foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
-                claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
-        }
-        //#if (multitenant == true)
-        else if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.TenantAdmin))
-        {
-            foreach (var feat in AppFeatures.GetTenantAdminFeatures())
-                claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
-        }
-        //#endif
+        foreach (var feat in AppFeatures.GetRoleImpliedFeatures(role => claims.Any(c => c.Type == RoleType && c.Value == role)))
+            claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
 
         return claims;
     }
 
-    private static Dictionary<string, JsonElement> DeserializeAccessToken(string accessToken)
+    private static Dictionary<string, JsonElement>? DeserializeAccessToken(string accessToken)
     {
         // Split the token to get the payload
         string base64UrlPayload = accessToken.Split('.')[1];
@@ -84,7 +87,7 @@ public interface IAuthTokenProvider
         string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
 
         // Deserialize the JSON string to a dictionary
-        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.Options.GetTypeInfo<Dictionary<string, JsonElement>>())!;
+        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.Options.GetTypeInfo<Dictionary<string, JsonElement>>());
 
         return claims;
     }

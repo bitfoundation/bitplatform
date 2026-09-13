@@ -1,0 +1,287 @@
+/* The footer is the one band on the page painted with the PRIMARY background: that change of
+   ground is what marks the end of the secondary-background content column above it. */
+.bb-footer {
+    width: 100%;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+}
+
+/* ---------- Upper band: what this is, and where to go ---------- */
+
+.bb-footer-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 3rem;
+    max-width: var(--bb-content-width);
+    margin: 0 auto;
+    padding: 3rem 2rem 2.5rem;
+}
+
+.bb-footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* The mark is drawn per theme - the light and dark logos are different artwork rather than the
+   same glyph recolored, so this is an image swap and not a mask. */
+.bb-footer-logo {
+    width: 108px;
+    height: 34px;
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+    flex: none;
+}
+
+:root[bit-theme$='dark'] .bb-footer-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([bit-theme$='dark']) .bb-footer-logo {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+.bb-footer-tagline {
+    margin: 0;
+    max-width: 40ch;
+    line-height: 1.65;
+    color: var(--bb-text-muted);
+}
+
+.bb-footer-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+}
+
+/* ---------- Link columns ---------- */
+
+.bb-footer-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+    gap: 2rem 1.5rem;
+    min-width: 0;
+}
+
+.bb-footer-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    min-width: 0;
+}
+
+/* Fluent's Overline over each column - a label, not a heading: the footer sits after the page's
+   own content, and four more headings there would say the document has four more sections. */
+.bb-footer-col-title {
+    margin: 0 0 .25rem;
+    font-size: .6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text);
+}
+
+.bb-footer-col a,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a {
+    color: var(--bb-text-muted);
+    text-decoration: none;
+    line-height: 1.6;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-footer-col a:hover,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a:hover {
+    color: var(--bb-primary);
+    text-decoration: underline;
+}
+
+/* The footer's links are never "the page you are on" - a link to the current page is still a
+   destination here, not a state - so the active class the router adds is neutralized. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a.active {
+    color: var(--bb-text-muted);
+    font-weight: inherit;
+}
+
+/* ---------- Lower band: the organization ---------- */
+
+.bb-footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: var(--bb-content-width);
+    margin: 0 auto;
+    padding: 1.25rem 2rem 2rem;
+    border-top: 1px solid var(--bb-border);
+    font-size: .8125rem;
+}
+
+.bb-footer-address {
+    display: flex;
+    flex-direction: column;
+    gap: .125rem;
+    min-width: 0;
+}
+
+.bb-footer-address a,
+.bb-country {
+    color: var(--bb-text-soft);
+    text-decoration: none;
+    line-height: 1.6;
+}
+
+.bb-footer-address a:hover {
+    color: var(--bb-primary);
+    text-decoration: underline;
+}
+
+.bb-address,
+.bb-tel {
+    padding-inline-start: 1.25rem;
+    background-repeat: no-repeat;
+    background-position: left .2rem;
+    background-size: 14px;
+}
+
+.bb-address {
+    background-image: url('images/footer/location-icon.svg');
+}
+
+.bb-tel {
+    background-image: url('images/footer/tel-icon.svg');
+}
+
+.bb-country {
+    padding-inline-start: 1.25rem;
+}
+
+.bb-footer-social-block {
+    display: flex;
+    flex-direction: column;
+    gap: .625rem;
+    align-items: flex-start;
+}
+
+.bb-social-links {
+    display: flex;
+    gap: .5rem;
+}
+
+/* The marks are single-color artwork, so each one is a mask painted with the brand's own color on
+   hover and a neutral one at rest - which keeps four different logos from turning the row into a
+   sticker sheet. */
+.bb-social-link {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--bb-radius);
+    background-color: var(--bb-text-soft);
+    -webkit-mask-size: 17px;
+    mask-size: 17px;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transition: background-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-twitter-link {
+    -webkit-mask-image: url('images/footer/twitter-icon.svg');
+    mask-image: url('images/footer/twitter-icon.svg');
+}
+
+.bb-github-link {
+    -webkit-mask-image: url('images/footer/github-icon.svg');
+    mask-image: url('images/footer/github-icon.svg');
+}
+
+.bb-youtube-link {
+    -webkit-mask-image: url('images/footer/youtube-icon.svg');
+    mask-image: url('images/footer/youtube-icon.svg');
+}
+
+.bb-linkedin-link {
+    -webkit-mask-image: url('images/footer/linkedin-icon.svg');
+    mask-image: url('images/footer/linkedin-icon.svg');
+}
+
+.bb-social-link:hover {
+    background-color: var(--bb-primary);
+}
+
+.bb-copyright {
+    color: var(--bb-text-soft);
+    line-height: 1.6;
+}
+
+.bb-copyright a {
+    color: var(--bb-text-muted);
+}
+
+.bb-go-to-top {
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    height: 32px;
+    padding: 0 .75rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+    font-family: inherit;
+    font-size: .8125rem;
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-go-to-top:hover {
+    background: var(--bb-surface-hover);
+    border-color: var(--bb-border-strong);
+    color: var(--bb-text);
+}
+
+.bb-go-to-top svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 960px) {
+    .bb-footer-main {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2.5rem;
+        padding: 2.5rem 1.5rem 2rem;
+    }
+
+    .bb-footer-bottom {
+        padding: 1.25rem 1.5rem 2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .bb-footer-main {
+        padding: 2rem 1rem 1.5rem;
+    }
+
+    .bb-footer-bottom {
+        padding: 1.25rem 1rem 2rem;
+        gap: 1.25rem;
+    }
+
+    .bb-footer-links {
+        gap: 1.5rem 1rem;
+    }
+}

@@ -1,0 +1,17 @@
+﻿@* Trailing optional parameter: /profile and /profile/saleh both match, so bind it as nullable. *@
+
+<h1>Profile</h1>
+
+<dl>
+    <dt>username</dt>
+    <dd>@(Username ?? "(null - the URL omitted it)")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/profile" class="btn">/profile</BrouterLink>
+    <BrouterLink Href="/profile/saleh" class="btn">/profile/saleh</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Username { get; set; }
+}

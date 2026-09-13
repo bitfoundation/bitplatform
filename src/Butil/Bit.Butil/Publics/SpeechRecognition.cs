@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition">SpeechRecognition</see>
 /// API (Web Speech, prefixed as <c>webkitSpeechRecognition</c> on Chromium).
 /// </summary>
+[ButilService(typeof(SpeechRecognition))]
 public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ResultMethodName = nameof(InvokeSpeechRecognitionResult);
@@ -90,6 +91,7 @@ public class SpeechRecognition(IJSRuntime js) : IAsyncDisposable
         return js.InvokeVoid("BitButil.speechRecognition.stop", id);
     }
 
+    /// <summary>Stops every recognition session started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

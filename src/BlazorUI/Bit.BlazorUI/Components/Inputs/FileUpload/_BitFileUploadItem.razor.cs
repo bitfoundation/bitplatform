@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public partial class _BitFileUploadItem : ComponentBase
 {
@@ -9,50 +9,35 @@ public partial class _BitFileUploadItem : ComponentBase
 
     private static int GetFileUploadPercent(BitFileInfo file)
     {
-        int uploadedPercent;
-        if (file.TotalUploadedSize >= file.Size)
-        {
-            uploadedPercent = 100;
-        }
-        else
-        {
-            uploadedPercent = (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100);
-        }
+        // an empty file has no byte whose progress could be measured, so it is either done or not
+        // started - reporting it as complete before it has been sent would be telling a story.
+        if (file.Size == 0) return file.Status is BitFileUploadStatus.Completed ? 100 : 0;
 
-        return uploadedPercent;
+        if (file.TotalUploadedSize >= file.Size) return 100;
+
+        // the progress events count the bytes of the whole request body, multipart overhead included,
+        // so the raw ratio can slightly overshoot and has to be capped.
+        return Math.Min(100, (int)((file.TotalUploadedSize + file.LastChunkUploadedSize) / (float)file.Size * 100));
     }
 
-    private static string GetFileUploadSize(BitFileInfo file)
+    private static long GetFileUploadSize(BitFileInfo file)
     {
-        long uploadedSize;
-        if (file.TotalUploadedSize >= file.Size)
-        {
-            uploadedSize = file.Size;
-        }
-        else
-        {
-            uploadedSize = file.TotalUploadedSize + file.LastChunkUploadedSize;
-        }
-
-        return FileSizeHumanizer.Humanize(uploadedSize);
+        // the progress events count the bytes of the whole request body, multipart overhead included, so the
+        // running total can overshoot the file and has to be capped - "1.1 MB/1 MB" would read as a bug.
+        return Math.Min(file.Size, file.TotalUploadedSize + file.LastChunkUploadedSize);
     }
 
-    private string GetFileElClass(BitFileUploadStatus status)
+    private string FormatSize(long size)
+    {
+        return FileUpload.FileSizeFormatter is null ? FileSizeHumanizer.Humanize(size) : FileUpload.FileSizeFormatter(size);
+    }
+
+    private static string GetFileElClass(BitFileUploadStatus status)
         => status switch
         {
             BitFileUploadStatus.Completed => $"{ROOT_ELEMENT_CLASS}-uld",
-            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed => $"{ROOT_ELEMENT_CLASS}-fld",
-            BitFileUploadStatus.Paused => $"{ROOT_ELEMENT_CLASS}-psd",
+            BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed or BitFileUploadStatus.RemoveFailed => $"{ROOT_ELEMENT_CLASS}-fld",
+            BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled => $"{ROOT_ELEMENT_CLASS}-psd",
             _ => $"{ROOT_ELEMENT_CLASS}-ip",
-        };
-
-    private string GetUploadMessage(BitFileInfo file)
-        => file.Status switch
-        {
-            BitFileUploadStatus.Completed => FileUpload.SuccessfulUploadMessage,
-            BitFileUploadStatus.Failed => FileUpload.FailedUploadMessage,
-            BitFileUploadStatus.RemoveFailed => FileUpload.FailedRemoveMessage,
-            BitFileUploadStatus.NotAllowed => FileUpload.IsFileTypeNotAllowed(file) ? FileUpload.NotAllowedExtensionErrorMessage : FileUpload.MaxSizeErrorMessage,
-            _ => string.Empty,
         };
 }

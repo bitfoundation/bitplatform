@@ -1,13 +1,27 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-rtg {
-    font-weight: 400;
-    font-size: spacing(1.75);
+    font-weight: $tg-fw-regular;
+    width: fit-content;
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+    // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
+    // instead of as a second, dimmer accent.
+    --bit-rtg-clr-uns: #{$clr-fg-ter};
+    --bit-rtg-size: #{$siz-icon-md};
+
+    // While the pointer is over an interactive rating the filled part - which the hover preview has
+    // already extended to the item under the pointer - shifts to the hover shade, so the preview reads
+    // as "this is what a click would give you" rather than as the committed value. An invalid rating is
+    // left out of it, so the error color it is painted with survives the pointer passing over it.
+    @media (hover: hover) {
+        &:hover:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-ifl {
+            color: var(--bit-rtg-clr-hover);
+        }
+    }
 
     &.bit-dis {
         .bit-rtg-btn {
-            opacity: 0.65;
             cursor: not-allowed;
             pointer-events: none;
         }
@@ -21,6 +35,10 @@
         .bit-rtg-iem, .bit-rtg-ifl {
             color: $clr-err;
         }
+
+        .bit-rtg-btn:focus-visible {
+            @include focus-ring($clr-err-focus);
+        }
     }
 }
 
@@ -28,14 +46,24 @@
     margin: 0;
     border: none;
     cursor: pointer;
-    height: spacing(2);
     position: relative;
     outline: transparent;
-    font-size: spacing(2);
-    line-height: spacing(2);
     box-sizing: content-box;
+    // A minimum rather than a fixed height: the icons never exceed their line box, so the size token still
+    // decides the height of a plain rating, while an ItemTemplate taller than an icon grows the item to fit
+    // instead of spilling out of it.
+    min-height: var(--bit-rtg-size);
+    font-size: var(--bit-rtg-size);
+    line-height: var(--bit-rtg-size);
     background-color: transparent;
+    border-radius: $shp-radius-control;
     padding: spacing(1) spacing(0.25);
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-rtg-clr-focus));
+        // The ring is drawn with a box-shadow, which the neighbouring items would otherwise paint over.
+        z-index: 1;
+    }
 }
 
 .bit-rtg-rdl {
@@ -45,70 +73,138 @@
     }
 }
 
+// A transparent slice of an item, laid over the icons, that commits its own fraction of the item.
+// inset-inline-start keeps the first slice on the leading edge in both directions.
+.bit-rtg-seg {
+    top: 0;
+    height: 100%;
+    cursor: inherit;
+    position: absolute;
+}
+
 .bit-rtg-sm {
-    .bit-rtg-btn {
-        height: spacing(1);
-        font-size: spacing(1);
-        line-height: spacing(1);
-    }
+    --bit-rtg-size: #{$siz-icon-sm};
+}
+
+.bit-rtg-md {
+    --bit-rtg-size: #{$siz-icon-md};
 }
 
 .bit-rtg-lg {
-    .bit-rtg-btn {
-        height: spacing(3);
-        font-size: spacing(3);
-        line-height: spacing(3);
-    }
+    --bit-rtg-size: #{$siz-icon-lg};
 }
 
 .bit-rtg-alb {
     border: 0;
     padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
     overflow: hidden;
     position: absolute;
     white-space: nowrap;
-    width: spacing(0.125);
-    height: spacing(0.125);
-    margin: spacing(-0.125);
+    clip-path: inset(50%);
 }
 
+// A flex container rather than an inline-block, so that the box is exactly the icon it holds. An
+// inline-block sizes itself to a line box, and the line box carries the descender of the surrounding text
+// font under an icon glyph that has none of its own, which leaves a few pixels of slack below the icon.
+// The slack costs a horizontal rating nothing, because its filled layer hangs from the top edge the icon
+// starts at, but a vertical rating anchors that layer to the bottom edge and measures its fill against
+// this box: the fill would be drawn below the glyph it is meant to cover, and a half-filled item would
+// show more than half. It also keeps the step slices, which cover the item, centred on what is drawn.
 .bit-rtg-ict {
-    height: inherit;
+    display: flex;
     position: relative;
-    display: inline-block;
 }
 
 .bit-rtg-iem {
-    speak: none;
     width: 100%;
     font-style: normal;
-    font-weight: normal;
+    font-weight: $tg-fw-regular;
     display: inline-block;
-    color: $clr-fg-pri;
-
-    @media (hover: hover) {
-        &:hover {
-            color: $clr-pri;
-        }
-    }
+    color: var(--bit-rtg-clr-uns);
+    transition: color $mot-duration-short $mot-easing;
 }
 
+// The filled layer is the same glyph clipped to a percentage of its width, so a fractional value shows
+// as a partly filled item. It is anchored and aligned to the leading edge, which puts the filled part on
+// the left in LTR and on the right in RTL - the direction a rating is read from in each.
 .bit-rtg-ifl {
     top: 0;
-    left: 0;
-    speak: none;
+    inset-inline-start: 0;
     overflow: hidden;
     position: absolute;
     font-style: normal;
-    text-align: center;
-    font-weight: normal;
+    text-align: start;
+    font-weight: $tg-fw-regular;
     display: inline-block;
     vertical-align: middle;
-    color: $clr-fg-pri;
+    color: var(--bit-rtg-clr);
+    transition: width $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+}
 
-    @media (hover: hover) {
-        &:hover {
-            color: $clr-pri;
+
+// A vertical rating stacks its items bottom-up, so that "more" is up the same way the ArrowUp key means
+// more, and the fill of a partly covered item grows from its bottom edge instead of its leading one.
+.bit-rtg-vrt {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: column-reverse;
+
+    // The generous padding that separates the items of a row belongs on the other axis once they form a
+    // column, so the rows do not end up spaced twice as far apart as the columns were.
+    .bit-rtg-btn {
+        padding: spacing(0.25) spacing(1);
+    }
+
+    // Anchored to the bottom, and the glyph inside it with them: clipping a box whose content sits at the
+    // top would reveal the top of the icon, which is the half a bottom-up fill is meant to hide.
+    .bit-rtg-ifl {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        transition: height $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+    }
+
+    .bit-rtg-seg {
+        top: auto;
+        width: 100%;
+        inset-inline-start: 0;
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-rtg-#{$role} {
+        --bit-rtg-clr: #{role($tokens, main)};
+        --bit-rtg-clr-hover: #{role($tokens, hover)};
+        --bit-rtg-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+// The filled and unfilled items are told apart by color alone, which forced-colors modes discard, so the
+// distinction is re-established with the system colors here: the plain text color for the empty outline
+// glyph and the selection color for the filled one, both of which contrast with the page.
+@media (forced-colors: active) {
+    .bit-rtg-iem {
+        forced-color-adjust: none;
+        color: ButtonText;
+    }
+
+    .bit-rtg-ifl {
+        forced-color-adjust: none;
+        color: Highlight;
+    }
+
+    .bit-rtg.bit-dis {
+        .bit-rtg-iem, .bit-rtg-ifl {
+            color: GrayText;
         }
     }
 }

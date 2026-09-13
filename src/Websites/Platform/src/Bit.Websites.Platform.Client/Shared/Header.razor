@@ -1,12 +1,14 @@
 ﻿@inherits AppComponentBase
 
 <header class="main-header">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (isDocsRoute)
+            @if (navMenuService.IsDocsRoute)
             {
                 <BitButton Class="header-menu-btn"
                            Variant="BitVariant.Text"
+                           AriaLabel="Toggle documentation navigation"
                            OnClick=@WrapHandled(ToggleMenu)>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M21 7.75H3C2.59 7.75 2.25 7.41 2.25 7C2.25 6.59 2.59 6.25 3 6.25H21C21.41 6.25 21.75 6.59 21.75 7C21.75 7.41 21.41 7.75 21 7.75Z" fill="currentColor" />
@@ -15,80 +17,53 @@
                     </svg>
                 </BitButton>
             }
-            <a class="header-logo" href="@Urls.Home" aria-label="Home page" />
-            <div class="header-link header-ps-btn @(isDocsRoute ? "header-link--active" : null)">
-                Products
-                <div class="header-menu-popup">
-                    <div class="col">
-                        <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode">
-                            <div class="menu-item-content">
-                                <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
-                                <div class="item-desc">(Private alpha)</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates">
-                            <div class="menu-item-content">
-                                <div class="item-title">Boilerplate</div>
-                                <div class="item-desc">Feature-rich .NET project template</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
-                            <div class="menu-item-content">
-                                <div class="item-title">Butil</div>
-                                <div class="item-desc">Blazor utils for browser APIs</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup">
-                            <div class="menu-item-content">
-                                <div class="item-title">Bswup</div>
-                                <div class="item-desc">Blazor PWA on steroids</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql">
-                            <div class="menu-item-content">
-                                <div class="item-title">Besql</div>
-                                <div class="item-desc">Blazor Entity Framework SQLite</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item" href="@Urls.BlazorUI" target="_blank">
-                            <div class="menu-item-content">
-                                <div class="item-title">BlazorUI</div>
-                                <div class="item-desc">Native Blazor UI components</div>
-                            </div>
-                        </a>
-
-                        <a class="menu-item menu-item--disabled">
-                            <div class="menu-item-content">
-                                <div class="item-title">bit Academy</div>
-                                <div class="item-desc">Coming soon</div>
-                            </div>
-                        </a>
-                    </div>
+            <a class="header-logo" href="@Urls.Home" aria-label="bit platform home page" />
+            @* The mouseenter handler is attached only while force-closed is set (it just lifts that
+               flag), so the common hover path stays pure CSS with no interop roundtrip or re-render. *@
+            <div class="header-link header-ps-btn @(navMenuService.IsProductsRoute ? "header-link--active" : null) @(isProductsMenuOpen ? "open" : null) @(isProductsMenuForceClosed ? "force-closed" : null)"
+                 @onmouseenter="@(isProductsMenuForceClosed ? WrapHandled(HandleProductsMenuMouseEnter) : null)"
+                 @onkeydown="WrapHandled<KeyboardEventArgs>(HandleProductsMenuKeyDown)">
+                <button type="button"
+                        class="header-ps-trigger"
+                        aria-haspopup="true"
+                        aria-controls="header-products-menu"
+                        aria-expanded="@(isProductsMenuOpen ? "true" : "false")"
+                        @onclick=@WrapHandled(ToggleProductsMenu)>
+                    Products
+                    <svg class="ps-chevron" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <div class="header-menu-popup" id="header-products-menu">
+                    @foreach (var column in productMenuColumns)
+                    {
+                        <div class="col">
+                            @foreach (var item in column)
+                            {
+                                @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
+                            }
+                        </div>
+                    }
                 </div>
             </div>
-            <a class="header-link @(currentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
-            <a class="header-link @(currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
-            <a class="header-link @(currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
         </div>
         <div class="right-section">
-            <a class="github-container" target="_blank" aria-label="Github repository" title="Github repository" href="@Urls.GithubRepo">
+            <a class="github-container" target="_blank" rel="noopener" aria-label="GitHub repository" title="GitHub repository" href="@Urls.GithubRepo">
                 <span class="github-btn"></span>
             </a>
 
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light" aria-label="Switch to light theme">
                 <span class="icon-container">
-                    <img src="/images/sun.png" />
+                    <img src="/images/sun.svg" alt="" />
                 </span>
             </button>
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
+            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light" aria-label="Switch to dark theme">
                 <span class="icon-container">
-                    <img src="/images/moon.svg" />
+                    <img src="/images/moon.svg" alt="" />
                 </span>
             </button>
         </div>
@@ -98,6 +73,7 @@
         <BitActionButton IconName="ChevronRight"
                          Class="header-action-button"
                          OnClick="@WrapHandled(ToggleHeaderMenu)"
+                         AriaLabel="@($"{(isHeaderMenuOpen ? "Close" : "Open")} site navigation")"
                          Styles="@(new() { Icon = isHeaderMenuOpen ? "transform:rotate(-90deg)" : "transform:rotate(90deg)" })">
             @GetActiveRouteName()
         </BitActionButton>
@@ -106,69 +82,66 @@
 
 @if (isHeaderMenuOpen)
 {
-    <nav class="header-nav">
+    <nav class="header-nav" @onkeydown="WrapHandled<KeyboardEventArgs>(HandleHeaderNavKeyDown)">
         <BitButton IconName="Cancel"
                    Variant="BitVariant.Text"
                    Class="header-nav-close-btn"
+                   AriaLabel="Close site navigation"
                    OnClick="@WrapHandled(ToggleHeaderMenu)" />
-        <div class="header-nav-link header-ps-btn @(IsProductsServicesActive() ? "header-nav-link--active" : null)">
-            Products
-            <div class="header-menu-popup">
-                <div class="col">
-                    <a class="menu-item @(isLcncDocRoute ? "active" : "")" href="@Urls.LowCodeNoCode" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Low-code/<span style="opacity:0.5">No-code</span></div>
-                            <div class="item-desc">(Private alpha)</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item @(isTemplateDocRoute ? "active" : "")" href="@Urls.Templates" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Boilerplate</div>
-                            <div class="item-desc">Feature-rich project template</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Butil</div>
-                            <div class="item-desc">Blazor utils for browser APIs</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Bswup</div>
-                            <div class="item-desc">Blazor PWA on steroids</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item @(isBesqlDocRoute ? "active" : "")" href="@Urls.Besql" @onclick=@WrapHandled(ToggleHeaderMenu)>
-                        <div class="menu-item-content">
-                            <div class="item-title">Besql</div>
-                            <div class="item-desc">Blazor Entity Framework SQLite</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item" href="@Urls.BlazorUI" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
-                        <div class="menu-item-content">
-                            <div class="item-title">BlazorUI</div>
-                            <div class="item-desc">Native Blazor UI components</div>
-                        </div>
-                    </a>
-
-                    <a class="menu-item menu-item--disabled">
-                        <div class="menu-item-content">
-                            <div class="item-title">bit Academy</div>
-                            <div class="item-desc">Coming soon</div>
-                        </div>
-                    </a>
+        <div class="header-nav-item">
+            <button type="button"
+                    class="header-nav-link header-nav-products-trigger @(navMenuService.IsProductsRoute ? "header-nav-link--active" : null)"
+                    aria-controls="@(isMobileProductsOpen ? "header-nav-products" : null)"
+                    aria-expanded="@(isMobileProductsOpen ? "true" : "false")"
+                    @onclick=@WrapHandled(ToggleMobileProducts)>
+                Products
+                <svg class="ps-chevron @(isMobileProductsOpen ? "open" : null)" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+            @if (isMobileProductsOpen)
+            {
+                <div class="header-nav-products" id="header-nav-products">
+                    @foreach (var item in productMenuColumns.SelectMany(c => c))
+                    {
+                        @ProductMenuItemTemplate(item, ToggleHeaderMenu)
+                    }
                 </div>
-            </div>
+            }
         </div>
-        <a class="header-nav-link @(currentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
-        <a class="header-nav-link @(currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
-        <a class="header-nav-link @(currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
-        <a class="header-nav-link @(currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
     </nav>
+}
+
+@code {
+    // Shared between the desktop popup columns and the flattened mobile list; only the click
+    // behavior differs.
+    private RenderFragment ProductMenuItemTemplate(ProductMenuItem item, Func<Task> onClick) =>
+        @<text>
+            @if (item.Disabled)
+            {
+                <div class="menu-item menu-item--disabled" aria-disabled="true">
+                    <div class="menu-item-content">
+                        <div class="item-title">@((MarkupString)item.Title)</div>
+                        <div class="item-desc">@item.Description</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a class="menu-item @(IsMenuItemActive(item) ? "active" : null)"
+                   href="@item.Url"
+                   target="@(item.External ? "_blank" : null)"
+                   rel="@(item.External ? "noopener" : null)"
+                   @onclick="WrapHandled(onClick)">
+                    <div class="menu-item-content">
+                        <div class="item-title">@((MarkupString)item.Title)</div>
+                        <div class="item-desc">@item.Description</div>
+                    </div>
+                </a>
+            }
+        </text>;
 }

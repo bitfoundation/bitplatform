@@ -26,6 +26,7 @@ public sealed class AbortableFetch : IAsyncDisposable
         return _js.InvokeVoid("BitButil.fetch.abort", _id);
     }
 
+    /// <summary>Aborts the request if it is still in flight. Does nothing once it has completed or already been aborted.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_completed) return;

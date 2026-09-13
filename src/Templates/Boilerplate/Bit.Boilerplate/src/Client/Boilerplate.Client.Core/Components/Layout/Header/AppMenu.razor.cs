@@ -1,7 +1,7 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Microsoft.AspNetCore.Components.Routing;
+//#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
+//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Header;
 
@@ -14,33 +14,68 @@ public partial class AppMenu
     [CascadingParameter] public AppThemeType? CurrentTheme { get; set; }
 
 
-    [AutoInject] private Cookie cookie = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private IUserController userController = default!;
-    [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
+    //#if (notification == true)
+    [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    [AutoInject] private IPushNotificationController pushNotificationController = default!;
+    //#elseif (signalR == true)
+    [AutoInject] private Notification notification = default!;
+    //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
 
 
     private bool isOpen;
     private bool showCultures;
     private bool isSignOutConfirmOpen;
     private BitChoiceGroupItem<string>[] cultures = default!;
+    private bool showTimeZones;
+    private string? currentTimeZoneId;
+    private string? timeZoneSearchText;
+    private TimeZoneOption[] timeZones = [];
+    //#if (signalR == true || notification == true)
+    private bool notificationsEnabled;
+    //#endif
+    //#if (notification == true)
+    private bool pushNotificationsBlocked;
+    //#endif
     //#if (multitenant == true)
     private bool showTenants;
     private string? currentTenantId;
     private BitChoiceGroupItem<string>[] tenants = [];
+    private HashSet<string> pendingInvitationTenantIds = [];
     //#endif
 
     private bool ShowMainMenu =>
         showCultures is false
+        && showTimeZones is false
         //#if (multitenant == true)
         && showTenants is false
         //#endif
         ;
 
+    private sealed record TimeZoneOption(string Id, string Text);
+
+    private TimeZoneOption[] FilteredTimeZones =>
+        string.IsNullOrWhiteSpace(timeZoneSearchText)
+            ? timeZones
+            : [.. timeZones.Where(tz => tz.Text.Contains(timeZoneSearchText, StringComparison.OrdinalIgnoreCase))];
+
+    private bool IsCurrentTimeZone(TimeZoneOption timeZone) =>
+        string.Equals(timeZone.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase);
+
 
     private string? ProfileImageUrl => CurrentUser?.GetProfileImageUrl(AbsoluteServerAddress);
+
+    private string AccountMenuLabel => CurrentUser?.DisplayName ?? Localizer[nameof(AppStrings.AccountMenuTitle)].Value;
+
+    private string ThemeToggleLabel => CurrentTheme == AppThemeType.Light
+        ? Localizer[nameof(AppStrings.SwitchToDarkThemeTitle)]
+        : Localizer[nameof(AppStrings.SwitchToLightThemeTitle)];
 
 
     protected override async Task OnInitAsync()
@@ -72,6 +107,170 @@ public partial class AppMenu
         await cultureService.ChangeCulture(cultureName);
     }
 
+    //#if (signalR == true || notification == true)
+    protected override async Task OnAfterFirstRenderAsync()
+    {
+        await base.OnAfterFirstRenderAsync();
+
+        // Warms the switch so the first open shows the real state; OnDropMenuOpen keeps it fresh from then on.
+        await RefreshNotificationsState();
+    }
+
+    private bool ShowNotificationsToggle
+    {
+        get
+        {
+            var show = AppPlatform.IsWindows is false; // Push is not implemented on Windows.
+            //#if (signalR == true)
+            show = true; // In-app messages reach every platform, and a signed out choice applies at the next sign-in.
+            //#endif
+            return show;
+        }
+    }
+
+    private string NotificationsToggleLabel => notificationsEnabled
+        ? Localizer[nameof(AppStrings.TurnNotificationsOff)].Value
+        : Localizer[nameof(AppStrings.TurnNotificationsOn)].Value;
+
+    /// <summary>
+    /// The switch shows the device's choice, which covers in-app messages too, so a push the platform refuses is
+    /// called out under it rather than turning it off.
+    /// </summary>
+    private async Task RefreshNotificationsState()
+    {
+        notificationsEnabled = await notificationPreferenceService.IsEnabled();
+        //#if (notification == true)
+        pushNotificationsBlocked = notificationsEnabled
+                                   && AppPlatform.IsWindows is false
+                                   && await pushNotificationService.IsAvailable(CurrentCancellationToken) is false;
+        //#endif
+
+        StateHasChanged();
+    }
+
+    private async Task ToggleNotifications()
+    {
+        var enable = notificationsEnabled is false;
+
+        if (enable)
+        {
+            // Asked first, so the prompt is still tied to the click that got us here.
+            //#if (notification == true)
+            if (AppPlatform.IsWindows is false)
+            {
+                await pushNotificationService.RequestPermission(CurrentCancellationToken);
+            }
+            //#else
+            if (await notification.IsSupported())
+            {
+                await notification.RequestPermission();
+            }
+            //#endif
+        }
+
+        // Stored either way: the permission decides whether a push can be delivered, not whether the user wants
+        // notifications, and in-app messages need no permission at all.
+        await notificationPreferenceService.SetEnabled(enable);
+
+        //#if (notification == true)
+        if (enable)
+        {
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
+        }
+        else
+        {
+            await pushNotificationService.Unsubscribe(CurrentCancellationToken);
+        }
+        //#endif
+
+        await RefreshNotificationsState();
+
+        await ConfirmNotifications(enable);
+    }
+
+    /// <summary>
+    /// Tells the server what the switch now says, and the server answers with the welcome notification that proves
+    /// the setup works. A later sign-in on this device gets the same choice through UpdateSession, silently.
+    /// </summary>
+    private async Task ConfirmNotifications(bool enabled)
+    {
+        var user = (await AuthenticationStateTask).User;
+
+        if (user.IsAuthenticated())
+        {
+            await userController.SetNotificationEnabled(enabled, CurrentCancellationToken);
+            return;
+        }
+
+        //#if (notification == true)
+        // Signed out there is no session to store the choice on, and turning the switch off has just deleted the
+        // subscription, so only an enable the platform accepted has anything left to say. Windows has no push to test.
+        if (enabled is false || pushNotificationsBlocked || AppPlatform.IsWindows)
+            return;
+
+        var subscription = await pushNotificationService.GetSubscription(CurrentCancellationToken);
+
+        if (subscription?.DeviceId is null)
+            return;
+
+        await pushNotificationController.TestPushNotificationSetup(subscription, CurrentCancellationToken);
+        //#endif
+    }
+    //#endif
+
+    private async Task ShowTimeZones()
+    {
+        showTimeZones = true;
+        timeZoneSearchText = null;
+        currentTimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
+
+        // Rebuilt on every open rather than cached, because the current zone leads the list and changes with it.
+        // Android's tzdata carries the IANA links as ids of their own ("Iran" beside "Asia/Tehran"), and both render
+        // the same text, so rows that read alike are dropped - after the ordering, which keeps the current zone's one.
+        timeZones = [.. TimeZoneInfo.GetSystemTimeZones()
+            .OrderByDescending(tz => string.Equals(tz.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(tz => tz.BaseUtcOffset)
+            .ThenBy(tz => tz.Id, StringComparer.OrdinalIgnoreCase)
+            .Select(tz => new TimeZoneOption(tz.Id, GetTimeZoneDisplayText(tz)))
+            .DistinctBy(tz => tz.Text, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    /// <summary>
+    /// Normalizes the three wordings the runtimes produce - "(UTC+03:30) Tehran" on Windows, "(UTC+03:30) Asia/Tehran"
+    /// in the browser, the bare "Asia/Tehran" on Android/iOS - to the first, keeping the offset so the list stays
+    /// searchable by it. The IANA area is dropped and underscores become spaces ("Asia/Tehran" reads as "Tehran"),
+    /// but only when the name IS the zone's own id, so a real display name containing a slash is never cut in half.
+    /// </summary>
+    private static string GetTimeZoneDisplayText(TimeZoneInfo timeZone)
+    {
+        var displayName = timeZone.DisplayName;
+
+        var offsetEndIndex = displayName.StartsWith('(') ? displayName.IndexOf(')', StringComparison.Ordinal) : -1;
+
+        var offset = timeZone.BaseUtcOffset;
+        var offsetText = offsetEndIndex is -1
+            ? $"(UTC{(offset < TimeSpan.Zero ? '-' : '+')}{offset:hh\\:mm})"
+            : displayName[..(offsetEndIndex + 1)];
+
+        var place = offsetEndIndex is -1 ? displayName : displayName[(offsetEndIndex + 1)..].TrimStart();
+
+        if (place == timeZone.Id && place.IndexOf('/', StringComparison.Ordinal) is int areaSeparatorIndex and not -1)
+        {
+            place = place[(areaSeparatorIndex + 1)..].Replace('_', ' ');
+        }
+
+        return $"{offsetText} {place}";
+    }
+
+    private async Task OnTimeZoneChanged(string timeZoneId)
+    {
+        if (timeZoneId == currentTimeZoneId) return;
+
+        currentTimeZoneId = timeZoneId;
+
+        await TimeZoneService.ChangeTimeZone(timeZoneId);
+    }
+
     //#if (multitenant == true)
     private async Task ShowTenants()
     {
@@ -80,23 +279,36 @@ public partial class AppMenu
         var user = (await AuthenticationStateTask).User;
         currentTenantId = user.GetTenantId()?.ToString();
 
-        tenants = [.. (await userController.GetTenants(CurrentCancellationToken))
-                        .Select(t => new BitChoiceGroupItem<string> { Value = t.Id.ToString(), Text = t.Title ?? t.Name })];
+        // GetTenants also returns tenants the user has only been INVITED to, and switching into one of those is what
+        // accepts the invitation (See IdentityController.Refresh) - so they have to be told apart in the list rather
+        // than offered as if they were memberships. A pending invitation is only relevant for regular users; a global
+        // admin is listed every active tenant and always just switches (See ManageMyTenantsPage.IsPendingInvitation).
+        var isGlobalAdmin = await AuthorizationService.IsAuthorized(user, AppFeatures.Management.Tenants_Manage_Global);
+
+        var userTenants = await userController.GetTenants(CurrentCancellationToken);
+
+        pendingInvitationTenantIds = isGlobalAdmin
+            ? []
+            : [.. userTenants.Where(t => t.CurrentUserHasAcceptedThisTenantInvitation is false).Select(t => t.Id.ToString())];
+
+        tenants = [.. userTenants.Select(t => new BitChoiceGroupItem<string> { Value = t.Id.ToString(), Text = t.Title ?? t.Name })];
     }
+
+    private bool IsPendingInvitation(string? tenantId) => tenantId is not null && pendingInvitationTenantIds.Contains(tenantId);
 
     private async Task OnTenantChanged(string? tenantId)
     {
         if (Guid.TryParse(tenantId, out var newTenantId) is false || tenantId == currentTenantId)
             return;
 
-        isOpen = false;
+        CloseMenu(); // A switch that fails leaves the menu closed rather than sitting on the tenant panel behind the error.
 
         // Switching calls the refresh token api that stores the new tenant id in the token's claims (See IdentityController.Refresh).
         if (await AuthManager.SwitchTenant(newTenantId, CurrentCancellationToken))
         {
-            NavigationManager.RefreshCurrentPage(); // Re-renders the current page so it reflects the new tenant's data.
-            // The layout's tenant display (next to the app version) updates on its own: switching changes the tenant claim, which
-            // triggers the authentication-state change that MainLayout re-resolves the current tenant from (See MainLayout.SetCurrentTenantIfNeeded).
+            // Rebuilds everything the previous tenant's data reached: the current page, the tenant shown in the
+            // nav panel, this menu itself.
+            PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
         }
     }
     //#endif
@@ -108,12 +320,36 @@ public partial class AppMenu
 
     private async Task GoToProfile()
     {
-        NavigationManager.NavigateTo(PageUrls.Settings);
+        CloseMenu();
+        NavigationManager.NavigateTo($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}");
+    }
+
+    /// <summary>
+    /// Re-reads whatever the menu shows that can go stale while it is closed. The notification permission is the one
+    /// that matters: it changes in the browser's or the OS's own settings, and nothing tells the app when.
+    /// </summary>
+    private async Task OnDropMenuOpen()
+    {
+        //#if (signalR == true || notification == true)
+        await RefreshNotificationsState();
+        //#endif
+    }
+
+    /// <summary>
+    /// Closes the menu and resets its sub panels, so it reopens on the main menu rather than on whichever
+    /// sub panel was open when it was closed. BitDropMenu only raises OnDismiss when it closes itself
+    /// (a click on the overlay or on the trigger); assigning the bound IsOpen from code does not.
+    /// </summary>
+    private void CloseMenu()
+    {
+        isOpen = false;
+        OnDropMenuDismiss();
     }
 
     private void OnDropMenuDismiss()
     {
         showCultures = false;
+        showTimeZones = false;
         //#if (multitenant == true)
         showTenants = false;
         //#endif
@@ -122,8 +358,11 @@ public partial class AppMenu
     //#if (multitenant == true)
     private void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
-        showTenants = false; // This would help refreshing the list of tenants, so they would get loaded again the next time user opens the tenant menu.
-        StateHasChanged();
+        _ = InvokeAsync(() =>
+        {
+            showTenants = false; // This would help refreshing the list of tenants, so they would get loaded again the next time user opens the tenant menu.
+            StateHasChanged();
+        });
     }
     //#endif
 
@@ -140,7 +379,7 @@ public partial class AppMenu
 
     private async Task ModalSignIn()
     {
-        isOpen = false;
+        CloseMenu();
         await signInModalService.SignIn();
     }
 }

@@ -1,0 +1,334 @@
+@use 'sass:map';
+@use 'sass:string';
+@import "theme-variables.scss";
+
+/*
+ * $bit-color-roles
+ * --------------------------------------------------
+ * The single source of truth for the per-role color vocabulary that component stylesheets
+ * expose as `.bit-<cmp>-<role>` classes. Components iterate this map with @each and assign the
+ * slots they need to their own `--bit-<cmp>-*` custom properties, instead of hand-writing the
+ * same ~17 role blocks per component.
+ *
+ * Roles:
+ *   - kind "semantic": pri/sec/ter/inf/suc/wrn/swr/err - accent roles with a dedicated on-color.
+ *   - kind "surface":  pbg/sbg/tbg (backgrounds), pfg/sfg/tfg (foregrounds), pbr/sbr/tbr
+ *     (borders) - neutral families whose "on" slot is the cross-family contrast color
+ *     (fg-pri over backgrounds/borders, bg-pri over foregrounds).
+ *
+ * Slots: main, on, hover, active, dark, dark-hover, dark-active, light, light-hover,
+ * light-active, dis, dis-text, focus. All slots are defined for every role, so component
+ * loops never need per-role special cases beyond the "kind" discriminator.
+ */
+$bit-color-roles: (
+    pri: (
+        kind: semantic,
+        main: $clr-pri,
+        on: $clr-pri-text,
+        hover: $clr-pri-hover,
+        active: $clr-pri-active,
+        dark: $clr-pri-dark,
+        dark-hover: $clr-pri-dark-hover,
+        dark-active: $clr-pri-dark-active,
+        light: $clr-pri-light,
+        light-hover: $clr-pri-light-hover,
+        light-active: $clr-pri-light-active,
+        dis: $clr-pri-dis,
+        dis-text: $clr-pri-dis-text,
+        focus: $clr-pri-focus,
+    ),
+    sec: (
+        kind: semantic,
+        main: $clr-sec,
+        on: $clr-sec-text,
+        hover: $clr-sec-hover,
+        active: $clr-sec-active,
+        dark: $clr-sec-dark,
+        dark-hover: $clr-sec-dark-hover,
+        dark-active: $clr-sec-dark-active,
+        light: $clr-sec-light,
+        light-hover: $clr-sec-light-hover,
+        light-active: $clr-sec-light-active,
+        dis: $clr-sec-dis,
+        dis-text: $clr-sec-dis-text,
+        focus: $clr-sec-focus,
+    ),
+    ter: (
+        kind: semantic,
+        main: $clr-ter,
+        on: $clr-ter-text,
+        hover: $clr-ter-hover,
+        active: $clr-ter-active,
+        dark: $clr-ter-dark,
+        dark-hover: $clr-ter-dark-hover,
+        dark-active: $clr-ter-dark-active,
+        light: $clr-ter-light,
+        light-hover: $clr-ter-light-hover,
+        light-active: $clr-ter-light-active,
+        dis: $clr-ter-dis,
+        dis-text: $clr-ter-dis-text,
+        focus: $clr-ter-focus,
+    ),
+    inf: (
+        kind: semantic,
+        main: $clr-inf,
+        on: $clr-inf-text,
+        hover: $clr-inf-hover,
+        active: $clr-inf-active,
+        dark: $clr-inf-dark,
+        dark-hover: $clr-inf-dark-hover,
+        dark-active: $clr-inf-dark-active,
+        light: $clr-inf-light,
+        light-hover: $clr-inf-light-hover,
+        light-active: $clr-inf-light-active,
+        dis: $clr-inf-dis,
+        dis-text: $clr-inf-dis-text,
+        focus: $clr-inf-focus,
+    ),
+    suc: (
+        kind: semantic,
+        main: $clr-suc,
+        on: $clr-suc-text,
+        hover: $clr-suc-hover,
+        active: $clr-suc-active,
+        dark: $clr-suc-dark,
+        dark-hover: $clr-suc-dark-hover,
+        dark-active: $clr-suc-dark-active,
+        light: $clr-suc-light,
+        light-hover: $clr-suc-light-hover,
+        light-active: $clr-suc-light-active,
+        dis: $clr-suc-dis,
+        dis-text: $clr-suc-dis-text,
+        focus: $clr-suc-focus,
+    ),
+    wrn: (
+        kind: semantic,
+        main: $clr-wrn,
+        on: $clr-wrn-text,
+        hover: $clr-wrn-hover,
+        active: $clr-wrn-active,
+        dark: $clr-wrn-dark,
+        dark-hover: $clr-wrn-dark-hover,
+        dark-active: $clr-wrn-dark-active,
+        light: $clr-wrn-light,
+        light-hover: $clr-wrn-light-hover,
+        light-active: $clr-wrn-light-active,
+        dis: $clr-wrn-dis,
+        dis-text: $clr-wrn-dis-text,
+        focus: $clr-wrn-focus,
+    ),
+    swr: (
+        kind: semantic,
+        main: $clr-swr,
+        on: $clr-swr-text,
+        hover: $clr-swr-hover,
+        active: $clr-swr-active,
+        dark: $clr-swr-dark,
+        dark-hover: $clr-swr-dark-hover,
+        dark-active: $clr-swr-dark-active,
+        light: $clr-swr-light,
+        light-hover: $clr-swr-light-hover,
+        light-active: $clr-swr-light-active,
+        dis: $clr-swr-dis,
+        dis-text: $clr-swr-dis-text,
+        focus: $clr-swr-focus,
+    ),
+    err: (
+        kind: semantic,
+        main: $clr-err,
+        on: $clr-err-text,
+        hover: $clr-err-hover,
+        active: $clr-err-active,
+        dark: $clr-err-dark,
+        dark-hover: $clr-err-dark-hover,
+        dark-active: $clr-err-dark-active,
+        light: $clr-err-light,
+        light-hover: $clr-err-light-hover,
+        light-active: $clr-err-light-active,
+        dis: $clr-err-dis,
+        dis-text: $clr-err-dis-text,
+        focus: $clr-err-focus,
+    ),
+    pbg: (
+        kind: surface,
+        main: $clr-bg-pri,
+        on: $clr-fg-pri,
+        hover: $clr-bg-pri-hover,
+        active: $clr-bg-pri-active,
+        dark: $clr-bg-pri-dark,
+        dark-hover: $clr-bg-pri-dark-hover,
+        dark-active: $clr-bg-pri-dark-active,
+        light: $clr-bg-pri-light,
+        light-hover: $clr-bg-pri-light-hover,
+        light-active: $clr-bg-pri-light-active,
+        dis: $clr-bg-pri-dis,
+        dis-text: $clr-bg-pri-dis-text,
+        focus: $clr-bg-pri-focus,
+    ),
+    sbg: (
+        kind: surface,
+        main: $clr-bg-sec,
+        on: $clr-fg-pri,
+        hover: $clr-bg-sec-hover,
+        active: $clr-bg-sec-active,
+        dark: $clr-bg-sec-dark,
+        dark-hover: $clr-bg-sec-dark-hover,
+        dark-active: $clr-bg-sec-dark-active,
+        light: $clr-bg-sec-light,
+        light-hover: $clr-bg-sec-light-hover,
+        light-active: $clr-bg-sec-light-active,
+        dis: $clr-bg-sec-dis,
+        dis-text: $clr-bg-sec-dis-text,
+        focus: $clr-bg-sec-focus,
+    ),
+    tbg: (
+        kind: surface,
+        main: $clr-bg-ter,
+        on: $clr-fg-pri,
+        hover: $clr-bg-ter-hover,
+        active: $clr-bg-ter-active,
+        dark: $clr-bg-ter-dark,
+        dark-hover: $clr-bg-ter-dark-hover,
+        dark-active: $clr-bg-ter-dark-active,
+        light: $clr-bg-ter-light,
+        light-hover: $clr-bg-ter-light-hover,
+        light-active: $clr-bg-ter-light-active,
+        dis: $clr-bg-ter-dis,
+        dis-text: $clr-bg-ter-dis-text,
+        focus: $clr-bg-ter-focus,
+    ),
+    pfg: (
+        kind: surface,
+        main: $clr-fg-pri,
+        on: $clr-bg-pri,
+        hover: $clr-fg-pri-hover,
+        active: $clr-fg-pri-active,
+        dark: $clr-fg-pri-dark,
+        dark-hover: $clr-fg-pri-dark-hover,
+        dark-active: $clr-fg-pri-dark-active,
+        light: $clr-fg-pri-light,
+        light-hover: $clr-fg-pri-light-hover,
+        light-active: $clr-fg-pri-light-active,
+        dis: $clr-fg-pri-dis,
+        dis-text: $clr-fg-pri-dis-text,
+        focus: $clr-fg-pri-focus,
+    ),
+    sfg: (
+        kind: surface,
+        main: $clr-fg-sec,
+        on: $clr-bg-pri,
+        hover: $clr-fg-sec-hover,
+        active: $clr-fg-sec-active,
+        dark: $clr-fg-sec-dark,
+        dark-hover: $clr-fg-sec-dark-hover,
+        dark-active: $clr-fg-sec-dark-active,
+        light: $clr-fg-sec-light,
+        light-hover: $clr-fg-sec-light-hover,
+        light-active: $clr-fg-sec-light-active,
+        dis: $clr-fg-sec-dis,
+        dis-text: $clr-fg-sec-dis-text,
+        focus: $clr-fg-sec-focus,
+    ),
+    tfg: (
+        kind: surface,
+        main: $clr-fg-ter,
+        on: $clr-bg-pri,
+        hover: $clr-fg-ter-hover,
+        active: $clr-fg-ter-active,
+        dark: $clr-fg-ter-dark,
+        dark-hover: $clr-fg-ter-dark-hover,
+        dark-active: $clr-fg-ter-dark-active,
+        light: $clr-fg-ter-light,
+        light-hover: $clr-fg-ter-light-hover,
+        light-active: $clr-fg-ter-light-active,
+        dis: $clr-fg-ter-dis,
+        dis-text: $clr-fg-ter-dis-text,
+        focus: $clr-fg-ter-focus,
+    ),
+    pbr: (
+        kind: surface,
+        main: $clr-brd-pri,
+        on: $clr-fg-pri,
+        hover: $clr-brd-pri-hover,
+        active: $clr-brd-pri-active,
+        dark: $clr-brd-pri-dark,
+        dark-hover: $clr-brd-pri-dark-hover,
+        dark-active: $clr-brd-pri-dark-active,
+        light: $clr-brd-pri-light,
+        light-hover: $clr-brd-pri-light-hover,
+        light-active: $clr-brd-pri-light-active,
+        dis: $clr-brd-pri-dis,
+        dis-text: $clr-brd-pri-dis-text,
+        focus: $clr-brd-pri-focus,
+    ),
+    sbr: (
+        kind: surface,
+        main: $clr-brd-sec,
+        on: $clr-fg-pri,
+        hover: $clr-brd-sec-hover,
+        active: $clr-brd-sec-active,
+        dark: $clr-brd-sec-dark,
+        dark-hover: $clr-brd-sec-dark-hover,
+        dark-active: $clr-brd-sec-dark-active,
+        light: $clr-brd-sec-light,
+        light-hover: $clr-brd-sec-light-hover,
+        light-active: $clr-brd-sec-light-active,
+        dis: $clr-brd-sec-dis,
+        dis-text: $clr-brd-sec-dis-text,
+        focus: $clr-brd-sec-focus,
+    ),
+    tbr: (
+        kind: surface,
+        main: $clr-brd-ter,
+        on: $clr-fg-pri,
+        hover: $clr-brd-ter-hover,
+        active: $clr-brd-ter-active,
+        dark: $clr-brd-ter-dark,
+        dark-hover: $clr-brd-ter-dark-hover,
+        dark-active: $clr-brd-ter-dark-active,
+        light: $clr-brd-ter-light,
+        light-hover: $clr-brd-ter-light-hover,
+        light-active: $clr-brd-ter-light-active,
+        dis: $clr-brd-ter-dis,
+        dis-text: $clr-brd-ter-dis-text,
+        focus: $clr-brd-ter-focus,
+    ),
+);
+
+// The 8 accent roles alone, for components that expose no surface roles (e.g. BitPagination).
+$bit-semantic-color-roles: (
+    pri: map.get($bit-color-roles, pri),
+    sec: map.get($bit-color-roles, sec),
+    ter: map.get($bit-color-roles, ter),
+    inf: map.get($bit-color-roles, inf),
+    suc: map.get($bit-color-roles, suc),
+    wrn: map.get($bit-color-roles, wrn),
+    swr: map.get($bit-color-roles, swr),
+    err: map.get($bit-color-roles, err),
+);
+
+/*
+ * role($tokens, $slot) / role-emphasis($tokens)
+ * --------------------------------------------------
+ * Slot accessors for the role maps above, used inside component @each loops. `role()` wraps
+ * map.get so component files don't each need a `@use 'sass:map'` header in the @import world.
+ * `role-emphasis()` is the recurring "one step stronger than main" color: the dark shade for
+ * semantic roles, and the contrast ("on") color for surface roles, which have no darker on-color
+ * of their own (used e.g. for button spinner strokes).
+ */
+@function role($tokens, $slot) {
+    @return map.get($tokens, $slot);
+}
+
+// Two-letter role abbreviation for legacy per-item alias classes (e.g. BitTimeline's .bit-tln-ipr).
+@function role-abbr($role) {
+    @return string.slice($role, 1, 2);
+}
+
+@function role-emphasis($tokens) {
+    @if map.get($tokens, kind) == semantic {
+        @return map.get($tokens, dark);
+    }
+
+    @return map.get($tokens, on);
+}

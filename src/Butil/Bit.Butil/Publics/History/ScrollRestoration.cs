@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Whether the browser restores the scroll position when the user returns to a history entry.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration">History.scrollRestoration</see>
+/// </summary>
 public enum ScrollRestoration
 {
     /// <summary>

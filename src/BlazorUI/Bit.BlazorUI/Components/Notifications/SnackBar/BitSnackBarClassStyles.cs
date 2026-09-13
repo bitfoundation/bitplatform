@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitSnackBarClassStyles
 {
@@ -18,12 +18,22 @@ public class BitSnackBarClassStyles
     public string? Header { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the icon container of the BitSnackBar.
+    /// </summary>
+    public string? IconContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the leading icon of the BitSnackBar.
+    /// </summary>
+    public string? Icon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the dismiss button of the BitSnackBar.
     /// </summary>
     public string? DismissButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the dismis icon of the BitSnackBar.
+    /// Custom CSS classes/styles for the dismiss icon of the BitSnackBar.
     /// </summary>
     public string? DismissIcon { get; set; }
 
@@ -36,6 +46,11 @@ public class BitSnackBarClassStyles
     /// Custom CSS classes/styles for the body of the BitSnackBar.
     /// </summary>
     public string? Body { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the action area of the BitSnackBar.
+    /// </summary>
+    public string? Actions { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the progress bar of the BitSnackBar.

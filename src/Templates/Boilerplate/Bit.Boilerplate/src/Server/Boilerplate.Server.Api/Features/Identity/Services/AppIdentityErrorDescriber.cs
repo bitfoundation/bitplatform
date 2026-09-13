@@ -9,8 +9,20 @@ public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
         return new()
         {
             Code = code,
-            Description = localizer[code, args]
+            Description = TryLocalize(code, args)
         };
+    }
+
+    string TryLocalize(string code, params object[] args)
+    {
+        try
+        {
+            return localizer[code, args];
+        }
+        catch (FormatException)
+        {
+            return localizer[code];
+        }
     }
 
     public override IdentityError ConcurrencyFailure() => CreateIdentityError(nameof(IdentityStrings.ConcurrencyFailure));
@@ -43,7 +55,7 @@ public partial class AppIdentityErrorDescriber : IdentityErrorDescriber
 
     public override IdentityError PasswordRequiresUpper() => CreateIdentityError(nameof(IdentityStrings.PasswordRequiresUpper));
 
-    public override IdentityError PasswordTooShort(int length) => CreateIdentityError(nameof(IdentityStrings.PasswordTooShort));
+    public override IdentityError PasswordTooShort(int length) => CreateIdentityError(nameof(IdentityStrings.PasswordTooShort), length);
 
     public override IdentityError RecoveryCodeRedemptionFailed() => CreateIdentityError(nameof(IdentityStrings.RecoveryCodeRedemptionFailed));
 

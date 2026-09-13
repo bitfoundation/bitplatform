@@ -3,19 +3,42 @@
 
 <PageOutlet Url="components/navbar"
             Title="NavBar"
-            Description="A tab panel that provides navigation links to the main areas of an app." />
+            Description="A bar of navigation links to the main areas of an app, with automatic selection by the current URL, filled selected icons, line and pill selection indicators, badges, icon-only and rail layouts, scrolling for a bar with more destinations than it fits, header and footer content, and full keyboard support." />
 
 <div>
     <DemoPage Name="NavBar"
-              SecondaryNames="@(["NavMenu", "TabPanel"])"
-              Description="A tab panel that provides navigation links to the main areas of an app."
+              SecondaryNames="@(["NavMenu", "TabPanel", "BottomNavigation", "TabBar", "NavigationRail"])"
+              Description="A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level destinations along the bottom of the screen."
               Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Navs/NavBar/BitNavBar.razor"
               GitHubDemoUrl="Navs/NavBar/BitNavBarDemo.razor">
         <NotesTemplate>
             <BitText>
+                Each item renders an icon over its text and becomes a link when it carries a URL. In the default
+                <BitTag Color="BitColor.SecondaryBackground">Automatic</BitTag> mode the navbar follows the browser
+                and selects the item whose URL points at the current page &mdash; matched exactly, by prefix, by a
+                wildcard or by a regular expression &mdash; while the
+                <BitTag Color="BitColor.SecondaryBackground">Manual</BitTag> mode leaves the selection to clicks
+                and to the two-way <BitTag Color="BitColor.SecondaryBackground">SelectedItem</BitTag> binding.
+                The selected item can swap to a filled
+                <BitTag Color="BitColor.SecondaryBackground">SelectedIconName</BitTag> and take an
+                <BitTag Color="BitColor.SecondaryBackground">Indicator</BitTag> of its own &mdash; a line along its
+                edge or a pill behind its icon &mdash; and the bar reshapes itself for the space it has: labels
+                beside the icons, only on the selected item or dropped altogether, a column that turns it into a
+                navigation rail, a chosen <BitTag Color="BitColor.SecondaryBackground">Alignment</BitTag> of the
+                items along it, a <BitTag Color="BitColor.SecondaryBackground">Scrollable</BitTag> list for more
+                destinations than it fits, content of its own before and after them, and a safe-area inset for a
+                bar pinned to the bottom of a phone.
+                <br /><br />
+                The items are marked up as the list they are, the selected one reports itself to assistive
+                technology as the current page, a badge is folded into the name of its item rather than announced
+                twice, every item is a tab stop of its own (or one roving stop, with
+                <BitTag Color="BitColor.SecondaryBackground">SingleTabStop</BitTag>) and the arrow keys, Home and
+                End move the focus along the bar, optionally carrying the selection with it.
+                <br /><br />
                 The BitNavBar is a <BitTag Color="BitColor.SecondaryBackground">Multi-API</BitTag> component
                 which can accept the list of Items in 3 different ways:
                 <br />

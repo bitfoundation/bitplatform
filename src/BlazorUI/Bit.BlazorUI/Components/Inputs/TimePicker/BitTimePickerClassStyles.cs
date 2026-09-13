@@ -53,6 +53,16 @@ public class BitTimePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the callout header of the BitTimePicker.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout footer of the BitTimePicker.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the time input container of the BitTimePicker.
     /// </summary>
     public string? TimeInputContainer { get; set; }
@@ -124,6 +134,41 @@ public class BitTimePickerClassStyles
     public string? DecreaseMinuteIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the minute second separator of the BitTimePicker.
+    /// </summary>
+    public string? MinuteSecondSeparator { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the second input container of the BitTimePicker.
+    /// </summary>
+    public string? SecondInputContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the increase second button of the BitTimePicker.
+    /// </summary>
+    public string? IncreaseSecondButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the increase second icon of the BitTimePicker.
+    /// </summary>
+    public string? IncreaseSecondIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the second input of the BitTimePicker.
+    /// </summary>
+    public string? SecondInput { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the decrease second button of the BitTimePicker.
+    /// </summary>
+    public string? DecreaseSecondButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the decrease second icon of the BitTimePicker.
+    /// </summary>
+    public string? DecreaseSecondIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the AM/PM container of the BitTimePicker.
     /// </summary>
     public string? AmPmContainer { get; set; }
@@ -137,6 +182,21 @@ public class BitTimePickerClassStyles
     /// Custom CSS classes/styles for the PM button of the BitTimePicker.
     /// </summary>
     public string? PmButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the actions container of the BitTimePicker.
+    /// </summary>
+    public string? Actions { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the now button of the BitTimePicker.
+    /// </summary>
+    public string? NowButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the clear button of the BitTimePicker.
+    /// </summary>
+    public string? ClearButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the close button of the BitTimePicker.

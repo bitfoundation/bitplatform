@@ -71,6 +71,49 @@ export function scrollFraction(scroll: number, size: number, client: number): nu
 }
 
 /**
+ * A subject's 0→1 progress through a scrollport, the fallback for `ViewTimeline`'s default range:
+ * 0 the moment its leading edge enters at the far side, 1 the moment its trailing edge leaves at
+ * the near side. `near`/`far` are the scrollport's edges along the tracked axis and `start`/`size`
+ * the subject's position and extent in the same coordinate space.
+ *
+ * The travelled span is the scrollport plus the subject (the subject is off-screen at both ends),
+ * so a subject taller than the scrollport still maps its whole journey onto 0→1 instead of
+ * saturating. A zero span (both degenerate) yields 0 rather than a division by zero.
+ */
+export function viewFraction(start: number, size: number, near: number, far: number): number {
+    const span = (far - near) + size;
+    if (span <= 0) return 0;
+    const travelled = (far - start) / span;
+    return travelled < 0 ? 0 : travelled > 1 ? 1 : travelled;
+}
+
+/** The timeline-range keywords a CSS `animation-range` part can start with. */
+const _RANGE_NAMES = /^(normal|cover|contain|entry|exit|entry-crossing|exit-crossing)$/i;
+
+/**
+ * Splits a CSS `animation-range` shorthand into its start and end parts, because the Web Animations
+ * API takes them as two separate `rangeStart` / `rangeEnd` values rather than as one string.
+ *
+ * A part is either a keyword with an optional offset ("entry 0%") or a bare length/percentage
+ * ("40%"), so a token begins a new part unless it is an offset following a keyword that does not
+ * have one yet. "entry 0% cover 50%" → ["entry 0%", "cover 50%"]; "0% 100%" → ["0%", "100%"].
+ */
+export function splitAnimationRange(range: string): [string | undefined, string | undefined] {
+    const parts: string[] = [];
+    for (const token of (range ?? '').trim().split(/\s+/).filter(Boolean)) {
+        const attaches = parts.length > 0 && !_RANGE_NAMES.test(token) && _awaitsOffset(parts[parts.length - 1]);
+        if (attaches) parts[parts.length - 1] += ' ' + token;
+        else parts.push(token);
+    }
+    return [parts[0], parts[1]];
+}
+
+/** True when a part so far is a bare keyword, i.e. the next offset token belongs to it. */
+function _awaitsOffset(part: string): boolean {
+    return part.indexOf(' ') < 0 && _RANGE_NAMES.test(part);
+}
+
+/**
  * Layout FLIP child counter-transform (plan item 1.2). The parent element FLIPs with the transform
  * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along -
  * stretched by the scale AND shifted by the translate. To keep the child crisp and in place, apply
@@ -285,6 +328,9 @@ export function unregisterElement(elementId: string): void {
     const el = document.getElementById(elementId);
     if (el) el.removeAttribute('data-bmid');
     _runCleanup(elementId);
+    // Release scroll-scrub listeners before cancelling, so a fallback timeline can't keep firing
+    // against an animation that is about to go away.
+    _releaseScrubsForElement(elementId);
     _cancelWaapiForElement(elementId, false);
     // Detach from every viewport observer (drops membership and evicts empty observers).
     _detachFromObservers(el, elementId);
@@ -317,6 +363,13 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     const cleanups: Array<() => void> = [];
     _eventCleanup.set(elementId, cleanups);
 
+    // gesturePropagation:false stops this element's bubbling pointer gestures from also reaching
+    // gesture-enabled ancestors - the tap/pan counterpart of dragPropagation. Only pointerdown
+    // needs stopping: it is the event that starts both tap and pan, and pointerenter/leave don't
+    // bubble at all. Default true (motion.dev's default for tap/hover, unlike drag).
+    const gesturePropagation = events.gesturePropagation !== false;
+    const stopIfIsolated = (e: PointerEvent) => { if (!gesturePropagation) e.stopPropagation(); };
+
     //  Hover
     if (events.hover) {
         const onEnter = () => dotnetRef.invokeMethodAsync('OnPointerEnter');
@@ -331,6 +384,7 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
         let pressing = false;
         const onDown = (e: PointerEvent) => {
             if (e.button !== 0 && e.pointerType !== 'touch') return; // primary button / touch only
+            stopIfIsolated(e);
             pressing = true; dotnetRef.invokeMethodAsync('OnPointerDown');
         };
         const onUp   = (e: PointerEvent) => {
@@ -394,7 +448,7 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     if (events.pan) {
         // When drag is also active it already calls setPointerCapture; let pan reuse that capture
         // instead of grabbing the pointer a second time for the same element.
-        _attachPan(el, dotnetRef, cleanups, !!events.drag);
+        _attachPan(el, dotnetRef, cleanups, !!events.drag, stopIfIsolated);
     }
 
     //  Drag
@@ -403,7 +457,9 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     }
 }
 
-function _attachPan(el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: Array<() => void>, skipCapture: boolean): void {
+function _attachPan(
+    el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: Array<() => void>, skipCapture: boolean,
+    stopIfIsolated: (e: PointerEvent) => void): void {
     const PAN_THRESHOLD = 3; // pixels before pan is detected
     let down = false;        // whether a pointer is currently pressed on this element
     let panning = false;
@@ -412,6 +468,7 @@ function _attachPan(el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: A
 
     const onDown = (e: PointerEvent) => {
         if (e.button !== 0 && e.pointerType !== 'touch') return;
+        stopIfIsolated(e);
         down = true;
         startX = lastX = e.clientX; startY = lastY = e.clientY;
         lastT = performance.now(); velX = velY = 0; panning = false;
@@ -562,7 +619,12 @@ function _attachDrag(
         let effectiveAxis = axis;
         if (dirLock && !lockedAxis) {
             const dx = Math.abs(e.clientX - startPX), dy = Math.abs(e.clientY - startPY);
-            if (dx > 3 || dy > 3) lockedAxis = dx >= dy ? 'x' : 'y';
+            if (dx > 3 || dy > 3) {
+                lockedAxis = dx >= dy ? 'x' : 'y';
+                // Report the decision once, the moment it is made (motion.dev's onDirectionLock),
+                // so the consumer can e.g. hand the other axis back to the page scroll.
+                dotnetRef.invokeMethodAsync('OnDirectionLocked', lockedAxis);
+            }
         }
         if (dirLock && lockedAxis) effectiveAxis = lockedAxis;
 
@@ -765,6 +827,177 @@ function _cancelWaapiForElement(elementId: string, commit: boolean): void {
 }
 
 //
+// Scroll-driven animations (ScrollTimeline / ViewTimeline)
+//
+// Same pre-sampled keyframes as the compositor offload above, but progressed by scroll position
+// rather than by time. Where the browser has native scroll timelines this runs entirely off the
+// main thread - no scroll handler at all. Where it doesn't, we scrub the same Web Animation from
+// one passive scroll listener: still the browser interpolating the values, and still no .NET
+// interop per frame.
+//
+
+// Scrub cleanups for timeline animations that fell back, keyed the same way as _waapiAnims so
+// cancellation and element teardown release both together.
+const _timelineScrubs = new Map<string, Map<string, () => void>>(); // elementId → Map<token, cleanup>
+
+/** The scroll container a spec points at: an element by selector, or the document scroller. */
+function _timelineSource(spec: any): HTMLElement | null {
+    if (spec?.selector) return document.querySelector(spec.selector) as HTMLElement | null;
+    return document.scrollingElement as HTMLElement | null ?? document.documentElement;
+}
+
+/** The subject a view timeline tracks: an element by selector, or the animated element itself. */
+function _timelineSubject(spec: any, el: HTMLElement): HTMLElement | null {
+    if (spec?.selector) return document.querySelector(spec.selector) as HTMLElement | null;
+    return el;
+}
+
+/** Constructs the native timeline for a spec, or null when the browser has no native support. */
+function _nativeTimeline(spec: any, el: HTMLElement): any | null {
+    const axis = spec?.axis === 'inline' ? 'inline' : 'block';
+    try {
+        if (spec?.view) {
+            const ViewTl = (window as any).ViewTimeline;
+            if (typeof ViewTl !== 'function') return null;
+            const subject = _timelineSubject(spec, el);
+            return subject ? new ViewTl({ subject, axis }) : null;
+        }
+        const ScrollTl = (window as any).ScrollTimeline;
+        if (typeof ScrollTl !== 'function') return null;
+        const source = _timelineSource(spec);
+        return source ? new ScrollTl({ source, axis }) : null;
+    } catch {
+        // A constructor that exists but rejects the arguments (older prefixed builds) is treated
+        // exactly like no support at all, so the caller falls back to scrubbing.
+        return null;
+    }
+}
+
+/**
+ * Plays a pre-sampled animation driven by scroll position. Returns true when a native scroll
+ * timeline drove it, false when the scrub fallback did (and false is not a failure - the caller
+ * only uses it to report which path is live). Returns null when the element is gone or the
+ * browser has no Web Animations API at all.
+ */
+export function playScrollTimelineAnimation(
+    elementId: string, token: string, keyframes: any, spec: any): boolean | null {
+    const el = document.getElementById(elementId);
+    if (!el || typeof el.animate !== 'function') return null;
+
+    const timeline = _nativeTimeline(spec, el);
+    let anim: Animation;
+    try {
+        if (timeline) {
+            anim = (el as any).animate(keyframes, { timeline, fill: 'both' });
+            // The range is applied after the fact, and non-fatally: a browser that has scroll
+            // timelines but not ranges should narrow to the default full journey rather than lose
+            // the animation entirely. (The scrub fallback below always covers the full journey.)
+            if (spec?.range) {
+                const [rangeStart, rangeEnd] = splitAnimationRange(spec.range);
+                try {
+                    if (rangeStart) (anim as any).rangeStart = rangeStart;
+                    if (rangeEnd) (anim as any).rangeEnd = rangeEnd;
+                } catch { /* ranges unsupported - keep the default range */ }
+            }
+        } else {
+            // Fallback: a paused, time-based animation whose currentTime we drive from scroll.
+            // SCRUB_MS is arbitrary - it is only the unit the progress fraction is scaled into.
+            anim = el.animate(keyframes, { duration: SCRUB_MS, fill: 'both', easing: 'linear' });
+            anim.pause();
+        }
+    } catch {
+        return null;
+    }
+
+    let map = _waapiAnims.get(elementId);
+    if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
+    map.set(token, anim);
+
+    if (timeline) return true;
+
+    _attachScrub(elementId, token, el, anim, spec);
+    return false;
+}
+
+const SCRUB_MS = 1000;
+
+/** Drives a paused animation's currentTime from the scroll position described by `spec`. */
+function _attachScrub(
+    elementId: string, token: string, el: HTMLElement, anim: Animation, spec: any): void {
+    const inline = spec?.axis === 'inline';
+    const source = spec?.view ? null : _timelineSource(spec);
+    const subject = spec?.view ? _timelineSubject(spec, el) : null;
+    // The document scroller reports its scroll on window, not on the element itself.
+    const scrollHost: HTMLElement | Window =
+        source && source !== document.scrollingElement && source !== document.documentElement
+            ? source
+            : window;
+
+    const update = () => {
+        let progress = 0;
+        if (spec?.view) {
+            if (subject) {
+                const r = subject.getBoundingClientRect();
+                progress = inline
+                    ? viewFraction(r.left, r.width, 0, window.innerWidth)
+                    : viewFraction(r.top, r.height, 0, window.innerHeight);
+            }
+        } else if (scrollHost === window) {
+            const d = document.documentElement;
+            progress = inline
+                ? scrollFraction(window.scrollX, d.scrollWidth, window.innerWidth)
+                : scrollFraction(window.scrollY, d.scrollHeight, window.innerHeight);
+        } else {
+            const c = scrollHost as HTMLElement;
+            progress = inline
+                ? scrollFraction(c.scrollLeft, c.scrollWidth, c.clientWidth)
+                : scrollFraction(c.scrollTop, c.scrollHeight, c.clientHeight);
+        }
+        try { anim.currentTime = progress * SCRUB_MS; } catch { /* animation cancelled */ }
+    };
+
+    // A view timeline's progress changes with any scroll on the page, not only with the tracked
+    // container's, so it listens on window; resize changes the rects without any scroll at all.
+    const target: HTMLElement | Window = spec?.view ? window : scrollHost;
+    target.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+
+    let scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) { scrubs = new Map(); _timelineScrubs.set(elementId, scrubs); }
+    scrubs.set(token, () => {
+        target.removeEventListener('scroll', update);
+        window.removeEventListener('resize', update);
+    });
+}
+
+/** Stops a scroll-driven animation and releases its scroll listener (when it fell back). */
+export function cancelScrollTimelineAnimation(elementId: string, token: string): void {
+    _releaseScrub(elementId, token);
+    const anim = _waapiAnims.get(elementId)?.get(token);
+    if (!anim) return;
+    try { anim.commitStyles(); } catch { /* detached element */ }
+    anim.cancel();
+    const map = _waapiAnims.get(elementId);
+    if (map) { map.delete(token); if (map.size === 0) _waapiAnims.delete(elementId); }
+}
+
+function _releaseScrub(elementId: string, token: string): void {
+    const scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) return;
+    scrubs.get(token)?.();
+    scrubs.delete(token);
+    if (scrubs.size === 0) _timelineScrubs.delete(elementId);
+}
+
+function _releaseScrubsForElement(elementId: string): void {
+    const scrubs = _timelineScrubs.get(elementId);
+    if (!scrubs) return;
+    for (const cleanup of [...scrubs.values()]) cleanup();
+    _timelineScrubs.delete(elementId);
+}
+
+//
 // Viewport observation (whileInView)
 //
 
@@ -774,12 +1007,17 @@ function _cancelWaapiForElement(elementId: string, commit: boolean): void {
 const _vpObservers = new Map<string, { observer: IntersectionObserver; members: Set<string> }>(); // sig → { observer, members: Set<elementId> }
 const _vpRefs      = new Map<string, { dotnetRef: DotNet.DotNetObject; once: boolean }>(); // elementId → { dotnetRef, once }
 
-function _vpSig(margin: string, threshold: number): string { return `${margin}|${threshold}`; }
+function _vpSig(margin: string, threshold: number, root: string | null): string {
+    return `${root ?? ''}|${margin}|${threshold}`;
+}
 
-function _getVpEntry(margin: string, threshold: number): { observer: IntersectionObserver; members: Set<string> } {
-    const sig = _vpSig(margin, threshold);
+function _getVpEntry(margin: string, threshold: number, root: string | null): { observer: IntersectionObserver; members: Set<string> } {
+    const sig = _vpSig(margin, threshold, root);
     let entry = _vpObservers.get(sig);
     if (entry) return entry;
+    // A root selector that matches nothing degrades to the browser viewport (the API's default)
+    // rather than silently never intersecting.
+    const rootEl = root ? document.querySelector(root) : null;
     const observer = new IntersectionObserver((entries) => {
         for (const entry of entries) {
             const id  = entry.target.getAttribute('data-bmid');
@@ -791,7 +1029,7 @@ function _getVpEntry(margin: string, threshold: number): { observer: Intersectio
                 _vpRefs.delete(id);
             }
         }
-    }, { rootMargin: margin || '0px', threshold: threshold ?? 0 });
+    }, { root: rootEl, rootMargin: margin || '0px', threshold: threshold ?? 0 });
     entry = { observer, members: new Set<string>() };
     _vpObservers.set(sig, entry);
     return entry;
@@ -816,12 +1054,13 @@ export function observeViewport(elementId: string, dotnetRef: DotNet.DotNetObjec
     const once      = options?.once      ?? false;
     const margin    = options?.margin    ?? '0px';
     const threshold = options?.threshold ?? 0;
+    const root      = options?.root      ?? null;
     // Detach from any previously assigned observer first so re-observing with different options
     // doesn't stack duplicate subscriptions (which would fire OnIntersect multiple times and
     // break the "once" behaviour across option changes).
     _detachFromObservers(el, elementId);
     _vpRefs.set(elementId, { dotnetRef, once });
-    const entry = _getVpEntry(margin, threshold);
+    const entry = _getVpEntry(margin, threshold, root);
     entry.members.add(elementId);
     entry.observer.observe(el);
 }
@@ -847,12 +1086,39 @@ export function unobserveViewport(elementId: string): void {
  * place. Document coordinates are scroll-invariant, which keeps the FLIP start position correct
  * across an intervening page scroll. (Widths/heights are unaffected by scrolling.)
  */
-export function getBoundingRect(elementId: string):
+// The nearest ancestor that actually scrolls, for layoutScroll measurements. Walks up on computed
+// overflow rather than scrollHeight, so a container that is currently short enough not to scroll is
+// still recognised as the scroller it will be once its content grows.
+function _scrollableAncestor(el: HTMLElement): HTMLElement | null {
+    for (let p = el.parentElement; p; p = p.parentElement) {
+        const style = getComputedStyle(p);
+        if (/(auto|scroll|overlay)/.test(style.overflowY + style.overflowX)) return p;
+    }
+    return null;
+}
+
+/**
+ * Measures an element for a FLIP comparison.
+ *
+ * Coordinates are document-relative by default (page scroll folded in), so scrolling the page
+ * between the snapshot and the measurement isn't mistaken for the element having moved.
+ * `options.fixedRoot` switches to viewport coordinates for a position:fixed element, which is the
+ * one case where the page scrolling really does leave it where it was; `options.trackScroll` folds
+ * in the nearest scrolling ancestor's offset for the same reason one level down.
+ */
+export function getBoundingRect(elementId: string, options?: { trackScroll?: boolean; fixedRoot?: boolean }):
     { x: number; y: number; width: number; height: number; top: number; left: number } | null {
     const el = document.getElementById(elementId);
     if (!el) return null;
     const r = el.getBoundingClientRect();
-    const sx = window.scrollX, sy = window.scrollY;
+    // A fixed element is positioned against the viewport, so its viewport rect is already the
+    // stable one - adding page scroll would invent a delta on every scroll.
+    let sx = options?.fixedRoot ? 0 : window.scrollX;
+    let sy = options?.fixedRoot ? 0 : window.scrollY;
+    if (options?.trackScroll) {
+        const container = _scrollableAncestor(el);
+        if (container) { sx += container.scrollLeft; sy += container.scrollTop; }
+    }
     return {
         x: r.x + sx, y: r.y + sy, width: r.width, height: r.height,
         top: r.top + sy, left: r.left + sx,
@@ -866,10 +1132,19 @@ export function getBoundingRect(elementId: string):
  */
 export function playWaapiFlip(
     elementId: string, dx: number, dy: number, sx: number, sy: number,
-    durationMs: number, easingStr: string, finalTransform: string): void {
+    durationMs: number, easingStr: string, finalTransform: string,
+    originX?: number, originY?: number, dotnetRef?: DotNet.DotNetObject): void {
     const el = document.getElementById(elementId);
-    if (!el) return;
-    el.style.transformOrigin = '0 0';
+    if (!el) {
+        // Nothing will animate, so the caller's completion callback would never arrive; settle it
+        // now rather than leaving an OnLayoutAnimationComplete permanently outstanding.
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+        return;
+    }
+    // The projection anchor (layoutAnchor): the point of the box that appears to stay still. The
+    // deltas C# computed are measured from this same point, so the two must agree.
+    const ax = (originX ?? 0) * 100, ay = (originY ?? 0) * 100;
+    el.style.transformOrigin = `${ax}% ${ay}%`;
     const timing: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'forwards' };
     const anim = el.animate(
         [
@@ -926,8 +1201,12 @@ export function playWaapiFlip(
         el.style.transformOrigin = '';
         for (const done of cleanups) done();
     };
-    anim.onfinish = settle;
-    anim.oncancel = settle;
+    // Report completion on both outcomes. A cancelled FLIP is one that a newer layout change
+    // superseded, and that newer animation reports its own completion - so firing here too keeps
+    // every started layout animation matched by exactly one completion, which is what a consumer
+    // re-enabling interaction on OnLayoutAnimationComplete depends on.
+    anim.onfinish = () => { settle(); dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted'); };
+    anim.oncancel = () => { settle(); dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted'); };
 }
 
 //

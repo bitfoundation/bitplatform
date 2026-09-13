@@ -36,7 +36,7 @@ section {
 
     .refresh-selected-btn {
         top: 1rem;
-        right: 1rem;
+        inset-inline-end: 1rem;
         position: absolute;
     }
 
@@ -46,9 +46,51 @@ section {
         margin-bottom: 1rem;
     }
 
-    .del-session-btn {
-        top: 1rem;
-        position: absolute;
-        inset-inline-end: 1rem;
+    .session-persona {
+        // Without this the persona refuses to shrink below its texts and pushes the card into a horizontal scroll.
+        min-width: 0;
+
+        @include lt-sm {
+            max-width: calc(100% - 60px);
+        }
+    }
+
+    .session-address {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    // An IPv6 address is far longer than the place name above it and matters less, so it gets its own quiet line.
+    .session-ip {
+        direction: ltr;
+        overflow: hidden;
+        line-height: 1.25;
+        white-space: nowrap;
+        font-family: monospace;
+        text-overflow: ellipsis;
+        font-size: 0.75rem;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .session-details {
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
+    .oauth-session-banner {
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    // Client ids are long, so keep them to a single row.
+    .oauth-client-id {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        direction: ltr;
+        font-family: monospace;
     }
 }

@@ -1,0 +1,265 @@
+@page "/nfc"
+@implements IAsyncDisposable
+@inject Bit.Butil.Nfc nfc
+
+<PageTitle>Nfc - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Nfc"
+            Lead="Read and write NDEF tags with the Web NFC API - scan for nearby tags, then write text or URL records to the next tag the user taps."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_NFC_API"
+            InjectAs="Nfc nfc" />
+
+<Callout Type="warning" Title="Chromium on Android only">
+    Web NFC is an experimental API implemented exclusively in Chromium-based browsers on Android
+    devices with NFC hardware. It is unavailable on every desktop browser, on iOS, and in Firefox.
+    On this machine the demos below will most likely report unsupported - check
+    <code>IsSupported</code> first and keep every call inside a try/catch.
+</Callout>
+
+<Callout Type="info" Title="Permission and user gesture">
+    NFC requires a secure context (HTTPS), and the first scan triggers an
+    <code>nfc</code> permission prompt. Scanning and writing must be initiated from a user
+    gesture such as a button click.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes NDEFReader. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Nfc nfc
+
+var supported = await nfc.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Scan for tags"
+                 Api="Scan"
+                 Description="Starts listening for NDEF tags. Each tap delivers a typed NdefMessage - the tag's serial number plus its records (record type, MIME type, language, decoded text or raw bytes). Dispose the returned handle to stop scanning."
+                 Code=@("""
+private IAsyncDisposable? _scan;
+
+_scan = await nfc.Scan(
+    onReading: message =>
+    {
+        var serial = message.SerialNumber;
+        foreach (var record in message.Records)
+        {
+            // record.RecordType: "text", "url", "mime", ...
+            // record.Text: decoded payload for text records
+        }
+    },
+    onError: error => { /* scan/read error message */ });
+
+// stop scanning:
+await _scan.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="StartScan">Start scan</button>
+            <button class="danger" @onclick="StopScan">Stop scan</button>
+        </div>
+        @if (_scan is not null)
+        {
+            <div class="field">
+                <span class="field-label">Status</span>
+                <span>Scanning - tap an NDEF tag against the device.</span>
+            </div>
+        }
+        <DemoConsole @ref="scanOutput" Title="scan output" />
+    </DemoSection>
+
+    <DemoSection Title="Write a text record"
+                 Api="WriteText"
+                 Description="Writes a single NDEF text record to the next tag tapped against the device. The optional lang parameter sets the record's BCP-47 language tag; the optional id sets an application-defined record id."
+                 Code=@("""
+var ok = await nfc.WriteText("Hello from Butil!", lang: "en");
+// ok == true when the record was written to the tapped tag
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Text</span>
+                <input type="text" @bind="_writeText" placeholder="Hello from Butil!" />
+            </div>
+            <div class="field">
+                <span class="field-label">Language (optional)</span>
+                <input type="text" @bind="_writeLang" placeholder="en" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="WriteTextRecord">WriteText</button>
+        </div>
+        <DemoConsole @ref="writeTextOutput" Title="write text output" />
+    </DemoSection>
+
+    <DemoSection Title="Write a URL record"
+                 Api="WriteUrl"
+                 Description="Writes a single NDEF URL record to the next tag tapped against the device - a tag that most phones will open in the browser when scanned."
+                 Code=@("""
+var ok = await nfc.WriteUrl("https://bitplatform.dev");
+""")>
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input type="url" @bind="_writeUrl" placeholder="https://bitplatform.dev" />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteUrlRecord">WriteUrl</button>
+        </div>
+        <DemoConsole @ref="writeUrlOutput" Title="write url output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes NDEFReader. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Scan"
+               Signature="Task<IAsyncDisposable> Scan(Action<NdefMessage>? onReading, Action<string>? onError = null)"
+               Description="Starts scanning for NDEF tags. Dispose the returned handle to stop. Throws ArgumentException when both handlers are null." />
+    <ApiMember Name="WriteText"
+               Signature="ValueTask<bool> WriteText(string text, string? lang = null, string? id = null)"
+               Description="Writes a single NDEF text record to the next tag tapped against the device." />
+    <ApiMember Name="WriteUrl"
+               Signature="ValueTask<bool> WriteUrl(string url, string? id = null)"
+               Description="Writes a single NDEF URL record to the next tag tapped against the device." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops every active scan and releases the JS callback reference. Called automatically on scope/circuit teardown." />
+    <ApiMember Name="InvokeNdefReading"
+               Signature="void InvokeNdefReading(Guid id, NdefMessage message)"
+               Description="JSInvokable interop plumbing for tag reads - not intended for app code." />
+    <ApiMember Name="InvokeNdefError"
+               Signature="void InvokeNdefError(Guid id, string message)"
+               Description="JSInvokable interop plumbing for scan errors - not intended for app code." />
+    <ApiMember Name="NdefMessage.SerialNumber"
+               Signature="string SerialNumber { get; set; }"
+               Description="The scanned tag's serial number." />
+    <ApiMember Name="NdefMessage.Records"
+               Signature="NdefRecord[] Records { get; set; }"
+               Description="The NDEF records carried by the message: RecordType, MediaType, Id, Lang, Encoding, Text and raw Data." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole scanOutput = default!;
+    private DemoConsole writeTextOutput = default!;
+    private DemoConsole writeUrlOutput = default!;
+    private IAsyncDisposable? _scan;
+    private string _writeText = "Hello from Butil!";
+    private string _writeLang = "";
+    private string _writeUrl = "https://bitplatform.dev";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await nfc.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartScan()
+    {
+        await StopScan();
+
+        try
+        {
+            if (!await nfc.IsSupported())
+            {
+                await scanOutput.Warn("Web NFC is not supported on this device/browser.");
+                return;
+            }
+
+            _scan = await nfc.Scan(
+                onReading: message => _ = InvokeAsync(() => LogMessage(message)),
+                onError: error => _ = InvokeAsync(() => scanOutput.Error("Scan error →", error)));
+
+            await scanOutput.Log("Scan started - tap a tag against the device.");
+        }
+        catch (Exception ex)
+        {
+            await scanOutput.Error("Scan failed →", ex.Message);
+        }
+    }
+
+    private async Task StopScan()
+    {
+        if (_scan is null) return;
+
+        await _scan.DisposeAsync();
+        _scan = null;
+        await scanOutput.Log("Scan stopped.");
+    }
+
+    private async Task WriteTextRecord()
+    {
+        try
+        {
+            if (!await nfc.IsSupported())
+            {
+                await writeTextOutput.Warn("Web NFC is not supported on this device/browser.");
+                return;
+            }
+
+            var lang = string.IsNullOrWhiteSpace(_writeLang) ? null : _writeLang;
+            var ok = await nfc.WriteText(_writeText, lang);
+            await writeTextOutput.Success("WriteText →", ok ? "record written." : "write failed or was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            await writeTextOutput.Error("WriteText failed →", ex.Message);
+        }
+    }
+
+    private async Task WriteUrlRecord()
+    {
+        try
+        {
+            if (!await nfc.IsSupported())
+            {
+                await writeUrlOutput.Warn("Web NFC is not supported on this device/browser.");
+                return;
+            }
+
+            var ok = await nfc.WriteUrl(_writeUrl);
+            await writeUrlOutput.Success("WriteUrl →", ok ? "record written." : "write failed or was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            await writeUrlOutput.Error("WriteUrl failed →", ex.Message);
+        }
+    }
+
+    private async Task LogMessage(NdefMessage message)
+    {
+        try
+        {
+            await scanOutput.Success("Tag read →", $"serial={message.SerialNumber}, records={message.Records.Length}");
+            foreach (var record in message.Records)
+            {
+                await scanOutput.Log($"  [{record.RecordType}]",
+                    record.Text ?? record.MediaType ?? (record.Data is null ? "(empty)" : $"{record.Data.Length} byte(s)"));
+            }
+        }
+        catch (Exception ex)
+        {
+            await scanOutput.Error("Tag read failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_scan is not null)
+        {
+            await _scan.DisposeAsync();
+            _scan = null;
+        }
+    }
+}

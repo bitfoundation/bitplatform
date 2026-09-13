@@ -25,7 +25,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     // ── Cascaded contexts ──────────────────────────────────────────────────────
     [CascadingParameter] private BmotionPresenceContext? PresenceCtx { get; set; }
-    [CascadingParameter] private BmotionVariantContext? VariantCtx { get; set; }
+    [CascadingParameter] private BmotionVariantContext? InheritedVariantCtx { get; set; }
+
+    /// <summary>
+    /// The ancestor variant context this element actually participates in - <c>null</c> when
+    /// <see cref="Inherit"/> is <c>false</c>, which is the single place the opt-out is enforced:
+    /// every consumer of the cascade (initial style, enter animation, variant re-resolution,
+    /// stagger registration and named-variant lookup) reads it through here.
+    /// </summary>
+    private BmotionVariantContext? VariantCtx => Inherit ? InheritedVariantCtx : null;
     [CascadingParameter] private BmotionConfigContext? ConfigCtx { get; set; }
     [CascadingParameter] private BmotionLayoutGroupContext? LayoutGroupCtx { get; set; }
 
@@ -73,6 +81,22 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // ── Transition ─────────────────────────────────────────────────────────────
     [Parameter] public BmTransition? Transition { get; set; }
 
+    /// <summary>
+    /// Drives <see cref="Animate"/> from <b>scroll position instead of time</b>, on the browser's
+    /// native <c>ScrollTimeline</c>/<c>ViewTimeline</c> where available - so the animation runs off
+    /// the main thread with no scroll handler and no per-frame interop:
+    /// <code>
+    /// &lt;Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])"&gt;
+    ///     &lt;div class="progress-bar" /&gt;
+    /// &lt;/Bmotion&gt;
+    /// </code>
+    /// Only transform components and <c>opacity</c> can be scroll-driven (they are what the browser
+    /// can interpolate for us); a target touching anything else falls back to the ordinary
+    /// time-based path. <see cref="Transition"/> is not used while a timeline is attached - scroll
+    /// position <em>is</em> the progress. See <see cref="BmScrollTimeline"/>.
+    /// </summary>
+    [Parameter] public BmScrollTimeline? Timeline { get; set; }
+
     // ── Variants ─────────────────────────────────────────────────────────────
     [Parameter] public BmVariants? Variants { get; set; }
 
@@ -94,6 +118,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <see cref="BmVariants.Add(string, Func{object?, BmProps})"/>).
     /// </summary>
     [Parameter] public object? Custom { get; set; }
+
+    /// <summary>
+    /// Whether this element takes part in an ancestor's variant tree - motion.dev's <c>inherit</c>.
+    /// Default <c>true</c>: an active variant label cascading from above selects this element's
+    /// matching variant and its stagger slot. Set <c>false</c> to cut the element out of the
+    /// cascade, so it only ever animates what its own <c>Animate</c>/<c>State</c> says - useful for
+    /// a subtree that must keep its own timing while sitting inside an orchestrating parent.
+    /// <para>
+    /// Cutting the link is one-directional: descendants of this element still inherit from the
+    /// variants <em>it</em> defines.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool Inherit { get; set; } = true;
 
     // ── Motion-value bindings ──────────────────────────────────────────────────
     /// <summary>
@@ -120,6 +157,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </code>
     /// </summary>
     [Parameter] public Dictionary<string, BmValue<string>>? StringValues { get; set; }
+
+    /// <summary>
+    /// Rewrites the CSS <c>transform</c> string this element's animation composes - motion.dev's
+    /// <c>transformTemplate</c>. Use it to reorder the components or to keep a transform of your own
+    /// in front of the animated ones:
+    /// <code>
+    /// &lt;Bmotion TransformTemplate="(_, generated) =&gt; $&quot;translate(-50%, -50%) {generated}&quot;"&gt;
+    /// </code>
+    /// Applied on every path that writes the transform (per-frame loop, initial inline style,
+    /// instant <c>Set</c>, and the keyframes handed to the compositor). See
+    /// <see cref="BmTransformTemplate"/>.
+    /// </summary>
+    [Parameter] public BmTransformTemplate? TransformTemplate { get; set; }
 
     // ── Drag ─────────────────────────────────────────────────────────────────
     /// <summary>Enable dragging: <c>Drag="true"</c> (both axes), <c>Drag="BmDrag.X"</c> or <c>Drag="BmDrag.Y"</c>.</summary>
@@ -164,6 +214,18 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public bool DragDirectionLock { get; set; }
 
     /// <summary>
+    /// Whether this element's pointer gestures (tap and pan) also reach gesture-enabled ancestors -
+    /// the tap/pan counterpart of <see cref="DragPropagation"/>, and motion.dev's <c>propagate</c>.
+    /// Default <c>true</c> (the platform's bubbling behaviour, and motion.dev's default for these
+    /// gestures). Set <c>false</c> so pressing a tappable child doesn't also press its tappable
+    /// parent - the button-inside-a-card case.
+    /// <para>
+    /// Hover is unaffected: <c>pointerenter</c>/<c>pointerleave</c> don't bubble in the first place.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool GesturePropagation { get; set; } = true;
+
+    /// <summary>
     /// Whether a drag on this element also propagates to draggable ancestors. Default <c>false</c>
     /// (motion.dev's default): the drag stops propagation so a nested draggable doesn't also drag its
     /// draggable parent. Set <c>true</c> to let both move together.
@@ -188,6 +250,40 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public string? LayoutId { get; set; }
 
+    /// <summary>
+    /// Re-measures for a layout animation only when this value changes - motion.dev's
+    /// <c>layoutDependency</c>. By default (<c>null</c>) a <see cref="Layout"/>-enabled element
+    /// measures itself on every re-render, which costs a forced reflow each time; point this at the
+    /// state the layout actually depends on and unrelated re-renders stop measuring.
+    /// <para>
+    /// Compared with <see cref="object.Equals(object, object)"/>, so records, value types and
+    /// strings all work. A layout change that this value doesn't capture won't animate.
+    /// </para>
+    /// </summary>
+    [Parameter] public object? LayoutDependency { get; set; }
+
+    /// <summary>
+    /// The point of the element a layout animation is projected from - motion.dev's
+    /// <c>layoutAnchor</c>. Defaults to <see cref="BmLayoutAnchor.TopLeft"/>; use
+    /// <see cref="BmLayoutAnchor.Center"/> to make a resizing box grow evenly around its middle.
+    /// </summary>
+    [Parameter] public BmLayoutAnchor LayoutAnchor { get; set; } = BmLayoutAnchor.TopLeft;
+
+    /// <summary>
+    /// Set on an element inside a <b>scrolling container</b> so its layout measurements fold in that
+    /// container's scroll offset - motion.dev's <c>layoutScroll</c>. Without it, scrolling the
+    /// container between the two measurements reads as the element having moved, and the element
+    /// visibly jumps. Page scroll is always accounted for; this is for the container case.
+    /// </summary>
+    [Parameter] public bool LayoutScroll { get; set; }
+
+    /// <summary>
+    /// Set on a <c>position: fixed</c> element - motion.dev's <c>layoutRoot</c>. Fixed elements stay
+    /// put while the page scrolls, so they are measured in viewport coordinates; without this they
+    /// would be measured in document coordinates and every page scroll would look like a move.
+    /// </summary>
+    [Parameter] public bool LayoutRoot { get; set; }
+
     // ── Events ─────────────────────────────────────────────────────────────────
     [Parameter] public EventCallback OnHoverStart { get; set; }
     [Parameter] public EventCallback OnHoverEnd { get; set; }
@@ -202,6 +298,26 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnDragStart { get; set; }
     [Parameter] public EventCallback OnDrag { get; set; }
     [Parameter] public EventCallback OnDragEnd { get; set; }
+
+    /// <summary>
+    /// Fires once per drag when <see cref="DragDirectionLock"/> resolves the dominant axis -
+    /// motion.dev's <c>onDirectionLock</c>. Receives <see cref="BmDragAxis.X"/> or
+    /// <see cref="BmDragAxis.Y"/>.
+    /// </summary>
+    [Parameter] public EventCallback<BmDragAxis> OnDirectionLock { get; set; }
+    /// <summary>
+    /// Fires when a layout (FLIP) animation starts - motion.dev's <c>onLayoutAnimationStart</c>.
+    /// Only fires when the element actually moved or resized enough to animate.
+    /// </summary>
+    [Parameter] public EventCallback OnLayoutAnimationStart { get; set; }
+
+    /// <summary>
+    /// Fires when a layout (FLIP) animation ends - motion.dev's <c>onLayoutAnimationComplete</c>.
+    /// Also fires when a newer layout change supersedes it, so every start is matched by exactly
+    /// one completion.
+    /// </summary>
+    [Parameter] public EventCallback OnLayoutAnimationComplete { get; set; }
+
     /// <summary>Fires when an Animate/State-driven animation starts; receives the resolved target props.</summary>
     [Parameter] public EventCallback<BmProps?> OnAnimationStart { get; set; }
 
@@ -282,7 +398,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             var initialTarget = EffectiveInitial;
             var initial = initialTarget?.IsVariant == true ? initialTarget.Variant : VariantCtx?.InitialVariant;
             var stagger = Transition?.StaggerChildren ?? 0;
+            var childStagger = Transition?.ChildStagger;
             var delayChildren = Transition?.DelayChildren ?? 0;
+            // when: beforeChildren - hold the children back until this element's own animation has
+            // played. Expressed as extra child delay so the whole cascade (including the stagger)
+            // shifts together, and derived from the transition so it stays correct when the
+            // container's duration changes.
+            if (Transition is { When: BmWhen.BeforeChildren })
+                delayChildren += Transition.ToConfig().EstimatedDurationSeconds();
 
             // A cascaded context whose fields are mutated in place does NOT reliably notify
             // descendants (CascadingValue change-detection is reference-based). So when any cascaded
@@ -294,7 +417,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 _ownVariantCtx.InitialVariant != initial ||
                 !ReferenceEquals(_ownVariantCtx.Variants, Variants) ||
                 _ownVariantCtx.StaggerChildren != stagger ||
-                _ownVariantCtx.DelayChildren != delayChildren)
+                _ownVariantCtx.DelayChildren != delayChildren ||
+                !BmStagger.AreEquivalent(_ownVariantCtx.ChildStagger, childStagger))
             {
                 var previous = _ownVariantCtx;
                 _ownVariantCtx = new BmotionVariantContext
@@ -303,9 +427,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                     InitialVariant = initial,
                     Variants = Variants,
                     StaggerChildren = stagger,
+                    ChildStagger = childStagger,
                     DelayChildren = delayChildren,
                 };
-                if (previous != null) _ownVariantCtx.SeedChildIndex(previous.NextChildIndex);
+                // Carry the registered children over: they claimed their slots against the previous
+                // instance and never re-register, so a fresh context would otherwise think it had none.
+                if (previous != null) _ownVariantCtx.SeedFrom(previous);
             }
 
             builder.OpenComponent<CascadingValue<BmotionVariantContext>>(0);
@@ -352,7 +479,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var props = ResolveProps(EffectiveInitial);
         if (props == null && EffectiveAnimate == null && VariantCtx?.InitialVariant is string initVariant)
             props = Variants?.Get(initVariant, Custom) ?? VariantCtx.Variants?.Get(initVariant, Custom);
-        return _initialStyleCache = props?.ToCssStyleString() ?? string.Empty;
+        return _initialStyleCache = props?.ToCssStyleString(TransformTemplate) ?? string.Empty;
     }
     private string? _initialStyleCache;
 
@@ -366,6 +493,35 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // by selector) can target the element. Read once: the id is the element's engine identity,
         // so changing it after first render is unsupported.
         if (!string.IsNullOrWhiteSpace(Id)) _id = Id;
+
+        // Claim this element's stagger slot here - during the render pass - rather than after the
+        // first render. Every component's OnInitialized runs before any OnAfterRenderAsync, so by
+        // the time a delay is computed the context knows how many children there really are. That
+        // is what a stagger radiating from the last/centre element needs, and what lets an
+        // afterChildren parent wait for the actual cascade instead of an empty one.
+        // Only cascade participants register: an element driving its own Animate isn't one, so it
+        // must not consume a slot and shift its siblings' delays.
+        if (VariantCtx != null && EffectiveAnimate == null && (Variants != null || VariantCtx.Variants != null))
+            _variantChildIndex = VariantCtx.RegisterChild(EstimateOwnAnimationSeconds);
+    }
+
+    /// <summary>
+    /// How long this element's variant animation takes, for an <see cref="BmWhen.AfterChildren"/>
+    /// parent's wait. Evaluated lazily (the parent calls it when it is about to animate), so it
+    /// reflects the variant that actually resolved rather than whatever was configured at
+    /// registration time.
+    /// </summary>
+    private double EstimateOwnAnimationSeconds()
+    {
+        var props = VariantCtx?.ActiveVariant is string name
+            ? Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom)
+            : null;
+        var transition = props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
+        // No transition anywhere means the engine's default tween, whose length is BmTween's default.
+        if (transition is null) return new BmTween().Duration;
+        var config = transition.ToConfig();
+        // An endlessly repeating child would make the parent wait forever; count only one play.
+        return config.EstimatedDurationSeconds() + Math.Max(config.Delay, 0);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -430,10 +586,30 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 try { await Interop.UnpopLayoutAsync(_id); } catch { /* cosmetic restore only */ }
         }
 
-        // FLIP: snapshot BEFORE re-render
-        if (_initialized && Layout.Enabled && !_isExiting)
-            _layoutSnapshot = await Interop.GetBoundingRectAsync(_id);
+        // FLIP: snapshot BEFORE re-render. Measuring forces a reflow, so LayoutDependency lets a
+        // consumer restrict it to the renders where the layout can actually have changed.
+        // Evaluated unconditionally so the first render establishes the baseline: otherwise the
+        // first render that could measure would always see "no previous value" and measure anyway.
+        bool dependencyChanged = LayoutDependencyChanged();
+        if (_initialized && Layout.Enabled && !_isExiting && dependencyChanged)
+            _layoutSnapshot = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
     }
+
+    // Null (the default) means "no dependency declared": measure on every render, as before.
+    private object? _prevLayoutDependency;
+    private bool _hasLayoutDependency;
+
+    private bool LayoutDependencyChanged()
+    {
+        if (LayoutDependency is null) return true;
+        bool changed = !_hasLayoutDependency || !Equals(_prevLayoutDependency, LayoutDependency);
+        _prevLayoutDependency = LayoutDependency;
+        _hasLayoutDependency = true;
+        return changed;
+    }
+
+    /// <summary>The coordinate space this element's layout measurements are taken in.</summary>
+    private BmotionMeasureOptions MeasureOptions => new(LayoutScroll, LayoutRoot);
 
     private async Task InitialiseAsync()
     {
@@ -453,6 +629,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var initProps = ResolveProps(EffectiveInitial);
         Engine.RegisterElement(_id, initProps?.ToJsDictionary());
         Engine.SetOnFrame(_id, OnUpdate);
+        Engine.SetTransformTemplate(_id, TransformTemplate);
         ReconcileValueBindings();
 
         // Mark element in the DOM for JS bridge. The rewriter guarantees the id was rendered, so
@@ -474,23 +651,26 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Shared-element transition: FLIP from wherever the previous LayoutId holder was.
         await HandleSharedLayoutMountAsync();
 
+        // A scroll timeline drives the animate target from scroll position instead of time, so
+        // when it takes ownership the time-based enter animation below must stand down.
+        bool timelineOwns = await ReconcileScrollTimelineAsync();
+
         // Start enter animation
-        if (EffectiveAnimate != null)
+        if (!timelineOwns && EffectiveAnimate != null)
         {
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
             {
                 await OnAnimationStart.InvokeAsync(animateProps);
-                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(), BuildEffectiveTransition(animateProps),
+                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
+                    ApplyAfterChildren(BuildEffectiveTransition(animateProps)),
                     () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true);
             }
         }
-        else if (VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
+        else if (!timelineOwns && VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
         {
-            // Claim a stable stagger position on first render even when no variant is active yet,
-            // so a parent that switches its variant later (the common hidden→visible toggle) still
-            // staggers its children in render order instead of collapsing every delay to zero.
-            _variantChildIndex = VariantCtx.RegisterChild();
+            // The stagger slot was already claimed in OnInitialized (during the render pass, so the
+            // child count is complete by now); nothing to do here but use it.
             if (VariantCtx.ActiveVariant is string inheritedVariant)
             {
                 _prevInheritedVariant = inheritedVariant;
@@ -502,7 +682,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             }
         }
 
-        _prevAnimate = EffectiveAnimate;
+        // While a timeline owns the target, remember "nothing has been played over time" - so
+        // dropping the Timeline parameter later reads as a change and replays it, rather than as
+        // "the target is already current".
+        _prevAnimate = timelineOwns ? null : EffectiveAnimate;
     }
 
     private async Task HandleParameterUpdateAsync()
@@ -532,6 +715,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         // Keep the per-frame callback and motion-value bindings current with the latest parameters.
         Engine.SetOnFrame(_id, OnUpdate);
+        Engine.SetTransformTemplate(_id, TransformTemplate);
         ReconcileValueBindings();
 
         // Gesture listeners and viewport observation are wired once at init; re-wire them when the
@@ -541,13 +725,26 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         await ReconcileEventListenersAsync();
         await ReconcileViewportAsync();
 
+        // Re-bind (or release) the scroll timeline before the animate diff below: while one is
+        // attached the browser drives the target from scroll position, so the time-based path
+        // must not also animate it.
+        bool timelineOwns = await ReconcileScrollTimelineAsync();
+        if (timelineOwns)
+        {
+            // Forget the last time-based target so that dropping the Timeline parameter later
+            // replays the animate target instead of reading as "nothing changed".
+            _prevAnimate = null;
+            return;
+        }
+
         if (!BmTarget.AreEquivalent(_prevAnimate, EffectiveAnimate))
         {
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
             {
                 await OnAnimationStart.InvokeAsync(animateProps);
-                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(), BuildEffectiveTransition(animateProps),
+                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
+                    ApplyAfterChildren(BuildEffectiveTransition(animateProps)),
                     () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true);
             }
             _prevAnimate = EffectiveAnimate;
@@ -566,12 +763,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                     var props = Variants?.Get(newVariant, Custom) ?? VariantCtx?.Variants?.Get(newVariant, Custom);
                     if (props != null)
                     {
-                        // When this element rendered with a non-null Animate on first render it
-                        // never claimed a stagger slot, so _variantChildIndex is still -1 here.
-                        // Lazily claim one now (newVariant came from VariantCtx, so it's non-null)
-                        // so GetChildDelay receives a real index instead of collapsing to zero.
+                        // An element that rendered with a non-null Animate never claimed a slot in
+                        // OnInitialized (it wasn't a cascade participant then). Now that its Animate
+                        // is gone it is one, so claim a slot rather than let GetChildDelay collapse
+                        // to zero. It registers late, so it lands at the end of the cascade.
                         if (_variantChildIndex < 0)
-                            _variantChildIndex = VariantCtx!.RegisterChild();
+                            _variantChildIndex = VariantCtx!.RegisterChild(EstimateOwnAnimationSeconds);
                         double delay = VariantCtx!.GetChildDelay(_variantChildIndex);
                         await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
                             BuildEffectiveTransitionWithDelay(delay, props), setAsBase: true);
@@ -605,18 +802,29 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private async Task PlayFlipAsync(BmotionBoundingRect snap)
     {
-        var cur = await Interop.GetBoundingRectAsync(_id);
+        var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
         if (cur == null) return;
         await PlayFlipFromAsync(snap, cur);
     }
 
     private async Task PlayFlipFromAsync(BmotionBoundingRect snap, BmotionBoundingRect cur)
     {
-        double dx = snap.Left - cur.Left;
-        double dy = snap.Top - cur.Top;
         // Position mode animates translation only, avoiding scale distortion on text/aspect-
-        // ratio-sensitive content (motion.dev's layout="position").
+        // ratio-sensitive content (motion.dev's layout="position"); Size mode is the mirror image -
+        // the element snaps to its new position and only the box scales (motion.dev's
+        // layout="size"), for boxes that grow or shrink in place.
+        bool translateToo = Layout.Mode != BmLayoutMode.Size;
         bool scaleToo = Layout.Mode != BmLayoutMode.Position;
+        // The projection anchor is the point that appears to stay still. Measuring the delta from
+        // that same point - rather than always from the top-left corner - is what makes a centre
+        // anchor grow the box evenly instead of pushing it down and right.
+        var anchor = LayoutAnchor.Sanitized();
+        double snapAnchorX = snap.Left + anchor.X * snap.Width;
+        double snapAnchorY = snap.Top + anchor.Y * snap.Height;
+        double curAnchorX = cur.Left + anchor.X * cur.Width;
+        double curAnchorY = cur.Top + anchor.Y * cur.Height;
+        double dx = translateToo ? snapAnchorX - curAnchorX : 0;
+        double dy = translateToo ? snapAnchorY - curAnchorY : 0;
         double sx = scaleToo && cur.Width > 0 ? snap.Width / cur.Width : 1;
         double sy = scaleToo && cur.Height > 0 ? snap.Height / cur.Height : 1;
 
@@ -637,8 +845,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // recording until it settles.
         _flipUntilMs = Environment.TickCount64 + (long)dur + 50;
 
-        await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT);
+        await OnLayoutAnimationStart.InvokeAsync();
+        // The ref is only handed over when someone is listening, so the common case costs no
+        // JS→.NET callback at the end of every layout animation.
+        await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
+            anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
     }
+
+    /// <summary>Invoked by JS when a FLIP animation finishes or is superseded. Not for direct use.</summary>
+    [JSInvokable]
+    public async Task OnLayoutAnimationCompleted() => await OnLayoutAnimationComplete.InvokeAsync();
 
     // ── Shared-element transitions (LayoutId) ──────────────────────────────────
 
@@ -659,7 +875,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
-        var cur = await Interop.GetBoundingRectAsync(_id);
+        var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
         if (cur == null) return;
         var prev = LayoutRegistry.Get(layoutId);
         LayoutRegistry.Record(layoutId, cur);
@@ -672,7 +888,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
         if (Environment.TickCount64 < _flipUntilMs) return;
-        var cur = await Interop.GetBoundingRectAsync(_id);
+        var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
         if (cur != null) LayoutRegistry.Record(layoutId, cur);
     }
 
@@ -714,7 +930,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         Engine.SetInstant(_id, props.ToJsDictionary());
         // Flush synchronous style update to DOM as individual declarations (never via cssText,
         // which would replace the element's entire inline style).
-        var styles = props.ToCssStyleDictionary();
+        var styles = props.ToCssStyleDictionary(TransformTemplate);
         if (styles.Count > 0)
             await Interop.ApplyStylesAsync(_id, styles);
     }
@@ -819,6 +1035,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     [JSInvokable] public async Task OnDragMove() => await OnDrag.InvokeAsync();
 
+    /// <summary>Invoked by JS the moment direction lock resolves the drag's axis. Not for direct use.</summary>
+    [JSInvokable]
+    public async Task OnDirectionLocked(string axis)
+        => await OnDirectionLock.InvokeAsync(
+            string.Equals(axis, "y", StringComparison.OrdinalIgnoreCase) ? BmDragAxis.Y : BmDragAxis.X);
+
     [JSInvokable]
     public async Task OnPointerUp_Drag(double velX, double velY,
         double? boundLeft = null, double? boundRight = null, double? boundTop = null, double? boundBottom = null)
@@ -830,7 +1052,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // End the drag first (momentum off, no constraints) so the engine clears its dragging
             // state - the same cleanup the non-snap path below gets - before animating back.
             await Engine.EndDragAsync(_id, velX, velY, momentum: false, constraints: null, axis: null, snapTransition: null);
-            var snapT = DragTransition?.ToConfig() ?? new BmotionTransitionConfig
+            // Snapping back to the origin is a spring, not a coast: a DragTransition authored as an
+            // inertia describes the momentum (which is off here), so fall back to the default spring
+            // rather than handing the return trip an inertia config it can't express.
+            var dragT = DragTransition?.ToConfig();
+            var snapT = dragT is { Type: not BmotionTransitionType.Inertia } ? dragT : new BmotionTransitionConfig
                 { Type = BmotionTransitionType.Spring, Stiffness = 400, Damping = 35 };
             await Engine.AnimateToAsync(_id,
                 new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 }, snapT);
@@ -1007,6 +1233,25 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return ShouldReduceMotion() ? BuildReducedTransition(normal) : normal;
     }
 
+    /// <summary>
+    /// Applies <see cref="BmWhen.AfterChildren"/> to this container's own animation by delaying it
+    /// until the child cascade below it has finished. Only meaningful on an element that publishes
+    /// a variant context, and skipped under reduced motion (where the cascade is instant anyway, so
+    /// waiting for it would just be dead time before the container appears).
+    /// </summary>
+    private BmotionTransitionConfig? ApplyAfterChildren(BmotionTransitionConfig? config)
+    {
+        if (Transition is not { When: BmWhen.AfterChildren }) return config;
+        if (_ownVariantCtx is null || ShouldReduceMotion()) return config;
+        double wait = _ownVariantCtx.MaxChildFinishSeconds();
+        if (wait <= 0) return config;
+        // BuildNormalTransition already returned a fresh instance, so mutating is safe; a null one
+        // means "engine defaults", which still needs a real config to carry the delay.
+        var result = config ?? new BmotionTransitionConfig();
+        result.Delay += wait;
+        return result;
+    }
+
     private BmotionTransitionConfig? BuildNormalTransition(BmProps? props, BmTransition? explicitTransition = null)
     {
         // Resolution order: an explicit transition (programmatic AnimateAsync) wins, then the one
@@ -1061,6 +1306,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         if (WhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate || OnTapCancel.HasDelegate) d["tap"] = true;
         if (WhileFocus != null || OnFocusStart.HasDelegate || OnFocusEnd.HasDelegate) d["focus"] = true;
         if (OnPanStart.HasDelegate || OnPan.HasDelegate || OnPanEnd.HasDelegate) d["pan"] = true;
+        // Only emitted when opting out, so the default flags dictionary (and its signature) is
+        // unchanged for the overwhelmingly common propagating case.
+        if (!GesturePropagation) d["gesturePropagation"] = false;
         if (Drag.Enabled)
         {
             d["drag"] = true;
@@ -1150,8 +1398,58 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         bool needed = WhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate;
         if (!needed) return null;
         return Viewport != null
-            ? $"opt|{Viewport.Once}|{Viewport.Margin}|{Viewport.Amount}"
+            ? $"opt|{Viewport.Once}|{Viewport.Margin}|{Viewport.Amount}|{Viewport.Root}"
             : $"once|{Once}";
+    }
+
+    // ── Scroll-driven timeline ─────────────────────────────────────────────────
+
+    private BmScrollTimeline? _attachedTimeline;
+    private BmTarget? _timelineTarget;
+    private int _timelineToken;
+
+    /// <summary>
+    /// Keeps the scroll-driven animation current with <see cref="Timeline"/> and the animate
+    /// target, and reports whether one is live. When it is, the browser owns those properties and
+    /// the time-based paths must leave them alone.
+    /// <para>
+    /// A target the browser can't interpolate for us (anything beyond transforms and opacity)
+    /// leaves the token at 0 and returns <c>false</c>, so the caller runs the ordinary time-based
+    /// animation instead. That state is remembered, so the failed attach isn't retried on every
+    /// subsequent render.
+    /// </para>
+    /// </summary>
+    private async Task<bool> ReconcileScrollTimelineAsync()
+    {
+        var timeline = Timeline;
+        var target = timeline is null ? null : EffectiveAnimate;
+
+        if (BmScrollTimeline.AreEquivalent(_attachedTimeline, timeline) &&
+            BmTarget.AreEquivalent(_timelineTarget, target))
+            return _timelineToken != 0;
+
+        if (_timelineToken != 0)
+        {
+            await Engine.DetachScrollTimelineAsync(_id, _timelineToken);
+            _timelineToken = 0;
+        }
+        _attachedTimeline = timeline;
+        _timelineTarget = target;
+
+        if (timeline is null || target is null) return false;
+
+        var props = ResolveProps(target);
+        if (props is null) return false;
+
+        _timelineToken = await Engine.AttachScrollTimelineAsync(_id, props.ToJsDictionary(), timeline);
+        if (_timelineToken == 0)
+        {
+            Logger?.LogWarning(
+                "Bit.Bmotion: element '{Id}' has a Timeline but its Animate target isn't scroll-drivable "
+                + "(only transform components and opacity are). Falling back to the time-based animation.", _id);
+            return false;
+        }
+        return true;
     }
 
     // ── Motion-value bindings ──────────────────────────────────────────────────
@@ -1248,6 +1546,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _valueSubscriptions.Clear();
         _attachedDragControls?.Detach(this);
         PresenceCtx?.Unregister(this);
+        if (_timelineToken != 0)
+        {
+            await Engine.DetachScrollTimelineAsync(_id, _timelineToken);
+            _timelineToken = 0;
+        }
         Engine.UnregisterElement(_id);
         try { await Interop.UnregisterElementAsync(_id); } catch { /* ignore during teardown */ }
         try { await Interop.UnobserveViewportAsync(_id); } catch { /* ignore during teardown */ }

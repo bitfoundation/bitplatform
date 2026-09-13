@@ -1,110 +1,120 @@
 // https://github.com/Necromancerx/media-queries-scss-mixins
 
-$brk-xs-max: 600px;
-$brk-sm-min: 601px;
-$brk-sm-max: 960px;
-$brk-md-min: 961px;
-$brk-md-max: 1280px;
-$brk-lg-min: 1281px;
-$brk-lg-max: 1920px;
-$brk-xl-min: 1921px;
-$brk-xl-max: 2560px;
-$brk-xxl-min: 2561px;
+$mq-xs-max: 599px;
+$mq-sm-min: 600px;
+$mq-sm-max: 959px;
+$mq-md-min: 960px;
+$mq-md-max: 1279px;
+$mq-lg-min: 1280px;
+$mq-lg-max: 1919px;
+$mq-xl-min: 1920px;
+$mq-xl-max: 2559px;
+$mq-xxl-min: 2560px;
+
+:root {
+    --bit-bp-xs: 0;
+    --bit-bp-sm: #{$mq-sm-min};
+    --bit-bp-md: #{$mq-md-min};
+    --bit-bp-lg: #{$mq-lg-min};
+    --bit-bp-xl: #{$mq-xl-min};
+    --bit-bp-xxl: #{$mq-xxl-min};
+}
 
 // media devices
 @mixin xs {
-    @media screen and (max-width: #{$brk-xs-max}) {
+    @media screen and (max-width: #{$mq-xs-max}) {
         @content;
     }
 }
+
 @mixin sm {
-    @media screen and (min-width: #{$brk-sm-min}) and (max-width: #{$brk-sm-max}) {
+    @media screen and (min-width: #{$mq-sm-min}) and (max-width: #{$mq-sm-max}) {
         @content;
     }
 }
 
 @mixin md {
-    @media screen and (min-width: #{$brk-md-min}) and (max-width: #{$brk-md-max}) {
+    @media screen and (min-width: #{$mq-md-min}) and (max-width: #{$mq-md-max}) {
         @content;
     }
 }
 
 @mixin lg {
-    @media screen and (min-width: #{$brk-lg-min}) and (max-width: #{$brk-lg-max}) {
+    @media screen and (min-width: #{$mq-lg-min}) and (max-width: #{$mq-lg-max}) {
         @content;
     }
 }
 
 @mixin xl {
-    @media screen and (min-width: #{$brk-xl-min}) and (max-width: #{$brk-xl-max}) {
+    @media screen and (min-width: #{$mq-xl-min}) and (max-width: #{$mq-xl-max}) {
         @content;
     }
 }
 
 @mixin xxl {
-    @media screen and (min-width: #{$brk-xxl-min}) {
+    @media screen and (min-width: #{$mq-xxl-min}) {
         @content;
     }
 }
 
 // media lt queries
 @mixin lt-sm {
-    @media screen and (max-width: #{$brk-xs-max}) {
+    @media screen and (max-width: #{$mq-xs-max}) {
         @content;
     }
 }
 
 @mixin lt-md {
-    @media screen and (max-width: #{$brk-sm-max}) {
+    @media screen and (max-width: #{$mq-sm-max}) {
         @content;
     }
 }
 
 @mixin lt-lg {
-    @media screen and (max-width: #{$brk-md-max}) {
+    @media screen and (max-width: #{$mq-md-max}) {
         @content;
     }
 }
 
 @mixin lt-xl {
-    @media screen and (max-width: #{$brk-lg-max}) {
+    @media screen and (max-width: #{$mq-lg-max}) {
         @content;
     }
 }
 
 @mixin lt-xxl {
-    @media screen and (max-width: #{$brk-xl-max}) {
+    @media screen and (max-width: #{$mq-xl-max}) {
         @content;
     }
 }
 
 // media gt queries
 @mixin gt-xs {
-    @media screen and (min-width: #{$brk-sm-min}) {
+    @media screen and (min-width: #{$mq-sm-min}) {
         @content;
     }
 }
 
 @mixin gt-sm {
-    @media screen and (min-width: #{$brk-md-min}) {
+    @media screen and (min-width: #{$mq-md-min}) {
         @content;
     }
 }
 
 @mixin gt-md {
-    @media screen and (min-width: #{$brk-lg-min}) {
+    @media screen and (min-width: #{$mq-lg-min}) {
         @content;
     }
 }
 
 @mixin gt-lg {
-    @media screen and (min-width: #{$brk-xl-min}) {
+    @media screen and (min-width: #{$mq-xl-min}) {
         @content;
     }
 }
 
 @mixin gt-xl {
-    @media screen and (min-width: #{$brk-xxl-min}) {
+    @media screen and (min-width: #{$mq-xxl-min}) {
         @content;
     }
 }

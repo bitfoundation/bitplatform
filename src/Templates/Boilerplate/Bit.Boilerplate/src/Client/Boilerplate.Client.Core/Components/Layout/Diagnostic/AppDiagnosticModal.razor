@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitProModal @bind-IsOpen="isOpen"
+    <BitModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
               OnDismiss="() => searchText = null"
@@ -11,26 +11,16 @@
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
                 <BitSpacer />
                 <BitButton IconOnly
+                           Title="Close"
+                           AriaLabel="Close"
                            Color="BitColor.Info"
                            Variant="BitVariant.Text"
                            OnClick="() => isOpen = false"
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
 
-            <BitAccordion Title="Telemetry Context">
-                <BitButton IconOnly
-                           Color="BitColor.Info"
-                           OnClick="CopyTelemetry"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Copy" />
-                <BitScrollablePane>
-                    <BitStack>
-                        @foreach (var (key, value) in telemetryContext.ToDictionary())
-                        {
-                            <BitText NoWrap><b>@key</b>: @value</BitText>
-                        }
-                    </BitStack>
-                </BitScrollablePane>
+            <BitAccordion Title="Diagnostic">
+                <DiagnosticReport AutoRun="false" />
             </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
@@ -88,6 +78,8 @@
                            IconName="@BitIconName.Delete"
                            Color="BitColor.SecondaryBackground" />
 
+                @* Deliberately unwrapped: this button exists to prove the unhandled-exception path, so
+                   WrapHandled would defeat the only thing it does. *@
                 <BitButton IconOnly
                            Title="Throw test error"
                            OnClick="ThrowTestException"
@@ -95,61 +87,70 @@
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly AutoLoading
-                           Title="Call Diag API"
-                           OnClick="CallDiagnosticApi"
-                           Color="BitColor.SecondaryBackground"
-                           IconName="@BitIconName.DiagnosticDataViewerApp" />
-
-                <BitButton IconOnly AutoLoading
-                           OnClick="OpenDevTools"
                            Title="Open dev tools"
                            Color="BitColor.SecondaryBackground"
+                           OnClick="WrapHandled(OpenDevTools)"
                            IconName="@BitIconName.DeveloperTools" />
+
+                @*#if (api == "Integrated")*@
+                @if (AppPlatform.IsBlazorHybrid is false)
+                {
+                    <AuthorizeView Policy="@AppFeatures.System.Jobs_Manage">
+                        <BitButton IconOnly
+                                   AutoLoading
+                                   Title="Open Hangfire dashboard"
+                                   Color="BitColor.SecondaryBackground"
+                                   IconName="@BitIconName.RecurringTask"
+                                   OnClick="WrapHandled(OpenHangfireDashboard)" />
+                    </AuthorizeView>
+                }
+                @*#endif*@
 
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly
                                Title="Call GC"
-                               OnClick="CallGC"
                                IconName="@BitIconName.RecycleBin"
+                               OnClick="WrapHandled(CallGC)"
                                Color="BitColor.SecondaryBackground" />
                 }
 
                 <BitButton IconOnly
                            AutoLoading
                            Title="Clear app files"
-                           OnClick="ClearAppFiles"
                            IconName="@BitIconName.RemoveFrom"
+                           OnClick="WrapHandled(ClearAppFiles)"
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly
                            AutoLoading
                            Title="Update app"
-                           OnClick="UpdateApp"
                            IconName="@BitIconName.UpdateRestore"
+                           OnClick="WrapHandled(UpdateApp)"
                            Color="BitColor.SecondaryBackground" />
             </BitStack>
 
             <BitBasicList @ref="logStackRef"
+                          Virtualize
+                          ItemSize="32"
                           Style="height:unset"
-                          EnableVirtualization
-                          Items="filteredLogs.Indexed().ToArray()">
+                          Items="indexedFilteredLogs">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn.ToLocalTime()" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToLocalTime().ToString("HH:mm:ss")}]")</BitText>
+                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Copy"
-                                   OnClick="() => CopyLog(logIndex.item)" />
+                                   OnClick="WrapHandled(() => CopyLog(logIndex.item))" />
                         <BitButton IconOnly
                                    Title="Details"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.DiagnosticDataViewerApp"
-                                   OnClick="() => OpenLog(logIndex.item, logIndex.index)" />
+                                   OnClick="WrapHandled(() => OpenLog(logIndex.item, logIndex.index))" />
                         <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
                         <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
                     </BitStack>
@@ -158,16 +159,18 @@
         </BitStack>
 
         <BitButton IconOnly
-                   OnClick="GoTop"
+                   Title="Go to top"
+                   AriaLabel="Go to top"
                    Color="BitColor.Info"
                    Class="go-top-button"
                    Variant="BitVariant.Text"
+                   OnClick="WrapHandled(GoTop)"
                    IconName="@BitIconName.Up" />
-    </BitProModal>
+    </BitModal>
 
-    <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen" 
-                        OnNav="NavLog"
+    <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen"
+                        OnNav="WrapHandled((bool isNext) => NavLog(isNext))"
                         Content="@GetContent(selectedLog)"
-                        OnCopy="() => CopyLog(selectedLog)"
+                        OnCopy="WrapHandled(() => CopyLog(selectedLog))"
                         Color="GetColor(selectedLog?.Level)" />
 </div>

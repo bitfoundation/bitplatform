@@ -1,0 +1,213 @@
+﻿@page "/storage-manager"
+@inject Bit.Butil.StorageManager storageManager
+
+<PageTitle>StorageManager - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="StorageManager"
+            Lead="Quota, usage and persistence for everything the origin stores - localStorage, IndexedDB, CacheStorage and friends. Ask the browser how much room you have, how much you are using, and whether your data is safe from eviction."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager"
+            InjectAs="StorageManager storageManager" />
+
+<div class="stack">
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="navigator.storage requires a secure context (HTTPS or localhost) and is absent in some older or embedded browsers, so feature-detect before showing quota UI."
+                 Code=@("""
+@inject Bit.Butil.StorageManager storageManager
+
+if (await storageManager.IsSupported())
+{
+    // safe to query estimates and persistence
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Quota and usage estimate"
+                 Api="Estimate"
+                 Description="Estimate reports how many bytes the origin is currently using and roughly how many it may use in total, across all storage backends. The numbers are deliberately imprecise - browsers pad them to resist fingerprinting - but they are exactly what you need for a storage meter or a pre-download space check."
+                 Code=@("""
+var estimate = await storageManager.Estimate();
+
+// values in bytes; null when the runtime can't report them
+var usage = estimate.Usage;
+var quota = estimate.Quota;
+
+if (usage is not null && quota is not null)
+{
+    var percent = (double)usage.Value / quota.Value * 100;
+}
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="GetEstimate">Estimate</button>
+        </div>
+        <DemoConsole @ref="estimateOutput" Title="estimate output" />
+    </DemoSection>
+
+    <DemoSection Title="Is storage persistent?"
+                 Api="Persisted"
+                 Description="By default an origin's storage is best-effort: under disk pressure the browser may silently evict it. Persisted tells you which mode you are in - true means the data will survive until the user or the app explicitly deletes it."
+                 Code=@("""
+var persisted = await storageManager.Persisted();
+// false → best-effort storage, evictable under pressure
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="CheckPersisted">Persisted</button>
+        </div>
+        <DemoConsole @ref="persistedOutput" Title="persisted output" />
+    </DemoSection>
+
+    <DemoSection Title="Request persistence"
+                 Api="Persist"
+                 Description="Persist asks the browser to upgrade the origin to persistent storage. The user agent decides: Chromium grants silently based on engagement heuristics (bookmarks, install state, notification permission), Firefox prompts the user. A false result is normal for a site the user has barely interacted with - it is a request, not a command."
+                 Code=@("""
+var granted = await storageManager.Persist();
+
+if (granted)
+{
+    // storage will not be evicted under pressure
+}
+""")>
+        <div class="controls">
+            <button @onclick="RequestPersist">Persist</button>
+        </div>
+        <DemoConsole @ref="persistOutput" Title="persist output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="One quota for everything">
+    The estimate covers the origin's combined footprint: IndexedDB databases, CacheStorage caches,
+    service-worker registrations and Origin Private File System data all draw from the same budget.
+    Web Storage (<a href="storage">localStorage / sessionStorage</a>) has its own separate ~5&nbsp;MB
+    cap in most browsers.
+</Callout>
+
+<Callout Type="warning" Title="Estimates are estimates">
+    Browsers intentionally round and pad the reported values to prevent them being used as a
+    fingerprinting signal or an eviction oracle. Treat <code>Usage</code> and <code>Quota</code> as
+    order-of-magnitude guidance, not accounting-grade numbers - and both can be null when the runtime
+    cannot report them.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.storage." />
+    <ApiMember Name="Estimate"
+               Signature="ValueTask<StorageEstimate> Estimate()"
+               Description="Reports an estimate of the storage quota and current usage for the origin." />
+    <ApiMember Name="Persisted"
+               Signature="ValueTask<bool> Persisted()"
+               Description="True when the origin's storage is persistent (won't be evicted under pressure)." />
+    <ApiMember Name="Persist"
+               Signature="ValueTask<bool> Persist()"
+               Description="Asks the browser to make storage persistent. The user agent decides whether to grant." />
+    <ApiMember Name="StorageEstimate"
+               Signature="class StorageEstimate { long? Quota; long? Usage; }"
+               Description="Estimate payload. All values are in bytes; null when the runtime can't report them." />
+    <ApiMember Name="StorageEstimate.UsageDetails"
+               Signature="StorageUsageDetail[] UsageDetails { get; set; }"
+               Description="Per-API breakdown of Usage - which storage API holds the bytes (indexedDB, caches, serviceWorkerRegistrations, ...). Empty outside Chromium, so treat empty as unknown rather than as nothing stored." />
+    <ApiMember Name="StorageUsageDetail"
+               Signature="class StorageUsageDetail { string Api; long Bytes; }"
+               Description="One entry of the usage breakdown." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole estimateOutput = default!;
+    private DemoConsole persistedOutput = default!;
+    private DemoConsole persistOutput = default!;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported() →", await storageManager.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetEstimate()
+    {
+        try
+        {
+            var estimate = await storageManager.Estimate();
+            if (estimate.Usage is null || estimate.Quota is null or 0)
+            {
+                await estimateOutput.Warn($"Estimate() → usage: {FormatBytes(estimate.Usage)}, quota: {FormatBytes(estimate.Quota)}");
+                return;
+            }
+
+            var percent = (double)estimate.Usage.Value / estimate.Quota.Value * 100;
+            await estimateOutput.Success($"Estimate() → using {FormatBytes(estimate.Usage)} of {FormatBytes(estimate.Quota)} ({percent:0.###}%)");
+        }
+        catch (Exception ex)
+        {
+            await estimateOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CheckPersisted()
+    {
+        try
+        {
+            var persisted = await storageManager.Persisted();
+            if (persisted)
+            {
+                await persistedOutput.Success("Persisted() → true - storage won't be evicted under pressure.");
+            }
+            else
+            {
+                await persistedOutput.Warn("Persisted() → false - storage is best-effort and may be evicted.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await persistedOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RequestPersist()
+    {
+        try
+        {
+            var granted = await storageManager.Persist();
+            if (granted)
+            {
+                await persistOutput.Success("Persist() → true - the browser granted persistent storage.");
+            }
+            else
+            {
+                await persistOutput.Warn("Persist() → false - request denied (engagement heuristics not met, or user declined).");
+            }
+        }
+        catch (Exception ex)
+        {
+            await persistOutput.Error(ex.Message);
+        }
+    }
+
+    private static string FormatBytes(long? bytes)
+    {
+        if (bytes is null) return "(unknown)";
+
+        double value = bytes.Value;
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        var unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+
+        return $"{value:0.##} {units[unit]}";
+    }
+}

@@ -10,6 +10,7 @@ namespace Bit.Butil;
 /// Helpers for reading bytes/text out of a Blob or File reference. Use it together with an
 /// <c>&lt;input type="file"&gt;</c> element captured via <see cref="ElementReference"/>.
 /// </summary>
+[ButilService(typeof(FileReader))]
 public class FileReader(IJSRuntime js)
 {
     /// <summary>

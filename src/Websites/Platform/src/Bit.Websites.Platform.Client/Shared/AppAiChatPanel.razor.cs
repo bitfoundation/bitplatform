@@ -15,6 +15,7 @@ public partial class AppAiChatPanel
     private bool isLoading;
     private string? userInput;
     private bool isSmallScreen;
+    private bool isMaximized; // Widened to the whole viewport, and it outlives a close and a reopen the way a maximized window does.
     private int responseCounter;
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;
@@ -22,8 +23,28 @@ public partial class AppAiChatPanel
 
     private string AiChatPanelPrompt1 = "What does bitplatform MIT license mean? Is it free to use?";
     private string AiChatPanelPrompt2 = "What are the benefits of dedicated support?";
-    private string AiChatPanelPrompt3 = "What does bit Besql do?";
+    private string AiChatPanelPrompt3 = "What does bit Butil do?";
 
+    private Action? unsubscribeOpenPanel;
+
+
+    protected override async Task OnInitAsync()
+    {
+        unsubscribeOpenPanel = PubSubService.Subscribe(PubSubMessages.OPEN_AI_CHAT_PANEL, async payload =>
+        {
+            await InvokeAsync(() =>
+            {
+                isOpen = true;
+                if (payload is string question && string.IsNullOrWhiteSpace(question) is false)
+                {
+                    userInput = question;
+                }
+                StateHasChanged();
+            });
+        });
+
+        await base.OnInitAsync();
+    }
 
     protected override async Task OnAfterFirstRenderAsync()
     {
@@ -165,6 +186,7 @@ public partial class AppAiChatPanel
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        unsubscribeOpenPanel?.Invoke();
         hubConnection.Reconnected -= HubConnection_Reconnected;
 
         await StopChannel();

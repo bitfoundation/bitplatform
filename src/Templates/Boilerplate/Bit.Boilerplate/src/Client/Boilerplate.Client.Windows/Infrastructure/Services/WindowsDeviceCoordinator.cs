@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+// [mirror] IBitDeviceCoordinator - applying the theme to native chrome - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiDeviceCoordinator.cs
+
 using Boilerplate.Client.Core.Styles;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;

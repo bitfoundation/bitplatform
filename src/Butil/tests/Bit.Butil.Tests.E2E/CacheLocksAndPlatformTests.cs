@@ -1,0 +1,147 @@
+﻿using Bit.Butil.Tests.E2E.Infrastructure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Bit.Butil.Tests.E2E;
+
+[TestClass]
+public class CacheLocksAndPlatformTests : ButilObserversPageTest
+{
+    [TestMethod]
+    public async Task CacheStorage_PutText_Match_And_Delete_Roundtrips()
+    {
+        // Found=True, body="hello-cache", entry deleted=True.
+        await ClickAndExpectAsync("cache-roundtrip", "cache:roundtrip:True/hello-cache/True");
+    }
+
+    [TestMethod]
+    public async Task WebLocks_Run_Holds_The_Lock_While_Executing()
+    {
+        // The callback ran (True) and the lock manager reported the lock held (True) during it.
+        await ClickAndExpectAsync("lock-run", "lock:run:True/True");
+    }
+
+    [TestMethod]
+    public async Task ObjectUrls_Create_Returns_A_Blob_Url()
+    {
+        await ClickAndExpectAsync("objurl-create", "objurl:create:True");
+    }
+
+    [TestMethod]
+    public async Task CookieStore_Set_Get_Delete_Roundtrips()
+    {
+        // CookieStore is Chromium-only; the E2E suite runs on Chromium so the value round-trips.
+        await ClickAndExpectAsync("cookiestore-roundtrip", "cookiestore:get:csval");
+    }
+
+    [TestMethod]
+    public async Task Performance_GetEntries_Reports_Then_ClearMarks_Empties()
+    {
+        // entries.Length>0 after the mark, and 0 after ClearMarks.
+        await ClickAndExpectAsync("perf-entries", "perf:entries:True/True");
+    }
+
+    [TestMethod]
+    public async Task Navigator_Reports_Language_Cores_And_Online()
+    {
+        await ClickAndExpectAsync("nav-info", "nav:info:True");
+    }
+
+    [TestMethod]
+    public async Task UserAgent_Extract_Names_The_Running_Browser()
+    {
+        await ClickAndExpectAsync("ua-extract", "ua:extract:True");
+    }
+
+    [TestMethod]
+    public async Task UserAgent_Extract_Parses_A_String_It_Was_Given()
+    {
+        // A fixed iPhone string, so the expectation is the parse itself rather than whatever
+        // browser the suite happens to be running in.
+        await ClickAndExpectAsync("ua-extract-string", "ua:extract-string:Safari/18.2/WebKit/iOS/18.2/iPhone");
+    }
+
+    [TestMethod]
+    public async Task Screen_Reports_Positive_Metrics()
+    {
+        await ClickAndExpectAsync("screen-metrics", "screen:metrics:True");
+    }
+
+    /// <summary>
+    /// Where the Notifications API is missing, a bare <c>Notification</c> reference throws; the permission
+    /// reads have to report Denied instead. Removing the constructor stands in for such an engine.
+    /// </summary>
+    [TestMethod]
+    public async Task Notification_Permission_Reports_Denied_Without_The_Api()
+    {
+        await Page.EvaluateAsync("delete window.Notification");
+
+        await ClickAndExpectAsync("notification-missing", "notification:missing:False/Denied/Denied");
+    }
+
+    /// <summary>
+    /// An engine rejects an action name it does not know, so registering each newer action succeeding is
+    /// what proves the name sent for it is the spec's.
+    /// </summary>
+    [TestMethod]
+    public async Task MediaSession_Accepts_The_Slide_And_Picture_In_Picture_Actions()
+    {
+        await ClickAndExpectAsync("mediasession-actions", "mediasession:actions:True/True/True");
+    }
+
+    /// <summary>
+    /// The change event carries <c>screen.orientation.type</c>, a kebab-case keyword that has to be mapped
+    /// onto <c>ScreenOrientationType</c> - handed to System.Text.Json as-is it fails to deserialize,
+    /// and every event is dropped with nothing but a console error to show for it.
+    /// </summary>
+    [TestMethod]
+    public async Task ScreenOrientation_Change_Reports_The_New_Type_And_Angle()
+    {
+        await ClickAndExpectAsync("screen-orientation-watch", "screen:orientation-watching");
+
+        // Chromium-only, like the rest of the suite: DevTools rotates the emulated screen, which is
+        // what fires the change event on a headless desktop page.
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Emulation.setDeviceMetricsOverride", new Dictionary<string, object>
+        {
+            ["width"] = 400,
+            ["height"] = 800,
+            ["deviceScaleFactor"] = 1,
+            ["mobile"] = true,
+            ["screenOrientation"] = new Dictionary<string, object> { ["type"] = "portraitSecondary", ["angle"] = 180 },
+        });
+
+        await Microsoft.Playwright.Assertions.Expect(Page.Locator("#status"))
+            .ToContainTextAsync("screen:orientation-change:PortraitSecondary/180", new() { Timeout = 15_000 });
+    }
+
+    [TestMethod]
+    public async Task Identity_Support_Checks_All_Resolve()
+    {
+        // What is asserted is that every identity identifier resolves and answers with a bool -
+        // not which of them this engine implements, which would make the suite fail the day one
+        // more of them ships.
+        await ClickAndExpectAsync("identity-support", "identity:support:ok");
+    }
+
+    [TestMethod]
+    public async Task Identity_Silent_Get_And_Aborts_Are_Quiet()
+    {
+        // Nothing stored, so a silent get answers with no credential and shows no UI; and with no
+        // wait pending, both aborts report that there was nothing to abort.
+        await ClickAndExpectAsync("identity-quiet", "identity:quiet:none/False/False");
+    }
+
+    [TestMethod]
+    public async Task Commerce_Support_Checks_All_Resolve()
+    {
+        await ClickAndExpectAsync("commerce-support", "commerce:support:ok");
+    }
+
+    [TestMethod]
+    public async Task Commerce_Abort_And_Store_Queries_Answer_With_Nothing()
+    {
+        // No sheet was opened and a test browser is not an app installed from a store, so: nothing
+        // to abort, nothing consumed, no purchases.
+        await ClickAndExpectAsync("commerce-quiet", "commerce:quiet:False/False/0");
+    }
+}

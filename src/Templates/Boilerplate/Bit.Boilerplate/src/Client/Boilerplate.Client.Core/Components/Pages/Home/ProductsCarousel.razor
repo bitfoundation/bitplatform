@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-@if (carouselProducts is null)
+@if (isLoading)
 {
     <BitCard FullWidth>
         <BitStack HorizontalAlign="BitAlignment.Center">
@@ -18,10 +18,29 @@
         </BitStack>
     </BitCard>
 }
+else if (loadFailed)
+{
+    <BitCard FullWidth>
+        <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem">
+            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ProductsCouldNotBeLoaded)]</BitText>
+            <BitButton AutoLoading ButtonType="BitButtonType.Button" OnClick="WrapHandled(LoadAsync)">
+                @Localizer[nameof(AppStrings.TryAgain)]
+            </BitButton>
+        </BitStack>
+    </BitCard>
+}
+else if (carouselProducts?.Any() is not true)
+{
+    <BitCard FullWidth>
+        <BitStack HorizontalAlign="BitAlignment.Center">
+            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.NoProductsToShow)]</BitText>
+        </BitStack>
+    </BitCard>
+}
 else
 {
     <BitCard FullWidth Style="position:relative">
-        <BitCarousel @ref="carouselRef" Class="carousel" AutoPlay AutoPlayInterval="5000" HideNextPrev InfiniteScrolling>
+        <BitCarousel Class="carousel" AutoPlay AutoPlayInterval="5000" ShowPlayPause InfiniteScrolling>
             @foreach (var product in carouselProducts)
             {
                 <BitCarouselItem Style="width:100%">
@@ -43,17 +62,5 @@ else
                 </BitCarouselItem>
             }
         </BitCarousel>
-        <BitStack Horizontal FitSize Class="carousel-buttons">
-            <BitButton IconOnly 
-                       Size="BitSize.Small" 
-                       Color="BitColor.Tertiary" 
-                       OnClick="() => carouselRef.GoPrev()" 
-                       IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)" />
-            <BitButton IconOnly 
-                       Size="BitSize.Small" 
-                       Color="BitColor.Tertiary" 
-                       OnClick="() => carouselRef.GoNext()" 
-                       IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" />
-        </BitStack>
     </BitCard>
 }

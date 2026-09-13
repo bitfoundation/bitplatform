@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html bit-theme="dark">
+<!-- bit-theme-view-transition: theme toggles cross-fade via the View Transitions API
+     (skipped automatically on unsupported WebViews / prefers-reduced-motion).
+     bit-theme: the app dresses in Fluent 2 by default, same as the web host, and opens on its dark
+     scheme; the header's theme switcher takes it from there. -->
+<html bit-theme="fluent2-dark" bit-theme-light="fluent2-light" bit-theme-dark="fluent2-dark" bit-theme-view-transition>
 <head>
     <base href="/" />
     <meta charset="utf-8" />
@@ -8,8 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" as="image">
-    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/github-icon-dark.svg" as="image">
-    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/github-icon-light.svg" as="image">
+    <link rel="preload" href="_content/Bit.BlazorUI.Demo.Client.Core/images/github-mark.svg" as="image">
 
     <link rel="preload" href="_content/Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-bold.woff2" as="font" type="font/woff2" crossorigin>
@@ -20,6 +23,12 @@
 
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <!-- The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras as
+         override-only token bundles, so they must be linked after the core stylesheet that carries the
+         Fluent defaults. -->
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />

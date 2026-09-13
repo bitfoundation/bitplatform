@@ -30,6 +30,9 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private void Edit()
     {
+        if (State.ReadOnly)
+            return;
+
         _showEdit = true;
     }
 
@@ -48,6 +51,9 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private async Task Delete()
     {
+        if (State.ReadOnly)
+            return;
+
         // Guard against double invocation (rapid clicks / Enter while the async work is in flight):
         // keep the flag set through the notifier and OnClose so the delete only runs once.
         if (_isDeleting)

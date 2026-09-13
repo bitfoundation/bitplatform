@@ -1,0 +1,11 @@
+﻿@* The Modal's own unmatched attributes over the ones the cascaded parameters carry: "own" wins the key
+   both of them declare, and neither source loses the keys only it declares. *@
+<CascadingValue Value="ModalParameters">
+    <BitModal IsOpen data-own="yes" data-shared="own">
+        <div>Content</div>
+    </BitModal>
+</CascadingValue>
+
+@code {
+    [Parameter] public BitModalParameters? ModalParameters { get; set; }
+}

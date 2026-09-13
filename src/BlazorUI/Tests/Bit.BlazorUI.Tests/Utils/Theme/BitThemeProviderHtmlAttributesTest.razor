@@ -1,0 +1,14 @@
+@*
+    Test fixture for BitThemeProvider's [Parameter(CaptureUnmatchedValues = true)] AdditionalAttributes
+    pass-through. Uses the same convention as the other *HtmlAttributesTest fixtures in the test
+    project: a small Razor host that writes literal HTML attributes onto the component, which
+    bunit then renders and the test asserts on.
+*@
+
+<BitThemeProvider Theme="Theme" data-val-test="bit" class="branded">
+    <i></i>
+</BitThemeProvider>
+
+@code {
+    [Parameter] public BitTheme? Theme { get; set; }
+}

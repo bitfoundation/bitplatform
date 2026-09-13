@@ -57,6 +57,16 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Lettuce", Value = "v-let" }
     ];
 
+    private List<Product> GetAccentedCustoms() =>
+    [
+        new() { Text = "José", Value = "n-jos" },
+        new() { Text = "Renée", Value = "n-ren" },
+        new() { Text = "Müller", Value = "n-mul" },
+        new() { Text = "Ångström", Value = "n-ang" },
+        new() { Text = "Zoë", Value = "n-zoe" },
+        new() { Text = "Smith", Value = "n-smi" }
+    ];
+
     private List<Product> GetDataCustoms() =>
     [
         new() { Type = BitDropdownItemType.Header, Text = "Items", Payload = new DropdownItemData { IconName = "BulletedList2" } },
@@ -72,6 +82,7 @@ public partial class _BitDropdownCustomDemo
 
     private ICollection<Product>? virtualizeCustoms1;
     private ICollection<Product>? virtualizeCustoms2;
+    private ICollection<Product>? virtualizeCustoms3;
 
     private List<Product> GetExternalIconCustoms() =>
     [
@@ -158,17 +169,81 @@ public partial class _BitDropdownCustomDemo
 
 
 
+    private readonly List<Product> emptyCustoms = [];
+
+    private List<Product> GetGroupedCustoms() =>
+    [
+        new() { Text = "Fruits", Type = BitDropdownItemType.Header },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { Text = "Mango", Value = "f-man" },
+        new() { Text = "Peach", Value = "f-pea" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Vegetables", Type = BitDropdownItemType.Header },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" },
+        new() { Text = "Potato", Value = "v-pot" },
+        new() { Text = "Tomato", Value = "v-tom" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Grains", Type = BitDropdownItemType.Header },
+        new() { Text = "Barley", Value = "g-bar" },
+        new() { Text = "Oat", Value = "g-oat" },
+        new() { Text = "Rice", Value = "g-ric" },
+        new() { Text = "Wheat", Value = "g-whe" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Nuts", Type = BitDropdownItemType.Header },
+        new() { Text = "Almond", Value = "n-alm" },
+        new() { Text = "Cashew", Value = "n-cas" },
+        new() { Text = "Walnut", Value = "n-wal" }
+    ];
+
+    private List<Product> GetLocalizedCustoms() =>
+    [
+        new() { Text = "Früchte", Type = BitDropdownItemType.Header },
+        new() { Text = "Apfel", Value = "f-app" },
+        new() { Text = "Banane", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Traube", Value = "f-gra" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Gemüse", Type = BitDropdownItemType.Header },
+        new() { Text = "Brokkoli", Value = "v-bro" },
+        new() { Text = "Karotte", Value = "v-car" }
+    ];
+
+    private IEnumerable<string?> localizationValues = ["f-app", "f-ban", "v-bro"];
+
+    private IEnumerable<string?> selectAllValues = [];
+    private IEnumerable<string?> maxSelectedValues = [];
+
+    private bool isDropdownOpen;
+    private int selectItemCounter;
+
     private string controlledValue = "f-app";
-    private IEnumerable<string> controlledValues = ["f-app", "f-ban"];
+    private IEnumerable<string?> controlledValues = ["f-app", "f-ban"];
 
     private string? changedValue;
     private IEnumerable<string> changedValues = [];
 
     private Product? selectedItem1;
     private Product? selectedItem2;
+    private Product? pickedItem;
+    private Product? deselectedItem;
 
-    private string clearValue = "f-app";
-    private IEnumerable<string> clearValues = ["f-app", "f-ban"];
+    private string? clearValue = "f-app";
+    private IEnumerable<string?> clearValues = ["f-app", "f-ban"];
+    private int clearCounter;
+    private string? clearOnEscapeValue = "f-app";
+
+    private string calloutState = "closed";
+    private string focusState = "blurred";
+
+    private string? comparerValue = "F-APP";
+
+    private bool isLoadingItems;
+    private ICollection<Product> delayedCustoms = [];
 
     private string? immediateSearchValue;
     private string? debouncedSearchValue;
@@ -176,13 +251,25 @@ public partial class _BitDropdownCustomDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
+    private string? closeOnSelectValue;
+    private IEnumerable<string?> closeOnSelectValues = [];
+
+    private char[] tokenSeparators = [',', ';'];
+    private IEnumerable<string?> tokenSeparatorValues = [];
+
+    private string? openOnFocusValue;
+
+    private string? autoSelectValue;
+    private string? selectTextOnFocusValue;
+
     private string comboBoxValueSample1 = default!;
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private IEnumerable<string> comboBoxValues1 = [];
-    private IEnumerable<string> comboBoxValues2 = [];
-    private IEnumerable<string> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues1 = [];
+    private IEnumerable<string?> comboBoxValues2 = [];
+    private IEnumerable<string?> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues4 = [];
 
     private IEnumerable<Product> initialSelectedItem = [
         new()
@@ -228,11 +315,17 @@ public partial class _BitDropdownCustomDemo
 
     protected override void OnInitialized()
     {
+        // A list of its own per example: the items carry the selected state the dropdown writes back to
+        // them, so sharing one list would let each of these dropdowns overwrite the state of the others.
         virtualizeCustoms1 = Enumerable.Range(1, 10_000)
                                        .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
         virtualizeCustoms2 = Enumerable.Range(1, 10_000)
+                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
+                                       .ToArray();
+
+        virtualizeCustoms3 = Enumerable.Range(1, 10_000)
                                        .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
@@ -261,6 +354,25 @@ public partial class _BitDropdownCustomDemo
     private void HandleOnDynamicAdd(Product item)
     {
         comboBoxCustoms.Add(item);
+    }
+
+    private void HandleOnCalloutOpen() => calloutState = "opened";
+
+    private void HandleOnCalloutClose() => calloutState = "closed";
+
+    private void HandleOnFocusIn() => focusState = "focused";
+
+    private void HandleOnFocusOut() => focusState = "blurred";
+
+    private async Task LoadDelayedCustoms()
+    {
+        isLoadingItems = true;
+        delayedCustoms = [];
+
+        await Task.Delay(2000);
+
+        delayedCustoms = GetBasicCustoms();
+        isLoadingItems = false;
     }
 
     private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(

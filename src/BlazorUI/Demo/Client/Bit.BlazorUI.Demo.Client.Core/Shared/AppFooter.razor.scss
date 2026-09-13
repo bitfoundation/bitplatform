@@ -1,161 +1,134 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../Styles/abstracts/_docs.scss';
 
+// The site foot: a short statement of what this is, the four link columns a documentation site is
+// expected to carry, and one line of small print. It sits on the primary surface with a hairline
+// above it, which is the same boundary every other section of the site uses.
 .footer {
     width: 100%;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
     background-color: $bit-color-background-primary;
-}
+    border-top: rem2(1px) solid $bit-color-border-secondary;
 
-section {
-    width: 100%;
-    position: relative;
-    box-sizing: border-box;
-    max-width: rem2(1200px);
-    padding: rem2(100px) rem2(16px);
+    // Matches the header's ring; see the note there for why it is not declared globally.
+    @include doc-focusable-children;
 
-    &:first-child {
-        display: grid;
-        gap: rem2(40px);
-        align-items: center;
-        grid-auto-columns: 1fr;
-        grid-template-rows: auto;
-        grid-template-columns: 1fr 1fr;
-        justify-content: space-between;
-    }
-
-    &:last-child {
-        display: flex;
-        align-items: center;
-        padding: rem2(40px) rem2(20px);
-        justify-content: space-between;
-        border-top: rem2(1px) solid $bit-color-border-secondary;
-
-        @include sm {
-            align-items: center;
-            flex-flow: column nowrap;
-            justify-content: flex-start;
-        }
-    }
-
-    @include md {
-        padding-left: rem2(30px);
-        padding-right: rem2(30px);
+    a {
+        text-decoration: none;
     }
 }
 
-a {
-    text-decoration: none;
+.footer-inner {
+    margin-inline: auto;
+    max-width: var(--demo-content-width);
+    padding: $doc-space-2xl $doc-space-md $doc-space-md;
+
+    @include sm {
+        padding: $doc-space-xl $doc-space-sm $doc-space-sm;
+    }
 }
 
-.links-container {
-    gap: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+// The pitch column is given twice the width of a link column so its paragraph keeps a readable
+// measure instead of breaking every four words.
+.footer-main {
+    display: grid;
+    gap: $doc-space-xl;
+    grid-template-columns: 2fr 3fr;
+
+    @include lt-lg {
+        gap: $doc-space-lg;
+        grid-template-columns: 1fr;
+    }
 }
 
-.column {
-    height: 100%;
-    display: flex;
-    align-items: flex-start;
-    flex-flow: column nowrap;
-    justify-content: flex-start;
-}
-
-.bit-logo {
-    width: rem2(32px);
-    height: rem2(27px);
-    margin-bottom: rem2(20px);
+.footer-logo {
+    display: block;
+    width: rem2(36px);
+    height: rem2(36px);
     background-size: contain;
-    background-position: center;
+    background-position: left center;
     background-repeat: no-repeat;
-    background-image: url('images/bit-logo.svg');
 }
 
-.go-to-top {
-    bottom: 0;
-    cursor: pointer;
-    right: rem2(2px);
-    position: absolute;
-    padding: rem2(8px) rem2(12px);
-    background-color: $bit-color-background-secondary;
+.footer-pitch {
+    max-width: rem2(360px);
+    margin-block: $doc-space-sm;
+}
+
+:root[bit-theme$='dark'] .footer-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([bit-theme$='dark']) .footer-logo {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+.footer-links {
+    display: grid;
+    gap: $doc-space-lg;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    @include lt-lg {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include xs {
+        grid-template-columns: 1fr;
+    }
+}
+
+.footer-col {
+    display: flex;
+    min-width: 0;
+    gap: $doc-space-2xs;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
+
+.footer-col-title {
+    margin: 0 0 $doc-space-3xs;
+    @include doc-eyebrow;
+}
+
+.footer-address,
+.footer-tel {
+    line-height: 1.6;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
 
     &:hover {
-        background-color: $bit-color-background-secondary-hover;
-    }
-}
-
-.address-info {
-    display: flex;
-    gap: rem2(3px);
-    flex-flow: column nowrap;
-
-    @include sm {
-        margin-bottom: rem2(30px);
-    }
-
-    .address, .tel, .country {
-        padding-left: rem2(20px);
-        background-repeat: no-repeat;
-        background-position-y: rem2(4px);
-    }
-
-    .address, .tel {
         color: $bit-color-primary;
-
-        &:hover {
-            color: $bit-color-primary-hover;
-        }
-    }
-
-    .address {
-        background-image: url('images/footer/location-icon.svg');
-    }
-
-    .country {
-        /*font-weight: 600;*/
-    }
-
-    .tel {
-        background-image: url('images/footer/tel-icon.svg');
     }
 }
 
-.copy-right-txt {
-    line-height: 1.5;
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: rem2(14px);
-    margin-top: rem2(16px);
-}
-
-.social-link-group {
+.footer-bottom {
     display: flex;
+    flex-wrap: wrap;
+    gap: $doc-space-2xs;
     align-items: center;
-    flex-flow: row nowrap;
-    justify-content: center;
+    margin-top: $doc-space-xl;
+    padding-top: $doc-space-sm;
+    justify-content: space-between;
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+}
 
-    @include sm {
-        margin-bottom: rem2(8px);
+// The link columns and the social row are BitStacks and BitLinks; their leftovers live in ::deep
+// because those components' root elements do not carry this file's scope attribute.
+::deep {
+    .social-link-group {
+        gap: $doc-space-2xs;
     }
 
-
+    // Neutral at rest so four saturated discs do not shout from the foot of every page; each one
+    // takes its own brand color only when the pointer is actually on it, which is the moment the
+    // color is doing identification work.
     .social-link {
-        cursor: pointer;
         width: rem2(32px);
         height: rem2(32px);
-        margin: 0 rem2(10);
         border-radius: 50%;
-        background-color: #888;
-        background-size: rem2(18px);
+        background-size: rem2(16px);
         background-position: center;
         background-repeat: no-repeat;
+        background-color: $bit-color-foreground-tertiary;
+        transition: background-color $bit-motion-duration $bit-motion-easing;
     }
 
     .twitter-link {
@@ -170,7 +143,7 @@ a {
         background-image: url('images/footer/github-icon.svg');
 
         &:hover {
-            background-color: #000;
+            background-color: #24292F;
         }
     }
 
@@ -187,6 +160,16 @@ a {
 
         &:hover {
             background-color: #0077B5;
+        }
+    }
+
+    .footer-col .bit-lnk {
+        line-height: 1.6;
+        font-size: $bit-typography-fs-xs;
+        color: $bit-color-foreground-secondary;
+
+        &:hover {
+            color: $bit-color-primary;
         }
     }
 }

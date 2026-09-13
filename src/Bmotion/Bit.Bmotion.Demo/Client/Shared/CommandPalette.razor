@@ -1,0 +1,200 @@
+﻿@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+@* Every page of the docs, one keystroke away.
+
+   It searches the same NavItem list the nav panel renders, so a page is findable here for having
+   a nav entry rather than for being added to a second index that could fall behind it - and it
+   searches each entry's keywords as well as its title, because a reader looking for "stagger" or
+   "elastic" is naming the feature, not the page it happens to live on.
+
+   The keyboard is handled in js/demo.js rather than here. A Blazor @onkeydown handler cannot
+   decide per-event whether to preventDefault, so arrow keys either scroll the palette's own list
+   twice or the typed characters never reach the input; the listener there suppresses exactly the
+   four keys this dialog owns and leaves every other key alone. *@
+
+@if (IsOpen)
+{
+    <div class="palette-backdrop" @onclick="CloseAsync"></div>
+
+    <div class="palette" role="dialog" aria-modal="true" aria-label="Search the documentation">
+        <div class="palette-field">
+            <Icon Path="@Icons.Search" />
+            <input id="palette-input" type="text" autocomplete="off" spellcheck="false"
+                   role="combobox" aria-expanded="true" aria-controls="palette-results"
+                   aria-activedescendant="@(_matches.Length > 0 ? ItemId(_active) : null)"
+                   aria-label="Search the documentation"
+                   placeholder="Search pages, features, keywords..."
+                   value="@_term" @oninput="OnInput" />
+            <button type="button" class="icon-btn" @onclick="CloseAsync" aria-label="Close search">
+                <Icon Path="@Icons.Close" />
+            </button>
+        </div>
+
+        @if (_matches.Length == 0)
+        {
+            <p class="palette-empty" role="status">No page matches &ldquo;@_term&rdquo;.</p>
+        }
+        else
+        {
+            <ul class="palette-results" id="palette-results" role="listbox" aria-label="Results">
+                @{
+                    var index = 0;
+                    string? group = null;
+                }
+                @foreach (var item in _matches)
+                {
+                    @* The results stay grouped while nothing has been typed, so an empty palette
+                       reads as the table of contents it is. Once there is a term, the ranking is
+                       what matters and the group headings would only break it up. *@
+                    if (_term.Length == 0 && item.Category != group)
+                    {
+                        group = item.Category;
+                        <li class="palette-group" role="presentation">
+                            <Icon Path="@item.Icon" />
+                            @group
+                        </li>
+                    }
+
+                    var i = index++;
+                    <li class="palette-item @(i == _active ? "active" : null)"
+                        id="@ItemId(i)" role="option" aria-selected="@(i == _active)">
+                        <a href="@item.Url" tabindex="-1" @onclick="() => GoAsync(item)" @onclick:preventDefault>
+                            <span class="palette-title">@item.Title</span>
+                            <span class="palette-desc">@item.Description</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
+        <div class="palette-footer">
+            <span><span class="kbd">&uarr;</span><span class="kbd">&darr;</span> to move</span>
+            <span><span class="kbd">Enter</span> to open</span>
+            <span><span class="kbd">Esc</span> to close</span>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Whether the dialog is on screen. The layout owns it, because the header opens it.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Raised when the palette closes itself - by Escape, by the backdrop or by a result.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string _term = "";
+    private int _active;
+    private bool _wasOpen;
+    private NavItem[] _matches = NavItem.Docs;
+    private DotNetObjectReference<CommandPalette>? _selfRef;
+
+    private static string ItemId(int index) => $"palette-item-{index}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen == _wasOpen) return;
+
+        _wasOpen = IsOpen;
+
+        if (IsOpen)
+        {
+            // A palette that reopens holding the last search would show the reader results for a
+            // question they have already answered.
+            _term = "";
+            _active = 0;
+            _matches = NavItem.Docs;
+        }
+
+        try
+        {
+            _selfRef ??= DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("bmSetPaletteOpen", IsOpen, _selfRef);
+        }
+        catch
+        {
+            // Prerendering has no JS runtime, and the palette cannot be open there anyway: it is
+            // only ever opened from a click or a key, both of which need the runtime to have
+            // booted. Without the call the dialog still works from the pointer alone.
+        }
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _term = e.Value?.ToString()?.Trim() ?? "";
+        _matches = _term.Length == 0
+            ? NavItem.Docs
+            : [.. NavItem.Docs.Where(item => item.Matches(_term))];
+
+        // The selection always lands on the first result of the new set: keeping the old index
+        // would leave it pointing at whatever now happens to be in that position.
+        _active = 0;
+    }
+
+    /// <summary>
+    /// One of the four keys the dialog owns, forwarded by the listener in js/demo.js. Anything
+    /// else never reaches here and goes to the input, which is where typing belongs.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnPaletteKey(string key)
+    {
+        switch (key)
+        {
+            case "down" when _matches.Length > 0:
+                _active = (_active + 1) % _matches.Length;
+                break;
+
+            case "up" when _matches.Length > 0:
+                _active = (_active - 1 + _matches.Length) % _matches.Length;
+                break;
+
+            case "enter" when _matches.Length > 0:
+                await GoAsync(_matches[_active]);
+                return;
+
+            case "close":
+                await CloseAsync();
+                return;
+
+            default:
+                return;
+        }
+
+        StateHasChanged();
+
+        try
+        {
+            // The selection can move past either end of the visible list, and a selection nobody
+            // can see is the same as no selection at all.
+            await JS.InvokeVoidAsync("bmScrollPaletteActive");
+        }
+        catch
+        {
+            // Only the scroll is lost; the selection itself is still marked in the markup.
+        }
+    }
+
+    private async Task GoAsync(NavItem item)
+    {
+        await CloseAsync();
+        Nav.NavigateTo(item.Url);
+    }
+
+    private Task CloseAsync() => OnClose.InvokeAsync();
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmSetPaletteOpen", false, null);
+        }
+        catch
+        {
+            // Disposal races the page going away, and never has a JS runtime while prerendering;
+            // the listener it would remove dies with the document either way.
+        }
+
+        _selfRef?.Dispose();
+    }
+}

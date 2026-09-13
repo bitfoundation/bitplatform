@@ -134,15 +134,27 @@ public sealed class BmotionInterop : IBmotionInterop
     // ── FLIP layout ───────────────────────────────────────────────────────────
 
     /// <summary>Returns the element's current bounding rect (for C# FLIP delta computation).</summary>
-    public async ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId)
-        => await (await Module()).InvokeAsync<BmotionBoundingRect?>("getBoundingRect", elementId);
+    public async ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(
+        string elementId, BmotionMeasureOptions options = default)
+        // The default measurement sends no options object at all, so the overwhelmingly common
+        // FLIP path marshals exactly what it always did.
+        => options.IsDefault
+            ? await (await Module()).InvokeAsync<BmotionBoundingRect?>("getBoundingRect", elementId)
+            : await (await Module()).InvokeAsync<BmotionBoundingRect?>("getBoundingRect", elementId,
+                new Dictionary<string, object?>
+                {
+                    ["trackScroll"] = options.TrackScroll,
+                    ["fixedRoot"] = options.FixedRoot,
+                });
 
     /// <summary>Run a FLIP animation via the Web Animations API.</summary>
-    public async ValueTask PlayWaapiFlipAsync(
+    public async ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
         string elementId, double dx, double dy, double sx, double sy,
-        double durationMs, string easingStr, string? finalTransform)
+        double durationMs, string easingStr, string? finalTransform,
+        double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
         => await (await Module()).InvokeVoidAsync(
-            "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform);
+            "playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform,
+            originX, originY, dotnetRef);
 
     // ── WAAPI compositor offload ──────────────────────────────────────────────
 
@@ -163,6 +175,25 @@ public sealed class BmotionInterop : IBmotionInterop
     {
         if (!_moduleTask.IsValueCreated) return;
         await (await Module()).InvokeVoidAsync("cancelWaapiAnimation", elementId, token, commit);
+    }
+
+    // ── Scroll-driven timelines ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Plays a pre-sampled animation progressed by scroll position. Returns <c>true</c> when a
+    /// native scroll timeline drove it, <c>false</c> when the scroll-scrub fallback did, and
+    /// <c>null</c> when it could not start at all.
+    /// </summary>
+    public async ValueTask<bool?> PlayScrollTimelineAsync(
+        string elementId, int token, object keyframes, object timeline)
+        => await (await Module()).InvokeAsync<bool?>(
+            "playScrollTimelineAnimation", elementId, token, keyframes, timeline);
+
+    /// <summary>Stops a scroll-driven animation and releases any scroll listener behind it.</summary>
+    public async ValueTask CancelScrollTimelineAsync(string elementId, int token)
+    {
+        if (!_moduleTask.IsValueCreated) return;
+        await (await Module()).InvokeVoidAsync("cancelScrollTimelineAnimation", elementId, token);
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────

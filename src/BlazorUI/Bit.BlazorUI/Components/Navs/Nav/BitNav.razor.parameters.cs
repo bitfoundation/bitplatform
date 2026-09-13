@@ -9,7 +9,9 @@ public partial class BitNav<TItem>
     public BitColor? Accent { get; set; }
 
     /// <summary>
-    /// Expands all items on first render.
+    /// Expands all items when they are first rendered. Items that arrive later (a collection loaded from a
+    /// service, for instance) are expanded as they arrive, while the items already on screen keep whatever
+    /// the user has expanded or collapsed in the meantime.
     /// </summary>
     [Parameter] public bool AllExpanded { get; set; }
 
@@ -29,14 +31,19 @@ public partial class BitNav<TItem>
     /// <summary>
     /// Items to render as children.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the nav.
     /// </summary>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The default aria-label of the expand/collapse button of an expanded item.
+    /// The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided
+    /// the text of the item is used, so the button is never left without an accessible name.
+    /// </summary>
+    [Parameter] public string? CollapseAriaLabel { get; set; }
 
     /// <summary>
     /// The general color of the nav that is only used for colored parts like icons.
@@ -48,6 +55,13 @@ public partial class BitNav<TItem>
     /// The initially selected item in manual mode.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// The default aria-label of the expand/collapse button of a collapsed item.
+    /// The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided
+    /// the text of the item is used, so the button is never left without an accessible name.
+    /// </summary>
+    [Parameter] public string? ExpandAriaLabel { get; set; }
 
     /// <summary>
     /// Renders the nav in a width to only fit its content.
@@ -95,9 +109,7 @@ public partial class BitNav<TItem>
     /// <summary>
     /// A collection of items to display in the BitNav component.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(OnSetParameters))]
-    public IList<TItem> Items { get; set; } = [];
+    [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
     /// Used to customize how content inside the item is rendered.
@@ -111,14 +123,18 @@ public partial class BitNav<TItem>
 
     /// <summary>
     /// Gets or sets a value representing the global URL matching behavior of the nav.
+    /// The Match of an item takes precedence over this value, and when neither is provided the URL of an
+    /// item has to match the current one exactly.
     /// </summary>
-    [Parameter] public BitNavMatch? Match { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnUrlMatchingChanged))]
+    public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Determines how the navigation will be handled.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetMode))]
+    [CallOnSet(nameof(OnUrlMatchingChanged))]
     public BitNavMode Mode { get; set; }
 
     /// <summary>
@@ -172,6 +188,12 @@ public partial class BitNav<TItem>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
+
+    /// <summary>
+    /// The size of the nav items.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Enables the single-expand mode in the BitNav.

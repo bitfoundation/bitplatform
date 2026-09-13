@@ -9,7 +9,7 @@ public partial class BitCheckboxDemo
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the checkbox for the benefit of screen readers.",
+            Description = "Detailed description of the checkbox for the benefit of screen readers, rendered as a visually hidden element that the checkbox input points to via aria-describedby.",
         },
         new()
         {
@@ -31,6 +31,13 @@ public partial class BitCheckboxDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "The total size of the parent set (if in a set) for aria-setsize.",
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the checkbox input automatically receives focus when the page renders.",
         },
         new()
         {
@@ -87,10 +94,31 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "DefaultValue",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "The default value of the checkbox to be used in uncontrolled mode (i.e. when the Value is not bound).",
+        },
+        new()
+        {
             Name = "Indeterminate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "An indeterminate visual state for checkbox. Setting indeterminate state takes visual precedence over checked given but does not affect on Value state.",
+            Description = "An indeterminate visual state for checkbox. The indeterminate state takes visual precedence over the checked state but does not affect the Value.",
+        },
+        new()
+        {
+            Name = "IndeterminateIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to render in the indeterminate state using custom CSS classes for external icon libraries, replacing the default filled square. Takes precedence over IndeterminateIconName when both are set.",
+        },
+        new()
+        {
+            Name = "IndeterminateIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in icon to render in the indeterminate state, replacing the default filled square.",
         },
         new()
         {
@@ -98,6 +126,15 @@ public partial class BitCheckboxDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Descriptive label for the checkbox.",
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
         },
         new()
         {
@@ -115,9 +152,37 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "OnChange",
+            Type = "EventCallback<bool>",
+            Description = "Callback for when the checkbox value changes, once the new state is committed.",
+        },
+        new()
+        {
+            Name = "OnChanging",
+            Type = "EventCallback<BitCheckboxChangeArgs>",
+            Description = "Callback invoked before the state of the checkbox changes, letting the change be cancelled by setting Cancel on its arguments.",
+            LinkType = LinkType.Link,
+            Href = "#change-args",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback<MouseEventArgs>",
             Description = "Callback for when the checkbox clicked.",
+        },
+        new()
+        {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the checkbox read-only: it stays focusable and gets announced by screen readers, but user interaction no longer changes its state.",
+        },
+        new()
+        {
+            Name = "Required",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the checkbox required, rendering the native required attribute on its input and an asterisk next to its label.",
         },
         new()
         {
@@ -137,6 +202,13 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the click event from bubbling up to the parent elements.",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitCheckboxClassStyles?",
             DefaultValue = "null",
@@ -146,10 +218,31 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "ThreeState",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables cycling through the unchecked, checked and indeterminate states on each click, instead of the indeterminate state being reachable only programmatically.",
+        },
+        new()
+        {
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Title text applied to the root element and the hidden checkbox input.",
+            Description = "Title text applied to the label container of the checkbox.",
+        },
+        new()
+        {
+            Name = "UncheckedIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to render in the unchecked state using custom CSS classes for external icon libraries. Takes precedence over UncheckedIconName when both are set.",
+        },
+        new()
+        {
+            Name = "UncheckedIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in icon to render in the unchecked state. By default the unchecked box is empty and previews the check icon on hover.",
         }
     ];
 
@@ -184,6 +277,13 @@ public partial class BitCheckboxDemo
                },
                new()
                {
+                   Name = "Indeterminate",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the indeterminate state of the BitCheckbox."
+               },
+               new()
+               {
                    Name = "Box",
                    Type = "string?",
                    DefaultValue = "null",
@@ -204,38 +304,41 @@ public partial class BitCheckboxDemo
                    Description = "Custom CSS classes/styles for the label of the BitCheckbox."
                }
             ]
+        },
+        new()
+        {
+            Id = "change-args",
+            Title = "BitCheckboxChangeArgs",
+            Description = "The arguments of the OnChanging callback of the BitCheckbox.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Value",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "The checked state the checkbox is about to move to.",
+                },
+                new()
+                {
+                    Name = "Indeterminate",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "The indeterminate state the checkbox is about to move to.",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the change and keep the current state of the checkbox.",
+                }
+            ]
         }
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="Fill styled variant.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="Outline styled variant.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="Text styled variant.",
-                    Value="2",
-                }
-            ]
-        },
         new()
         {
             Id = "color-enum",
@@ -349,6 +452,39 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "The position of the label in regards to the checkbox box.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the checkbox.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The label shows on the end of the checkbox.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the checkbox.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The label shows on the start of the checkbox.",
+                    Value="3",
+                }
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "",
@@ -378,18 +514,69 @@ public partial class BitCheckboxDemo
 
 
 
+    private bool apple;
+    private bool banana;
+    private bool orange;
+    private bool selectAll;
+    private bool selectAllIndeterminate;
+
+    private bool threeStateValue;
+    private bool threeStateIndeterminate;
+
     private bool oneWayValue;
     private bool twoWayValue;
     private bool oneWayIndeterminate = true;
     private bool twoWayIndeterminate = true;
+
+    private string eventsLog = string.Empty;
+    private int cancelledCounter;
+    private int containerClickCounter;
+    private bool allowChange;
+
+    private bool readOnlyValue;
 
     private bool customCheckboxValue;
 
     private bool customContentValue;
     private bool customContentIndeterminate = true;
 
+    private BitCheckbox checkboxRef = default!;
+
     private string SuccessMessage = string.Empty;
     private BitCheckboxValidationModel validationModel = new();
+
+
+
+    private void HandleSelectAllChange(bool value)
+    {
+        selectAll = value;
+        selectAllIndeterminate = false;
+        apple = banana = orange = value;
+    }
+
+    private void RefreshSelectAll()
+    {
+        var checkedCount = (apple ? 1 : 0) + (banana ? 1 : 0) + (orange ? 1 : 0);
+
+        selectAll = checkedCount == 3;
+        selectAllIndeterminate = checkedCount is > 0 and < 3;
+    }
+
+    private void LogOnClick() => eventsLog = "OnClick";
+
+    private void LogOnChanging(BitCheckboxChangeArgs args) => eventsLog += $" → OnChanging({args.Value})";
+
+    private void LogOnChange(bool value) => eventsLog += $" → OnChange({value})";
+
+    private void HandleOnChanging(BitCheckboxChangeArgs args)
+    {
+        if (allowChange) return;
+
+        args.Cancel = true;
+        cancelledCounter++;
+    }
+
+    private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();
 
     private async Task HandleValidSubmit()
     {

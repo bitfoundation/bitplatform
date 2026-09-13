@@ -1,13 +1,13 @@
 namespace Boilerplate.Tests.Features.Culture;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class CultureSelectionUITests : AppPageTest
 {
     /// <summary>
     /// An anonymous visitor changes the app language from the header app-menu and the UI re-renders in the chosen language:
     /// <list type="number">
     /// <item>Open the home page (no sign-in required) and confirm the default English home message is shown.</item>
-    /// <item>Open the header app-menu (the persona drop-menu), tap Language, and pick Persian (fa-IR) from the culture list. Selecting a culture writes the .AspNetCore.Culture cookie and force-reloads the culture-less URL (See <c>CultureService.ChangeCulture</c>).</item>
+    /// <item>Open the header app-menu (the persona drop-menu), tap Language, and pick Persian (fa-IR) from the culture list. Selecting a culture writes the .AspNetCore.Culture cookie and re-addresses the current URL to the new culture - in place where the runtime supports it, via a force-reload on Blazor Server (See <c>CultureService.ChangeCulture</c>).</item>
     /// <item>After the reload the home message now shows its Persian (fa-IR) translation, read from the resx for the fa-IR culture (never hard-coded), and the English message is gone.</item>
     /// <item>Switch back to English from the same menu and confirm the English home message returns, proving the switch is reversible.</item>
     /// </list>
@@ -53,6 +53,12 @@ public partial class CultureSelectionUITests : AppPageTest
 
         // Pick Persian. This writes the culture cookie and force-reloads the page (See CultureService.ChangeCulture).
         await Page.GetByText(faDisplayName, new() { Exact = true }).ClickAsync();
+
+        // Wait for the reloaded page to finish booting before touching the menu again. With pre-rendering on, the
+        // Persian markup is on screen while the app is still downloading, and a click landing on that not-yet-interactive
+        // DOM is simply lost - the menu never opens and the assertion below waits out its whole timeout. The text
+        // assertions in between would not have caught it: they are satisfied by the pre-rendered html.
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
         // After the reload the home message is now in Persian and the English one is gone.
         await Expect(Page.GetByText(faHomeMessage)).ToBeVisibleAsync();

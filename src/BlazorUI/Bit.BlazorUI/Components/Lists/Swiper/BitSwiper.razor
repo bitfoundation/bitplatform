@@ -1,42 +1,111 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onpointerdown:preventDefault @onpointerup="HandlePointerUp" @onpointermove="HandlePointerMove" @onpointerdown="HandlePointerDown"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="region"
+     aria-roledescription="carousel"
+     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@base.Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
+     @onkeydown="HandleKeyDown"
+     @onfocusin="HandleFocusIn"
+     @onfocusout="HandleFocusOut"
+     @onmouseenter="HandleMouseEnter"
+     @onmouseleave="HandleMouseLeave">
 
-    <div @ref="_swiperContainer"
-         class="bit-swp-cnt"
-         style="@_directionStyle">
-        <CascadingValue Value="this" IsFixed="true">
-            @ChildContent
-        </CascadingValue>
-    </div>
-
-    @if (HideNextPrev is false)
+    @* The controls are rendered before the items so the play/pause button is the first thing the keyboard
+       reaches, which is what the carousel pattern of the ARIA authoring practices asks of anything that
+       moves on its own: the motion can be stopped before anything else is dealt with. The stylesheet puts
+       the row back below the items, so nothing about the way the swiper looks changes with it. *@
+    @if ((ShowDots && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
-        var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? "ChevronRight");
-        var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? "ChevronRight bit-ico-r180");
-
-        <div class="bit-swp-rbt" @onclick="async() => await Go(true)" style="@_rightButtonStyle" @onpointerdown:stopPropagation>
-            <i class="@nextIcon?.GetCssClasses()" />
-        </div>
-
-        <div class="bit-swp-lbt" @onclick="async () => await Go(false)" style="@_leftButtonStyle" @onpointerdown:stopPropagation>
-            <i class="@prevIcon?.GetCssClasses()" />
+        <div class="bit-swp-dcn @Classes?.DotsContainer"
+             style="@_directionStyle @Styles?.DotsContainer">
+            @if (AutoPlay && ShowPlayPause)
+            {
+                var playPauseIcon = IsPaused
+                                    ? BitIconInfo.From(PlayIcon, PlayIconName ?? "Play")
+                                    : BitIconInfo.From(PauseIcon, PauseIconName ?? "Pause");
+                <button @onclick="TogglePlay"
+                        type="button"
+                        aria-controls="@_ContainerId"
+                        aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
+                        disabled="@(IsEnabled is false)"
+                        class="bit-swp-ppb @Classes?.PlayPauseButton"
+                        style="@Styles?.PlayPauseButton">
+                    <i aria-hidden="true"
+                       style="@Styles?.PlayPauseButtonIcon"
+                       class="@playPauseIcon?.GetCssClasses() @Classes?.PlayPauseButtonIcon" />
+                </button>
+            }
+            @if (ShowDots && _pagesCount > 1)
+            {
+                @* The group holds the dots alone (not the play/pause button), so its accessible label
+                   describes exactly what it contains. *@
+                <div role="group" aria-label="@DotsAriaLabel" class="bit-swp-dts">
+                    @for (int i = 0; i < _pagesCount; i++)
+                    {
+                        int index = i;
+                        <button @onclick="() => HandleGoToPage(index)"
+                                type="button"
+                                aria-controls="@_ContainerId"
+                                aria-label="@($"{DotAriaLabel} {index + 1}")"
+                                aria-current="@(_page == index ? "true" : null)"
+                                disabled="@(IsEnabled is false)"
+                                style="@Styles?.Dots @(_page == index ? Styles?.CurrentDot : null)"
+                                class="bit-swp-dot @(DotTemplate is null ? null : "bit-swp-dtt") @((_page == index ? $"bit-swp-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
+                    }
+                </div>
+            }
         </div>
     }
 
-    @*@if (HideDots is false)
-    {
-        <div class="bit-swp-dot" style="@_directionStyle">
-            @for (int i = 0; i < _pagesCount; i++)
-            {
-                int index = i;
-                <div class="@(_currentPage == index ? " current" : null)" @onclick="(() => GotoPage(index))"></div>
-            }
+    @* The buttons sit next to the scrolling box rather than inside it, so they stay in place while the
+       items travel under them. *@
+    <div class="bit-swp-vwp">
+        @if (HideNextPrev is false)
+        {
+            var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? GetDefaultNextIconName());
+            var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? GetDefaultPrevIconName());
+
+            @* The previous button is rendered first, so the keyboard reaches the two of them in the order
+               they move the swiper in. They are placed by the stylesheet, so their order costs nothing
+               visually. *@
+            <button @onclick="HandleGoPrev"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-swp-lbt @Classes?.Buttons @Classes?.PrevButton"
+                    style="@_prevButtonStyle @Styles?.Buttons @Styles?.PrevButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.PrevButtonIcon"
+                   class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
+            </button>
+
+            <button @onclick="HandleGoNext"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
+                    style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.NextButtonIcon"
+                   class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
+            </button>
+        }
+
+        <div @ref="_swiperContainer"
+             id="@_ContainerId"
+             class="bit-swp-cnt @Classes?.Container"
+             style="@_directionStyle @Styles?.Container">
+            <CascadingValue Value="this" IsFixed="true">
+                @ChildContent
+            </CascadingValue>
         </div>
-    }*@
+    </div>
 </div>

@@ -1,5 +1,3 @@
-using Boilerplate.Server.Api.Features.Identity.Models;
-
 namespace Boilerplate.Server.Api.Features.Tenants;
 
 /// <summary>

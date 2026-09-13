@@ -2,8 +2,8 @@
 @inherits AppComponentBase
 
 <PageOutlet Url="contact-us"
-            Title="Contact"
-            Description="contact the bit platform" />
+            Title="Contact us"
+            Description="Get in touch with the bit platform team for questions, feedback, or project inquiries." />
 
 <div class="page-container">
     <section class="page-section">
@@ -45,6 +45,13 @@
                                   Placeholder="Enter your message" />
                     <ValidationMessage For="() => contactUsModel.Message" />
 
+                    @if (isSent)
+                    {
+                        <BitMessage Color="BitColor.Success" Class="contact-success-message">
+                            Thank you! Your message has been sent. We will get back to you soon.
+                        </BitMessage>
+                    }
+
                     <BitStack Horizontal Alignment="BitAlignment.Center">
                         <BitButton IsLoading="isSending" ButtonType="BitButtonType.Submit">
                             Send
@@ -54,7 +61,7 @@
                                    Color="BitColor.Tertiary"
                                    Variant="BitVariant.Text"
                                    ButtonType="BitButtonType.Button"
-                                   OnClick="() => contactUsModel = new()">
+                                   OnClick="ResetForm">
                             Reset
                         </BitButton>
                     </BitStack>

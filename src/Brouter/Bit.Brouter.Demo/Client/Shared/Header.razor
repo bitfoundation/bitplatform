@@ -1,0 +1,122 @@
+@inject IBrouter brouter
+@implements IDisposable
+
+@* The site header: a 56px translucent bar - Fluent's own nav-bar height - carrying the bit mark
+   and the top-level links at the start, and the search trigger, the GitHub mark and the theme
+   toggle at the end.
+
+   Below the tablet breakpoint the links move into a drawer opened from the end of the bar, so the
+   bar itself stays one row tall at every width and --bb-header-height (which every sticky offset
+   and heading scroll-margin on the site is measured from) never has to change. *@
+
+<header class="bb-header">
+    <div class="bb-header-inner">
+        <div class="bb-header-brand">
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-logo" aria-label="Homepage" />
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-wordmark">Brouter</BrouterLink>
+        </div>
+
+        <nav class="bb-nav" aria-label="Primary">
+            @foreach (var item in _primary)
+            {
+                <BrouterLink @key="item.Href" Href="@item.Href" Match="@item.Match">@item.Label</BrouterLink>
+            }
+        </nav>
+
+        <div class="bb-header-end">
+            <CommandPalette />
+
+            @* A mask rather than a picture, so the mark is painted with the theme's own foreground
+               color and re-tints with the theme - a colored asset could not. *@
+            <a class="bb-github-btn" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer"
+               title="GitHub repository" aria-label="GitHub repository"></a>
+
+            <button type="button" class="bb-theme-toggle" title="Toggle light/dark theme" aria-label="Toggle light/dark theme" @onclick="ToggleTheme">
+                <svg class="bb-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg class="bb-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+
+            <button type="button" class="bb-menu-btn" aria-label="Site menu" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="bb-header-drawer" @onclick="() => _menuOpen = !_menuOpen">
+                @if (_menuOpen)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                }
+            </button>
+        </div>
+    </div>
+
+    @* The narrow-width menu. Rendered only while open, so its links are out of the tab order the
+       rest of the time - a drawer that is merely translated off-screen still holds focus. *@
+    @if (_menuOpen)
+    {
+        <div class="bb-header-scrim" @onclick="() => _menuOpen = false"></div>
+        <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site">
+            @foreach (var item in _primary)
+            {
+                <BrouterLink @key="item.Href" Href="@item.Href" Match="@item.Match">@item.Label</BrouterLink>
+            }
+            <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a href="https://www.nuget.org/packages/Bit.Brouter" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
+        </nav>
+    }
+</header>
+
+@code {
+    private record NavItem(string Href, string Label, BrouterLinkMatch Match);
+
+    private static readonly NavItem[] _primary =
+    [
+        new("/", "Home", BrouterLinkMatch.All),
+        new("/docs", "Docs", BrouterLinkMatch.Prefix),
+        new("/docs/api", "API", BrouterLinkMatch.All),
+        new("/playground", "Playground", BrouterLinkMatch.Prefix),
+    ];
+
+    private bool _menuOpen;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+
+    [Inject] private IJSRuntime jsRuntime { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        // A drawer that survives the navigation it started covers the page the reader just asked for.
+        _onNavigated = ctx =>
+        {
+            if (_menuOpen)
+            {
+                _menuOpen = false;
+                _ = InvokeAsync(StateHasChanged);
+            }
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigated += _onNavigated;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+    }
+
+    private async Task ToggleTheme()
+    {
+        // theme.js flips the bit-theme attribute on <html>; the sun/moon icon swap is pure CSS.
+        await jsRuntime.InvokeVoidAsync("bitBrouterTheme.toggle");
+    }
+}

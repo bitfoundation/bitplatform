@@ -39,10 +39,18 @@ Each project in the solution has its own set of `appsettings.json` files:
   - [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
   - [`src/Server/Boilerplate.Server.Api/appsettings.Development.json`](/src/Server/Boilerplate.Server.Api/appsettings.Development.json)
   - [`src/Server/Boilerplate.Server.Api/appsettings.Production.json`](/src/Server/Boilerplate.Server.Api/appsettings.Production.json)
+<!--#if (api == "Standalone")-->
 - **Web Server**:
   - [`src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json)
   - [`src/Server/Boilerplate.Server.Web/appsettings.Development.json`](/src/Server/Boilerplate.Server.Web/appsettings.Development.json)
   - [`src/Server/Boilerplate.Server.Web/appsettings.Production.json`](/src/Server/Boilerplate.Server.Web/appsettings.Production.json)
+<!--#endif-->
+<!--#if (api == "Integrated")-->
+- **Web Server**: has no appsettings files of its own. `Boilerplate.Server.Web.csproj` links the API Server's
+  `appsettings*.json` above into its output directory, so those are the files it reads at runtime. Do not create
+  `src/Server/Boilerplate.Server.Web/appsettings.json` - it would be copied to the same output path and which of the
+  two wins depends on build order.
+<!--#endif-->
 - **AppHost**: 
   - [`src/Server/Boilerplate.Server.AppHost/appsettings.json`](/src/Server/Boilerplate.Server.AppHost/appsettings.json)
   - [`src/Server/Boilerplate.Server.AppHost/appsettings.Development.json`](/src/Server/Boilerplate.Server.AppHost/appsettings.Development.json)
@@ -220,7 +228,6 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
         }
     },
     "Identity": {
-        "Issuer": "Boilerplate",
         "Audience": "Boilerplate",
         "BearerTokenExpiration": "0.00:05:00",
         "RefreshTokenExpiration": "14.00:00:00"
@@ -402,12 +409,18 @@ public class EmailService
 
 The project supports four environments by default:
 - **Development** - Local development (uses `appsettings.Development.json`)
-- **Test** - Testing environment (uses `appsettings.Test.json`)
+- **Test** - Testing environment (create `appsettings.Test.json` next to the existing environment files if you need Test-specific overrides; it is picked up automatically)
 - **Staging** - Pre-production testing environment
 - **Production** - Live production environment (uses `appsettings.Production.json`)
 
 Environment is determined by `AppEnvironment.Current` which is set during build time based on the `-p:Environment` msbuild switch.
 
 See [`Directory.Build.props`](/src/Directory.Build.props) for environment configuration and [`src/Shared/Infrastructure/Services/AppEnvironment.cs`](/src/Shared/Infrastructure/Services/AppEnvironment.cs) for the environment service.
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

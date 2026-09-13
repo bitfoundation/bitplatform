@@ -1,1 +1,49 @@
-﻿<BitElement data-val-test="bit">I'm a element</BitElement>
+﻿@* Covers the attribute splatting of the element: everything written as a plain HTML attribute lands on the
+   rendered tag, and the class and the style the component builds itself are merged with the ones splatted
+   through a dictionary rather than replacing them. *@
+
+<BitElement data-val-test="bit">I'm a element</BitElement>
+
+<BitElement Class="from-parameter" Style="color: red;"
+            @attributes="@(new Dictionary<string, object>
+                           {
+                               ["class"] = "from-attribute",
+                               ["style"] = "font-weight: bold;",
+                               ["dir"] = "rtl",
+                               ["id"] = "from-attribute",
+                               ["aria-label"] = "from attribute",
+                               ["tabindex"] = "3",
+                           })">
+    I'm a merged element
+</BitElement>
+
+<BitElement class="lowercase-class" style="color: blue;" id="lowercase-id" tabindex="4">
+    I'm a lowercase element
+</BitElement>
+
+@* An enabled element must keep a disabled attribute of its own: the component only writes that attribute
+   while it is disabled itself, since writing it as false would remove the splatted one instead. *@
+<BitElement Element="button" disabled="true">I'm a self-disabled element</BitElement>
+
+@* The same holds of the aria attribute, and of the tab stop the component takes away from a disabled element:
+   an element the component was not asked to disable is left with whatever the page wrote on it. *@
+<BitElement aria-disabled="true">I'm a self-aria-disabled element</BitElement>
+
+@* An href is only useful splatted, and it is the one splatted attribute a disabled element cannot keep: an anchor
+   with an href is focusable of itself and follows that href on the enter key whatever the tab order says. *@
+<BitElement Element="a" href="https://bitplatform.dev/">I'm a link</BitElement>
+
+<BitElement Element="a" href="https://bitplatform.dev/" IsEnabled="false">I'm a disabled link</BitElement>
+
+@* An area is the other tag that is a hyperlink of its own, and the one with no box of its own for the pointer
+   events of the disabled class to turn off, so the href is all there is to take away from a disabled one. *@
+<BitElement Element="area" href="https://bitplatform.dev/" alt="I'm an image map link" />
+
+<BitElement Element="area" href="https://bitplatform.dev/" alt="I'm a disabled image map link" IsEnabled="false" />
+
+@* A boolean is the one attribute value that is not written as its text on a plain element: true writes the
+   attribute with no value at all and false writes none of it, which is how a boolean splatted onto one of the
+   names the component resolves itself has to come out too. *@
+<BitElement aria-disabled="@false" data-plain-attribute="@false">I'm an element with false attributes</BitElement>
+
+<BitElement aria-disabled="@true" data-plain-attribute="@true">I'm an element with true attributes</BitElement>

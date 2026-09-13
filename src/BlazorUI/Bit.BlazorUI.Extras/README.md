@@ -45,3 +45,17 @@ Install-Package Bit.BlazorUI.Extras
 ```
 
 5. Start using BlazorUI Extra components following its documents: https://blazorui.bitplatform.dev
+
+### Design system presets
+
+This package also carries the Material and Cupertino design-system presets. They are override-only
+stylesheet bundles that re-value the theme tokens, so link the one you want **after** the core
+`bit.blazorui.css` and activate it with the `bit-theme` attribute (`BitExtraThemePresets` / `BitExtraThemeName`
+name them in C#, and `BitThemeSwitcher` is the ready-made control for letting the user pick):
+
+```
+<link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+<!-- or: _content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css -->
+
+<html bit-theme="material-dark">
+```

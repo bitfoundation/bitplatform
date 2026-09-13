@@ -27,6 +27,14 @@ public abstract class BitComponentBaseParams
     public BitDir? Dir { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component's animations play at their full duration
+    /// even when reduced motion is requested.
+    /// <br />
+    /// <see cref="BitComponentBase.ForceAnimation"/>.
+    /// </summary>
+    public bool? ForceAnimation { get; set; }
+
+    /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
     /// <br />
     /// <see cref="BitComponentBase.HtmlAttributes"/>.
@@ -96,6 +104,13 @@ public abstract class BitComponentBaseParams
         if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)))
         {
             bitComponentBase.Dir = Dir.Value;
+
+            bitComponentBase.ClassBuilder.Reset();
+        }
+
+        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)))
+        {
+            bitComponentBase.ForceAnimation = ForceAnimation.Value;
 
             bitComponentBase.ClassBuilder.Reset();
         }

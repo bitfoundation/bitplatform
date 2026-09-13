@@ -1,26 +1,37 @@
-@page "/components/swiper"
+﻿@page "/components/swiper"
 
 <PageOutlet Url="components/swiper"
             Title="Swiper"
-            Description="Swipers (touch slider) let people show their slides in a swiping row." />
+            Description="Swiper (touch slider) scrolls a row of items freely, with navigation buttons, dots, drag, keyboard, wheel, snapping, autoplay and responsive multi-item layouts." />
 
 <DemoPage Name="Swiper"
           SecondaryNames="@(["TouchSlider"])"
-          Description="Swipers (touch slider) let people show their slides in a swiping row."
+          Description="Swiper (touch slider) lets people show their items in a swiping row. Unlike the Carousel, which pages through its slides, the swiper is a real scrolling region: the items sit side by side and the row scrolls freely through them, so a touch swipe carries the momentum of the platform and nothing crosses over to .NET while a finger is on the screen. It can be moved with its next/prev buttons and dots, by dragging it, with the keyboard or the mouse wheel, programmatically, or on its own with autoplay; it can settle on an item instead of stopping anywhere (Snap), size its items to a number that fit at a time (adapting that to its own width), scroll vertically, and it follows the carousel pattern of the ARIA authoring practices: a labelled region of labelled items, real buttons for every control, and a rotation that stops as soon as the pointer or the keyboard focus reaches it."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
           GitHubUrl="Lists/Swiper/BitSwiper.razor"
           GitHubDemoUrl="Lists/Swiper/BitSwiperDemo.razor">
+
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            <BitSwiper>
+            The basic swiper lays its items out in a scrolling row and renders the next/prev buttons over its sides,
+            each of which hides itself at the end it cannot move any further towards. The row can also be dragged with
+            the mouse, swiped with a finger, and (since the swiper is focusable) moved with the arrow keys and the
+            Home/End keys. Give the swiper an AriaLabel that describes its content, so assistive technologies can
+            announce what the region holds.
+        </div>
+        <br />
+        <div>
+            <BitSwiper AriaLabel="Landscape photos">
                 @for (int i = 1; i <= 32; i++)
                 {
                     var index = i;
                     var imageIndex = (index - 1) % 4 + 1;
                     <BitSwiperItem Class="item">
                         <div class="number">Item @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
                 }
             </BitSwiper>
@@ -28,7 +39,11 @@
     </DemoExample>
 
     <DemoExample Title="ScrollItemsCount" RazorCode="@example2RazorCode" Id="example2">
-        <div>Configure BitSwiper to scroll multiple items at once.</div>
+        <div>
+            The ScrollItemsCount parameter sets how many items a single navigation moves, which is the step of the
+            next/prev buttons, of the arrow keys and of the mouse wheel. A move that would overshoot the end of the
+            swiper runs out to it instead, so the last item is never left half shown.
+        </div>
         <br />
         <div>
             <BitSwiper ScrollItemsCount="2">
@@ -38,7 +53,7 @@
                     var imageIndex = (index - 1) % 4 + 1;
                     <BitSwiperItem Class="item">
                         <div class="number">Item @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
                 }
             </BitSwiper>
@@ -46,7 +61,11 @@
     </DemoExample>
 
     <DemoExample Title="HideNextPrev" RazorCode="@example3RazorCode" Id="example3">
-        <div>Use BitSwiper without showing the next and previous navigation buttons.</div>
+        <div>
+            The HideNextPrev parameter removes the navigation buttons, leaving a bare rail that is moved by dragging
+            it, by swiping it, with the keyboard or with the scrollbar. The buttons also leave on their own while
+            everything already fits in the swiper, since there is nothing to move then.
+        </div>
         <br />
         <div>
             <BitSwiper HideNextPrev ScrollItemsCount="2">
@@ -56,32 +75,452 @@
                     var imageIndex = (index - 1) % 4 + 1;
                     <BitSwiperItem Class="item">
                         <div class="number">Item @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
                 }
             </BitSwiper>
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example4RazorCode" Id="example4">
-        <div>Use BitSwiper in right-to-left (RTL).</div>
+    <DemoExample Title="Snap" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            The Snap parameter makes the swiper settle on an item instead of stopping wherever the scrolling ran out,
+            and chooses where that item comes to rest: at the Start of the swiper, in its Center, or at its End. The
+            snapping itself is the browser's (CSS scroll snapping), so a touch swipe settles exactly the way a
+            navigation does. Without it the swiper scrolls freely, which is what a rail of items that are read side by
+            side wants.
+        </div>
+        <br />
+        <div>Start: each item comes to rest against the leading edge of the swiper.</div>
         <br />
         <div>
-            <BitSwiper Dir="BitDir.Rtl">
-                @for (int i = 1; i <= 32; i++)
+            <BitSwiper Snap="BitSwiperSnap.Start" Gap="0.5rem" VisibleItemsCount="3">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>Center: the item settles in the middle of the swiper.</div>
+        <br />
+        <div>
+            <BitSwiper Snap="BitSwiperSnap.Center" Gap="0.5rem" VisibleItemsCount="3">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>End: each item comes to rest against the trailing edge of the swiper.</div>
+        <br />
+        <div>
+            <BitSwiper Snap="BitSwiperSnap.End" Gap="0.5rem" VisibleItemsCount="3">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Multiple items" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            Without VisibleItemsCount the items keep whatever size they were given, which is what a rail of differently
+            sized items wants. With it they are all sized to a fraction of the swiper, so exactly that many fit at a
+            time, which is what a row of cards wants. The Xs to Xxl variants adapt that number to the size the swiper
+            itself is laid out at (not the size of the window), each applying from its breakpoint upwards, so the same
+            swiper shows fewer cards inside a sidebar and more across a full width page.
+        </div>
+        <br />
+        <div>Four at a time, moved two at a time:</div>
+        <br />
+        <div>
+            <BitSwiper VisibleItemsCount="4" ScrollItemsCount="2" Gap="0.5rem" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>Resize the window (or this panel) to watch the number of items change, from one up to five:</div>
+        <br />
+        <div>
+            <BitSwiper VisibleItemsCount="1" VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="5"
+                       Gap="0.5rem" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gap" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            The Gap parameter puts space (any CSS length) between the items of the swiper. It is also taken into
+            account by VisibleItemsCount, so the requested number of items keeps fitting in the swiper once they are
+            spaced out.
+        </div>
+        <br />
+        <div>
+            <BitSwiper Gap="1.5rem" VisibleItemsCount="4">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Vertical" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            The Vertical parameter stacks the items over the height of the swiper, so it scrolls up and down instead of
+            left and right: the navigation buttons move to the top and bottom edges and the up/down arrow keys take
+            over the navigation. A vertical swiper is laid out over its own height, so give it one (it falls back to a
+            default height otherwise).
+        </div>
+        <br />
+        <div>
+            <BitSwiper Vertical Style="height: 200px" Gap="0.5rem" Snap="BitSwiperSnap.Start" AriaLabel="Vertical items">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Dots" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            The ShowDots parameter renders navigation dots below the items. A dot stands for a screenful of the swiper
+            rather than for a single item, since a swiper shows as many items as it has room for, and the dots are left
+            out while everything already fits. The DotTemplate parameter replaces the content of a dot, receiving the
+            zero based index of the page it navigates to, so the row can carry page numbers, thumbnails, or anything
+            else.
+        </div>
+        <br />
+        <div>
+            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>Numbered dots:</div>
+        <br />
+        <div>
+            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                <DotTemplate Context="index"><span>@(index + 1)</span></DotTemplate>
+                <ChildContent>
+                    @for (int i = 1; i <= 16; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                    }
+                </ChildContent>
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="AutoPlay" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            The AutoPlay parameter scrolls the items on its own at the AutoPlayInterval, rewinding to the start when it
+            reaches the end. The scrolling pauses while the pointer rests over the swiper or the keyboard focus is
+            inside it (PauseOnHover / PauseOnFocus, both on by default) and while the page sits in a background tab,
+            and resumes when they leave.
+        </div>
+        <br />
+        <div>
+            <BitSwiper AutoPlay AutoPlayInterval="2000" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>
+            The ShowPlayPause parameter renders a play/pause button next to the dots so the scrolling can be stopped
+            and started by hand (which WCAG asks of any auto-moving content), and StopOnInteraction stops it for good
+            as soon as the swiper is navigated manually. Pause, Resume and TogglePlay do the same from code, and
+            IsPaused / IsPlaying report the state. AutoPlayReverse plays it backwards, and StopOnLastSlide stops at the
+            end instead of rewinding.
+        </div>
+        <br />
+        <div>
+            <BitSwiper AutoPlay AutoPlayInterval="1500" ShowDots ShowPlayPause StopOnInteraction
+                       Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Interaction" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            The way the swiper is operated by hand is configurable: NoDrag turns off dragging it with the mouse (a
+            touch swipe is the browser's own scrolling of the region and is never taken away), DragThreshold sets how
+            far the pointer has to travel before a press turns into a drag rather than staying a click, NoKeyboard
+            takes the swiper out of the tab sequence and turns off its arrow key navigation, Wheel navigates it with
+            the mouse wheel, and ShowScrollbar leaves the scrollbar visible, which is hidden by default.
+        </div>
+        <br />
+        <div>This swiper is navigated with the mouse wheel and cannot be dragged:</div>
+        <br />
+        <div>
+            <BitSwiper Wheel NoDrag Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>This one keeps its scrollbar, which is another way of moving it:</div>
+        <br />
+        <div>
+            <BitSwiper ShowScrollbar HideNextPrev Gap="0.5rem" VisibleItemsCount="4">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Animation" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            The AnimationDuration parameter sets how long the moves the swiper makes itself take, in seconds (0.5 by
+            default): the ones of its buttons, its dots, the keyboard, the wheel, the auto scrolling and the public
+            API, plus the glide a flick of the pointer ends with. A value of 0 moves the items at once, with no
+            animation at all. A touch swipe is scrolled by the browser, which brings the timing of the platform with
+            it, and the animation collapses to nothing when the system asks for reduced motion.
+        </div>
+        <br />
+        <div>Slow (1.5 seconds):</div>
+        <br />
+        <div>
+            <BitSwiper AnimationDuration="1.5" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br /><br />
+        <div>No animation (0 seconds):</div>
+        <br />
+        <div>
+            <BitSwiper AnimationDuration="0" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="DefaultItem" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The DefaultItem parameter sets the item (1 based, like GoTo) the swiper starts on. It is only read
+            while the swiper is being set up, so the swiper is laid out there rather than sliding over to it,
+            and changing it afterwards does not move the swiper (use GoTo for that). Values outside of the range
+            of the swiper are clamped to its first or last item.
+        </div>
+        <br />
+        <div>
+            <BitSwiper DefaultItem="7" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Public API" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            The swiper can be driven entirely from application code through a @@ref to it: GoNext, GoPrev, GoTo (1
+            based), GoToPage (1 based), GoToStart and GoToEnd navigate it, Pause, Resume and TogglePlay drive the auto
+            scrolling, and Refresh measures it again after something else moved the ground under it. The CurrentIndex
+            (zero based), CurrentPage, PagesCount, ItemsCount, IsAtStart, IsAtEnd, IsPlaying and IsPaused members
+            report where it stands, and OnChange fires with the index of the item it came to stand on, however it was
+            moved: with its controls, by dragging, by scrolling it, with the keyboard or by the auto scrolling. This
+            example hides the built-in buttons and replaces them with its own.
+        </div>
+        <br />
+        <div>
+            <BitSwiper @ref="swiper" HideNextPrev Gap="0.5rem" VisibleItemsCount="4"
+                       Snap="BitSwiperSnap.Start" OnChange="v => currentIndex = v">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <br />
+        <div class="buttons-container">
+            <div>
+                <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
+                <BitButton OnClick="GoNext">Next &gt;</BitButton>
+            </div>
+            <div class="goto-container">
+                <BitButton Class="goto-button" OnClick="GoTo">GoTo</BitButton>
+                <BitNumberField @bind-Value="number" Min="1" Max="16" Mode="BitSpinButtonMode.Compact" />
+            </div>
+            <div>
+                <BitButton OnClick="GoToStart">Start</BitButton>
+                <BitButton OnClick="GoToEnd">End</BitButton>
+            </div>
+        </div>
+        <br />
+        <div>Current item: @(currentIndex + 1)</div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            The swiper follows the carousel pattern of the ARIA authoring practices out of the box: its root is a
+            focusable region marked as a carousel, every item is a group marked as a slide, all of the controls are
+            real buttons that point at the items they move with aria-controls, and the play/pause button is the first
+            thing the keyboard reaches so the motion can be stopped before anything else. The text of all of that is
+            yours to set:
+        </div>
+        <br />
+        <ul>
+            <li><b>AriaLabel</b> names the swiper region, which is what a screen reader announces on the way in.</li>
+            <li><b>ItemAriaLabelFormat</b> names the items that carry no label of their own ("{0} of {1}" by default, where {0} is the position of the item and {1} the number of items); an item that deserves a better name takes an AriaLabel of its own.</li>
+            <li><b>DotsAriaLabel</b> names the group of dots and <b>DotAriaLabel</b> prefixes each one of them, which is followed by the number of the page it navigates to.</li>
+            <li><b>NextAriaLabel</b> and <b>PrevAriaLabel</b> name the navigation buttons.</li>
+            <li><b>PlayButtonAriaLabel</b> and <b>PauseButtonAriaLabel</b> name the rotation control in each of its two states.</li>
+        </ul>
+        <br />
+        <div>
+            <BitSwiper AutoPlay
+                       ShowDots
+                       ShowPlayPause
+                       Gap="0.5rem"
+                       VisibleItemsCount="3"
+                       Snap="BitSwiperSnap.Start"
+                       AriaLabel="Landscape photos"
+                       ItemAriaLabelFormat="Photo {0} of {1}"
+                       DotAriaLabel="Photo group"
+                       DotsAriaLabel="Choose a group of photos to display"
+                       NextAriaLabel="Next photo"
+                       PrevAriaLabel="Previous photo"
+                       PlayButtonAriaLabel="Start the photo slide show"
+                       PauseButtonAriaLabel="Stop the photo slide show">
+                @for (int i = 1; i <= 12; i++)
                 {
                     var index = i;
                     var imageIndex = (index - 1) % 4 + 1;
-                    <BitSwiperItem Class="item">
-                        <div class="number">مورد @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                    <BitSwiperItem AriaLabel="@(index == 1 ? "Aurora over a frozen lake" : null)">
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
                 }
             </BitSwiper>
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            The Color parameter offers the general colors of the theme for the chrome of the swiper: it colors the dot
+            of the current page and the navigation buttons. The Accent parameter is its lighter-weight sibling that
+            only offers the primary/secondary/tertiary/transparent kinds for the current dot.
+        </div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Primary</BitLabel>
+                <BitSwiper ShowDots Color="BitColor.Primary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Success</BitLabel>
+                <BitSwiper ShowDots Color="BitColor.Success" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Warning</BitLabel>
+                <BitSwiper ShowDots Color="BitColor.Warning" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Error</BitLabel>
+                <BitSwiper ShowDots Color="BitColor.Error" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </div>
+        <br /><br />
+        <div>Accent, which only colors the dot of the current page:</div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Secondary</BitLabel>
+                <BitSwiper ShowDots Accent="BitColorKind.Secondary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Tertiary</BitLabel>
+                <BitSwiper ShowDots Accent="BitColorKind.Tertiary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>NextIcon</b> and <b>PrevIcon</b> parameters.</div>
 
         <br />
@@ -99,7 +538,7 @@
                     var imageIndex = (index - 1) % 4 + 1;
                     <BitSwiperItem Class="item">
                         <div class="number">Item @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
                 }
             </BitSwiper>
@@ -119,8 +558,89 @@
                     var imageIndex = (index - 1) % 4 + 1;
                     <BitSwiperItem Class="item">
                         <div class="number">Item @index</div>
-                        <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
+                        <img class="image" alt="Landscape @index" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(imageIndex).jpg" />
                     </BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+        <div>The Size parameter offers three sizes for the chrome of the swiper: the dots and the navigation buttons.</div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Small</BitLabel>
+                <BitSwiper ShowDots Size="BitSize.Small" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Medium</BitLabel>
+                <BitSwiper ShowDots Size="BitSize.Medium" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Large</BitLabel>
+                <BitSwiper ShowDots Size="BitSize.Large" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            Besides the Style and Class parameters of the root element, the Styles and Classes parameters customize
+            every part of the swiper: its container, its items and the one it is currently standing on (Item and
+            CurrentItem), the navigation buttons and their icons, the dots and the current dot, and the play/pause
+            button and its icon.
+        </div>
+        <br />
+        <div>
+            <BitSwiper ShowDots
+                       Gap="0.5rem"
+                       VisibleItemsCount="4"
+                       Snap="BitSwiperSnap.Start"
+                       Style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(128,128,128,0.15)"
+                       Classes="@(new() { CurrentItem = "custom-item" })"
+                       Styles="@(new() { Buttons = "color: white; background-color: rgba(0,0,0,0.35); width: 2.5rem;",
+                                         CurrentDot = "background-color: mediumpurple;" })">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            In right-to-left mode the swiper lays its items out and scrolls from right to left, and the two navigation
+            buttons swap sides accordingly: the next button sits at the left edge and the previous one at the right.
+            The arrow keys keep moving the view the way they point.
+        </div>
+        <br />
+        <div>
+            <BitSwiper Dir="BitDir.Rtl" ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                @for (int i = 1; i <= 16; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">مورد @index</div></BitSwiperItem>
                 }
             </BitSwiper>
         </div>

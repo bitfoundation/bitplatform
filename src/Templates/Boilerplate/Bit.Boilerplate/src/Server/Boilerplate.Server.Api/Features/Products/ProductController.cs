@@ -1,11 +1,8 @@
 //+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
-using Boilerplate.Shared.Features.Products;
 using Ganss.Xss;
-using Boilerplate.Server.Api.Infrastructure.Services;
+using FluentStorage.Storage;
+using Boilerplate.Shared.Features.Products;
+using Boilerplate.Shared.Features.Attachments;
 
 namespace Boilerplate.Server.Api.Features.Products;
 
@@ -18,6 +15,7 @@ namespace Boilerplate.Server.Api.Features.Products;
     Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
 public partial class ProductController : AppControllerBase, IProductController
 {
+    [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private HtmlSanitizer htmlSanitizer = default!;
 
     //#if (signalR == true)
@@ -54,15 +52,24 @@ public partial class ProductController : AppControllerBase, IProductController
         //#if (database == "PostgreSQL" || database == "SqlServer")
         var query = (IQueryable<ProductDto>)odataQuery.ApplyTo((await (productEmbeddingService.SearchProducts(searchQuery, cancellationToken))).Project(),
             ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip | AllowedQueryOptions.OrderBy /* Ordering can disrupt the results of the embedding service. */);
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        var query = (IQueryable<ProductDto>)odataQuery.ApplyTo(DbContext.Products
+            .Where(p => EF.Functions.Like(p.Name!, $"%{searchQuery}%"))
+            .Project(), ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
+
         var totalCount = await query.LongCountAsync(cancellationToken);
 
         query = query.SkipIf(odataQuery.Skip is not null, odataQuery.Skip?.Value)
                      .TakeIf(odataQuery.Top is not null, odataQuery.Top?.Value);
 
         return new PagedResponse<ProductDto>(await query.ToArrayAsync(cancellationToken), totalCount);
-        //#else
-        throw new NotImplementedException("Embedding based search is only implemented for PostgreSQL and SQL Server only.");
-        //#endif
     }
 
     [HttpGet("{id}")]
@@ -83,6 +90,10 @@ public partial class ProductController : AppControllerBase, IProductController
 
         entityToAdd.CreatedOn = TimeProvider.GetUtcNow();
 
+        // The image is uploaded before the product row exists.
+        entityToAdd.HasPrimaryImage = await DbContext.Attachments
+            .AnyAsync(att => att.Id == entityToAdd.Id && att.Kind == AttachmentKind.ProductPrimaryImageMedium, cancellationToken);
+
         await DbContext.Products.AddAsync(entityToAdd, cancellationToken);
 
         await Validate(entityToAdd, cancellationToken);
@@ -101,11 +112,13 @@ public partial class ProductController : AppControllerBase, IProductController
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
+        await responseCacheService.PurgeProductCache(entityToAdd.ShortId, catalogChanged: true);
+
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
 
-        return entityToAdd.Map();
+        return await Get(entityToAdd.Id, cancellationToken);
     }
 
     [HttpPut]
@@ -140,7 +153,7 @@ public partial class ProductController : AppControllerBase, IProductController
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
 
-        return entityToUpdate.Map();
+        return await Get(entityToUpdate.Id, cancellationToken);
     }
 
     [HttpDelete("{id}/{version}")]
@@ -151,11 +164,26 @@ public partial class ProductController : AppControllerBase, IProductController
 
         entityToDelete.Version = version;
 
+        var attachments = await DbContext.Attachments
+            .Where(att => att.Id == id && (att.Kind == AttachmentKind.ProductPrimaryImageMedium || att.Kind == AttachmentKind.ProductPrimaryImageOriginal))
+            .ToArrayAsync(cancellationToken);
+
+        DbContext.Attachments.RemoveRange(attachments);
         DbContext.Remove(entityToDelete);
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        await responseCacheService.PurgeProductCache(entityToDelete.ShortId);
+        foreach (var attachment in attachments)
+        {
+            var filePath = attachment.Path;
+
+            if (await blobStorage.ObjectExists(filePath, cancellationToken))
+            {
+                await blobStorage.DeleteSingleObject(filePath, cancellationToken);
+            }
+        }
+
+        await responseCacheService.PurgeProductCache(entityToDelete.ShortId, catalogChanged: true);
 
         //#if (signalR == true)
         await PublishDashboardDataChanged(cancellationToken);
@@ -167,7 +195,18 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
+        //#if (multitenant == true)
+        // Only this tenant: "AuthenticatedClients" spans every tenant.
+        await appHubContext.Clients.Group(AppHub.TenantGroupName(TenantProvider.GetCurrentTenantId())).Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         await appHubContext.Clients.Group("AuthenticatedClients").Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
     }
     //#endif
 
@@ -175,8 +214,10 @@ public partial class ProductController : AppControllerBase, IProductController
     {
         var entry = DbContext.Entry(product);
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
+        // The `p.Id != product.Id` term matters on a case or accent insensitive collation: IsModified compares
+        // ordinally, so renaming "EQB SUV" to "EQB Suv" reaches this query, and without it the row matches itself.
         if ((entry.State is EntityState.Added || entry.Property(c => c.Name).IsModified)
-            && await DbContext.Products.AnyAsync(p => p.Name == product.Name, cancellationToken))
+            && await DbContext.Products.AnyAsync(p => p.Id != product.Id && p.Name == product.Name, cancellationToken))
             throw new ResourceValidationException((nameof(ProductDto.Name), [Localizer[nameof(AppStrings.DuplicateProductName)]]));
     }
 }

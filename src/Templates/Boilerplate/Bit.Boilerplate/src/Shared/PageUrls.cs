@@ -4,8 +4,11 @@ using System.ComponentModel;
 namespace Boilerplate.Shared;
 
 // The [Description] attribute defines a short, human/AI friendly summary for a page.
-// Only pages that carry a [Description] are exposed by PageUrls.GetPages() / GetPagesMarkdown(),
-// which feed the chatbot's GetAppPages tool and the follow-up suggestions agent (see PageUrls.Pages.cs).
+// Only pages that carry a [Description] are exposed by PageUrls.GetPages() (see PageUrls.Pages.cs).
+// Those are published PUBLICLY and WITHOUT authentication at GET /llms.txt
+// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, passed to the
+// chatbot's GetAppPages tool.
+// Do not describe a page here unless the description is safe for an anonymous reader.
 public static partial class PageUrls
 {
     [Description("Home page.")]
@@ -69,6 +72,17 @@ public static partial class PageUrls
 
     [Description("Manage users. Requires sign-in.")]
     public const string Users = "/users";
+
+    [Description("Review and revoke the external applications authorized over OAuth. Requires sign-in.")]
+    public const string OAuthClients = "/oauth-clients";
+
+    /// <summary>
+    /// Where <c>/oauth/authorize</c> sends the browser; no [Description] because only that redirect reaches it. An app
+    /// link on both platforms: whoever installed the app is usually signed in there, and even a cold hybrid start beats
+    /// booting Blazor WebAssembly in an Android browser (ConsentPage.LeaveFor gets back out). Deliberately not under
+    /// /oauth/, which belongs to the server, so the service worker, the AASA and the Android filter need no carve-out.
+    /// </summary>
+    public const string OAuthConsent = "/oauth-consent";
 
     public const string WebInteropApp = "/web-interop-app.html";
 }

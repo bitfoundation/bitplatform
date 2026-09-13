@@ -1,0 +1,9 @@
+description = "Move hardcoded user-facing strings into AppStrings.resx and rewrite call sites to use IStringLocalizer with nameof(AppStrings.Key)."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/localize-strings.agent.md}
+
+Files or code to localize: {{args}}
+"""

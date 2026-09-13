@@ -11,8 +11,8 @@ public partial class TodoItemDto
     //#if (IsInsideProjectTemplate == true)
     /*
     //#endif
-    public new string Id { get; set; }
-    public new DateTimeOffset? UpdatedAt { get; set; }
+    public string Id { get; set; } = default!;
+    public DateTimeOffset? UpdatedAt { get; set; }
     //#if (IsInsideProjectTemplate == true)
     */
     //#endif

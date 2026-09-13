@@ -7,6 +7,8 @@ public partial class NoOpLocalHttpServer : ILocalHttpServer
 
     public string Origin => $"http://localhost:{Port}";
 
+    public string SessionToken => string.Empty;
+
     public int Port => -1;
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;

@@ -25,6 +25,7 @@ public sealed class AudioPlaybackHandle : IAsyncDisposable
     /// <summary>Sets per-source gain in [0, 1].</summary>
     public ValueTask SetGain(double value) => _js.InvokeVoid("BitButil.webAudio.setGain", _id, value);
 
+    /// <summary>Stops playback and releases the browser-side handle. Calling it again does nothing.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;

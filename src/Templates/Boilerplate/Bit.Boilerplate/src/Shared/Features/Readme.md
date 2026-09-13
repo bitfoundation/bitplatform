@@ -30,12 +30,12 @@ and `Refresh` method of `IdentityController` returns `ActionResult` and these ty
 In this case you can still use `Bit.SourceGenerators`, but in order to prevent C# compiler's build error, write the followings:
 ```csharp
 [HttpPost]
-Task<TokenResponseDto> Refresh(RefreshRequestDto body) => default!;
+Task<TokenResponseDto> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken) => default!;
 ```
 instead of
 ```csharp
 [HttpPost]
-Task<TokenResponseDto> Refresh(RefreshRequestDto body);
+Task<TokenResponseDto> Refresh(RefreshTokenRequestDto request, CancellationToken cancellationToken);
 ```
 
 **Convention Over Configuration:**
@@ -46,7 +46,7 @@ you are not bound by this convention. Use any `RoutePrefix` you prefer, as long 
 **Important**: IAppControllers support pre-render state internally using `IPrerenderStateService`, so you don't need to handle it manually using `PersistentComponentState` or `[PersistentState]`.
 
 **Advanced sample**:
-Explore `IMinimalApiController` for example of ASP.NET Core Minimal API that has the following characteristics:
+Explore `IMinimalApiSampleController` for example of ASP.NET Core Minimal API that has the following characteristics:
 
 1- No server-side web api controllers because of ASP.NET Core Minimal API.
 
@@ -54,7 +54,9 @@ Explore `IMinimalApiController` for example of ASP.NET Core Minimal API that has
 
 3- Example of Query String.
 
-Another advanced examples includes Direct GitHub API call at client-side in IStatisticsController's GetGitHubStats and IDiagnosticController.
+Another advanced example is the direct GitHub API call made at client-side by `IStatisticsController.GetGitHubStats`,
+which combines an absolute `[Route]` with `[ExternalApi]` so the client's message handlers skip it (no access token,
+no `X-Origin`, no exception translation).
 
 **Note:** We support [RFC6570](https://datatracker.ietf.org/doc/html/rfc6570) for request url templates thanks to [DoLess.UriTemplates](https://github.com/letsar/DoLess.UriTemplates?tab=readme-ov-file#examples)!
 

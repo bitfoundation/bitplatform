@@ -1,85 +1,369 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
-    @if (ShowFirstButton)
-    {
-        var firstIcon = BitIconInfo.From(FirstButtonIcon, FirstButtonIconName ?? "ChevronRightEnd6 bit-pgn-trs");
-        <button @onclick="@(() => ChangePage(1))"
-                aria-label="First page"
-                disabled="@(SelectedPage == 1 || IsEnabled is false)"
-                style="@Styles?.Button @Styles?.FirstButton"
-                class="bit-pgn-btn @Classes?.Button @Classes?.FirstButton @GetButtonClasses()">
-            <i style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
-        </button>
-    }
-
-    @if (ShowPreviousButton)
-    {
-        var previousIcon = BitIconInfo.From(PreviousButtonIcon, PreviousButtonIconName ?? "ChevronRight bit-pgn-trs");
-        <button @onclick="@(() => ChangePage(SelectedPage - 1))"
-                aria-label="Previous page"
-                disabled="@(SelectedPage == 1 || IsEnabled is false)"
-                style="@Styles?.Button @Styles?.PreviousButton"
-                class="bit-pgn-btn @Classes?.Button @Classes?.PreviousButton @GetButtonClasses()">
-            <i style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
-        </button>
-    }
-
-    @foreach (var page in GeneratePages())
-    {
-        var currentPage = page;
-        if (currentPage == -1)
+@* The pagination is a navigation landmark wrapping a list of page controls, which is the markup every
+   major design system settles on, so assistive technologies announce it as navigation and enumerate its
+   items instead of reading a bare run of buttons.
+   The list and its items are collapsed with display:contents so the buttons stay the direct flex items of
+   the root and the layout (including any gap coming through Styles.Root) is exactly what it was before the
+   list was introduced. The explicit list roles are there because a box removed by display:contents used to
+   lose its implicit semantics in some browser / screen reader combinations.
+   The page size selector, the summary and the go to page input sit outside of that list: none of them is one
+   of the pages the list enumerates, so counting them among its items would misreport how many it holds. *@
+@* GetPageHref turns every control into a link, since a range that is reachable by its own address belongs in
+   links rather than in buttons. The two forms are written out side by side rather than folded into one
+   dynamic tag: which one is rendered follows from GetPageHref alone, so a control never swaps its markup
+   while the selection moves. A link with no page to reach carries no href, and reports aria-disabled in
+   place of the disabled attribute an anchor has no use for. A click carrying a modifier opens the address
+   somewhere else, so it leaves the selection of this pagination alone. *@
+@* The aria-label sits before the attribute splatting so that an aria-label passed as a plain attribute
+   still wins over the default name of the landmark, while the id, the style, the class and the dir stay
+   after it and keep the ones the component renders. *@
+@if (_IsHidden is false)
+{
+    <nav @ref="RootElement"
+         aria-label="@(AriaLabel ?? "Pagination")"
+         @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @* The page size opens the pagination, since it is the choice the whole range of pages follows from.
+           It is a plain select so that it carries the keyboard handling and the native picker of the
+           platform it is rendered on without any of it having to be rebuilt.
+           The visible label names the select while it is there, and the aria-label steps in only once it is
+           dropped: an aria-label on top of a visible label replaces it as the name, which is what leaves a
+           control announced as something other than what is written beside it. *@
+        @if (ShowPageSizeSelector)
         {
-            <div style="@Styles?.Ellipsis" class="bit-pgn-elp @Classes?.Ellipsis" disabled="@(IsEnabled is false)">&bull;&bull;&bull;</div>
+            <div style="@Styles?.PageSizeSelector" class="bit-pgn-pss @Classes?.PageSizeSelector">
+                @if (PageSizeText.HasValue())
+                {
+                    <label for="@($"{_Id}-pss")" style="@Styles?.PageSizeLabel" class="bit-pgn-psl @Classes?.PageSizeLabel">@PageSizeText</label>
+                }
+                @* The key is what puts the select back on the size the pagination runs on after a pick the
+                   consumer did not take: the value it renders with is the one it already rendered with, so
+                   only replacing the element itself can undo what the user picked in it. *@
+                <select @key="_pageSizeKey"
+                        @ref="_pageSizeSelectRef"
+                        id="@($"{_Id}-pss")"
+                        value="@_PageSize"
+                        disabled="@(IsEnabled is false)"
+                        aria-label="@(PageSizeText.HasValue() ? null : PageSizeAriaLabel)"
+                        @onchange="HandlePageSizeChange"
+                        style="@Styles?.PageSizeSelect"
+                        class="bit-pgn-pse @Classes?.PageSizeSelect">
+                    @foreach (var option in _pageSizeSelectorOptions)
+                    {
+                        <option value="@option" selected="@(option == _PageSize)">@option</option>
+                    }
+                </select>
+            </div>
         }
-        else if (currentPage == SelectedPage)
-        {
-            <button disabled="@(IsEnabled is false)"
-                    aria-current="page"
-                    aria-label="@($"Current page {currentPage}")"
-                    style="@Styles?.Button @Styles?.SelectedButton"
-                    class="bit-pgn-btn bit-pgn-sel @Classes?.Button @Classes?.SelectedButton @GetButtonClasses()">
-                @currentPage
-            </button>
-        }
-        else
-        {
-            <button @onclick="@(() => ChangePage(currentPage))"
-                    disabled="@(IsEnabled is false)"
-                    aria-label="@($"Page {currentPage}")"
-                    style="@Styles?.Button"
-                    class="bit-pgn-btn @Classes?.Button @GetButtonClasses()">
-                @currentPage
-            </button>
-        }
-    }
 
-    @if (ShowNextButton)
-    {
-        var nextIcon = BitIconInfo.From(NextButtonIcon, NextButtonIconName ?? "ChevronRight bit-pgn-tre");
-        <button @onclick="@(() => ChangePage(SelectedPage + 1))"
-                aria-label="Next page"
-                disabled="@(SelectedPage == Count || IsEnabled is false)"
-                style="@Styles?.Button @Styles?.NextButton"
-                class="bit-pgn-btn @Classes?.Button @Classes?.NextButton @GetButtonClasses()">
-            <i style="@Styles?.NextButtonIcon" class="@nextIcon?.GetCssClasses() @Classes?.NextButtonIcon" />
-        </button>
-    }
+        @* The summary leads the controls, where it is read before the ones it describes. It is a status
+           region so that a screen reader reports the new position as the page changes, which is the only
+           cue left once the numeric page buttons are turned off. *@
+        @if (ShowSummary)
+        {
+            <div role="status" style="@Styles?.Summary" class="bit-pgn-sum @Classes?.Summary">@GetSummaryText()</div>
+        }
 
-    @if (ShowLastButton)
-    {
-        var lastIcon = BitIconInfo.From(LastButtonIcon, LastButtonIconName ?? "ChevronRightEnd6 bit-pgn-tre");
-        <button @onclick="@(() => ChangePage(Count))"
-                aria-label="Last page"
-                disabled="@(SelectedPage == Count || IsEnabled is false)"
-                style="@Styles?.Button @Styles?.LastButton"
-                class="bit-pgn-btn @Classes?.Button @Classes?.LastButton @GetButtonClasses()">
-            <i style="@Styles?.LastButtonIcon" class="@lastIcon?.GetCssClasses() @Classes?.LastButtonIcon" />
-        </button>
-    }
-</div>
+        <ul role="list" class="bit-pgn-lst">
+            @if (ShowFirstButton)
+            {
+                var firstIcon = BitIconInfo.From(FirstButtonIcon, FirstButtonIconName ?? "ChevronRightEnd6 bit-pgn-trs");
+                var firstClass = $"bit-pgn-btn {(FirstButtonText.HasValue() ? "bit-pgn-lbl" : null)} {Classes?.Button} {Classes?.FirstButton} {_VariantClass}";
+                <li role="listitem" class="bit-pgn-itm">
+                    @if (_UseLinks)
+                    {
+                        var firstHref = GetHref(1, _IsFirstDisabled);
+                        <a @ref="_firstButtonRef"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.First, 1))"
+                           href="@firstHref"
+                           title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
+                           aria-label="@FirstButtonAriaLabel"
+                           aria-disabled="@(firstHref is null ? "true" : null)"
+                           style="@JoinStyles(Styles?.Button, Styles?.FirstButton)"
+                           class="@firstClass">
+                            <i aria-hidden="true" style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
+                            @if (FirstButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@FirstButtonText</span>
+                            }
+                        </a>
+                    }
+                    else
+                    {
+                        <button @ref="_firstButtonRef"
+                                @onclick="@(() => ChangePageFrom(FocusTarget.First, 1))"
+                                type="button"
+                                title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
+                                aria-label="@FirstButtonAriaLabel"
+                                disabled="@_IsFirstDisabled"
+                                style="@JoinStyles(Styles?.Button, Styles?.FirstButton)"
+                                class="@firstClass">
+                            <i aria-hidden="true" style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
+                            @if (FirstButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@FirstButtonText</span>
+                            }
+                        </button>
+                    }
+                </li>
+            }
+
+            @if (ShowPreviousButton)
+            {
+                var previousIcon = BitIconInfo.From(PreviousButtonIcon, PreviousButtonIconName ?? "ChevronRight bit-pgn-trs");
+                var previousClass = $"bit-pgn-btn {(PreviousButtonText.HasValue() ? "bit-pgn-lbl" : null)} {Classes?.Button} {Classes?.PreviousButton} {_VariantClass}";
+                <li role="listitem" class="bit-pgn-itm">
+                    @if (_UseLinks)
+                    {
+                        var previousHref = GetHref(_PreviousPage, _IsPreviousDisabled);
+                        <a @ref="_previousButtonRef"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Previous, _PreviousPage))"
+                           href="@previousHref"
+                           rel="@(previousHref is null ? null : "prev")"
+                           title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
+                           aria-label="@PreviousButtonAriaLabel"
+                           aria-disabled="@(previousHref is null ? "true" : null)"
+                           style="@JoinStyles(Styles?.Button, Styles?.PreviousButton)"
+                           class="@previousClass">
+                            <i aria-hidden="true" style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
+                            @if (PreviousButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@PreviousButtonText</span>
+                            }
+                        </a>
+                    }
+                    else
+                    {
+                        <button @ref="_previousButtonRef"
+                                @onclick="@(() => ChangePageFrom(FocusTarget.Previous, _PreviousPage))"
+                                type="button"
+                                title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
+                                aria-label="@PreviousButtonAriaLabel"
+                                disabled="@_IsPreviousDisabled"
+                                style="@JoinStyles(Styles?.Button, Styles?.PreviousButton)"
+                                class="@previousClass">
+                            <i aria-hidden="true" style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
+                            @if (PreviousButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@PreviousButtonText</span>
+                            }
+                        </button>
+                    }
+                </li>
+            }
+
+            @if (ShowPageButtons)
+            {
+                @* Every page keeps its own key so that moving the selection only flips the attributes of the
+                   already rendered control instead of replacing it, which is what keeps the keyboard focus on
+                   the page the user just activated. *@
+                var pages = GeneratePages();
+                for (var i = 0; i < pages.Length; i++)
+                {
+                    var pageNumber = pages[i];
+
+                    if (pageNumber == EllipsisPage)
+                    {
+                        @* A plain gap keeps its glyph hidden and lets the item carry the label, so it is reported
+                           as one named item instead of being read out as a run of punctuation. A clickable one is
+                           a control of its own, so it is named directly and the item is left unnamed beside it. *@
+                        var ellipsisClass = $"bit-pgn-elp {(ClickableEllipsis ? "bit-pgn-elb" : null)} {Classes?.Ellipsis}";
+                        <li @key="@($"ellipsis-{i}")" role="listitem" aria-label="@(ClickableEllipsis ? null : EllipsisAriaLabel)" class="bit-pgn-itm">
+                            @if (ClickableEllipsis is false)
+                            {
+                                <div aria-hidden="true" style="@Styles?.Ellipsis" class="@ellipsisClass">@EllipsisText</div>
+                            }
+                            else
+                            {
+                                var ellipsisPage = GetEllipsisPage(pages, i);
+
+                                if (_UseLinks)
+                                {
+                                    var ellipsisHref = GetHref(ellipsisPage, IsEnabled is false);
+                                    <a @onclick="@(e => ChangePageFromLink(e, FocusTarget.Ellipsis, ellipsisPage))"
+                                       href="@ellipsisHref"
+                                       title="@EllipsisAriaLabel"
+                                       aria-label="@EllipsisAriaLabel"
+                                       aria-disabled="@(ellipsisHref is null ? "true" : null)"
+                                       style="@Styles?.Ellipsis"
+                                       class="@ellipsisClass">
+                                        @EllipsisText
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button @onclick="@(() => ChangePageFrom(FocusTarget.Ellipsis, ellipsisPage))"
+                                            type="button"
+                                            title="@EllipsisAriaLabel"
+                                            aria-label="@EllipsisAriaLabel"
+                                            disabled="@(IsEnabled is false)"
+                                            style="@Styles?.Ellipsis"
+                                            class="@ellipsisClass">
+                                        @EllipsisText
+                                    </button>
+                                }
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        var isSelected = pageNumber == _SelectedPage;
+                        var pageClass = $"bit-pgn-btn {(isSelected ? "bit-pgn-sel" : null)} {Classes?.Button} {(isSelected ? Classes?.SelectedButton : null)} {_VariantClass}";
+                        <li @key="@pageNumber" role="listitem" class="bit-pgn-itm">
+                            @if (_UseLinks)
+                            {
+                                var pageHref = GetHref(pageNumber, IsEnabled is false);
+                                <a @ref="_pageRefs[pageNumber]"
+                                   @onclick="@(e => ChangePageFromLink(e, pageNumber))"
+                                   href="@pageHref"
+                                   aria-current="@(isSelected ? "page" : null)"
+                                   aria-disabled="@(pageHref is null ? "true" : null)"
+                                   aria-label="@GetPageLabel(pageNumber, isSelected)"
+                                   style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
+                                   class="@pageClass">
+                                    @pageNumber
+                                </a>
+                            }
+                            else
+                            {
+                                <button @ref="_pageRefs[pageNumber]"
+                                        @onclick="@(() => ChangePage(pageNumber))"
+                                        type="button"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-current="@(isSelected ? "page" : null)"
+                                        aria-label="@GetPageLabel(pageNumber, isSelected)"
+                                        style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
+                                        class="@pageClass">
+                                    @pageNumber
+                                </button>
+                            }
+                        </li>
+                    }
+                }
+            }
+
+            @if (ShowNextButton)
+            {
+                var nextIcon = BitIconInfo.From(NextButtonIcon, NextButtonIconName ?? "ChevronRight bit-pgn-tre");
+                var nextClass = $"bit-pgn-btn {(NextButtonText.HasValue() ? "bit-pgn-lbl" : null)} {Classes?.Button} {Classes?.NextButton} {_VariantClass}";
+                <li role="listitem" class="bit-pgn-itm">
+                    @if (_UseLinks)
+                    {
+                        var nextHref = GetHref(_NextPage, _IsNextDisabled);
+                        <a @ref="_nextButtonRef"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Next, _NextPage))"
+                           href="@nextHref"
+                           rel="@(nextHref is null ? null : "next")"
+                           title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
+                           aria-label="@NextButtonAriaLabel"
+                           aria-disabled="@(nextHref is null ? "true" : null)"
+                           style="@JoinStyles(Styles?.Button, Styles?.NextButton)"
+                           class="@nextClass">
+                            @if (NextButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@NextButtonText</span>
+                            }
+                            <i aria-hidden="true" style="@Styles?.NextButtonIcon" class="@nextIcon?.GetCssClasses() @Classes?.NextButtonIcon" />
+                        </a>
+                    }
+                    else
+                    {
+                        <button @ref="_nextButtonRef"
+                                @onclick="@(() => ChangePageFrom(FocusTarget.Next, _NextPage))"
+                                type="button"
+                                title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
+                                aria-label="@NextButtonAriaLabel"
+                                disabled="@_IsNextDisabled"
+                                style="@JoinStyles(Styles?.Button, Styles?.NextButton)"
+                                class="@nextClass">
+                            @if (NextButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@NextButtonText</span>
+                            }
+                            <i aria-hidden="true" style="@Styles?.NextButtonIcon" class="@nextIcon?.GetCssClasses() @Classes?.NextButtonIcon" />
+                        </button>
+                    }
+                </li>
+            }
+
+            @if (ShowLastButton)
+            {
+                var lastIcon = BitIconInfo.From(LastButtonIcon, LastButtonIconName ?? "ChevronRightEnd6 bit-pgn-tre");
+                var lastClass = $"bit-pgn-btn {(LastButtonText.HasValue() ? "bit-pgn-lbl" : null)} {Classes?.Button} {Classes?.LastButton} {_VariantClass}";
+                <li role="listitem" class="bit-pgn-itm">
+                    @if (_UseLinks)
+                    {
+                        var lastHref = GetHref(_Count, _IsLastDisabled);
+                        <a @ref="_lastButtonRef"
+                           @onclick="@(e => ChangePageFromLink(e, FocusTarget.Last, _Count))"
+                           href="@lastHref"
+                           title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
+                           aria-label="@LastButtonAriaLabel"
+                           aria-disabled="@(lastHref is null ? "true" : null)"
+                           style="@JoinStyles(Styles?.Button, Styles?.LastButton)"
+                           class="@lastClass">
+                            @if (LastButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@LastButtonText</span>
+                            }
+                            <i aria-hidden="true" style="@Styles?.LastButtonIcon" class="@lastIcon?.GetCssClasses() @Classes?.LastButtonIcon" />
+                        </a>
+                    }
+                    else
+                    {
+                        <button @ref="_lastButtonRef"
+                                @onclick="@(() => ChangePageFrom(FocusTarget.Last, _Count))"
+                                type="button"
+                                title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
+                                aria-label="@LastButtonAriaLabel"
+                                disabled="@_IsLastDisabled"
+                                style="@JoinStyles(Styles?.Button, Styles?.LastButton)"
+                                class="@lastClass">
+                            @if (LastButtonText.HasValue())
+                            {
+                                <span style="@Styles?.ButtonText" class="bit-pgn-btx @Classes?.ButtonText">@LastButtonText</span>
+                            }
+                            <i aria-hidden="true" style="@Styles?.LastButtonIcon" class="@lastIcon?.GetCssClasses() @Classes?.LastButtonIcon" />
+                        </button>
+                    }
+                </li>
+            }
+        </ul>
+
+        @* The jump closes the pagination, after the controls it is the shortcut for. The visible label names
+           the input while it is there and the aria-label steps in once it is dropped, so the input is never
+           unnamed and never announced as something other than what is written beside it. The value is tracked
+           on every keystroke so that clearing the field after a jump actually reaches the DOM.
+           Enter is what commits the jump, so it is handled here rather than left to the change event, and its
+           default action is taken off the element: an enclosing form would otherwise read the key as a request
+           to submit itself and navigate the page away instead of jumping inside it. *@
+        @if (ShowGoToPage)
+        {
+            <div style="@Styles?.GoToPage" class="bit-pgn-gtp @Classes?.GoToPage">
+                @if (GoToPageText.HasValue())
+                {
+                    <label for="@($"{_Id}-gtp")" style="@Styles?.GoToPageLabel" class="bit-pgn-gtl @Classes?.GoToPageLabel">@GoToPageText</label>
+                }
+                <input @ref="_goToPageInputRef"
+                       id="@($"{_Id}-gtp")"
+                       min="1"
+                       max="@_Count"
+                       type="number"
+                       value="@_goToPageText"
+                       autocomplete="off"
+                       disabled="@(IsEnabled is false)"
+                       aria-label="@(GoToPageText.HasValue() ? null : GoToPageAriaLabel)"
+                       @oninput="HandleGoToPageInput"
+                       @onchange="HandleGoToPageChange"
+                       @onkeydown="HandleGoToPageKeyDown"
+                       style="@Styles?.GoToPageInput"
+                       class="bit-pgn-gti @Classes?.GoToPageInput" />
+            </div>
+        }
+    </nav>
+}

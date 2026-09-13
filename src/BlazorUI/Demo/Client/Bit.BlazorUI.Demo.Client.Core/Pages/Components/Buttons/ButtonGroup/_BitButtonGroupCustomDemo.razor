@@ -1,7 +1,9 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1" PreventRenderForMcpClient>
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1"
+             PreventRenderForMcpClient>
     <div>
         The ButtonGroup can be bound to a list of any class, without adapting that class to the component. The
-        <strong>NameSelectors</strong> maps each of the component's fields onto the class, either by property name or by a
+        <strong>NameSelectors</strong> maps each of the component's fields onto the class, either by property name or by
+        a
         selector expression, so an existing domain model can drive the group as it is.
     </div>
     <br />
@@ -26,7 +28,8 @@
         <div>Outline</div>
         <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
         <BitButtonGroup Variant="BitVariant.Outline" Items="disabledCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" IsEnabled="false" />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector"
+                        IsEnabled="false" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -37,87 +40,110 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+<DemoExample Title="Icon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3"
+             PreventRenderForMcpClient>
     <div>
-        Each button can render an icon before its text by pointing the <strong>IconName</strong> selector at the field that
-        holds the icon name — here the class calls it <strong>Image</strong>, which the selector maps for the component.
+        Each button can render an icon before its text by pointing the <strong>IconName</strong> selector at the field
+        that
+        holds the icon name - here the class calls it <strong>Image</strong>, which the selector maps for the component.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Fill (default)</div>
-        <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
-        <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
-        <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+<DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact toolbars
+        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
+        toolbars
         and tight spaces. Because such a button has no visible label, map the <strong>AriaLabel</strong> selector (or at
         least <strong>Title</strong>) so it stays understandable to screen reader users.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Fill (default)</div>
-        <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" IconOnly />
+        <BitButtonGroup Variant="BitVariant.Fill" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" IconOnly />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
-        <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" IconOnly />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" IconOnly />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
-        <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" IconOnly />
+        <BitButtonGroup Variant="BitVariant.Text" Items="iconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" IconOnly />
     </div>
     <br /><br />
     <div>Alternatively, each button can be set to IconOnly by simply leaving the text field empty.</div>
     <br /><br />
     <div class="example-content">
         <div>Fill (default)</div>
-        <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
-        <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
-        <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="ReversedIcon" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5"
+             PreventRenderForMcpClient>
     <div>
         Mapping the <strong>ReversedIcon</strong> selector to a boolean field swaps the icon and the text of a button,
         putting the icon after the content instead of before it. It is read per item, so a single button can point the
@@ -126,35 +152,45 @@
     <br /><br />
     <div class="example-content">
         <div>Fill (default)</div>
-        <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image },
-                                                 ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        <BitButtonGroup Variant="BitVariant.Fill" Items="reversedIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image },
+                            ReversedIcon = { Selector = i => i.ReversedIcon }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
-        <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image },
-                                                 ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="reversedIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image },
+                            ReversedIcon = { Selector = i => i.ReversedIcon }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Text</div>
-        <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image },
-                                                 ReversedIcon = { Selector = i => i.ReversedIcon } })" />
+        <BitButtonGroup Variant="BitVariant.Text" Items="reversedIconCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image },
+                            ReversedIcon = { Selector = i => i.ReversedIcon }
+                        })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="Toggle" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a time
+        The <strong>Toggle</strong> turns the group into a single-select one, where at most one button is toggled at a
+        time
         (a shorthand for <strong>SelectionMode="BitButtonGroupSelectionMode.Single"</strong>). It renders as a
-        <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. The component
-        writes the toggle state back onto the class through the field named by the <strong>IsToggled</strong> selector, so
+        <strong>radiogroup</strong> whose buttons report their state through <strong>aria-checked</strong>. The
+        component
+        writes the toggle state back onto the class through the field named by the <strong>IsToggled</strong> selector,
+        so
         the model always reflects what is toggled. The toggled key is read and set through <strong>ToggleKey</strong>,
         seeded by <strong>DefaultToggleKey</strong>, and every change raises <strong>OnToggleChange</strong>.
     </div>
@@ -166,7 +202,8 @@
     <br /><br />
     <div class="example-content">
         <div>Outline</div>
-        <BitButtonGroup Toggle Items="toggledCustoms" Variant="BitVariant.Outline" NameSelectors="toggledNameSelectors" />
+        <BitButtonGroup Toggle Items="toggledCustoms" Variant="BitVariant.Outline"
+                        NameSelectors="toggledNameSelectors" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -175,22 +212,27 @@
     </div>
     <br /><br /><br /><br />
     <div>Binding:</div><br />
-    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledCustoms" NameSelectors="toggledNameSelectors" @bind-ToggleKey="toggleKey" />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledCustoms" NameSelectors="toggledNameSelectors"
+                    @bind-ToggleKey="toggleKey" />
     <div>Toggle key: @toggleKey</div>
     <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
-    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="changeToggledCustoms" NameSelectors="toggledNameSelectors" DefaultToggleKey="forward" OnToggleChange="(Operation o) => onChangeToggleCustom = o" />
+    <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="changeToggledCustoms"
+                    NameSelectors="toggledNameSelectors" DefaultToggleKey="forward"
+                    OnToggleChange="(Operation o) => onChangeToggleCustom = o" />
     <div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>
     <br /><br /><br /><br />
     <div>
         <strong>FixedToggle</strong> makes the selection mandatory: clicking the toggled button no longer un-toggles it,
         so the group always keeps exactly one answer.
     </div><br />
-    <BitButtonGroup Toggle FixedToggle Variant="BitVariant.Outline" Items="fixedSingleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKey="medium" />
+    <BitButtonGroup Toggle FixedToggle Variant="BitVariant.Outline" Items="fixedSingleCustoms"
+                    NameSelectors="multiNameSelectors" DefaultToggleKey="medium" />
 </DemoExample>
 
-<DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+<DemoExample Title="Vertical" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7"
+             PreventRenderForMcpClient>
     <div>
         By default the ButtonGroup lays its buttons out horizontally; the <strong>Vertical</strong> stacks them instead,
         moving the separators between the buttons from their sides to their edges. The keyboard navigation follows the
@@ -215,35 +257,41 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
+             PreventRenderForMcpClient>
     <div>
-        Clicks can be handled in two places: the group's <strong>OnItemClick</strong> receives whichever item was clicked,
-        and the <strong>OnClick</strong> selector points at a field on the class holding a per-item delegate. Both run on
+        Clicks can be handled in two places: the group's <strong>OnItemClick</strong> receives whichever item was
+        clicked,
+        and the <strong>OnClick</strong> selector points at a field on the class holding a per-item delegate. Both run
+        on
         every click, the group's callback first. Disabled and loading buttons raise neither.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Component's ItemClick event:</div>
-        <BitButtonGroup Items="basicCustoms"
-                        NameSelectors="nameSelector"
+        <BitButtonGroup Items="basicCustoms" NameSelectors="nameSelector"
                         OnItemClick="(Operation item) => clickedCustom = item.Name" />
         <div>Clicked item: <b>@clickedCustom</b></div>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Item's Click event:</div>
-        <BitButtonGroup Items="eventsCustoms"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image },
-                                                 OnClick = { Selector = i => i.Clicked } })" />
+        <BitButtonGroup Items="eventsCustoms" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image },
+                            OnClick = { Selector = i => i.Clicked }
+                        })" />
         <div>Click count: <b>@clickCounter</b></div>
     </div>
 </DemoExample>
 
-<DemoExample Title="FullWidth" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="FullWidth" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>FullWidth</strong> stretches the group to 100% of its container's width. The extra space is shared by
-        the buttons in proportion to their content, so wider labels stay wider — pair it with
+        The <strong>FullWidth</strong> stretches the group to 100% of its container's width. The extra space is shared
+        by
+        the buttons in proportion to their content, so wider labels stay wider - pair it with
         <BitLink Href="#example11"><strong>Justified</strong></BitLink> when every button should end up the same width.
     </div>
     <br /><br />
@@ -254,44 +302,36 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Multiple" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+<DemoExample Title="Multiple" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10"
+             PreventRenderForMcpClient>
     <div>
-        Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at the
+        Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at
+        the
         same time. The toggled keys are available through the <strong>ToggleKeys</strong> two-way bound parameter.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Binding:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        Items="formatCustoms"
-                        NameSelectors="multiNameSelectors"
-                        @bind-ToggleKeys="formatKeys" />
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple"
+                        Items="formatCustoms" NameSelectors="multiNameSelectors" @bind-ToggleKeys="formatKeys" />
         <div>Toggle keys: <b>@string.Join(", ", formatKeys ?? [])</b></div>
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>MaxToggles</strong> caps how many buttons can be toggled at once:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        MaxToggles="2"
-                        Items="maxToggleCustoms"
-                        NameSelectors="multiNameSelectors"
-                        DefaultToggleKeys="@defaultKeys" />
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2"
+                        Items="maxToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>FixedToggle</strong> keeps at least one button toggled:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        FixedToggle
-                        Items="fixedToggleCustoms"
-                        NameSelectors="multiNameSelectors"
-                        DefaultToggleKeys="@defaultKeys" />
+        <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" FixedToggle
+                        Items="fixedToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Justified" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Justified" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11"
+             PreventRenderForMcpClient>
     <div>
         The Justified gives every button an equal width, so the buttons evenly fill the ButtonGroup.
         Combined with FullWidth it turns the ButtonGroup into a segmented control.
@@ -302,13 +342,16 @@
         <BitButtonGroup FullWidth Variant="BitVariant.Outline" Items="justifiedCustoms" NameSelectors="nameSelector" />
         <br />
         <div>Justified (buttons share the width equally)</div>
-        <BitButtonGroup FullWidth Justified Variant="BitVariant.Outline" Items="justifiedCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup FullWidth Justified Variant="BitVariant.Outline" Items="justifiedCustoms"
+                        NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Detached" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
+<DemoExample Title="Detached" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Detached</strong> breaks the buttons apart: the border and the rounding move from the group onto each
+        The <strong>Detached</strong> breaks the buttons apart: the border and the rounding move from the group onto
+        each
         button, so they read as separate buttons that still share the group's color, size, and selection behavior.
         The <strong>Gap</strong> takes any CSS length and sets the space between them.
     </div>
@@ -325,13 +368,16 @@
     <br /><br />
     <div class="example-content">
         <div>Gap</div>
-        <BitButtonGroup Detached Gap="1.5rem" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup Detached Gap="1.5rem" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Rounded" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Rounded" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Rounded</strong> renders pill shaped corners. On an attached group only the outer corners are rounded,
+        The <strong>Rounded</strong> renders pill shaped corners. On an attached group only the outer corners are
+        rounded,
         while combining it with <strong>Detached</strong> turns every button into its own pill.
     </div>
     <br /><br />
@@ -344,13 +390,16 @@
     <div class="example-content">
         <div>Detached</div>
         <BitButtonGroup Rounded Detached Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Rounded Detached Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup Rounded Detached Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Overflow" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="Overflow" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Overflow</strong> decides what happens when the buttons do not fit: <strong>Wrap</strong> moves them onto
+        The <strong>Overflow</strong> decides what happens when the buttons do not fit: <strong>Wrap</strong> moves them
+        onto
         more lines, <strong>Scroll</strong> keeps one line and lets the group scroll sideways &mdash; by swiping, by
         shift+wheel, or with the arrow keys, since the scrollbar itself is hidden so that the border keeps hugging
         the buttons &mdash; <strong>Scrollbar</strong> does the same but keeps the scrollbar visible as an affordance,
@@ -362,38 +411,30 @@
     <div class="example-content">
         <div>Wrap</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth
-                            Variant="BitVariant.Outline"
-                            Overflow="BitButtonGroupOverflow.Wrap"
-                            Items="overflowCustoms"
-                            NameSelectors="nameSelector" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" Overflow="BitButtonGroupOverflow.Wrap"
+                            Items="overflowCustoms" NameSelectors="nameSelector" />
         </div>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Scroll</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth
-                            Variant="BitVariant.Outline"
-                            Overflow="BitButtonGroupOverflow.Scroll"
-                            Items="overflowCustoms"
-                            NameSelectors="nameSelector" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" Overflow="BitButtonGroupOverflow.Scroll"
+                            Items="overflowCustoms" NameSelectors="nameSelector" />
         </div>
     </div>
     <br /><br />
     <div class="example-content">
         <div>Scrollbar</div>
         <div class="overflow-container">
-            <BitButtonGroup FullWidth
-                            Variant="BitVariant.Outline"
-                            Overflow="BitButtonGroupOverflow.Scrollbar"
-                            Items="overflowCustoms"
-                            NameSelectors="nameSelector" />
+            <BitButtonGroup FullWidth Variant="BitVariant.Outline" Overflow="BitButtonGroupOverflow.Scrollbar"
+                            Items="overflowCustoms" NameSelectors="nameSelector" />
         </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="SelectionIndicator" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="SelectionIndicator" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15"
+             PreventRenderForMcpClient>
     <div>
         The ShowSelectionIndicator renders a check mark at the start of the toggled buttons. The indicator always
         occupies its space, so toggling a button never shifts the layout.
@@ -401,36 +442,30 @@
     <br /><br />
     <div class="example-content">
         <div>Single</div>
-        <BitButtonGroup ShowSelectionIndicator
-                        Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        Items="indicatorSingleCustoms"
-                        NameSelectors="multiNameSelectors"
-                        DefaultToggleKey="list" />
+        <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="indicatorSingleCustoms"
+                        NameSelectors="multiNameSelectors" DefaultToggleKey="list" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Multiple</div>
-        <BitButtonGroup ShowSelectionIndicator
-                        Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Multiple"
-                        Items="indicatorMultipleCustoms"
-                        NameSelectors="multiNameSelectors"
-                        DefaultToggleKeys="@indicatorDefaultKeys" />
+        <BitButtonGroup ShowSelectionIndicator Variant="BitVariant.Outline"
+                        SelectionMode="BitButtonGroupSelectionMode.Multiple" Items="indicatorMultipleCustoms"
+                        NameSelectors="multiNameSelectors" DefaultToggleKeys="@indicatorDefaultKeys" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Loading &amp; Badge" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Loading &amp; Badge" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode"
+             Id="example16" PreventRenderForMcpClient>
     <div>
-        Each button can show a spinner in place of its icon by mapping the IsLoading selector, which also blocks its click,
+        Each button can show a spinner in place of its icon by mapping the IsLoading selector, which also blocks its
+        click,
         and can render a short count at its end by mapping the Badge selector.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Loading:</div>
-        <BitButtonGroup Variant="BitVariant.Outline"
-                        Items="loadingCustoms"
-                        NameSelectors="loadingNameSelectors"
+        <BitButtonGroup Variant="BitVariant.Outline" Items="loadingCustoms" NameSelectors="loadingNameSelectors"
                         OnItemClick="(Operation item) => HandleLoadingClick(item)" />
         <div>Click a button to see it load for a moment.</div>
     </div>
@@ -442,9 +477,11 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Links" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Links" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17"
+             PreventRenderForMcpClient>
     <div>
-        Mapping the <strong>Href</strong> selector renders that button as an anchor tag instead, optionally opened elsewhere
+        Mapping the <strong>Href</strong> selector renders that button as an anchor tag instead, optionally opened
+        elsewhere
         through the <strong>Target</strong> selector.
     </div>
     <br /><br />
@@ -453,10 +490,12 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Templates" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18"
+             PreventRenderForMcpClient>
     <div>
         The content of the buttons can be replaced entirely: the group's <strong>ItemTemplate</strong> re-renders every
-        button, while the <strong>Template</strong> selector points at a field holding a per-item template that re-renders
+        button, while the <strong>Template</strong> selector points at a field holding a per-item template that
+        re-renders
         only that one and wins over the group's template. A template replaces the icon, text, and badge, so anything the
         button needs has to be part of it.
     </div>
@@ -475,14 +514,18 @@
     <br /><br />
     <div class="example-content">
         <div>Template selector (applies to a single button):</div>
-        <BitButtonGroup Variant="BitVariant.Outline" Items="itemTemplateCustoms" NameSelectors="templateNameSelectors" />
+        <BitButtonGroup Variant="BitVariant.Outline" Items="itemTemplateCustoms"
+                        NameSelectors="templateNameSelectors" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Tooltips" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Tooltips" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19"
+             PreventRenderForMcpClient>
     <div>
-        Mapping the <strong>Title</strong> selector gives a button a native tooltip, which is the cheapest way to explain an
-        icon-only button on hover. In a toggle group, the <strong>OnTitle</strong> and <strong>OffTitle</strong> selectors
+        Mapping the <strong>Title</strong> selector gives a button a native tooltip, which is the cheapest way to
+        explain an
+        icon-only button on hover. In a toggle group, the <strong>OnTitle</strong> and <strong>OffTitle</strong>
+        selectors
         let the tooltip follow the toggle state and fall back to Title when they are not mapped. A tooltip is not an
         accessible name, so keep mapping <strong>AriaLabel</strong> for icon-only buttons.
     </div>
@@ -494,287 +537,523 @@
     <br /><br />
     <div class="example-content">
         <div>OnTitle &amp; OffTitle (toggle the button and hover it again):</div>
-        <BitButtonGroup Toggle
-                        Variant="BitVariant.Outline"
-                        Items="toggleTitleCustoms"
-                        NameSelectors="toggleTitleNameSelectors"
-                        DefaultToggleKey="mute" />
+        <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggleTitleCustoms"
+                        NameSelectors="toggleTitleNameSelectors" DefaultToggleKey="mute" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+             PreventRenderForMcpClient>
     <div>
-        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in the
-        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a single
+        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in
+        the
+        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a
+        single
         tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the group an AriaLabel.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Tab into the group, then navigate it using the arrow, Home, and End keys:</div>
-        <BitButtonGroup AriaLabel="Text alignment"
-                        Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        Items="a11yCustoms"
-                        NameSelectors="a11yNameSelectors"
+        <BitButtonGroup AriaLabel="Text alignment" Variant="BitVariant.Outline"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="a11yCustoms" NameSelectors="a11yNameSelectors"
                         DefaultToggleKey="start" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
-        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)"
-                        SelectOnFocus
-                        Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single"
-                        Items="selectOnFocusCustoms"
-                        NameSelectors="a11yNameSelectors"
-                        DefaultToggleKey="start" />
+        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="selectOnFocusCustoms"
+                        NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><strong>DisabledInteractive</strong> keeps the disabled buttons focusable, so they stay discoverable:</div>
-        <BitButtonGroup AriaLabel="Operations with a disabled button"
-                        DisabledInteractive
-                        Variant="BitVariant.Outline"
-                        Items="disabledCustoms"
-                        NameSelectors="nameSelector" />
+        <BitButtonGroup AriaLabel="Operations with a disabled button" DisabledInteractive Variant="BitVariant.Outline"
+                        Items="disabledCustoms" NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>Navigable="false"</strong> restores the natural tab order, making every button its own tab stop:</div>
-        <BitButtonGroup AriaLabel="Operations"
-                        Navigable="false"
-                        Variant="BitVariant.Outline"
-                        Items="basicCustoms"
+        <div><strong>Navigable="false"</strong> restores the natural tab order, making every button its own tab stop:
+        </div>
+        <BitButtonGroup AriaLabel="Operations" Navigable="false" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Color</strong> sets the palette of the whole group — its border, fill, hover and active states, the
-        focus ring, and the darker shade used for toggled buttons — from the theme's general, background, foreground, and
+        The <strong>Color</strong> sets the palette of the whole group - its border, fill, hover and active states, the
+        focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground,
+        and
         border colors.
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Primary</div>
-        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Primary</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Primary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Secondary</div>
-        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Secondary</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Secondary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Tertiary</div>
-        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Tertiary</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Info</div>
-        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Info</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Info" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Success</div>
-        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Success</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Success" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Warning</div>
-        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Warning</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Warning" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SevereWarning</div>
-        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>SevereWarning</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>Error</div>
-        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>Error</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.Error" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div style="background:var(--bit-clr-fg-sec);padding:1rem">
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
-            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.PrimaryBackground" Variant="BitVariant.Text" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
-            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.SecondaryBackground" Variant="BitVariant.Text" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
         </div>
         <br /><br />
-        <div class="example-content">
-            <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
-            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
+            <BitButtonGroup Color="BitColor.TertiaryBackground" Variant="BitVariant.Text" Items="basicCustoms"
+                            NameSelectors="nameSelector" />
         </div>
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryForeground</div>
-        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>PrimaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.PrimaryForeground" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryForeground</div>
-        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>SecondaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SecondaryForeground" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryForeground</div>
-        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>TertiaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.TertiaryForeground" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>PrimaryBorder</div>
-        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>PrimaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>SecondaryBorder</div>
-        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>SecondaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.SecondaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
-    <div class="example-content">
-        <div>TertiaryBorder</div>
-        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+    <div>TertiaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div><b>Disabled</b>:</div>
+    <br />
+    <div>Primary</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Primary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Secondary</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Secondary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Tertiary</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Tertiary" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Info</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Info" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Success</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Success" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Warning</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Warning" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>SevereWarning</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SevereWarning" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>Error</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.Error" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div style="background:var(--bit-clr-fg-sec);padding:1rem">
+        <div style="color:var(--bit-clr-bg-pri)">PrimaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Fill"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBackground" Variant="BitVariant.Text"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+        </div>
+        <br /><br />
+        <div style="color:var(--bit-clr-bg-pri)">SecondaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Fill"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Outline"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBackground" Variant="BitVariant.Text"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+        </div>
+        <br /><br />
+        <div style="color:var(--bit-clr-bg-pri)">TertiaryBackground</div>
+        <div class="example-content row">
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Fill"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Outline"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+            <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBackground" Variant="BitVariant.Text"
+                            Items="basicCustoms" NameSelectors="nameSelector" />
+        </div>
+    </div>
+    <br /><br />
+    <div>PrimaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryForeground" Variant="BitVariant.Text"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>SecondaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Fill"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryForeground" Variant="BitVariant.Text"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>TertiaryForeground</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Fill"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryForeground" Variant="BitVariant.Text"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>PrimaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.PrimaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>SecondaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Fill"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.SecondaryBorder" Variant="BitVariant.Text"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div>TertiaryBorder</div>
+    <div class="example-content row">
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline"
+                        Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup IsEnabled="false" Color="BitColor.TertiaryBorder" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
+             PreventRenderForMcpClient>
     <div>
-        Beyond the built-in Fluent UI icons, the <strong>Icon</strong> selector maps a field holding a BitIconInfo, which
+        Beyond the built-in Fluent UI icons, the <strong>Icon</strong> selector maps a field holding a BitIconInfo,
+        which
         renders an icon from any external library. Pass the CSS classes directly, or use the helpers such as
         <strong>BitIconInfo.Fa</strong> (FontAwesome), <strong>BitIconInfo.Bi</strong> (Bootstrap Icons), and
         <strong>BitIconInfo.Css</strong>. When both are mapped, Icon takes precedence over IconName.
     </div>
-    
-    <br />
-    <br />
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    
-    <BitButtonGroup Variant="BitVariant.Fill" Items="externalIconCustoms"
-                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                             Icon = { Selector = i => i.IconInfo } })" />
-    
-    <br />
-    <br />
-    
-    <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" Items="externalIconCustoms"
-                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                             Icon = { Selector = i => i.IconInfo } })" />
-    
+
     <br />
     <br />
 
-    <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" Items="externalIconCustoms"
-                    NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                             Icon = { Selector = i => i.IconInfo } })" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+    <BitButtonGroup Variant="BitVariant.Fill" Items="externalIconCustoms" NameSelectors="@(new()
+                    {
+                        Text = { Selector = i => i.Name },
+                        Icon = { Selector = i => i.IconInfo }
+                    })" />
+
+    <br />
+    <br />
+
+    <BitButtonGroup Variant="BitVariant.Outline" Color="BitColor.Secondary" Items="externalIconCustoms" NameSelectors="@(new()
+                    {
+                        Text = { Selector = i => i.Name },
+                        Icon = { Selector = i => i.IconInfo }
+                    })" />
+
+    <br />
+    <br />
+
+    <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" Items="externalIconCustoms" NameSelectors="@(new()
+                    {
+                        Text = { Selector = i => i.Name },
+                        Icon = { Selector = i => i.IconInfo }
+                    })" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
+             PreventRenderForMcpClient>
     <div>
-        The <strong>Size</strong> picks one of three presets — Small, Medium (default), and Large — which scale the font
-        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text size.
+        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which scale the font
+        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text
+        size.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Small</div>
-        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Small" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Medium</div>
-        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Medium" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Large</div>
-        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicCustoms" NameSelectors="nameSelector" />
-        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicCustoms" NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Fill" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Size="BitSize.Large" Variant="BitVariant.Text" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24"
+             PreventRenderForMcpClient>
     <div>
         Styling works at three levels: <strong>Style</strong> and <strong>Class</strong> target the root element, the
-        <strong>Style</strong> and <strong>Class</strong> selectors target a single button through fields on the class, and
-        <strong>Styles</strong> and <strong>Classes</strong> reach every part of the component — Root, Button,
+        <strong>Style</strong> and <strong>Class</strong> selectors target a single button through fields on the class,
+        and
+        <strong>Styles</strong> and <strong>Classes</strong> reach every part of the component - Root, Button,
         ToggledButton, Icon, Text, Badge, Spinner, and SelectionIndicator.
     </div>
     <br /><br />
     <div class="example-content">
         <div>Component's style & class:</div>
-        <BitButtonGroup Items="basicCustoms" Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;" NameSelectors="nameSelector" />
-        <BitButtonGroup Items="basicCustoms" Class="custom-class" Variant="BitVariant.Outline" NameSelectors="nameSelector" />
+        <BitButtonGroup Items="basicCustoms" Style="border-radius: 1rem; margin: 1rem; box-shadow: tomato 0 0 1rem;"
+                        NameSelectors="nameSelector" />
+        <BitButtonGroup Items="basicCustoms" Class="custom-class" Variant="BitVariant.Outline"
+                        NameSelectors="nameSelector" />
     </div>
     <br /><br />
     <div class="example-content">
         <div>Item's style & class:</div>
-        <BitButtonGroup Items="styleClassCustoms"
-                        Variant="BitVariant.Text"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Items="styleClassCustoms" Variant="BitVariant.Text" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
     <br /><br />
     <div class="example-content">
         <div><b>Styles</b> & <b>Classes</b>:</div>
-        <BitButtonGroup Items="basicCustoms"
-                        Variant="BitVariant.Text"
-                        NameSelectors="nameSelector"
+        <BitButtonGroup Items="basicCustoms" Variant="BitVariant.Text" NameSelectors="nameSelector"
                         Styles="@(new() { Button = "color: darkcyan; border-color: deepskyblue; background-color: azure;" })" />
 
-        <BitButtonGroup Items="basicCustoms"
-                        Variant="BitVariant.Text"
-                        NameSelectors="nameSelector"
+        <BitButtonGroup Items="basicCustoms" Variant="BitVariant.Text" NameSelectors="nameSelector"
                         Classes="@(new() { Button = "custom-btn" })" />
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25"
+             PreventRenderForMcpClient>
     <div>
         Setting <strong>Dir</strong> to Rtl (or inheriting it from an ancestor) flips the ButtonGroup for right-to-left
         languages: the buttons, their icons, and the separators between them all reverse, and so does the arrow key
@@ -782,23 +1061,23 @@
     </div>
     <br />
     <div dir="rtl">
-        <BitButtonGroup Dir="BitDir.Rtl"
-                        Items="rtlCustoms"
-                        Variant="BitVariant.Fill"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Dir="BitDir.Rtl" Items="rtlCustoms" Variant="BitVariant.Fill" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
         <br /><br />
-        <BitButtonGroup Dir="BitDir.Rtl"
-                        Items="rtlCustoms"
-                        Variant="BitVariant.Outline"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Dir="BitDir.Rtl" Items="rtlCustoms" Variant="BitVariant.Outline" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
         <br /><br />
-        <BitButtonGroup Dir="BitDir.Rtl"
-                        Items="rtlCustoms"
-                        Variant="BitVariant.Text"
-                        NameSelectors="@(new() { Text = { Selector = i => i.Name },
-                                                 IconName = { Selector = i => i.Image } })" />
+        <BitButtonGroup Dir="BitDir.Rtl" Items="rtlCustoms" Variant="BitVariant.Text" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
     </div>
 </DemoExample>
 

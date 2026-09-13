@@ -157,6 +157,15 @@ footer {
     &:hover {
         text-decoration: underline;
     }
+
+    &.coming-soon {
+        cursor: default;
+        color: $bit-color-foreground-secondary;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 .copyright-txt {
@@ -182,7 +191,7 @@ footer {
     cursor: pointer;
     width: rem2(32px);
     height: rem2(32px);
-    margin: 0 rem2(10);
+    margin: 0 rem2(10px);
     border-radius: 50%;
     background-color: #a19f9d;
     background-size: rem2(18px);
@@ -202,7 +211,7 @@ footer {
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
-        background-color: #333;
+        background-color: $GithubColor;
     }
 }
 
@@ -210,7 +219,7 @@ footer {
     background-image: url('/images/footer/youtube-icon.svg');
 
     &:hover {
-        background-color: #FF0000;
+        background-color: $YouTubeColor;
     }
 }
 
@@ -218,6 +227,6 @@ footer {
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {
-        background-color: #0077B5;
+        background-color: $LinkedinColor;
     }
 }

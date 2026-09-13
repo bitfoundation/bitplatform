@@ -40,4 +40,53 @@
         align-items: center;
         flex-flow: row nowrap;
     }
+
+    .custom-class {
+        width: fit-content;
+        border-radius: 8px;
+        border: 1px dashed dodgerblue;
+    }
+
+    .custom-item-list {
+        border-inline-start: 3px solid mediumseagreen;
+    }
+
+    .custom-root {
+        width: fit-content;
+        border-radius: 8px;
+        background-color: #1b2a1b;
+    }
+
+    .custom-header {
+        color: yellowgreen;
+    }
+
+    .custom-header-text {
+        font-style: italic;
+    }
+
+    .custom-item-container {
+        margin: 2px;
+        border-radius: 6px;
+    }
+
+    .custom-item {
+        color: khaki;
+    }
+
+    .custom-item-icon {
+        color: yellowgreen;
+    }
+
+    .custom-item-text {
+        font-weight: 600;
+    }
+
+    .custom-toggle-icon {
+        color: orange;
+    }
+
+    .custom-description {
+        color: darkseagreen;
+    }
 }

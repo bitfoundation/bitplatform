@@ -215,12 +215,54 @@ public sealed class BmotionAnimateService
         foreach (var id in allIds)
             _engine.RegisterElement(id);
 
-        // Segment starts are scheduled with a timer rather than driver delays: a delayed driver
+        // Segment starts are scheduled rather than expressed as driver delays: a delayed driver
         // would immediately supersede an earlier segment animating the same property (drivers for
         // a key cancel their predecessor at creation), which would break sequential steps.
+        //
+        // Where a frame loop exists the schedule rides the engine's animation clock, so the
+        // timeline's playback rate governs the gaps between segments as well as the segments
+        // themselves - pausing a sequence really holds it, and doubling its speed halves the whole
+        // run. On Blazor Server there is no frame loop, so the gaps fall back to wall-clock timers
+        // (playback control degrades along with everything else that needs the loop).
+        bool onEngineClock = _engine.SupportsFrameLoop;
         var cts = new CancellationTokenSource();
 
-        async Task RunSegmentAsync(string id, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)
+        // One completion source per (segment, element): the scheduler fires the start, and this is
+        // what the caller's `await controls` is actually waiting on.
+        var segmentCompletions = new List<TaskCompletionSource<bool>>();
+        var scheduledStarts = new List<(double StartSeconds, Action Fire)>();
+
+        Task RunSegmentAsync(string id, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)
+        {
+            if (!onEngineClock) return RunSegmentOnWallClockAsync(id, values, config, start);
+
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            segmentCompletions.Add(tcs);
+            scheduledStarts.Add((start, () =>
+            {
+                // Fire-and-forget by design: the segment's own completion flows through `tcs`, and
+                // the scheduler tick (inside the rAF frame) must not await anything.
+                _ = AwaitSegmentAsync(id, values, config, tcs);
+            }));
+            return tcs.Task;
+        }
+
+        async Task AwaitSegmentAsync(string id, Dictionary<string, object?> values,
+            BmotionTransitionConfig config, TaskCompletionSource<bool> tcs)
+        {
+            try
+            {
+                await _engine.AnimateToAwaitAsync(id, values, config);
+                tcs.TrySetResult(true);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+        }
+
+        async Task RunSegmentOnWallClockAsync(string id, Dictionary<string, object?> values,
+            BmotionTransitionConfig config, double start)
         {
             try
             {
@@ -238,19 +280,32 @@ public sealed class BmotionAnimateService
             .ToArray();
         var completion = Task.WhenAll(completionTasks);
 
+        BmotionSequenceScheduler? scheduler = null;
+        if (onEngineClock && scheduledStarts.Count > 0)
+        {
+            scheduler = new BmotionSequenceScheduler(scheduledStarts);
+            _engine.AddScheduler(scheduler);
+            await _engine.EnsureLoopRunningAsync();
+        }
+
         var released = false;
         void Release()
         {
             if (released) return;
             released = true;
-            // Cancel not-yet-started segments first so a Stop() can't race a segment into starting.
+            // Drop not-yet-fired segments first so a Stop() can't race one into starting.
+            if (scheduler != null) _engine.RemoveScheduler(scheduler);
             cts.Cancel();
             cts.Dispose();
+            // Segments the scheduler will now never fire would leave `await controls` hanging
+            // forever, so settle them here (false = superseded/stopped, not a natural finish).
+            foreach (var pending in segmentCompletions) pending.TrySetResult(false);
             foreach (var id in allIds)
                 _engine.UnregisterElement(id);
         }
 
-        var controls = new BmAnimationControls(allIds, _engine, completion, Release);
+        var controls = new BmAnimationControls(allIds, _engine, completion, Release,
+            setTimelineRate: scheduler is null ? null : rate => scheduler.Rate = rate);
 
         _ = completion.ContinueWith(
             _ => controls.OnCompletionSettled(),

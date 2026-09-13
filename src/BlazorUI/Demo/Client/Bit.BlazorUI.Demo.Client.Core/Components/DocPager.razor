@@ -1,0 +1,56 @@
+﻿@inherits AppComponentBase
+
+@* The pager every good reference has and this site did not: having read a component's page, the
+   next thing is almost always the component beside it in the nav. Without this, getting there means
+   going back to the panel and finding your place in a list of a hundred entries.
+
+   It reads ComponentCatalog, which is derived from the nav itself, so the order here is exactly the
+   order the panel shows. *@
+@if (_previous is not null || _next is not null)
+{
+    <nav class="doc-pager" aria-label="Component pages">
+        @if (_previous is not null)
+        {
+            <a class="doc-pager-link previous" href="@_previous.Url">
+                <BitIcon IconName="@BitIconName.ChevronLeft" Class="doc-pager-chevron" />
+                <span class="doc-pager-text">
+                    <span class="doc-pager-label">Previous</span>
+                    <span class="doc-pager-name">@_previous.Name</span>
+                </span>
+            </a>
+        }
+        else
+        {
+            <span></span>
+        }
+
+        @if (_next is not null)
+        {
+            <a class="doc-pager-link next" href="@_next.Url">
+                <span class="doc-pager-text">
+                    <span class="doc-pager-label">Next</span>
+                    <span class="doc-pager-name">@_next.Name</span>
+                </span>
+                <BitIcon IconName="@BitIconName.ChevronRight" Class="doc-pager-chevron" />
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    private ComponentCatalogItem? _previous;
+    private ComponentCatalogItem? _next;
+
+    /// <summary>
+    /// The route of the page the pager sits on. Defaults to wherever the browser currently is, which
+    /// is what every caller wants; the parameter exists so the pager can be tested and reused.
+    /// </summary>
+    [Parameter] public string? CurrentUrl { get; set; }
+
+    protected override Task OnParamsSetAsync()
+    {
+        (_previous, _next) = ComponentCatalog.Neighbors(CurrentUrl ?? NavigationManager.Uri);
+
+        return base.OnParamsSetAsync();
+    }
+}

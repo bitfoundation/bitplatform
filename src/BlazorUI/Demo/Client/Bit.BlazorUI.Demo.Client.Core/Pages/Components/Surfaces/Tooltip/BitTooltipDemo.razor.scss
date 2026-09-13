@@ -6,6 +6,19 @@
     max-width: max-content;
     flex-flow: column wrap;
 
+    &.row {
+        gap: 1.5rem;
+        max-width: unset;
+        align-items: center;
+        flex-flow: row wrap;
+    }
+
+    // The rows whose tooltips are shown from the start need the room those tooltips hang into, above
+    // and below the anchors, which a row of hover-only tooltips does not.
+    &.spaced {
+        padding: 3rem 0.5rem;
+    }
+
     &.center {
         gap: 1.65rem;
         display: flex;
@@ -15,6 +28,43 @@
         align-items: center;
         justify-content: center;
     }
+}
+
+// The twelve placements are all shown open at once, so each cell is given room on every side for the
+// tooltip that hangs off it - the side placements need the width, the corner ones the height.
+.position-grid {
+    display: grid;
+    padding: 2.5rem 0;
+    gap: 4rem 6rem;
+    justify-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
+
+.color-grid {
+    display: grid;
+    padding: 1rem 0 3rem;
+    gap: 4rem 1rem;
+    justify-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+// The accessibility example needs an anchor that is a plain HTML control rather than a component, to
+// show an aria-describedby of the page's own pointed at the id the tooltip renders its text in.
+.plain-anchor {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    color: var(--bit-clr-fg-pri);
+    border: 1px solid var(--bit-clr-brd-pri);
+    border-radius: var(--bit-shp-radius-button, 0.25rem);
+    background-color: transparent;
+}
+
+.event-log {
+    gap: 0.25rem;
+    display: flex;
+    min-height: 6rem;
+    padding-top: 0.5rem;
+    flex-flow: column nowrap;
 }
 
 ::deep {

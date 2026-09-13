@@ -12,6 +12,22 @@
         }
     }
 
+    .narrow-box {
+        padding: 4px;
+        overflow: hidden;
+        max-width: 480px;
+        border: 1px dashed gray;
+    }
+
+    .resizable-box {
+        width: 320px;
+        padding: 4px;
+        overflow: auto;
+        max-width: 100%;
+        resize: horizontal;
+        border: 1px dashed gray;
+    }
+
     .custom-class {
         font-style: italic;
         text-shadow: dodgerblue 0 0 0.5rem;

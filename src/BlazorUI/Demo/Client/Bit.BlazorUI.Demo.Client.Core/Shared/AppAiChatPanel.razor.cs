@@ -1,4 +1,4 @@
-﻿using System.Threading.Channels;
+﻿﻿using System.Threading.Channels;
 using Bit.BlazorUI.Demo.Shared.Dtos.AiChat;
 using Bit.BlazorUI.Demo.Shared.Services;
 using Microsoft.AspNetCore.Components.Web;
@@ -16,6 +16,7 @@ public partial class AppAiChatPanel
     private bool _isLoading;
     private string? _userInput;
     private bool _isSmallScreen;
+    private bool _isMaximized;
     private int _responseCounter;
     private Channel<string>? _channel;
     private BitDebouncer _debouncer = new();

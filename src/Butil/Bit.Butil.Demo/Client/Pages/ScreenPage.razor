@@ -1,0 +1,288 @@
+﻿@page "/screen"
+@implements IAsyncDisposable
+@inject Bit.Butil.Screen screen
+
+<PageTitle>Screen - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="Screen"
+            Lead="Read the physical display's size, available working area, color depth and multi-monitor status, and react to screen changes - all from injected C# with no JavaScript."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Screen"
+            InjectAs="Screen screen" />
+
+<div class="stack">
+    <DemoSection Title="Dimensions"
+                 Api="GetWidth / GetHeight"
+                 Description="The full width and height of the screen in pixels, regardless of what the operating system or browser occupies."
+                 Code=@("""
+var width = await screen.GetWidth();
+var height = await screen.GetHeight();
+""")>
+        <div class="controls">
+            <button @onclick="GetWidth">GetWidth</button>
+            <button @onclick="GetHeight">GetHeight</button>
+        </div>
+        <DemoConsole @ref="dimensionsOutput" Title="dimensions output" />
+    </DemoSection>
+
+    <DemoSection Title="Available area"
+                 Api="GetAvailableWidth / GetAvailableHeight"
+                 Description="The screen area actually available to windows, excluding permanent or semipermanent OS interface features such as the Windows Taskbar or the macOS Dock."
+                 Code=@("""
+var availableWidth = await screen.GetAvailableWidth();
+var availableHeight = await screen.GetAvailableHeight();
+""")>
+        <div class="controls">
+            <button @onclick="GetAvailableWidth">GetAvailableWidth</button>
+            <button @onclick="GetAvailableHeight">GetAvailableHeight</button>
+        </div>
+        <DemoConsole @ref="availableAreaOutput" Title="available area output" />
+    </DemoSection>
+
+    <DemoSection Title="Color & pixel depth"
+                 Api="GetColorDepth / GetPixelDepth"
+                 Description="The color depth and bit depth of the screen, in bits per pixel. On virtually all modern hardware both report 24 or 30."
+                 Code=@("""
+var colorDepth = await screen.GetColorDepth();
+var pixelDepth = await screen.GetPixelDepth();
+""")>
+        <div class="controls">
+            <button @onclick="GetColorDepth">GetColorDepth</button>
+            <button @onclick="GetPixelDepth">GetPixelDepth</button>
+        </div>
+        <DemoConsole @ref="depthOutput" Title="depth output" />
+    </DemoSection>
+
+    <DemoSection Title="Multiple displays"
+                 Api="IsExtended"
+                 Description="Reports whether the user's desktop spans more than one screen - useful before offering multi-window or presentation features."
+                 Code=@("""
+var isExtended = await screen.IsExtended();
+""")>
+        <div class="controls">
+            <button @onclick="GetIsExtended">IsExtended</button>
+        </div>
+        <DemoConsole @ref="extendedOutput" Title="multiple displays output" />
+    </DemoSection>
+
+    <DemoSection Title="Change event"
+                 Api="SubscribeChange"
+                 Description="Fires when the screen changes in some way - width or height, available area, color depth or orientation. The returned subscription detaches the listener when disposed."
+                 Code=@("""
+var subscription = await screen.SubscribeChange(() =>
+{
+    // width, height, color depth or orientation changed
+});
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change event output" />
+    </DemoSection>
+
+    <DemoSection Title="Manual listener management"
+                 Api="AddChange / RemoveChange / RemoveAllChanges"
+                 Description="If you prefer explicit ids over disposable subscriptions, AddChange returns a Guid that can later be passed to RemoveChange, and RemoveAllChanges drops every listener registered on this instance."
+                 Code=@("""
+// register and keep the id
+var id = await screen.AddChange(OnScreenChange);
+
+// remove a single listener by id
+await screen.RemoveChange(id);
+
+// or drop every registered listener at once
+await screen.RemoveAllChanges();
+""") />
+</div>
+
+<Callout Type="warning" Title="Browser support varies">
+    IsExtended and the screen change event belong to the newer Window Management surface and are currently
+    available in Chromium-based browsers only. The size and depth properties work everywhere.
+</Callout>
+
+<Callout Type="info" Title="Prerendering">
+    During prerender/SSR there is no JS runtime, so all getters return their default value (0 or false)
+    instead of throwing. If you branch on a result, defer the read to OnAfterRenderAsync.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetWidth" Signature="Task<float> GetWidth()" Description="Returns the width of the screen in pixels." />
+    <ApiMember Name="GetHeight" Signature="Task<float> GetHeight()" Description="Returns the height of the screen in pixels." />
+    <ApiMember Name="GetAvailableWidth" Signature="Task<float> GetAvailableWidth()" Description="Returns the amount of horizontal space in pixels available to the window." />
+    <ApiMember Name="GetAvailableHeight" Signature="Task<float> GetAvailableHeight()" Description="Returns the height of the screen minus permanent OS interface features such as the Taskbar." />
+    <ApiMember Name="GetColorDepth" Signature="Task<byte> GetColorDepth()" Description="Returns the color depth of the screen." />
+    <ApiMember Name="GetPixelDepth" Signature="Task<byte> GetPixelDepth()" Description="Returns the bit depth of the screen." />
+    <ApiMember Name="IsExtended" Signature="Task<bool> IsExtended()" Description="Returns true if the user's device has multiple screens, and false if not." />
+    <ApiMember Name="AddChange" Signature="ValueTask<Guid> AddChange(Action handler)" Description="Registers a handler for the screen change event and returns its listener id." />
+    <ApiMember Name="SubscribeChange" Signature="ValueTask<ButilSubscription> SubscribeChange(Action handler)" Description="Subscribe variant of AddChange returning a disposable subscription handle." />
+    <ApiMember Name="RemoveChange" Signature="ValueTask<Guid[]> RemoveChange(Action handler)" Description="Removes listeners matched by delegate identity; pass the exact handler instance that was registered." />
+    <ApiMember Name="RemoveChange" Signature="ValueTask RemoveChange(Guid id)" Description="Removes a single change listener by its id." />
+    <ApiMember Name="RemoveAllChanges" Signature="ValueTask RemoveAllChanges()" Description="Removes every change listener registered on this instance." />
+    <ApiMember Name="InvokeScreenChange" Signature="void InvokeScreenChange(Guid id)" Description="JS interop bridge invoked by the browser on the change event; not intended for application code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
+    <ApiMember Name="GetAvailableLeft"
+               Signature="Task<float> GetAvailableLeft()"
+               Description="X-coordinate of the left edge of the available screen area. Non-standard; reported as 0 where unimplemented, which is indistinguishable from a genuine 0." />
+    <ApiMember Name="GetAvailableTop"
+               Signature="Task<float> GetAvailableTop()"
+               Description="Y-coordinate of the top edge of the available screen area - the height of any OS bar docked at the top. Same non-standard caveat as GetAvailableLeft." />
+</ApiTable>
+
+@code {
+    private DemoConsole dimensionsOutput = default!;
+    private DemoConsole availableAreaOutput = default!;
+    private DemoConsole depthOutput = default!;
+    private DemoConsole extendedOutput = default!;
+    private DemoConsole changeOutput = default!;
+    private ButilSubscription? changeSub;
+
+    private async Task GetWidth()
+    {
+        try
+        {
+            await dimensionsOutput.Success("screen.width →", await screen.GetWidth());
+        }
+        catch (Exception ex)
+        {
+            await dimensionsOutput.Error("GetWidth failed →", ex.Message);
+        }
+    }
+
+    private async Task GetHeight()
+    {
+        try
+        {
+            await dimensionsOutput.Success("screen.height →", await screen.GetHeight());
+        }
+        catch (Exception ex)
+        {
+            await dimensionsOutput.Error("GetHeight failed →", ex.Message);
+        }
+    }
+
+    private async Task GetAvailableWidth()
+    {
+        try
+        {
+            await availableAreaOutput.Success("screen.availWidth →", await screen.GetAvailableWidth());
+        }
+        catch (Exception ex)
+        {
+            await availableAreaOutput.Error("GetAvailableWidth failed →", ex.Message);
+        }
+    }
+
+    private async Task GetAvailableHeight()
+    {
+        try
+        {
+            await availableAreaOutput.Success("screen.availHeight →", await screen.GetAvailableHeight());
+        }
+        catch (Exception ex)
+        {
+            await availableAreaOutput.Error("GetAvailableHeight failed →", ex.Message);
+        }
+    }
+
+    private async Task GetColorDepth()
+    {
+        try
+        {
+            await depthOutput.Success("screen.colorDepth →", await screen.GetColorDepth(), "bits");
+        }
+        catch (Exception ex)
+        {
+            await depthOutput.Error("GetColorDepth failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPixelDepth()
+    {
+        try
+        {
+            await depthOutput.Success("screen.pixelDepth →", await screen.GetPixelDepth(), "bits");
+        }
+        catch (Exception ex)
+        {
+            await depthOutput.Error("GetPixelDepth failed →", ex.Message);
+        }
+    }
+
+    private async Task GetIsExtended()
+    {
+        try
+        {
+            await extendedOutput.Success("screen.isExtended →", await screen.IsExtended());
+        }
+        catch (Exception ex)
+        {
+            await extendedOutput.Error("IsExtended failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            if (changeSub is not null)
+            {
+                await changeOutput.Warn("Already subscribed.");
+                return;
+            }
+
+            changeSub = await screen.SubscribeChange(() => _ = OnScreenChanged());
+            await changeOutput.Log("Subscribed to the screen change event.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task OnScreenChanged()
+    {
+        try
+        {
+            var width = await screen.GetWidth();
+            var height = await screen.GetHeight();
+            await changeOutput.Info("Screen changed →", width, "x", height);
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Change handler failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (changeSub is null)
+            {
+                await changeOutput.Warn("Not subscribed.");
+                return;
+            }
+
+            await changeSub.DisposeAsync();
+            changeSub = null;
+            await changeOutput.Log("Subscription removed.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (changeSub is not null)
+        {
+            await changeSub.DisposeAsync();
+            changeSub = null;
+        }
+    }
+}

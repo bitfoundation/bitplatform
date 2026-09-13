@@ -25,6 +25,12 @@ public partial class BitFcCalendarDayView : IDisposable
     private int? _dragHour;
     private int? _dragMinute;
 
+    // The hour slots exist only as add/drop targets, so a read-only grid must not expose 48
+    // focusable no-op buttons per day to keyboard and assistive-technology users. A null attribute
+    // value is omitted from the rendered markup.
+    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
     protected override void OnInitialized()
     {
         // The "Happening now" panel is derived from DateTime.Now; refresh once a minute so it
@@ -56,6 +62,9 @@ public partial class BitFcCalendarDayView : IDisposable
 
     private async Task OnHourClickAsync(int hour, int minute = 0)
     {
+        if (State.ReadOnly)
+            return;
+
         if (OnAddClick.HasDelegate)
         {
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(State.SelectedDate, hour, minute);
@@ -76,8 +85,12 @@ public partial class BitFcCalendarDayView : IDisposable
             await OnHourClickAsync(hour, minute);
     }
 
-    private string HourSlotAriaLabel(int hour, int minute = 0)
+    private string? HourSlotAriaLabel(int hour, int minute = 0)
     {
+        // The slot is inert in read-only mode, so it carries no label to announce.
+        if (State.ReadOnly)
+            return null;
+
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
         return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }

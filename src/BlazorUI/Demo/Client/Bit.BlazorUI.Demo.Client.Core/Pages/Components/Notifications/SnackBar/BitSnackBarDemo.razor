@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/snackbar"
             Title="Snackbar"
-            Description="SnackBars provide brief notifications. The component is also known as a toast." />
+            Description="Snackbars provide brief notifications - also known as toasts - stacked in a corner of the screen, announced to screen readers through a live region, and dismissed by the user or by a countdown that pauses while it is being read." />
 
 <DemoPage Name="SnackBar"
           SecondaryNames="@(["Toast"])"
-          Description="SnackBars provide brief notifications. The component is also known as a toast."
+          Description="Snackbars provide brief notifications. The component is also known as a toast. One host, placed once in the layout and captured by reference, shows every notification of the page: each Show call stacks a new item in the chosen corner and hands back the handle to close, update, pause or resume it. Items carry their own color, icon, lifetime, actions and content; each is announced through a live region the host has kept in the page from its first render, with the politeness its color implies; the auto-dismiss countdown holds while the pointer or the keyboard focus is inside an item; and a cap on how many fit at once decides whether the extras wait their turn, replace the oldest, or are dropped."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
@@ -14,16 +14,376 @@
           GitHubUrl="Notifications/SnackBar/BitSnackBar.razor"
           GitHubDemoUrl="Notifications/SnackBar/BitSnackBarDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+        <div>
+            A snack bar host renders nothing until something is shown in it, so it is placed once - normally in the
+            layout - and captured with <b>@@ref</b>. Each of the <b>Info</b>, <b>Success</b>, <b>Warning</b>,
+            <b>SevereWarning</b> and <b>Error</b> shortcuts shows a new item in the matching color and returns it, and
+            the plain <b>Show</b> takes any color. The item stays until it is dismissed, since auto-dismiss is opt-in.
+        </div>
+        <br />
         <BitSnackBar @ref="basicRef" />
         <BitButton OnClick="OpenBasicSnackBar">Open SnackBar</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Customization" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Position & Offset" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            The <b>Position</b> parameter pins the stack to one of the six corners and edges of the screen
+            (default is <b>BottomEnd</b>). The start/end naming follows the text direction, so a snack bar keeps to the
+            same side of the reading order in both LTR and RTL, and the enter animation always slides out of the edge
+            the stack is pinned to. <b>Offset</b> takes any CSS length and moves the whole stack away from those edges,
+            which is how a snack bar is kept clear of the chrome the app already has there - a bottom app bar, a cookie
+            banner, the safe area of a phone.
+        </div>
+        <br />
+        <BitSnackBar @ref="positionRef" Position="position" Offset="@offset" />
+        <BitChoiceGroup @bind-Value="position" Label="Position" Horizontal
+                        TItem="BitChoiceGroupOption<BitSnackBarPosition>" TValue="BitSnackBarPosition">
+            <BitChoiceGroupOption Text="TopStart" Value="BitSnackBarPosition.TopStart" />
+            <BitChoiceGroupOption Text="TopCenter" Value="BitSnackBarPosition.TopCenter" />
+            <BitChoiceGroupOption Text="TopEnd" Value="BitSnackBarPosition.TopEnd" />
+            <BitChoiceGroupOption Text="BottomStart" Value="BitSnackBarPosition.BottomStart" />
+            <BitChoiceGroupOption Text="BottomCenter" Value="BitSnackBarPosition.BottomCenter" />
+            <BitChoiceGroupOption Text="BottomEnd" Value="BitSnackBarPosition.BottomEnd" />
+        </BitChoiceGroup>
+        <br />
+        <BitChoiceGroup @bind-Value="offset" Label="Offset" Horizontal
+                        TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="8px (default)" Value="@("8px")" />
+            <BitChoiceGroupOption Text="2rem" Value="@("2rem")" />
+            <BitChoiceGroupOption Text="4rem" Value="@("4rem")" />
+        </BitChoiceGroup>
+        <br />
+        <BitButton OnClick="OpenPositionSnackBar">Open SnackBar</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Auto dismiss" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>AutoDismiss</b> starts a countdown for each item, <b>AutoDismissTime</b> sets how long it runs
+            (default is 3 seconds), and a bar along the bottom edge draws it out - <b>HideProgress</b> takes that bar
+            away and <b>ReverseProgress</b> makes it drain from full to empty rather than fill. Give anything the user
+            has to read or act on at least five seconds. The countdown holds while the pointer or the keyboard focus is
+            inside the item, which is what keeps a notification from being taken away from someone who is still reading
+            it or reaching for its action, and is how the countdown meets WCAG 2.2.1 without a longer timeout; set
+            <b>PauseOnHover</b> to false to opt out. <b>PauseOnPageHidden</b> holds it while the page sits in a
+            background tab, so a notification is not spent before the tab is looked at again, and
+            <b>PauseOnWindowBlur</b> does the same while the window is merely covered by another one - which the page
+            visibility API says nothing about. Both need <b>AddBitBlazorUIServices</b>; without it they turn
+            themselves off rather than fail.
+        </div>
+        <br />
+        <BitSnackBar @ref="autoDismissRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)"
+                     PauseOnPageHidden PauseOnWindowBlur />
+        <BitButton OnClick="OpenAutoDismiss">Hover me to pause the countdown</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="reverseProgressRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" ReverseProgress />
+        <BitButton OnClick="OpenReverseProgress">Draining progress bar</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="noProgressRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" HideProgress />
+        <BitButton OnClick="OpenNoProgress">No progress bar</BitButton>
+        <br /><br />
+        <div>
+            A single item can also ask for a lifetime of its own, which is how a short confirmation and a long report
+            can share one host:
+        </div>
+        <br />
+        <BitSnackBar @ref="perItemTimeRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(10)" />
+        <BitButton OnClick="OpenPerItemTime">Per-item dismiss time</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Persistent" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>Persistent</b> removes the dismiss button and keeps the item out of the countdown and out of the Escape
+            key, so it stays until the code that opened it closes it through <b>Close</b> - which is what a snack bar
+            reporting a job still in progress needs. The same is available per item through
+            <b>BitSnackBarItem.Persistent</b> (or the <b>persistent</b> argument of the shortcuts), so one host can mix
+            items that go away on their own with items that do not.
+        </div>
+        <br />
+        <BitSnackBar @ref="persistentRef" Persistent />
+        <BitButton OnClick="OpenPersistentSnackBar">Open SnackBar</BitButton>
+        <BitButton OnClick="ClosePersistentSnackBar">Close SnackBar</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="perItemPersistentRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(3)" />
+        <BitButton OnClick="OpenMixedPersistence">Open one of each</BitButton>
+        <br /><br />
+        <div>
+            <b>HideDismiss</b> only takes the button away: the item still counts down, still answers Escape and still
+            takes part in <b>DismissOnClick</b>. It is for the notification that carries its own way out - an action
+            button, or a countdown short enough that a second way out would only be noise.
+        </div>
+        <br />
+        <BitSnackBar @ref="hideDismissRef" HideDismiss AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
+        <BitButton OnClick="OpenHideDismiss">No dismiss button</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Swipe to dismiss" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>SwipeToDismiss</b> lets an item be dragged out of the way with the pointer, in either inline direction,
+            which is how a notification is thrown away on a touch screen where the dismiss button is a small target and
+            the pointer is a thumb. <b>SwipeThreshold</b> is how far the drag has to go before it counts (default is
+            50 pixels); anything short of that springs the item back. A persistent item does not follow the pointer at
+            all, for the same reason it has no dismiss button, and a dismissal this way reports itself as
+            <b>BitSnackBarDismissReason.Swipe</b>.
+        </div>
+        <br />
+        <BitSnackBar @ref="swipeRef" SwipeToDismiss SwipeThreshold="60" ShowIcon
+                     OnDismiss="HandleSwipeDismiss" />
+        <BitButton OnClick="OpenSwipe">Open, then drag it sideways</BitButton>
+        <br /><br />
+        <div>Last dismissal: <b>@swipeResult</b></div>
+    </DemoExample>
+
+    <DemoExample Title="Stacking" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>MaxItems</b> caps how many items are on screen at once, so a burst of notifications cannot grow into a
+            wall that covers the page, and <b>OverflowBehavior</b> decides what happens to the one that does not fit:
+            <b>DismissOldest</b> (the default) keeps the newest news on screen, <b>Queue</b> holds the item back until
+            a slot frees up so that none of them is missed - <b>PendingItems</b> is what is still waiting - and
+            <b>Skip</b> drops it. <b>NewestOnTop</b> puts the newest item at the head of the stack instead of the tail,
+            and <b>PreventDuplicates</b> skips an item whose title, body and color match one that is already showing,
+            returning that one instead, starting its countdown over and counting the repeat in
+            <b>BitSnackBarItem.DuplicateCount</b> - which is what a template shows the repeat with, so suppressing it
+            hides the noise without hiding that the thing happened again.
+        </div>
+        <br />
+        <BitSnackBar @ref="stackingRef" MaxItems="3" NewestOnTop="newestOnTop" PreventDuplicates="preventDuplicates"
+                     OverflowBehavior="overflowBehavior" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(4)"
+                     OnShow="HandleStackingChange" OnDismiss="HandleStackingChange" />
+        <BitChoiceGroup @bind-Value="overflowBehavior" Label="Overflow behavior" Horizontal
+                        TItem="BitChoiceGroupOption<BitSnackBarOverflowBehavior>" TValue="BitSnackBarOverflowBehavior">
+            <BitChoiceGroupOption Text="DismissOldest" Value="BitSnackBarOverflowBehavior.DismissOldest" />
+            <BitChoiceGroupOption Text="Queue" Value="BitSnackBarOverflowBehavior.Queue" />
+            <BitChoiceGroupOption Text="Skip" Value="BitSnackBarOverflowBehavior.Skip" />
+        </BitChoiceGroup>
+        <br />
+        <BitToggle @bind-Value="newestOnTop" Label="Newest on top" Inline />
+        <BitToggle @bind-Value="preventDuplicates" Label="Prevent duplicates" Inline />
+        <br />
+        <BitButton OnClick="OpenStacking">Show (max 3)</BitButton>
+        <BitButton OnClick="OpenDuplicate">Show a duplicate</BitButton>
+        <br /><br />
+        <div>
+            Showing: <b>@stackingRef?.Items.Count</b> &nbsp;
+            Waiting: <b>@stackingRef?.PendingItems.Count</b> &nbsp;
+            Repeats suppressed: <b>@duplicateItem?.DuplicateCount</b>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Icon" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            <b>ShowIcon</b> puts a leading glyph in each item, chosen from its color, which makes the severity of a
+            notification readable at a glance instead of from the fill alone. <b>IconName</b> replaces that glyph for
+            every item, <b>BitSnackBarItem.IconName</b> for a single one, and <b>BitSnackBarItem.HideIcon</b> drops it
+            from one item while the rest keep theirs. The glyph is decorative, so it is hidden from screen readers -
+            the text is what they announce.
+        </div>
+        <br />
+        <BitSnackBar @ref="iconRef" ShowIcon />
+        <BitButton OnClick="OpenIconInfo">Info</BitButton>
+        <BitButton OnClick="OpenIconSuccess">Success</BitButton>
+        <BitButton OnClick="OpenIconError">Error</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="customIconRef" ShowIcon IconName="@BitIconName.Ringer" />
+        <BitButton OnClick="OpenCustomIcon">Custom icon</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="perItemIconRef" ShowIcon />
+        <BitButton OnClick="OpenPerItemIcon">Per-item icon</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Actions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            An action is the point of a notification that reports something the user can still do about it - "Undo",
+            "Retry", "View". <b>ActionsTemplate</b> renders that content under the body of every item and receives the
+            item, so one template can act on whichever notification it was rendered for; a single item can carry its
+            own <b>BitSnackBarItem.Actions</b> instead. Keep the countdown long enough (or the item persistent) for the
+            action to be reachable - the pause on hover and focus already holds it while the button is being aimed at.
+        </div>
+        <br />
+        <BitSnackBar @ref="actionsRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(8)" ShowIcon>
+            <ActionsTemplate Context="item">
+                <BitButton Variant="BitVariant.Text" Color="BitColor.TertiaryBackground" OnClick="() => Undo(item)">Undo</BitButton>
+            </ActionsTemplate>
+        </BitSnackBar>
+        <BitButton OnClick="OpenActions">Delete item</BitButton>
+        <br /><br />
+        <div>Last action: <b>@actionResult</b></div>
+    </DemoExample>
+
+    <DemoExample Title="Multiline" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            By default the title and the body are kept to a single line and cut off with an ellipsis, with the full text
+            in a tooltip, which keeps the stack the same size no matter what is shown in it. <b>Multiline</b> lets both
+            wrap instead, for the notifications whose whole text has to be read. Neither shows until the item has a width
+            to run out of: an item is only as wide as its longest line needs, so the same message sits on one line either
+            way until <b>MaxWidth</b> caps it - at that measure the default truncates and a multiline one wraps.
+        </div>
+        <br />
+        <BitSnackBar @ref="uncappedRef" />
+        <BitButton OnClick="OpenUncapped">Uncapped</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="singleLineRef" MaxWidth="20rem" />
+        <BitButton OnClick="OpenSingleLine">Single line, capped at 20rem</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="multilineRef" Multiline MaxWidth="20rem" />
+        <BitButton OnClick="OpenMultiline">Multiline, capped at 20rem</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>TitleTemplate</b> and <b>BodyTemplate</b> replace the text of the header and of the body, each receiving
+            the string it stands in for, while <b>Template</b> takes over the whole item - header, body and actions -
+            and receives the item itself. A template that takes over the item is responsible for whatever of it should
+            still be there, including a way to dismiss it; the countdown bar is still drawn underneath.
+        </div>
+        <br />
+        <BitSnackBar @ref="titleTemplateRef">
+            <TitleTemplate Context="title">
+                <div style="display: flex; flex-direction: row; gap: 10px;">
+                    <span>@title</span>
+                    <BitProgress Thickness="20" Style="width: 40px;" Indeterminate />
+                </div>
+            </TitleTemplate>
+        </BitSnackBar>
+        <BitButton OnClick="OpenTitleTemplate">Title template</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="bodyTemplateRef">
+            <BodyTemplate Context="body">
+                <div style="display: flex; flex-flow: column nowrap; gap: 5px;">
+                    <span style="font-size: 12px; margin-bottom: 5px;">@body</span>
+                    <div style="display: flex; gap: 10px;">
+                        <BitButton OnClick="@(() => bodyTemplateAnswer = "Yes")">Yes</BitButton>
+                        <BitButton OnClick="@(() => bodyTemplateAnswer = "No")">No</BitButton>
+                    </div>
+                    <span>Answer: @bodyTemplateAnswer</span>
+                </div>
+            </BodyTemplate>
+        </BitSnackBar>
+        <BitButton OnClick="OpenBodyTemplate">Body template</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="fullTemplateRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(6)">
+            <Template Context="item">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <BitPersona PrimaryText="@item.Title" SecondaryText="@item.Body" Size="BitPersonaSize.Size32" />
+                    <BitButton Variant="BitVariant.Text" Color="BitColor.TertiaryBackground"
+                               IconName="@BitIconName.Cancel" OnClick="() => fullTemplateRef.Close(item)" />
+                </div>
+            </Template>
+        </BitSnackBar>
+        <BitButton OnClick="OpenFullTemplate">Item template</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>OnShow</b> and <b>OnDismiss</b> report the item that arrived or left, and
+            <b>BitSnackBarItem.DismissReason</b> tells which of them took it away - the button, the Escape key, a
+            click, a swipe, the countdown, a <b>Close</b> call, <b>Clear</b>, or the host making room for a newer
+            item - so a callback can tell a notification the user threw away from one that simply ran out of time.
+            <b>OnItemClick</b> reports a click anywhere inside an item, and <b>DismissOnClick</b> makes that click
+            dismiss it as well, which is the usual way a notification that links somewhere gets out of the way once it
+            is followed; a clickable item carries a tab stop of its own and answers Enter and Space, so it is reachable
+            without a pointer. Each item can also carry its own <b>OnClick</b> and <b>OnDismiss</b> callbacks, which
+            run first, and its own <b>BitSnackBarItem.Data</b> - a payload the component never reads, so a shared
+            callback can find the entity or the correlation id the notification was about without a lookup table.
+        </div>
+        <br />
+        <BitSnackBar @ref="eventsRef" DismissOnClick AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(6)"
+                     OnShow="HandleOnShow" OnDismiss="HandleOnDismiss" OnItemClick="HandleOnItemClick" />
+        <BitButton OnClick="OpenEvents">Open SnackBar</BitButton>
+        <br /><br />
+        <div>Log:</div>
+        <ul>
+            @foreach (var log in eventLogs)
+            {
+                <li>@log</li>
+            }
+        </ul>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic control" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            The item a <b>Show</b> call returns is the handle to the notification: change its title, body or color and
+            hand it to <b>Update</b> to turn it into the report of whatever it was waiting for, restarting its
+            countdown and announcing it again. <b>Pause</b> and <b>Resume</b> hold and release that countdown from
+            code - a hold of its own, which the pointer wandering over the item and away again does not let go -
+            <b>Clear</b> closes everything at once, and <b>Items</b> is the list of what is showing right now.
+            <b>ClearOnNavigation</b> does that last one for you the moment the app routes somewhere else, so a
+            notification about the page it was raised on does not outlive that page.
+        </div>
+        <br />
+        <BitSnackBar @ref="controlRef" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(6)" ShowIcon
+                     OnShow="HandleControlChange" OnDismiss="HandleControlChange" />
+        <BitButton OnClick="StartUpload">Start upload</BitButton>
+        <BitButton OnClick="CompleteUpload" IsEnabled="uploadItem is not null">Complete upload</BitButton>
+        <br /><br />
+        <BitButton OnClick="PauseAll">Pause</BitButton>
+        <BitButton OnClick="ResumeAll">Resume</BitButton>
+        <BitButton OnClick="ClearAll">Clear all</BitButton>
+        <br /><br />
+        <div>Showing: <b>@controlRef?.Items.Count</b></div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            A notification nobody can see has to be heard. An element that arrives with its text already inside it is
+            silent in most screen readers, so the host keeps two live regions in the page from its first render and
+            puts the text of an arriving item into whichever matches how loudly it asked to be heard: the colors that
+            report a problem interrupt as an <b>alert</b>, the rest wait for a pause as a <b>status</b>. <b>Role</b>
+            (or <b>BitSnackBarItem.Role</b>) overrides that choice, and a role that is not a live one leaves the item
+            unannounced. <b>BitSnackBarItem.AnnounceText</b> replaces what is said, for an item whose text on screen is
+            not what should be read out - an abbreviation, or a <b>Template</b> whose content lives elsewhere.
+        </div>
+        <br />
+        <div>
+            The rest is the same care in the other places: <b>AriaLabel</b> names the region a screen reader user jumps
+            to, <b>DismissAriaLabel</b> names the dismiss button (which is last in the DOM although it is drawn first
+            from the end, so the notification is read before the button that throws it away), Escape closes the item
+            the focus is inside and hands the focus on to the next one, and the countdown holds while the item is being
+            read.
+        </div>
+        <br />
+        <BitSnackBar @ref="a11yRef" ShowIcon AriaLabel="Demo notifications" DismissAriaLabel="Dismiss notification" />
+        <BitButton OnClick="OpenPoliteA11y">Polite (status)</BitButton>
+        <BitButton OnClick="OpenAssertiveA11y">Assertive (alert)</BitButton>
+        <BitButton OnClick="OpenAnnounceText">Custom announcement</BitButton>
+        <BitButton OnClick="OpenSilentA11y">Unannounced</BitButton>
+        <br /><br />
+        <div>
+            A notification sits at the end of the document and takes itself away again, so without a shortcut a
+            keyboard user has no reliable way to reach one before it is gone. <b>Hotkey</b> is that shortcut: a list of
+            <b>KeyboardEvent.code</b> values (the modifiers written as <b>altKey</b>, <b>ctrlKey</b>, <b>shiftKey</b>,
+            <b>metaKey</b>) that moves the focus to the notification region, from where the next Tab walks into the
+            dismiss buttons and the actions. Name it in <b>AriaLabel</b> so it can be found, and use <b>FocusAsync</b>
+            instead where the app has a shortcut registry of its own.
+        </div>
+        <br />
+        <BitSnackBar @ref="hotkeyRef" Hotkey="@(["F8"])" AriaLabel="Notifications (F8)"
+                     AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(30)" ShowIcon>
+            <ActionsTemplate Context="item">
+                <BitButton Variant="BitVariant.Text" Color="BitColor.TertiaryBackground"
+                           OnClick="() => hotkeyRef.Close(item)">Got it</BitButton>
+            </ActionsTemplate>
+        </BitSnackBar>
+        <BitButton OnClick="OpenHotkey">Open, then press F8</BitButton>
+        <BitButton OnClick="FocusSnackBars">Focus the region from code</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Customization" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            Everything the snack bar offers, in one place: pick a color, a position, a direction and a lifetime, type a
+            title and a body, then show it. <b>TransitionDuration</b> is how long the enter and exit animations run
+            (default 200ms) - a dismissed item is kept in the DOM for that long so its exit can play, and zero takes it
+            away at once with no animation at all.
+        </div>
+        <br />
         <BitSnackBar @ref="customizationRef"
                      Dir="direction"
+                     Size="customSize"
+                     ShowIcon="customShowIcon"
+                     Variant="customVariant"
                      Position="basicSnackBarPosition"
                      Multiline="basicSnackBarMultiline"
                      AutoDismiss="basicSnackBarAutoDismiss"
+                     TransitionDuration="customTransitionDuration"
                      AutoDismissTime="TimeSpan.FromSeconds(basicSnackBarDismissSeconds)" />
 
         <BitButton OnClick="OpenCustomizationSnackBar">Show</BitButton>
@@ -67,10 +427,27 @@
             </div>
 
             <div>
+                <BitChoiceGroup @bind-Value="customVariant" Label="Variant" TItem="BitChoiceGroupOption<BitVariant>" TValue="BitVariant">
+                    <BitChoiceGroupOption Text="Fill" Value="BitVariant.Fill" />
+                    <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
+                    <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
+                </BitChoiceGroup>
+                <br />
+                <BitChoiceGroup @bind-Value="customSize" Label="Size" TItem="BitChoiceGroupOption<BitSize>" TValue="BitSize">
+                    <BitChoiceGroupOption Text="Small" Value="BitSize.Small" />
+                    <BitChoiceGroupOption Text="Medium" Value="BitSize.Medium" />
+                    <BitChoiceGroupOption Text="Large" Value="BitSize.Large" />
+                </BitChoiceGroup>
+            </div>
+
+            <div>
                 <BitToggle @bind-Value="basicSnackBarAutoDismiss" Label="Auto Dismiss" Inline />
                 <BitNumberField @bind-Value="basicSnackBarDismissSeconds" IsEnabled="basicSnackBarAutoDismiss" Step="1" Min="1" Label="Dismiss Time (based on second)" />
+                <br />
+                <BitNumberField @bind-Value="customTransitionDuration" Step="50" Min="0" Max="2000" Label="Transition Duration (ms)" />
                 <br /><br />
                 <BitToggle @bind-Value="basicSnackBarMultiline" Label="Multiline" Inline />
+                <BitToggle @bind-Value="customShowIcon" Label="Show Icon" Inline />
                 <br /><br />
                 <BitTextField @bind-Value="basicSnackBarTitle" Label="Title" DefaultValue="Title" />
                 <BitTextField @bind-Value="basicSnackBarBody" Label="Body" Multiline Rows="6" DefaultValue="This is a body!" />
@@ -79,44 +456,39 @@
         <br />
     </DemoExample>
 
-    <DemoExample Title="Persistent" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <BitSnackBar @ref="persistentRef" Persistent />
-        <BitButton OnClick="OpenPersistentSnackBar">Open SnackBar</BitButton>
-        <BitButton OnClick="ClosePersistentSnackBar">Close SnackBar</BitButton>
-    </DemoExample>
-
-    <DemoExample Title="Templates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <BitSnackBar @ref="dismissIconNameRef" DismissIconName="@BitIconName.Go" />
-        <BitButton OnClick="OpenDismissIconName">Dismiss Icon Name</BitButton>
-        <br /><br />
-        <BitSnackBar @ref="titleTemplateRef" AutoDismiss="false">
-            <TitleTemplate Context="title">
-                <div style="display: flex; flex-direction: row; gap: 10px;">
-                    <span>@title</span>
-                    <BitProgress Thickness="20" Style="width: 40px;" Indeterminate />
-                </div>
-            </TitleTemplate>
-        </BitSnackBar>
-        <BitButton OnClick="OpenTitleTemplate">Title Template</BitButton>
-        <br /><br />
-        <BitSnackBar @ref="bodyTemplateRef" AutoDismiss="false">
-            <BodyTemplate Context="body">
-                <div style="display: flex; flex-flow: column nowrap; gap: 5px;">
-                    <span style="font-size: 12px; margin-bottom: 5px;">@body</span>
-                    <div style="display: flex; gap: 10px;">
-                        <BitButton OnClick="@(() => bodyTemplateAnswer = "Yes")">Yes</BitButton>
-                        <BitButton OnClick="@(() => bodyTemplateAnswer = "No")">No</BitButton>
-                    </div>
-                    <span>Answer: @bodyTemplateAnswer</span>
-                </div>
-            </BodyTemplate>
-        </BitSnackBar>
-        <BitButton OnClick="OpenBodyTemplate">Body Template</BitButton>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
-            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>DismissIcon</b> parameter.
+            The color of an item comes from the general <b>BitColor</b> palette, either through one of the named
+            shortcuts or through the <b>color</b> argument of <b>Show</b>. It decides the fill and the foreground, the
+            default leading icon, and how the item is announced: the colors that report a problem (Warning,
+            SevereWarning, Error) interrupt the screen reader as an <b>alert</b>, the rest wait for a pause as a
+            <b>status</b>. <b>Variant</b> switches all of them between the filled, outlined and text looks.
+        </div>
+        <br />
+        <BitSnackBar @ref="colorRef" ShowIcon Variant="colorVariant" MaxItems="4" NewestOnTop />
+        <BitChoiceGroup @bind-Value="colorVariant" Label="Variant" Horizontal TItem="BitChoiceGroupOption<BitVariant>" TValue="BitVariant">
+            <BitChoiceGroupOption Text="Fill" Value="BitVariant.Fill" />
+            <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
+            <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
+        </BitChoiceGroup>
+        <br />
+        <div class="buttons-container">
+            <BitButton OnClick="@(async () => await colorRef.Info("Info", "This is an info notification."))">Info</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Success("Success", "This is a success notification."))">Success</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Warning("Warning", "This is a warning notification."))">Warning</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.SevereWarning("SevereWarning", "This is a severe warning notification."))">SevereWarning</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Error("Error", "This is an error notification."))">Error</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Show("Primary", "This is a primary notification.", BitColor.Primary))">Primary</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Show("Secondary", "This is a secondary notification.", BitColor.Secondary))">Secondary</BitButton>
+            <BitButton OnClick="@(async () => await colorRef.Show("Tertiary", "This is a tertiary notification.", BitColor.Tertiary))">Tertiary</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <div>
+            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>DismissIcon</b> and
+            <b>Icon</b> parameters. <b>BitIconInfo.Fa</b>, <b>BitIconInfo.Bi</b> and <b>BitIconInfo.Css</b> build the
+            class list for a library, and a bare string of CSS classes converts to one implicitly.
         </div>
 
         <br /><br />
@@ -130,6 +502,9 @@
         <br /><br />
         <BitSnackBar @ref="dismissIconCssRef" DismissIcon="@BitIconInfo.Css("fa-solid fa-x")" />
         <BitButton OnClick="OpenDismissIconCss">CSS classes dismiss icon</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="leadingIconFaRef" ShowIcon Icon="@BitIconInfo.Fa("solid circle-info")" />
+        <BitButton OnClick="OpenLeadingIconFa">FontAwesome leading icon</BitButton>
         <br /><br /><br /><br />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
@@ -143,25 +518,61 @@
         <BitButton OnClick="OpenDismissIconImplicit">Implicit CSS dismiss icon</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            <b>Size</b> scales the padding, the gaps and the type of the items between <b>Small</b>, <b>Medium</b>
+            (the default) and <b>Large</b>, so a snack bar can sit alongside the density of the rest of the app.
+        </div>
+        <br />
+        <BitSnackBar @ref="sizeSmallRef" ShowIcon Size="BitSize.Small" />
+        <BitButton OnClick="OpenSizeSmall">Small</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="sizeMediumRef" ShowIcon Size="BitSize.Medium" />
+        <BitButton OnClick="OpenSizeMedium">Medium</BitButton>
+        <br /><br />
+        <BitSnackBar @ref="sizeLargeRef" ShowIcon Size="BitSize.Large" />
+        <BitButton OnClick="OpenSizeLarge">Large</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <div>
+            A single item takes a <b>cssStyle</b> and a <b>cssClass</b> of its own through <b>Show</b>, which is how one
+            notification is made to stand out from the rest of the host. <b>Styles</b> and <b>Classes</b> reach every
+            part of every item - root, container, header, icon, title, body, actions, dismiss button and progress bar.
+        </div>
+        <br />
         <div>
             <div>Item's Style & Class:</div><br />
             <BitSnackBar @ref="snackBarStyleRef" />
             <BitButton OnClick="OpenSnackBarStyle">Custom style</BitButton>
             <br /><br />
             <BitSnackBar @ref="snackBarClassRef" />
-            <BitButton OnClick="OpenSnackBarClass">Custom style</BitButton>
+            <BitButton OnClick="OpenSnackBarClass">Custom class</BitButton>
             <br /><br /><br /><br />
             <div>Styles & Classes:</div><br />
             <BitSnackBar @ref="snackBarStylesRef"
                          Styles="@(new() { Container = "width: 16rem; background-color: purple;",
-                                     Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
-                <BitButton OnClick="OpenSnackBarStyles">Custom styles</BitButton>
-                <br /><br />
+                                           Header = "background-color: rebeccapurple; padding: 0.2rem;" })" />
+            <BitButton OnClick="OpenSnackBarStyles">Custom styles</BitButton>
+            <br /><br />
             <BitSnackBar @ref="snackBarClassesRef" AutoDismiss
                          Classes="@(new() { Container = "custom-container",
-                                     ProgressBar = "custom-progress" })" />
+                                            ProgressBar = "custom-progress" })" />
             <BitButton OnClick="OpenSnackBarClasses">Custom classes</BitButton>
-            </div>
-            </DemoExample>
-                </DemoPage>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay a snack bar out right-to-left. The positions are named after the
+            reading order rather than the screen, so a <b>BottomStart</b> stack sits at the bottom right here, the
+            leading icon comes first from the right, and the dismiss button keeps to the inline end.
+        </div>
+        <br />
+        <BitSnackBar @ref="rtlRef" Dir="BitDir.Rtl" ShowIcon Position="BitSnackBarPosition.BottomEnd"
+                     AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(5)" />
+        <div dir="rtl">
+            <BitButton Dir="BitDir.Rtl" OnClick="OpenRtl">نمایش پیام</BitButton>
+        </div>
+    </DemoExample>
+</DemoPage>

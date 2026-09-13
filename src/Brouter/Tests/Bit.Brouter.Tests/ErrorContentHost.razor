@@ -40,6 +40,13 @@
             <Content><div data-testid="root-content">root ok</div></Content>
         </Broute>
 
+        @* No route-level ErrorContent, and a loader that only starts failing when the test says so:
+           the page renders first and a later pass (a reload) falls through to the ROUTER-level
+           boundary below - the one case where the failure empties the committed chain. *@
+        <Broute Path="/rooterr" Loader="RootErrLoader">
+            <Content><div data-testid="rooterr-page">rooterr</div></Content>
+        </Broute>
+
         @* Keep-alive Component route whose lifecycle context survives an error render: the page it
            instantiates (ErrorLockPage) auto-registers a navigation lock and never unregisters -
            when ErrorContent replaces it, its stale registration must not outlive it. *@
@@ -118,6 +125,14 @@
 
     private ValueTask<object?> RootFailLoader(BrouterNavigationContext ctx)
         => throw new InvalidOperationException("root loader failed");
+
+    // Toggled by tests: lets /rooterr render fine first, then fail on a later pass.
+    public bool RootErrShouldFail { get; set; }
+
+    private ValueTask<object?> RootErrLoader(BrouterNavigationContext ctx)
+        => RootErrShouldFail
+            ? throw new InvalidOperationException("rooterr loader failed")
+            : ValueTask.FromResult<object?>(null);
 
     private ValueTask<object?> ELockLoader(BrouterNavigationContext ctx)
         => ELockShouldFail

@@ -8,18 +8,20 @@ public partial class NavMenu : IDisposable
     private List<BitNavItem> filteredNavItems = default!;
     
 
-    [AutoInject] private NavManuService navMenuService = default!;
+    [AutoInject] private NavMenuService navMenuService = default!;
 
 
     [Parameter] public List<BitNavItem> NavItems { get; set; } = [];
 
 
 
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
         navMenuService.OnToggleMenu += ToggleMenu;
 
         HandleOnClear();
+
+        return base.OnInitAsync();
     }
 
     protected override void OnParametersSet()

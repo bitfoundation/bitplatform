@@ -9,6 +9,14 @@
     z-index: 999999999;
     text-align: center;
     font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    /* The full-viewport root itself swallows no clicks: when the app is force-started under
+       a fatal first-install error panel (or any host keeps content behind the splash), the
+       page stays usable outside the splash content. Interactive children re-enable below. */
+    pointer-events: none;
+}
+
+#bit-bswup > * {
+    pointer-events: auto;
 }
 
 .bit-bswup-container {
@@ -46,6 +54,10 @@
     position: fixed;
     top: 10px;
     right: 10px;
+    /* The button no longer lives inside #bit-bswup (see BswupProgress.razor), so it no longer
+       inherits the overlay's stacking; without its own z-index any fixed app chrome (sticky
+       headers, toasts - usually parked exactly top-right) painted over it. */
+    z-index: 999999999;
 }
 
 #bit-bswup-assets {
@@ -53,4 +65,57 @@
     overflow: auto;
     height: 50vh;
     text-align: left;
+}
+
+.bit-bswup-error {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid rgb(168, 0, 0);
+    background-color: rgb(253, 231, 233);
+    color: rgb(89, 0, 0);
+    border-radius: 4px;
+    text-align: left;
+}
+
+.bit-bswup-error-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+}
+
+.bit-bswup-error-message {
+    font-size: 13px;
+    margin: 0 0 8px 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.bit-bswup-error-details {
+    font-size: 11px;
+    margin: 0 0 8px 0;
+    padding: 6px 8px;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 30vh;
+    overflow: auto;
+}
+
+#bit-bswup-error-retry {
+    display: none;
+}
+
+/* Screen-reader-only: keeps the role="status" announcement region in the accessibility tree
+   without rendering anything (display:none would silence it entirely). */
+.bit-bswup-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
 }

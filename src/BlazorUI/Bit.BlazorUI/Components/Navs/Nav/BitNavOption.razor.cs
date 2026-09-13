@@ -37,7 +37,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Aria label when nav  option is collapsed and can be expanded.
+    /// Aria label of the toggle button when the nav option is expanded and can be collapsed.
     /// </summary>
     [Parameter] public string? CollapseAriaLabel { get; set; }
 
@@ -52,7 +52,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public string? Description { get; set; }
 
     /// <summary>
-    /// Aria label when nav option is collapsed and can be expanded.
+    /// Aria label of the toggle button when the nav option is collapsed and can be expanded.
     /// </summary>
     [Parameter] public string? ExpandAriaLabel { get; set; }
 
@@ -173,12 +173,7 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
         if (Nav is not null)
         {
-            if (Nav.AllExpanded)
-            {
-                Nav.SetIsExpanded(this, true);
-            }
-
-            Nav.SetItemExpanded(this, Nav.GetIsExpanded(this) ?? false);
+            Nav.SetItemExpanded(this, Nav.AllExpanded || (Nav.GetIsExpanded(this) ?? false));
 
             if (Nav.Mode == BitNavMode.Automatic)
             {

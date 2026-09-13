@@ -53,9 +53,25 @@ public class BitCircularTimePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the callout header, the container of the CalloutHeaderTemplate.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout footer, the container of the CalloutFooterTemplate.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the toolbar of the BitCircularTimePicker.
     /// </summary>
     public string? Toolbar { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the body of the BitCircularTimePicker - everything under the toolbar:
+    /// the clock, the AM/PM pair when it is placed there, and the row of actions.
+    /// </summary>
+    public string? Body { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the hour and minute container of the BitCircularTimePicker.
@@ -71,6 +87,11 @@ public class BitCircularTimePickerClassStyles
     /// Custom CSS classes/styles for the minute button of the BitCircularTimePicker.
     /// </summary>
     public string? MinuteButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the second button of the BitCircularTimePicker.
+    /// </summary>
+    public string? SecondButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the hour minute separator of the BitCircularTimePicker.
@@ -128,6 +149,12 @@ public class BitCircularTimePickerClassStyles
     public string? ClockSelectedNumber { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for a clock number that cannot be selected, because of the
+    /// time bounds, the steps or the allowed-value predicates of the BitCircularTimePicker.
+    /// </summary>
+    public string? ClockDisabledNumber { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the clock pointer of the BitCircularTimePicker.
     /// </summary>
     public string? ClockPointer { get; set; }
@@ -138,7 +165,8 @@ public class BitCircularTimePickerClassStyles
     public string? ClockPointerThumb { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the clock pointer thumb minute of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker when it does not
+    /// rest on a number of the dial - between two marks, or on a part of the time that has not been set yet.
     /// </summary>
     public string? ClockPointerThumbMinute { get; set; }
 
@@ -151,4 +179,19 @@ public class BitCircularTimePickerClassStyles
     /// Custom CSS classes/styles for the close button icon of the BitCircularTimePicker.
     /// </summary>
     public string? CloseButtonIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the row holding the "now" and "clear" buttons of the BitCircularTimePicker.
+    /// </summary>
+    public string? Actions { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the button that sets the BitCircularTimePicker to the current time.
+    /// </summary>
+    public string? NowButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the button that clears the value of the BitCircularTimePicker.
+    /// </summary>
+    public string? ClearButton { get; set; }
 }

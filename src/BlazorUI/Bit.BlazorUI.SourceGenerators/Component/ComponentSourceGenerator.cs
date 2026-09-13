@@ -125,6 +125,10 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
+// A parameter marked obsolete is still a parameter: it has to keep being assigned here for as long as it
+// exists, and the deprecation is a message for whoever sets it, not for the code that reads the set value.
+#pragma warning disable CS0618
+
 namespace {namespaceName}
 {{
     public partial class {className}

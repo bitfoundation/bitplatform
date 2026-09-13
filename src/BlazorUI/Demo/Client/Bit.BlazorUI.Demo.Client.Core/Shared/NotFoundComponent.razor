@@ -8,11 +8,26 @@
     <meta name="robots" content="noindex, follow" />
 </HeadContent>
 
-<div class="main">
-    <div>
-        <div class="title"></div>
-        <div class="description">Page Not Found</div>
+@* A dead end is the one thing a 404 must not be. The old page offered a single "Go Back" button;
+   this one offers the three things a visitor who mistyped a component URL actually wants: the
+   search that finds it, the index that lists everything, and the way home. *@
+<div class="not-found">
+    <div class="not-found-art" role="img" aria-label="404"></div>
+
+    <BitText Element="h1" Typography="BitTypography.H3" Class="not-found-title">This page does not exist</BitText>
+
+    <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="not-found-text">
+        The link may be out of date, or the component may have been renamed. Search for it by name -
+        including the name another library would use for it.
+    </BitText>
+
+    <div class="not-found-search">
+        <ComponentSearchBox Placeholder="Search components" />
     </div>
-    <div class="disconnected-cable"></div>
-    <BitButton Class="not-found-back-btn" OnClick="BackToHome">Go Back</BitButton>
+
+    <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" HorizontalAlign="BitAlignment.Center">
+        <BitButton OnClick="BackToHome" IconName="@BitIconName.Home">Go to home</BitButton>
+        <BitButton Href="/components" Variant="BitVariant.Outline" IconName="@BitIconName.Puzzle">All components</BitButton>
+        <BitButton Href="/overview" Variant="BitVariant.Text" Color="BitColor.SecondaryForeground">Read the docs</BitButton>
+    </BitStack>
 </div>

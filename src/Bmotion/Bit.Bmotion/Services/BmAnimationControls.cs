@@ -17,6 +17,10 @@ public sealed class BmAnimationControls
     private readonly BmotionAnimationEngine _engine;
     private readonly Task _completion;
     private readonly Action _release;
+    // Set for a BmSequence: its segment starts live on a timeline playhead, not on the elements,
+    // so the rate has to reach the playhead too or pausing/speeding a timeline would only affect
+    // whichever segment happened to be running.
+    private readonly Action<double>? _setTimelineRate;
     private int _released;
     // Serializes the release/claim decision with the engine calls it guards: without it,
     // SetSpeed could observe _released == 0, lose the CPU, and then touch elements a concurrent
@@ -24,12 +28,14 @@ public sealed class BmAnimationControls
     private readonly object _sync = new();
 
     internal BmAnimationControls(
-        IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release)
+        IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release,
+        Action<double>? setTimelineRate = null)
     {
         _elementIds = elementIds;
         _engine = engine;
         _completion = completion;
         _release = release;
+        _setTimelineRate = setTimelineRate;
     }
 
     // Release the engine refcount exactly once - whether the animation finishes naturally, is
@@ -62,6 +68,9 @@ public sealed class BmAnimationControls
             if (System.Threading.Volatile.Read(ref _released) != 0) return;
             foreach (var id in _elementIds)
                 _engine.SetPlaybackRate(id, speed);
+            // Segments that haven't started yet are governed by the timeline playhead, so the same
+            // rate applies there - otherwise a paused sequence would keep starting its later steps.
+            _setTimelineRate?.Invoke(speed);
         }
     }
 

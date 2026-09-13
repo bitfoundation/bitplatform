@@ -3,5 +3,5 @@
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms and conditions.")]
-    public bool TermsAgreement { get; set; } = true;
+    public bool TermsAgreement { get; set; }
 }

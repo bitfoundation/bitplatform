@@ -11,14 +11,32 @@ public partial class ODataQuery
 
     public string? Filter { get; set; }
 
+    /// <remarks>
+    /// Both operands are parenthesized: OData binds `and` tighter than `or`, so appending ` and X` to a filter that
+    /// already contains a top-level `or` would re-associate it - `A or B and C` is `A or (B and C)` - and the server
+    /// would silently answer with a superset of the intended rows.
+    /// </remarks>
     public string AndFilter
     {
-        set => Filter = Filter != null ? $"{Filter} and {value}" : value;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+
+            Filter = string.IsNullOrWhiteSpace(Filter) ? value : $"({Filter}) and ({value})";
+        }
     }
 
+    /// <remarks>
+    /// <inheritdoc cref="AndFilter"/>
+    /// </remarks>
     public string OrFilter
     {
-        set => Filter = Filter != null ? $"{Filter} or {value}" : value;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+
+            Filter = string.IsNullOrWhiteSpace(Filter) ? value : $"({Filter}) or ({value})";
+        }
     }
 
     public string? OrderBy { get; set; }
@@ -40,27 +58,27 @@ public partial class ODataQuery
             qs.Add("$skip", Skip.ToString()!);
         }
 
-        if (string.IsNullOrEmpty(Filter) is false)
+        if (string.IsNullOrWhiteSpace(Filter) is false)
         {
             qs.Add("$filter", Filter);
         }
 
-        if (string.IsNullOrEmpty(OrderBy) is false)
+        if (string.IsNullOrWhiteSpace(OrderBy) is false)
         {
             qs.Add("$orderby", OrderBy);
         }
 
-        if (string.IsNullOrEmpty(Select) is false)
+        if (string.IsNullOrWhiteSpace(Select) is false)
         {
             qs.Add("$select", Select);
         }
 
-        if (string.IsNullOrEmpty(Expand) is false)
+        if (string.IsNullOrWhiteSpace(Expand) is false)
         {
             qs.Add("$expand", Expand);
         }
 
-        if (string.IsNullOrEmpty(Search) is false)
+        if (string.IsNullOrWhiteSpace(Search) is false)
         {
             qs.Add("$search", Search);
         }

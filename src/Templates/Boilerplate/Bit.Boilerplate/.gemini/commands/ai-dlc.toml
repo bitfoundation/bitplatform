@@ -1,0 +1,9 @@
+description = "Drive a feature end-to-end with the AI-Driven Development Lifecycle: requirements, plan, design, implement, validate - with approval gates before any code is written."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/ai-dlc.agent.md}
+
+Feature or task: {{args}}
+"""

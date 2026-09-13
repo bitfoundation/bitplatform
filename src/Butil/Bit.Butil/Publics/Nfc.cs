@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Web_NFC_API">Web NFC API</see>
 /// (<c>NDEFReader</c>). Available on Chromium for Android only.
 /// </summary>
+[ButilService(typeof(Nfc))]
 public class Nfc(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ReadingMethodName = nameof(InvokeNdefReading);
@@ -90,6 +91,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> WriteUrl(string url, string? id = null)
         => js.Invoke<bool>("BitButil.nfc.writeUrl", url, id);
 
+    /// <summary>Stops every scan started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

@@ -1,0 +1,66 @@
+// Fluent 2 preset - light elevation. Fluent 2 casts every shadow as a pair: a tight ambient ring
+// that separates the surface from what is under it, and an offset key shadow that gives it height.
+// The ramp is shadow2 / 4 / 8 / 16 / 28 / 64, named for the key blur, over
+// colorNeutralShadowAmbient rgba(0,0,0,0.12) and colorNeutralShadowKey rgba(0,0,0,0.14). It lives
+// beside the palette rather than in tokens.fluent2.scss because those two alphas are per-scheme.
+// Scoped-preset twins: see the note in colors.fluent-light.scss.
+:root[bit-theme="fluent2"],
+:root [bit-theme="fluent2"],
+:root[bit-theme="fluent2-light"],
+:root [bit-theme="fluent2-light"] {
+    // The legacy callout primitives: what a floating surface and a heavier one are lifted by.
+    --bit-shd-cal: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-cal2: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
+
+    // The generic ramp, mapped onto Fluent 2's six levels.
+    --bit-shd-sm: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14); //shadow2
+    --bit-shd-nm: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-md: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-lg: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
+    --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+
+    // Per surface family, at the level Fluent 2's own components sit at: Card shadow4, MenuPopover
+    // and PopoverSurface shadow16, DialogSurface and OverlayDrawer shadow64, Tooltip and Toast
+    // shadow8. App bars cast the card shadow towards the content they cover.
+    --bit-shd-card: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-popup: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.12), 0 -2px 4px rgba(0, 0, 0, 0.14); //shadow4, mirrored
+
+    // The inset shadow of the generic ramp: shadow4, turned inward.
+    --bit-shd-inner: inset 0 0 2px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.14);
+
+    // BitCard's Elevation (1..24) predates the family tier and is still a public API, so the
+    // numbered ramp is retuned here too. Left out, it is the one thing on a Fluent 2 page still
+    // casting the core stylesheet's Fabric depths - the elevation of the Fluent this one succeeds.
+    // Fluent 2 publishes six levels, so the 24 steps are dealt out in six even bands, one level each.
+    --bit-shd-1: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14); //shadow2
+    --bit-shd-2: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+    --bit-shd-3: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+    --bit-shd-4: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+    --bit-shd-5: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-6: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+    --bit-shd-7: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+    --bit-shd-8: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+    --bit-shd-9: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-10: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+    --bit-shd-11: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+    --bit-shd-12: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+    --bit-shd-13: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-14: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-15: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-16: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+    --bit-shd-17: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
+    --bit-shd-18: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14);
+    --bit-shd-19: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14);
+    --bit-shd-20: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14);
+    --bit-shd-21: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-22: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
+    --bit-shd-23: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
+    --bit-shd-24: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
+}

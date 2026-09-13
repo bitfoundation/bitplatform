@@ -1,8 +1,9 @@
 ﻿@inherits AppComponentBase
 
-<div class="header">
-    <div class="container@(IsHomePage ? " home-page" : "")">
-        <div class="content">
+<div class="app-header">
+    <div class="app-header-inner @(IsHomePage ? "marketing" : null)">
+
+        <div class="app-header-start">
             @if (IsHomePage is false)
             {
                 <BitButton FixedColor
@@ -10,21 +11,71 @@
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.CollapseMenu"
                            Color="BitColor.SecondaryBackground"
-                           OnClick=@WrapHandled(ToggleNavMenu) AriaLabel="Header menu button" />
+                           OnClick="@WrapHandled(ToggleNavMenu)"
+                           AriaLabel="Open the navigation menu" />
             }
-            <a class="logo" href="/" aria-label="Homepage"></a>
-            <a class="link@(IsHomePage ? " active" : "")" href="/">Home</a>
-            <a class="link@(IsHomePage ? "" : " active")" href="/overview">Docs</a>
-        </div>
-        <div class="right-section">
-            <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
 
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
-                <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
-            </button>
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
-                <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
-            </button>
+            @* Mark plus wordmark rather than the mark alone: on a documentation site the logo is
+               also the name of the thing being documented, and "bit BlazorUI" is what a visitor
+               arriving from a search result needs to see. The wordmark folds away on narrow screens,
+               where the mark alone still gets them home. *@
+            <a class="brand" href="/" aria-label="bit BlazorUI home">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name"><b>BlazorUI</b></span>
+            </a>
+
+            <nav class="app-nav" aria-label="Primary">
+                @foreach (var link in _navLinks)
+                {
+                    var isActive = link.Href == _activeNavHref;
+                    <a class="app-nav-link @(isActive ? "active" : null)"
+                       href="@link.Href"
+                       aria-current="@(isActive ? "page" : null)">@link.Text</a>
+                }
+            </nav>
+
+            @* The home page has no nav drawer to fold the links into - it is a marketing page, and
+               deliberately hides the panel - so at the widths where the bar above cannot hold five
+               links it keeps the one that matters: the way into the documentation. *@
+            @if (IsHomePage)
+            {
+                <a class="app-nav-compact" href="/overview">Docs</a>
+            }
         </div>
+
+        <div class="app-header-end">
+            @* Not on the home page: the hero opens with its own search-and-browse story, and a
+               second finder in the bar above it would just be a smaller copy of it. *@
+            @if (IsHomePage is false)
+            {
+                <ComponentSearchBox RegisterShortcut Class="app-header-search" />
+            }
+
+            @* Not on the home page: the hero has the full-size switcher with the "Make it yours"
+               label explaining what it does, and two of the same control on one screen would just
+               raise the question of whether they are the same control. Narrow widths hand this off
+               to the nav drawer's copy - see AccentColorSwitcher's own stylesheet. *@
+            @if (IsHomePage is false)
+            {
+                <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.Header" />
+            }
+
+            @* The design system picker and the light/dark toggle are both this component's; all that is
+               left here is the three things it cannot know about - the design systems this site offers
+               (see _designSystems), the theme to show before JS interop is reachable (see OnInitAsync)
+               and the native shell that follows the applied scheme. *@
+            <BitThemeSwitcher Class="theme-switcher"
+                              DesignSystems="_designSystems"
+                              InitialTheme="@_initialTheme"
+                              OnChange="WrapHandled<string>(OnThemeChanged)" />
+
+            <a class="github-btn"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="bit BlazorUI on GitHub"
+               aria-label="bit BlazorUI on GitHub"
+               href="https://github.com/bitfoundation/bitplatform"></a>
+        </div>
+
     </div>
 </div>

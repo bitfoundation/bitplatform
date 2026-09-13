@@ -1,9 +1,6 @@
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Time.Testing;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Client.Core.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Tests.Features.Mcp;
 
@@ -45,6 +42,27 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         await using var scope = server.WebApp.Services.CreateAsyncScope();
 
+        // Before signing in, pin that /mcp actually REJECTS an anonymous caller. This guard once shipped commented out
+        // (748225ec87, restored by 6cf854a66a), and every other line of this test authenticates first - so without this
+        // probe, removing RequireAuthorization() again would leave the whole suite green while /mcp (whose tools can
+        // drive any user's connected client session) goes anonymous. Asserted on the raw HTTP status rather than
+        // through the MCP client, whose transport wraps/obscures the 401 - and through a bare HttpClient rather than
+        // the DI one, whose handler chain attaches auth and turns the non-success status into an exception.
+        // This exercises Server.Web's mapping (Program.Middlewares.cs); Server.Api's own MapMcp stays mirror-protected.
+        using (var anonymousHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        {
+            using var anonymousRequest = new HttpRequestMessage(HttpMethod.Post, "mcp");
+            anonymousRequest.Content = new StringContent("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
+                System.Text.Encoding.UTF8, "application/json");
+            anonymousRequest.Headers.Accept.ParseAdd("application/json");
+            anonymousRequest.Headers.Accept.ParseAdd("text/event-stream");
+
+            using var anonymousResponse = await anonymousHttpClient.SendAsync(anonymousRequest, TestContext.CancellationToken);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode,
+                "/mcp must reject an anonymous caller. Its tools can push messages to any connected client session, " +
+                "and this exact guard has already shipped commented out once.");
+        }
+
         // The /mcp endpoint is behind RequireAuthorization(), so sign in with the seeded default account first and reuse
         // the resulting bearer token to authenticate the MCP transport.
         await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
@@ -71,7 +89,7 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         // The GetCurrentDateTime tool must be advertised by the server (See [McpServerTool] in AppChatbot.Tools.cs).
         var tools = await mcpClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
-        Assert.IsTrue(tools.Any(t => t.Name == "GetCurrentDateTime"), "The MCP server must expose the GetCurrentDateTime tool.");
+        Assert.Contains(t => t.Name == "GetCurrentDateTime", tools, "The MCP server must expose the GetCurrentDateTime tool.");
 
         // Invoke it for the UTC timezone; the tool converts the (faked) UtcNow into that timezone and echoes it back as text.
         var result = await mcpClient.CallToolAsync("GetCurrentDateTime",
@@ -80,13 +98,13 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
 
         var text = result.Content.OfType<TextContentBlock>().First().Text;
 
-        Assert.IsTrue(result.IsError is not true, $"The GetCurrentDateTime tool call returned an error. Result: '{text}'.");
+        Assert.AreNotEqual(true, result.IsError, $"The GetCurrentDateTime tool call returned an error. Result: '{text}'.");
 
         // The tool formats the instant with the round-trip ("o") format. Assert on a second-precision prefix of the faked
         // UTC time so the check is immune to sub-second/offset formatting differences, plus that it names the timezone.
         var expectedUtc = TimeZoneInfo.ConvertTime(fakeTimeProvider.GetUtcNow(), TimeZoneInfo.Utc);
-        Assert.IsTrue(text.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)),
+        Assert.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture), text,
             $"Tool result did not contain the faked current date/time. Result: '{text}'.");
-        Assert.IsTrue(text.Contains("UTC"), $"Tool result did not mention the requested timezone. Result: '{text}'.");
+        Assert.Contains("UTC", text, $"Tool result did not mention the requested timezone. Result: '{text}'.");
     }
 }

@@ -1,0 +1,8 @@
+@* Regression host for issue #12752: a shared layout owns a SectionOutlet and every page fills it
+   with SectionContent - the standard shared-footer pattern. Navigating between the two pages must
+   not throw the framework's "There is already a subscriber to the content with the given section
+   ID" InvalidOperationException. *@
+<Brouter DefaultLayout="@typeof(SectionTestLayout)">
+    <Broute Path="/section-a" Component="@typeof(SectionPageA)" />
+    <Broute Path="/section-b" Component="@typeof(SectionPageB)" />
+</Brouter>

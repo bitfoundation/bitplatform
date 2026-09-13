@@ -1,0 +1,216 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+@* The documentation shell: a sticky header, a navigation rail, the article, and
+   an "On this page" outline - the three-column arrangement every reference site
+   converges on, because it is the one that answers "where am I", "what else is
+   there" and "what is on this page" without a click.
+
+   This site takes no dependency on Bit.BlazorUI (it is the Bswup demo, and
+   Bswup itself has none), so the chrome is plain markup against the Fluent 2
+   tokens in wwwroot/app.css rather than composed from a component library.
+
+   Every control here is wired through data-demo-action and the single delegated
+   listener in demo.js - no inline onclick, and no @@onclick that would need an
+   interactive circuit during prerendering - so the chrome works under a strict
+   Content-Security-Policy and before the WebAssembly runtime takes over. *@
+
+@* First in the tab order, and the only way a keyboard user reaches the article
+   without walking the whole rail on every page. *@
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="header">
+    <div class="container">
+        <div class="header-group">
+            @* No nav rail on the home page, so nothing for the drawer button to open either. *@
+            @if (_isHomePage is false)
+            {
+                @* aria-expanded starts false and is kept in sync by demo.js, which owns the
+                   open/closed state (a body class) - the drawer is never open on first render. *@
+                <button type="button" class="icon-btn menu-btn" aria-label="Open the navigation menu"
+                        aria-controls="nav-panel" aria-expanded="false" data-demo-action="toggle-nav-panel">
+                    <Icon Name="menu" />
+                </button>
+            }
+
+            @* The brand lockup: the bit mark, the product name, and what it is in
+               one line. Real text rather than a logotype image, so it is
+               selectable, searchable and translatable, and so the name survives
+               when the mark fails to load. *@
+            <a class="brand" href="/" aria-label="bit Bswup home">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-text">
+                    <span class="brand-name">bit Bswup</span>
+                    <span class="brand-tagline">Blazor service worker</span>
+                </span>
+            </a>
+
+            @* Not NavLinks: "Docs" marks the whole documentation section, which is every route
+               except the home page, and NavLink can only match its own href. *@
+            <nav class="header-group" aria-label="Main">
+                <a class="link@(_isHomePage ? " active" : "")" href="/" aria-current="@(_isHomePage ? "page" : null)">Home</a>
+                <a class="link@(_isHomePage ? "" : " active")" href="getting-started" aria-current="@(_isHomePage ? null : "true")">Docs</a>
+                <a class="link" href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener noreferrer">NuGet</a>
+            </nav>
+        </div>
+
+        <div class="header-group">
+            @* The exception to the data-demo-action rule above: it searches DocsCatalog, which
+               only exists in C#. See the comment in SearchBox.razor. *@
+            <SearchBox />
+
+            <a class="icon-btn" href="https://github.com/bitfoundation/bitplatform" target="_blank"
+               rel="noopener noreferrer" aria-label="bit platform on GitHub">
+                <Icon Name="github" />
+            </a>
+
+            @* Exact complements: the stylesheet shows the dark-theme button only while
+               data-theme resolves to dark, and the light-theme one only while it does not, so
+               exactly one of the pair is ever visible - and each states which way it will move
+               rather than which state it is in, because a toggle that names its current state
+               is the classic ambiguous control. *@
+            <button type="button" class="icon-btn toggle-theme-btn dark-theme" title="Switch to the light theme"
+                    aria-label="Switch to the light theme" data-demo-action="toggle-theme">
+                <Icon Name="sun" />
+            </button>
+            <button type="button" class="icon-btn toggle-theme-btn light-theme" title="Switch to the dark theme"
+                    aria-label="Switch to the dark theme" data-demo-action="toggle-theme">
+                <Icon Name="moon" />
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="layout-body">
+    @* The home page is a landing page, not a documentation page: it gets the full width, and
+       neither the rail nor the outline. *@
+    @if (_isHomePage is false)
+    {
+        @* Two elements, not one: the outer column carries the rail's surface and
+           runs the full height of the document, and the inner box is the part
+           that sticks under the header and scrolls. One element doing both jobs
+           leaves the rail's colour ending in a hard line across the page
+           wherever the fold falls. *@
+        <aside class="nav-panel" id="nav-panel" aria-label="Documentation">
+            <div class="nav-panel-sticky">
+                <NavMenu />
+            </div>
+        </aside>
+        <div class="nav-panel-backdrop" data-demo-action="close-nav-panel"></div>
+    }
+
+    <main class="site-content" id="main-content" tabindex="-1">
+        <div class="page-container@(_isHomePage ? " home-page" : "")">
+            <article class="page-content">
+                @Body
+            </article>
+        </div>
+    </main>
+
+    @if (_isHomePage is false)
+    {
+        @* Filled in from the article's own headings by demo.js, so a page never
+           maintains a second copy of its outline - and left EMPTY (and therefore
+           hidden by :empty) on a page with too few headings to be worth one.
+           Rendered on the server as a bare element so the column exists before
+           the runtime boots and the article does not reflow when it appears. *@
+        <aside class="docs-toc" id="docs-toc" aria-label="On this page"></aside>
+    }
+</div>
+
+@* Outside the footer, because it is a floating control over the page rather than
+   a link in it. demo.js reveals it once there is a page to scroll back up. *@
+<button type="button" class="go-to-top" aria-label="Back to top" data-demo-action="go-to-top">
+    <Icon Name="arrow-up" />
+</button>
+
+<footer class="footer">
+    <section>
+        <div>
+            <div class="bit-logo" role="img" aria-label="bit platform"></div>
+            <p class="footer-blurb">
+                Bswup is part of bit platform - a platform that simplifies the development process for
+                freelancers and software companies through its clean project templates and easy-to-use
+                one-click build and deployment feature.
+            </p>
+        </div>
+
+        <div class="footer-columns">
+            <nav class="footer-column" aria-label="Documentation links">
+                <div class="footer-column-title">Documentation</div>
+                <a href="getting-started">Getting Started</a>
+                <a href="how-it-works">How It Works</a>
+                <a href="script-options">Script Options</a>
+                <a href="service-worker">Service Worker Settings</a>
+                <a href="javascript-api">JavaScript API</a>
+            </nav>
+
+            <nav class="footer-column" aria-label="Guide links">
+                <div class="footer-column-title">Guides</div>
+                <a href="recipes">Recipes</a>
+                <a href="troubleshooting">Troubleshooting &amp; FAQ</a>
+                <a href="cleanup">Backing Out of Bswup</a>
+                <a href="migration">Migrating to v-10-6-0</a>
+            </nav>
+
+            <nav class="footer-column" aria-label="Project links">
+                <div class="footer-column-title">Project</div>
+                <a href="playground">Live Playground</a>
+                <a href="mcp-server">MCP Server</a>
+                <a href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener noreferrer">Bit.Bswup on NuGet</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub repository</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+            </nav>
+        </div>
+    </section>
+
+    <section>
+        <address class="address-info">
+            <a class="address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </address>
+        <div class="footer-legal">
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="copy-right-txt">Copyright © @DateTime.Now.Year bit platform | All Rights Reserved</div>
+        </div>
+    </section>
+</footer>
+
+@code {
+    private bool _isHomePage;
+
+    protected override void OnInitialized()
+    {
+        SetIsHomePage();
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        base.OnInitialized();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetIsHomePage();
+        StateHasChanged();
+    }
+
+    // Query and fragment are stripped rather than compared: the service worker fetches the app
+    // shell with ?no-prerender attached (see the host document), so the copy it caches - and
+    // replays for the home page when offline - carries a query string the route does not.
+    private void SetIsHomePage()
+    {
+        var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0];
+        _isHomePage = path.Length == 0;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

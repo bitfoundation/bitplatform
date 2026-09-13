@@ -1,0 +1,224 @@
+﻿@page "/crypto"
+@inject Bit.Butil.Crypto crypto
+
+<PageTitle>Butil - Crypto Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Crypto"
+            Lead="Use the browser's Web Crypto engine from C#: encrypt and decrypt data, hash values and generate cryptographically-strong random bytes."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Crypto" />
+
+<pre>
+@@inject Bit.Butil.Crypto crypto
+
+var cipher = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, data, iv: iv);
+var plain  = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, cipher, iv: iv);
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="AES-CBC encrypt / decrypt" Api="Encrypt / Decrypt"
+              Description="A random 128-bit key and IV are generated when the page loads. Encrypt your text, then decrypt the cipher back to the original.">
+        <div class="field">
+            <span class="field-label">Plain text</span>
+            <input @bind="@inputText" placeholder="Secret message..." />
+        </div>
+        <button @onclick="Encrypt">Encrypt</button>
+
+        <hr />
+
+        <div class="field">
+            <span class="field-label">Cipher (hex)</span>
+            <input value="@cipherHex" readonly placeholder="Encrypt first to see the cipher" />
+        </div>
+        <button class="secondary" @onclick="Decrypt">Decrypt</button>
+
+        @if (!string.IsNullOrEmpty(outputText))
+        {
+            <p style="margin-top:1rem">
+                <span class="result-pill">Decrypted: <b>@outputText</b></span>
+            </p>
+        }
+    </DemoCard>
+
+    <DemoCard Title="Random values" Api="RandomUuid / GetRandomValues"
+              Description="Cryptographically strong random UUIDs and byte arrays.">
+        <div class="controls">
+            <button @onclick="RandomUuid">RandomUuid</button>
+            <button @onclick="RandomBytes">GetRandomValues (16 bytes)</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Digest & HMAC" Api="Digest / SignHmac / VerifyHmac"
+              Description="Hash text with SHA-256 and sign/verify with an HMAC key.">
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_hashInput" placeholder="Message to hash or sign" />
+        </div>
+        <div class="controls">
+            <button @onclick="DigestSha256">Digest (SHA-256)</button>
+            <button @onclick="HmacSignVerify">Sign + verify HMAC</button>
+        </div>
+    </DemoCard>
+
+    <DemoCard Title="Key import & export" Api="ExportJsonWebKey / ImportJsonWebKey"
+              Description="Publish a key as the JWK a server understands, then import it back to raw bytes - the round trip that makes a key from elsewhere usable here.">
+        <button @onclick="JwkRoundTrip">AES key → JWK → key</button>
+    </DemoCard>
+
+    <DemoCard Title="Key agreement" Api="GenerateEcdhKeyPair / DeriveEcdhKey"
+              Description="Two ECDH pairs exchange public keys and arrive at the same AES key without ever sending it.">
+        <button @onclick="EcdhAgreement">Generate two pairs and agree</button>
+    </DemoCard>
+
+    <DemoCard Title="Derivation & wrapping" Api="DeriveHkdfKey / GenerateAesKwKey / WrapKey / UnwrapKey"
+              Description="HKDF splits one secret into purpose-bound keys; AES-KW encrypts a key with another so it can be stored without ever being in the clear.">
+        <div class="controls">
+            <button @onclick="HkdfDerive">HKDF: two keys from one secret</button>
+            <button @onclick="WrapUnwrap">Wrap and unwrap a key</button>
+        </div>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="crypto output" />
+
+@code {
+    private DemoConsole output = default!;
+    private string inputText;
+    private byte[] iv = new byte[16];
+    private byte[] key = new byte[16];
+    private byte[] encryptedBytes;
+    private string cipherHex;
+    private string outputText;
+    private string _hashInput = "Bit.Butil";
+
+    protected override void OnInitialized()
+    {
+        System.Security.Cryptography.RandomNumberGenerator.Fill(iv);
+        System.Security.Cryptography.RandomNumberGenerator.Fill(key);
+    }
+
+    private async Task Encrypt()
+    {
+        if (string.IsNullOrEmpty(inputText))
+        {
+            await output.Warn("Enter some text to encrypt first.");
+            return;
+        }
+
+        await output.Info("Encrypting...");
+        var textAsUtf8Bytes = System.Text.Encoding.UTF8.GetBytes(inputText);
+        encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
+        cipherHex = BitConverter.ToString(encryptedBytes);
+        await output.Success("Encrypted →", cipherHex);
+    }
+
+    private async Task Decrypt()
+    {
+        if (encryptedBytes is null)
+        {
+            await output.Warn("Encrypt something first.");
+            return;
+        }
+
+        await output.Info("Decrypting...");
+        var decryptedBytes = await crypto.Decrypt(CryptoAlgorithm.AesCbc, key, encryptedBytes, iv: iv);
+        outputText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
+        await output.Success("Decrypted →", outputText);
+    }
+
+    private async Task RandomUuid()
+    {
+        var uuid = await crypto.RandomUuid();
+        await output.Success("RandomUuid →", uuid);
+    }
+
+    private async Task RandomBytes()
+    {
+        var bytes = await crypto.GetRandomValues(16);
+        await output.Success("GetRandomValues →", BitConverter.ToString(bytes));
+    }
+
+    private async Task DigestSha256()
+    {
+        if (string.IsNullOrEmpty(_hashInput))
+        {
+            await output.Warn("Enter a message to hash.");
+            return;
+        }
+
+        var data = System.Text.Encoding.UTF8.GetBytes(_hashInput);
+        var hash = await crypto.Digest(CryptoKeyHash.Sha256, data);
+        await output.Success("Digest (SHA-256) →", BitConverter.ToString(hash));
+    }
+
+    private async Task HmacSignVerify()
+    {
+        if (string.IsNullOrEmpty(_hashInput))
+        {
+            await output.Warn("Enter a message to sign.");
+            return;
+        }
+
+        var data = System.Text.Encoding.UTF8.GetBytes(_hashInput);
+        var key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+        var signature = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
+        var valid = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, signature, data);
+        await output.Success("HMAC verify →", valid);
+    }
+
+    private async Task JwkRoundTrip()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var aesKey = await crypto.GenerateAesKey(256);
+
+        var jwk = await crypto.ExportJsonWebKey(aesKey, CryptoKeyFormat.Raw, algorithm);
+        if (jwk is null)
+        {
+            // Only reachable during prerender/SSR, where there is no JS runtime to export with.
+            await output.Info("ExportJsonWebKey →", "no JS runtime yet; run this after the first render.");
+            return;
+        }
+
+        await output.Success("ExportJsonWebKey →", $"kty={jwk.Kty}, alg={jwk.Alg}, k={jwk.K}");
+
+        var roundTripped = await crypto.ImportJsonWebKey(jwk, algorithm, CryptoKeyFormat.Raw);
+        await output.Success("ImportJsonWebKey →", $"same key back: {roundTripped.SequenceEqual(aesKey)}");
+    }
+
+    private async Task EcdhAgreement()
+    {
+        var alice = await crypto.GenerateEcdhKeyPair("P-256");
+        var bob = await crypto.GenerateEcdhKeyPair("P-256");
+
+        var aliceKey = await crypto.DeriveEcdhKey(alice.PrivateKey, bob.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+        var bobKey = await crypto.DeriveEcdhKey(bob.PrivateKey, alice.PublicKey, CryptoKeyAlgorithm.AesGcm(256));
+
+        await output.Success("DeriveEcdhKey →", BitConverter.ToString(aliceKey));
+        await output.Success("Both sides agree →", aliceKey.SequenceEqual(bobKey));
+    }
+
+    private async Task HkdfDerive()
+    {
+        var secret = await crypto.GetRandomValues(32);
+        var salt = await crypto.GetRandomValues(16);
+
+        var encryptionKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("encryption"), CryptoKeyAlgorithm.AesGcm(256));
+        var signingKey = await crypto.DeriveHkdfKey(secret, salt, System.Text.Encoding.UTF8.GetBytes("signing"), CryptoKeyAlgorithm.Hmac());
+
+        await output.Success("DeriveHkdfKey (encryption) →", BitConverter.ToString(encryptionKey));
+        await output.Success("Different info, different key →", !encryptionKey.SequenceEqual(signingKey));
+    }
+
+    private async Task WrapUnwrap()
+    {
+        var algorithm = CryptoKeyAlgorithm.AesGcm(256);
+        var keyToProtect = await crypto.GenerateAesKey(256);
+        var wrappingKey = await crypto.GenerateAesKwKey(256);
+
+        var wrapped = await crypto.WrapKey(keyToProtect, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+        await output.Success("WrapKey →", BitConverter.ToString(wrapped));
+
+        var recovered = await crypto.UnwrapKey(wrapped, CryptoKeyFormat.Raw, algorithm, wrappingKey, new AesKwCryptoAlgorithmParams());
+        await output.Success("UnwrapKey →", $"recovered the original key: {recovered.SequenceEqual(keyToProtect)}");
+    }
+}

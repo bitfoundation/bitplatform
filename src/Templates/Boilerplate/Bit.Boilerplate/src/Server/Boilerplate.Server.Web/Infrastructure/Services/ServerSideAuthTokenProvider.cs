@@ -1,5 +1,4 @@
 //-:cnd:noEmit
-using Boilerplate.Client.Core.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Microsoft.JSInterop;
 

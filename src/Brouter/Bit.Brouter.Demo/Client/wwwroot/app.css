@@ -1,0 +1,1997 @@
+/* ============================================================================================
+   Bit.Brouter demo - global stylesheet
+
+   The site is built on Microsoft's Fluent 2 design language, expressed as three layers:
+
+     1. --bit-clr-*   the Bit.BlazorUI Fluent palette, inlined verbatim from
+                      BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-*.scss and selected by the
+                      same `bit-theme` attribute convention, so a value copied out of a
+                      Bit.BlazorUI stylesheet lands here unchanged.
+     2. --fl-*        the rest of the Fluent 2 token set - shape, elevation, type ramp, spacing,
+                      motion, stroke - at the values the design system publishes. These are the
+                      pieces that used to be Fluent 1 here (a 2px corner on everything,
+                      regular-weight titles, one duration for the whole site) and they are what
+                      makes the site read as Fluent 2 rather than as its predecessor.
+     3. --bb-*        this site's own vocabulary, mapped onto the two layers above. Every page is
+                      written against these names, so no page ever names a palette entry directly.
+
+   Brouter ships no component library of its own - a router demo that pulled one in would be
+   arguing against itself - so the Fluent surfaces below are reproduced in plain CSS.
+   ============================================================================================ */
+
+/* ============================================================================================
+   1a. Palette - light
+   ============================================================================================ */
+
+:root,
+:root[bit-theme="light"] {
+    color-scheme: light;
+
+    /* primary. Interaction moves the fill toward MORE contrast with the surface under it, so the
+       states darken on these light surfaces; '-dis' is the tint the soft backgrounds use. */
+    --bit-clr-pri: #1276C6;
+    --bit-clr-pri-hover: #0B6AB4;
+    --bit-clr-pri-active: #095A9B;
+    --bit-clr-pri-text: #FFFFFF;
+    --bit-clr-pri-dis: #DDEDFF;
+    /* secondary - the bit orange */
+    --bit-clr-sec: #FD7F36;
+    --bit-clr-sec-dark: #B4520F;
+    /* success / warning / error */
+    --bit-clr-suc: #228422;
+    --bit-clr-suc-dark: #0D5D0F;
+    --bit-clr-suc-dis: #E0F1DF;
+    --bit-clr-wrn: #EDAE12;
+    --bit-clr-wrn-dark: #8A6200;
+    --bit-clr-wrn-dis: #F7EED9;
+    --bit-clr-err: #D2393B;
+    --bit-clr-err-dark: #9D2225;
+    --bit-clr-err-dis: #FFE4E1;
+    /* foregrounds */
+    --bit-clr-fg-pri: #1A1A1A;
+    --bit-clr-fg-sec: #525252;
+    --bit-clr-fg-ter: #6B6B6B;
+    /* backgrounds */
+    --bit-clr-bg-pri: #FFFFFF;
+    --bit-clr-bg-pri-hover: #F5F5F5;
+    --bit-clr-bg-sec: #F5F5F5;
+    --bit-clr-bg-sec-hover: #EDEDED;
+    --bit-clr-bg-ter: #EBEBEB;
+    /* borders */
+    --bit-clr-brd-pri: #707070;
+    --bit-clr-brd-sec: #ADADAD;
+    --bit-clr-brd-ter: #E0E0E0;
+
+    /* Fluent 2's focus indicator is a neutral DOUBLE stroke, not a brand-colored ring: a hairline
+       in the surface color with a heavier one outside it in the foreground color. Neutral is the
+       point - it stays visible on a brand-filled button, where a brand ring would sink into the
+       fill it sits on. */
+    --fl-stroke-focus-inner: #FFFFFF;
+    --fl-stroke-focus-outer: #000000;
+
+    /* Elevation - Fluent 2's shadow ramp. Two shadows per level: a key light that gives the
+       direction, and an ambient one that seats the surface on the page. */
+    --fl-shadow-2: 0 1px 2px rgba(0, 0, 0, .14), 0 0 2px rgba(0, 0, 0, .12);
+    --fl-shadow-4: 0 2px 4px rgba(0, 0, 0, .14), 0 0 2px rgba(0, 0, 0, .12);
+    --fl-shadow-8: 0 4px 8px rgba(0, 0, 0, .14), 0 0 2px rgba(0, 0, 0, .12);
+    --fl-shadow-16: 0 8px 16px rgba(0, 0, 0, .14), 0 0 2px rgba(0, 0, 0, .12);
+    --fl-shadow-28: 0 14px 28px rgba(0, 0, 0, .24), 0 0 8px rgba(0, 0, 0, .20);
+    --fl-shadow-64: 0 32px 64px rgba(0, 0, 0, .24), 0 0 8px rgba(0, 0, 0, .20);
+
+    /* Code surface - GitHub's light syntax colors, which is what the samples were written
+       against. */
+    --bb-code-bg: #F6F8FA;
+    --bb-code-fg: #1F2328;
+    --bb-code-comment: #59636E;
+    --bb-code-keyword: #0550AE;
+    --bb-code-string: #953800;
+    --bb-code-param: #116329;
+
+    /* The landing hero's ground: two brand-tinted washes rather than a gradient sheet, so the
+       color is felt at the edges and the type still sits on the flat surface color. */
+    --bb-wash-primary: rgba(18, 118, 198, .10);
+    --bb-wash-accent: rgba(253, 127, 54, .07);
+    --bb-scrim: rgba(0, 0, 0, .40);
+}
+
+/* ============================================================================================
+   1b. Palette - dark
+   ============================================================================================ */
+
+:root[bit-theme="dark"] {
+    color-scheme: dark;
+
+    /* On dark surfaces more contrast means lighter, so every interaction step inverts. */
+    --bit-clr-pri: #4FA3F4;
+    --bit-clr-pri-hover: #61AEFB;
+    --bit-clr-pri-active: #7DBEFF;
+    --bit-clr-pri-text: #0F1318;
+    --bit-clr-pri-dis: #17273A;
+    --bit-clr-sec: #F49666;
+    --bit-clr-sec-dark: #FFB68C;
+    --bit-clr-suc: #78B774;
+    --bit-clr-suc-dark: #A0D49D;
+    --bit-clr-suc-dis: #1B2A1B;
+    --bit-clr-wrn: #F0BB52;
+    --bit-clr-wrn-dark: #FFDA97;
+    --bit-clr-wrn-dis: #2C2617;
+    --bit-clr-err: #E67A73;
+    --bit-clr-err-dark: #FEA199;
+    --bit-clr-err-dis: #31201E;
+    --bit-clr-fg-pri: #E6ECF2;
+    --bit-clr-fg-sec: #B9BEC4;
+    --bit-clr-fg-ter: #8E9398;
+    --bit-clr-bg-pri: #0F1318;
+    --bit-clr-bg-pri-hover: #171C22;
+    --bit-clr-bg-sec: #15191E;
+    --bit-clr-bg-sec-hover: #22272C;
+    --bit-clr-bg-ter: #272C31;
+    --bit-clr-brd-pri: #757B81;
+    --bit-clr-brd-sec: #454C53;
+    --bit-clr-brd-ter: #2B3138;
+
+    --fl-stroke-focus-inner: #0F1318;
+    --fl-stroke-focus-outer: #FFFFFF;
+
+    /* A dark surface swallows a shadow, so Fluent 2 raises the alpha rather than the geometry -
+       the elevation reads at the same distance without the blur turning into a halo. */
+    --fl-shadow-2: 0 1px 2px rgba(0, 0, 0, .28), 0 0 2px rgba(0, 0, 0, .24);
+    --fl-shadow-4: 0 2px 4px rgba(0, 0, 0, .28), 0 0 2px rgba(0, 0, 0, .24);
+    --fl-shadow-8: 0 4px 8px rgba(0, 0, 0, .28), 0 0 2px rgba(0, 0, 0, .24);
+    --fl-shadow-16: 0 8px 16px rgba(0, 0, 0, .28), 0 0 2px rgba(0, 0, 0, .24);
+    --fl-shadow-28: 0 14px 28px rgba(0, 0, 0, .40), 0 0 8px rgba(0, 0, 0, .36);
+    --fl-shadow-64: 0 32px 64px rgba(0, 0, 0, .40), 0 0 8px rgba(0, 0, 0, .36);
+
+    --bb-code-bg: #0A0E13;
+    --bb-code-fg: #E6EDF3;
+    --bb-code-comment: #8E9398;
+    --bb-code-keyword: #7DD3FC;
+    --bb-code-string: #FBBF24;
+    --bb-code-param: #86EFAC;
+
+    --bb-wash-primary: rgba(79, 163, 244, .14);
+    --bb-wash-accent: rgba(244, 150, 102, .08);
+    --bb-scrim: rgba(0, 0, 0, .62);
+}
+
+/* ============================================================================================
+   2. The rest of the Fluent 2 token set, and this site's vocabulary on top of it
+   ============================================================================================ */
+
+:root {
+    /* ---------- Shape. Fluent 2's corner ramp, and the most visible difference from Fluent 1 -
+       which rounded everything by the same 2px hairline. Controls take Medium, surfaces take
+       Large, and anything that floats over the page takes XLarge. ---------- */
+    --fl-radius-none: 0;
+    --fl-radius-small: 2px;
+    --fl-radius-medium: 4px;
+    --fl-radius-large: 6px;
+    --fl-radius-xlarge: 8px;
+    --fl-radius-circular: 10000px;
+
+    /* Bit.BlazorUI components read their own shape token, so publishing it keeps one dropped into
+       this site rounded the way the site is. */
+    --bit-shp-brd-radius: var(--fl-radius-medium);
+
+    --bb-radius-sm: var(--fl-radius-small);
+    --bb-radius: var(--fl-radius-medium);
+    --bb-radius-lg: var(--fl-radius-large);
+    --bb-radius-xl: var(--fl-radius-xlarge);
+    --bb-radius-pill: var(--fl-radius-circular);
+
+    /* ---------- Spacing. Fluent 2's scale; nothing on the site invents a value between two of
+       these. ---------- */
+    --fl-space-xxs: .125rem;
+    --fl-space-xs: .25rem;
+    --fl-space-s: .5rem;
+    --fl-space-m: .75rem;
+    --fl-space-l: 1rem;
+    --fl-space-xl: 1.25rem;
+    --fl-space-xxl: 1.5rem;
+    --fl-space-xxxl: 2rem;
+
+    /* ---------- Type ramp. Fluent 2 sizes AND weights its levels: titles are Semibold, which is
+       exactly what separates its headings from Fluent 1's regular-weight ones. ---------- */
+    --fl-font-size-100: .75rem;
+    --fl-font-size-200: .875rem;
+    --fl-font-size-300: 1rem;
+    --fl-font-size-400: 1.25rem;
+    --fl-font-size-500: 1.5rem;
+    --fl-font-size-600: 1.75rem;
+    --fl-font-size-700: 2rem;
+    --fl-font-size-800: 2.5rem;
+    --fl-font-size-900: 4rem;
+
+    --fl-weight-regular: 400;
+    --fl-weight-medium: 500;
+    --fl-weight-semibold: 600;
+
+    /* ---------- Motion. Fluent 2 publishes eight durations and a family of curves: entrances
+       decelerate, exits accelerate, and anything that only changes color uses easyEase. -------- */
+    --fl-duration-ultra-fast: 50ms;
+    --fl-duration-faster: 100ms;
+    --fl-duration-fast: 150ms;
+    --fl-duration-normal: 200ms;
+    --fl-duration-gentle: 250ms;
+    --fl-duration-slow: 300ms;
+    --fl-duration-slower: 400ms;
+
+    --fl-curve-accelerate-min: cubic-bezier(.8, 0, .78, 1);
+    --fl-curve-decelerate-max: cubic-bezier(.1, .9, .2, 1);
+    --fl-curve-decelerate-mid: cubic-bezier(0, 0, 0, 1);
+    --fl-curve-easy-ease: cubic-bezier(.33, 0, .67, 1);
+
+    /* The motion names the site's own rules and every scoped stylesheet are written against. */
+    --bb-motion-duration: var(--fl-duration-normal);
+    --bb-motion-duration-short: var(--fl-duration-fast);
+    --bb-motion-easing: var(--fl-curve-easy-ease);
+    --bb-motion-enter: var(--fl-curve-decelerate-max);
+
+    /* ---------- Roles ---------- */
+    --bb-bg: var(--bit-clr-bg-sec);
+    --bb-surface: var(--bit-clr-bg-pri);
+    --bb-surface-hover: var(--bit-clr-bg-sec-hover);
+    --bb-surface-2: var(--bit-clr-bg-ter);
+    --bb-surface-sunken: var(--bit-clr-bg-sec);
+    --bb-border: var(--bit-clr-brd-ter);
+    --bb-border-strong: var(--bit-clr-brd-sec);
+    /* An alias, not a fourth role: pages and scoped stylesheets written before the border roles
+       were split still ask for this name, and it means what they meant - the quieter of the two. */
+    --bb-border-soft: var(--bit-clr-brd-ter);
+    --bb-text: var(--bit-clr-fg-pri);
+    --bb-text-muted: var(--bit-clr-fg-sec);
+    --bb-text-soft: var(--bit-clr-fg-ter);
+    --bb-primary: var(--bit-clr-pri);
+    --bb-primary-hover: var(--bit-clr-pri-hover);
+    --bb-primary-active: var(--bit-clr-pri-active);
+    --bb-primary-soft: var(--bit-clr-pri-dis);
+    --bb-primary-text: var(--bit-clr-pri-text);
+    --bb-accent: var(--bit-clr-sec);
+    --bb-accent-text: var(--bit-clr-sec-dark);
+    --bb-success: var(--bit-clr-suc);
+    --bb-success-soft: var(--bit-clr-suc-dis);
+    --bb-success-text: var(--bit-clr-suc-dark);
+    --bb-warning: var(--bit-clr-wrn);
+    --bb-warning-soft: var(--bit-clr-wrn-dis);
+    --bb-warning-text: var(--bit-clr-wrn-dark);
+    --bb-danger: var(--bit-clr-err);
+    --bb-danger-soft: var(--bit-clr-err-dis);
+    --bb-danger-text: var(--bit-clr-err-dark);
+
+    --bb-shadow-card: var(--fl-shadow-2);
+    --bb-shadow-raised: var(--fl-shadow-8);
+    --bb-shadow-flyout: var(--fl-shadow-16);
+    --bb-shadow-dialog: var(--fl-shadow-64);
+    /* Alias for scoped stylesheets written against the old single elevation. */
+    --bb-shadow: var(--fl-shadow-16);
+
+    /* ---------- Chrome geometry. Published here because the header, the docs shell, the rail,
+       the drawer and every heading's scroll-margin all have to agree on them. ---------- */
+    --bb-header-height: 56px;
+    --bb-nav-panel-width: 262px;
+    --bb-rail-width: 232px;
+    --bb-content-width: 1320px;
+    --bb-measure: 74ch;
+
+    /* Segoe UI Variable is Fluent 2's typeface; static Segoe UI is the fallback on Windows
+       versions that do not ship it, and the platform stack takes over everywhere else. */
+    --bb-font-sans: "Segoe UI Variable Text", "Segoe UI Variable Static Text", "Segoe UI",
+                    "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+    --bb-font-display: "Segoe UI Variable Display", "Segoe UI Variable Static Display",
+                       var(--bb-font-sans);
+    --bb-mono: ui-monospace, "Cascadia Code", SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+}
+
+/* Fluent's own components collapse their motion under this preference; the site does the same at
+   the token, so nothing downstream has to opt in individually. */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --fl-duration-ultra-fast: 1ms;
+        --fl-duration-faster: 1ms;
+        --fl-duration-fast: 1ms;
+        --fl-duration-normal: 1ms;
+        --fl-duration-gentle: 1ms;
+        --fl-duration-slow: 1ms;
+        --fl-duration-slower: 1ms;
+    }
+}
+
+/* ============================================================================================
+   3. Base
+   ============================================================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    /* Keep the viewport width constant whether or not the page scrolls (classic scrollbars eat
+       layout width on Windows). Without this, navigating between a tall page and a short one
+       resizes every element by ~17px, so even chrome pinned out of the view transition via
+       view-transition-name picks up a visible resize animation on its own group. */
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bb-bg);
+    color: var(--bb-text);
+    font-family: var(--bb-font-sans);
+    /* Fluent 2's Body2 - 16/22. The previous 15px was below the readable floor for a page whose
+       job is long-form prose. */
+    font-size: var(--fl-font-size-300);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Theme-driven thin scrollbars on the site's own chrome. The scrollbars inside a demo belong to
+   whatever that demo renders and are deliberately left alone. */
+html,
+body,
+.bb-docs-sidebar,
+.bb-rail,
+.bb-scroll,
+pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-clr-brd-sec) transparent;
+}
+
+::selection {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+}
+
+a {
+    color: var(--bb-primary);
+    text-decoration: none;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+a:hover {
+    color: var(--bb-primary-hover);
+    text-decoration: underline;
+    text-underline-offset: .18em;
+}
+
+img,
+svg {
+    max-width: 100%;
+}
+
+/* One focus indicator for the whole site, drawn the Fluent 2 way: a hairline in the surface
+   color hugging the control, and a heavier neutral stroke outside it. Written as an outline plus
+   a ring shadow so it follows the control's own corner radius and never displaces layout. */
+:focus-visible {
+    outline: 2px solid var(--fl-stroke-focus-outer);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 1px var(--fl-stroke-focus-inner);
+}
+
+/* ...except on the things the ROUTER focuses. Brouter moves focus to the page heading after every
+   navigation (o.FocusOnNavigateSelector = "h1") so assistive technology announces the new page,
+   and it makes the heading focusable with tabindex="-1" to do it - the same trick the skip link
+   uses on <main>. A ring there would say "you are on a control", which none of these are: the
+   reader did not focus it, and there is nothing to activate. Interactive elements never carry
+   tabindex="-1", so nothing that IS a control loses its ring here. */
+:is(h1, h2, h3, h4, main, article, section, div)[tabindex="-1"]:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+/* The first thing in the tab order: a keyboard reader lands on it before the nav and can jump
+   straight past the chrome. Off-screen until focused, never display:none - a hidden element is
+   not focusable at all. */
+.bb-skip-link {
+    position: fixed;
+    top: .5rem;
+    left: .5rem;
+    z-index: 1200;
+    transform: translateY(calc(-100% - 1rem));
+    padding: .5rem .875rem;
+    border-radius: var(--bb-radius);
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    box-shadow: var(--bb-shadow-flyout);
+    transition: transform var(--bb-motion-duration) var(--bb-motion-enter);
+}
+
+.bb-skip-link:focus-visible {
+    transform: translateY(0);
+    color: var(--bb-primary-text);
+    text-decoration: none;
+}
+
+/* ============================================================================================
+   4. Typography - Fluent 2's ramp. Titles carry weight as well as size, which is the difference
+   between this ramp and Fluent 1's.
+   ============================================================================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--bb-text);
+    font-family: var(--bb-font-display);
+    font-weight: var(--fl-weight-semibold);
+    margin: 0 0 .5rem;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+}
+
+/* Title1 */
+h1 {
+    font-size: var(--fl-font-size-700);
+    line-height: 1.25;
+    letter-spacing: -.02em;
+}
+
+/* Title3 */
+h2 {
+    font-size: var(--fl-font-size-500);
+    line-height: 1.33;
+}
+
+/* Subtitle1 */
+h3 {
+    font-size: var(--fl-font-size-400);
+    line-height: 1.4;
+}
+
+/* Subtitle2 */
+h4 {
+    font-size: var(--fl-font-size-300);
+    line-height: 1.5;
+}
+
+h5,
+h6 {
+    font-size: var(--fl-font-size-200);
+    line-height: 1.43;
+}
+
+@media (max-width: 600px) {
+    h1 { font-size: var(--fl-font-size-600); }
+    h2 { font-size: var(--fl-font-size-400); }
+    h3 { font-size: var(--fl-font-size-300); }
+}
+
+p {
+    margin: 0 0 .75rem;
+}
+
+strong,
+b {
+    font-weight: var(--fl-weight-semibold);
+}
+
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--bb-mono);
+}
+
+/* Inline code. Quieter than the old brand-tinted pill: in a docs paragraph half the nouns are
+   identifiers, and colouring every one of them turns the prose into a link farm. */
+code {
+    font-size: .875em;
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    color: var(--bb-text);
+    padding: .0625rem .3125rem;
+    border-radius: var(--bb-radius);
+    overflow-wrap: anywhere;
+}
+
+/* Inside a link, though, it takes the link's color - otherwise the one word that IS the link
+   looks like the one word that is not. */
+a code {
+    color: inherit;
+    border-color: color-mix(in srgb, currentColor 30%, transparent);
+    background: var(--bb-primary-soft);
+}
+
+/* A key on the keyboard, drawn as one. */
+kbd {
+    display: inline-block;
+    min-width: 1.5rem;
+    padding: .125rem .375rem;
+    font-size: .75rem;
+    line-height: 1.25;
+    text-align: center;
+    color: var(--bb-text-muted);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border-strong);
+    border-bottom-width: 2px;
+    border-radius: var(--bb-radius);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--bb-border);
+    margin: 2rem 0;
+}
+
+/* ============================================================================================
+   5. Layout - header band, content band, footer.
+   ============================================================================================ */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.bb-site-content {
+    flex: 1;
+    width: 100%;
+    background: var(--bb-bg);
+}
+
+main {
+    width: 100%;
+    max-width: var(--bb-content-width);
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+}
+
+@media (max-width: 960px) {
+    main {
+        padding: 2rem 1.5rem 3.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    main {
+        padding: 1.5rem 1rem 3rem;
+    }
+}
+
+article {
+    width: 100%;
+    min-width: 0;
+}
+
+/* The landing page is the one page built from full-bleed bands rather than from a column of
+   content, so it opts out of the container and lays its own gutters out instead. */
+main:has(.bb-landing) {
+    max-width: none;
+    padding: 0;
+}
+
+/* ============================================================================================
+   6. Page intro - the title block every page opens with.
+   ============================================================================================ */
+
+.bb-intro {
+    margin-bottom: 2.5rem;
+}
+
+.bb-intro .bb-overline {
+    color: var(--bb-primary);
+    margin-bottom: .5rem;
+}
+
+.bb-intro h1 {
+    overflow-wrap: anywhere;
+    margin-bottom: .75rem;
+}
+
+.bb-intro .bb-subtitle {
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-300);
+    line-height: 1.6;
+    max-width: var(--bb-measure);
+    margin: 0;
+}
+
+/* ============================================================================================
+   7. Buttons - Fluent 2's Primary / Secondary / Subtle variants.
+   ============================================================================================ */
+
+.btn,
+button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    /* Fluent 2's medium control height, and a touch target that clears the 44px guidance once the
+       0.25rem of vertical rhythm around it is counted. */
+    min-height: 2rem;
+    padding: .3125rem .75rem;
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.43;
+    border-radius: var(--bb-radius);
+    border: 1px solid transparent;
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+.btn svg {
+    width: 1em;
+    height: 1em;
+    flex: none;
+}
+
+.btn[disabled],
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+/* Primary - the filled brand button. */
+.btn-primary,
+button.btn-primary {
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    border-color: var(--bb-primary);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover {
+    background: var(--bb-primary-hover);
+    border-color: var(--bb-primary-hover);
+    color: var(--bb-primary-text);
+}
+
+.btn-primary:active,
+button.btn-primary:active {
+    background: var(--bb-primary-active);
+    border-color: var(--bb-primary-active);
+}
+
+/* Secondary - Fluent 2's default button: a neutral surface with a neutral stroke. This is the
+   variant most of the site's "go and look at this" links want, which is why it, rather than the
+   brand outline, is what a bare `.btn` already looks like. */
+.btn-secondary,
+button.btn-secondary {
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    border-color: var(--bb-border-strong);
+}
+
+.btn-secondary:hover,
+button.btn-secondary:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-text);
+}
+
+/* Outline - the brand-stroked variant the demo pages use for their "try this route" links. */
+.btn-outline,
+button.btn-outline {
+    background: transparent;
+    color: var(--bb-primary);
+    border-color: color-mix(in srgb, var(--bb-primary) 45%, transparent);
+}
+
+.btn-outline:hover,
+button.btn-outline:hover {
+    color: var(--bb-primary-hover);
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-primary);
+}
+
+/* Large - the landing page's calls to action. */
+.bb-btn-lg {
+    min-height: 2.75rem;
+    padding: .625rem 1.25rem;
+    font-size: var(--fl-font-size-300);
+    border-radius: var(--bb-radius-lg);
+}
+
+/* An icon-only button: square, quiet, and sized for a finger. */
+.bb-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    background: transparent;
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-icon-btn:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-text);
+}
+
+.bb-icon-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* A row of "try it" links under a paragraph. */
+.bb-try {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 1.25rem;
+}
+
+/* ============================================================================================
+   7b. Form controls - Fluent 2's Input, Textarea and Select.
+
+   The signature of a Fluent 2 field is the bottom stroke: a neutral hairline all round, a heavier
+   line along the bottom edge, and on focus that bottom line thickens into the brand color while
+   the rest of the border stays put. Applied to the elements themselves rather than to a class,
+   because the demo pages render plain inputs - a design system that only reaches markup written
+   for it is not a design system.
+   ============================================================================================ */
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select,
+.form-control {
+    width: auto;
+    max-width: 100%;
+    min-height: 2rem;
+    padding: .3125rem .625rem;
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.43;
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border-strong);
+    border-bottom-color: var(--bb-text-soft);
+    border-radius: var(--bb-radius);
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+textarea {
+    width: 100%;
+    padding: .5rem .625rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--bb-text-soft);
+}
+
+input:hover:not(:disabled),
+textarea:hover:not(:disabled),
+select:hover:not(:disabled) {
+    border-color: var(--bb-text-soft);
+}
+
+/* Focus: the brand underline, and no ring - the moving line IS the indicator here, which is what
+   Fluent 2 does for a field. Everything else on the site keeps the neutral double ring. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.form-control:focus-visible {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--bb-border-strong);
+    border-bottom: 2px solid var(--bb-primary);
+    /* The border grew by a pixel, so the padding gives it back and the text does not jump. */
+    padding-bottom: calc(.3125rem - 1px);
+}
+
+textarea:focus-visible {
+    padding-bottom: calc(.5rem - 1px);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+    color: var(--bb-text-soft);
+    background: var(--bb-surface-sunken);
+    cursor: not-allowed;
+}
+
+/* A search input's native clear button is drawn by the UA in its own color; hiding it lets the
+   field look the same in every browser. */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+/* ============================================================================================
+   8. Cards and sections
+
+   `.bb-card` plays two roles on this site, and the difference is structural rather than a class
+   the author has to remember:
+
+     - inside a grid or a flex stack it is a TILE, and gets Fluent's card chrome: a raised
+       surface, a hairline and elevation 2;
+     - standing on its own in the docs column it is a SECTION of a document, and gets none of
+       that. Thirty bordered boxes stacked down a reference page is a filing cabinet, not a
+       document - the heading and the space around it are what separate one section from the
+       next, exactly as they do in print.
+
+   Every documentation page is written as a stack of `.bb-card`s, so this one distinction is what
+   turns them into prose without a single page being edited.
+   ============================================================================================ */
+
+.bb-card {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--bb-text-muted);
+}
+
+.bb-card-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: var(--fl-font-size-300);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.5;
+    color: var(--bb-text);
+    margin: 0 0 .375rem;
+}
+
+.bb-card-desc {
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.6;
+    margin: 0 0 1rem;
+}
+
+.bb-card-desc:last-child {
+    margin-bottom: 0;
+}
+
+/* A tile the whole of which is a link. */
+a.bb-card {
+    display: block;
+    color: var(--bb-text-muted);
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                box-shadow var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+a.bb-card:hover {
+    text-decoration: none;
+    border-color: var(--bb-primary);
+    box-shadow: var(--bb-shadow-raised);
+}
+
+.bb-grid {
+    display: grid;
+    /* min() on the track floor rather than a bare 280px: below that width a fixed minimum makes
+       the track wider than its own container and the page picks up a horizontal scrollbar. */
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Tiles in a grid are laid out as columns so their footer links line up along the bottom edge
+   regardless of how much prose each one carries above them. */
+.bb-grid > .bb-card {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+/* The trailing call to action is pushed to the bottom of its tile rather than the prose above it
+   being stretched: `margin-top: auto` lines the buttons up along one baseline across the row
+   whatever each tile has to say, and a tile that ends in a list instead keeps that list directly
+   under the sentence introducing it. */
+.bb-grid > .bb-card > .btn:last-child,
+.bb-grid > .bb-card > .bb-try:last-child {
+    align-self: flex-start;
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.bb-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bb-flex > .bb-card {
+    margin-bottom: 0;
+}
+
+/* A band on the landing page and other full-width pages. */
+.bb-section {
+    margin-bottom: 3rem;
+}
+
+.bb-section-sub {
+    color: var(--bb-text-muted);
+    max-width: var(--bb-measure);
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================================================================
+   9. Documentation prose - the flattening described above, scoped to the docs column.
+   ============================================================================================ */
+
+/* A section of the document: no frame, no fill, no elevation. What separates one section from the
+   next is the space between them and the hairline under each heading - the same two devices a
+   printed reference uses, and the reason a page of thirty of them still reads as one document. */
+.bb-docs-content > .bb-card {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0 0 2.5rem;
+    color: var(--bb-text-muted);
+}
+
+/* Restated for the grids and stacks INSIDE a docs page - a "find your topic" grid is still a set
+   of tiles, and the rule above would have flattened those too. */
+.bb-docs-content .bb-grid > .bb-card,
+.bb-docs-content .bb-flex > .bb-card,
+.bb-docs-content .bb-card .bb-card {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    padding: 1.25rem;
+    margin-bottom: 0;
+}
+
+/* A flattened section's title is a document heading, so it takes Fluent's Title3 rather than the
+   card title's Subtitle2 - the level below the page's own H1. */
+.bb-docs-content > .bb-card > .bb-card-title {
+    font-size: var(--fl-font-size-500);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.33;
+    letter-spacing: -.01em;
+    margin: 0 0 .75rem;
+    padding-bottom: .625rem;
+    border-bottom: 1px solid var(--bb-border);
+    scroll-margin-top: calc(var(--bb-header-height) + 1.5rem);
+}
+
+/* The prose of a section, and the only thing on the page held to the reading measure. The column
+   itself is uncapped (see DocsShell.razor.css) so code samples and API tables get its full width;
+   holding the line length here rather than there is what lets both be true at once. */
+.bb-docs-content > .bb-card > .bb-card-desc,
+.bb-docs-content > .bb-card > p,
+.bb-docs-content > p {
+    font-size: var(--fl-font-size-300);
+    line-height: 1.65;
+    max-width: var(--bb-measure);
+    margin-bottom: 1rem;
+}
+
+/* The dot in front of a section heading. It is not always decoration - the MCP page uses it as a
+   live connection light, and the constraint tester as an accept/reject signal - so it stays, but
+   at the larger heading size it is drawn as a marker in the margin rather than as a bullet
+   crowding the first word. */
+.bb-docs-content > .bb-card > .bb-card-title > .bb-dot {
+    width: 10px;
+    height: 10px;
+    margin-inline-end: .125rem;
+}
+
+/* An H2 in the docs column groups several sections under it - the API reference and the FAQ are
+   both built that way - so it has to outrank the section headings underneath it on both counts a
+   heading is ranked by: it is a step larger, and its rule is the brand's rather than a hairline.
+   The page's own H1, the H2 parts and the H3 sections then run 32 / 28 / 24, which is three
+   consecutive steps of Fluent's ramp and no invented sizes. */
+.bb-docs-content > h2 {
+    font-size: var(--fl-font-size-600);
+    margin: 3.5rem 0 1.5rem;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid var(--bb-primary);
+}
+
+.bb-docs-content > h2:first-child {
+    margin-top: 0;
+}
+
+/* The anchor link site.js hangs off every section heading: invisible until the heading is hovered
+   or the link itself is focused, so it never competes with the title. */
+.bb-anchor {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: .4rem;
+    color: var(--bb-text-soft);
+    font-weight: var(--fl-weight-regular);
+    opacity: 0;
+    transition: opacity var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-anchor svg {
+    width: 15px;
+    height: 15px;
+}
+
+:is(h1, h2, h3, .bb-card-title):hover > .bb-anchor,
+.bb-anchor:focus-visible {
+    opacity: 1;
+}
+
+.bb-anchor:hover {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+/* ============================================================================================
+   10. Lists
+   ============================================================================================ */
+
+.bb-link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.bb-link-list li {
+    display: flex;
+    align-items: center;
+}
+
+.bb-link-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    padding: .375rem .5rem;
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
+    color: var(--bb-primary);
+    text-decoration: none;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-link-list a:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-primary-hover);
+    text-decoration: none;
+}
+
+.bb-link-list a.active {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* Prose-style list: items mix text with inline links and code. */
+.bb-detail-list {
+    margin: 0 0 1rem;
+    padding-inline-start: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    line-height: 1.65;
+}
+
+.bb-docs-content > .bb-card .bb-detail-list {
+    font-size: var(--fl-font-size-300);
+    max-width: var(--bb-measure);
+}
+
+.bb-detail-list::marker,
+.bb-detail-list li::marker {
+    color: var(--bb-text-soft);
+}
+
+/* ============================================================================================
+   11. Badges - Fluent 2's Badge, in its tinted "filled-light" appearance.
+   ============================================================================================ */
+
+.bb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.25;
+    padding: .1875rem .5rem;
+    border-radius: var(--bb-radius-pill);
+    letter-spacing: .01em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    white-space: nowrap;
+}
+
+.bb-badge.bb-badge-warn {
+    background: var(--bb-warning-soft);
+    color: var(--bb-warning-text);
+}
+
+.bb-badge.bb-badge-danger {
+    background: var(--bb-danger-soft);
+    color: var(--bb-danger-text);
+}
+
+.bb-badge.bb-badge-success {
+    background: var(--bb-success-soft);
+    color: var(--bb-success-text);
+}
+
+/* Fluent's Overline: the small, spaced, uppercase label that sits over a group. */
+.bb-overline {
+    display: block;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.33;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+    margin: 0;
+}
+
+/* ============================================================================================
+   12. Status dots
+   ============================================================================================ */
+
+.bb-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-text-soft);
+    flex: none;
+}
+
+.bb-dot-primary { background: var(--bb-primary); }
+.bb-dot-success { background: var(--bb-success); }
+.bb-dot-warning { background: var(--bb-warning); }
+.bb-dot-danger { background: var(--bb-danger); }
+
+/* ============================================================================================
+   13. Tables
+   ============================================================================================ */
+
+.bb-table,
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    overflow: hidden;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+}
+
+.bb-table thead th,
+.table thead th {
+    text-align: start;
+    padding: .625rem .875rem;
+    background: var(--bb-surface-sunken);
+    border-bottom: 1px solid var(--bb-border);
+    color: var(--bb-text-muted);
+    font-weight: var(--fl-weight-semibold);
+    font-size: var(--fl-font-size-100);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+}
+
+.bb-table td,
+.table td {
+    padding: .625rem .875rem;
+    border-top: 1px solid var(--bb-border);
+    vertical-align: top;
+    color: var(--bb-text-muted);
+}
+
+.bb-table tbody tr:first-child td,
+.table tbody tr:first-child td {
+    border-top: 0;
+}
+
+.bb-table tbody tr:hover td,
+.table tbody tr:hover td {
+    background: var(--bb-surface-hover);
+}
+
+/* The identifier column: monospaced and in the foreground color, because it is the thing the
+   reader is scanning for. */
+.bb-table td:first-child {
+    font-family: var(--bb-mono);
+    font-size: .9em;
+    color: var(--bb-text);
+}
+
+/* A table's used width can never fall below the sum of its columns' MIN-CONTENT widths, so a
+   single unbreakable cell anywhere in it sizes the whole table - and, since these tables are
+   full-width, overflows whatever holds them. Making one column breakable is therefore not a fix:
+   it has to be every cell, headers included, which is also why the identifier column above cannot
+   be `white-space: nowrap`.
+
+   `anywhere` and not `break-word`: the two wrap identically at a given width, but only `anywhere`
+   lowers the intrinsic minimum - and the intrinsic minimum is the number the table is sized from,
+   so `break-word` here would look fixed and still overflow. Neither breaks a word that already
+   fits, so this costs nothing at widths where the table was fine. */
+.bb-table th,
+.bb-table td,
+.table th,
+.table td {
+    overflow-wrap: anywhere;
+}
+
+/* A column of buttons rather than of prose: `width: 1%` in an auto-layout table reads as "give
+   this column its minimum", so the button keeps its label on one line and every pixel the column
+   does not need goes to the text columns instead of squeezing them. This is the one place the
+   cells' `overflow-wrap: anywhere` must not reach - a broken button label is worse than a wide
+   column, and a button's minimum is small enough to afford. */
+.bb-table .bb-table-action {
+    width: 1%;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+/* A wide table on a narrow screen scrolls inside its own box rather than widening the page. */
+.bb-scroll {
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+}
+
+.bb-scroll > .bb-table,
+.bb-scroll > .table {
+    margin-bottom: 0;
+}
+
+/* ============================================================================================
+   14. Definition list - the "what did this route bind?" readout the demos use.
+   ============================================================================================ */
+
+.bb-params {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    padding: 0;
+    overflow: hidden;
+    font-size: var(--fl-font-size-200);
+    margin: 0 0 1.25rem;
+}
+
+.bb-params dt {
+    color: var(--bb-text-muted);
+    font-weight: var(--fl-weight-semibold);
+    text-transform: uppercase;
+    font-size: var(--fl-font-size-100);
+    letter-spacing: .05em;
+    padding: .5rem .875rem;
+    background: var(--bb-surface-sunken);
+    border-top: 1px solid var(--bb-border);
+    display: flex;
+    align-items: center;
+}
+
+.bb-params dd {
+    margin: 0;
+    padding: .5rem .875rem;
+    border-top: 1px solid var(--bb-border);
+    font-family: var(--bb-mono);
+    font-size: .9em;
+    color: var(--bb-text);
+    overflow-wrap: anywhere;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+.bb-params > dt:first-of-type,
+.bb-params > dt:first-of-type + dd {
+    border-top: 0;
+}
+
+/* ============================================================================================
+   15. Notes - Fluent 2's MessageBar: an icon-less tinted band with the role's color as its
+   leading rule.
+   ============================================================================================ */
+
+.bb-note {
+    border: 1px solid color-mix(in srgb, var(--bb-primary) 30%, transparent);
+    border-inline-start: 3px solid var(--bb-primary);
+    background: var(--bb-primary-soft);
+    color: var(--bb-text);
+    border-radius: var(--bb-radius-lg);
+    padding: .75rem 1rem;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.65;
+    margin: 0 0 1.25rem;
+}
+
+.bb-note > :last-child {
+    margin-bottom: 0;
+}
+
+.bb-note code {
+    background: color-mix(in srgb, var(--bb-surface) 60%, transparent);
+}
+
+.bb-note-warn {
+    border-color: color-mix(in srgb, var(--bb-warning) 40%, transparent);
+    border-inline-start-color: var(--bb-warning);
+    background: var(--bb-warning-soft);
+}
+
+.bb-note-danger {
+    border-color: color-mix(in srgb, var(--bb-danger) 40%, transparent);
+    border-inline-start-color: var(--bb-danger);
+    background: var(--bb-danger-soft);
+}
+
+.bb-note-success {
+    border-color: color-mix(in srgb, var(--bb-success) 40%, transparent);
+    border-inline-start-color: var(--bb-success);
+    background: var(--bb-success-soft);
+}
+
+.bb-docs-content .bb-note {
+    font-size: var(--fl-font-size-300);
+    max-width: var(--bb-measure);
+}
+
+/* ============================================================================================
+   16. Code samples
+   ============================================================================================ */
+
+.bb-code {
+    position: relative;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    padding: .875rem 3rem .875rem 1rem;
+    font-family: var(--bb-mono);
+    font-size: .8125rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin: 0 0 1.25rem;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.bb-code::-webkit-scrollbar { width: 8px; }
+.bb-code::-webkit-scrollbar:horizontal { height: 8px; }
+.bb-code::-webkit-scrollbar-track { background-color: transparent; }
+.bb-code::-webkit-scrollbar-thumb { border-radius: 8px; background-color: var(--bit-clr-brd-sec); }
+.bb-code::-webkit-scrollbar-button { display: none; }
+
+.bb-code .c { color: var(--bb-code-comment); font-style: italic; }  /* comment */
+.bb-code .k { color: var(--bb-code-keyword); }                      /* keyword / tag */
+.bb-code .s { color: var(--bb-code-string); }                       /* string / template */
+.bb-code .p { color: var(--bb-code-param); }                        /* parameter */
+
+/* The copy button site.js appends to every code block. Always visible rather than
+   hover-revealed: on a touch screen there is no hover, and the button is the only way to take the
+   sample. It is appended INTO the <pre> rather than wrapped around it, which is what keeps Blazor
+   from ever diffing over it - the render tree's shape for the element never changes, so the node
+   added here is simply never visited. */
+.bb-copy-btn {
+    position: absolute;
+    top: .5rem;
+    inset-inline-end: .5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    background: color-mix(in srgb, var(--bb-code-bg) 85%, transparent);
+    color: var(--bb-text-soft);
+    cursor: pointer;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-copy-btn:hover {
+    color: var(--bb-primary);
+    border-color: var(--bb-border-strong);
+    background: var(--bb-surface);
+}
+
+.bb-copy-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.bb-copy-btn.bb-copied {
+    color: var(--bb-success);
+    border-color: var(--bb-success);
+    background: var(--bb-surface);
+}
+
+/* ============================================================================================
+   17. Empty state
+   ============================================================================================ */
+
+.bb-empty {
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border-strong);
+    border-radius: var(--bb-radius-lg);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-200);
+    margin-bottom: 1rem;
+}
+
+/* ============================================================================================
+   18. Counter (CounterPage)
+   ============================================================================================ */
+
+.bb-counter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    box-shadow: var(--bb-shadow-card);
+    margin-bottom: 1rem;
+}
+
+.bb-counter-value {
+    font-size: var(--fl-font-size-700);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-primary);
+    min-width: 3rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.bb-counter-label {
+    color: var(--bb-text-muted);
+    font-size: var(--fl-font-size-100);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: var(--fl-weight-semibold);
+}
+
+/* ============================================================================================
+   19. View-transitions gallery (GalleryPage / GalleryItemPage)
+   ============================================================================================ */
+
+.bb-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr));
+    gap: 1rem;
+}
+
+.bb-gallery-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--bb-radius-xl);
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    box-shadow: var(--bb-shadow-card);
+    transition: transform var(--bb-motion-duration) var(--bb-motion-enter),
+                box-shadow var(--bb-motion-duration) var(--bb-motion-easing);
+}
+
+.bb-gallery-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--bb-shadow-raised);
+    text-decoration: none;
+    color: #fff;
+}
+
+.bb-gallery-emoji { font-size: 2.2rem; }
+.bb-gallery-name { font-weight: var(--fl-weight-semibold); }
+
+.bb-gallery-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 260px;
+    border-radius: var(--bb-radius-xl);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+}
+
+.bb-gallery-hero-emoji { font-size: 4.5rem; }
+.bb-gallery-hero-name { margin: 0; font-size: var(--fl-font-size-700); color: #fff; }
+
+.bb-gallery-nav {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================================================================
+   20. Error pages
+   ============================================================================================ */
+
+.bb-error {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-card);
+}
+
+.bb-error h1 {
+    font-size: var(--fl-font-size-900);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -.04em;
+    margin: 0;
+    line-height: 1;
+}
+
+.bb-error.bb-error-404 h1 { color: var(--bb-text-soft); }
+.bb-error.bb-error-403 h1 { color: var(--bb-warning); }
+
+.bb-error p {
+    color: var(--bb-text-muted);
+    max-width: 46ch;
+    margin: .75rem auto 1.5rem;
+}
+
+.bb-error-actions {
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.bb-error-hint {
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text-soft);
+    margin-bottom: 0;
+}
+
+/* ============================================================================================
+   21. Docs pager (DocsPager, rendered by DocsShell)
+   ============================================================================================ */
+
+.bb-pager {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.bb-pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .875rem 1rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    background: var(--bb-surface);
+    box-shadow: var(--bb-shadow-card);
+    text-decoration: none;
+    min-width: 0;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                box-shadow var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-pager-link:hover {
+    border-color: var(--bb-primary);
+    box-shadow: var(--bb-shadow-raised);
+    text-decoration: none;
+}
+
+.bb-pager-next {
+    grid-column: 2;
+    text-align: end;
+    align-items: flex-end;
+}
+
+.bb-pager-label {
+    font-size: var(--fl-font-size-100);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: var(--fl-weight-semibold);
+    color: var(--bb-text-soft);
+}
+
+.bb-pager-title {
+    font-weight: var(--fl-weight-semibold);
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* ============================================================================================
+   22. "On this page" rail - built by site.js from whatever headings the current page rendered,
+   so no docs page had to be edited to gain one.
+   ============================================================================================ */
+
+.bb-rail {
+    position: sticky;
+    top: calc(var(--bb-header-height) + 1.75rem);
+    flex: 0 0 var(--bb-rail-width);
+    height: fit-content;
+    max-height: calc(100vh - var(--bb-header-height) - 3.5rem);
+    overflow: auto;
+    padding: 0 .5rem 2rem 0;
+    /* Persistent chrome: keep it out of the page's view transition, like the header. */
+    view-transition-name: bb-rail;
+}
+
+.bb-rail:empty {
+    padding: 0;
+}
+
+.bb-rail-title {
+    display: block;
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1.33;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+    margin: 0 0 .5rem;
+    padding-inline-start: .75rem;
+}
+
+.bb-rail ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-inline-start: 1px solid var(--bb-border);
+}
+
+.bb-rail li {
+    position: relative;
+    padding: .1875rem .75rem;
+    overflow-wrap: anywhere;
+}
+
+.bb-rail li.bb-rail-sub {
+    padding-inline-start: 1.5rem;
+}
+
+.bb-rail a {
+    display: block;
+    font-size: var(--fl-font-size-200);
+    line-height: 1.5;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-rail a:hover {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+/* The current section: its entry takes the brand color and some weight, and its stretch of the
+   spine lights up in the same color - drawn as an overlay on the list's own hairline so active
+   and inactive entries keep exactly the same geometry. */
+.bb-rail li.bb-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    inset-inline-start: -1px;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary);
+}
+
+.bb-rail li.bb-active a {
+    color: var(--bb-primary);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.bb-rail-top {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    margin: 1rem 0 0 .75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--bb-text-muted);
+    font-family: inherit;
+    font-size: var(--fl-font-size-200);
+    cursor: pointer;
+}
+
+.bb-rail-top:hover {
+    color: var(--bb-primary);
+}
+
+.bb-rail-top svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Anchored headings need clearance for the sticky header when something scrolls to them. */
+:target,
+.bb-docs-content [id],
+article [id] {
+    scroll-margin-top: calc(var(--bb-header-height) + 1.5rem);
+}
+
+/* ============================================================================================
+   23. Theme toggle - lives here rather than in Header.razor.css because the sun/moon swap keys
+   off the bit-theme attribute on <html>, which a scoped-CSS selector cannot reach.
+   ============================================================================================ */
+
+.bb-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    flex: none;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius);
+    background: transparent;
+    color: var(--bb-text-muted);
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-theme-toggle:hover {
+    background: var(--bb-surface-hover);
+    color: var(--bb-text);
+}
+
+.bb-theme-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.bb-theme-toggle .bb-icon-moon { display: none; }
+
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-sun { display: none; }
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-moon { display: block; }
+
+/* ============================================================================================
+   24. View Transitions (o.ViewTransitions = true)
+
+   No custom ::view-transition rules here on purpose: the animations you see (direction-aware
+   glide on push, mirrored on Back/Forward, quick fade on replace, springy shared-element morphs)
+   are Bit.Brouter's BUILT-IN defaults (o.ViewTransitionDefaultAnimations, on by default). They
+   live in the CSS layer "bit-brouter", so any unlayered ::view-transition-* rule added to this
+   file would override them automatically - e.g.:
+
+       ::view-transition-new(root) { animation: 400ms ease both my-fancy-entrance; }
+   ============================================================================================ */
+
+/* ============================================================================================
+   25. Narrow viewports - the handful of components whose desktop shape does not survive a phone.
+   Everything here earns its place by preventing horizontal overflow, which is the one layout
+   failure a reader cannot work around: a page wider than the screen makes every line of prose on
+   it require sideways scrolling to finish.
+   ============================================================================================ */
+
+/* Tighter cells buy back some of the width the wrapping spends, so each column holds a few more
+   characters before it has to break a word - which is what keeps the breaks landing between words
+   rather than inside them. The wrapping itself is unconditional (see `overflow-wrap` on the
+   cells): these tables sit in the docs column, whose width comes from the sidebar and rail
+   flanking it rather than from the viewport, so a viewport breakpoint is the wrong axis to hang
+   it on - it leaves the table overflowing on a wide screen with a narrow content column. */
+@media (max-width: 760px) {
+    .bb-table th,
+    .bb-table td,
+    .table th,
+    .table td {
+        padding: .5rem .5rem;
+        font-size: .8125rem;
+    }
+}
+
+/* Docs prose runs to long identifiers, package names and URLs; in a phone-width column any one of
+   them is wider than the line, so they are allowed to break rather than to overflow. */
+@media (max-width: 960px) {
+    .bb-card,
+    .bb-intro,
+    .bb-detail-list {
+        overflow-wrap: break-word;
+    }
+}
+
+/* ============================================================================================
+   26. Forced colors (Windows high contrast)
+
+   In this mode the OS replaces every color the page chose, and a surface that was distinguished
+   ONLY by its fill becomes invisible. Everything on this site that relies on a tint to say
+   something - the selected nav row, the active rail entry, a tinted note - gets a border here so
+   the same distinction survives being repainted.
+   ============================================================================================ */
+
+@media (forced-colors: active) {
+    .bb-card,
+    .bb-note,
+    .bb-code,
+    .bb-params,
+    .bb-badge,
+    .bb-pager-link,
+    .btn {
+        border: 1px solid CanvasText;
+    }
+
+    /* The dots and the rail's active marker are painted shapes with no text in them, so they
+       would come back as blocks of the canvas color and disappear. */
+    .bb-dot,
+    .bb-rail li.bb-active::before {
+        forced-color-adjust: none;
+        background: LinkText;
+    }
+
+    :focus-visible {
+        outline: 2px solid CanvasText;
+    }
+}
+
+/* ============================================================================================
+   27. Print
+
+   A reference page is printed, or saved to PDF, more often than any other kind of web page. What
+   is dropped is everything that is navigation rather than content - it cannot be followed on
+   paper - and what is added is the one thing paper cannot carry: the address behind each link.
+   ============================================================================================ */
+
+@media print {
+    :root {
+        --bb-header-height: 0px;
+    }
+
+    html,
+    body {
+        background: #fff;
+        color: #000;
+        font-size: 11pt;
+    }
+
+    .bb-header,
+    .bb-footer,
+    .bb-rail,
+    .bb-docs-sidebar,
+    .bb-docs-topbar,
+    .bb-pager,
+    .bb-docs-foot,
+    .bb-skip-link,
+    .bb-copy-btn,
+    .bb-anchor,
+    .bb-try,
+    .bb-hero-actions {
+        display: none !important;
+    }
+
+    main,
+    .bb-docs,
+    .bb-docs-content,
+    .bb-landing > section {
+        display: block;
+        max-width: none;
+        padding: 0;
+        margin: 0;
+        background: none;
+    }
+
+    .bb-card,
+    .bb-note,
+    .bb-code,
+    .bb-table,
+    .bb-params {
+        background: none;
+        box-shadow: none;
+        border-color: #999;
+        /* A section split across a page break loses the connection between its heading and its
+           content, which on a reference page is the whole of what it says. */
+        break-inside: avoid;
+    }
+
+    .bb-code {
+        white-space: pre-wrap;
+        overflow: visible;
+    }
+
+    h1,
+    h2,
+    h3 {
+        break-after: avoid;
+    }
+
+    /* On paper a link is just underlined words unless the address comes with it. Only external
+       and absolute ones: printing "(#install)" after every in-page anchor is noise. */
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: .85em;
+        color: #555;
+        word-break: break-all;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Two pager cards side by side leave neither enough room for its title, and the ellipsis then
+       hides the very thing the link is there to name. */
+    .bb-pager {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bb-pager-next {
+        grid-column: 1;
+        text-align: start;
+        align-items: flex-start;
+    }
+
+    /* A label column sized to its own content plus a value column cannot both fit. Stacked, the
+       value gets a full line - which is what it needs, since these are URLs, route templates and
+       serialized history state. */
+    .bb-params {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bb-params dd {
+        border-top: 0;
+    }
+
+    .bb-params > dt:first-of-type + dd {
+        border-top: 0;
+    }
+
+    .bb-error {
+        padding: 3rem 1rem;
+    }
+
+    .bb-error h1 {
+        font-size: var(--fl-font-size-800);
+    }
+}

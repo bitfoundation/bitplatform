@@ -36,10 +36,77 @@ public abstract class BmTransition
     public double? DelayChildren { get; set; }
 
     /// <summary>
+    /// Orders this element's own animation against its children's (variants only) - motion.dev's
+    /// <c>when</c>. <see cref="BmWhen.BeforeChildren"/> pushes every child back by this
+    /// transition's own duration, on top of <see cref="DelayChildren"/>;
+    /// <see cref="BmWhen.AfterChildren"/> delays this element until the cascade has finished.
+    /// </summary>
+    public BmWhen When { get; set; } = BmWhen.Together;
+
+    /// <summary>
+    /// Full stagger generator for the children of a variants container - motion.dev's
+    /// <c>delayChildren: stagger(...)</c>. It supersedes the flat <see cref="StaggerChildren"/>
+    /// interval and is what lets the cascade radiate from the last element, from the centre, or
+    /// across a grid:
+    /// <code>
+    /// Bm.Tween(0.3, childStagger: Bm.Stagger(0.06, from: BmStaggerFrom.Center))
+    /// Bm.Tween(0.3, childStagger: Bm.Stagger(0.04, grid: (cols: 6, rows: 4)))
+    /// </code>
+    /// <see cref="DelayChildren"/> still adds on top, as does the stagger's own start delay.
+    /// </summary>
+    public BmStagger? ChildStagger { get; set; }
+
+    /// <summary>
+    /// Bends the straight line between this animation's start and end point into a curve -
+    /// motion.dev's <c>transition.path</c>. Build one with <see cref="Bm.Arc"/>:
+    /// <code>
+    /// Bm.Tween(0.8, path: Bm.Arc(strength: 0.8, rotate: 1))
+    /// </code>
+    /// Applies when the target carries both <c>x</c> and <c>y</c> as single values; otherwise the
+    /// animation runs in a straight line as usual. See <see cref="BmArc"/>.
+    /// </summary>
+    public BmArc? Path { get; set; }
+
+    /// <summary>
     /// Called on every animation frame with the latest interpolated value.
     /// Supported for single-value numeric animations.
     /// </summary>
     public Action<double>? OnUpdate { get; set; }
+
+    /// <summary>
+    /// Returns a copy of this transition with <see cref="Delay"/> replaced - the way to reuse one
+    /// configured transition across staggered elements without mutating the shared instance:
+    /// <code>
+    /// var t = Bm.Spring(bounce: 0.3, duration: 0.6);
+    /// // …then per element: t.WithDelay(i * 0.05)
+    /// </code>
+    /// </summary>
+    public BmTransition WithDelay(double delay)
+    {
+        var copy = CloneTransition();
+        copy.Delay = delay;
+        return copy;
+    }
+
+    /// <summary>Creates a copy of this transition, including every base-class field.</summary>
+    private protected abstract BmTransition CloneTransition();
+
+    /// <summary>Copies the fields declared on <see cref="BmTransition"/> onto <paramref name="target"/>.</summary>
+    private protected void CopyBaseTo(BmTransition target)
+    {
+        target.Delay = Delay;
+        target.ColorSpace = ColorSpace;
+        target.Repeat = Repeat;
+        target.StaggerChildren = StaggerChildren;
+        target.DelayChildren = DelayChildren;
+        target.When = When;
+        target.ChildStagger = ChildStagger;
+        target.Path = Path;
+        target.OnUpdate = OnUpdate;
+        // Per-property overrides are immutable from this type's perspective (ToConfig only reads
+        // them), so a shallow copy of the map is enough to keep the copies independent.
+        target.Properties = Properties is null ? null : new Dictionary<string, BmTransition>(Properties);
+    }
 
     /// <summary>Lowers this transition into the internal flat engine configuration.</summary>
     internal BmotionTransitionConfig ToConfig() => ToConfig(null);
@@ -66,6 +133,8 @@ public abstract class BmTransition
         }
         c.StaggerChildren = StaggerChildren;
         c.DelayChildren = DelayChildren;
+        c.When = When;
+        c.Path = Path;
         c.OnUpdate = OnUpdate;
         if (Properties is { Count: > 0 })
         {
@@ -94,6 +163,9 @@ public abstract class BmTransition
         if (ColorSpace != other.ColorSpace) return false;
         if (!Nullable.Equals(Repeat, other.Repeat)) return false;
         if (StaggerChildren != other.StaggerChildren || DelayChildren != other.DelayChildren) return false;
+        if (When != other.When) return false;
+        if (!BmStagger.AreEquivalent(ChildStagger, other.ChildStagger)) return false;
+        if (!BmArc.AreEquivalent(Path, other.Path)) return false;
         // OnUpdate is deliberately excluded: inline callbacks are recreated on every render and
         // must not read as a transition change (an animation picks up the freshest delegate when
         // it actually starts).
@@ -177,6 +249,22 @@ public sealed class BmTween : BmTransition
         Eases = Eases,
     };
 
+    private protected override BmTransition CloneTransition()
+    {
+        var copy = new BmTween
+        {
+            Duration = Duration,
+            Ease = Ease,
+            Bezier = Bezier,
+            Steps = Steps,
+            StepJump = StepJump,
+            Times = Times,
+            Eases = Eases,
+        };
+        CopyBaseTo(copy);
+        return copy;
+    }
+
     internal override bool ValueEquals(BmTransition other)
         => other is BmTween t
            && Duration == t.Duration && Ease == t.Ease
@@ -250,6 +338,23 @@ public sealed class BmSpring : BmTransition
         return c;
     }
 
+    private protected override BmTransition CloneTransition()
+    {
+        var copy = new BmSpring
+        {
+            Stiffness = Stiffness,
+            Damping = Damping,
+            Mass = Mass,
+            Velocity = Velocity,
+            RestSpeed = RestSpeed,
+            RestDelta = RestDelta,
+            Bounce = Bounce,
+            Duration = Duration,
+        };
+        CopyBaseTo(copy);
+        return copy;
+    }
+
     internal override bool ValueEquals(BmTransition other)
         => other is BmSpring s
            && Stiffness == s.Stiffness && Damping == s.Damping && Mass == s.Mass
@@ -279,6 +384,19 @@ public sealed class BmInertia : BmTransition
     /// <summary>Optional upper bound for the coast target.</summary>
     public double? Max { get; set; }
 
+    /// <summary>
+    /// Adjusts where the coast comes to rest - motion.dev's <c>modifyTarget</c>. The projected
+    /// resting position is passed in and the returned value is used instead, which is how a fling
+    /// snaps to a grid, a page or a set of stops:
+    /// <code>
+    /// // release anywhere, settle on the nearest 100px stop
+    /// Bm.Inertia(modifyTarget: v =&gt; Math.Round(v / 100) * 100)
+    /// </code>
+    /// Runs before <see cref="Min"/>/<see cref="Max"/> clamping, so a snapped target still respects
+    /// the bounds. A non-finite return value is ignored.
+    /// </summary>
+    public Func<double, double>? ModifyTarget { get; set; }
+
     private protected override BmotionTransitionConfig CreateConfig() => new()
     {
         Type = BmotionTransitionType.Inertia,
@@ -288,11 +406,32 @@ public sealed class BmInertia : BmTransition
         InertiaRestDelta = RestDelta,
         InertiaMin = Min,
         InertiaMax = Max,
+        ModifyTarget = ModifyTarget,
     };
+
+    private protected override BmTransition CloneTransition()
+    {
+        var copy = new BmInertia
+        {
+            Velocity = Velocity,
+            TimeConstant = TimeConstant,
+            Power = Power,
+            RestDelta = RestDelta,
+            Min = Min,
+            Max = Max,
+            ModifyTarget = ModifyTarget,
+        };
+        CopyBaseTo(copy);
+        return copy;
+    }
 
     internal override bool ValueEquals(BmTransition other)
         => other is BmInertia i
            && Velocity == i.Velocity && TimeConstant == i.TimeConstant && Power == i.Power
            && RestDelta == i.RestDelta && Min == i.Min && Max == i.Max
+           // Like OnUpdate, an inline lambda is a fresh delegate every render; comparing it by
+           // reference would report a transition change on every re-render. Compare by target
+           // method so a stable named method still reads as unchanged.
+           && Equals(ModifyTarget?.Method, i.ModifyTarget?.Method)
            && base.ValueEquals(other);
 }

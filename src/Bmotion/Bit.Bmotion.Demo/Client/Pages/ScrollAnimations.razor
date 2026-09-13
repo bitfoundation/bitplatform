@@ -1,0 +1,548 @@
+@page "/scroll"
+@inject BmotionScrollTracker Scroll
+@inject BmotionScrollTracker TargetScroll
+@implements IAsyncDisposable
+
+<PageTitle>Scroll animations - Bit.Bmotion</PageTitle>
+
+<h1>Scroll animations</h1>
+
+<p class="page-intro">
+    There are two ways to tie motion to a scrollbar, and they answer different questions.
+    <strong>Scroll-linked</strong> motion asks <em>"how far along are we?"</em> and maps that
+    progress continuously onto a property - the reader scrubs the animation.
+    <strong>Scroll-triggered</strong> motion asks <em>"is this on screen yet?"</em> and plays a
+    normal animation once the answer changes. For the first there is a fast path -
+    <code>Timeline</code>, which hands the scrubbing to the browser outright - and a general one,
+    <code>BmotionScrollTracker</code>, for when you need the number itself.
+    <code>WhileInView</code> covers the second.
+</p>
+
+@* Offset by the site header's own height so the readout parks under it rather than behind it. *@
+<div class="scroll-progress">
+    <div class="demo-label progress-caption">Window scroll progress</div>
+    <div class="scroll-track">
+        <div class="scroll-fill" style="@($"width:{Percent(_progressY)}%")"></div>
+    </div>
+    <div class="demo-label progress-caption">
+        Y: @Percent(_progressY)% &nbsp;|&nbsp; X: @Percent(_progressX)%
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Scroll timelines: let the browser do it</h2>
+    <p>
+        A scroll handler that calls back into .NET on every scroll event is the expensive way to
+        scrub an animation, and it is the one thing you cannot make fast from the outside.
+        <strong>Timeline</strong> hands the whole thing to the browser instead: the keyframes are
+        pre-sampled in C# once, and progress comes from the browser's own
+        <code>ScrollTimeline</code> / <code>ViewTimeline</code>. After the handoff there is no
+        scroll handler, no frame loop and no interop at all - the animation runs on the compositor.
+        Where those APIs are missing, the bridge scrubs the same Web Animation from one passive
+        listener, so the values are still interpolated by the browser rather than round-tripped
+        through .NET.
+    </p>
+    <p>
+        <code>BmScrollTimeline.Page()</code> is the whole document's progress;
+        <code>Container(selector)</code> is one scroller's; <code>View()</code> is the animated
+        element's own journey through the viewport, and <code>ViewOf(selector)</code> is some other
+        element's. Only transforms and <code>opacity</code> can be handed over this way - they are
+        what the browser can interpolate for us - and while a timeline is attached it owns those
+        properties, so <code>Transition</code> does not apply: scroll position <em>is</em> the
+        progress.
+    </p>
+
+    <div class="timeline-bar-wrap">
+        <span class="demo-label">BmScrollTimeline.Page() &middot; scroll the page</span>
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill full-width" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-row">
+        @foreach (var card in _timelineCards)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@card</span>
+                <Bmotion Timeline="BmScrollTimeline.View()"
+                         Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
+                    <div class="box" />
+                </Bmotion>
+            </div>
+        }
+    </div>
+
+    <CodeSnippet Code="@_timelineCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Tracking the scroll position</h2>
+    <p>
+        Inject <strong>BmotionScrollTracker</strong> and call <code>ObserveAsync</code> to receive a
+        <code>BmScrollInfo</code> on every scroll: absolute offsets and normalised
+        <code>0..1</code> progress on both axes. The tracker is <em>transient</em> and owned by the
+        component that injected it, which is why the page below implements
+        <code>IAsyncDisposable</code> - the browser-side listener goes away with the component
+        rather than outliving it.
+    </p>
+
+    <CodeSnippet Code="@_scrollTrackCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Scroll-linked motion values</h2>
+    <p>
+        A callback that calls <code>StateHasChanged</code> on every scroll event is a diff per
+        frame. Motion values skip that entirely: bind them with the <code>Values</code> parameter
+        and their changes are flushed straight to the DOM each frame
+        <em>without re-rendering the component</em>. <code>Transform</code> derives new values from
+        them - here the same progress drives a <code>scaleX</code> bar directly and, mapped through
+        <code>0..1 → 0..360</code>, a full rotation over the length of the page.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="scroll-track">
+                <Bmotion Values="_barValues">
+                    <div class="scroll-fill full-width" />
+                </Bmotion>
+            </div>
+            <Bmotion Values="_boxValues">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_valuesCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Motion templates</h2>
+    <p>
+        Some properties are not a number - they are a sentence made of numbers.
+        <strong>Bm.Template</strong> composes motion values into a CSS string and
+        <code>StringValues</code> binds the result to any property, so a
+        <code>filter</code> built from two independently derived values updates as one. The blur
+        below peaks at the middle of the page (<code>[0, 0.5, 1] → [0, 4, 0]</code>) while the hue
+        rotates straight through.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion StringValues="_filterValue">
+                <div class="box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_templateCode" />
+</div>
+
+<div class="demo-section">
+    <h2>An element's own progress</h2>
+    <p>
+        Window progress is the wrong measure for anything that is not the whole page. Pass
+        <strong>BmScrollOptions</strong> a <code>TargetId</code> and a pair of
+        <code>Offset</code> alignments instead, and progress is measured over <em>that element's</em>
+        journey through the viewport. Each offset reads
+        <code>"&lt;target edge&gt; &lt;container edge&gt;"</code>, so the default
+        <code>["start end", "end start"]</code> means <em>0 when its top reaches the bottom of the
+        viewport, 1 when its bottom passes the top</em>. Scroll the striped panel past and watch
+        the ring fill.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack" id="scroll-target">
+            <span class="demo-label">This card is the tracked target</span>
+            <div class="target-panel"></div>
+            <div class="scroll-track">
+                <Bmotion Values="_targetValues">
+                    <div class="scroll-fill full-width" />
+                </Bmotion>
+            </div>
+            <span class="demo-label">Target progress: @Percent(_targetProgress)%</span>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_targetCode" />
+</div>
+
+<div class="demo-section">
+    <h2>whileInView</h2>
+    <p>
+        <strong>WhileInView</strong> is the trigger half: an ordinary gesture state, activated by an
+        <code>IntersectionObserver</code> rather than a pointer. <code>Once="true"</code> keeps it
+        from replaying every time the element crosses the fold - the right default for entrance
+        animations, since a section that re-animates on the way back up reads as a glitch. For
+        finer control, <code>Viewport</code> takes a <code>Margin</code> and an <code>Amount</code>
+        (<code>"some"</code>, <code>"all"</code>, or a <code>0..1</code> threshold).
+    </p>
+
+    @* Each band waits 60 pixels off its place, so on a narrow screen the ones that come in from
+       the right start outside the viewport - and a page that scrolls sideways because something
+       has not arrived yet is a bug, not an entrance. overflow-x: clip rather than hidden: hidden
+       would make this a scroll container and break position: sticky for anything inside it. *@
+    <div class="inview-strip">
+        @for (int i = 0; i < 12; i++)
+        {
+            var idx = i;
+            <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
+                    WhileInView="Bm.To(opacity: 1, x: 0)"
+                    Transition="Bm.Tween(0.5, BmEase.BackOut)"
+                    Once="true">
+                <div class="inview-band @(idx % 2 == 0 ? "from-left" : "from-right")">
+                    Section @(idx + 1)
+                </div>
+            </Bmotion>
+        }
+    </div>
+
+    <CodeSnippet Code="@_inViewCode" />
+</div>
+
+<style>
+    .scroll-progress {
+        top: calc(var(--demo-header-height) + .5rem);
+        z-index: 50;
+        padding: 1.5rem;
+        position: sticky;
+        margin-bottom: 1.5rem;
+        background: var(--bm-card);
+        border: 1px solid var(--bm-border);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
+    }
+
+    .progress-caption { text-align: left; margin: .4rem 0; }
+
+    /* The timeline-driven bar sits on its own, above the row of stages, with the caption it
+       needs to be readable as a sample rather than as page chrome. */
+    .timeline-bar-wrap { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.5rem; }
+
+    .scroll-track {
+        width: 100%;
+        height: .5rem;
+        overflow: hidden;
+        border-radius: 6px;
+        background: var(--bm-track);
+    }
+
+    .scroll-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width .05s;
+        background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    /* The motion-value bound fills are scaled, not resized: they start full width and the
+       engine drives scaleX from the left edge. */
+    .full-width { width: 100%; transition: none; transform-origin: 0 50%; }
+
+    .target-panel {
+        width: 100%;
+        height: 8rem;
+        border-radius: 8px;
+        background: repeating-linear-gradient(45deg,
+            var(--bm-accent-soft) 0 12px,
+            transparent 12px 24px);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .inview-strip { overflow-x: clip; }
+
+    .inview-band {
+        height: 5rem;
+        display: flex;
+        color: #fff;
+        font-weight: 700;
+        align-items: center;
+        border-radius: 12px;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .from-left { background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+    .from-right { background: linear-gradient(135deg, var(--bm-secondary), var(--bm-primary)); }
+</style>
+
+@code {
+    private double _progressX;
+    private double _progressY;
+    private double _targetProgress;
+
+    // Created once (not inline in the markup) so re-renders don't re-subscribe the bindings.
+    private Dictionary<string, BmValue<double>> _barValues = default!;
+    private Dictionary<string, BmValue<double>> _boxValues = default!;
+    private Dictionary<string, BmValue<double>> _targetValues = default!;
+    private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+    // Three stages so the reader can see one enter, one cross and one leave at the same time -
+    // one card alone only ever shows a single phase of its own journey.
+    private readonly string[] _timelineCards =
+        ["BmScrollTimeline.View()", "…the same, one row along", "…and again"];
+
+    private static string Percent(double progress)
+        => (progress * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+
+    protected override void OnInitialized()
+    {
+        _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
+        _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+
+        // A second tracker, because this one measures one element's journey rather than the
+        // window's - the two subscriptions are independent and each owns its own listener.
+        _targetValues = new() { ["scaleX"] = TargetScroll.TargetProgressValue };
+
+        // Compose two derived values into one CSS string (useMotionTemplate).
+        var hue = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+        var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+        _filterValue = new()
+        {
+            ["filter"] = Bm.Template(
+                () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await Scroll.ObserveAsync(info =>
+        {
+            _progressX = info.ProgressX;
+            _progressY = info.ProgressY;
+            return InvokeAsync(StateHasChanged);
+        });
+
+        await TargetScroll.ObserveAsync(
+            new BmScrollOptions
+            {
+                TargetId = "scroll-target",
+                Offset = ["start end", "end start"],
+            },
+            info =>
+            {
+                _targetProgress = info.TargetProgress ?? 0;
+                return InvokeAsync(StateHasChanged);
+            });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Scroll.DisposeAsync();
+        await TargetScroll.DisposeAsync();
+    }
+
+    private const string _valuesCode = """
+        @inject BmotionScrollTracker Scroll
+
+        @* Values bindings flush to the DOM every frame WITHOUT re-rendering the component -
+           no diff, no StateHasChanged, no per-frame render tree. *@
+        <div class="scroll-track">
+            <Bmotion Values="_barValues">
+                <div style="height:100%;width:100%;transform-origin:0 50%" />
+            </Bmotion>
+        </div>
+
+        <Bmotion Values="_boxValues">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<double>> _barValues = default!;
+            private Dictionary<string, BmValue<double>> _boxValues = default!;
+
+            // Built once, not inline in the markup: a fresh dictionary each render would
+            // re-subscribe the bindings every time.
+            protected override void OnInitialized()
+            {
+                _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
+                _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+            }
+        }
+        """;
+
+    private const string _templateCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
+
+        <Bmotion StringValues="_filterValue">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+            protected override void OnInitialized()
+            {
+                // Two independently derived values composed into one CSS string.
+                // Transform's three-stop range peaks the blur in the middle of the page.
+                var hue  = Scroll.ProgressYValue.Transform([0, 1], [0, 270]);
+                var blur = Scroll.ProgressYValue.Transform([0, 0.5, 1], [0, 4, 0]);
+                _filterValue = new()
+                {
+                    ["filter"] = Bm.Template(
+                        () => $"hue-rotate({hue.Value:F0}deg) blur({blur.Value:F1}px)", hue, blur),
+                };
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
+            }
+        }
+        """;
+
+    private const string _targetCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker TargetScroll
+
+        <div id="scroll-target">…</div>
+
+        <Bmotion Values="_targetValues">
+            <div class="bar" style="transform-origin:0 50%" />
+        </Bmotion>
+
+        @code {
+            private Dictionary<string, BmValue<double>> _targetValues = default!;
+
+            protected override void OnInitialized()
+                => _targetValues = new() { ["scaleX"] = TargetScroll.TargetProgressValue };
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender is false) return;
+
+                await TargetScroll.ObserveAsync(new BmScrollOptions
+                {
+                    TargetId = "scroll-target",
+                    // "<target edge> <container edge>": 0 when the target's top reaches the
+                    // bottom of the viewport, 1 when its bottom passes the top.
+                    // Edges are start / center / end, or any 0-1 number.
+                    Offset = ["start end", "end start"],
+                }, info => { _progress = info.TargetProgress ?? 0; return InvokeAsync(StateHasChanged); });
+            }
+        }
+        """;
+
+    private const string _timelineCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-track: #EBEBEB; --bm-primary: #1276C6; --bm-secondary: #FD7F36; }
+            .scroll-track { background: var(--bm-track); border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+            /* Scaled, not resized: the bar starts full width and the browser drives scaleX
+               from its left edge. */
+            .scroll-fill { width: 100%; height: 100%; border-radius: 6px; transform-origin: 0 50%;
+                background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary)); }
+            .box { width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        @* A reading-progress bar. No scroll handler, no OnInitialized, no IAsyncDisposable:
+           the browser's own ScrollTimeline drives it on the compositor. *@
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill" />
+            </Bmotion>
+        </div>
+
+        @* View(): the element's own journey through the viewport, 0 as it enters and 1 as it
+           leaves. Four keyframes, so it fades in, holds, then fades out again. *@
+        <Bmotion Timeline="BmScrollTimeline.View()"
+                 Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
+            <div class="box" />
+        </Bmotion>
+
+        @* Other sources: one scroll container, or another element's journey driving this one.
+           A native range narrows a view timeline to part of the journey. *@
+        <Bmotion Timeline='BmScrollTimeline.Container(".panel")' Animate="Bm.To(scaleX: [0, 1])">
+            <div class="scroll-fill" />
+        </Bmotion>
+
+        <Bmotion Timeline='BmScrollTimeline.ViewOf("#hero", range: "entry 0% cover 50%")'
+                 Animate="Bm.To(opacity: [1, 0])">
+            <div class="box" />
+        </Bmotion>
+        """;
+
+    private const string _scrollTrackCode = """
+        @using Bit.Bmotion
+        @inject BmotionScrollTracker Scroll
+        @implements IAsyncDisposable
+
+        <style>
+            :root { --bm-card: #F5F5F5; --bm-muted: #525252; --bm-track: #EBEBEB; --bm-primary: #1276C6; --bm-secondary: #FD7F36; }
+            .scroll-progress {
+                position: sticky; top: 0; z-index: 50; background: var(--bm-card);
+                border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,.15);
+            }
+            .scroll-track { background: var(--bm-track); border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+            .scroll-fill { height: 100%; border-radius: 6px; transition: width .05s;
+                background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        <div class="scroll-progress">
+            <div class="scroll-track">
+                <div class="scroll-fill" style="@($"width:{Percent(_progressY)}%")"></div>
+            </div>
+            <div>Y: @Percent(_progressY)% | X: @Percent(_progressX)%</div>
+        </div>
+
+        @code {
+            private double _progressX;
+            private double _progressY;
+
+            private static string Percent(double progress)
+                => (progress * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await Scroll.ObserveAsync(info =>
+                    {
+                        _progressX = info.ProgressX;
+                        _progressY = info.ProgressY;
+                        return InvokeAsync(StateHasChanged);
+                    });
+                }
+            }
+
+            // The tracker is transient and owned by this component - dispose it or the
+            // browser-side listener outlives the page.
+            public async ValueTask DisposeAsync() => await Scroll.DisposeAsync();
+        }
+        """;
+
+    private const string _inViewCode = """
+        @using Bit.Bmotion
+
+        @* An ordinary gesture state, triggered by an IntersectionObserver instead of a pointer.
+           Once="true" stops it replaying every time the element crosses the fold. *@
+        @for (int i = 0; i < 12; i++)
+        {
+            var idx = i;
+            <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
+                     WhileInView="Bm.To(opacity: 1, x: 0)"
+                     Transition="Bm.Tween(0.5, BmEase.BackOut)"
+                     Once="true">
+                <div class="band">Section @(idx + 1)</div>
+            </Bmotion>
+        }
+
+        @* For finer control, swap Once for the full viewport options: *@
+        <Bmotion WhileInView="Bm.To(opacity: 1)"
+                 Viewport="new BmViewport { Once = true, Amount = "all", Margin = "0px 0px -80px 0px" }">
+            <div class="band" />
+        </Bmotion>
+        """;
+}

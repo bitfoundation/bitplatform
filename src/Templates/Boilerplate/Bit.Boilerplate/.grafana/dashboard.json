@@ -512,7 +512,7 @@
                 "kind": "Panel",
                 "spec": {
                     "id": 19,
-                    "title": "Attachment Resize P95",
+                    "title": "Attachment Resize Mean",
                     "description": "P95 duration of image resize operations (`attachment.resize_duration` histogram from customMetrics). Values are in milliseconds.",
                     "links": [],
                     "data": {
@@ -533,7 +533,7 @@
                                                 "azureLogAnalytics": {
                                                     "dashboardTime": false,
                                                     "mode": "raw",
-                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"attachment.resize_duration\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize P95_ms = percentile(Sum, 95) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"attachment.resize_duration\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize Mean_ms = sum(Sum) / sum(ItemCount) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
                                                     "resources": [
                                                         "${workspace}"
                                                     ],
@@ -1250,7 +1250,7 @@
                                                 "azureLogAnalytics": {
                                                     "dashboardTime": false,
                                                     "mode": "raw",
-                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType == \"postgresql\"\n| summarize \n    Avg = avg(DurationMs),\n    P95 = percentile(DurationMs, 95),\n    Max = max(DurationMs)\n    by bin(TimeGenerated, $__interval), AppRoleName\n| project TimeGenerated, Avg, P95, Max, AppRoleName\n| order by TimeGenerated asc",
+                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType !in (\"HTTP\", \"Http\", \"InProc\", \"Azure blob\", \"Azure Service Bus\", \"Queue Message\")\n| summarize \n    Avg = avg(DurationMs),\n    P95 = percentile(DurationMs, 95),\n    Max = max(DurationMs)\n    by bin(TimeGenerated, $__interval), DependencyType\n| project TimeGenerated, Avg, P95, Max, DependencyType\n| order by TimeGenerated asc",
                                                     "resources": [
                                                         "${workspace}"
                                                     ],
@@ -1425,7 +1425,7 @@
                                                 "azureLogAnalytics": {
                                                     "dashboardTime": false,
                                                     "mode": "raw",
-                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType == \"postgresql\"\n| project TimeGenerated, AppRoleName, Data, DurationMs, Success\n| top 100 by DurationMs desc",
+                                                    "query": "AppDependencies\n| where $__timeFilter(TimeGenerated)\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| where DependencyType !in (\"HTTP\", \"Http\", \"InProc\", \"Azure blob\", \"Azure Service Bus\", \"Queue Message\")\n| project TimeGenerated, AppRoleName, DependencyType, Data, DurationMs, Success\n| top 100 by DurationMs desc",
                                                     "resources": [
                                                         "${workspace}"
                                                     ],

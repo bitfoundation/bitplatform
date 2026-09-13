@@ -1,7 +1,17 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The keydown handler is here as well as on the callout because the focus is usually still on the trigger
+   inside the anchor while the callout is open - it only moves into the callout for AutoFocus and TrapFocus -
+   and Escape has to dismiss the callout from wherever the keyboard actually is. The keys stop here: the
+   anchor of a callout nested in another one sits inside that one's content, so an Escape left to carry on
+   up would dismiss the callout the keyboard is still working inside of along with the one it was meant for.
+   The callout itself needs none of this - it is relocated to the body while it is open, which is already
+   outside of whatever it was opened from. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onkeydown="HandleOnCalloutKeyDown" @onkeydown:stopPropagation
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -9,8 +19,17 @@
 
     @if (Anchor is not null)
     {
-        <div @onclick="OpenCallout"
+        @* The anchor holds the consumer's own trigger, so the relationship attributes are all this
+           element carries: a role or a tabindex of its own would either duplicate the tab stop of the
+           button inside it or turn a container of interactive content into an interactive element.
+           The click stops here for the same reason the keys do on the root: the anchor of a callout
+           nested in another one sits inside that one's content, where a click left to carry on up would
+           reach an AutoClose callout and dismiss it - taking the callout just opened from it along too. *@
+        <div @onclick="HandleOnAnchorClick" @onclick:stopPropagation
              id="@_anchorId"
+             aria-controls="@_contentId"
+             aria-haspopup="@GetAriaHasPopup()"
+             aria-expanded="@(IsOpen ? "true" : "false")"
              style="@Styles?.AnchorContainer"
              class="bit-clo-acn @Classes?.AnchorContainer">
             @Anchor
@@ -18,14 +37,92 @@
     }
 </div>
 
-<div @onclick="CloseCallout" @onclick:stopPropagation
-     id="@_overlayId"
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
-     class="bit-clo-ovl @Classes?.Overlay">
-</div>
+@if (HasPoint)
+{
+    @* The point a callout opened with OpenAt is placed against, as a zero-sized element the placement code
+       can measure the way it measures an anchor. It stays after the callout closes, so reopening at the
+       same point costs no extra render, and it is taken away again the moment an anchor takes over. *@
+    <div id="@_pointId"
+         aria-hidden="true"
+         class="bit-clo-pnt"
+         style="@GetPointStyles()">
+    </div>
+}
 
-<div id="@_contentId"
-     style="@Styles?.Content"
-     class="bit-clo-cal @Classes?.Content">
-    @(Content ?? ChildContent)
+@if (HasOverlay)
+{
+    @* The overlay covers the page while the callout is open, so that a click anywhere outside of the
+       callout lands on it instead of on whatever it is over, and dismisses the callout. A callout that
+       was asked to leave the page its own clicks renders none, and the dismissal is taken over for it by
+       the page-level handler on the JS side. *@
+    <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
+         id="@_overlayId"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="@GetOverlayCssClasses()">
+    </div>
+}
+
+@if (ShowArrow)
+{
+    @* The arrow is a sibling of the callout rather than a child of it so that a callout which scrolls
+       its own content never clips the half of the arrow that sticks out of it. It is positioned, and
+       hidden again, by the same code that places the callout. *@
+    <div id="@_arrowId"
+         aria-hidden="true"
+         style="@GetArrowStyles()"
+         class="@GetArrowCssClasses()">
+    </div>
+}
+
+<div @onclick="HandleOnCalloutClick"
+     @onkeydown="HandleOnCalloutKeyDown"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
+     id="@_contentId"
+     tabindex="-1"
+     role="@GetRole()"
+     aria-label="@AriaLabel"
+     aria-labelledby="@GetAriaLabelledBy()"
+     aria-modal="@(TrapFocus ? "true" : null)"
+     style="@GetCalloutStyles()"
+     class="@GetCalloutCssClasses()"
+     dir="@Dir?.ToString().ToLower()">
+    @* A lazy callout keeps its content out of the page until it is first opened. The callout itself always
+       renders, since it is the element the positioning code shows and measures. *@
+    @if (ContentRendered)
+    {
+        if (HasSections)
+        {
+            @* A callout that was given a header or a footer lays them out around a body that takes the
+               scrolling, which is the id-free version of pointing HeaderId, ScrollContainerId and FooterId
+               at elements of the consumer's own: the parts around the body stay put while it scrolls. *@
+            if (Header is not null)
+            {
+                <div id="@_headerId"
+                     style="@Styles?.Header"
+                     class="bit-clo-hdr @Classes?.Header">
+                    @Header
+                </div>
+            }
+
+            <div id="@_bodyId"
+                 style="@Styles?.Body"
+                 class="bit-clo-bdy @Classes?.Body">
+                @(Content ?? ChildContent)
+            </div>
+
+            if (Footer is not null)
+            {
+                <div id="@_footerId"
+                     style="@Styles?.Footer"
+                     class="bit-clo-ftr @Classes?.Footer">
+                    @Footer
+                </div>
+            }
+        }
+        else
+        {
+            @(Content ?? ChildContent)
+        }
+    }
 </div>

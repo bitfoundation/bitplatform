@@ -1,6 +1,4 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class SessionsSection
@@ -15,11 +13,6 @@ public partial class SessionsSection
     private UserSessionDto[] otherSessions = [];
 
     [AutoInject] private IUserController userController = default!;
-    //#if (notification == true)
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
-    //#elseif (signalR == true)
-    [AutoInject] private Notification notification = default!;
-    //#endif
 
 
     protected override async Task OnInitAsync()
@@ -44,10 +37,17 @@ public partial class SessionsSection
 
             var userSessions = await userController.GetUserSessions(CurrentCancellationToken);
             otherSessions = userSessions.Where(s => s.Id != currentSessionId).ToArray();
-            currentSession = userSessions.Single(s => s.Id == currentSessionId);
+
+            currentSession = userSessions.SingleOrDefault(s => s.Id == currentSessionId);
+
+            if (currentSession is null)
+            {
+                SnackBarService.Warning(Localizer[nameof(AppStrings.SessionNoLongerValidMessage)]);
+            }
 
             maxPrivilegedSessionsCount = user.GetClaimValue<int>(AppClaimTypes.MAX_PRIVILEGED_SESSIONS);
-            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, "-1");
+            hasUnlimitedPrivilegedSessions = user.HasClaim(AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
+                AppClaimTypes.UNLIMITED_PRIVILEGED_SESSIONS.ToString(CultureInfo.InvariantCulture));
             currentPrivilegedSessionsCount = userSessions.Count(us => us.Privileged);
         }
         catch (KnownException e)
@@ -87,59 +87,4 @@ public partial class SessionsSection
             revokingSessionIds.Remove(session.Id);
         }
     }
-
-    private static string GetImageUrl(string? deviceInfo)
-    {
-        if (string.IsNullOrEmpty(deviceInfo)) return "unknown.png";
-
-        var d = deviceInfo.ToLowerInvariant();
-
-        if (d.Contains("win") /*Windows, WinUI, Win32*/) return "windows.png";
-
-        if (d.Contains("android")) return "android.png";
-
-        if (d.Contains("linux")) return "linux.png";
-
-        return "apple.png";
-    }
-
-    private BitPersonaPresence GetPresence(DateTimeOffset renewedOn)
-    {
-        return TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(5) ? BitPersonaPresence.Online
-                    : TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(15) ? BitPersonaPresence.Away
-                    : BitPersonaPresence.Offline;
-    }
-
-    private string GetLastSeenOn(DateTimeOffset renewedOn)
-    {
-        return TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(5) ? Localizer[nameof(AppStrings.Online)]
-                    : TimeProvider.GetUtcNow() - renewedOn < TimeSpan.FromMinutes(15) ? Localizer[nameof(AppStrings.Recently)]
-                    : renewedOn.ToLocalTime().ToString("g");
-    }
-
-    //#if (signalR == true || notification == true)
-    private async Task ToggleNotification(UserSessionDto userSession)
-    {
-        if (userSession.NotificationStatus is not UserSessionNotificationStatus.Allowed)
-        {
-            // User is going to allow notifications so it's an opportune time to request permission.
-            // The permission might have already been requested (if userSession.NotificationStatus is UserSessionNotificationStatus.Muted), but there's no harm in asking for permission again.
-
-            //#if (notification == true)
-            if (AppPlatform.IsWindows is false)
-            {
-                await pushNotificationService.RequestPermission(CurrentCancellationToken);
-                await pushNotificationService.Subscribe(CurrentCancellationToken);
-            }
-            //#else
-            if (await notification.IsSupported())
-            {
-                await notification.RequestPermission();
-            }
-            //#endif
-        }
-
-        userSession.NotificationStatus = await userController.ToggleNotification(userSession.Id, CurrentCancellationToken);
-    }
-    //#endif
 }

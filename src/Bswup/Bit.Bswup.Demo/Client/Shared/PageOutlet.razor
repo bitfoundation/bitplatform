@@ -1,0 +1,41 @@
+@* Every routable page starts with one of these. It is the only place the site writes a document
+   title or a meta tag from, so a page cannot end up with a title but no description, or with a
+   canonical URL that disagrees with the sitemap.
+
+   The tags land in <head> through HeadOutlet, which the host renders during prerendering - so a
+   crawler that never runs the WebAssembly runtime still receives the finished head. *@
+
+<PageTitle>@_title</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@_description" />
+    @if (_noIndex)
+    {
+        @* Also kept out of sitemap.xml - both read SiteMetadata.NoIndexUrls. *@
+        <meta name="robots" content="noindex, follow" />
+    }
+
+    <link rel="canonical" href="@_canonicalUrl" />
+
+    <meta property="og:type" content="@(_url == "/" ? "website" : "article")" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="@SiteMetadata.SiteName" />
+    <meta property="og:title" content="@_title" />
+    <meta property="og:description" content="@_description" />
+    <meta property="og:url" content="@_canonicalUrl" />
+    <meta property="og:image" content="@SiteMetadata.SocialImageUrl" />
+    <meta property="og:image:width" content="@SiteMetadata.SocialImageSize" />
+    <meta property="og:image:height" content="@SiteMetadata.SocialImageSize" />
+    <meta property="og:image:alt" content="bit Bswup logo" />
+
+    @* summary rather than summary_large_image: the shared image is the square app icon, and the
+       large card would crop it to a letterbox. *@
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@("@bitplatformhq")" />
+    <meta name="twitter:title" content="@_title" />
+    <meta name="twitter:description" content="@_description" />
+    <meta name="twitter:image" content="@SiteMetadata.SocialImageUrl" />
+    <meta name="twitter:image:alt" content="bit Bswup logo" />
+
+    @ChildContent
+</HeadContent>

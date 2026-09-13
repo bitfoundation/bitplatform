@@ -23,13 +23,49 @@ builder.Services.AddBitBrouterServices(o =>
     o.ScrollBehavior = BrouterScrollMode.ToTop;
     o.ScrollToFragment = true;            // default: /docs#install scrolls #install into view
     o.FocusOnNavigateSelector = "h1";     // move focus after navigation (accessibility)
+    o.RemountOnParameterChange = false;   // default: /item/1 -> /item/2 re-binds the page instance (true rebuilds it)
 });
 ```
 
-A runnable tour of every feature below lives in [`Demos`](Demos/) - run the
-[Server](Demos/Server/) project (`dotnet run`) and click through the home page cards; the
-same shared demo pages also run under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
-render modes.
+Brouter's documentation website lives in [`Bit.Brouter.Demo`](Bit.Brouter.Demo/) - run the
+[Server](Bit.Brouter.Demo/Server/) project (`dotnet run`) for the full site: a landing page, a
+docs hub under `/docs` with a page per feature area (plus an API reference, recipes and a
+troubleshooting guide), and a `/playground` index of live, clickable demo routes. It is a
+self-contained Blazor WebAssembly app with prerendering - and it is routed by Brouter itself, so
+every page you read is also a working proof of the feature it documents.
+
+That same server hosts an **MCP server** at `/mcp`, so an AI agent can work against Brouter's real
+API instead of guessing at it. Point an MCP client at `http://localhost:5185/mcp`; every tool is
+also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
+
+- **Search** across everything at once (`SearchBrouter`) - the guide below, the docs pages, every
+  public member, the constraints and the demo's sources - with the exact follow-up call on each hit.
+- **Setup** per Blazor render mode (`GetBrouterSetupGuide`), as the real files of a working project.
+- **The exact API** (`GetBrouterApi`), reflected out of the shipped assembly with every parameter's
+  type, default value and XML documentation.
+- **Route-template checking** (`InspectBrouterRouteTemplates`) using Brouter's own parser: one
+  template in full, or a whole table ranked by specificity with the ambiguous pairs and real errors.
+- **The guide and the docs** as text (`GetBrouterGuideSection`, `GetBrouterDocsPage`), the
+  constraint catalog (`GetBrouterRouteConstraints`) and the demo's own source (`GetBrouterSourceFile`).
+- **Resources** (`brouter://guide/...`, `brouter://api/...`, `brouter://docs/...`) and **prompts**
+  for the four common jobs: adding Brouter to an app, implementing a routing feature, migrating off
+  the built-in Router, and debugging a route that will not match.
+- **Server instructions** handed over at `initialize` - the working rules an agent reads before it
+  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), an output schema on the
+  two tools whose answer is an object, and `completion/complete` for every argument that is a key
+  into a closed set: the docs slugs, the guide headings, the type names, the source paths.
+
+Eight tools, and one rule across the reference ones: pass the key of the thing you want and you get
+that thing; leave it out and you get the index of what there is. Start with `SearchBrouter`. See
+[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
+is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
+calls them and prints every JSON-RPC message in both directions - so the server can be tried, and
+watched, without wiring up a client first.
+
+[`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
+[Core](Samples/Core/) project of demo routes, hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same routing
+code can be exercised in each render mode.
 
 ## Quick start
 
@@ -81,6 +117,7 @@ render modes.
 - **View Transitions API**: `o.ViewTransitions = true` wraps each navigation's re-render in `document.startViewTransition` with **beautiful direction-aware default animations** out of the box (push glides forward, Back mirrors it, replace fades; overridable via plain CSS thanks to `@layer`, opt-out via `o.ViewTransitionDefaultAnimations`); `view-transition-name` morphs just work; inert on unsupported browsers
 - **.NET 10 `NotFound()` interop**: `NavigationManager.NotFound()` routes through Brouter's not-found handling, and an unmatched URL during static SSR sets a real HTTP 404
 - **Revalidation**: `brouter.RevalidateAsync()` re-runs the matched chain's loaders after a mutation - no guards, no URL change, current content stays while fresh data loads
+- **Reload (rebuild the page)**: `brouter.ReloadAsync()` disposes and recreates the matched chain's components (keep-alive instances included) and re-runs its loaders - the "arrive here for the first time" reset that re-navigating to the current URL can't give you, since Blazor reuses a component whose route and parameters didn't change
 - **Loader caching (stale-while-revalidate)**: per-route `StaleTime` (or a global default) caches loader results per URL - fresh hits skip the loader (instant Back/Forward), stale hits render immediately and refresh in the background (TanStack Router style); `GcTime`, entry cap, `Blocking` mode and `ClearLoaderCache()` included
 - **Link preloading**: `<BrouterLink Preload="Intent">` (hover/touch/focus with debounce), `Viewport` (IntersectionObserver) or `Render` warm the loader cache before the click; programmatic `brouter.PreloadAsync(url)`; guards never run on preloads (`ctx.IsPreload`)
 - **Deferred (streamed) data**: return unawaited `Task<T>`s inside the loader result and render them with `<BrouterAwait>` (`Pending`/`Resolved`/`Error`) - critical data blocks navigation, slow data streams in (React Router `<Await>` style)
@@ -90,7 +127,8 @@ render modes.
 - **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
-- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand - `ClearKeepAlive(includeActive: true)` throws away the page on screen as well and rebuilds it in place
+- **Parameter-change semantics, your choice**: by default a navigation that only changes a route's parameter values (`/settings/profile → /settings/account`) re-binds the live instance and reports the change as `OnRenavigated` - the same reuse Blazor's built-in `Router` gives a page, and what Angular and Vue do. Set `o.RemountOnParameterChange = true` (or `<Broute RemountOnParameterChange="true">` for a single route) to rebuild the content instead, so a page that reads a value once (`OnInitialized`, an uncontrolled `Default*` parameter on a UI component) sees the new one
 - **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason) - plus the pre-commit `OnDeactivating` / `OnRenavigating` lock callbacks above
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
@@ -101,7 +139,7 @@ render modes.
 - **Type-safe `BrouterRouteParameters`** with `TryGet<T>` / `Get<T>` / `GetOrDefault<T>`
 - **Auto-binding** to plain `[Parameter]` properties by name (Blazor-style) and `[SupplyParameterFromQuery]` for query values, plus two opt-in Brouter attributes that extend the built-in tools: `[BrouterParameter(Name = ...)]` remaps a route parameter to a differently-named property, and `[BrouterQuery]` binds query values of types the framework supplier can't parse (e.g. enums)
 - **`<BrouterLink>`** component with active-class and `aria-current` (NavLink-style)
-- **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl`
+- **Programmatic navigation** via `IBrouter`: `Navigate`, `Back`, `NavigateToName`, `ResolveUrl` - plus `IsMounted` and non-throwing `Try...` counterparts (`TryNavigate`, `TryBackAsync`, `TryResolveUrl`, ...) for call sites that can't be sure a router is mounted
 - **Relative navigation**: `./edit` and `../sibling` resolve against the current location (segment math, React Router style) in `Navigate`, guard redirects and `<BrouterLink>`
 - **Global hooks**: `OnNavigating`, `OnNavigated`, `OnError` (Vue Router style)
 - **Navigation type** on `BrouterNavigationContext.NavigationType`: distinguishes `Push` / `Replace` / `Pop` (Back/Forward) for scroll-restoration and analytics logic
@@ -356,6 +394,36 @@ Not a navigation: the URL stays, guards and `OnNavigating`/`OnNavigated` don't r
 content remains visible while loaders work. Loaders can branch on `ctx.IsRevalidation`. For data on
 *other* pages, `brouter.ClearLoaderCache()` drops every cached loader result instead.
 
+### Reload (rebuild the current page)
+
+```csharp
+await AuthManager.SwitchTenant(tenantId);
+brouter.ClearKeepAlive();       // drop the retained (hidden) pages of the previous tenant
+await brouter.ReloadAsync();    // and rebuild the one on screen, re-running its guards and loaders
+```
+
+(If the page's *data* isn't stale - only the instances holding the previous tenant's state are -
+`brouter.ClearKeepAlive(includeActive: true)` does the same rebuild in one call and skips the
+pipeline entirely: see [keep-alive routes](#keep-alive-routes).)
+
+`ReloadAsync()` disposes the matched chain's components - the visible content plus anything those
+routes were keeping alive - evicts their cached loader results for this URL, and matches the URL
+again, so the page comes back with new instances, fresh state and freshly loaded data: the same
+result as arriving at the URL for the first time, without a full-page reload.
+
+Use it when something invalidated everything the page *derived*, not just its data - switching
+tenant, impersonating another user, changing a setting the page read once in `OnInitialized`.
+Re-navigating to the current URL is not an alternative: Blazor reuses a component whose route and
+parameters didn't change (the built-in `Router` behaves the same way), so `NavigateTo(currentUrl)`
+leaves the stale instance exactly where it is. Prefer `RevalidateAsync()` when only loader data is
+stale - it keeps component state and skips the remount.
+
+Not a navigation either: the URL and history entry are untouched, `OnNavigating`/`OnNavigated` don't
+fire, the scroll position is left alone, and no `LeaveGuard` can veto it (nothing is being left).
+Route guards, `RedirectTo` and loaders *do* run - the chain is matched from nothing - and can branch
+on `ctx.IsReload`. Retained instances of routes outside the current chain are untouched; pair it
+with `ClearKeepAlive()` (as above) to drop those too.
+
 ### Loader caching (stale-while-revalidate)
 
 ```razor
@@ -484,6 +552,37 @@ re-resolves after every (matched) navigation.
 Bare paths without a leading `.` (e.g. `Navigate("sibling")`) are untouched and keep their usual
 base-relative meaning through `NavigationManager`.
 
+### Safe calls when the router may not be mounted
+
+The members that act on the router - `Navigate`, `NavigateAsync`, `Back`/`Forward` (and their
+async forms), `NavigateToName`, `ResolveUrl`, `NavigateWithQuery`, `RevalidateAsync`,
+`ReloadAsync`, `PreloadAsync` and `ClearKeepAlive` - throw `InvalidOperationException` while no
+`<Brouter>` is mounted in the scope: before it initializes, after it is disposed, or in a scope that
+never renders one. When a call site can't be sure (a scoped service reacting to an event, a
+component that may run ahead of or outlive the router, a teardown path), check `IsMounted` or use
+the `Try...` counterpart, which does nothing and returns `false` instead (`TryNavigateAsync` returns
+`null`, and `TryResolveUrl` sets its `url` to `null`):
+
+```csharp
+brouter.TryNavigate("/login");                           // false: skipped, nothing mounted
+await brouter.TryRevalidateAsync();                      // ValueTask<bool>
+var outcome = await brouter.TryNavigateAsync("/admin");  // null when nothing is mounted
+
+if (brouter.TryResolveUrl("user", out var url, new Dictionary<string, object?> { ["id"] = 42 }))
+    Console.WriteLine(url);                              // "/users/42"
+```
+
+Only the mount state is tolerated: once a router is mounted a `Try...` member behaves exactly like
+its counterpart, so an unknown route name, a missing route parameter or a `delta` below 1 still
+throws. `ClearLoaderCache` and `SetConfirmExternalNavigationAsync` never need a mounted router and
+have no `Try...` form.
+
+The `Try...` members are default interface members built on `IsMounted`, so a custom `IBrouter`
+gets them for free. `IsMounted` itself defaults to `true` (an implementation without a notion of
+mounting is assumed to always serve calls), which means a decorator wrapping another `IBrouter` must
+forward it - `public bool IsMounted => _inner.IsMounted;` - or its `Try...` calls will throw while
+the wrapped router isn't mounted.
+
 ## Navigation type (push / replace / pop)
 
 `BrouterNavigationContext.NavigationType` tells guards, loaders and hooks how the current navigation
@@ -588,6 +687,10 @@ animations out of the box (`o.ViewTransitionDefaultAnimations`, enabled by defau
   often off for *performance* reasons (VMs, remote desktops) rather than user preference, you can
   bypass it with `o.ViewTransitionRespectReducedMotion = false` - think twice, though: for
   motion-sensitive users `reduce` is a genuine request.
+
+Only actual navigations animate - the **initial load never does**. This matters with prerendering:
+the prerendered HTML is already on screen when the router becomes interactive, and animating the
+first (identical) interactive render would show an annoying double render of the same page.
 
 The defaults live in the CSS layer `bit-brouter`, so **any unlayered `::view-transition-*` rule in
 your own CSS overrides them automatically** - customize without specificity fights, or set
@@ -828,6 +931,58 @@ Named views receive the route's parameters (the `Context`) and see its data/meta
 Angular's secondary outlets there is no URL serialization - the named regions always follow the
 primary match, which is the common layout case.
 
+## Rebuild or re-bind on a parameter change
+
+A navigation can keep the same route matched and change only its parameter values
+(`/settings/profile → /settings/account`, `/item/1 → /item/2`). By default the component instance
+survives: the new values arrive as parameters and the change is reported as `OnRenavigated` rather
+than a deactivation plus a fresh activation. That is the same reuse Blazor's built-in `Router`
+gives a page (its `RouteView` re-parameterizes the existing component - `OnParametersSet` runs,
+`OnInitialized` does not), and what Angular and Vue do; it preserves scroll position, form state
+and in-flight work across the change, at the cost of every affected component having to react to
+the new parameters itself.
+
+That bites anything that reads a value *once*: `OnInitialized`, a child that captures a parameter
+when it registers with its parent, an uncontrolled `Default*` parameter on a UI component
+(`DefaultExpandedKey`, `DefaultSelectedKey`). With the instance re-bound, those keep showing the
+value the page was first mounted with, and the navigation looks to the user like nothing happened.
+Opt into rebuilding instead - the old content is disposed and a brand-new instance mounts, so
+everything starts from the new values:
+
+```csharp
+services.AddBitBrouterServices(o =>
+{
+    o.RemountOnParameterChange = true; // /item/1 -> /item/2 disposes the page and mounts a fresh one
+});
+```
+
+A single route overrides either default:
+
+```razor
+<Broute Path="/item/{id:int}" RemountOnParameterChange="true">
+    <Content><ItemPage /></Content>
+</Broute>
+```
+
+Notes:
+
+- Only **template parameters** count - every parameter of the route's full template, so a child
+  under `/user/{id}` is rebuilt when `id` changes even though its own segment didn't. A query-only
+  change (`?tab=2`) never rebuilds - the built-in router keeps its page there too, re-supplying
+  `[SupplyParameterFromQuery]` values.
+- A rebuild is a leave as far as the content is concerned: it votes through `OnDeactivating`
+  (reason `Disposing`) and the route's `LeaveGuard`, gets `OnDeactivated` - never `OnRenavigating`
+  / `OnRenavigated` - and the fresh instance starts with a first `OnActivated`.
+- Rebuilding a route rebuilds everything nested inside it: a child's content lives in the subtree
+  being replaced. A parent layout declared as a `<Broute>` whose own parameters didn't change is
+  untouched. Pages rendered through `DefaultLayout` / `Found` are different: the framework
+  `RouteView` composes the layout *inside* the page's subtree, so the layout is rebuilt with the
+  page - the cost of opting in on those routes.
+- `KeepAlive` routes never rebuild for their own parameter change - retaining the instance is what
+  they asked for - and a `KeepAliveMax > 1` route already mounts one instance per parameter set. A
+  kept route hosted in the outlet of an ancestor that *is* rebuilt dies with that subtree (reported
+  as `Disposing`, exactly like a kept child whose layout is left).
+
 ## Keep-alive routes
 
 ```razor
@@ -855,10 +1010,14 @@ component-level hooks Angular's `RouteReuseStrategy` never delivered and Ionic's
   and unlike `Dispose` it carries the destination location). `KeepAlive` only changes which reason
   you get; pages written against the lifecycle keep working when the route's retention changes.
 - **`OnRenavigated`** - a navigation re-committed this route while the *same instance* stayed
-  visible (`/item/1 → /item/2` on a singleton route, or a query-only change): the "user arrived
-  here again" moment that `OnInitialized` misses on instance reuse. On a per-parameter keep-alive
-  route (`KeepAliveMax` > 1) a parameter change mounts a separate instance instead, so it surfaces
-  as an activate/deactivate pair rather than a renavigation.
+  visible (`/item/1 → /item/2` on a singleton route, a query-only change, or moving between the
+  route's descendants): the "user arrived here again" moment that `OnInitialized` misses on
+  instance reuse. A route that opted into
+  [rebuilding on a parameter change](#rebuild-or-re-bind-on-a-parameter-change) never gets it for
+  such a change - the content is disposed, so it sees a `Disposing` deactivation plus a first
+  activation instead. On a per-parameter keep-alive route (`KeepAliveMax` > 1) a parameter change
+  mounts a separate instance too, so it surfaces as an activate/deactivate pair rather than a
+  renavigation.
 
 All callbacks have async variants; returned tasks are observed for errors (surfaced via
 `IBrouter.OnError`) but never delay the navigation. They are not invoked during static prerendering.
@@ -902,7 +1061,7 @@ automatically:
 @implements IBrouterRoute
 @code {
     public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
-        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance; OnInitialized won't re-run
+        => RefreshAsync(); // e.g. /item/1 -> /item/2 reused this instance (the default); OnInitialized won't re-run
 }
 ```
 
@@ -935,7 +1094,10 @@ component-side):
   entirely - or `Disposing`).
 - **`OnRenavigating`** - a pending navigation keeps this route matched (a route/query parameter
   change, or moving between its descendants). This is the case `LeaveGuard` deliberately never
-  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`.
+  fires for - without it, a dirty edit form on `/item/1` couldn't veto going to `/item/2`. A route
+  that opted into [rebuilding on a parameter change](#rebuild-or-re-bind-on-a-parameter-change)
+  is the exception: its content is disposed by the change, so it votes through `OnDeactivating`
+  (reason `Disposing`) and its `LeaveGuard` runs, exactly as if the route were left.
 
 Both are **awaited** by the pipeline (unlike the notify-only lifecycle callbacks) and run inside
 the preventive phase, so `context.Cancel()` / `context.Redirect(...)` stop the URL from ever
@@ -1052,11 +1214,20 @@ Retention is inherently bounded - one instance per `KeepAlive` route by default,
 ```csharp
 @inject IBrouter brouter
 ...
-brouter.ClearKeepAlive();  // dispose every retained (hidden) page; the visible one stays
+brouter.ClearKeepAlive();                       // dispose every retained (hidden) page; the visible one stays
+brouter.ClearKeepAlive(includeActive: true);    // ...and the visible one too - rebuilt in place, fresh instance
 ```
 
 Call it on sign-out, under memory pressure, or after invalidating the state those pages hold; the
 next visit to a dropped route recreates it fresh.
+
+`includeActive: true` extends it to the page on screen: the matched chain's components are
+deactivated (`Disposing`), unmounted, disposed and immediately rebuilt, so the user is looking at a
+brand-new instance in its initial state - no restored scroll, filters or drafts. It is *not* a
+navigation and not a reload: the URL, history entry and scroll position don't move, no hook or guard
+runs, and route loaders don't re-run (the rebuilt chain keeps the data it already loaded), so it is
+the cheap reset for "this state belongs to the previous user/tenant". When the data is stale too,
+use [`ReloadAsync()`](#reload-rebuild-the-current-page), which re-runs the whole pipeline.
 
 > Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
 > that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a

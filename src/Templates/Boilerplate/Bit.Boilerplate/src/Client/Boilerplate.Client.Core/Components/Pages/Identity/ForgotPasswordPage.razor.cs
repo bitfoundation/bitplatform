@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
@@ -55,11 +53,11 @@ public partial class ForgotPasswordPage
             {
                 { "return-url", ReturnUrlQueryString }
             };
-            if (string.IsNullOrEmpty(model.Email) is false)
+            if (string.IsNullOrWhiteSpace(model.Email) is false)
             {
                 queryParams.Add("email", model.Email);
             }
-            if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+            if (string.IsNullOrWhiteSpace(model.PhoneNumber) is false)
             {
                 queryParams.Add("phoneNumber", model.PhoneNumber);
             }
@@ -87,11 +85,11 @@ public partial class ForgotPasswordPage
         {
             { "return-url", ReturnUrlQueryString }
         };
-        if (string.IsNullOrEmpty(model.Email) is false)
+        if (string.IsNullOrWhiteSpace(model.Email) is false)
         {
             queryParams.Add("email", model.Email);
         }
-        if (string.IsNullOrEmpty(model.PhoneNumber) is false)
+        if (string.IsNullOrWhiteSpace(model.PhoneNumber) is false)
         {
             queryParams.Add("phoneNumber", model.PhoneNumber);
         }

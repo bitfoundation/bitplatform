@@ -2,13 +2,10 @@
 using System.Web;
 //#if (signalR == true)
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
 //#endif
 //#if (appInsights == true)
 using BlazorApplicationInsights.Interfaces;
 //#endif
-using Microsoft.AspNetCore.Components.Routing;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 namespace Boilerplate.Client.Core.Components;
@@ -24,20 +21,27 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private Notification notification = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private HubConnection hubConnection = default!;
-    [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
+    [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
+    [AutoInject] private ConsentService consentService = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
+    [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
+    //#if (brouter == true)
+    [AutoInject] private IBrouter brouter = default!;
     //#endif
 
     private List<Action> unsubscribes = [];
@@ -55,10 +59,12 @@ public partial class AppClientCoordinator : AppComponentBase
         {
             unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.NAVIGATE_TO, async (uri) =>
             {
-                var uriValue = uri?.ToString()!;
-                var replace = uriValue.Contains("replace=true", StringComparison.InvariantCultureIgnoreCase);
-                var forceLoad = uriValue.Contains("forceLoad=true", StringComparison.InvariantCultureIgnoreCase);
-                NavigationManager.NavigateTo(uriValue.Replace("replace=true", "", StringComparison.InvariantCultureIgnoreCase).Replace("forceLoad=true", "", StringComparison.InvariantCultureIgnoreCase).TrimEnd('&'), forceLoad, replace);
+                var (url, replace, forceLoad) = ParseNavigateToOptions(uri?.ToString()!);
+
+                if (Uri.IsAppRelativeUrl(url, requireLeadingSlash: false) is false)
+                    return;
+
+                NavigationManager.NavigateTo(url, forceLoad, replace);
             }));
             //#if (signalR == true)
             unsubscribes.Add(PubSubService.Subscribe(SharedAppMessages.EXCEPTION_THROWN, async (payload) =>
@@ -75,20 +81,12 @@ public partial class AppClientCoordinator : AppComponentBase
 
             if (AppPlatform.IsBlazorHybrid is false)
             {
-                try
-                {
-                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
-                    var userAgentData = await userAgent.Extract();
-                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-                }
-                finally
-                {
-                    BitButil.UseNormalInvoke();
-                }
+                var userAgentData = await userAgent.Extract();
+                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                await cultureService.PersistCurrentCulture();
             }
-            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
+            await TimeZoneService.ApplyPreferredTimeZone();
+            TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
             _ = appInsights.AddTelemetryInitializer(new()
@@ -97,10 +95,26 @@ public partial class AppClientCoordinator : AppComponentBase
                 {
                     ["ai.application.ver"] = TelemetryContext.AppVersion,
                     ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = TelemetryContext.Culture
+                    ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
                 }
             });
+
+            if (appInsights is AppInsightsJsSdkService appInsightsJsSdk)
+            {
+                appInsightsJsSdk.AnalyticsConsentProvider = () => consentService.IsGranted(ConsentCategory.Analytics);
+            }
+
+            _ = appInsights.UpdateCfg(new());
+
+            // The empty config asks for nothing - the switches are filled in there.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ =>
+            {
+                await appInsights.UpdateCfg(new());
+                await ApplyAuthenticatedUserContext(lastPropagatedUser);
+            }));
             //#endif
+
+            await accentColorService.InitializeAsync();
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
@@ -111,15 +125,65 @@ public partial class AppClientCoordinator : AppComponentBase
         }
     }
 
-    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    /// <summary>
+    /// Splits a NAVIGATE_TO payload into the url the app should go to plus the two control flags, which the server
+    /// (and the service worker) pass as ordinary query parameters. Only the exact <c>replace</c> and <c>forceLoad</c>
+    /// keys are consumed; every other parameter, including one that merely contains those words, is left alone.
+    /// </summary>
+    private static (string Url, bool Replace, bool ForceLoad) ParseNavigateToOptions(string uriValue)
     {
-        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
-        navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
+        var queryStartIndex = uriValue.IndexOf('?', StringComparison.Ordinal);
+
+        if (queryStartIndex is -1)
+            return (uriValue, false, false);
+
+        var parsedQuery = HttpUtility.ParseQueryString(uriValue[(queryStartIndex + 1)..]);
+
+        bool IsTrue(string key) => string.Equals(parsedQuery[key], "true", StringComparison.OrdinalIgnoreCase);
+
+        var replace = IsTrue("replace");
+        var forceLoad = IsTrue("forceLoad");
+
+        parsedQuery.Remove("replace");
+        parsedQuery.Remove("forceLoad");
+
+        var remainingQuery = parsedQuery.ToString();
+
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
-    private Guid? lastPropagatedUserId = Guid.Empty;
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
+        //#if (appInsights != true)
+        navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
+        //#endif
+    }
+
+    //#if (appInsights == true)
+    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    {
+        try
+        {
+            if (user?.IsAuthenticated() is true && await consentService.IsGranted(ConsentCategory.Analytics))
+            {
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+        }
+    }
+    //#endif
+
+    private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
-    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
@@ -129,9 +193,16 @@ public partial class AppClientCoordinator : AppComponentBase
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
-            if (lastPropagatedUserId == userId)
+
+            if (user.IsTheSame(lastPropagatedUser))
                 return;
+
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+
+            //#if (brouter == true)
+            brouter.TryClearKeepAlive();
+            //#endif
+
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
@@ -146,14 +217,7 @@ public partial class AppClientCoordinator : AppComponentBase
             // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
 
             //#if (appInsights == true)
-            if (isAuthenticated)
-            {
-                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
-            else
-            {
-                _ = appInsights.ClearAuthenticatedUserContext();
-            }
+            _ = ApplyAuthenticatedUserContext(user);
             //#endif
 
             var data = TelemetryContext.ToDictionary();
@@ -175,7 +239,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 await UpdateUserSession();
             }
 
-            lastPropagatedUserId = userId;
+            lastPropagatedUser = user;
         }
         catch (Exception exp)
         {
@@ -220,9 +284,9 @@ public partial class AppClientCoordinator : AppComponentBase
             }
             else
             {
-                if (data is not null) return false; // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown.
-
                 SnackBarService.Show("Boilerplate", message);
+
+                return data is null;  // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown properly.
             }
 
             return true; // Message gets shown successfully. You CAN (not implemented yet) use this in server side in order to not to send push notifications for messages that are already shown in the client side.
@@ -236,15 +300,12 @@ public partial class AppClientCoordinator : AppComponentBase
             // You can also leverage IPubSubService to notify other components in the application.
         }));
 
-        hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
-        {
-            return DiagnosticLogger.Store.ToArray();
-        }));
-
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
         signalROnDisposables.Add(hubConnection.On(SharedAppMessages.NAVIGATE_TO, async (string url) =>
         {
+            if (Uri.IsAppRelativeUrl(url) is false)
+                return false;
+
             await InvokeAsync(async () =>
             {
                 NavigationManager.NavigateTo(url);
@@ -342,6 +403,10 @@ public partial class AppClientCoordinator : AppComponentBase
         {
             logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
         }
+        else if (exception is OperationCanceledException)
+        {
+            logger.LogInformation("SignalR connection attempt cancelled.");
+        }
         else
         {
             logger.LogWarning(exception, "SignalR connection lost.");
@@ -369,6 +434,9 @@ public partial class AppClientCoordinator : AppComponentBase
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(),
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }

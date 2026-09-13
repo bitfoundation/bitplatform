@@ -1,0 +1,9 @@
+@using Microsoft.AspNetCore.Components.Sections
+@inherits LayoutComponentBase
+
+<div data-testid="section-layout">
+    @Body
+    <footer data-testid="section-footer">
+        <SectionOutlet SectionId="SectionIds.Footer" />
+    </footer>
+</div>

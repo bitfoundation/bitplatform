@@ -1,4 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .content {
@@ -42,25 +42,23 @@
 }
 
 ::deep {
-    .overlay {
-        z-index: 10;
+    // The Overlay covers what it covers and lays its content out no further than that, so the samples that
+    // want theirs in the middle of the layer center it themselves: the layer is a flex container, and this
+    // is the whole of what it takes.
+    .centered-overlay {
         align-items: center;
         justify-content: center;
-        background-color: $bit-color-background-overlay;
+    }
+
+    .custom-overlay {
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        background-color: rgba(0, 0, 0, 0.2);
     }
 
     .close-button {
         right: rem2(10px);
         position: absolute;
-    }
-
-    .show-button {
-        gap: rem2(5px);
-        display: flex;
-        top: rem2(15px);
-        left: rem2(10px);
-        width: fit-content;
-        position: absolute;
-        flex-flow: row wrap;
     }
 }

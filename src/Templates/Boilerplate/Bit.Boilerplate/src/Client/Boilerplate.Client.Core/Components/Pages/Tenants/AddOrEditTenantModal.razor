@@ -5,7 +5,7 @@
     <NavigationLock OnBeforeInternalNavigation="OnNavigation" />
 }
 
-<BitProModal @bind-IsOpen="isOpen"
+<BitModal @bind-IsOpen="isOpen"
           AutoToggleScroll="false" Blocking="isChanged"
           Draggable DragElementSelector=".header-stack">
     <section>
@@ -26,6 +26,8 @@
                            Variant="BitVariant.Text"
                            IconName="@BitIconName.Cancel"
                            Color="BitColor.SecondaryBackground"
+                           Title="@Localizer[nameof(AppStrings.Close)]"
+                           AriaLabel="@Localizer[nameof(AppStrings.Close)]"
                            OnClick="() => isOpen = false" />
             </BitStack>
             <BitCard FullSize>
@@ -68,4 +70,4 @@
             </BitCard>
         </BitStack>
     </section>
-</BitProModal>
+</BitModal>

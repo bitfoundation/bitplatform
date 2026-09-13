@@ -1,4 +1,6 @@
-﻿.example-box {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.example-box {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
@@ -15,7 +17,7 @@
     cursor: pointer;
     padding: 1rem;
     border-radius: 0.25rem;
-    border: 1px dashed var(--bit-clr-brd-sec);
+    border: 1px dashed $bit-color-border-secondary;
 }
 
 ::deep {

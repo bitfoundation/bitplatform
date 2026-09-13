@@ -1,0 +1,18 @@
+﻿@* Catch-all parameter: {**slug} binds the entire remaining path, slashes included, always as a
+   string - typed conversion deliberately skips catch-alls, mirroring the built-in router. *@
+
+<h1>Post</h1>
+
+<dl>
+    <dt>slug</dt>
+    <dd>@(Slug ?? "(none)")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/posts/hello" class="btn">/posts/hello</BrouterLink>
+    <BrouterLink Href="/posts/2026/05/hello-world" class="btn">/posts/2026/05/hello-world</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Slug { get; set; }
+}

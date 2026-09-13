@@ -1,12 +1,11 @@
-@namespace Bit.BlazorUI.Legacy.Demo.Chart
-<DemoExample Title="Bubble" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example7">
+<DemoExample Title="Bubble" RazorCode="@razorCode" CsharpCode="@csharpCode" Id="example10">
     <div class="example-desc">
         A bubble chart is used to display three dimensions of data at the same time.
         The location of the bubble is determined by the first two dimensions and the corresponding horizontal and vertical axes. The third dimension is represented by the size of the individual bubbles.
     </div>
     <div class="chart-wrapper">
         <div class="chart-container">
-            <Bit.BlazorUI.Legacy.BitChartLegacy Config="_config" IsDateAdapterRequired="true" @ref="_chart" />
+            <BitChartLegacy Config="_config" IsDateAdapterRequired="true" @ref="_chart" />
         </div>
     </div>
     <div class="buttons-container">

@@ -1,0 +1,92 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject ThemeService theme
+@inject NavigationManager navManager
+
+@* The theme lives on this wrapper rather than on <html>: Bit.BlazorUI's palettes are declared
+   for `:root [bit-theme="..."]` as well as for the root itself, so stamping the attribute on any
+   element re-themes that subtree through custom-property inheritance - no interop needed to reach
+   the document element, which also means the prerendered HTML is already themed. *@
+<div class="app-root" bit-theme="@theme.Current">
+    <AppHeader IsHomePage="_isHomePage"
+               IsNavPanelOpen="_isNavPanelOpen"
+               OnToggleNavPanel="() => _isNavPanelOpen = !_isNavPanelOpen" />
+
+    <div class="layout">
+        @if (_isHomePage is false)
+        {
+            @if (_isNavPanelOpen)
+            {
+                <div class="nav-scrim" @onclick="() => _isNavPanelOpen = false"></div>
+            }
+
+            <NavMenu IsOpen="_isNavPanelOpen" OnNavigate="() => _isNavPanelOpen = false" />
+        }
+
+        <div class="main">
+            <div class="site-content">
+                @if (_isHomePage)
+                {
+                    @Body
+                }
+                else
+                {
+                    <div class="page-wrapper">
+                        <div class="page-container">
+                            @Body
+                            <DocPager />
+                        </div>
+                        <SideRail />
+                    </div>
+                }
+            </div>
+
+            <AppFooter />
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isHomePage;
+    private bool _isNavPanelOpen;
+
+    protected override void OnInitialized()
+    {
+        theme.Changed += OnThemeChanged;
+        navManager.LocationChanged += OnLocationChanged;
+
+        SetIsHomePage();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await theme.Initialize();
+        }
+    }
+
+    private void SetIsHomePage()
+    {
+        _isHomePage = navManager.RouteKey().Length == 0;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetIsHomePage();
+
+        // Whatever opened the drawer has been navigated away from; leaving it over the new page
+        // would make every small-screen navigation take two taps.
+        _isNavPanelOpen = false;
+
+        StateHasChanged();
+    }
+
+    private void OnThemeChanged() => StateHasChanged();
+
+    public void Dispose()
+    {
+        theme.Changed -= OnThemeChanged;
+        navManager.LocationChanged -= OnLocationChanged;
+    }
+}

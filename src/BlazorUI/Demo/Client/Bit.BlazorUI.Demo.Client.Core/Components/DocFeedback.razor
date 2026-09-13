@@ -1,0 +1,53 @@
+﻿@* How every documentation page ends: where to report something, and how to fix it yourself. It is
+   a DocSection like any other, so it turns up in the "on this page" rail without the rail having to
+   know anything about it. *@
+<DocSection Id="feedback-section"
+            Title="Feedback"
+            Description="Found a mistake, a gap, or something that could be clearer? Every page and every component is one click from its source.">
+
+    <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+        <BitButton Target="_blank"
+                   Variant="BitVariant.Outline"
+                   IconName="@BitIconName.Bug"
+                   Href="@($"{RepoUrl}/issues/new/choose")">
+            Open an issue
+        </BitButton>
+
+        <BitButton Target="_blank"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Comment"
+                   Color="BitColor.SecondaryForeground"
+                   Href="@($"{RepoUrl}/discussions/new/choose")">
+            Start a discussion
+        </BitButton>
+
+        @if (DocsPagePath.HasValue())
+        {
+            <BitButton Target="_blank"
+                       Variant="BitVariant.Text"
+                       IconName="@BitIconName.Edit"
+                       Color="BitColor.SecondaryForeground"
+                       Href="@($"{RepoUrl}/edit/develop/{DemoPagesPath}/{DocsPagePath}")">
+                Edit this page
+            </BitButton>
+        }
+
+        @ChildContent
+    </BitStack>
+
+</DocSection>
+
+@code {
+    private const string RepoUrl = "https://github.com/bitfoundation/bitplatform";
+
+    private const string DemoPagesPath = "src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Pages";
+
+    /// <summary>
+    /// The page's path under Pages/ - "GettingStartedPage.razor", or
+    /// "Components/Buttons/Button/BitButtonDemo.razor" for a component page.
+    /// </summary>
+    [Parameter] public string? DocsPagePath { get; set; }
+
+    /// <summary>Extra links for this page - a component page adds its own source.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

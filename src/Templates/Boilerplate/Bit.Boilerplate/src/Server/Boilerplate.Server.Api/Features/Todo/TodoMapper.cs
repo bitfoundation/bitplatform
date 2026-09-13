@@ -1,10 +1,9 @@
-using Riok.Mapperly.Abstractions;
 using Boilerplate.Shared.Features.Todo;
 
 namespace Boilerplate.Server.Api.Features.Todo;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class TodoMapper

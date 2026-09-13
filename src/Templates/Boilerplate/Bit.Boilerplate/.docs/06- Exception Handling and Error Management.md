@@ -50,12 +50,12 @@ These are **expected, business-logic exceptions** that represent predictable err
 - Thrown when authentication is required
 - HTTP Status Code: 401 (Unauthorized)
 
-5. **`ServerConnectionException`** ([`src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs`](/src/Shared/Infrastructure/Exceptions/ServerConnectionException.cs))
-- Indicates connectivity issues between client and server
+5. **`TransientException`** ([`src/Shared/Infrastructure/Exceptions/TransientException.cs`](/src/Shared/Infrastructure/Exceptions/TransientException.cs))
+- Indicates a temporary failure, such as connectivity issues between client and server, that is worth retrying
 
 **Exception Inheritance:**
 - Exceptions that map to HTTP status codes (like `BadRequestException`, `UnauthorizedException`, `ResourceNotFoundException`) inherit from **`RestException`** ([`src/Shared/Infrastructure/Exceptions/RestException.cs`](/src/Shared/Infrastructure/Exceptions/RestException.cs)), which inherits from `KnownException` and provides HTTP status code mapping for REST APIs.
-- Exceptions that don't require HTTP status codes (like `DomainLogicException`, `ServerConnectionException`) inherit directly from **`KnownException`**.
+- Exceptions that don't require HTTP status codes (like `DomainLogicException`, `TransientException`) inherit directly from **`KnownException`**.
 
 ---
 
@@ -191,17 +191,19 @@ The project sends **RFC 7807-compliant** error responses to clients. This is a s
 
 ```json
 {
-  "type": "Boilerplate.Shared.Exceptions.TooManyRequestsException",
+  "type": "Boilerplate.Shared.Infrastructure.Exceptions.TooManyRequestsException",
   "title": "Please wait 1 minute before requesting another reset password token",
   "status": 429,
   "instance": "POST /api/identity/SendResetPasswordToken",
-  "extensions": {
-    "key": "WaitForResetPasswordTokenRequestResendDelay",
-    "traceId": "00-abc123...",
-    "TryAgainIn": "00:01:00"
-  }
+  "key": "WaitForResetPasswordTokenRequestResendDelay",
+  "traceId": "00-abc123...",
+  "TryAgainIn": "00:01:00"
 }
 ```
+
+`AppProblemDetails.Extensions` is a `[JsonExtensionData]` dictionary, so its entries are written as **top-level**
+members - there is no `extensions` object in a real response. A non-.NET consumer reads `body.traceId`, not
+`body.extensions.traceId`.
 
 ### Syntax
 
@@ -426,7 +428,7 @@ For **critical errors** that require user acknowledgment, a **message box** is d
 └─────────────────────────────────────┘
 ```
 
-**Handled by:** `BitMessageBoxService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Handled by:** `BitMessageBoxService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 ---
 
@@ -441,7 +443,7 @@ For **less critical errors** that don't require immediate action, a **snack bar*
 └─────────────────────────────────────────┘
 ```
 
-**Handled by:** `SnackBarService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Handled by:** `SnackBarService` in [`ClientExceptionHandlerBase`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 ---
 
@@ -476,11 +478,12 @@ The Error Boundary displays:
 
 ## Exception Handlers in the Project
 
-The project includes multiple exception handlers for different platforms, all inheriting from `SharedExceptionHandler`.
+The project includes multiple exception handlers for different platforms. All of them derive from
+`SharedExceptionHandler`, though the client-side ones do so through `ClientExceptionHandlerBase`.
 
-### 1. ServerExceptionHandler
+### 1. ApiServerExceptionHandler
 
-**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ServerExceptionHandler.cs)
+**Location:** [`src/Server/Boilerplate.Server.Api/Infrastructure/Services/ApiServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Api/Infrastructure/Services/ApiServerExceptionHandler.cs)
 
 **Purpose:** Handles exceptions on the **server-side** (API controllers).
 
@@ -494,17 +497,17 @@ The project includes multiple exception handlers for different platforms, all in
 **Example of generated error response:**
 ```json
 {
-  "type": "Boilerplate.Shared.Exceptions.ResourceNotFoundException",
+  "type": "Boilerplate.Shared.Infrastructure.Exceptions.ResourceNotFoundException",
   "title": "User not found",
   "status": 404,
   "instance": "GET /api/user/123",
-  "extensions": {
-    "key": "UserNotFound",
-    "traceId": "00-abc123...",
-    "Email": "user@example.com"
-  }
+  "key": "UserNotFound",
+  "traceId": "00-abc123..."
 }
 ```
+
+A value attached with `WithData("Email", …)` would **not** appear here - it goes to the log scope only. Only
+`WithExtensionData()` adds members to the response.
 
 ---
 
@@ -520,7 +523,7 @@ The project includes multiple exception handlers for different platforms, all in
   - Unknown exceptions (Production): Show generic "Unknown error"
   - Unknown exceptions (Development): Show full stack trace
 - `GetExceptionMessageToLog()`: Formats exception for logging (includes inner exceptions)
-- `UnWrapException()`: Unwraps `AggregateException` and `TargetInvocationException`
+- `UnWrapException()`: Unwraps `TargetInvocationException`
 - `IgnoreException()`: Determines if an exception should be logged
 - `GetExceptionData()`: Extracts all data attached to the exception
 
@@ -528,7 +531,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 3. ClientExceptionHandlerBase
 
-**Location:** [`src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs`](/src/Client/Boilerplate.Client.Core/Services/ClientExceptionHandlerBase.cs)
+**Location:** [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientExceptionHandlerBase.cs)
 
 **Purpose:** Base class for **client-side exception handlers**.
 
@@ -544,7 +547,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 4. WebClientExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs`](/src/Client/Boilerplate.Client.Web/Services/WebClientExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebClientExceptionHandler.cs`](/src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebClientExceptionHandler.cs)
 
 **Purpose:** Exception handler for **Blazor WebAssembly** (browser).
 
@@ -556,7 +559,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 5. MauiExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs`](/src/Client/Boilerplate.Client.Maui/Services/MauiExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiExceptionHandler.cs`](/src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiExceptionHandler.cs)
 
 **Purpose:** Exception handler for **.NET MAUI** (Android, iOS, macOS).
 
@@ -578,7 +581,7 @@ The project includes multiple exception handlers for different platforms, all in
 
 ### 6. WindowsExceptionHandler
 
-**Location:** [`src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs`](/src/Client/Boilerplate.Client.Windows/Services/WindowsExceptionHandler.cs)
+**Location:** [`src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsExceptionHandler.cs`](/src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsExceptionHandler.cs)
 
 **Purpose:** Exception handler for **Windows Forms Blazor Hybrid** app.
 
@@ -587,9 +590,28 @@ The project includes multiple exception handlers for different platforms, all in
 
 ---
 
-### AI Wiki: Answered Questions
-* [Tell me everything about ServerConnectionException](https://deepwiki.com/search/tell-me-everything-about-serve_9576ec69-a10d-4b72-ad88-086ab54db2bf)
+### 7. WebServerExceptionHandler
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+**Location:** [`src/Server/Boilerplate.Server.Web/Infrastructure/Services/WebServerExceptionHandler.cs`](/src/Server/Boilerplate.Server.Web/Infrastructure/Services/WebServerExceptionHandler.cs)
+
+**Purpose:** Handles exceptions raised by components running **on the server** - Blazor Server circuits and
+server-side pre-rendering. Note that it derives from `ClientExceptionHandlerBase`, **not** from
+`SharedExceptionHandler` directly: from the component's point of view it is a client-side handler that happens
+to be executing inside the web host.
+
+**Key Responsibilities:**
+- Sets the HTTP status code from a `RestException` when the response has not started yet, so a faulted
+  non-streaming pre-render is not stored by the response cache (see `AppResponseCachePolicy.cs`)
+- Then defers to `ClientExceptionHandlerBase`, so the message box / snack bar behaviour described above applies
+  unchanged
+
+If you customise client-side exception display, remember this handler is on the same path for Blazor Server
+and pre-rendering.
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

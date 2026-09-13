@@ -18,8 +18,12 @@ public class BitPersonaClassStyles
     public string? PresentationIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the presentation of the BitPersona.
+    /// Custom CSS classes/styles for the presence dot of the BitPersona at <see cref="BitPersonaSize.Size8"/>.
     /// </summary>
+    /// <remarks>
+    /// Kept for backward compatibility. <see cref="Presence"/> is applied to the presence dot at every size,
+    /// including <see cref="BitPersonaSize.Size8"/>, and is what new code should use.
+    /// </remarks>
     public string? Presentation { get; set; }
 
     /// <summary>
@@ -31,6 +35,12 @@ public class BitPersonaClassStyles
     /// Custom CSS classes/styles for the unknown icon of the BitPersona.
     /// </summary>
     public string? UnknownIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the coin icon of the BitPersona, which is the icon shown inside the
+    /// coin in place of the initials.
+    /// </summary>
+    public string? CoinIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the image overlay of the BitPersona.
@@ -63,7 +73,7 @@ public class BitPersonaClassStyles
     public string? ActionButtonIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the presence of the BitPersona.
+    /// Custom CSS classes/styles for the presence dot of the BitPersona.
     /// </summary>
     public string? Presence { get; set; }
 

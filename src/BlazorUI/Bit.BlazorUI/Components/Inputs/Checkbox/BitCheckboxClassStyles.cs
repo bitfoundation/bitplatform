@@ -18,6 +18,11 @@ public class BitCheckboxClassStyles
     public string? Checked { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the indeterminate state of the BitCheckbox.
+    /// </summary>
+    public string? Indeterminate { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the box element of the BitCheckbox.
     /// </summary>
     public string? Box { get; set; }

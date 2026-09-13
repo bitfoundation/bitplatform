@@ -1,0 +1,161 @@
+@inject IBrouter brouter
+@implements IDisposable
+
+@* The documentation shell - rendered as the Content of the parent /docs route, with every docs
+   page nested under it. The sidebar stays mounted while the outlet swaps pages, so its scroll
+   position survives navigation (nested routes doing what they are for); the breadcrumb, the pager
+   and the "read next" links are all recomputed from DocsCatalog on each navigation.
+
+   Three columns, in the arrangement Fluent's own documentation uses: the nav panel, the page, and
+   the "on this page" rail. The rail's contents are built by site.js from whatever headings the
+   page rendered - see the note on the <nav> below. *@
+
+<div class="bb-docs" @onkeydown="OnKeyDown">
+    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" id="bb-docs-nav" aria-label="Documentation navigation">
+        <p class="bb-overline bb-docs-nav-title">Documentation</p>
+
+        @foreach (var section in DocsCatalog.Sections)
+        {
+            @* The group label is a <p> rather than a heading on purpose: the panel precedes the
+               page in the DOM, and a heading here would open the document's outline two levels
+               below the page's own H1. The list's aria-label carries the same grouping to a
+               screen reader without touching the outline. *@
+            <div class="bb-docs-section" @key="section.Title">
+                <p class="bb-docs-group">@section.Title</p>
+                <ul aria-label="@section.Title">
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li @key="entry.Url">
+                            <BrouterLink Href="@entry.Url" Match="BrouterLinkMatch.All" title="@entry.Description">@entry.Title</BrouterLink>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="bb-docs-nav-foot">
+            <BrouterLink Href="/playground">Playground</BrouterLink>
+            <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a href="https://www.nuget.org/packages/Bit.Brouter" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
+        </div>
+    </aside>
+
+    <div class="bb-docs-main">
+        @* The narrow-width entry into the panel above. It sits with the breadcrumb because at
+           those widths the two together are the whole "where am I / where else can I go" row. *@
+        <div class="bb-docs-topbar">
+            <button @ref="_toggle" type="button" class="bb-docs-menu-toggle" aria-expanded="@(_menuOpen ? "true" : "false")"
+                    aria-controls="bb-docs-nav" @onclick="() => _menuOpen = !_menuOpen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+                @(_menuOpen ? "Hide" : "Browse") docs
+            </button>
+
+            <nav class="bb-crumbs" aria-label="Breadcrumb">
+                <ol>
+                    <li><BrouterLink Href="/docs" Match="BrouterLinkMatch.All">Docs</BrouterLink></li>
+                    @if (_current is { Slug.Length: > 0 })
+                    {
+                        <li aria-hidden="true" class="bb-crumb-sep">/</li>
+                        <li>@DocsCatalog.SectionOf(_current)</li>
+                        <li aria-hidden="true" class="bb-crumb-sep">/</li>
+                        <li aria-current="page">@_current.Title</li>
+                    }
+                </ol>
+            </nav>
+        </div>
+
+        <div class="bb-docs-content">
+            <BrouterOutlet />
+        </div>
+
+        @* Below the page: where to go from here. The "edit" link is built from the page's own
+           component type, so a page added to the catalog gets one without anyone wiring it up. *@
+        @if (_current is not null)
+        {
+            <div class="bb-docs-foot">
+                <a class="bb-docs-edit" target="_blank" rel="noopener noreferrer"
+                   href="@($"{RepositoryUrl}/{_current.PageType.Name}.razor")">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit this page on GitHub
+                </a>
+            </div>
+        }
+
+        <DocsPager />
+    </div>
+
+    @* Deliberately empty in the render tree: site.js fills it from the headings of whichever page
+       the outlet just rendered, so no docs page had to be edited to gain a rail. Blazor never
+       diffs into it because this component's output for the element never changes - the same
+       reason the copy buttons can be appended into a <pre>. The column is rendered even while
+       empty so the content column does not stretch and snap back a frame later. *@
+    <nav class="bb-rail" aria-label="On this page"></nav>
+</div>
+
+@if (_menuOpen)
+{
+    <div class="bb-docs-scrim" @onclick="() => _menuOpen = false"></div>
+}
+
+@code {
+    /// <summary>Where the docs pages live, for the "edit this page" link under each of them.</summary>
+    private const string RepositoryUrl =
+        "https://github.com/bitfoundation/bitplatform/blob/develop/src/Brouter/Bit.Brouter.Demo/Client/Pages";
+
+    private bool _menuOpen;
+    private bool _restorePending;
+    private ElementReference _toggle;
+    private DocsPageInfo? _current;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+
+    protected override void OnInitialized()
+    {
+        Recompute();
+
+        _onNavigated = ctx =>
+        {
+            Recompute();
+            // Collapse the narrow-width panel after a link in it commits: a drawer that survives
+            // the navigation it started covers the page the reader just asked for.
+            _menuOpen = false;
+            _ = InvokeAsync(StateHasChanged);
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigated += _onNavigated;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_restorePending is false) return;
+
+        _restorePending = false;
+        await _toggle.FocusAsync();
+    }
+
+    /// <summary>
+    /// Escape closes the narrow-width drawer, the way every other overlay on the site closes. The
+    /// handler sits on the shell rather than on the panel because the button that opens the drawer
+    /// is outside the panel it controls, and a keydown reaches the shell from either of them.
+    /// </summary>
+    private void OnKeyDown(KeyboardEventArgs args)
+    {
+        if (_menuOpen is false || args.Key != "Escape") return;
+
+        _menuOpen = false;
+        // Once hidden, a panel that was holding focus hands it to <body> and the next Tab restarts
+        // at the top of the page - hence the trip back to the button that opened it.
+        _restorePending = true;
+    }
+
+    private void Recompute() => _current = DocsCatalog.FindByPath(brouter.Location.Path);
+
+    public void Dispose()
+    {
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+    }
+}

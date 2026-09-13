@@ -1,17 +1,314 @@
+﻿// Brand palette overrides on top of the Fluent theme. Light mode swaps the default Fluent
+// blue/orange for the bit brand blue (see $B* in abstracts/_colors.scss) and the indigo of the
+// home page hero gradients, and cools the neutral ramps toward the same hue so surfaces, text
+// and strokes read as one family. Dark mode does the same over the existing navy surfaces.
+:root,
+:root[bit-theme="light"] {
+    //primary - azure (matches the github-icon-light.svg blue, deepened to keep 4.5:1 with white)
+    --bit-clr-pri: #1078CA;
+    --bit-clr-pri-hover: #0D71BF;
+    --bit-clr-pri-active: #0B6BB6;
+    --bit-clr-pri-dark: #0965AC;
+    --bit-clr-pri-dark-hover: #075CA0;
+    --bit-clr-pri-dark-active: #065390;
+    --bit-clr-pri-light: #7FBFFF;
+    --bit-clr-pri-light-hover: #6FB5FC;
+    --bit-clr-pri-light-active: #61ACF8;
+    --bit-clr-pri-text: #FFFFFF;
+    --bit-clr-pri-dis: #DBEDFD;
+    --bit-clr-pri-dis-text: #6D859A;
+    //secondary - hero gradient indigo
+    --bit-clr-sec: #524ADD;
+    --bit-clr-sec-hover: #4A42CE;
+    --bit-clr-sec-active: #433BC0;
+    --bit-clr-sec-dark: #3B34AC;
+    --bit-clr-sec-dark-hover: #342D99;
+    --bit-clr-sec-dark-active: #2E2888;
+    --bit-clr-sec-light: #A9A4F1;
+    --bit-clr-sec-light-hover: #9A94ED;
+    --bit-clr-sec-light-active: #8C86E9;
+    --bit-clr-sec-text: #FFFFFF;
+    --bit-clr-sec-dis: #E4E2FA;
+    --bit-clr-sec-dis-text: #7B789E;
+    //foregrounds - cool ink
+    --bit-clr-fg-pri: #111827;
+    --bit-clr-fg-pri-hover: #0B101C;
+    --bit-clr-fg-pri-active: #060912;
+    --bit-clr-fg-pri-dark: #0A0E18;
+    --bit-clr-fg-pri-dark-hover: #05070C;
+    --bit-clr-fg-pri-dark-active: #000000;
+    --bit-clr-fg-pri-light: #2B3242;
+    --bit-clr-fg-pri-light-hover: #232937;
+    --bit-clr-fg-pri-light-active: #1C2230;
+    --bit-clr-fg-pri-dis: #E9EDF4;
+    --bit-clr-fg-pri-dis-text: #7A8496;
+    --bit-clr-fg-sec: #45516B;
+    --bit-clr-fg-sec-hover: #3A4459;
+    --bit-clr-fg-sec-active: #2F3748;
+    --bit-clr-fg-sec-dark: #333D52;
+    --bit-clr-fg-sec-dark-hover: #29303F;
+    --bit-clr-fg-sec-dark-active: #1F252F;
+    --bit-clr-fg-sec-light: #5D6A85;
+    --bit-clr-fg-sec-light-hover: #525D75;
+    --bit-clr-fg-sec-light-active: #444E63;
+    --bit-clr-fg-sec-dis: #E9EDF4;
+    --bit-clr-fg-sec-dis-text: #7A8496;
+    --bit-clr-fg-ter: #64708C;
+    --bit-clr-fg-ter-hover: #57627A;
+    --bit-clr-fg-ter-active: #4B5468;
+    --bit-clr-fg-ter-dark: #525C74;
+    --bit-clr-fg-ter-dark-hover: #454E62;
+    --bit-clr-fg-ter-dark-active: #384050;
+    --bit-clr-fg-ter-light: #7E89A3;
+    --bit-clr-fg-ter-light-hover: #707C96;
+    --bit-clr-fg-ter-light-active: #606B83;
+    --bit-clr-fg-ter-dis: #E9EDF4;
+    --bit-clr-fg-ter-dis-text: #7A8496;
+    --bit-clr-fg-dis: #8A93A5;
+    //backgrounds - cool paper
+    --bit-clr-bg-pri: #FFFFFF;
+    --bit-clr-bg-pri-hover: #F4F7FC;
+    --bit-clr-bg-pri-active: #E9EEF8;
+    --bit-clr-bg-pri-dark: #ECF1F9;
+    --bit-clr-bg-pri-dark-hover: #E1E8F4;
+    --bit-clr-bg-pri-dark-active: #D6DFEF;
+    --bit-clr-bg-pri-light: #FFFFFF;
+    --bit-clr-bg-pri-light-hover: #F4F7FC;
+    --bit-clr-bg-pri-light-active: #E9EEF8;
+    --bit-clr-bg-pri-dis: #F5F8FC;
+    --bit-clr-bg-pri-dis-text: #7E8998;
+    --bit-clr-bg-sec: #F3F7FD;
+    --bit-clr-bg-sec-hover: #EAF0FA;
+    --bit-clr-bg-sec-active: #E1E9F6;
+    --bit-clr-bg-sec-dark: #E5EBF6;
+    --bit-clr-bg-sec-dark-hover: #DCE4F2;
+    --bit-clr-bg-sec-dark-active: #D3DDEE;
+    --bit-clr-bg-sec-light: #FAFCFE;
+    --bit-clr-bg-sec-light-hover: #F4F8FD;
+    --bit-clr-bg-sec-light-active: #EBF1FA;
+    --bit-clr-bg-sec-dis: #EAF0F8;
+    --bit-clr-bg-sec-dis-text: #7C8797;
+    --bit-clr-bg-ter: #E8EEF9;
+    --bit-clr-bg-ter-hover: #DFE7F5;
+    --bit-clr-bg-ter-active: #D6E0F1;
+    --bit-clr-bg-ter-dark: #DAE2F0;
+    --bit-clr-bg-ter-dark-hover: #D1DBEC;
+    --bit-clr-bg-ter-dark-active: #C8D4E8;
+    --bit-clr-bg-ter-light: #F3F7FD;
+    --bit-clr-bg-ter-light-hover: #EDF2FB;
+    --bit-clr-bg-ter-light-active: #E1E9F6;
+    --bit-clr-bg-ter-dis: #DFE6F1;
+    --bit-clr-bg-ter-dis-text: #75808F;
+    --bit-clr-bg-dis: #EDF1F8;
+    //borders - cool strokes
+    --bit-clr-brd-pri: #64708C;
+    --bit-clr-brd-pri-hover: #57627A;
+    --bit-clr-brd-pri-active: #4B5468;
+    --bit-clr-brd-pri-dark: #525C74;
+    --bit-clr-brd-pri-dark-hover: #454E62;
+    --bit-clr-brd-pri-dark-active: #384050;
+    --bit-clr-brd-pri-light: #7E89A3;
+    --bit-clr-brd-pri-light-hover: #707C96;
+    --bit-clr-brd-pri-light-active: #606B83;
+    --bit-clr-brd-pri-dis: #E7EBF2;
+    --bit-clr-brd-pri-dis-text: #7A8496;
+    --bit-clr-brd-sec: #A2ACC0;
+    --bit-clr-brd-sec-hover: #929DB3;
+    --bit-clr-brd-sec-active: #8290A7;
+    --bit-clr-brd-sec-dark: #8B96AC;
+    --bit-clr-brd-sec-dark-hover: #7B87A0;
+    --bit-clr-brd-sec-dark-active: #6E7A93;
+    --bit-clr-brd-sec-light: #BCC4D4;
+    --bit-clr-brd-sec-light-hover: #ACB6C9;
+    --bit-clr-brd-sec-light-active: #99A5BB;
+    --bit-clr-brd-sec-dis: #E7EBF2;
+    --bit-clr-brd-sec-dis-text: #7A8496;
+    --bit-clr-brd-ter: #D9E0EC;
+    --bit-clr-brd-ter-hover: #C9D2E3;
+    --bit-clr-brd-ter-active: #BAC5DA;
+    --bit-clr-brd-ter-dark: #C1CCDE;
+    --bit-clr-brd-ter-dark-hover: #B2BFD5;
+    --bit-clr-brd-ter-dark-active: #A4B2CC;
+    --bit-clr-brd-ter-light: #EBEFF6;
+    --bit-clr-brd-ter-light-hover: #E0E6F0;
+    --bit-clr-brd-ter-light-active: #D1D9E7;
+    --bit-clr-brd-ter-dis: #E7EBF2;
+    --bit-clr-brd-ter-dis-text: #7A8496;
+    --bit-clr-brd-dis: #D9E0EC;
+}
+
 :root[bit-theme="dark"] {
+    //primary - azure tuned for the navy surfaces
+    --bit-clr-pri: #4FA8F5;
+    --bit-clr-pri-hover: #63B2F8;
+    --bit-clr-pri-active: #74BBFA;
+    --bit-clr-pri-dark: #3E97EC;
+    --bit-clr-pri-dark-hover: #4AA0F0;
+    --bit-clr-pri-dark-active: #55A8F4;
+    --bit-clr-pri-light: #85C4FB;
+    --bit-clr-pri-light-hover: #99CEFC;
+    --bit-clr-pri-light-active: #A9D6FD;
+    --bit-clr-pri-text: #06132E;
+    --bit-clr-pri-dis: #12224D;
+    --bit-clr-pri-dis-text: #5F7396;
+    //secondary
     --bit-clr-sec: transparent;
     --bit-clr-sec-hover: #061342;
+    --bit-clr-sec-active: #061241;
+    --bit-clr-sec-dark: #061342;
+    --bit-clr-sec-dark-hover: #07154A;
+    --bit-clr-sec-dark-active: #061241;
+    --bit-clr-sec-light: #A9A4F1;
+    --bit-clr-sec-light-hover: #9A94ED;
+    --bit-clr-sec-light-active: #8C86E9;
+    --bit-clr-sec-text: #E9EEFA;
+    --bit-clr-sec-dis: #12224D;
+    --bit-clr-sec-dis-text: #5F7396;
+    //foregrounds - navy-tinted ink
+    --bit-clr-fg-pri: #E9EEFA;
+    --bit-clr-fg-pri-hover: #F1F5FC;
+    --bit-clr-fg-pri-active: #F7F9FE;
+    --bit-clr-fg-pri-dark: #D6DEF0;
+    --bit-clr-fg-pri-dark-hover: #E0E7F4;
+    --bit-clr-fg-pri-dark-active: #E8EDF8;
+    --bit-clr-fg-pri-light: #F3F6FD;
+    --bit-clr-fg-pri-light-hover: #F9FBFE;
+    --bit-clr-fg-pri-light-active: #FDFEFF;
+    --bit-clr-fg-pri-dis: #131C3C;
+    --bit-clr-fg-pri-dis-text: #6C7A9C;
+    --bit-clr-fg-sec: #ADBAD6;
+    --bit-clr-fg-sec-hover: #B8C4DD;
+    --bit-clr-fg-sec-active: #C1CCE2;
+    --bit-clr-fg-sec-dark: #96A5C7;
+    --bit-clr-fg-sec-dark-hover: #A0AECE;
+    --bit-clr-fg-sec-dark-active: #A8B5D3;
+    --bit-clr-fg-sec-light: #C3CDE3;
+    --bit-clr-fg-sec-light-hover: #CDD6E9;
+    --bit-clr-fg-sec-light-active: #D5DDED;
+    --bit-clr-fg-sec-dis: #131C3C;
+    --bit-clr-fg-sec-dis-text: #6C7A9C;
+    --bit-clr-fg-ter: #8291B3;
+    --bit-clr-fg-ter-hover: #8C9BBA;
+    --bit-clr-fg-ter-active: #94A2C0;
+    --bit-clr-fg-ter-dark: #6F7EA3;
+    --bit-clr-fg-ter-dark-hover: #7887AB;
+    --bit-clr-fg-ter-dark-active: #8090B2;
+    --bit-clr-fg-ter-light: #97A5C4;
+    --bit-clr-fg-ter-light-hover: #A1AECB;
+    --bit-clr-fg-ter-light-active: #A9B6D1;
+    --bit-clr-fg-ter-dis: #131C3C;
+    --bit-clr-fg-ter-dis-text: #6C7A9C;
+    --bit-clr-fg-dis: #56638A;
+    //backgrounds - navy surfaces
     --bit-clr-bg-pri: #060E2D;
     --bit-clr-bg-pri-hover: #07154a;
     --bit-clr-bg-pri-active: #061241;
+    --bit-clr-bg-pri-dark: #040A20;
+    --bit-clr-bg-pri-dark-hover: #051134;
+    --bit-clr-bg-pri-dark-active: #040E2B;
+    --bit-clr-bg-pri-light: #0A1638;
+    --bit-clr-bg-pri-light-hover: #0C1B50;
+    --bit-clr-bg-pri-light-active: #0B1745;
+    --bit-clr-bg-pri-dis: #0A1231;
+    --bit-clr-bg-pri-dis-text: #67709A;
     --bit-clr-bg-sec: #0a153d;
     --bit-clr-bg-sec-hover: #07154a;
+    --bit-clr-bg-sec-active: #081857;
+    --bit-clr-bg-sec-dark: #071031;
+    --bit-clr-bg-sec-dark-hover: #091845;
+    --bit-clr-bg-sec-dark-active: #08143C;
+    --bit-clr-bg-sec-light: #0C1848;
+    --bit-clr-bg-sec-light-hover: #0E1D5A;
+    --bit-clr-bg-sec-light-active: #0D1A50;
+    --bit-clr-bg-sec-dis: #0C142F;
+    --bit-clr-bg-sec-dis-text: #67709A;
     --bit-clr-bg-ter: #0a1747;
+    --bit-clr-bg-ter-hover: #0C1B54;
+    --bit-clr-bg-ter-active: #0E1F60;
+    --bit-clr-bg-ter-dark: #081239;
+    --bit-clr-bg-ter-dark-hover: #0A1747;
+    --bit-clr-bg-ter-dark-active: #0C1A52;
+    --bit-clr-bg-ter-light: #0C1A52;
+    --bit-clr-bg-ter-light-hover: #0E1E5E;
+    --bit-clr-bg-ter-light-active: #102269;
+    --bit-clr-bg-ter-dis: #0D1533;
+    --bit-clr-bg-ter-dis-text: #6B7498;
+    --bit-clr-bg-dis: #0B1638;
+    --bit-clr-bg-overlay: rgba(2, 6, 23, 0.65);
+    //borders - navy-tinted strokes
+    --bit-clr-brd-pri: #6F80AB;
+    --bit-clr-brd-pri-hover: #7D8DB5;
+    --bit-clr-brd-pri-active: #8896BC;
+    --bit-clr-brd-pri-dark: #5E6E99;
+    --bit-clr-brd-pri-dark-hover: #6B7BA6;
+    --bit-clr-brd-pri-dark-active: #7684AF;
+    --bit-clr-brd-pri-light: #8290B6;
+    --bit-clr-brd-pri-light-hover: #909DC0;
+    --bit-clr-brd-pri-light-active: #9CA8C8;
+    --bit-clr-brd-pri-dis: #131C3C;
+    --bit-clr-brd-pri-dis-text: #6C7A9C;
+    --bit-clr-brd-sec: #48588A;
+    --bit-clr-brd-sec-hover: #536396;
+    --bit-clr-brd-sec-active: #5C6CA0;
+    --bit-clr-brd-sec-dark: #394878;
+    --bit-clr-brd-sec-dark-hover: #445485;
+    --bit-clr-brd-sec-dark-active: #4E5E90;
+    --bit-clr-brd-sec-light: #56659B;
+    --bit-clr-brd-sec-light-hover: #6272A7;
+    --bit-clr-brd-sec-light-active: #6D7DB0;
+    --bit-clr-brd-sec-dis: #131C3C;
+    --bit-clr-brd-sec-dis-text: #6C7A9C;
+    --bit-clr-brd-ter: #26325F;
+    --bit-clr-brd-ter-hover: #2E3B6C;
+    --bit-clr-brd-ter-active: #344275;
+    --bit-clr-brd-ter-dark: #1C2749;
+    --bit-clr-brd-ter-dark-hover: #232F57;
+    --bit-clr-brd-ter-dark-active: #293563;
+    --bit-clr-brd-ter-light: #313E71;
+    --bit-clr-brd-ter-light-hover: #39477E;
+    --bit-clr-brd-ter-light-active: #404E88;
+    --bit-clr-brd-ter-dis: #131C3C;
+    --bit-clr-brd-ter-dis-text: #6C7A9C;
+    --bit-clr-brd-dis: #1D2748;
+}
+
+// Themed visibility utilities: an element carrying one of these classes renders only in the
+// matching theme. These rules own the element's display entirely (hidden by default, shown in
+// the matching theme), so components must not set their own `display` on such elements.
+.dark-theme,
+.dark-image,
+.light-theme,
+.light-image {
+    display: none;
+}
+
+:root[bit-theme="dark"] {
+
+    .dark-theme,
+    .dark-image {
+        display: revert;
+    }
+}
+
+:root[bit-theme="light"] {
+
+    .light-theme,
+    .light-image {
+        display: revert;
+    }
+}
+
+// Shared layout of the six Lcnc placeholder pages, which have no page-specific styling of their
+// own (replaces six identical per-page scss files).
+.lcnc-page-container {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI";
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-text-size-adjust: none;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;

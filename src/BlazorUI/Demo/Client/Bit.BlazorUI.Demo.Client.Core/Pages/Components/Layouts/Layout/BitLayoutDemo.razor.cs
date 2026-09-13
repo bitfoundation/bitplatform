@@ -1,9 +1,37 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Layout;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Layout;
 
 public partial class BitLayoutDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "Aside",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content of the aside section, which sits next to the main content on the side opposite the nav panel. It renders a semantic aside element (the complementary landmark), and is left out of the markup entirely while it is null or HideAside is on.",
+        },
+        new()
+        {
+            Name = "AsideAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the aside section, which is what tells more than one complementary landmark apart in the landmark list of a screen reader.",
+        },
+        new()
+        {
+            Name = "AsideWidth",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The width of the aside section in pixels. This is the room the main content leaves for the aside, not a width forced onto the aside itself, so an aside that takes itself out of the flow only has to be given 0 for the main content to span the whole row again.",
+        },
+        new()
+        {
+            Name = "Bordered",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws divider lines between the sections of the BitLayout. The two vertical dividers follow the reading direction and swap sides along with ReverseNavPanel.",
+        },
         new()
         {
             Name = "Classes",
@@ -18,58 +46,154 @@ public partial class BitLayoutDemo
             Name = "Footer",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the footer section.",
+            Description = "The content of the footer section. It renders a semantic footer element (the contentinfo landmark), and is left out of the markup entirely while it is null or HideFooter is on.",
+        },
+        new()
+        {
+            Name = "FooterHeight",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The height of the footer section in pixels, including its paddings and border. When not set, the footer is as tall as its own content.",
+        },
+        new()
+        {
+            Name = "FullHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the BitLayout fill at least the height of the viewport, so the footer of a short page still sits at the bottom of the screen. The height follows the browser chrome of a mobile device as it retracts.",
+        },
+        new()
+        {
+            Name = "FullHeightPanels",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the nav panel and the aside span the whole height of the BitLayout, with the header and the footer between them rather than above and below them. The panels are columns of their own here, so NavPanelWidth and AsideWidth are applied to the panels themselves.",
+        },
+        new()
+        {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The space between the nav panel, the main content and the aside (the CSS gap of the middle row). Takes any CSS length or the two value form of the gap shorthand.",
         },
         new()
         {
             Name = "Header",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the header section.",
+            Description = "The content of the header section. It renders a semantic header element (the banner landmark), and is left out of the markup entirely while it is null or HideHeader is on.",
+        },
+        new()
+        {
+            Name = "HeaderHeight",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The height of the header section in pixels, including its paddings and border. It is also the offset a sticky nav panel or aside pins itself at, so a panel pinned under a sticky header starts right below it.",
+        },
+        new()
+        {
+            Name = "HideAside",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the aside section, which is removed from the markup so the main content takes the room it used to reserve for it.",
+        },
+        new()
+        {
+            Name = "HideFooter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the footer section.",
+        },
+        new()
+        {
+            Name = "HideHeader",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Hides the header section.",
         },
         new()
         {
             Name = "HideNavPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Hides NavPanel content when true.",
+            Description = "Hides the nav panel section, which is removed from the markup so the main content takes the room it used to reserve for it.",
         },
         new()
         {
             Name = "Main",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the main section.",
+            Description = "The content of the main section. It renders a semantic main element (the main landmark and the target of the skip link), and unlike the other sections it is always rendered.",
         },
         new()
         {
             Name = "NavPanel",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the nav panel section.",
+            Description = "The content of the nav panel section. It renders a semantic nav element (the navigation landmark), and is left out of the markup entirely while it is null or HideNavPanel is on.",
+        },
+        new()
+        {
+            Name = "NavPanelAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of the nav panel section, which is what tells the navigation landmarks of a page apart in the landmark list of a screen reader.",
         },
         new()
         {
             Name = "NavPanelWidth",
             Type = "int",
             DefaultValue = "0",
-            Description = "The width of the nav panel section in px.",
+            Description = "The width of the nav panel section in pixels. This is the room the main content leaves for the panel, not a width forced onto the panel itself, so a panel that collapses to a rail or turns into an overlay drawer only has to be given 0 for the main content to span the whole row again.",
+        },
+        new()
+        {
+            Name = "Nested",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the main section as a plain element instead of the main landmark, for a BitLayout nested inside another one, since a page may hold only one main landmark. The section keeps its id, its classes and its place as the target of the skip link.",
+        },
+        new()
+        {
+            Name = "Padding",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The padding around the content of the main section. Takes any CSS padding value; the main section is a border-box, so the padding is taken out of the width it already has rather than added to it.",
         },
         new()
         {
             Name = "ReverseNavPanel",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Reverses the position of the nav panel inside the main container.",
+            Description = "Reverses the position of the nav panel and the aside inside the middle row, which puts the nav panel at the end of the row and the aside at its start.",
         },
         new()
         {
-            Name = "Styles",
-            Type = "BitLayoutClassStyles?",
+            Name = "ScrollableMain",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the header and the footer in place and gives the sections of the middle row a scrollport of their own, which is the shape of an application shell. It needs the BitLayout to have a height to fill: FullHeight, or a parent of a definite height.",
+        },
+        new()
+        {
+            Name = "SkipLink",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a skip link as the first focusable element of the BitLayout, which jumps to the main section. The link stays out of sight until it is focused.",
+        },
+        new()
+        {
+            Name = "SkipLinkText",
+            Type = "string?",
             DefaultValue = "null",
-            Description = "Custom CSS styles for different parts of the BitLayout.",
-            LinkType = LinkType.Link,
-            Href = "#class-styles"
+            Description = "The text of the skip link. The default value is \"Skip to main content\".",
+        },
+        new()
+        {
+            Name = "StickyAside",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables sticky positioning of the aside, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
         },
         new()
         {
@@ -84,6 +208,29 @@ public partial class BitLayoutDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Enables sticky positioning of the header at the top of the viewport.",
+        },
+        new()
+        {
+            Name = "StickyNavPanel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables sticky positioning of the nav panel, pinned HeaderHeight pixels from the top of the viewport and given the rest of it with its own scrollbar.",
+        },
+        new()
+        {
+            Name = "Styles",
+            Type = "BitLayoutClassStyles?",
+            DefaultValue = "null",
+            Description = "Custom CSS styles for different parts of the BitLayout.",
+            LinkType = LinkType.Link,
+            Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "ZIndex",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The stacking order of the pinned sections of the BitLayout, which decides whether a sticky section passes over or under the other layers of the application. When not set, they take the base z-index of the theme.",
         },
     ];
 
@@ -104,6 +251,13 @@ public partial class BitLayoutDemo
                 },
                 new()
                 {
+                    Name = "SkipLink",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the skip link of the BitLayout."
+                },
+                new()
+                {
                     Name = "Header",
                     Type = "string?",
                     DefaultValue = "null",
@@ -114,14 +268,14 @@ public partial class BitLayoutDemo
                     Name = "Main",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the main section of the BitLayout."
+                    Description = "Custom CSS classes/styles for the middle row of the BitLayout that holds the nav panel, the main content and the aside."
                 },
                 new()
                 {
                     Name = "NavPanel",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the nav-menu section of the BitLayout."
+                    Description = "Custom CSS classes/styles for the nav panel section of the BitLayout."
                 },
                 new()
                 {
@@ -129,6 +283,13 @@ public partial class BitLayoutDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the main-content section of the BitLayout."
+                },
+                new()
+                {
+                    Name = "Aside",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the aside section of the BitLayout."
                 },
                 new()
                 {
@@ -143,145 +304,26 @@ public partial class BitLayoutDemo
 
 
 
-    private bool HideNavPanel;
+    private bool hideNavPanel;
 
+    private bool hideAside;
 
+    private bool reverseNavPanel;
 
-    private readonly string example1RazorCode = @"
-<style>
-    .header {
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
+    private bool fullHeightPanels;
+    private bool reverseNavPanel2;
 
-    .main {
-        width: 100%;
-        height: 100%;
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
+    private bool hideHeader;
+    private bool hideNavPanel2;
+    private bool hideAside2;
+    private bool hideFooter;
 
-    .footer {
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-</style>
+    private bool stickyHeader;
+    private bool stickyNavPanel;
+    private bool stickyAside;
+    private bool stickyFooter;
 
+    private bool fullHeight;
 
-<BitLayout>
-    <Header>
-        <div class=""header"">Header</div>
-    </Header>
-    <Main>
-        <div class=""main"">Main</div>
-    </Main>
-    <Footer>
-        <div class=""footer"">Footer</div>
-    </Footer>
-</BitLayout>";
-
-    private readonly string example2RazorCode = @"
-<style>
-    .header {
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-
-    .main {
-        width: 100%;
-        height: 100%;
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-
-    .nav-menu {
-        width: 100%;
-        height: 100%;
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-
-    .footer {
-        padding: 0.5rem;
-        border: 1px solid gray;
-    }
-</style>
-
-
-<BitToggle Label=""Hide NavPanel"" @bind-Value=""HideNavPanel"" />
-
-<BitLayout HideNavPanel=""HideNavPanel"">
-    <Header>
-        <div class=""header"">Header</div>
-    </Header>
-    <NavPanel>
-        <div class=""nav-menu"">NavPanel</div>
-    </NavPanel>
-    <Main>
-        <div class=""main"">Main</div>
-    </Main>
-    <Footer>
-        <div class=""footer"">Footer</div>
-    </Footer>
-</BitLayout>";
-    private readonly string example2CsharpCode = @"
-private bool HideNavPanel;";
-
-    private readonly string example3RazorCode = @"
-<style>
-    .header {
-        color: black;
-        display: flex;
-        padding: 1rem;
-        border: 1px solid red;
-        justify-content: center;
-        background-color: lightgreen;
-    }
-
-    .main {
-        border: 1px solid green;
-    }
-
-    .nav-menu2 {
-        color: black;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: lightblue;
-        border: 1px solid lightgreen;
-    }
-
-    .main-content {
-        color: black;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid darkgreen;
-        background-color: lightgoldenrodyellow;
-    }
-
-    .footer {
-        color: black;
-        display: flex;
-        padding: 1rem;
-        border: 1px solid blue;
-        justify-content: center;
-        background-color: lightpink;
-    }
-</style>
-
-
-<BitLayout Styles=""@(new() { Main = ""height: 19rem;"" })"" 
-           Classes=""@(new() { Header = ""header2"",
-                              Main = ""main2"",
-                              NavPanel = ""nav-menu2"",
-                              MainContent = ""main-content2"",
-                              Footer = ""footer2"" })"">
-    <Header>Header</Header>
-    <NavPanel>NavPanel</NavPanel>
-    <Main>Main</Main>
-    <Footer>Footer</Footer>
-</BitLayout>";
+    private bool scrollableMain;
 }

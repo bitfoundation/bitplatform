@@ -1,0 +1,64 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-ths {
+    --bit-ths-gap: #{rem2(8px)};
+    // The color scheme buttons are icon-only squares, so they take the control height for both axes -
+    // the same 32px an icon button gets at the md size class.
+    --bit-ths-size: #{$siz-ctrl-md};
+
+    gap: var(--bit-ths-gap);
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.bit-ths-csb {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    color: $clr-pri-text;
+    height: var(--bit-ths-size);
+    background-color: $clr-pri;
+    min-width: var(--bit-ths-size);
+    border-radius: $shp-radius-full;
+
+    .bit-icon {
+        margin: 0 rem2(4px);
+        font-size: $siz-icon-md;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// The sun glyph sits low and left in its em box next to the crescent's, so the button that carries it
+// gets the optical nudge that centers it in the circle.
+.bit-ths-drk .bit-icon {
+    padding: rem2(2px) 0 0 rem2(1px);
+}
+
+// The document's bit-theme attribute is the library's own live theme state, kept current by the theme
+// script itself (including through OS-driven changes while following the system theme), so which of the
+// two buttons is showing keys off it rather than off C# state - that is what makes the pair correct in
+// prerendered and cached markup, before any Blazor runtime is up. The two selectors are exact
+// complements, so exactly one button of the pair is visible in every possible state.
+:root[bit-theme$='dark'] .bit-ths-lgt {
+    display: none;
+}
+
+:root:not([bit-theme$='dark']) .bit-ths-drk {
+    display: none;
+}
+
+.bit-ths.bit-dis {
+    .bit-ths-csb {
+        cursor: default;
+        opacity: $opa-dis;
+    }
+}

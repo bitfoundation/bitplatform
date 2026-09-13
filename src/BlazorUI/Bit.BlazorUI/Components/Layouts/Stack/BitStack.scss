@@ -1,5 +1,11 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
+$bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
+
+// Almost everything a stack does is an inline style, so the root class only carries what has to hold for every
+// stack: the box it takes and the two alignments a stack that was told nothing falls back to. The direction, the
+// gap and the alignments that were asked for are written onto the element, where they outrank these.
 .bit-stc {
     width: 100%;
     height: 100%;
@@ -8,6 +14,8 @@
     justify-content: flex-start;
 }
 
+// The two axes of FillContent. The child is given the whole of the axis it is not laid out along, forcibly, so a
+// menu or a toolbar of equally sized items does not have to state that size on each of them.
 .bit-stc-fch {
     > * {
         height: 100%;
@@ -18,4 +26,216 @@
     > * {
         width: 100%;
     }
+}
+
+// The same for a stack that wraps, where the room a child was given is its own row and not the whole of the
+// stack across it, and for one whose direction answers to the width of the window, where which of the two axes
+// is the cross one is not known here. Stretching a child fills whichever of the two it turns out to be, one row
+// at a time, and unlike a forced size it leaves a child that stated a size of its own across that axis alone.
+.bit-stc-fcr {
+    > * {
+        align-self: stretch;
+    }
+}
+
+// An inline stack is sized by its content: an inline-level box that still claimed the full width of its line
+// would be inline in name only. This is a class rather than an inline style, so an explicit size - from Style
+// or from the Fit and Auto parameters, both of which are written onto the element - still wins over it.
+.bit-stc-inl {
+    width: auto;
+    height: auto;
+}
+
+// GrowContent: the axis the children are laid out along, shared out between them once they have all been laid out
+// at their natural size. A stack with nothing left over is unchanged, which is what keeps this from squashing a
+// row that was already full.
+.bit-stc-grc {
+    > * {
+        flex-grow: 1;
+    }
+}
+
+// EqualContent: the same axis, but with the content of the children taken out of the sum, so what they hold no
+// longer decides how much of it each of them gets. Declared after GrowContent, which it is the stricter form of.
+.bit-stc-eqc {
+    > * {
+        flex: 1 1 0;
+    }
+}
+
+// NoShrinkContent: the children are taken out of being squeezed below their content when the stack runs out of
+// room, so what no longer fits overflows the stack - or wraps, if it was told it may - instead of being crushed.
+.bit-stc-nsc {
+    > * {
+        flex-shrink: 0;
+    }
+}
+
+/*
+ * The direction of a stack that changes it with the width of the window, and the two alignments that follow it. Each
+ * per breakpoint property falls back to the breakpoint below it rather than to the base value, which is what makes
+ * them mobile first: a direction set for sm keeps applying to md, lg, xl and xxl until one of those replaces it. The
+ * BitStack component only declares the breakpoints that were actually asked for, and this chain fills in all the others.
+ *
+ * The three being painted are handed on as properties of their own, which the media queries below point at whichever
+ * breakpoint currently applies. Every one of these is redeclared here rather than inherited, so a stack nested inside
+ * a responsive one is laid out by its own direction and never by the direction of its parent.
+ *
+ * Which of the two named alignments of the component reaches align-items and which reaches justify-content is decided
+ * per breakpoint, since the axis each of them names is the cross axis at one direction and the main axis at the other.
+ * A breakpoint whose alignment means nothing on the axis it lands on is handed the initial value of the property, which
+ * is the guaranteed-invalid one, so the two fallbacks below are what such a breakpoint - and a stack that was told no
+ * alignment at all - ends up being laid out by.
+ */
+.bit-stc-rsp {
+    --bit-stc-dir-xs: var(--bit-stc-dir);
+    --bit-stc-dir-sm: var(--bit-stc-dir-xs);
+    --bit-stc-dir-md: var(--bit-stc-dir-sm);
+    --bit-stc-dir-lg: var(--bit-stc-dir-md);
+    --bit-stc-dir-xl: var(--bit-stc-dir-lg);
+    --bit-stc-dir-xxl: var(--bit-stc-dir-xl);
+
+    --bit-stc-ai-xs: var(--bit-stc-ai);
+    --bit-stc-ai-sm: var(--bit-stc-ai-xs);
+    --bit-stc-ai-md: var(--bit-stc-ai-sm);
+    --bit-stc-ai-lg: var(--bit-stc-ai-md);
+    --bit-stc-ai-xl: var(--bit-stc-ai-lg);
+    --bit-stc-ai-xxl: var(--bit-stc-ai-xl);
+
+    --bit-stc-jc-xs: var(--bit-stc-jc);
+    --bit-stc-jc-sm: var(--bit-stc-jc-xs);
+    --bit-stc-jc-md: var(--bit-stc-jc-sm);
+    --bit-stc-jc-lg: var(--bit-stc-jc-md);
+    --bit-stc-jc-xl: var(--bit-stc-jc-lg);
+    --bit-stc-jc-xxl: var(--bit-stc-jc-xl);
+
+    --bit-stc-dir-now: var(--bit-stc-dir-xs);
+    --bit-stc-ai-now: var(--bit-stc-ai-xs);
+    --bit-stc-jc-now: var(--bit-stc-jc-xs);
+
+    flex-direction: var(--bit-stc-dir-now);
+    align-items: var(--bit-stc-ai-now, flex-start);
+    justify-content: var(--bit-stc-jc-now, flex-start);
+}
+
+/*
+ * The gap of a stack that changes its spacing with the width of the window. It is the same chain as the one above and for
+ * the same reasons - each breakpoint falls back to the one below it rather than to the base value, so a gap set for sm
+ * keeps applying to md, lg, xl and xxl until one of those replaces it, and only the breakpoints actually asked for are
+ * declared by the component - but it is a class of its own, since a stack may change its spacing without changing its
+ * direction and the other way round.
+ *
+ * The base of this chain is always declared, so unlike the alignments above there is nothing here to fall back from: a
+ * responsive stack that was told no gap at all still hands over the length the component resolved for it.
+ */
+.bit-stc-rsg {
+    --bit-stc-gap-xs: var(--bit-stc-gap);
+    --bit-stc-gap-sm: var(--bit-stc-gap-xs);
+    --bit-stc-gap-md: var(--bit-stc-gap-sm);
+    --bit-stc-gap-lg: var(--bit-stc-gap-md);
+    --bit-stc-gap-xl: var(--bit-stc-gap-lg);
+    --bit-stc-gap-xxl: var(--bit-stc-gap-xl);
+
+    --bit-stc-gap-now: var(--bit-stc-gap-xs);
+
+    gap: var(--bit-stc-gap-now);
+}
+
+/*
+ * And one chain per axis, for the stack that wants a different amount of room between its columns than between its
+ * rows at some width. They are the same chain as the one above once more, with one difference: the base of each of
+ * them falls back to whatever the chain above resolves to at the width being painted, so an axis only has to be
+ * written out at the breakpoints it actually differs at and follows the shorthand everywhere else.
+ *
+ * Both are declared after the shorthand, since a longhand only replaces it while it comes after it, and an axis
+ * that changes with the width of the window is what drags the shorthand out of the element and into the chain
+ * above: an inline gap is an inline style, which no rule here could override at any width.
+ */
+.bit-stc-rshg {
+    --bit-stc-hgap-xs: var(--bit-stc-hgap);
+    --bit-stc-hgap-sm: var(--bit-stc-hgap-xs);
+    --bit-stc-hgap-md: var(--bit-stc-hgap-sm);
+    --bit-stc-hgap-lg: var(--bit-stc-hgap-md);
+    --bit-stc-hgap-xl: var(--bit-stc-hgap-lg);
+    --bit-stc-hgap-xxl: var(--bit-stc-hgap-xl);
+
+    --bit-stc-hgap-now: var(--bit-stc-hgap-xs);
+
+    column-gap: var(--bit-stc-hgap-now);
+}
+
+.bit-stc-rsvg {
+    --bit-stc-vgap-xs: var(--bit-stc-vgap);
+    --bit-stc-vgap-sm: var(--bit-stc-vgap-xs);
+    --bit-stc-vgap-md: var(--bit-stc-vgap-sm);
+    --bit-stc-vgap-lg: var(--bit-stc-vgap-md);
+    --bit-stc-vgap-xl: var(--bit-stc-vgap-lg);
+    --bit-stc-vgap-xxl: var(--bit-stc-vgap-xl);
+
+    --bit-stc-vgap-now: var(--bit-stc-vgap-xs);
+
+    row-gap: var(--bit-stc-vgap-now);
+}
+
+/*
+ * And the chain of a stack that only breaks onto a second row at some widths. It is the same chain as the ones above once
+ * more - each breakpoint falls back to the one below it, so a stack told to stop wrapping at md keeps not wrapping at lg,
+ * xl and xxl, and only the breakpoints actually asked for are declared by the component - and it is a class of its own
+ * because whether a stack wraps, which way it faces and how much room it leaves between its children are three separate
+ * questions, any of which may answer to the width of the window without the others doing so.
+ *
+ * The base of this chain is always declared, so like the gap and unlike the alignments there is nothing here to fall back
+ * from: a stack that was told nothing about wrapping hands over the "nowrap" that a flex container starts from anyway.
+ */
+.bit-stc-rswrp {
+    --bit-stc-wrap-xs: var(--bit-stc-wrap);
+    --bit-stc-wrap-sm: var(--bit-stc-wrap-xs);
+    --bit-stc-wrap-md: var(--bit-stc-wrap-sm);
+    --bit-stc-wrap-lg: var(--bit-stc-wrap-md);
+    --bit-stc-wrap-xl: var(--bit-stc-wrap-lg);
+    --bit-stc-wrap-xxl: var(--bit-stc-wrap-xl);
+
+    --bit-stc-wrap-now: var(--bit-stc-wrap-xs);
+
+    flex-wrap: var(--bit-stc-wrap-now);
+}
+
+@each $name, $breakpoint in $bit-stc-breakpoints {
+    @media (min-width: $breakpoint) {
+        .bit-stc-rsp {
+            --bit-stc-dir-now: var(--bit-stc-dir-#{$name});
+            --bit-stc-ai-now: var(--bit-stc-ai-#{$name});
+            --bit-stc-jc-now: var(--bit-stc-jc-#{$name});
+        }
+
+        .bit-stc-rsg {
+            --bit-stc-gap-now: var(--bit-stc-gap-#{$name});
+        }
+
+        .bit-stc-rshg {
+            --bit-stc-hgap-now: var(--bit-stc-hgap-#{$name});
+        }
+
+        .bit-stc-rsvg {
+            --bit-stc-vgap-now: var(--bit-stc-vgap-#{$name});
+        }
+
+        .bit-stc-rswrp {
+            --bit-stc-wrap-now: var(--bit-stc-wrap-#{$name});
+        }
+    }
+}
+
+// The three steps of the spacing scale of the theme, so a sized stack follows the spacing unit and the density of
+// the current theme rather than a hardcoded length. The component reads them back through var(--bit-stc-size).
+.bit-stc-sm {
+    --bit-stc-size: #{spacing(1)};
+}
+
+.bit-stc-md {
+    --bit-stc-size: #{spacing(2)};
+}
+
+.bit-stc-lg {
+    --bit-stc-size: #{spacing(4)};
 }

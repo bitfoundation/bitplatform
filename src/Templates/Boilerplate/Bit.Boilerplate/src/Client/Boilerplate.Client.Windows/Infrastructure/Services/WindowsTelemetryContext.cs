@@ -1,3 +1,6 @@
+// [mirror] telemetry context properties - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiTelemetryContext.cs
+
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public class WindowsTelemetryContext : AppTelemetryContext

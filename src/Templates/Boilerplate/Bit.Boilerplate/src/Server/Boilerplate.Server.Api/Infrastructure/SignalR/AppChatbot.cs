@@ -1,10 +1,10 @@
 //+:cnd:noEmit
-using System.Text;
 using System.Threading.Channels;
-using Boilerplate.Shared;
 using Microsoft.Agents.AI;
+using FluentStorage.Storage;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.Services;
+using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 
 namespace Boilerplate.Server.Api.Infrastructure.SignalR;
@@ -13,7 +13,10 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// Service responsible for managing chatbot conversations, maintaining chat history,
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
-/// Every tool method is decorated with [McpServerTool] attribute, so it can be also be used by other external MCP-Client if needed (Checkout AppChatbot.Tools.cs)
+/// Only the tools that stay on the server carry [McpServerTool], so an external MCP client can use them too (checkout
+/// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing
+/// a sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only
+/// and signalRConnectionId is always the connection StartChat was given.
 /// 
 /// Microsoft.Agents.AI:
 /// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
@@ -25,7 +28,11 @@ public partial class AppChatbot
 {
     private AIAgent? supportAgent = default!;
 
+    [AutoInject] private IStore blobStorage = default!;
+    [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
+    [AutoInject] private ChatbotAnswerSigner answerSigner = default!;
+    [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
@@ -49,7 +56,20 @@ public partial class AppChatbot
         string? signalRConnectionId,
         CancellationToken cancellationToken)
     {
-        chatMessages = [.. request.ChatMessagesHistory.Select(c => new ChatMessage(c.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User, c.Content))];
+        chatMessages = [];
+
+        var history = request.ChatMessagesHistory
+            .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+            .Where(WrittenByThisAssistantOrByTheUser)
+            .TakeLast(MaxMessagesInHistory)
+            .ToArray();
+
+        foreach (var message in history)
+        {
+            chatMessages.Add(await ToChatMessage(message, cancellationToken));
+        }
+
+        TrimChatHistory();
 
         CultureInfo? culture = null;
         if (request.CultureId is not null && CultureInfoManager.InvariantGlobalization is false)
@@ -69,34 +89,44 @@ public partial class AppChatbot
     }
 
     /// <summary>
+    /// A resent assistant turn is believed only when it carries the signature this app wrote it with - anything else,
+    /// the panel's own local greeting included, is the caller putting words in the assistant's mouth.
+    /// </summary>
+    private bool WrittenByThisAssistantOrByTheUser(AiChatMessage message)
+    {
+        return message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature);
+    }
+
+    /// <summary>
     /// Get the response channel for streaming AI responses
     /// </summary>
     public ChannelReader<string> GetStreamingChannel() => responseChannel.Reader;
 
     /// <summary>
-    /// Stops streaming
-    /// </summary>
-    public void Stop() => responseChannel.Writer.TryComplete();
-
-    /// <summary>
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessNewMessage(
-        bool generateFollowUpSuggestions,
-        string incomingMessage,
-        Uri? serverApiAddress,
+        AiChatMessage incomingMessage,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(variablesDefault))
-            throw new InvalidOperationException("Chat session must be started before processing messages. Call Start method first.");
+        // Everything sent for this turn is one json document (See AssistantTurn): the opening is written here, the
+        // reader follows the model's reply through the middle, and CloseTurn splices the closing on.
+        var reply = new PartialJsonReader<AssistantReply>(AppJsonContext.Default.AssistantReply);
+        var opened = false;
 
-        supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
-
-        StringBuilder assistantResponse = new();
         try
         {
-            chatMessages.Add(new(ChatRole.User, incomingMessage));
+            if (string.IsNullOrWhiteSpace(variablesDefault))
+                throw new InvalidOperationException($"Chat session must be started before processing messages. Call {nameof(StartChat)} method first.");
+
+            supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
+
+            // ChatRole.User rather than the role on the payload: whatever it claims, everything arriving on this
+            // stream is the user speaking.
+            chatMessages.Add(await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken));
+
+            TrimChatHistory();
 
             var chatOptions = CreateChatOptions();
 
@@ -108,7 +138,7 @@ public partial class AppChatbot
             var variablesPrompt = @$"
 ### Variables:
 {variablesDefault}
-{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}""}} 
+{{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
 {{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}"",
 {{{{WebAppUrl}}}}: ""{(httpContextAccessor.HttpContext!.Request.GetWebAppUrl())}"",
 ";
@@ -119,35 +149,188 @@ public partial class AppChatbot
                 ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
-                    break;
+                {
+                    await CloseTurn(reply, opened, successful: false);
+                    return;
+                }
 
-                var result = response.Text;
-                assistantResponse.Append(result);
-                await responseChannel.Writer.WriteAsync(result, cancellationToken);
+                if (response.Text is not { Length: > 0 } chunk) continue;
+
+                reply.Append(chunk);
+
+                if (opened is false)
+                {
+                    await SendStringToClient(OpenTurn(), cancellationToken);
+                    opened = true;
+                }
+
+                // Only json goes through as it comes. A provider that didn't hold the model to the schema is writing
+                // prose where a document belongs, which CloseTurn puts right instead.
+                if (reply.IsDocument)
+                {
+                    await responseChannel.Writer.WriteAsync(chunk, cancellationToken);
+                }
             }
 
-            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS, cancellationToken);
-
-            if (generateFollowUpSuggestions)
+            if (AnswerOf(reply) is { Length: > 0 } answer)
             {
-                // Generate follow-up suggestions
-                var followUpSuggestions = await GenerateFollowUpSuggestions(
-                    incomingMessage,
-                    assistantResponse.ToString(),
-                    chatOptions,
-                    cancellationToken);
-
-                await SendStringToClient(JsonSerializer.Serialize(followUpSuggestions), cancellationToken);
+                chatMessages.Add(new(ChatRole.Assistant, answer));
             }
+
+            await CloseTurn(reply, opened, successful: true);
+        }
+        catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
+        {
+            await CloseTurn(reply, opened, successful: false);
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
-            await SendStringToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR, cancellationToken);
+            await CloseTurn(reply, opened, successful: false);
         }
-        finally
+    }
+
+    /// <summary>Everything of the turn's document that comes before the model's reply.</summary>
+    private string OpenTurn() => $$"""{"sentAt":"{{timeProvider.GetUtcNow():O}}","reply":""";
+
+    /// <summary>
+    /// Finishes the turn's document: whatever a reply cut off mid word still owes, then the fields only the server
+    /// can fill in, over the answer the user was actually shown.
+    /// <para>
+    /// Never sent with the message's own token: the client ends a turn when the document closes, and on an unbounded
+    /// channel WriteAsync drops what it is given once that token is cancelled - which is the case here.
+    /// </para>
+    /// </summary>
+    private Task CloseTurn(PartialJsonReader<AssistantReply> reply, bool opened, bool successful)
+    {
+        var rest = opened is false
+            // Nothing was written at all, so the opening still has to go out with it.
+            ? $"{OpenTurn()}null"
+            : reply.IsDocument
+                // What a reply cut off mid word still owes. Empty for one that ended on its own.
+                ? reply.Completion()
+                // Prose that was held back above, put where a reply belongs.
+                : JsonSerializer.Serialize(new AssistantReply { Answer = reply.Json }, AppJsonContext.Default.AssistantReply);
+
+        var signature = successful && AnswerOf(reply) is { Length: > 0 } answer
+            ? $"\"{JsonEncodedText.Encode(answerSigner.Sign(answer))}\""
+            : "null";
+
+        return SendStringToClient($$"""{{rest}},"signature":{{signature}},"successful":{{(successful ? "true" : "false")}}}""",
+                                  CancellationToken.None);
+    }
+
+    /// <summary>
+    /// The text the user was shown - what gets signed and what is replayed to the model as its own previous turn -
+    /// read with the same reader the panel uses (See <c>AppAiChatPanel.RunChannel</c>).
+    /// </summary>
+    private static string? AnswerOf(PartialJsonReader<AssistantReply> reply)
+        => reply.IsDocument ? reply.Append(null)?.Answer : reply.Json;
+
+    /// <summary>
+    /// A message of the resent history, as the role it claims. Only messages that got past
+    /// <see cref="WrittenByThisAssistantOrByTheUser"/> reach here, so an assistant turn is one this app signed.
+    /// </summary>
+    private Task<ChatMessage> ToChatMessage(AiChatMessage message, CancellationToken cancellationToken)
+        => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
+                         message.Content,
+                         message.AttachmentId,
+                         cancellationToken);
+
+    /// <summary>
+    /// The text of a message, plus the image the user attached to it, if any.
+    /// </summary>
+    private async Task<ChatMessage> ToChatMessage(ChatRole role, string? content, Guid? attachmentId, CancellationToken cancellationToken)
+    {
+        List<AIContent> contents = [];
+
+        if (string.IsNullOrWhiteSpace(content) is false)
         {
-            chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
+            contents.Add(new TextContent(content));
+        }
+
+        if (await ReadAttachedImage(attachmentId, cancellationToken) is AIContent image)
+        {
+            contents.Add(image);
+        }
+
+        return new ChatMessage(role, contents);
+    }
+
+    /// <summary>What <c>AttachmentController</c> stores and serves an AI chat image as.</summary>
+    private const string AiChatImageMediaType = "image/webp";
+
+    /// <summary>
+    /// The chat image the client named, or null when it named none. The kind is fixed here rather than taken from
+    /// the client, so an id is only ever looked for among this app's chat images - a payload cannot point this at a
+    /// profile picture.
+    /// <para>
+    /// The picture is handed over as a url for the provider to fetch, which costs nothing to produce and does not
+    /// re-upload the same bytes on every turn of the conversation. That only works where the provider can reach this
+    /// backend, and a machine serving localhost cannot be reached from the internet - so development sends the bytes
+    /// themselves instead. A deployment that is not reachable from the internet either (a private network, say) has
+    /// to do the same.
+    /// </para>
+    /// </summary>
+    private async Task<AIContent?> ReadAttachedImage(Guid? attachmentId, CancellationToken cancellationToken)
+    {
+        if (attachmentId is null)
+            return null;
+
+        if (hostEnvironment.IsDevelopment() is false)
+        {
+            return new UriContent(new Uri(httpContextAccessor.HttpContext!.Request.GetBaseUrl(), $"api/v1/Attachment/GetAttachment/{attachmentId}/{AttachmentKind.AiChatImage}"), AiChatImageMediaType);
+        }
+
+        var path = AttachmentController.GetFilePath(appSettings, attachmentId.Value, AttachmentKind.AiChatImage);
+
+        return new DataContent(await blobStorage.GetBytes(path, cancellationToken), AiChatImageMediaType);
+    }
+
+    /// <summary>
+    /// How many of the newest pictures the model is shown. An image costs orders of magnitude more tokens than the
+    /// sentence around it, so a handful of them reach the context window long before the message count below does.
+    /// The panel still shows every picture the user attached; only what is replayed to the model is capped.
+    /// </summary>
+    private const int MaxImagesInHistory = 3;
+
+    /// <inheritdoc cref="StartChatRequest.MaxChatMessagesHistory"/>
+    private const int MaxMessagesInHistory = StartChatRequest.MaxChatMessagesHistory;
+
+    /// <summary>
+    /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
+    /// cost) without limit until the provider rejects it for exceeding the context window.
+    /// </summary>
+    private void TrimChatHistory()
+    {
+        if (chatMessages.Count > MaxMessagesInHistory)
+        {
+            chatMessages.RemoveRange(0, chatMessages.Count - MaxMessagesInHistory);
+        }
+
+        var pictures = 0;
+
+        for (var i = chatMessages.Count - 1; i >= 0; i--)
+        {
+            var contents = chatMessages[i].Contents;
+
+            for (var j = contents.Count - 1; j >= 0; j--)
+            {
+                // Both shapes a picture arrives in - see ReadAttachedImage - or the cap would quietly stop applying
+                // in every environment that hands the model a url.
+                if (contents[j] is not (DataContent or UriContent)) continue;
+
+                if (++pictures <= MaxImagesInHistory) continue;
+
+                contents.RemoveAt(j);
+            }
+
+            // What was said about a picture stays in the conversation once the picture itself is gone - but a message
+            // that was nothing else is left with no content at all, which not every provider accepts.
+            if (contents.Count == 0)
+            {
+                contents.Add(new TextContent("(an image the user attached earlier)"));
+            }
         }
     }
 
@@ -178,81 +361,28 @@ public partial class AppChatbot
     }
 
     /// <summary>
+    /// Makes the model write one json document (See <see cref="AssistantReply"/>) instead of prose, so the answer and
+    /// its follow-up suggestions arrive together rather than in two round trips. A provider that doesn't enforce the
+    /// schema streams whatever it likes, and both ends read that as the answer itself - minus the suggestions.
+    /// </summary>
+    private static readonly ChatResponseFormat AnswerFormat = ChatResponseFormat.ForJsonSchema(
+        AIJsonUtilities.CreateJsonSchema(typeof(AssistantReply), serializerOptions: AppJsonContext.Default.Options, inferenceOptions: new()
+        {
+            // What OpenAI's strict json schema mode requires of a schema, and what the rest ignore.
+            TransformOptions = new() { DisallowAdditionalProperties = true, RequireAllProperties = true }
+        }),
+        schemaName: "assistant_answer",
+        schemaDescription: "The assistant's reply to the user, and what the user might want to ask next.");
+
+    /// <summary>
     /// Create chat options with AI tools
     /// </summary>
     private ChatOptions CreateChatOptions()
     {
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
+        chatOptions.ResponseFormat = AnswerFormat;
         return chatOptions;
-    }
-
-    /// <summary>
-    /// Generate follow-up suggestions based on the conversation
-    /// </summary>
-    private async Task<AiChatFollowUpList> GenerateFollowUpSuggestions(
-        string incomingMessage,
-        string assistantResponse,
-        ChatOptions chatOptions,
-        CancellationToken cancellationToken)
-    {
-        // This would generate a list of follow-up questions/suggestions to keep the conversation going.
-        // You could instead generate that list in previous chat completion call:
-        // 1: Using "tools" or "functions" feature of the model, that would not consider the latest assistant response.
-        // 2: Returning a json object containing the response and follow-up suggestions all together, losing IAsyncEnumerable streaming capability.
-        var followUpSuggestionsAgent = serviceProvider.GetRequiredKeyedService<AIAgent>("FollowUpSuggestionsAgent");
-
-        chatOptions.ResponseFormat = ChatResponseFormat.Json;
-        chatOptions.AdditionalProperties = new() { ["response_format"] = new { type = "json_object" } };
-
-        // The follow-up agent responds in a strict JSON format and must not perform tool round-trips,
-        // so instead of letting it call the GetAppPages tool we inject the list of pages directly as context.
-        var appPagesPrompt = @$"### Available pages (useful for navigation/discovery follow-up suggestions):
-{PageUrls.GetPagesMarkdown()}";
-
-        var followUpItems = await followUpSuggestionsAgent.RunAsync<AiChatFollowUpList>(
-            messages: [
-                new (ChatRole.System, variablesDefault),
-                new (ChatRole.System, appPagesPrompt),
-                new(ChatRole.User, incomingMessage),
-                new(ChatRole.Assistant, assistantResponse)
-            ],
-            cancellationToken: cancellationToken,
-            options: new ChatClientAgentRunOptions(chatOptions));
-
-        return followUpItems.Result ?? new AiChatFollowUpList();
-    }
-
-    private async Task EnsureSignalRConnectionIdIsPresent()
-    {
-        // If the AIFunction tool is getting called by the AIAgent, the signalRConnectionId is already set in the AppChatbot instance using
-        // StartChat method, so we can return it directly without querying the database again.
-
-        // The SignalRConnectionId gives access to the currently exposed SignalR Client methods (e.g., NavigateToPage, ShowSignInModal)
-        // that are essential for some of the AI tools to work properly, so it's important to ensure that we have it available when processing AI tool calls.
-
-        // If the AIFunction tool is getting called by an external MCP client, then the signalRConnectionId won't be set,
-        // so we need to query the database to get the active SignalR connection id for the current user session, assuming that the external MCP client is using authentication headers.
-
-        if (string.IsNullOrEmpty(signalRConnectionId) is false)
-            return;
-
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
-
-        if (httpContextAccessor?.HttpContext?.User?.IsAuthenticated() is false)
-            throw new UnauthorizedException("User must be authenticated to use this tool when calling from an external MCP client.");
-        // While these tools can be called internally even for unauthenticated users,
-        // we require authentication for external MCP clients to ensure we can associate the request with a user session and retrieve the correct SignalR connection id.
-        // accepting SignalR connection id from external MCP clients would not be secure as it can be easily manipulated using prompt injection in external LLM that's calling the MCP tool.
-
-        var userSessionId = httpContextAccessor?.HttpContext?.User.GetSessionId();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        signalRConnectionId = await dbContext.UserSessions
-            .Where(s => s.Id == userSessionId)
-            .Select(s => s.SignalRConnectionId)
-            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("There's no access to your app on your device.");
     }
 
     private async Task SendStringToClient(string message, CancellationToken ct)

@@ -13,26 +13,32 @@ public partial class AboutPage
     private string oem = default!;
     private string appName = default!;
     private string platform = default!;
-    private string processId = default!;
     private string appVersion = default!;
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        // You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,  
-        // allowing direct access to native platform features without dependency injection.  
-        // The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,  
+        // You can add `.razor`, `.razor.cs`, and `.razor.scss` files to the `Client.Maui` and `Client.Windows` projects,
+        // allowing direct access to native platform features without dependency injection.
+        // The `AboutPage.razor` file in `Client.Web` demonstrates that you can use the same route (e.g., `/about`) on the web,
         // but it does not provide access to native platform features.
 
         appName = "Boilerplate";
-        platform = telemetryContext.Platform!;
         appVersion = telemetryContext.AppVersion!;
-        processId = Environment.ProcessId.ToString();
 
-        if (InPrerenderSession is false)
+        // From the user agent rather than ITelemetryContext.Platform, and only once there is a device to ask: while
+        // prerendering, the only os this anonymous page could name is the host's. Environment.ProcessId has the same
+        // problem and no client-side answer, so it isn't shown at all.
+        if (InPrerenderSession)
         {
-            oem = (await userAgent.Extract()).Manufacturer ?? "?";
+            platform = "Generic Server";
+        }
+        else
+        {
+            var userAgentData = await userAgent.Extract();
+            oem = userAgentData.Manufacturer ?? "?";
+            platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
         }
     }
 }

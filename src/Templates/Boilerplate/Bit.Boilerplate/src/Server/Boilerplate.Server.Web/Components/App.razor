@@ -1,4 +1,8 @@
 @*+:cnd:noEmit*@
+@* [mirror] host page head tags, stylesheet and script list - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Web/wwwroot/index.html *@
+@* - src/Client/Boilerplate.Client.Maui/wwwroot/index.html *@
+
 @using Microsoft.AspNetCore.Http;
 @using Boilerplate.Client.Web.Components
 @using Boilerplate.Server.Web.Components.Layout
@@ -6,26 +10,61 @@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;
+    var renderMode = noPrerender ? serverWebSettings.WebAppRender.NoPrerenderRenderMode : serverWebSettings.WebAppRender.RenderMode;
     if (HttpContext.AcceptsInteractiveRouting() is false)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
         renderMode = null;
     }
+    // Nothing of the page is produced on the server, so the scripts are the only thing that can ever fill it in.
+    var noPrerenderedContent = renderMode is not null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender);
 }
 
 <!DOCTYPE html>
-<html bit-theme="dark">
+<html lang="@(string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) ? null : CultureInfo.CurrentUICulture.Name)"
+      dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
+      @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
+      bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
+      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
-    <ContentSecurityPolicy />
+    @* First in head on purpose: the CSP has to be in force before anything else in the document runs. *@
+    @*#if (appInsights == true)*@
+    @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
+    @*#endif*@
+    <AppHeadCoordinator @rendermode="null" InHead />
     <ResourcePreloader />
+    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
+    
     <base href="/" />
 
     <meta charset="utf-8" />
-    <meta name="theme-color">
+    @* [mirror] The PWA status bar / browser chrome color. These must equal ThemeColors.cs's PrimaryLightBgColor and *@
+    @* PrimaryDarkBgColor (the colors the native apps paint their status bar with), so an installed PWA looks like them. *@
+    @* The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a *@
+    @* theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs *@
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="@localizer[nameof(AppStrings.DescriptionMetaTagValue)]" />
+
+    @if (noPrerenderedContent)
+    {
+        <title>Boilerplate</title>
+    }
+
+    @* hreflang marks the per-culture urls of this page as translations of ONE document, so their ranking signals
+       consolidate; x-default names the culture-less url, whose 302 (See UseCultureUrlRedirection) is the language
+       chooser. hreflang urls must be fully qualified; the culture and the query are stripped from the path. *@
+    @if (CultureInfoManager.InvariantGlobalization is false)
+    {
+        var alternateBaseUrl = HttpContext.Request.GetBaseUrl();
+        var alternateBarePath = new Uri(HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath;
+        foreach (var (_, supportedCulture) in CultureInfoManager.SupportedCultures)
+        {
+            <link rel="alternate" hreflang="@supportedCulture.Name" href="@(new Uri(alternateBaseUrl, $"/{supportedCulture.Name}{alternateBarePath}"))" />
+        }
+        <link rel="alternate" hreflang="x-default" href="@(new Uri(alternateBaseUrl, alternateBarePath))" />
+    }
 
     <Script>
         // disable auto-zoom of iOS Safari when focusing an input
@@ -42,11 +81,6 @@
 
     <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
-    @*#if (appInsights == true)*@
-    <Link rel="preconnect" Href="https://js.monitor.azure.com" crossorigin />
-    <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
-    <BlazorApplicationInsights.ApplicationInsightsInit />
-    @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
 </head>
@@ -57,10 +91,20 @@
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @*#if (theme == "Cupertino")*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+    @*#endif*@
+    @*#if (theme == "Material")*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    @*#endif*@
+    @* The fluent2 bundle stays the last theme stylesheet, so the template's own tree (where every directive is a comment) renders with Fluent 2. *@
+    @*#if (theme == "Fluent2")*@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    @*#endif*@
     <Link rel="stylesheet" Href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" Href="Boilerplate.Server.Web.styles.css" />
 
-    @if (renderMode != null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender))
+    @if (noPrerenderedContent)
     {
         <LoadingComponent @rendermode="null" />
     }
@@ -79,11 +123,14 @@
         </StreamRenderingEnabledContainer>
     }
 
-    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    @* A benchmark run and a crawler both want the pre-rendered html on its own: the scripts would only cost the
+       benchmark its score and give the crawler a bundle it does not need. But that is only true when this response
+       actually carries pre-rendered html - otherwise the caller gets a page with no content AND no way to fetch any. *@
+    @if ((HttpContext.Request.IsLightHouseRequest() || HttpContext.Request.IsCrawlerClient()) is false || noPrerenderedContent)
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>

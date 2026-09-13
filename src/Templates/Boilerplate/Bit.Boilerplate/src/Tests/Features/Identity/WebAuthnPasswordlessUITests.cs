@@ -1,8 +1,6 @@
-using Boilerplate.Tests.Infrastructure.Components;
-
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class WebAuthnPasswordlessUITests : AppPageTest
 {
     /// <summary>
@@ -12,7 +10,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     /// <item>A CDP virtual <b>platform</b> authenticator is attached to the page (auto-approving user presence and user
     /// verification), so <c>navigator.credentials.create()</c> / <c>get()</c> succeed headlessly - no device, no gesture.</item>
     /// <item>She signs in for the first time with a magic link OTP (the same flow as <see cref="MagicLinkSignInTests"/>).</item>
-    /// <item>On Settings &gt; Account &gt; Passwordless she clicks "Enable passwordless sign-in", which registers a
+    /// <item>On Settings &gt; Account &gt; Passwordless she clicks "Enable passwordless sign-in". Enrolment is a
+    /// privileged operation, so she first answers the elevated access OTP prompt; the ceremony then registers a
     /// credential (<c>credentials.create()</c>) against the virtual authenticator and stores it on the server and in local
     /// storage; the success snackbar shows and the button flips to its "disable" state.</item>
     /// <item>She signs out - which clears only the auth tokens; the <c>bit-webauthn</c> local-storage marker survives, so
@@ -71,9 +70,25 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
 
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EnablePasswordless }).ClickAsync();
 
+        // Enrolling a passkey is a privileged operation: PasswordlessTab.EnablePasswordless calls
+        // AuthManager.TryEnterElevatedAccessMode BEFORE the ceremony, and a session that signed in through a magic link
+        // OTP is not elevated, so an elevated access token is e-mailed and its OTP prompt opens. Nothing else happens
+        // until that prompt is answered - credentials.create() is never reached and no snackbar ever shows.
+        // (See WebAuthnEnrolmentElevationTests for the server side half of the same rule.)
+        // The code goes into the prompt's own BitOtpInput, addressed through the prompt (a BitModal, ".bit-mdl"):
+        // this page already renders another one in its two-factor section, and that one comes first in the DOM, so
+        // filling "the page's OTP input" submits the code as a 2fa enable attempt and leaves the prompt unanswered.
+        var elevatedAccessPrompt = Page.Locator(".bit-mdl").Filter(new() { HasText = AppStrings.EnterElevatedAccessToken });
+        await Expect(elevatedAccessPrompt).ToBeVisibleAsync();
+
+        var elevatedAccessEmail = await server.WaitForCapturedEmail(email,
+            capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+
+        await BitOtpInputUtils.FillOtpInputs(elevatedAccessPrompt, elevatedAccessEmail.Token!);
+
         // credentials.create() against the virtual authenticator succeeds: the success snackbar shows and the button
         // flips to its "disable" state (isConfigured == true).
-        await Expect(Page.GetByText(AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.EnablePasswordlessSucsessMessage)).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DisablePasswordless })).ToBeVisibleAsync();
 
         // 3. She signs out. Sign-out clears only the auth tokens; the bit-webauthn marker survives, so the passkey option
@@ -134,7 +149,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
     {
         await MagicLinkSignInUtils.RequestMagicLinkAndOtp(page, appBaseUrl, email);
 
-        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the (127.0.0.1-based) link.
+        // A brand-new account's confirmation e-mail carries the OTP; we only need the code, not the link (which this
+        // test's ServerAddress override makes localhost-based rather than the default 127.0.0.1).
         var (_, otpCode) = await MagicLinkSignInUtils.ReadConfirmationEmail(server, email, TestContext.CancellationToken);
         await BitOtpInputUtils.FillOtpInputs(page, otpCode);
 

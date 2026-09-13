@@ -17,6 +17,16 @@ public class BitPageVisibility(IJSRuntime js)
     /// </summary>
     public event Func<bool, Task>? OnChange;
 
+    /// <summary>
+    /// Fires with <c>true</c> when the window has lost the focus and with <c>false</c> when it has got it back.
+    /// </summary>
+    /// <remarks>
+    /// A window that is covered by another one, or whose focus went to the dev tools or to an iframe, is not
+    /// hidden - <see cref="OnChange"/> never fires for it. This is the event to watch to hold something back
+    /// while the page is not the one being worked in.
+    /// </remarks>
+    public event Func<bool, Task>? OnWindowFocusChange;
+
 
 
     /// <summary>
@@ -42,6 +52,16 @@ public class BitPageVisibility(IJSRuntime js)
         if (onChange is not null)
         {
             await onChange(hidden);
+        }
+    }
+
+    [JSInvokable("WindowFocusChanged")]
+    public async Task _WindowFocusChanged(bool blurred)
+    {
+        var onWindowFocusChange = OnWindowFocusChange;
+        if (onWindowFocusChange is not null)
+        {
+            await onWindowFocusChange(blurred);
         }
     }
 

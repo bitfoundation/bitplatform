@@ -1,4 +1,4 @@
-@using Bit.BlazorUI.Demo.Client.Core.Shared
+﻿@using Bit.BlazorUI.Demo.Client.Core.Shared
 @using Bit.BlazorUI.Demo.Client.Web.Shared.Components
 
 @{
@@ -20,16 +20,83 @@
     var renderMode = noPrerender
         ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
         : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
+
+    // The theme the visitor picked, mirrored into a cookie by the client (bit-theme-persist-cookie
+    // below) because localStorage - where the client script keeps the same value - cannot be read
+    // from here. Without it every prerendered response painted a hardcoded dark, and anyone on light
+    // watched the whole page flip once the client came up.
+    var themePreference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
+    // Emits bit-theme="<name>" for a concrete choice, or the bit-theme-system marker when nothing is
+    // stored (or the visitor follows the OS), which the inline head script below resolves. Tampered
+    // values are rejected and treated as "nothing stored".
+    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference);
+    // Browser chrome color. "Ends with dark" is the same rule app.ts and the app's own stylesheets
+    // use, so presets like fluent-dark are classified the same way everywhere.
+    const string darkThemeColor = "#0d1117";
+    const string lightThemeColor = "#ffffff";
+    // Null while the visitor follows the OS, which the server cannot read. The tag then has to guess,
+    // and the script under it carries the client's answer back - see there.
+    var resolvedTheme = rootThemeAttributes.TryGetValue(BitThemeAttributeNames.Theme, out var themeName)
+                        ? themeName as string
+                        : null;
+    var themeColor = resolvedTheme?.EndsWith("dark", StringComparison.Ordinal) is false ? lightThemeColor : darkThemeColor;
 }
 
 <!DOCTYPE html>
-<html lang="en" bit-theme="dark">
+@* bit-theme-persist / bit-theme-persist-cookie: the client keeps the chosen theme in localStorage AND
+   in the cookie read above, which is what lets the server render the right theme in the first place.
+   bit-theme-view-transition: theme toggles cross-fade via the View Transitions API (skipped
+   automatically on unsupported browsers / prefers-reduced-motion).
+   bit-theme-light / bit-theme-dark: the site dresses in Fluent 2 by default, so the two names the
+   OS-following resolution (bit-theme-system, emitted above whenever nothing is persisted) picks
+   between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who has
+   already picked a design system in the header is painted from their cookie instead and never
+   reaches this. *@
+<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
+      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
+    @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie
+       before anything is painted. The attributes above are already correct for a visitor whose cookie
+       reached us, so this is what covers the rest - following the OS (which the server cannot read),
+       and a localStorage value newer than the cookie. *@
+    @((MarkupString)BitThemeSsr.InlineHeadScript)
+    @* The accent counterpart of the script above, as one component: emits the inline script that,
+       before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
+       injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what
+       keeps the accent correct even when this markup comes out of a cache (e.g. a CDN) that served
+       it to a visitor whose cookie never reached the server. Kept AFTER the theme script above: the
+       snapshot's rules split on the bit-theme attribute that script sets, so painting must not
+       start before it has run, which the parser guarantees for styles that come later in <head>.
+       The configuration comes from the BitAccentColorConfig registered in DI (see
+       AddClientSharedServices, which this server also runs) - the same one the app's
+       AccentColorSwitcher chrome instances configure the shared service with (the snapshot only
+       gets stored while the service runs StoredCss); this component only emits the matching head
+       half. PersistedAccent is the accent counterpart of the theme cookie read above: with the
+       StoredCss strategy it is what lets an origin-rendered response paint the accent itself,
+       instead of leaving the first paint to the snapshot the inline script above restores (which
+       only exists once the visitor has picked an accent on this device). *@
+    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color" content="#0d1117" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
+    <meta name="theme-color" content="@themeColor" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
+    @if (resolvedTheme is null)
+    {
+        @* The tag above had to guess (the dark default), because this visitor follows the OS and only
+           the client can resolve that - which the inline script at the top of <head> has already done,
+           onto <html>. Read it back and correct the tag here, while the browser is still parsing
+           <head>. app.ts does this same job on every later toggle, but it cannot cover the first paint:
+           app.js loads at the end of <body>, long after the address bar has been painted. Rewrites the
+           one tag rather than adding a media-qualified second one, which would shadow it for the
+           querySelector both this and app.ts rely on. *@
+        <Script>
+            document.querySelector('meta[name="theme-color"]').content =
+                (document.documentElement.getAttribute('@BitThemeAttributeNames.Theme') || '').endsWith('dark')
+                    ? '@darkThemeColor'
+                    : '@lightThemeColor';
+        </Script>
+    }
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),
@@ -87,6 +154,50 @@
 
     <HeadOutlet @rendermode=renderMode />
 
+    @* Keeps a title in the document for the whole hand-over from the prerendered HTML to the client.
+       When the client app boots, <HeadOutlet> above is activated as its own root component, separately
+       from <Routes> below and before it: at that first render nobody has registered the title section
+       yet (the <PageTitle> lives inside Routes - in PageOutlet and in Routes.razor's fallback), so the
+       diff against the prerendered markup deletes the <title> element, and it only comes back once
+       Routes has rendered - the whole of hydration later under WebAssembly. A head with no <title>
+       makes the browser label the tab with the URL, which is the flash the visitor sees. This watches
+       <head> and parks a copy of the last known title there while the real element is missing, then
+       drops it again the moment Blazor puts one back (Blazor's own title always sits earlier in <head>
+       than this one, so document.title reports the real value while both are present). *@
+    <Script>
+        (function () {
+            var head = document.head;
+            var lastTitle = document.title || 'bit BlazorUI';
+            var placeholder = null;
+
+            function findRealTitle() {
+                var titles = head.getElementsByTagName('title');
+                for (var i = 0; i < titles.length; i++) {
+                    if (titles[i] !== placeholder) return titles[i];
+                }
+                return null;
+            }
+
+            function sync() {
+                var real = findRealTitle();
+                if (real) {
+                    if (real.textContent) lastTitle = real.textContent;
+                    if (placeholder) {
+                        placeholder.remove();
+                        placeholder = null;
+                    }
+                } else if (placeholder === null) {
+                    placeholder = document.createElement('title');
+                    placeholder.textContent = lastTitle;
+                    head.appendChild(placeholder);
+                }
+            }
+
+            sync();
+            new MutationObserver(sync).observe(head, { childList: true, subtree: true, characterData: true });
+        })();
+    </Script>
+
     @if (includeWasm)
     {
         @* These files live in the Client.Web project's wwwroot, so they only exist when the WASM client is part of the build. *@
@@ -100,6 +211,12 @@
 
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @* The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras as
+       override-only token bundles, so they must be linked after the core stylesheet that carries the
+       Fluent defaults. *@
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />

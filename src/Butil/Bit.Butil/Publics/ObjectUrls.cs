@@ -13,6 +13,7 @@ namespace Bit.Butil;
 /// disposal automatically revokes outstanding ones. Call <see cref="Create(byte[], string, bool)"/>
 /// with <c>track: false</c> when you want the URL to outlive disposal and call <see cref="Revoke"/> yourself.
 /// </remarks>
+[ButilService(typeof(ObjectUrls))]
 public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
 {
     private readonly ConcurrentBag<string> _tracked = new();
@@ -28,6 +29,7 @@ public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
     /// <summary>Revokes a previously created object URL.</summary>
     public ValueTask Revoke(string objectUrl) => js.InvokeVoid("BitButil.objectUrls.revoke", objectUrl);
 
+    /// <summary>Revokes every object URL created through this instance, freeing the blobs behind them.</summary>
     public async ValueTask DisposeAsync()
     {
         try

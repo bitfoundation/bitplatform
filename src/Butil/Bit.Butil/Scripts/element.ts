@@ -1,33 +1,45 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    // Element-scoped event handlers, indexed by listenerId so element teardown can find them.
-    const _elementHandlers: { [listenerId: string]: { element: HTMLElement, eventName: string, handler: any, options: any } } = {};
-
+    // The Element surface an ElementReference reaches directly. Deliberately only the core of it:
+    // the aria members are elementAria, the DOM-manipulation ones elementDom, the reflected
+    // properties elementState and the listeners elementEvents - the same split the C# extension
+    // classes have. A page that only focuses an element downloads none of the other four.
     butil.element = {
         blur(element: HTMLElement) { element.blur() },
+        checkVisibility,
+        click(element: HTMLElement) { element.click() },
+        closest(element: HTMLElement, selectors: string) { return !!element.closest(selectors) },
+        focus(element: HTMLElement, options?: FocusOptions) { options ? element.focus(options) : element.focus() },
         getAttribute(element: HTMLElement, name: string) { return element.getAttribute(name) },
+        getAttributeNS(element: HTMLElement, namespaceUri: string, localName: string) { return element.getAttributeNS(namespaceUri, localName) },
         getAttributeNames(element: HTMLElement) { return element.getAttributeNames() },
         getBoundingClientRect(element: HTMLElement) { return element.getBoundingClientRect() },
         hasAttribute(element: HTMLElement, name: string) { return element.hasAttribute(name) },
+        hasAttributeNS(element: HTMLElement, namespaceUri: string, localName: string) { return element.hasAttributeNS(namespaceUri, localName) },
         hasAttributes(element: HTMLElement) { return element.hasAttributes() },
         hasPointerCapture(element: HTMLElement, pointerId: number) { return element.hasPointerCapture(pointerId) },
         matches(element: HTMLElement, selectors: string) { return element.matches(selectors) },
         releasePointerCapture(element: HTMLElement, pointerId: number) { element.releasePointerCapture(pointerId) },
         remove(element: HTMLElement) { element.remove() },
         removeAttribute(element: HTMLElement, name: string) { element.removeAttribute(name) },
+        removeAttributeNS(element: HTMLElement, namespaceUri: string, localName: string) { element.removeAttributeNS(namespaceUri, localName) },
         requestFullScreen(element: HTMLElement, options?: FullscreenOptions) { return element.requestFullscreen(options) },
         requestPointerLock(element: HTMLElement) { return element.requestPointerLock() },
         scroll,
         scrollBy,
         scrollIntoView,
+        scrollTo: scroll,
         setAttribute(element: HTMLElement, name: string, value: string) { return element.setAttribute(name, value) },
+        setAttributeNS(element: HTMLElement, namespaceUri: string, qualifiedName: string, value: string) { element.setAttributeNS(namespaceUri, qualifiedName, value) },
         setPointerCapture(element: HTMLElement, pointerId: number) { element.setPointerCapture(pointerId) },
         toggleAttribute(element: HTMLElement, name: string, force?: boolean) { return element.toggleAttribute(name, force) },
         getAccessKey(element: HTMLElement) { return element.accessKey },
         setAccessKey(element: HTMLElement, key: string) { element.accessKey = key },
-        getClassName(element: HTMLElement) { return element.className },
-        setClassName(element: HTMLElement, className: string) { element.className = className },
+        // The class attribute, not the className property - which on an SVG element is an
+        // SVGAnimatedString, so neither readable nor writable as a string there.
+        getClassName(element: HTMLElement) { return element.getAttribute('class') ?? '' },
+        setClassName(element: HTMLElement, className: string) { element.setAttribute('class', className) },
         clientHeight(element: HTMLElement) { return element.clientHeight },
         clientLeft(element: HTMLElement) { return element.clientLeft },
         clientTop(element: HTMLElement) { return element.clientTop },
@@ -40,7 +52,9 @@ var BitButil = BitButil || {};
         setOuterHTML(element: HTMLElement, outerHTML: string) { element.outerHTML = outerHTML },
         scrollHeight(element: HTMLElement) { return element.scrollHeight },
         scrollLeft(element: HTMLElement) { return element.scrollLeft },
+        setScrollLeft(element: HTMLElement, value: number) { element.scrollLeft = value },
         scrollTop(element: HTMLElement) { return element.scrollTop },
+        setScrollTop(element: HTMLElement, value: number) { element.scrollTop = value },
         scrollWidth(element: HTMLElement) { return element.scrollWidth },
         tagName(element: HTMLElement) { return element.tagName },
         getContentEditable(element: HTMLElement) { return element.contentEditable },
@@ -50,7 +64,9 @@ var BitButil = BitButil || {};
         setDir(element: HTMLElement, value: string) { element.dir = value },
         getEnterKeyHint(element: HTMLElement) { return element.enterKeyHint },
         setEnterKeyHint(element: HTMLElement, value: string) { element.enterKeyHint = value },
-        getHidden(element: HTMLElement) { return element.hidden },
+        // `hidden` is `true`, `false` or the string "until-found"; one string type keeps the .NET side
+        // from depending on how a JSON boolean happens to print.
+        getHidden(element: HTMLElement) { const h = element.hidden as boolean | string; return h === 'until-found' ? h : String(!!h) },
         setHidden(element: HTMLElement, value: boolean) { element.hidden = value },
         getInert(element: HTMLElement) { return element.inert },
         setInert(element: HTMLElement, value: boolean) { element.inert = value },
@@ -64,8 +80,6 @@ var BitButil = BitButil || {};
         offsetWidth(element: HTMLElement) { return element.offsetWidth },
         getTabIndex(element: HTMLElement) { return element.tabIndex },
         setTabIndex(element: HTMLElement, value: number) { element.tabIndex = value },
-        subscribeEvent,
-        unsubscribeEvent,
     };
 
     function scroll(element: HTMLElement, options?: ScrollToOptions, x?: number, y?: number) {
@@ -95,29 +109,16 @@ var BitButil = BitButil || {};
         element.scrollIntoView(alignToTop ?? options);
     }
 
-    function subscribeEvent(element: HTMLElement, elementId: string, eventName: string, methodName: string,
-        dotNetRef: any, listenerId: string, argsMembers: string[], options: AddEventListenerOptions | boolean,
-        preventDefault: boolean, stopPropagation: boolean) {
-        if (!element) return;
-        // When { once: true } is set the browser auto-detaches after the first call; mirror that by
-        // dropping our tracking entry so the listenerId doesn't linger after it fires.
-        const once = typeof options === 'object' && options.once === true;
-        const handler = (e: any) => {
-            preventDefault && e.preventDefault();
-            stopPropagation && e.stopPropagation();
-            if (once) delete _elementHandlers[listenerId];
-            butil.utils.dispatch(dotNetRef, methodName, listenerId, butil.events.mapEvent(e, argsMembers));
-        };
-        _elementHandlers[listenerId] = { element, eventName, handler, options };
-        element.addEventListener(eventName, handler, options);
-    }
+    // checkVisibility shipped later than the rest of this module. Where it is missing, a laid-out
+    // box is the whole answer, as it is natively: a visibility:hidden element still generates one,
+    // and only counts as invisible when the caller opted into the visibility property.
+    function checkVisibility(element: HTMLElement, options?: any) {
+        const check = (element as any).checkVisibility;
+        if (typeof check === 'function') return options ? check.call(element, options) : check.call(element);
 
-    function unsubscribeEvent(elementId: string, eventName: string, listenerId: string, options: AddEventListenerOptions | boolean) {
-        const entry = _elementHandlers[listenerId];
-        if (!entry) return;
-        delete _elementHandlers[listenerId];
-        try {
-            entry.element.removeEventListener(entry.eventName, entry.handler, entry.options);
-        } catch { /* element may already be detached */ }
+        if (element.getClientRects().length === 0) return false;
+
+        const checksVisibilityCss = options?.visibilityProperty === true || options?.checkVisibilityCSS === true;
+        return checksVisibilityCss === false || getComputedStyle(element).visibility !== 'hidden';
     }
 }(BitButil));

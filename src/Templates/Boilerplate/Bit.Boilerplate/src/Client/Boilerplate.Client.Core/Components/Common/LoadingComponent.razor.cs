@@ -3,7 +3,7 @@ namespace Boilerplate.Client.Core.Components.Common;
 
 public partial class LoadingComponent
 {
-    [Parameter] public string Color { get; set; } = "#123456";
+    [Parameter] public string Color { get; set; } = $"var({BitCss.Var.Color.Primary.Main}, #1276C6)";
 
     /// <summary>
     /// Renders the Loading component in full-screen mode that renders over all other components.

@@ -19,9 +19,11 @@
                 <BitOtpInput @bind-Value="Model.Otp"
                              AutoFocus
                              Length="6"
+                             NormalizeDigits
+                             IsLoading="IsWaiting"
                              Size="BitSize.Large"
                              Type="BitInputType.Number"
-                             Style="justify-content:center"
+                             InputMode="BitInputMode.Tel"
                              Label="@Localizer[nameof(AppStrings.Code)]"
                              OnFill="WrapHandled(async (string? otp) => await OnSignIn.InvokeAsync(otp))" />
                 <ValidationMessage For="@(() => Model.Otp)" />
@@ -44,14 +46,14 @@
                     <BitLink Href="https://www.gmail.com" Target="_blank">
                         <BitStack Horizontal>
                             <BitImage Src="_content/Boilerplate.Client.Core/images/icons/gmail-icon.png" />
-                            <BitText>Open Gmail</BitText>
+                            <BitText>@Localizer[nameof(AppStrings.OpenGmail)]</BitText>
                         </BitStack>
                     </BitLink>
 
                     <BitLink Href="https://www.outlook.com" Target="_blank">
                         <BitStack Horizontal>
                             <BitImage Src="_content/Boilerplate.Client.Core/images/icons/outlook-icon.png" />
-                            <BitText>Open Outlook</BitText>
+                            <BitText>@Localizer[nameof(AppStrings.OpenOutlook)]</BitText>
                         </BitStack>
                     </BitLink>
                 </BitStack>

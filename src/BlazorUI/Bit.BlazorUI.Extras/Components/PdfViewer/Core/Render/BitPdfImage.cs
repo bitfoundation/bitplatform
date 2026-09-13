@@ -176,12 +176,12 @@ internal static class BitPdfImage
         // oversized row into a catchable overflow (the caller skips the bad image).
         int rowBytes = checked((int)(((long)width * nComps * bpc + 7) / 8));
 
-        // Fast path A — single-component spaces at <=8 bpc. Every output pixel is a
+        // Fast path A - single-component spaces at <=8 bpc. Every output pixel is a
         // pure function of one sample value, of which there are at most 256, so bake
         // an RGBA lookup table once (one GetRgb per distinct sample) and collapse the
         // per-pixel work to a single table read + 32-bit store. This removes the
         // per-pixel virtual GetRgb dispatch for the Gray / Indexed / 1-colorant
-        // Separation cases — and for Indexed, lifts its per-pixel palette scaling and
+        // Separation cases - and for Indexed, lifts its per-pixel palette scaling and
         // double[] allocation out of the hot loop entirely.
         if (nComps == 1 && bpc <= 8)
         {
@@ -190,7 +190,7 @@ internal static class BitPdfImage
             return;
         }
 
-        // Fast path B — 8-bpc DeviceRGB (ICCBased-N3 / CalRGB resolve to the same
+        // Fast path B - 8-bpc DeviceRGB (ICCBased-N3 / CalRGB resolve to the same
         // singleton) with no /Decode or colour-key mask is already packed RGB bytes.
         // The scalar path round-trips each sample through /255 then *255 and a virtual
         // call; instead widen RGB->RGBA directly, SIMD-accelerated where available.
@@ -378,7 +378,7 @@ internal static class BitPdfImage
             }
         }
 
-        // Scalar tail — also the whole loop on non-accelerated runtimes and for any
+        // Scalar tail - also the whole loop on non-accelerated runtimes and for any
         // pixels whose source bytes run past a truncated stream (read as 0).
         for (; i < totalPixels; i++)
         {
@@ -523,7 +523,7 @@ internal static class BitPdfImage
     }
 
     // Above this destination width the per-column source-x map (4 bytes/entry) is not
-    // precomputed — each mx is derived inline instead — so a pathologically wide image
+    // precomputed - each mx is derived inline instead - so a pathologically wide image
     // cannot force a huge array allocation. 65536 keeps the fast path for any real image.
     private const int ScaleMapMaxWidth = 1 << 16;
 

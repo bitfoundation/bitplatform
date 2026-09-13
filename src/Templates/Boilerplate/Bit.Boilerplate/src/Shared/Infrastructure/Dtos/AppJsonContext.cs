@@ -10,6 +10,7 @@ using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 //#endif
 //#if (notification == true)
+using Boilerplate.Shared.Features.PushNotification;
 //#endif
 //#if (signalR == true)
 using Boilerplate.Shared.Features.Chatbot;
@@ -17,6 +18,7 @@ using Boilerplate.Shared.Infrastructure.Dtos.SignalR;
 //#endif
 using Boilerplate.Shared.Features.Statistics;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Shared.Features.Identity.OAuth.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants.Dtos;
 //#endif
@@ -42,7 +44,6 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
   AllowTrailingCommas = true,
   PropertyNameCaseInsensitive = true,
   GenerationMode = JsonSourceGenerationMode.Default,
-  DictionaryKeyPolicy = JsonKnownNamingPolicy.CamelCase,
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 
 )]
@@ -56,6 +57,12 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]
+[JsonSerializable(typeof(OAuthAuthorizeRequestDto))]
+[JsonSerializable(typeof(OAuthConsentDto))]
+[JsonSerializable(typeof(OAuthApprovalDto))]
+[JsonSerializable(typeof(OAuthClientDto))]
+[JsonSerializable(typeof(List<OAuthClientDto>))]
+[JsonSerializable(typeof(RevokeOAuthClientRequestDto))]
 //#if (notification == true)
 [JsonSerializable(typeof(PushNotificationSubscriptionDto))]
 //#endif
@@ -87,8 +94,13 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 //#if (signalR == true)
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
+[JsonSerializable(typeof(AiChatMessage))]
+[JsonSerializable(typeof(AssistantReply))]
+[JsonSerializable(typeof(AssistantTurn))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
+[JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
+[JsonSerializable(typeof(TranscribeSpeechResponseDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

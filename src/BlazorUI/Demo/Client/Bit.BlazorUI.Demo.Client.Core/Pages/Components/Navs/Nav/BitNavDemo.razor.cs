@@ -20,7 +20,7 @@ public partial class BitNavDemo
             Name = "AllExpanded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Expands all items on first render."
+            Description = "Expands all items when they are first rendered. Items that arrive later are expanded as they arrive, while the items already on screen keep whatever the user has expanded or collapsed in the meantime."
         },
         new()
         {
@@ -56,6 +56,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "CollapseAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The default aria-label of the expand/collapse button of an expanded item. The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -69,6 +76,13 @@ public partial class BitNavDemo
             Type = "TItem?",
             DefaultValue = "null",
             Description = "The initially selected item in manual mode."
+        },
+        new()
+        {
+            Name = "ExpandAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The default aria-label of the expand/collapse button of a collapsed item. The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided the text of the item is used.",
         },
         new()
         {
@@ -133,7 +147,7 @@ public partial class BitNavDemo
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "A collection of item to display in the navigation bar.",
+            Description = "A collection of items to display in the BitNav component.",
             Href="#nav-item",
             LinkType = LinkType.Link,
         },
@@ -158,7 +172,7 @@ public partial class BitNavDemo
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
-            Description = "Gets or sets a value representing the global URL matching behavior of the nav.",
+            Description = "Gets or sets a value representing the global URL matching behavior of the nav. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
             Href = "#nav-match-enum",
             LinkType = LinkType.Link,
         },
@@ -184,25 +198,36 @@ public partial class BitNavDemo
         {
             Name = "NoCollapse",
             Type = "bool",
+            DefaultValue = "false",
             Description = "Hides all collapse/expand buttons and remove their spaces at the start of each node."
         },
         new()
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
+            DefaultValue = "",
             Description = "Callback invoked when an item is clicked."
         },
         new()
         {
             Name = "OnItemToggle",
             Type = "EventCallback<TItem>",
-            Description = "Callback invoked when a group header is clicked and Expanded or Collapse."
+            DefaultValue = "",
+            Description = "Callback invoked when an item is expanded or collapsed."
         },
         new()
         {
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
+            DefaultValue = "",
             Description = "Callback invoked when an item is selected."
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Alias of ChildContent."
         },
         new()
         {
@@ -236,6 +261,15 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the nav items.",
+            Href = "#size-enum",
+            LinkType = LinkType.Link,
+        },
+        new()
+        {
             Name = "SingleExpand",
             Type = "bool",
             DefaultValue = "false",
@@ -262,14 +296,44 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "CollapseItem",
+            Type = "Func<TItem, Task>",
+            Description = "Collapses an item, and does nothing when it is already collapsed.",
+        },
+        new()
+        {
             Name = "ExpandAll",
             Type = "Action<TItem? item>",
             Description = "Expands all items and children in non-SingleExpand mode.",
         },
         new()
         {
+            Name = "ExpandItem",
+            Type = "Func<TItem, Task>",
+            Description = "Expands an item, and does nothing when it is already expanded.",
+        },
+        new()
+        {
+            Name = "FocusItem",
+            Type = "Func<TItem, ValueTask>",
+            Description = "Moves the focus to an item of the nav, opening the branches it is nested in when it is not rendered yet.",
+        },
+        new()
+        {
+            Name = "IsItemExpanded",
+            Type = "Func<TItem, bool>",
+            Description = "Whether an item is currently expanded.",
+        },
+        new()
+        {
+            Name = "SelectItem",
+            Type = "Func<TItem?, Task>",
+            Description = "Selects an item programmatically, exactly like a click on that item would in the manual mode.",
+        },
+        new()
+        {
             Name = "ToggleItem",
-            Type = "Func<Task, TItem>",
+            Type = "Func<TItem, Task>",
             Description = "Toggles an item.",
         },
     ];
@@ -287,7 +351,7 @@ public partial class BitNavDemo
                    Name = "AriaCurrent",
                    Type = "BitNavAriaCurrent",
                    DefaultValue = "BitNavAriaCurrent.Page",
-                   Description = " Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'.",
+                   Description = "Aria-current token for active nav item. Must be a valid token value, and defaults to 'page'.",
                    Href = "#nav-aria-current-enum",
                    LinkType = LinkType.Link,
                },
@@ -317,7 +381,7 @@ public partial class BitNavDemo
                    Name = "CollapseAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label when nav item is collapsed and can be expanded.",
+                   Description = "Aria label of the toggle button when the nav item is expanded and can be collapsed.",
                },
                new()
                {
@@ -338,7 +402,7 @@ public partial class BitNavDemo
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label when nav item is collapsed and can be expanded.",
+                   Description = "Aria label of the toggle button when the nav item is collapsed and can be expanded.",
                },
                new()
                {
@@ -471,7 +535,7 @@ public partial class BitNavDemo
                    Name = "AriaCurrent",
                    Type = "BitNavAriaCurrent",
                    DefaultValue = "BitNavAriaCurrent.Page",
-                   Description = " Aria-current token for active nav option. Must be a valid token value, and defaults to 'page'.",
+                   Description = "Aria-current token for active nav option. Must be a valid token value, and defaults to 'page'.",
                    Href = "#nav-aria-current-enum",
                    LinkType = LinkType.Link,
                },
@@ -501,7 +565,7 @@ public partial class BitNavDemo
                    Name = "CollapseAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label when nav option is collapsed and can be expanded.",
+                   Description = "Aria label of the toggle button when the nav option is expanded and can be collapsed.",
                },
                new()
                {
@@ -522,7 +586,7 @@ public partial class BitNavDemo
                    Name = "ExpandAriaLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Aria label when nav option is collapsed and can be expanded.",
+                   Description = "Aria label of the toggle button when the nav option is collapsed and can be expanded.",
                },
                new()
                {
@@ -601,7 +665,7 @@ public partial class BitNavDemo
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitNavItem>?",
+                   Type = "RenderFragment<BitNavOption>?",
                    DefaultValue = "null",
                    Description = "The custom template for the nav option to render.",
                },
@@ -784,6 +848,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Template",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitNavItem.Template))",
+                   Description = "The Template field name and selector of the custom input class."
+               },
+               new()
+               {
                    Name = "TemplateRenderMode",
                    Type = "BitNameSelectorPair<TItem, BitNavItemTemplateRenderMode?>",
                    DefaultValue = "new(nameof(BitNavItem.TemplateRenderMode))",
@@ -830,63 +901,91 @@ public partial class BitNavDemo
                new()
                {
                    Name = "Root",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the root element of the BitNav."
                },
                new()
                {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description of the BitNav."
+               },
+               new()
+               {
+                   Name = "Header",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the group header button of the BitNav in the Grouped render type."
+               },
+               new()
+               {
+                   Name = "HeaderText",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the text of the group header of the BitNav in the Grouped render type."
+               },
+               new()
+               {
                    Name = "Item",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item of the BitNav."
                },
                new()
                {
                    Name = "SelectedItem",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item of the BitNav."
                },
                new()
                {
                    Name = "ItemContainer",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item container of the BitNav."
                },
                new()
                {
                    Name = "ItemIcon",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item icon of the BitNav."
                },
                new()
                {
                    Name = "ItemText",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item text of the BitNav."
                },
                new()
                {
                    Name = "SelectedItemContainer",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item container of the BitNav."
                },
                new()
                {
                    Name = "ToggleButton",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the toggle button of the BitNav."
                },
                new()
                {
+                   Name = "ToggleIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chevron icon inside the toggle button of the BitNav."
+               },
+               new()
+               {
                    Name = "Separator",
-                   Type = "String?",
+                   Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the separator of the BitNav."
                },
@@ -1113,7 +1212,7 @@ public partial class BitNavDemo
         new()
         {
             Id = "nav-aria-current-enum",
-            Name = "BitNavItemAriaCurrent",
+            Name = "BitNavAriaCurrent",
             Items =
             [
                 new()
@@ -1166,6 +1265,33 @@ public partial class BitNavDemo
                     Name = "Replace",
                     Description = "Replaces the button/anchor root element of the item.",
                     Value = "1",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available for a component.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Small",
+                    Description = "The small size.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Medium",
+                    Description = "The medium size.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Large",
+                    Description = "The large size.",
+                    Value = "2",
                 }
             ]
         },

@@ -1,6 +1,11 @@
-<div style="width:@Width;overflow:hidden;position:relative;" class="@Class">
-    <img alt="@Alt"
-         style="width:100%;height:auto;display:block;"
-         src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder_{((CurrentTheme ?? AppThemeType.Dark).ToString().ToLower())}.png")" />
-    @* src="@(Src ?? $"_content/Boilerplate.Client.Core/images/car_placeholder.png")" /> *@
-</div>
+@inherits AppComponentBase
+
+<BitImage Src="@EffectiveSrc"
+          Alt="@Alt"
+          Width="@Width"
+          Class="@Class"
+          StartVisible>
+    <ErrorTemplate>
+        <img alt="@Alt" src="@PlaceholderSrc" style="width:100%;height:auto;display:block;" />
+    </ErrorTemplate>
+</BitImage>

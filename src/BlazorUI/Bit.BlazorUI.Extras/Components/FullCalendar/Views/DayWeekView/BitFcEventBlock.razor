@@ -30,7 +30,7 @@
      title="@tooltip"
      role="button"
      tabindex="0"
-     draggable="true"
+     draggable="@(State.ReadOnly ? "false" : "true")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
@@ -38,11 +38,14 @@
      @onclick:stopPropagation="true"
      @onkeydown:stopPropagation="true">
 
-    <div id="@_topHandleId"
-         class="bit-bfc-resize-handle bit-bfc-resize-handle-top"
-         @onpointerdown="OnResizeTopStart"
-         @onpointerdown:preventDefault="true"
-         @onpointerdown:stopPropagation="true"></div>
+    @if (!State.ReadOnly)
+    {
+        <div id="@_topHandleId"
+             class="bit-bfc-resize-handle bit-bfc-resize-handle-top"
+             @onpointerdown="OnResizeTopStart"
+             @onpointerdown:preventDefault="true"
+             @onpointerdown:stopPropagation="true"></div>
+    }
 
     @if (EventTemplate != null)
     {
@@ -66,11 +69,14 @@
         }
     }
 
-    <div id="@_bottomHandleId"
-         class="bit-bfc-resize-handle bit-bfc-resize-handle-bottom"
-         @onpointerdown="OnResizeBottomStart"
-         @onpointerdown:preventDefault="true"
-         @onpointerdown:stopPropagation="true"></div>
+    @if (!State.ReadOnly)
+    {
+        <div id="@_bottomHandleId"
+             class="bit-bfc-resize-handle bit-bfc-resize-handle-bottom"
+             @onpointerdown="OnResizeBottomStart"
+             @onpointerdown:preventDefault="true"
+             @onpointerdown:stopPropagation="true"></div>
+    }
 
     @if (_isResizing)
     {

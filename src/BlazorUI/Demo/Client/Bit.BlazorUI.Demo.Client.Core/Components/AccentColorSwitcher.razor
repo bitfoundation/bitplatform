@@ -1,0 +1,26 @@
+@inherits AppComponentBase
+
+@{
+    var placementClass = Placement switch
+    {
+        AccentColorSwitcherPlacement.Header => " accent-switcher--header",
+        AccentColorSwitcherPlacement.NavPanel => " accent-switcher--nav-panel",
+        _ => null,
+    };
+}
+
+<div class="accent-switcher@(placementClass)">
+    @if (Placement is AccentColorSwitcherPlacement.NavPanel)
+    {
+        @* The header's copy sits between two icon buttons that explain themselves; in the drawer the
+           swatches are on their own, so they get a label. *@
+        <BitText Element="span" Typography="BitTypography.Caption1" Class="accent-switcher-label">Accent color</BitText>
+    }
+
+    @* The configuration comes from the BitAccentColorConfig registered in DI (see
+       AddClientSharedServices), which is also what the host page's BitAccentColorHead (App.razor
+       in the Server project) emits the head half for - stated once, so the two halves cannot
+       diverge. It is fixed app-wide by the first initialized instance; these chrome instances
+       render in the layout on every page, so one of them is always that first instance. *@
+    <BitAccentColorSwitcher />
+</div>

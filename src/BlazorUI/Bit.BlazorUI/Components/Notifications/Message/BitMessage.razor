@@ -1,59 +1,129 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.RootContainer" class="bit-msg-rct @Classes?.RootContainer">
-        <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
-            @if (HideIcon is false)
-            {
-                <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
-                    <i style="@Styles?.Icon" class="bit-msg-ico @GetIcon()?.GetCssClasses() @Classes?.Icon" />
-                </div>
-            }
+@if (Dismissed is false)
+{
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
+         tabindex="@_TabIndex"
+         autofocus="@AutoFocus"
+         role="@_RootRole"
+         aria-label="@AriaLabel"
+         aria-labelledby="@_RootLabelledBy"
+         aria-describedby="@_RootDescribedBy">
+        <div style="@Styles?.RootContainer" class="bit-msg-rct @Classes?.RootContainer">
+            <div style="@Styles?.Container" class="bit-msg-con @Classes?.Container">
+                @if (HideIcon is false)
+                {
+                    <div style="@Styles?.IconContainer" class="bit-msg-ict @Classes?.IconContainer" aria-hidden="true">
+                        @if (IconTemplate is not null)
+                        {
+                            @IconTemplate
+                        }
+                        else
+                        {
+                            <i style="@Styles?.Icon" class="bit-msg-ico @GetIcon()?.GetCssClasses() @Classes?.Icon" />
+                        }
+                    </div>
+                }
 
-            <div style="@Styles?.ContentContainer" class="bit-msg-cnc@(_isExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer" role="@GetTextRole()">
-                <div style="@Styles?.ContentWrapper" class="bit-msg-cnw @Classes?.ContentWrapper">
-                    <div style="@Styles?.Content" class="bit-msg-cnt@(Multiline ? " bit-msg-mcn" : "") @Classes?.Content">
-                        @(Content ?? ChildContent)
+                <div style="@Styles?.ContentContainer"
+                     class="bit-msg-cnc@(_IsExpanded ? " bit-msg-cnx": "") @Classes?.ContentContainer"
+                     id="@($"{_Id}-cnt")"
+                     role="@GetTextRole()"
+                     aria-live="@GetPoliteness()">
+                    <div style="@Styles?.ContentWrapper" class="bit-msg-cnw@(_IsTitleInline ? " bit-msg-cwi" : "") @Classes?.ContentWrapper">
+                        @* A live region announces what changes inside it, so a delayed announcement leaves it empty
+                           for one render and hands it the text on the next one, once it is already on the page. *@
+                        @if (_IsAnnounced)
+                        {
+                            if (IconAriaLabel.HasValue())
+                            {
+                                @* The icon is decorative markup, so what it stands for is said here instead - inside the
+                                   announced region and ahead of everything else in it, but out of sight and out of flow. *@
+                                <span style="@Styles?.IconLabel" class="bit-msg-ilb @Classes?.IconLabel">@IconAriaLabel</span>
+                            }
+
+                            if (_HasTitle)
+                            {
+                                @_renderTitle
+                            }
+
+                            <div style="@Styles?.Content" class="@_ContentClass @Classes?.Content">
+                                @(Content ?? ChildContent)
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
+
+            @if (Actions is not null && Multiline is false)
+            {
+                <div style="@Styles?.Actions" class="bit-msg-act @Classes?.Actions">@Actions</div>
+            }
+
+            @if (_HasExpander)
+            {
+                <button style="@Styles?.ExpanderButton"
+                        class="bit-msg-exb @Classes?.ExpanderButton"
+                        @onclick="ToggleExpand"
+                        type="button"
+                        title="@_ExpanderLabel"
+                        aria-label="@_ExpanderLabel"
+                        aria-expanded="@(Expanded ? "true" : "false")"
+                        aria-describedby="@_ButtonDescribedBy"
+                        aria-controls="@($"{_Id}-cnt")"
+                        disabled="@(IsEnabled is false)">
+                    @{
+                        var expanderIcon = Expanded
+                            ? BitIconInfo.From(CollapseIcon, CollapseIconName ?? "DoubleChevronUp")
+                            : BitIconInfo.From(ExpandIcon, ExpandIconName ?? "DoubleChevronUp");
+                        // The default glyph is the collapse chevron turned over, so the rotation only applies
+                        // while no custom expand icon has been provided - a custom glyph already points down.
+                        var rotateExpander = Expanded is false && ExpandIcon is null && ExpandIconName is null;
+                        var expanderIconClasses = $"{expanderIcon?.GetCssClasses()}{(rotateExpander ? " bit-ico-r180" : "")}";
+                    }
+                    <i style="@Styles?.ExpanderIcon"
+                       class="bit-msg-exi @expanderIconClasses @Classes?.ExpanderIcon"
+                       aria-hidden="true" />
+                </button>
+            }
+
+            @if (_IsDismissable)
+            {
+                <button style="@Styles?.DismissButton"
+                        class="bit-msg-dmb @Classes?.DismissButton"
+                        @onclick="HandleOnDismiss"
+                        type="button"
+                        title="@DismissAriaLabel"
+                        aria-label="@DismissAriaLabel"
+                        aria-describedby="@_ButtonDescribedBy"
+                        disabled="@(IsEnabled is false)">
+                    @{
+                        var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+                    }
+                    <i style="@Styles?.DismissIcon" class="bit-msg-dmi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" aria-hidden="true" />
+                </button>
+            }
         </div>
 
-        @if (Actions is not null && Multiline is false)
+        @if (Actions is not null && Multiline)
         {
-            <div style="@Styles?.Actions" class="bit-msg-act @Classes?.Actions">@Actions</div>
+            <div style="@Styles?.Actions" class="bit-msg-act bit-msg-mac @Classes?.Actions">@Actions</div>
         }
 
-        @if (Truncate && Multiline is false)
+        @if (_ShowsAutoDismissProgress)
         {
-            <button style="@Styles?.ExpanderButton" class="bit-msg-exb @Classes?.ExpanderButton" @onclick="ToggleExpand" type="button">
-                @{
-                    var expanderIcon = _isExpanded
-                        ? BitIconInfo.From(CollapseIcon, CollapseIconName ?? "DoubleChevronUp")
-                        : BitIconInfo.From(ExpandIcon, ExpandIconName ?? "DoubleChevronUp bit-ico-r180");
-                }
-                <i style="@Styles?.ExpanderIcon" class="bit-msg-exi @expanderIcon?.GetCssClasses() @Classes?.ExpanderIcon" aria-hidden="true" />
-            </button>
-        }
-
-        @if (OnDismiss.HasDelegate)
-        {
-            <button style="@Styles?.DismissButton" class="bit-msg-dmb @Classes?.DismissButton" @onclick="OnDismiss" type="button">
-                @{
-                    var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
-                }
-                <i style="@Styles?.DismissIcon" class="bit-msg-dmi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" aria-hidden="true" />
-            </button>
+            @* The bar is the countdown made visible, and the countdown itself is already announced by nothing:
+               it is a time limit that holds on hover and focus, so there is nothing here for a reader to act on. *@
+            <div style="@Styles?.AutoDismissProgress" class="bit-msg-prg @Classes?.AutoDismissProgress" aria-hidden="true">
+                <div @key="_autoDismissGeneration"
+                     style="@JoinStyles(_AutoDismissDuration, Styles?.AutoDismissProgressBar)"
+                     class="bit-msg-prb@(_isAutoDismissPaused ? " bit-msg-pau" : "") @Classes?.AutoDismissProgressBar"></div>
+            </div>
         }
     </div>
-
-    @if (Actions is not null && Multiline)
-    {
-        <div style="@Styles?.Actions" class="bit-msg-act bit-msg-mac @Classes?.Actions">@Actions</div>
-    }
-</div>
+}

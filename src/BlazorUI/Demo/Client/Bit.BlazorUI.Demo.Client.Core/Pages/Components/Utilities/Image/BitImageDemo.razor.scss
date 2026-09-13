@@ -1,10 +1,40 @@
-﻿.visibility-items {
-    white-space: nowrap;
-    align-items: center;
-    display: inline-flex;
+﻿// The examples put loose images and their labels next to each other, so they need a container that
+// keeps a consistent gap between them and stops the frames from stretching across the row.
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+}
+
+// The parent a maximized frame fills, which has to have a size of its own for the frame to take it.
+.max-frame-host {
+    width: 14rem;
+    height: 9rem;
+    border-radius: 0.25rem;
+    border: 1px solid gray;
+}
+
+// The caption laid over an image. It is written inside the BitImage in this page, so it carries this
+// stylesheet's scope attribute and needs no ::deep - unlike the classes below, which are passed to the
+// component as a parameter and land on markup the component itself writes.
+.image-caption {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: white;
+    padding: 0.75rem;
+    position: absolute;
+    box-sizing: border-box;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
 }
 
 ::deep {
+    // A tint behind the image, so the empty part of a frame the image does not fill is visible.
+    .framed {
+        background-color: #00ffff17;
+    }
+
     .custom-class {
         padding: 0.5rem;
         filter: hue-rotate(45deg);

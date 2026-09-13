@@ -1,0 +1,19 @@
+﻿@* Component parent of a nested route: this shell stays mounted while children swap in the outlet. *@
+
+<h1>Component parent <code>/nested</code></h1>
+
+<div class="row">
+    <button @onclick="() => count++">Parent count: @count</button>
+    <BrouterLink Href="@($"/nested/n1/{count}")" class="btn">/n1/@count</BrouterLink>
+    <BrouterLink Href="@($"/nested/n2/{count}")" class="btn">/n2/@count</BrouterLink>
+</div>
+
+<div class="card" style="margin-top: 1rem;">
+    <BrouterOutlet />
+</div>
+
+<p class="muted">The parent count survives child navigations - the shell is not re-created.</p>
+
+@code {
+    private int count;
+}

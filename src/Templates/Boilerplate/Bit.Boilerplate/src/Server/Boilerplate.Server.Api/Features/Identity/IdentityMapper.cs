@@ -1,11 +1,10 @@
-using Riok.Mapperly.Abstractions;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Boilerplate.Server.Api.Features.Identity.Models;
+//+:cnd:noEmit
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
 /// <summary>
-/// More info at Server/Mappers/README.md
+/// More info at src/Server/Boilerplate.Server.Api/Features/Mappers.md
 /// </summary>
 [Mapper]
 public static partial class IdentityMapper
@@ -19,13 +18,15 @@ public static partial class IdentityMapper
 
     [MapProperty(nameof(@User.ConcurrencyStamp), nameof(@UserDto.Version))]
     public static partial UserDto Map(this User source);
-    public static partial User Map(this UserDto source);
-    public static partial void Patch(this UserDto source, User destination);
     public static partial void Patch(this EditUserRequestDto source, User destination);
     public static partial IQueryable<UserDto> Project(this IQueryable<User> query);
 
 
 
+    // The OAuth half lives in its own table, so the dto's flat shape is assembled here rather than on the entity.
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.ClientId)], [nameof(@UserSessionDto.OAuthClientId)])]
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.ClientName)], [nameof(@UserSessionDto.OAuthClientName)])]
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.Scope)], [nameof(@UserSessionDto.OAuthScope)])]
     [MapPropertyFromSource(nameof(@UserSessionDto.RenewedOn), Use = nameof(MapRenewedOn))]
     public static partial UserSessionDto Map(this UserSession source);
     public static partial IQueryable<UserSessionDto> Project(this IQueryable<UserSession> source);

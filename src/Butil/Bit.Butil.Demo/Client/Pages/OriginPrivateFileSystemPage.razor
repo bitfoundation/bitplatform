@@ -1,0 +1,454 @@
+﻿@page "/origin-private-file-system"
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+
+<PageTitle>OriginPrivateFileSystem - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="OriginPrivateFileSystem"
+            Lead="A real file system, private to your origin, with no picker and no permission prompt. Write files, walk directories, and - through a worker - read and write at a byte offset without rewriting the file. This is the storage a database engine would sit on."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system"
+            InjectAs="OriginPrivateFileSystem opfs" />
+
+<div class="stack">
+
+    <Callout Type="info" Title="The other half of the File System API">
+        <a href="file-system">FileSystem</a> wraps the pickers: every handle is a file the user chose
+        and can revoke. This is the opposite - nothing is shown to the user, nothing is granted, and
+        nothing here is visible outside the origin. It is for data your app owns (a cache, a working
+        copy, a database file), not data the user owns.
+    </Callout>
+
+    <DemoSection Title="Check for support"
+                 Api="IsSupported / IsSyncAccessSupported"
+                 Description="OPFS itself ships in every current engine. The synchronous access handles the Sync* members use are a separate check: they only exist on a worker thread, and this service relays those calls to a worker it starts for you."
+                 Code=@("""
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+
+var supported = await opfs.IsSupported();
+var syncSupported = await opfs.IsSyncAccessSupported();
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Write and read a file"
+                 Api="WriteText / ReadText"
+                 Description="Paths are relative to the origin's private root, and directories along the path are created for a write. A write goes through a swap file and commits on close, so a failed write leaves the previous contents rather than half of the new ones."
+                 Code=@("""
+await opfs.WriteText("notes/today.txt", "hello from C#");
+
+string? text = await opfs.ReadText("notes/today.txt");
+// null when there is no file there
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Path</label>
+                <input @bind="path" />
+            </div>
+            <div class="field">
+                <label class="field-label">Contents</label>
+                <input @bind="text" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="WriteText">WriteText</button>
+            <button class="secondary" @onclick="ReadText">ReadText</button>
+        </div>
+        <DemoConsole @ref="textOutput" Title="text output" />
+    </DemoSection>
+
+    <DemoSection Title="Bytes"
+                 Api="WriteBytes / ReadBytes"
+                 Description="The same two calls for binary content. Nothing is base64'd on the way through - a byte[] crosses the interop boundary as a Uint8Array."
+                 Code=@("""
+byte[] data = System.Text.Encoding.UTF8.GetBytes("binary payload");
+await opfs.WriteBytes("blobs/payload.bin", data);
+
+byte[]? read = await opfs.ReadBytes("blobs/payload.bin");
+""")>
+        <div class="controls">
+            <button @onclick="WriteBytes">WriteBytes</button>
+            <button class="secondary" @onclick="ReadBytes">ReadBytes</button>
+        </div>
+        <DemoConsole @ref="bytesOutput" Title="bytes output" />
+    </DemoSection>
+
+    <DemoSection Title="Directories"
+                 Api="CreateDirectory / List / Exists"
+                 Description="List returns one directory's immediate children - descend by calling it again with a child's Path. CreateDirectory creates every missing directory along the path."
+                 Code=@("""
+await opfs.CreateDirectory("projects/drafts");
+
+OpfsEntry[] entries = await opfs.List("projects");
+foreach (var entry in entries)
+{
+    // entry.Name, entry.Path, entry.IsDirectory
+}
+
+var exists = await opfs.Exists("projects/drafts");
+""")>
+        <div class="field">
+            <label class="field-label">Directory</label>
+            <input @bind="directory" />
+        </div>
+        <div class="controls">
+            <button @onclick="CreateDirectory">CreateDirectory</button>
+            <button class="secondary" @onclick="ListDirectory">List</button>
+            <button class="secondary" @onclick="CheckExists">Exists</button>
+        </div>
+        <DemoConsole @ref="directoryOutput" Title="directory output" />
+    </DemoSection>
+
+    <DemoSection Title="File metadata"
+                 Api="GetFileInfo"
+                 Description="Size, MIME type and last-modified time without reading the contents - which is what you want before deciding whether to read a file at all."
+                 Code=@("""
+OpfsFileInfo? info = await opfs.GetFileInfo("notes/today.txt");
+
+if (info is not null)
+{
+    var size = info.Size;                 // bytes
+    var modified = DateTimeOffset.FromUnixTimeMilliseconds(info.LastModified);
+}
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="GetFileInfo">GetFileInfo</button>
+        </div>
+        <DemoConsole @ref="infoOutput" Title="metadata output" />
+    </DemoSection>
+
+    <DemoSection Title="Move, remove and clear"
+                 Api="Move / Remove / Clear"
+                 Description="Move renames or relocates a file - natively in Chromium, and as a copy-and-delete elsewhere. Remove needs recursive: true for a directory that is not empty. Clear empties the whole private file system."
+                 Code=@("""
+await opfs.Move("notes/today.txt", "notes/archive/today.txt");
+
+await opfs.Remove("notes/archive/today.txt");
+await opfs.Remove("notes", recursive: true);
+
+await opfs.Clear();
+""")>
+        <div class="field">
+            <label class="field-label">Move destination</label>
+            <input @bind="destination" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="MoveFile">Move</button>
+            <button class="danger" @onclick="RemoveFile">Remove path</button>
+            <button class="danger" @onclick="ClearAll">Clear everything</button>
+        </div>
+        <DemoConsole @ref="removeOutput" Title="move / remove output" />
+    </DemoSection>
+
+    <DemoSection Title="Sync access handles - the fast path"
+                 Api="SyncWrite / SyncAppend / SyncRead / SyncSize / SyncTruncate"
+                 Description="These read and write at an offset without touching the rest of the file, which is what makes OPFS usable as a backing store for something like SQLite. createSyncAccessHandle only exists on a worker thread, so the calls are relayed to a dedicated worker started on first use and terminated when the service is disposed."
+                 Code=@("""
+var bytes = System.Text.Encoding.UTF8.GetBytes("record-1;");
+
+// truncate: true (the default) makes the file exactly what was written
+await opfs.SyncWrite("db/log.bin", bytes);
+
+// append is the cheap way to keep a log - nothing before it is read or rewritten
+await opfs.SyncAppend("db/log.bin", System.Text.Encoding.UTF8.GetBytes("record-2;"));
+
+var size = await opfs.SyncSize("db/log.bin");
+
+// read 9 bytes starting at offset 9, without loading the rest
+byte[]? slice = await opfs.SyncRead("db/log.bin", offset: 9, length: 9);
+
+await opfs.SyncTruncate("db/log.bin", 9);
+""")>
+        <div class="controls">
+            <button @onclick="SyncRoundTrip">Write + append + read back</button>
+            <button class="secondary" @onclick="SyncSizeAndTruncate">Size + truncate</button>
+        </div>
+        <DemoConsole @ref="syncOutput" Title="sync access output" />
+    </DemoSection>
+
+    <Callout Type="warning" Title="It counts against the origin's quota">
+        Everything written here draws on the same budget as IndexedDB and Cache Storage - see
+        <a href="storage-manager">StorageManager</a> for the estimate, and for asking the browser to
+        make the origin's storage persistent. Without that, this data is evictable under disk
+        pressure like everything else.
+    </Callout>
+
+    <Callout Type="info" Title="One file, one writer">
+        A sync access handle is an exclusive lock on its file for the duration of the call, so two
+        overlapping Sync* calls on the same path are serialized rather than run together. Firefox and
+        Safari additionally allow sync access handles <em>only</em> inside a worker - which is where
+        this service puts them, so the same code works in every engine that has OPFS.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.storage.getDirectory." />
+        <ApiMember Name="IsSyncAccessSupported" Signature="ValueTask<bool> IsSyncAccessSupported()" Description="True when OPFS, workers and createSyncAccessHandle are all present, so the Sync* members can work." />
+        <ApiMember Name="List" Signature="ValueTask<OpfsEntry[]> List(string path = &quot;&quot;)" Description="Lists a directory's immediate children. Not recursive; an empty path is the root." />
+        <ApiMember Name="CreateDirectory" Signature="ValueTask<bool> CreateDirectory(string path)" Description="Creates a directory and every missing directory above it." />
+        <ApiMember Name="Exists" Signature="ValueTask<bool> Exists(string path)" Description="True when a file or directory exists at the path." />
+        <ApiMember Name="GetFileInfo" Signature="ValueTask<OpfsFileInfo?> GetFileInfo(string path)" Description="Name, size, MIME type and last-modified time without reading the contents." />
+        <ApiMember Name="ReadText" Signature="ValueTask<string?> ReadText(string path)" Description="Reads a whole file as text; null when there is no file there." />
+        <ApiMember Name="ReadBytes" Signature="ValueTask<byte[]?> ReadBytes(string path)" Description="Reads a whole file as bytes; null when there is no file there." />
+        <ApiMember Name="WriteText" Signature="ValueTask<bool> WriteText(string path, string text)" Description="Writes text, replacing what was there and creating what is missing along the path." />
+        <ApiMember Name="WriteBytes" Signature="ValueTask<bool> WriteBytes(string path, byte[] data)" Description="Writes bytes, replacing what was there and creating what is missing along the path." />
+        <ApiMember Name="Remove" Signature="ValueTask<bool> Remove(string path, bool recursive = false)" Description="Deletes a file or directory. A non-empty directory needs recursive: true." />
+        <ApiMember Name="Move" Signature="ValueTask<bool> Move(string path, string destination)" Description="Moves or renames a file - natively in Chromium, as a copy and delete elsewhere." />
+        <ApiMember Name="Clear" Signature="ValueTask<bool> Clear()" Description="Deletes everything in the origin's private file system." />
+        <ApiMember Name="SyncRead" Signature="ValueTask<byte[]?> SyncRead(string path, long offset = 0, int length = 0)" Description="Reads part of a file through a sync access handle; length 0 reads to the end." />
+        <ApiMember Name="SyncWrite" Signature="ValueTask<long> SyncWrite(string path, byte[] data, long offset = 0, bool truncate = true)" Description="Writes bytes at an offset, returning the number written or -1. truncate: false patches in place." />
+        <ApiMember Name="SyncAppend" Signature="ValueTask<long> SyncAppend(string path, byte[] data)" Description="Appends bytes at the end of the file, reading and rewriting nothing before them." />
+        <ApiMember Name="SyncTruncate" Signature="ValueTask<bool> SyncTruncate(string path, long size)" Description="Cuts the file to size bytes, or pads it with zeros when it is shorter." />
+        <ApiMember Name="SyncSize" Signature="ValueTask<long> SyncSize(string path)" Description="Reads a file's size through a sync access handle; -1 when it is missing." />
+        <ApiMember Name="OpfsEntry" Signature="class OpfsEntry { string Name; string Path; bool IsDirectory; }" Description="One child of a listed directory. Path is what the other members accept." />
+        <ApiMember Name="OpfsFileInfo" Signature="class OpfsFileInfo { string Name; string Path; long Size; string Type; long LastModified; }" Description="A file's metadata. LastModified is milliseconds since the Unix epoch." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole textOutput = default!;
+    private DemoConsole bytesOutput = default!;
+    private DemoConsole directoryOutput = default!;
+    private DemoConsole infoOutput = default!;
+    private DemoConsole removeOutput = default!;
+    private DemoConsole syncOutput = default!;
+
+    private string path = "butil-demo/notes.txt";
+    private string text = "hello from C#";
+    private string directory = "butil-demo";
+    private string destination = "butil-demo/archive/notes.txt";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await opfs.IsSupported();
+            var sync = await opfs.IsSyncAccessSupported();
+            await supportOutput.Info("IsSupported() →", supported, "| IsSyncAccessSupported() →", sync);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task WriteText()
+    {
+        try
+        {
+            var written = await opfs.WriteText(path, text);
+            if (written) await textOutput.Success($"WriteText(\"{path}\") → wrote {text.Length} characters.");
+            else await textOutput.Warn($"WriteText(\"{path}\") → false. The path may name a directory, or the quota is full.");
+        }
+        catch (Exception ex)
+        {
+            await textOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadText()
+    {
+        try
+        {
+            var read = await opfs.ReadText(path);
+            if (read is null) await textOutput.Warn($"ReadText(\"{path}\") → null - no file there.");
+            else await textOutput.Success($"ReadText(\"{path}\") → \"{read}\"");
+        }
+        catch (Exception ex)
+        {
+            await textOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task WriteBytes()
+    {
+        try
+        {
+            var data = System.Text.Encoding.UTF8.GetBytes($"binary payload @ {DateTime.Now:HH:mm:ss}");
+            var written = await opfs.WriteBytes("butil-demo/payload.bin", data);
+            await (written
+                ? bytesOutput.Success($"WriteBytes(\"butil-demo/payload.bin\") → wrote {data.Length} bytes.")
+                : bytesOutput.Warn("WriteBytes → false."));
+        }
+        catch (Exception ex)
+        {
+            await bytesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadBytes()
+    {
+        try
+        {
+            var read = await opfs.ReadBytes("butil-demo/payload.bin");
+            if (read is null) await bytesOutput.Warn("ReadBytes → null - write it first.");
+            else await bytesOutput.Success($"ReadBytes → {read.Length} bytes: \"{System.Text.Encoding.UTF8.GetString(read)}\"");
+        }
+        catch (Exception ex)
+        {
+            await bytesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CreateDirectory()
+    {
+        try
+        {
+            var created = await opfs.CreateDirectory(directory);
+            await (created
+                ? directoryOutput.Success($"CreateDirectory(\"{directory}\") → the directory exists.")
+                : directoryOutput.Warn($"CreateDirectory(\"{directory}\") → false."));
+        }
+        catch (Exception ex)
+        {
+            await directoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListDirectory()
+    {
+        try
+        {
+            var entries = await opfs.List(directory);
+            if (entries.Length == 0)
+            {
+                await directoryOutput.Warn($"List(\"{directory}\") → empty (or the directory does not exist).");
+                return;
+            }
+
+            var described = string.Join(", ", entries.Select(e => e.IsDirectory ? $"{e.Name}/" : e.Name));
+            await directoryOutput.Success($"List(\"{directory}\") → {entries.Length} entries: {described}");
+        }
+        catch (Exception ex)
+        {
+            await directoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CheckExists()
+    {
+        try
+        {
+            await directoryOutput.Info($"Exists(\"{path}\") →", await opfs.Exists(path));
+        }
+        catch (Exception ex)
+        {
+            await directoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetFileInfo()
+    {
+        try
+        {
+            var info = await opfs.GetFileInfo(path);
+            if (info is null)
+            {
+                await infoOutput.Warn($"GetFileInfo(\"{path}\") → null - no file there.");
+                return;
+            }
+
+            var modified = DateTimeOffset.FromUnixTimeMilliseconds(info.LastModified).LocalDateTime;
+            await infoOutput.Success($"GetFileInfo → {info.Name}, {info.Size} bytes, type \"{info.Type}\", modified {modified:HH:mm:ss}");
+        }
+        catch (Exception ex)
+        {
+            await infoOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task MoveFile()
+    {
+        try
+        {
+            var moved = await opfs.Move(path, destination);
+            await (moved
+                ? removeOutput.Success($"Move(\"{path}\", \"{destination}\") → moved.")
+                : removeOutput.Warn($"Move(\"{path}\", \"{destination}\") → false - the source may be missing."));
+        }
+        catch (Exception ex)
+        {
+            await removeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RemoveFile()
+    {
+        try
+        {
+            var removed = await opfs.Remove(path, recursive: true);
+            await (removed
+                ? removeOutput.Success($"Remove(\"{path}\", recursive: true) → removed.")
+                : removeOutput.Warn($"Remove(\"{path}\") → false - nothing there."));
+        }
+        catch (Exception ex)
+        {
+            await removeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        try
+        {
+            var cleared = await opfs.Clear();
+            await (cleared
+                ? removeOutput.Success("Clear() → the private file system is empty.")
+                : removeOutput.Warn("Clear() → false."));
+        }
+        catch (Exception ex)
+        {
+            await removeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SyncRoundTrip()
+    {
+        const string syncPath = "butil-demo/log.bin";
+        try
+        {
+            if (await opfs.IsSyncAccessSupported() is false)
+            {
+                await syncOutput.Warn("IsSyncAccessSupported() → false: this browser has no createSyncAccessHandle.");
+                return;
+            }
+
+            var first = await opfs.SyncWrite(syncPath, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+            var second = await opfs.SyncAppend(syncPath, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+            var slice = await opfs.SyncRead(syncPath, offset: 9, length: 9);
+
+            await syncOutput.Success($"SyncWrite → {first} bytes, SyncAppend → {second} bytes, " +
+                $"SyncRead(offset: 9, length: 9) → \"{(slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice))}\"");
+        }
+        catch (Exception ex)
+        {
+            await syncOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SyncSizeAndTruncate()
+    {
+        const string syncPath = "butil-demo/log.bin";
+        try
+        {
+            var before = await opfs.SyncSize(syncPath);
+            if (before < 0)
+            {
+                await syncOutput.Warn($"SyncSize(\"{syncPath}\") → -1 - write it first.");
+                return;
+            }
+
+            await opfs.SyncTruncate(syncPath, 9);
+            var after = await opfs.SyncSize(syncPath);
+            await syncOutput.Success($"SyncSize → {before} bytes, SyncTruncate(9) → SyncSize → {after} bytes.");
+        }
+        catch (Exception ex)
+        {
+            await syncOutput.Error(ex.Message);
+        }
+    }
+}

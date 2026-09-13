@@ -1,0 +1,25 @@
+﻿@* Default parameter value: /blog binds "Index" rather than null. A parameter cannot be optional
+   AND defaulted - {id=5?} throws at parse time, matching the framework. *@
+
+<h1>Blog - @Action</h1>
+
+<dl>
+    <dt>action</dt>
+    <dd>@Action</dd>
+    <dt>came from</dt>
+    <dd>@(WasDefaulted ? "the template default" : "the URL")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/blog" class="btn">/blog</BrouterLink>
+    <BrouterLink Href="/blog/archive" class="btn">/blog/archive</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Action { get; set; }
+
+    [Inject] public IBrouter Brouter { get; set; } = default!;
+
+    // The URL had only "/blog" when the default kicked in.
+    private bool WasDefaulted => Brouter.Location.Segments.Count == 1;
+}

@@ -1,4 +1,6 @@
-﻿.example-content {
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.example-content {
     gap: 0.5rem;
     display: flex;
     flex-flow: row wrap;
@@ -18,10 +20,10 @@
     flex-flow: row wrap;
     align-items: center;
     justify-content: space-between;
-    border: 1px solid var(--bit-clr-brd-sec);
+    border: 1px solid $bit-color-border-secondary;
 
     &:hover {
-        background-color: var(--bit-clr-bg-sec);
+        background-color: $bit-color-background-secondary;
     }
 }
 

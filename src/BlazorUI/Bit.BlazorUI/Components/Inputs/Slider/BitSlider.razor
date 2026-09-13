@@ -1,120 +1,378 @@
-﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@namespace Bit.BlazorUI
+@inherits BitInputBase<double>
+
+@{
+    var min = _Min;
+    var max = _Max;
+    var step = _Step;
+    var interactive = _IsInteractive;
+    var value = CurrentValue;
+    var lower = LowerValue;
+    var upper = UpperValue;
+    var fillStart = _FillStart;
+    var fillEnd = _FillEnd;
+    var marks = _Marks;
+    var hasMarkLabels = marks.Exists(m => m.Label.HasValue());
+    var labelId = $"{_Id}-label";
+    var inputId = $"{_Id}-input";
+    var hasLabel = Label.HasValue() || LabelTemplate is not null;
+    var showThumbLabel = ThumbLabel is not null and not BitSliderThumbLabel.Off;
+    var valueText = GetDisplayValue(value);
+    var lowerText = GetDisplayValue(lower);
+    var upperText = GetDisplayValue(upper);
+
+    @* The bounds each input is handed. They are read into locals because the piece of the track the input
+       is laid over is measured from the very same pair, and the two must never be computed apart. *@
+    var valueInputMin = interactive ? min : value;
+    var valueInputMax = interactive ? max : value;
+    var lowerInputMin = interactive ? _LowerInputMin : _thumbA;
+    var lowerInputMax = interactive ? _LowerInputMax : _thumbA;
+    var upperInputMin = interactive ? _UpperInputMin : _thumbB;
+    var upperInputMax = interactive ? _UpperInputMax : _thumbB;
+
+    @* The point the hit areas of the two inputs are cut at, so that a press anywhere on the rail reaches the
+       input whose thumb is nearest to it. It is the midpoint between the thumbs, which is what "nearest"
+       means once the two of them are the only candidates. *@
+    var midPercent = (fillStart + fillEnd) / 2;
+
+    @* Whether the two inputs have traded ends - which they may, since an unconstrained pair is allowed to
+       cross. Everything that depends on where a thumb is rather than on which input drives it has to follow
+       that: the half of the rail each input takes the pointer on, the thumb the focus ring is drawn around,
+       and the value and the name each end announces. *@
+    var crossed = _thumbA > _thumbB;
+    var lowerPlace = crossed ? "bit-sld-inp-far" : "bit-sld-inp-near";
+    var upperPlace = crossed ? "bit-sld-inp-near" : "bit-sld-inp-far";
+    var lowerThumbAriaLabel = crossed ? UpperAriaLabel : LowerAriaLabel;
+    var upperThumbAriaLabel = crossed ? LowerAriaLabel : UpperAriaLabel;
+
+    @* The two ends of a range are two form fields rather than one, so the upper end carries a suffix on the
+       name the slider was given - posted under the same name twice, the two would be indistinguishable. The
+       bare name follows the lower value rather than the lower input, so a crossed pair still posts the end a
+       form written against that name is asking for. *@
+    var upperName = Name.HasValue() ? $"{Name}-upper" : null;
+    var lowerInputName = crossed ? upperName : Name;
+    var upperInputName = crossed ? Name : upperName;
+
+    @* The bounds each end announces: the ones its own input actually holds it inside of, which the WAI-ARIA
+       multi-thumb pattern asks for and which are narrower than the scale as soon as a constraint is in play.
+       A pinned input - a read-only or a disabled one - is the exception: its bounds are a way of refusing the
+       change rather than a description of the value, so the true ends of the scale are announced instead. *@
+    var lowerAriaMin = interactive ? lowerInputMin : min;
+    var lowerAriaMax = interactive ? lowerInputMax : max;
+    var upperAriaMin = interactive ? upperInputMin : min;
+    var upperAriaMax = interactive ? upperInputMax : max;
+
+    @* The value each input is rendered with. It is the value the component holds, except for the single pass
+       ResyncInputAsync spends on the one the browser is holding - see there for why that pass exists. *@
+    var valueAttr = _rawValue.HasValue ? ToInvariant(_rawValue.Value) : CurrentValueAsString;
+    var lowerValueAttr = ToInvariant(_rawA ?? _thumbA);
+    var upperValueAttr = ToInvariant(_rawB ?? _thumbB);
+
+    @* The draggable band, and the room it has left to travel: its value is the lower end of the range, and
+       the highest lower end there is room for is the one that puts the upper end at the end of the scale. *@
+    var canDragTrack = _CanDragTrack;
+    var trackInputMax = _TrackInputMax;
+    var trackValueAttr = ToInvariant(_rawBar ?? lower);
+}
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @if (Label.HasValue())
+
+    @if (hasLabel)
     {
-        <label style="@Styles?.Label" class="bit-sld-lbl @Classes?.Label" @ref="_labelRef">@Label</label>
+        @* The label is tied to the input that carries the single tab stop of a plain slider, and to the
+           lower one of a ranged slider, so clicking it lands the focus somewhere the value can be changed. *@
+        <label id="@labelId"
+               for="@inputId"
+               style="@Styles?.Label"
+               class="bit-sld-lbl @Classes?.Label">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                @Label
+            }
+        </label>
     }
 
-    @if (IsRanged)
-    {
-        @if (ShowValue && IsVertical)
+    <div class="bit-sld-cnt @Classes?.Container" style="@Styles?.Container">
+
+        @* The leading value label: the lower end of a range, and - once the slider stands upright and the
+           labels stack instead of flanking it - the upper end, since that is the one that belongs on top. *@
+        @if (ShowValue && IsRanged)
         {
-            <label @ref="_valueLabelRef"
-                   style="@Styles?.UpperValueLabel"
-                   class="bit-sld-vlb @Classes?.UpperValueLabel"
-                   for="@_sliderBoxId">
-                @GetDisplayValue(UpperValue)
-            </label>
+            <span style="@(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
+                  class="bit-sld-vlb @(IsVertical ? Classes?.UpperValueLabel : Classes?.LowerValueLabel)">
+                @(IsVertical ? upperText : lowerText)
+            </span>
         }
 
-        <div @ref="_containerRef"
-             class="bit-sld-cnt @Classes?.Container"
-             style="@(IsVertical ? _styleContainer : null) @Styles?.Container">
+        <div class="bit-sld-wrp">
 
-            @if (ShowValue && IsVertical is false)
-            {
-                <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(LowerValue)</label>
-            }
-
-            <div @attributes="@SliderBoxHtmlAttributes"
-                 id="@_sliderBoxId"
-                 style="@_styleProgress @Styles?.SliderBox"
+            <div @attributes="SliderBoxHtmlAttributes"
+                 style="@Styles?.SliderBox"
                  class="bit-sld-box @Classes?.SliderBox">
 
-                <input @bind-value="@_firstInputValue" @oninput="@(args => HandleOnRangeInput(args, true))"
-                       id="@_minInputId"
-                       type="range"
-                       min="@Min"
-                       max="@Max"
-                       step="@Step"
-                       role="slider"
-                       style="@Styles?.LowerValueInput"
-                       class="@Classes?.LowerValueInput"
-                       tabindex="@GetTabIndex"
-                       disabled=@(IsEnabled is false)
-                       data-is-focusable="@(IsEnabled is false)"
-                       aria-disabled="@(IsEnabled is false)"
-                       aria-label="@Label"
-                       aria-valuemin="@Min"
-                       aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(_firstInputValue)"
-                       aria-valuenow="@_firstInputValue" />
-                <input @bind-value="@_secondInputValue" @oninput="@(args => HandleOnRangeInput(args, false))"
-                       id="@_maxInputId"
-                       type="range"
-                       min="@Min"
-                       max="@Max"
-                       step="@Step"
-                       role="slider"
-                       style="@Styles?.UpperValueInput"
-                       class="@Classes?.UpperValueInput"
-                       tabindex="@GetTabIndex"
-                       disabled=@(IsEnabled is false)
-                       data-is-focusable="@(IsEnabled is false)"
-                       aria-disabled="@(IsEnabled is false)"
-                       aria-label="@Label"
-                       aria-valuemin="@Min"
-                       aria-valuemax="@Max"
-                       aria-valuetext="@GetAriaValueText(_secondInputValue)"
-                       aria-valuenow="@_secondInputValue" />
+                @* Everything drawn along the scale lives inside the track, which is inset by half a thumb at
+                   each end. That is exactly the room a native range input keeps for its own thumb, so a
+                   percentage measured here lands on the very pixel the native thumb centres itself on. *@
+                <div style="@Styles?.Track" class="bit-sld-trk @Classes?.Track">
 
-                @if (IsOriginFromZero)
+                    @if (NoFill)
+                    {
+                        @* A slider that only points at a value draws no fill at all, leaving the bare rail. *@
+                    }
+                    else if (Inverted && IsRanged)
+                    {
+                        @* An inverted range highlights what lies outside the two thumbs rather than between
+                           them, which takes two segments instead of one. *@
+                        <span style="@GetSegmentStyle(0, fillStart);@Styles?.Fill" class="bit-sld-fil @Classes?.Fill"></span>
+                        <span style="@GetSegmentStyle(fillEnd, 100);@Styles?.Fill" class="bit-sld-fil @Classes?.Fill"></span>
+                    }
+                    else
+                    {
+                        <span style="@GetSegmentStyle(fillStart, fillEnd);@Styles?.Fill" class="bit-sld-fil @Classes?.Fill"></span>
+                    }
+
+                    @foreach (var mark in marks)
+                    {
+                        <span aria-hidden="true"
+                              style="@GetPointStyle(GetPercent(mark.Value));@mark.Style;@Styles?.Mark"
+                              class="@GetMarkClass(mark, fillStart, fillEnd) @mark.Class @Classes?.Mark">
+                        </span>
+                    }
+
+                    @if (IsRanged is false && NoFill is false && (IsOriginFromZero || Origin.HasValue))
+                    {
+                        @* The origin tick marks where the fill grows out of, which is only the middle of the
+                           track when the scale happens to be symmetric around it. *@
+                        <span aria-hidden="true"
+                              style="@GetPointStyle(GetPercent(_Origin));@Styles?.OriginFromZero"
+                              class="bit-sld-ztk @Classes?.OriginFromZero">
+                        </span>
+                    }
+
+                    @if (IsRanged)
+                    {
+                        <span style="@GetPointStyle(fillStart);@Styles?.Thumb;@Styles?.LowerThumb"
+                              class="bit-sld-thb bit-sld-thb-lwr @Classes?.Thumb @Classes?.LowerThumb">
+                            @if (showThumbLabel)
+                            {
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                    @if (ThumbLabelTemplate is not null)
+                                    {
+                                        @ThumbLabelTemplate(lower)
+                                    }
+                                    else
+                                    {
+                                        @lowerText
+                                    }
+                                </span>
+                            }
+                        </span>
+                        <span style="@GetPointStyle(fillEnd);@Styles?.Thumb;@Styles?.UpperThumb"
+                              class="bit-sld-thb bit-sld-thb-upr @Classes?.Thumb @Classes?.UpperThumb">
+                            @if (showThumbLabel)
+                            {
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                    @if (ThumbLabelTemplate is not null)
+                                    {
+                                        @ThumbLabelTemplate(upper)
+                                    }
+                                    else
+                                    {
+                                        @upperText
+                                    }
+                                </span>
+                            }
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="@GetPointStyle(GetPercent(value));@Styles?.Thumb"
+                              class="bit-sld-thb @Classes?.Thumb">
+                            @if (showThumbLabel)
+                            {
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                    @if (ThumbLabelTemplate is not null)
+                                    {
+                                        @ThumbLabelTemplate(value)
+                                    }
+                                    else
+                                    {
+                                        @valueText
+                                    }
+                                </span>
+                            }
+                        </span>
+                    }
+                </div>
+
+                @* The native inputs are laid over the track and made invisible, keeping everything they are
+                   good at - the drag, the whole keyboard, the touch target, the role and the announced value -
+                   while the thumb that is actually seen is drawn above from the value the component holds.
+                   That is what stops the two from ever disagreeing when a constraint refuses a move. *@
+                @if (IsRanged)
                 {
-                    <span style="left:calc(50% - @(IsVertical ? "27" : "1")px);@Styles?.OriginFromZero" class="bit-sld-ztk @Classes?.OriginFromZero"></span>
+                    <input @ref="_lowerInputRef"
+                           @attributes="InputHtmlAttributes"
+                           @oninput="@(e => HandleOnRangeInput(e, true))"
+                           @onchange="@(e => HandleOnRangeChange(e, true))"
+                           @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
+                           @onfocusin="HandleOnFocusIn"
+                           @onfocusout="HandleOnFocusOut"
+                           id="@inputId"
+                           name="@lowerInputName"
+                           type="range"
+                           autofocus="@AutoFocus"
+                           style="@GetInputStyle(lowerInputMin, lowerInputMax, midPercent);@Styles?.LowerValueInput"
+                           class="bit-sld-inp bit-sld-inp-lwr @lowerPlace @Classes?.LowerValueInput"
+                           tabindex="@(TabIndex ?? "0")"
+                           disabled="@(IsEnabled is false)"
+                           aria-label="@GetThumbAriaLabel(lowerThumbAriaLabel)"
+                           aria-labelledby="@GetThumbAriaLabelledBy(lowerThumbAriaLabel)"
+                           aria-required="@(Required ? "true" : null)"
+                           aria-readonly="@(ReadOnly ? "true" : null)"
+                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-valuemin="@ToInvariant(lowerAriaMin)"
+                           aria-valuemax="@ToInvariant(lowerAriaMax)"
+                           aria-valuenow="@ToInvariant(_thumbA)"
+                           aria-valuetext="@GetAriaValueText(_thumbA)"
+                           min="@ToInvariant(lowerInputMin)"
+                           max="@ToInvariant(lowerInputMax)"
+                           step="@ToInvariant(step)"
+                           value="@lowerValueAttr" />
+
+                    <input @ref="_upperInputRef"
+                           @oninput="@(e => HandleOnRangeInput(e, false))"
+                           @onchange="@(e => HandleOnRangeChange(e, false))"
+                           @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
+                           @onfocusin="HandleOnFocusIn"
+                           @onfocusout="HandleOnFocusOut"
+                           name="@upperInputName"
+                           type="range"
+                           style="@GetInputStyle(upperInputMin, upperInputMax, midPercent);@Styles?.UpperValueInput"
+                           class="bit-sld-inp bit-sld-inp-upr @upperPlace @Classes?.UpperValueInput"
+                           tabindex="@(TabIndex ?? "0")"
+                           disabled="@(IsEnabled is false)"
+                           aria-label="@GetThumbAriaLabel(upperThumbAriaLabel)"
+                           aria-labelledby="@GetThumbAriaLabelledBy(upperThumbAriaLabel)"
+                           aria-required="@(Required ? "true" : null)"
+                           aria-readonly="@(ReadOnly ? "true" : null)"
+                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-valuemin="@ToInvariant(upperAriaMin)"
+                           aria-valuemax="@ToInvariant(upperAriaMax)"
+                           aria-valuenow="@ToInvariant(_thumbB)"
+                           aria-valuetext="@GetAriaValueText(_thumbB)"
+                           min="@ToInvariant(upperInputMin)"
+                           max="@ToInvariant(upperInputMax)"
+                           step="@ToInvariant(step)"
+                           value="@upperValueAttr" />
+
+                    @if (canDragTrack)
+                    {
+                        @* The band the whole range is dragged by. It is a third range input, laid over the
+                           box and given a thumb as wide as the band itself: a press then lands on that thumb
+                           rather than beside it, so the browser drags it along with the pointer instead of
+                           jumping it to the press, and the room such a thumb has left to travel is exactly
+                           the room the range has left on the scale. Only the rail strictly between the two
+                           thumbs reaches it, so the thumbs themselves stay grabbable.
+
+                           It is not a tab stop and announces nothing: it selects nothing the two thumbs do
+                           not already carry, and a third slider in the tab order announcing the same lower
+                           value again would be noise rather than a way through. *@
+                        <input @oninput="HandleOnTrackInput"
+                               @onchange="HandleOnTrackChange"
+                               @onpointerdown="_onPointerDown"
+                               type="range"
+                               tabindex="-1"
+                               aria-hidden="true"
+                               style="@GetTrackInputStyle(fillStart, fillEnd);@Styles?.TrackInput"
+                               class="bit-sld-inp bit-sld-inp-bar @Classes?.TrackInput"
+                               min="@ToInvariant(min)"
+                               max="@ToInvariant(trackInputMax)"
+                               step="@ToInvariant(step)"
+                               value="@trackValueAttr" />
+                    }
+                }
+                else
+                {
+                    <input @ref="_lowerInputRef"
+                           @attributes="InputHtmlAttributes"
+                           @oninput="HandleOnInput"
+                           @onchange="HandleOnChange"
+                           @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
+                           @onfocusin="HandleOnFocusIn"
+                           @onfocusout="HandleOnFocusOut"
+                           id="@inputId"
+                           name="@Name"
+                           type="range"
+                           autofocus="@AutoFocus"
+                           style="@GetInputStyle(valueInputMin, valueInputMax);@Styles?.ValueInput"
+                           class="bit-sld-inp @Classes?.ValueInput"
+                           tabindex="@(TabIndex ?? "0")"
+                           disabled="@(IsEnabled is false)"
+                           aria-label="@GetThumbAriaLabel(null)"
+                           aria-labelledby="@GetThumbAriaLabelledBy(null)"
+                           aria-required="@(Required ? "true" : null)"
+                           aria-readonly="@(ReadOnly ? "true" : null)"
+                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-orientation="@(IsVertical ? "vertical" : null)"
+                           aria-valuemin="@ToInvariant(min)"
+                           aria-valuemax="@ToInvariant(max)"
+                           aria-valuenow="@ToInvariant(value)"
+                           aria-valuetext="@GetAriaValueText(value)"
+                           min="@ToInvariant(valueInputMin)"
+                           max="@ToInvariant(valueInputMax)"
+                           step="@ToInvariant(step)"
+                           value="@valueAttr" />
                 }
             </div>
-            @if (ShowValue && IsVertical is false)
+
+            @if (hasMarkLabels)
             {
-                <label style="@Styles?.UpperValueLabel" class="bit-sld-vlb @Classes?.UpperValueLabel">@GetDisplayValue(UpperValue)</label>
+                <div class="bit-sld-mks">
+                    @foreach (var mark in marks)
+                    {
+                        @if (mark.Label.HasValue())
+                        {
+                            <span aria-hidden="true"
+                                  style="@GetPointStyle(GetPercent(mark.Value));@mark.Style;@Styles?.MarkLabel"
+                                  class="bit-sld-mlb @mark.Class @Classes?.MarkLabel">
+                                @mark.Label
+                            </span>
+                        }
+                    }
+                </div>
             }
         </div>
 
-        @if (ShowValue && IsVertical)
+        @* The trailing value label: the other end of the pair the leading one started, or the single value.
+           A vertical slider fills from the bottom up, so the low end of the scale is what the trailing
+           label sits next to either way. *@
+        @if (ShowValue)
         {
-            <label style="@Styles?.LowerValueLabel" class="bit-sld-vlb @Classes?.LowerValueLabel">@GetDisplayValue(LowerValue)</label>
-        }
-    }
-    else
-    {
-        <div @ref="_containerRef" style="@Styles?.Container" class="bit-sld-cnt @Classes?.Container">
-            <input @bind-value="@Value" @oninput="@HandleOnInput"
-                   type="range"
-                   min="@Min"
-                   max="@Max"
-                   step="@Step"
-                   style="@_styleProgress @Styles?.ValueInput"
-                   class="@Classes?.ValueInput"
-                   disabled=@(IsEnabled is false) />
-
-            @if (IsOriginFromZero)
+            @if (IsRanged)
             {
-                <span class="bit-sld-ztk @Classes?.OriginFromZero" style="@(IsVertical ? "top" : "left"):calc(50% @(IsVertical ? "+" : "-") 27px);@Styles?.OriginFromZero"></span>
+                <span style="@(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
+                      class="bit-sld-vlb @(IsVertical ? Classes?.LowerValueLabel : Classes?.UpperValueLabel)">
+                    @(IsVertical ? lowerText : upperText)
+                </span>
             }
-
-            @if (ShowValue && IsVertical is false)
+            else
             {
-                <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
+                <span style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@valueText</span>
             }
-        </div>
-        @if (ShowValue && IsVertical)
-        {
-            <label style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@GetDisplayValue(Value)</label>
         }
-    }
+    </div>
 </div>

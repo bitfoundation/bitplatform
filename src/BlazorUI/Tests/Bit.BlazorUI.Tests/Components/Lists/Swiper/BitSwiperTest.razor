@@ -1,9 +1,99 @@
-<BitSwiper HideNextPrev="HideNextPrev">
-    <BitSwiperItem><div class='item'>1</div></BitSwiperItem>
-    <BitSwiperItem><div class='item'>2</div></BitSwiperItem>
-    <BitSwiperItem><div class='item'>3</div></BitSwiperItem>
+<BitSwiper @ref="Swiper"
+           Dir="Dir"
+           Gap="@Gap"
+           Snap="Snap"
+           Size="Size"
+           Color="Color"
+           Wheel="Wheel"
+           NoDrag="NoDrag"
+           Accent="Accent"
+           Styles="Styles"
+           Classes="Classes"
+           ShowDots="ShowDots"
+           AutoPlay="AutoPlay"
+           Vertical="Vertical"
+           OnChange="OnChange"
+           IsEnabled="IsEnabled"
+           AriaLabel="@AriaLabel"
+           NoKeyboard="NoKeyboard"
+           DotTemplate="DotTemplate"
+           DefaultItem="DefaultItem"
+           HideNextPrev="HideNextPrev"
+           NextIcon="NextIcon"
+           PrevIcon="PrevIcon"
+           NextIconName="@NextIconName"
+           PrevIconName="@PrevIconName"
+           ShowPlayPause="ShowPlayPause"
+           ShowScrollbar="ShowScrollbar"
+           PauseOnHover="PauseOnHover"
+           PauseOnFocus="PauseOnFocus"
+           DotAriaLabel="@DotAriaLabel"
+           NextAriaLabel="@NextAriaLabel"
+           PrevAriaLabel="@PrevAriaLabel"
+           DragThreshold="DragThreshold"
+           DotsAriaLabel="@DotsAriaLabel"
+           StopOnLastSlide="StopOnLastSlide"
+           AutoPlayReverse="AutoPlayReverse"
+           ScrollItemsCount="ScrollItemsCount"
+           AutoPlayInterval="AutoPlayInterval"
+           AnimationDuration="AnimationDuration"
+           StopOnInteraction="StopOnInteraction"
+           VisibleItemsCount="VisibleItemsCount"
+           VisibleItemsCountSm="VisibleItemsCountSm"
+           VisibleItemsCountMd="VisibleItemsCountMd"
+           ItemAriaLabelFormat="@ItemAriaLabelFormat">
+    @for (int i = 1; i <= ItemsCount; i++)
+    {
+        var index = i;
+        <BitSwiperItem Class="item"><div>@index</div></BitSwiperItem>
+    }
 </BitSwiper>
 
 @code {
+    public BitSwiper Swiper { get; set; } = default!;
+
+    [Parameter] public BitDir? Dir { get; set; }
+    [Parameter] public string? Gap { get; set; }
+    [Parameter] public bool Wheel { get; set; }
+    [Parameter] public bool NoDrag { get; set; }
+    [Parameter] public bool ShowDots { get; set; }
+    [Parameter] public bool AutoPlay { get; set; }
+    [Parameter] public bool Vertical { get; set; }
+    [Parameter] public BitSize? Size { get; set; }
+    [Parameter] public BitColor? Color { get; set; }
+    [Parameter] public BitSwiperSnap? Snap { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool NoKeyboard { get; set; }
+    [Parameter] public int ItemsCount { get; set; } = 3;
+    [Parameter] public int DefaultItem { get; set; } = 1;
     [Parameter] public bool HideNextPrev { get; set; }
+    [Parameter] public bool ShowPlayPause { get; set; }
+    [Parameter] public bool ShowScrollbar { get; set; }
+    [Parameter] public bool PauseOnHover { get; set; } = true;
+    [Parameter] public bool PauseOnFocus { get; set; } = true;
+    [Parameter] public bool StopOnLastSlide { get; set; }
+    [Parameter] public bool AutoPlayReverse { get; set; }
+    [Parameter] public bool StopOnInteraction { get; set; }
+    [Parameter] public int DragThreshold { get; set; } = 5;
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter] public int? VisibleItemsCount { get; set; }
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
+    [Parameter] public int? VisibleItemsCountMd { get; set; }
+    [Parameter] public BitColorKind? Accent { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public BitIconInfo? NextIcon { get; set; }
+    [Parameter] public BitIconInfo? PrevIcon { get; set; }
+    [Parameter] public string? NextIconName { get; set; }
+    [Parameter] public string? PrevIconName { get; set; }
+    [Parameter] public string DotAriaLabel { get; set; } = "Slide";
+    [Parameter] public string DotsAriaLabel { get; set; } = "Choose slide to display";
+    [Parameter] public string? NextAriaLabel { get; set; }
+    [Parameter] public string? PrevAriaLabel { get; set; }
+    [Parameter] public string? ItemAriaLabelFormat { get; set; }
+    [Parameter] public RenderFragment<int>? DotTemplate { get; set; }
+    [Parameter] public BitSwiperClassStyles? Styles { get; set; }
+    [Parameter] public BitSwiperClassStyles? Classes { get; set; }
+    [Parameter] public EventCallback<int> OnChange { get; set; }
 }

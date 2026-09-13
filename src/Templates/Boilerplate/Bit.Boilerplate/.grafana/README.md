@@ -1,8 +1,16 @@
 # Azure Application Insights - Grafana Dashboard Boilerplate
 
-This repository contains a production-ready Grafana Dashboard Boilerplate tailored for applications integrated with **Azure Application Insights (Log Analytics Workspace)**. It provides deep visibility into application health, performance metrics, and system exceptions using Kusto Query Language (KQL).
+> **Requires `--appInsights true`.** Every panel in `dashboard.json` is a KQL query against the Azure Monitor
+> Log Analytics tables (`AppRequests`, `AppExceptions`, `AppDependencies`, `AppMetrics`), which are only written
+> when the Azure Monitor exporter is compiled in. A project generated without `--appInsights true` - the default -
+> exports OpenTelemetry over OTLP instead, so these panels will have no data source to point at. The folder is
+> shipped anyway so you can adopt it later; it is inert until then.
+>
+> One panel has a second requirement: **Ongoing AI Conversations** reads `appHub.ongoing_conversations_count`,
+> which only exists with `--signalR true`.
 
-Check out read-only demo dashboard here: [Demo](https://cordialwombat2006.grafana.net/dashboard/snapshot/7Jop0tHLzy1etgeepKES3fNOk7KH39IH)
+This folder contains a production-ready Grafana dashboard tailored for applications integrated with **Azure Application Insights (Log Analytics Workspace)**. It provides deep visibility into application health, performance metrics, and system exceptions using Kusto Query Language (KQL).
+
 ---
 
 ## 🚀 Key Features & Benefits
@@ -89,7 +97,12 @@ $clientSecretText = $secretCredential.SecretText
 $subscriptionId = $currentContext.Subscription.Id
 $tenantId = $currentContext.Tenant.Id
 
-# FIX: Changed "Reader" to "Log Analytics Reader" to restrict access strictly to monitoring data
+# NOTE: "Log Analytics Reader" (not "Reader") restricts access strictly to monitoring data.
+# The scope below is the whole subscription, which is what the dashboard's `subscriptions()` and
+# `workspaces($subscription)` variables need in order to populate their dropdowns. If your organisation
+# requires least privilege and you already know the workspace, narrow it to that resource id instead
+# (-Scope $workspace.ResourceId) and set the dashboard's subscription/workspace variables to fixed values -
+# the two go together, one without the other leaves you with empty dropdowns.
 Write-Host "Assigning 'Log Analytics Reader' role to the Service Principal on Subscription: $subscriptionId..." -ForegroundColor Cyan
 
 New-AzRoleAssignment `

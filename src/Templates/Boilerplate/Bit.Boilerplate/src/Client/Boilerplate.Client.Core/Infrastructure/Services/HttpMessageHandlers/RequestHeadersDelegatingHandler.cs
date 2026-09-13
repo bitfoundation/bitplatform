@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Boilerplate.Shared.Features.Identity;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
@@ -15,12 +14,14 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 
-        if (request.Headers.UserAgent.Any() is false)
+        // Only a device may describe itself: while prerendering this runs in the web server's process, and the
+        // diagnostic page reports back every header it was called with, on an anonymous page.
+        if (request.Headers.UserAgent.Any() is false && AppPlatform.IsBlazorHybridOrBrowser)
         {
             request.Headers.UserAgent.TryParseAdd(telemetryContext.Platform);
         }
 
-        if (CultureInfoManager.InvariantGlobalization is false && string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name) is false)
+        if (CultureInfoManager.InvariantGlobalization is false && string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) is false)
         {
             request.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(CultureInfo.CurrentUICulture.Name));
         }
@@ -28,8 +29,10 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         var isInternalRequest = request.HasExternalApiAttribute() is false;
         if (isInternalRequest)
         {
-            request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
-            request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
+            if (request.Headers.Contains("X-App-Version") is false)
+                request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
+            if (request.Headers.Contains("X-App-Platform") is false)
+                request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
         }
         else
         {

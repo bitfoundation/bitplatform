@@ -31,6 +31,11 @@ public partial class BitFcDayCell
     private async Task OnCellClick()    {
         State.SetSelectedDate(Cell.Date);
 
+        // Selecting the date above is navigation and stays available in read-only mode; only the
+        // add affordance behind the same click is suppressed.
+        if (State.ReadOnly)
+            return;
+
         // Build the draft once and use it for both the external add handler and the built-in dialog
         // fallback so they always agree on the start date/time. Seed from the calendar's start-of-day
         // hour (matching the other month-view add entry points) instead of DateTime.Now.Hour.

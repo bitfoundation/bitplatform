@@ -101,15 +101,15 @@ git push origin <branch-name>
 ```
 
 ### PR Title
-Use conventional-commit format and include the Issue number with a `#` prefix:
+Include the Issue number with a `#` prefix:
 
 ```
-<prefix>(<scope>): <short description> #<issue-number>
+<short description> #<issue-number>
 ```
 
 Example:
 ```
-fix(BlazorUI): BitButton disabled state ignores pointer-events in Safari #1234
+Fix BitButton disabled state ignores pointer-events in Safari #1234
 ```
 
 ### PR Description Template

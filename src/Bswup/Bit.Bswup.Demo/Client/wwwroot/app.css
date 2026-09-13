@@ -1,0 +1,3429 @@
+﻿/* ============================================================================
+   bit Bswup docs - design system
+
+   A hand-written implementation of Microsoft's Fluent 2 design language. This
+   site deliberately takes no dependency on Bit.BlazorUI (it is the Bswup demo,
+   and Bswup itself has none), so the tokens are declared here rather than
+   imported from a library stylesheet.
+
+   Layers, in the order they are declared below:
+
+     1. FLUENT 2 PRIMITIVES   the raw ramps - neutral greys, brand blues, the
+                              status hues, the shadow/radius/type/motion scales.
+                              These are Fluent 2's own published values and are
+                              never referenced directly by a component.
+     2. SEMANTIC TOKENS       what a primitive MEANS here (surface, stroke,
+                              foreground, accent). Theme switching happens
+                              entirely in this layer, so every rule below it is
+                              written once and works in both themes.
+     3. COMPONENTS            the shell, the prose, and the page-specific parts.
+
+   The theme is selected by the `data-theme` attribute on <html> - written by
+   this site alone, not by the library's own theme script - and is applied
+   before first paint by the inline script in the host document
+   (Server/Components/App.razor). The [data-theme$='dark'] suffix match keeps a
+   prefixed value such as "fluent-dark" resolving alongside a plain "dark".
+   ============================================================================ */
+
+/* ============================================================================
+   1. FLUENT 2 PRIMITIVES
+   ============================================================================ */
+
+:root {
+    /* ---- shape: Fluent 2 corner radius ramp -------------------------------
+       Fluent 2's most visible departure from Fluent 1 is that surfaces are
+       rounded rather than square. The ramp is used by role, not by taste:
+       small on chips and inline code, medium on inputs and buttons, large on
+       cards, xLarge on the surfaces that float. */
+    --fl-radius-none: 0;
+    --fl-radius-sm: 0.125rem;   /*  2px */
+    --fl-radius-md: 0.25rem;    /*  4px */
+    --fl-radius-lg: 0.375rem;   /*  6px */
+    --fl-radius-xl: 0.5rem;     /*  8px */
+    --fl-radius-2xl: 0.75rem;   /* 12px */
+    --fl-radius-circular: 624.9375rem;
+
+    /* ---- shape: stroke widths -------------------------------------------- */
+    --fl-stroke-thin: 0.0625rem;   /* 1px - every hairline on the page */
+    --fl-stroke-thick: 0.125rem;   /* 2px - focus rings, selected indicators */
+    --fl-stroke-thicker: 0.1875rem;
+
+    /* ---- spacing: Fluent 2's 4px rhythm ---------------------------------- */
+    --fl-space-xxs: 0.125rem;  /*  2px */
+    --fl-space-xs: 0.25rem;    /*  4px */
+    --fl-space-snug: 0.375rem; /*  6px */
+    --fl-space-s: 0.5rem;      /*  8px */
+    --fl-space-mnw: 0.625rem;  /* 10px */
+    --fl-space-m: 0.75rem;     /* 12px */
+    --fl-space-l: 1rem;        /* 16px */
+    --fl-space-xl: 1.25rem;    /* 20px */
+    --fl-space-xxl: 1.5rem;    /* 24px */
+    --fl-space-3xl: 2rem;      /* 32px */
+    --fl-space-4xl: 2.5rem;    /* 40px */
+    --fl-space-5xl: 3rem;      /* 48px */
+    --fl-space-6xl: 4rem;      /* 64px */
+
+    /* ---- typography ------------------------------------------------------
+       Segoe UI Variable is Fluent 2's typeface. It ships with Windows 11 and
+       has three optical sizes: Small (<=12px), Text (12-18px) and Display
+       (>=18px). Each is named explicitly so a heading gets the Display cut and
+       body copy gets the Text cut, exactly as the design language specifies,
+       falling back to Segoe UI and then to the platform's own UI face.
+
+       No webfont is loaded on purpose: this is an offline-first PWA
+       demonstrating a service worker, and a blocking request to a font CDN
+       would be the one asset the story cannot cache or explain. */
+    --fl-font-display: "Segoe UI Variable Display", "Segoe UI Variable Static Display", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fl-font-text: "Segoe UI Variable Text", "Segoe UI Variable Static Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fl-font-small: "Segoe UI Variable Small", "Segoe UI Variable Static Small", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Cascadia is Microsoft's own monospace and the on-brand partner to Segoe. */
+    --fl-font-mono: "Cascadia Code", "Cascadia Mono", ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+
+    /* Fluent 2's type ramp. Line heights are the published pairs, not a
+       multiplier - Fluent sizes leading per step. */
+    --fl-size-100: 0.625rem;   /* 10 / 14  Caption2 */
+    --fl-size-200: 0.75rem;    /* 12 / 16  Caption1 */
+    --fl-size-300: 0.875rem;   /* 14 / 20  Body1 */
+    --fl-size-400: 1rem;       /* 16 / 22  Body2 / Subtitle2 */
+    --fl-size-500: 1.25rem;    /* 20 / 26  Subtitle1 */
+    --fl-size-600: 1.5rem;     /* 24 / 32  Title3 */
+    --fl-size-700: 1.75rem;    /* 28 / 36  Title2 */
+    --fl-size-800: 2rem;       /* 32 / 40  Title1 */
+    --fl-size-900: 2.5rem;     /* 40 / 52  LargeTitle */
+    --fl-size-1000: 4.25rem;   /* 68 / 92  Display */
+
+    --fl-leading-100: 0.875rem;
+    --fl-leading-200: 1rem;
+    --fl-leading-300: 1.25rem;
+    --fl-leading-400: 1.375rem;
+    --fl-leading-500: 1.625rem;
+    --fl-leading-600: 2rem;
+    --fl-leading-700: 2.25rem;
+    --fl-leading-800: 2.5rem;
+    --fl-leading-900: 3.25rem;
+    --fl-leading-1000: 5.75rem;
+
+    /* Fluent 2 uses exactly four weights. Headings are Semibold - the Fluent 1
+       habit of setting titles in Light is not part of this design language. */
+    --fl-weight-regular: 400;
+    --fl-weight-medium: 500;
+    --fl-weight-semibold: 600;
+    --fl-weight-bold: 700;
+
+    /* Prose leading is looser than UI leading: the ramp above is tuned for
+       labels and controls, not for a paragraph someone reads end to end. */
+    --fl-leading-prose: 1.6;
+
+    /* ---- motion: Fluent 2 duration and curve tokens ----------------------- */
+    --fl-dur-ultra-fast: 50ms;
+    --fl-dur-faster: 100ms;
+    --fl-dur-fast: 150ms;
+    --fl-dur-normal: 200ms;
+    --fl-dur-gentle: 250ms;
+    --fl-dur-slow: 300ms;
+    --fl-dur-slower: 400ms;
+
+    --fl-curve-accelerate-max: cubic-bezier(0.9, 0.1, 1, 0.2);
+    --fl-curve-accelerate-mid: cubic-bezier(1, 0, 1, 1);
+    --fl-curve-decelerate-mid: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --fl-curve-decelerate-max: cubic-bezier(0, 0, 0, 1);
+    --fl-curve-easy-ease: cubic-bezier(0.33, 0, 0.67, 1);
+    --fl-curve-linear: cubic-bezier(0, 0, 1, 1);
+
+    /* ---- layout ----------------------------------------------------------- */
+    --shell-max-width: 96rem;      /* 1536px - the outer chrome */
+    --shell-header-height: 3.5rem; /* 56px */
+    --shell-rail-width: 16rem;     /* 256px - the documentation nav */
+    --shell-toc-width: 14.5rem;    /* 232px - "On this page" */
+    --shell-measure: 52rem;        /* the reading column's comfortable maximum */
+}
+
+/* ============================================================================
+   2. SEMANTIC TOKENS
+   ============================================================================ */
+
+:root,
+:root[data-theme='light'] {
+    color-scheme: light;
+
+    /* ---- brand ------------------------------------------------------------
+       Fluent 2's Communication Blue ramp. `accent` is the fill behind white
+       text; `accent-ink` is the darker step used for text and links ON a light
+       surface, where the fill colour alone would not clear 4.5:1. */
+    --clr-accent: #0F6CBD;
+    --clr-accent-hover: #115EA3;
+    --clr-accent-pressed: #0C3B5E;
+    --clr-accent-selected: #0F548C;
+    --clr-accent-on: #FFFFFF;
+    --clr-accent-ink: #115EA3;
+    --clr-accent-ink-hover: #0C3B5E;
+    --clr-accent-tint: #EBF3FC;
+    --clr-accent-tint-strong: #CFE4FA;
+    --clr-accent-stroke: #0F6CBD;
+
+    /* ---- surfaces ---------------------------------------------------------
+       1 is the raised surface (cards, the header, the rail, the footer); 2 is
+       the page canvas underneath them; 3 and 4 are the recessed wells INSIDE a
+       card - code samples, table headers, inline code.
+
+       The two themes reach the same hierarchy from opposite directions, which
+       is why Fluent 2 publishes a separate ramp per theme rather than deriving
+       one from the other. In light, canvas and card are both white and the
+       hairline border is what separates them, with the well a step darker; in
+       dark, the canvas is the darkest layer and a card is genuinely lifted off
+       it, with the well dropping back down to canvas level. */
+    --clr-surface-1: #FFFFFF;
+    --clr-surface-1-hover: #F5F5F5;
+    --clr-surface-1-pressed: #E0E0E0;
+    --clr-surface-2: #FFFFFF;
+    --clr-surface-3: #F5F5F5;
+    --clr-surface-4: #EBEBEB;
+    --clr-surface-inverted: #292929;
+    --clr-surface-on-inverted: #FFFFFF;
+    /* The header's translucent fill, at the alpha its backdrop blur reads through. */
+    --clr-surface-veil: rgba(255, 255, 255, 0.82);
+    --clr-scrim: rgba(0, 0, 0, 0.4);
+
+    /* ---- foregrounds ------------------------------------------------------ */
+    --clr-fg-1: #242424;   /* headings, emphasised text          15.9:1 on white */
+    --clr-fg-2: #424242;   /* body copy                          10.0:1 on white */
+    --clr-fg-3: #616161;   /* labels, captions, muted metadata    5.9:1 on white */
+    --clr-fg-4: #707070;   /* the quietest text still meant to be read   4.9:1 */
+    --clr-fg-disabled: #BDBDBD;
+
+    /* ---- strokes ----------------------------------------------------------
+       `divider` separates content of equal weight, `outline` bounds a control,
+       and `accessible` is the 3:1 step for a boundary that carries meaning. */
+    --clr-stroke-divider: #E0E0E0;
+    --clr-stroke-outline: #D1D1D1;
+    --clr-stroke-accessible: #616161;
+    --clr-stroke-focus: #000000;
+
+    /* ---- status ----------------------------------------------------------- */
+    --clr-success: #0E700E;
+    --clr-success-tint: #F1FAF1;
+    --clr-success-stroke: #9FD89F;
+    --clr-warning: #9D5D00;
+    --clr-warning-tint: #FFF9F5;
+    --clr-warning-stroke: #FDCFB4;
+    --clr-danger: #B10E1C;
+    --clr-danger-tint: #FDF3F4;
+    --clr-danger-stroke: #EEACB2;
+
+    /* ---- elevation --------------------------------------------------------
+       Fluent 2's shadow ramp: two coincident shadows per step, an ambient one
+       and a directional one. */
+    --fl-shadow-2: 0 0 0.125rem rgba(0, 0, 0, 0.12), 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.14);
+    --fl-shadow-4: 0 0 0.125rem rgba(0, 0, 0, 0.12), 0 0.125rem 0.25rem rgba(0, 0, 0, 0.14);
+    --fl-shadow-8: 0 0 0.125rem rgba(0, 0, 0, 0.12), 0 0.25rem 0.5rem rgba(0, 0, 0, 0.14);
+    --fl-shadow-16: 0 0 0.125rem rgba(0, 0, 0, 0.12), 0 0.5rem 1rem rgba(0, 0, 0, 0.14);
+    --fl-shadow-28: 0 0 0.5rem rgba(0, 0, 0, 0.12), 0 0.875rem 1.75rem rgba(0, 0, 0, 0.24);
+    --fl-shadow-64: 0 0 0.5rem rgba(0, 0, 0, 0.20), 0 2rem 4rem rgba(0, 0, 0, 0.24);
+
+    /* ---- syntax highlighting ---------------------------------------------
+       Deliberately not the palette of a code editor: a sample on a
+       documentation page is read as prose, so the hues are restrained and each
+       one clears 4.5:1 against the sample's own background. */
+    --clr-code-comment: #2C7A39;
+    --clr-code-string: #A3143C;
+    --clr-code-keyword: #0F548C;
+    --clr-code-type: #2B6E8F;
+    --clr-code-number: #7B4A00;
+    --clr-code-tag: #0F548C;
+    --clr-code-attr: #7B4A00;
+    --clr-code-punct: #616161;
+}
+
+:root[data-theme$='dark'] {
+    color-scheme: dark;
+
+    --clr-accent: #115EA3;
+    --clr-accent-hover: #0F6CBD;
+    --clr-accent-pressed: #0C3B5E;
+    --clr-accent-selected: #0F548C;
+    --clr-accent-on: #FFFFFF;
+    --clr-accent-ink: #479EF5;
+    --clr-accent-ink-hover: #62ABF5;
+    --clr-accent-tint: #082338;
+    --clr-accent-tint-strong: #0C3B5E;
+    --clr-accent-stroke: #479EF5;
+
+    --clr-surface-1: #1F1F1F;
+    --clr-surface-1-hover: #292929;
+    --clr-surface-1-pressed: #333333;
+    --clr-surface-2: #141414;
+    --clr-surface-3: #141414;
+    --clr-surface-4: #2B2B2B;
+    --clr-surface-inverted: #F5F5F5;
+    --clr-surface-on-inverted: #242424;
+    --clr-surface-veil: rgba(31, 31, 31, 0.82);
+    --clr-scrim: rgba(0, 0, 0, 0.6);
+
+    --clr-fg-1: #FFFFFF;
+    --clr-fg-2: #D6D6D6;
+    --clr-fg-3: #ADADAD;
+    --clr-fg-4: #A0A0A0;
+    --clr-fg-disabled: #5C5C5C;
+
+    --clr-stroke-divider: #363636;
+    --clr-stroke-outline: #4A4A4A;
+    --clr-stroke-accessible: #ADADAD;
+    --clr-stroke-focus: #FFFFFF;
+
+    --clr-success: #6BB700;
+    --clr-success-tint: #0D1A05;
+    --clr-success-stroke: #3D6613;
+    --clr-warning: #FFAA44;
+    --clr-warning-tint: #221504;
+    --clr-warning-stroke: #6C3B00;
+    --clr-danger: #F1707B;
+    --clr-danger-tint: #240A0D;
+    --clr-danger-stroke: #7A2431;
+
+    /* Dark-theme shadows are BLACK and heavier, never a light glow: elevation
+       reads as depth, and a white halo reads as a lit edge. */
+    --fl-shadow-2: 0 0 0.125rem rgba(0, 0, 0, 0.24), 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.28);
+    --fl-shadow-4: 0 0 0.125rem rgba(0, 0, 0, 0.24), 0 0.125rem 0.25rem rgba(0, 0, 0, 0.28);
+    --fl-shadow-8: 0 0 0.125rem rgba(0, 0, 0, 0.24), 0 0.25rem 0.5rem rgba(0, 0, 0, 0.28);
+    --fl-shadow-16: 0 0 0.125rem rgba(0, 0, 0, 0.24), 0 0.5rem 1rem rgba(0, 0, 0, 0.28);
+    --fl-shadow-28: 0 0 0.5rem rgba(0, 0, 0, 0.24), 0 0.875rem 1.75rem rgba(0, 0, 0, 0.4);
+    --fl-shadow-64: 0 0 0.5rem rgba(0, 0, 0, 0.4), 0 2rem 4rem rgba(0, 0, 0, 0.4);
+
+    --clr-code-comment: #6A9955;
+    --clr-code-string: #CE9178;
+    --clr-code-keyword: #569CD6;
+    --clr-code-type: #4EC9B0;
+    --clr-code-number: #B5CEA8;
+    --clr-code-tag: #569CD6;
+    --clr-code-attr: #9CDCFE;
+    --clr-code-punct: #ADADAD;
+}
+
+/* ============================================================================
+   3. BASE
+   ============================================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    /* Anchor navigation lands the heading below the sticky header rather than
+       under it - which is also WCAG 2.2's "focus not obscured" in practice,
+       since a keyboard user tabbing to an in-page link ends up there too.
+
+       Declared here and ONLY here. scroll-padding on the scroll container and
+       scroll-margin on the target are not alternatives, they ADD: setting both
+       to the header's height lands every deep link two header-heights down the
+       page, which reads as the browser having scrolled to the wrong place. */
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--shell-header-height) + 1.5rem);
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--fl-font-text);
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+    background-color: var(--clr-surface-2);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* No `overflow-x: hidden` on <body>. It looks like a harmless guard against a
+   stray wide element, and it is not: setting one axis to hidden forces the used
+   value of the OTHER axis to auto, which makes the body its own scroll
+   container and takes the job away from the viewport. Everything keyed to the
+   viewport then quietly stops working - scroll-padding-top no longer offsets an
+   anchor from under the sticky header, window.scrollY stays pinned at 0 so the
+   back-to-top button never appears, and a deep link lands with its heading
+   hidden behind the header.
+   Anything that IS too wide is made to scroll inside its own box instead: see
+   .docs-table-wrapper, .code-block pre and .diagram-wrapper. */
+
+html,
+body,
+.nav-panel,
+.docs-toc,
+pre,
+.docs-table-wrapper,
+.event-log {
+    scrollbar-width: thin;
+    scrollbar-color: var(--clr-stroke-outline) transparent;
+}
+
+code,
+kbd,
+pre,
+samp {
+    font-family: var(--fl-font-mono);
+    font-feature-settings: "calt" 0; /* keep ligatures out of code samples */
+}
+
+img,
+svg {
+    max-width: 100%;
+}
+
+/* One focus treatment for the whole site, declared once. Fluent 2's focus
+   indicator is a ring in the theme's focus colour, offset from the control so
+   it stays visible against a light fill, a dark fill and an image alike.
+
+   tabindex="-1" is excluded on purpose. Those elements are focus TARGETS, not
+   controls: the skip link's <main>, and the <h1> that Blazor's FocusOnNavigate
+   moves the cursor to after every client-side navigation. They are focused
+   programmatically so a screen reader starts reading at the new page - drawing
+   a ring around the page title on arrival announces nothing and looks like a
+   rendering fault. */
+:where(a, button, input, select, textarea, summary, [tabindex]):not([tabindex="-1"]):focus-visible {
+    outline: var(--fl-stroke-thick) solid var(--clr-stroke-focus);
+    outline-offset: var(--fl-stroke-thick);
+    border-radius: var(--fl-radius-md);
+}
+
+/* Our rule above skips these; without this the browser's own default ring
+   takes over and draws exactly what that rule was written to avoid. */
+:where([tabindex="-1"]):focus,
+:where([tabindex="-1"]):focus-visible {
+    outline: none;
+}
+
+::selection {
+    background: var(--clr-accent-tint-strong);
+    color: var(--clr-fg-1);
+}
+
+/* Text that only a screen reader reads - a heading for a table column whose
+   header cell is deliberately blank, for instance. Clipped rather than hidden,
+   because display:none and visibility:hidden take it out of the accessibility
+   tree along with the layout. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    border: 0;
+}
+
+/* Every control that looks pressable says so. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    color: var(--clr-fg-disabled);
+}
+
+/* --------------------------------------------------------------- skip link
+   The first thing in the tab order and the only way a keyboard user reaches
+   the article without walking the entire rail on every page. */
+
+.skip-link {
+    position: fixed;
+    top: var(--fl-space-s);
+    left: var(--fl-space-s);
+    z-index: 2000;
+    padding: var(--fl-space-s) var(--fl-space-l);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    text-decoration: none;
+    color: var(--clr-accent-on);
+    background: var(--clr-accent);
+    border-radius: var(--fl-radius-md);
+    box-shadow: var(--fl-shadow-16);
+    /* Moved off-screen rather than display:none so it stays focusable. */
+    transform: translateY(-200%);
+    transition: transform var(--fl-dur-fast) var(--fl-curve-decelerate-mid);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+    outline-color: var(--clr-stroke-focus);
+}
+
+/* ============================================================================
+   4. BSWUP SPLASH
+   Branded overrides on top of _content/Bit.Bswup/bit-bswup.progress.css. The
+   splash is painted by the host document before any theme-aware custom
+   property is meaningful, so it carries its own fixed palette rather than
+   reading the tokens above.
+   ============================================================================ */
+
+#bit-bswup {
+    background: #141414;
+    background:
+        radial-gradient(60rem 40rem at 50% -10%, rgba(15, 108, 189, 0.35), transparent 70%),
+        linear-gradient(180deg, #1F1F1F 0%, #141414 100%);
+    color: #FFFFFF;
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+.splash-container {
+    max-width: 24rem;
+    margin-top: 24vh;
+}
+
+.splash-logo {
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0.5rem 1.5rem rgba(0, 0, 0, 0.5));
+}
+
+#bit-bswup .bit-bswup-title {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0.25rem 0;
+}
+
+#bit-bswup .bit-bswup-description {
+    color: #ADADAD;
+    font-size: 0.875rem;
+}
+
+#bit-bswup .bit-bswup-progress {
+    background-color: rgba(255, 255, 255, 0.12);
+    height: 0.25rem;
+    border-radius: 624.9375rem;
+    overflow: hidden;
+}
+
+#bit-bswup #bit-bswup-progress-bar {
+    background: linear-gradient(90deg, #0F6CBD, #479EF5);
+    height: 0.25rem;
+    border-radius: 624.9375rem;
+    transition: width 0.2s cubic-bezier(0.33, 0, 0.67, 1);
+}
+
+#bit-bswup #bit-bswup-percent {
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The failure panel, for when an install cannot complete. bit-bswup.progress.css
+   styles it for a light page (#fde7e9 on #590000); the splash it appears on here
+   is dark, so it is restated in the splash's own fixed palette - which, like the
+   rest of this block, cannot be a theme token because none of them are resolved
+   yet when the splash paints. */
+#bit-bswup .bit-bswup-error {
+    background-color: rgba(241, 112, 123, 0.1);
+    border-color: #7A2431;
+    border-radius: 0.375rem;
+    color: #F1707B;
+}
+
+#bit-bswup .bit-bswup-error-title {
+    color: #FFFFFF;
+}
+
+#bit-bswup .bit-bswup-error-message {
+    color: #D6D6D6;
+}
+
+#bit-bswup .bit-bswup-error-details {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 0.25rem;
+    color: #ADADAD;
+}
+
+#bit-bswup-error-retry {
+    background: #0F6CBD;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.375rem 1rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.1s cubic-bezier(0.33, 0, 0.67, 1);
+}
+
+#bit-bswup-error-retry:hover {
+    background: #115EA3;
+}
+
+/* ============================================================================
+   5. HEADER
+   ============================================================================ */
+
+.header {
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    position: sticky;
+    background-color: var(--clr-surface-veil);
+    backdrop-filter: blur(1.25rem) saturate(180%);
+    -webkit-backdrop-filter: blur(1.25rem) saturate(180%);
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.header .container {
+    display: flex;
+    gap: var(--fl-space-l);
+    align-items: center;
+    justify-content: space-between;
+    height: var(--shell-header-height);
+    max-width: var(--shell-max-width);
+    padding: 0 var(--fl-space-l);
+    margin: 0 auto;
+}
+
+.header-group {
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-xs);
+    min-width: 0;
+}
+
+/* ---- brand lockup --------------------------------------------------------
+   The bit mark, the product name, and the one-word statement of what it is.
+   The name is set in the Display cut, which is what Fluent 2 asks for at this
+   size, and is a real text node so it is searchable and translatable. */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-mnw);
+    margin-right: var(--fl-space-m);
+    padding: var(--fl-space-xs);
+    text-decoration: none;
+    border-radius: var(--fl-radius-md);
+    color: var(--clr-fg-1);
+}
+
+.brand:hover {
+    background-color: var(--clr-surface-1-hover);
+}
+
+.brand-mark {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.brand-name {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -0.01em;
+    color: var(--clr-fg-1);
+}
+
+.brand-tagline {
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+    margin-top: 0.1875rem;
+}
+
+/* ---- top-level links ----------------------------------------------------- */
+
+.header .link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding: 0 var(--fl-space-m);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-medium);
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--clr-fg-2);
+    border-radius: var(--fl-radius-md);
+    transition: color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.header .link:hover {
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1-hover);
+}
+
+.header .link:active {
+    background-color: var(--clr-surface-1-pressed);
+}
+
+.header .link.active {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-ink);
+}
+
+/* Fluent 2 marks the selected item with a rounded indicator rather than by
+   colour alone - which is also what keeps the state legible without relying on
+   hue. */
+.header .link.active::after {
+    content: "";
+    position: absolute;
+    left: var(--fl-space-m);
+    right: var(--fl-space-m);
+    bottom: -0.6875rem;
+    height: var(--fl-stroke-thick);
+    border-radius: var(--fl-radius-circular);
+    background: var(--clr-accent-stroke);
+}
+
+/* ---- icon buttons --------------------------------------------------------
+   One shape for every square control in the bar: the theme toggle, the GitHub
+   link and the drawer button. */
+
+.icon-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--clr-fg-2);
+    border-radius: var(--fl-radius-md);
+    transition: color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.icon-btn:hover {
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1-hover);
+}
+
+.icon-btn:active {
+    background-color: var(--clr-surface-1-pressed);
+}
+
+.icon-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: block;
+}
+
+/* Kept as its own class name because the previous markup and demo.js both
+   address the drawer button by it. */
+.menu-btn {
+    display: none;
+}
+
+/* ---- keyboard hint ------------------------------------------------------- */
+
+.kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 var(--fl-space-xs);
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    line-height: 1;
+    color: var(--clr-fg-3);
+    background: var(--clr-surface-3);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-bottom-width: var(--fl-stroke-thick);
+    border-radius: var(--fl-radius-sm);
+}
+
+/* ============================================================================
+   6. HEADER SEARCH
+   The shape of a Fluent 2 SearchBox, with the results hanging off it as a
+   Popover surface.
+   ============================================================================ */
+
+.docs-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    margin-right: var(--fl-space-xs);
+}
+
+.docs-search-icon {
+    position: absolute;
+    left: var(--fl-space-s);
+    width: 1rem;
+    height: 1rem;
+    color: var(--clr-fg-3);
+    pointer-events: none;
+}
+
+.docs-search-kbd {
+    position: absolute;
+    right: var(--fl-space-snug);
+    pointer-events: none;
+}
+
+.docs-search-input {
+    width: 13rem;
+    height: 2rem;
+    max-width: 100%;
+    font-family: inherit;
+    font-size: var(--fl-size-300);
+    padding: 0 2.75rem 0 2rem;
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    /* Fluent 2's input: a hairline box with a heavier bottom stroke that turns
+       accent-coloured on focus. */
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-accessible);
+    border-radius: var(--fl-radius-md);
+    transition: border-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                width var(--fl-dur-normal) var(--fl-curve-decelerate-mid);
+}
+
+.docs-search-input:hover {
+    border-color: var(--clr-stroke-accessible);
+}
+
+.docs-search-input:focus {
+    outline: none;
+    width: 17rem;
+    border-color: var(--clr-stroke-outline);
+    border-bottom-color: var(--clr-accent-stroke);
+    box-shadow: 0 var(--fl-stroke-thin) 0 0 var(--clr-accent-stroke);
+}
+
+.docs-search-input::placeholder {
+    color: var(--clr-fg-3);
+}
+
+.docs-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+/* This really does float over the page, so its elevation is information. */
+.docs-search-results {
+    position: absolute;
+    top: calc(100% + var(--fl-space-s));
+    right: 0;
+    z-index: 1300;
+    width: 24rem;
+    max-width: 88vw;
+    max-height: 26rem;
+    overflow-y: auto;
+    margin: 0;
+    padding: var(--fl-space-xs);
+    list-style: none;
+    background-color: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+    box-shadow: var(--fl-shadow-16);
+}
+
+.docs-search-results li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 var(--fl-space-m);
+    align-items: baseline;
+    cursor: pointer;
+    font-size: var(--fl-size-300);
+    padding: var(--fl-space-s) var(--fl-space-mnw);
+    border-radius: var(--fl-radius-md);
+}
+
+.docs-search-results li:hover,
+.docs-search-results li.docs-search-active {
+    background-color: var(--clr-surface-1-hover);
+}
+
+.docs-search-result-title {
+    font-weight: var(--fl-weight-semibold);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--clr-fg-1);
+}
+
+.docs-search-result-section {
+    grid-column: 2;
+    grid-row: 1;
+    flex-shrink: 0;
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+}
+
+/* The description is what turns a list of page names into a list of answers. */
+.docs-search-result-desc {
+    grid-column: 1 / -1;
+    margin-top: var(--fl-space-xxs);
+    font-size: var(--fl-size-200);
+    line-height: var(--fl-leading-300);
+    color: var(--clr-fg-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.docs-search-empty {
+    display: block;
+    cursor: default;
+    color: var(--clr-fg-3);
+}
+
+.docs-search-results li.docs-search-empty:hover {
+    background-color: transparent;
+}
+
+/* ---- theme-dependent artwork ---------------------------------------------
+   The pairs are exact complements, so exactly one of each is visible in every
+   possible state. */
+
+:root[data-theme$='dark'] .light-theme {
+    display: none;
+}
+
+:root[data-theme$='dark'] .brand-mark,
+:root[data-theme$='dark'] .bit-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([data-theme$='dark']) .dark-theme {
+    display: none;
+}
+
+:root:not([data-theme$='dark']) .brand-mark,
+:root:not([data-theme$='dark']) .bit-logo {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+/* ============================================================================
+   7. SHELL LAYOUT
+   Three columns on a wide screen - navigation, article, "On this page" - and
+   one column with a drawer on a narrow one.
+   ============================================================================ */
+
+.layout-body {
+    display: flex;
+    /* stretch, not flex-start: the rail is a column with its own surface colour
+       and it has to reach the bottom of the DOCUMENT, not the bottom of the
+       viewport. A sticky box one viewport tall leaves a hard edge across the
+       page wherever the fold happens to fall. The rail stretches; the thing
+       that sticks is the box inside it. */
+    align-items: stretch;
+    max-width: var(--shell-max-width);
+    margin: 0 auto;
+}
+
+.site-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.page-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--fl-space-4xl) var(--fl-space-3xl) var(--fl-space-6xl);
+}
+
+/* The documentation column. A measure cap rather than a container cap: prose
+   set edge to edge across a 1500px screen is unreadable no matter how wide the
+   frame is allowed to be. */
+.page-content {
+    max-width: var(--shell-measure);
+}
+
+/* The home page is a landing page: full width, no rail, its own sections. */
+.page-container.home-page {
+    max-width: 78rem;
+    padding-top: var(--fl-space-3xl);
+}
+
+.page-container.home-page .page-content {
+    max-width: none;
+}
+
+/* ============================================================================
+   8. NAVIGATION RAIL
+   ============================================================================ */
+
+.nav-panel {
+    flex: 0 0 var(--shell-rail-width);
+    width: var(--shell-rail-width);
+    background-color: var(--clr-surface-1);
+    border-right: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+/* dvh first: on a phone, 100vh is the height the viewport has with the browser
+   chrome RETRACTED, so the last rows of a full rail sit under the address bar
+   until you scroll. Declared as a pair so a browser without dvh keeps the vh. */
+.nav-panel-sticky {
+    position: sticky;
+    top: var(--shell-header-height);
+    height: calc(100vh - var(--shell-header-height));
+    height: calc(100dvh - var(--shell-header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--fl-space-l) var(--fl-space-m) var(--fl-space-4xl);
+}
+
+.nav-panel-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-s);
+}
+
+.nav-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-search-icon {
+    position: absolute;
+    left: var(--fl-space-s);
+    width: 1rem;
+    height: 1rem;
+    color: var(--clr-fg-3);
+    pointer-events: none;
+}
+
+.nav-search-input {
+    width: 100%;
+    height: 2rem;
+    font-family: inherit;
+    font-size: var(--fl-size-300);
+    padding: 0 var(--fl-space-mnw) 0 2rem;
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    border-bottom-color: var(--clr-stroke-accessible);
+    border-radius: var(--fl-radius-md);
+    transition: border-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.nav-search-input:hover {
+    border-color: var(--clr-stroke-accessible);
+}
+
+.nav-search-input:focus {
+    outline: none;
+    border-bottom-color: var(--clr-accent-stroke);
+    box-shadow: 0 var(--fl-stroke-thin) 0 0 var(--clr-accent-stroke);
+}
+
+.nav-search-input::placeholder {
+    color: var(--clr-fg-3);
+}
+
+.nav-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.nav-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-group {
+    margin: var(--fl-space-l) var(--fl-space-s) var(--fl-space-xs);
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+}
+
+.nav-group:first-child {
+    margin-top: var(--fl-space-s);
+}
+
+/* Fluent 2's NavItem: a rounded row, a subtle fill when selected, and a pill
+   indicator on the inline start edge. */
+.nav-list a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: var(--fl-space-snug) var(--fl-space-mnw) var(--fl-space-snug) var(--fl-space-m);
+    font-size: var(--fl-size-300);
+    text-decoration: none;
+    color: var(--clr-fg-2);
+    border-radius: var(--fl-radius-md);
+    transition: background-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.nav-list a:hover {
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1-hover);
+}
+
+.nav-list a:active {
+    background-color: var(--clr-surface-1-pressed);
+}
+
+.nav-list a.active {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1-hover);
+}
+
+.nav-list a.active::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: var(--fl-stroke-thicker);
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--fl-stroke-thicker);
+    height: 1rem;
+    border-radius: var(--fl-radius-circular);
+    background: var(--clr-accent-stroke);
+}
+
+/* Set by the search filter in demo.js on the links and groups that no longer
+   match. */
+.nav-hidden {
+    display: none !important;
+}
+
+.nav-empty {
+    display: none;
+    padding: var(--fl-space-s) var(--fl-space-mnw);
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-3);
+}
+
+.nav-list.is-empty .nav-empty {
+    display: block;
+}
+
+.nav-panel-backdrop {
+    display: none;
+}
+
+/* ============================================================================
+   9. "ON THIS PAGE"
+   Built from the article's own headings by demo.js, so a page never has to
+   maintain a second copy of its outline.
+   ============================================================================ */
+
+.docs-toc {
+    flex: 0 0 var(--shell-toc-width);
+    width: var(--shell-toc-width);
+    /* It paints no surface of its own, so it can stay a sticky flex item -
+       but it has to opt out of the stretch above, or there is nothing left for
+       sticky to move within. */
+    align-self: flex-start;
+    position: sticky;
+    top: var(--shell-header-height);
+    max-height: calc(100vh - var(--shell-header-height));
+    max-height: calc(100dvh - var(--shell-header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--fl-space-4xl) var(--fl-space-l) var(--fl-space-3xl) 0;
+    /* Empty until demo.js fills it - and on pages with too few headings it stays
+       empty, so it must not reserve a visible column in that case. */
+}
+
+.docs-toc:empty {
+    display: none;
+}
+
+.docs-toc-title {
+    margin: 0 0 var(--fl-space-s);
+    padding-left: var(--fl-space-m);
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+}
+
+.docs-toc-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.docs-toc-link {
+    display: block;
+    padding: var(--fl-space-xs) var(--fl-space-s) var(--fl-space-xs) var(--fl-space-m);
+    margin-left: calc(var(--fl-stroke-thin) * -1);
+    border-left: var(--fl-stroke-thick) solid transparent;
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-300);
+    text-decoration: none;
+    color: var(--clr-fg-3);
+    transition: color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                border-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.docs-toc-link:hover {
+    color: var(--clr-fg-1);
+}
+
+.docs-toc-link.is-current {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-ink);
+    border-left-color: var(--clr-accent-stroke);
+}
+
+/* Second-level entries are indented rather than given their own list, so the
+   accent rail stays one continuous line down the whole outline. */
+.docs-toc-sub .docs-toc-link {
+    padding-left: var(--fl-space-xxl);
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-4);
+}
+
+.docs-toc-sub .docs-toc-link:hover {
+    color: var(--clr-fg-1);
+}
+
+/* --------------------------------------------------------- heading anchors
+   Added by demo.js to every heading that already carries an id. Hidden until
+   the heading is hovered or the link itself is focused, so the outline of the
+   page is not littered with hashes - but always reachable by keyboard. */
+
+.heading-anchor {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: var(--fl-space-s);
+    vertical-align: middle;
+    border-radius: var(--fl-radius-md);
+    color: var(--clr-fg-3);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.heading-anchor svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+:is(h2, h3, h4):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+    opacity: 1;
+}
+
+.heading-anchor:hover {
+    color: var(--clr-accent-ink);
+    background: var(--clr-surface-1-hover);
+}
+
+/* Touch devices have no hover, so the affordance is simply always there. */
+@media (hover: none) {
+    .heading-anchor {
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   10. PROSE
+   ============================================================================ */
+
+.page-content h1 {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-800);
+    line-height: var(--fl-leading-800);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -0.02em;
+    color: var(--clr-fg-1);
+    margin: 0 0 var(--fl-space-m);
+    overflow-wrap: anywhere;
+}
+
+.page-content h2 {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-600);
+    line-height: var(--fl-leading-600);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -0.01em;
+    color: var(--clr-fg-1);
+    margin: var(--fl-space-5xl) 0 var(--fl-space-l);
+    padding-bottom: var(--fl-space-m);
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    overflow-wrap: anywhere;
+}
+
+.page-content h3 {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-500);
+    line-height: var(--fl-leading-500);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+    margin: var(--fl-space-3xl) 0 var(--fl-space-s);
+    overflow-wrap: anywhere;
+}
+
+.page-content h4 {
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+    margin: var(--fl-space-xxl) 0 var(--fl-space-xs);
+}
+
+.page-content p,
+.page-content li {
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+    /* Prose is full of unbreakable identifiers
+       (_framework/blazor.web.<fingerprint>.js). At a phone's measure a single
+       one of those is wider than the column and would push the whole page into
+       a horizontal scroll. */
+    overflow-wrap: break-word;
+}
+
+.page-content p {
+    margin: 0 0 var(--fl-space-l);
+}
+
+.page-content ul,
+.page-content ol {
+    margin: 0 0 var(--fl-space-l);
+    padding-left: var(--fl-space-xxl);
+}
+
+.page-content li {
+    margin-bottom: var(--fl-space-s);
+}
+
+.page-content li::marker {
+    color: var(--clr-fg-3);
+}
+
+.page-content strong,
+.page-content b {
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+.page-content a {
+    color: var(--clr-accent-ink);
+    text-decoration: none;
+    /* An underline that is drawn but transparent keeps the text from reflowing
+       by a hairline when it appears on hover. */
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.15em;
+    transition: text-decoration-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.page-content a:hover {
+    color: var(--clr-accent-ink-hover);
+    text-decoration-color: currentColor;
+}
+
+/* The lead paragraph: one size up, quieter colour, sets the page's promise.
+   Qualified by .page-content so it outweighs the `.page-content p` rule above -
+   a bare .docs-lead is the weaker selector and would lose every property the
+   two have in common, which is all of them. */
+.page-content .docs-lead {
+    font-size: var(--fl-size-500);
+    line-height: var(--fl-leading-500);
+    color: var(--clr-fg-3);
+    margin: 0 0 var(--fl-space-3xl);
+    max-width: 44rem;
+}
+
+.page-content code:not(pre code) {
+    font-family: var(--fl-font-mono);
+    font-size: 0.875em;
+    background: var(--clr-surface-3);
+    color: var(--clr-fg-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-sm);
+    padding: 0.0625rem 0.3125rem;
+    /* anywhere rather than break-word: an inline identifier has no spaces to
+       break at, so break-word would still let it overhang. Sample code keeps
+       its own overflow-x scroll - this only applies to code set in a sentence. */
+    overflow-wrap: anywhere;
+}
+
+.page-content a code {
+    color: inherit;
+    border-color: currentColor;
+}
+
+.page-content hr {
+    height: 0;
+    margin: var(--fl-space-3xl) 0;
+    border: none;
+    border-top: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.page-content em {
+    color: var(--clr-fg-1);
+}
+
+/* ============================================================================
+   11. TABLES
+   ============================================================================ */
+
+/* An identifier is a single word to the person reading it, and a table column is
+   narrow. `overflow-wrap: anywhere` on inline code is right inside a sentence,
+   where the alternative is a paragraph that overflows the screen; in a cell it
+   produces UPDATE_FOUN / D split across two lines. The wrapper already scrolls
+   sideways, so here the cell is allowed to push the table wider instead.
+
+   The :not() is repeated rather than dropped because it is what the rule being
+   overridden carries: a complex selector inside :not() contributes its own
+   specificity, so `.page-content td code` alone is the WEAKER selector of the
+   two and loses. */
+.page-content td code:not(pre code),
+.page-content th code:not(pre code) {
+    overflow-wrap: normal;
+}
+
+.docs-table-wrapper {
+    overflow-x: auto;
+    margin: var(--fl-space-l) 0 var(--fl-space-xxl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+}
+
+.page-content table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fl-size-300);
+}
+
+/* The description column carries a floor so a narrow screen SCROLLS the wrapper
+   rather than crushing the prose to one word per line. width:100% above is only
+   a preferred width - a table cannot lay out below its minimum content width,
+   so once this floor no longer fits, the table outgrows .docs-table-wrapper and
+   its overflow-x takes over. Keyed off the last column rather than a min-width
+   on the table itself, so it holds for the two- and three-column tables alike
+   without either needing to know the other's shape. */
+.page-content td:last-child,
+.page-content th:last-child {
+    min-width: 16rem;
+}
+
+.page-content th {
+    text-align: left;
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+    background: var(--clr-surface-3);
+    padding: var(--fl-space-m) var(--fl-space-l);
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    white-space: nowrap;
+}
+
+.page-content thead tr:first-child th:first-child {
+    border-top-left-radius: var(--fl-radius-lg);
+}
+
+.page-content thead tr:first-child th:last-child {
+    border-top-right-radius: var(--fl-radius-lg);
+}
+
+.page-content td {
+    padding: var(--fl-space-m) var(--fl-space-l);
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    vertical-align: top;
+}
+
+.page-content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.page-content tbody tr {
+    transition: background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.page-content tbody tr:hover {
+    background: var(--clr-surface-1-hover);
+}
+
+.page-content td:first-child {
+    white-space: nowrap;
+    color: var(--clr-fg-1);
+}
+
+.page-content td p:last-child,
+.page-content td ul:last-child,
+.page-content td ol:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================================================
+   12. CODE BLOCKS
+   ============================================================================ */
+
+.code-block {
+    margin: var(--fl-space-l) 0 var(--fl-space-xxl);
+    overflow: hidden;
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+}
+
+.code-block-header {
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-m);
+    justify-content: space-between;
+    padding: var(--fl-space-snug) var(--fl-space-snug) var(--fl-space-snug) var(--fl-space-l);
+    background: var(--clr-surface-1);
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.code-block-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--fl-space-mnw);
+    min-width: 0;
+}
+
+.code-block-lang {
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+}
+
+/* An optional file name. Naming the file a sample belongs in is most of the
+   instruction on a page about configuration. */
+.code-block-title {
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.code-block-copy {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fl-space-snug);
+    height: 1.75rem;
+    padding: 0 var(--fl-space-mnw);
+    font-family: inherit;
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-2);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    border-radius: var(--fl-radius-md);
+    transition: color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                background-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                border-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.code-block-copy svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex: none;
+}
+
+.code-block-copy:hover:not(:disabled) {
+    color: var(--clr-fg-1);
+    background: var(--clr-surface-1-hover);
+    border-color: var(--clr-stroke-accessible);
+}
+
+/* The confirmation state, set by demo.js. Colour is not the only signal - the
+   label changes to "Copied" and the icon changes to a check. */
+.code-block-copy.is-done {
+    color: var(--clr-success);
+    border-color: var(--clr-success);
+}
+
+.code-block-copy.is-failed {
+    color: var(--clr-danger);
+    border-color: var(--clr-danger);
+}
+
+/* Exactly one of the two glyphs is ever laid out, so the button never changes
+   width when it flips to its confirmation - a resize under the pointer is the
+   classic way a "copied!" state ends up feeling broken. */
+.code-block-copy-check {
+    display: none;
+}
+
+.code-block-copy.is-done .code-block-copy-icon,
+.code-block-copy.is-failed .code-block-copy-icon {
+    display: none;
+}
+
+.code-block-copy.is-done .code-block-copy-check {
+    display: block;
+}
+
+/* The button is disabled for the second and a half it shows its result; the
+   generic disabled colour would erase the very signal it is showing. */
+.code-block-copy:disabled {
+    cursor: default;
+    background: var(--clr-surface-1);
+}
+
+.code-block-copy-label {
+    min-width: 3rem;
+    text-align: left;
+}
+
+.code-block pre {
+    margin: 0;
+    width: 100%;
+    display: block;
+    overflow: auto;
+    direction: ltr;
+    tab-size: 4;
+    line-height: 1.65;
+    font-size: var(--fl-size-300);
+    max-height: 32rem;
+    padding: var(--fl-space-l);
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-3);
+}
+
+.code-block code {
+    font-family: var(--fl-font-mono);
+    white-space: pre;
+}
+
+/* ---- syntax tokens -------------------------------------------------------
+   Emitted by Shared/CodeBlock.razor.cs. A token type with no rule here simply
+   renders as plain code, which is the intended failure mode. */
+
+.tok-cmt { color: var(--clr-code-comment); font-style: italic; }
+.tok-str { color: var(--clr-code-string); }
+.tok-kw  { color: var(--clr-code-keyword); }
+.tok-typ { color: var(--clr-code-type); }
+.tok-num { color: var(--clr-code-number); }
+.tok-tag { color: var(--clr-code-tag); }
+.tok-atr { color: var(--clr-code-attr); }
+.tok-pun { color: var(--clr-code-punct); }
+
+/* ============================================================================
+   13. CALLOUTS
+   Fluent 2's MessageBar: an icon, a title, a body, and a tinted surface whose
+   accent stripe repeats the icon's colour.
+   ============================================================================ */
+
+.callout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--fl-space-xxs) var(--fl-space-m);
+    margin: var(--fl-space-xxl) 0;
+    padding: var(--fl-space-m) var(--fl-space-l);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-inline-start: var(--fl-stroke-thicker) solid var(--clr-accent-stroke);
+    border-radius: var(--fl-radius-lg);
+    background: var(--clr-surface-3);
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+}
+
+.callout-icon {
+    grid-row: 1 / span 2;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.1875rem;
+    color: var(--clr-accent-ink);
+}
+
+.callout-title {
+    font-weight: var(--fl-weight-semibold);
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-1);
+}
+
+.callout-body > :last-child {
+    margin-bottom: 0;
+}
+
+.callout p {
+    margin: var(--fl-space-xs) 0 0;
+    font-size: var(--fl-size-300);
+}
+
+.callout ul,
+.callout ol {
+    margin: var(--fl-space-xs) 0 0;
+    font-size: var(--fl-size-300);
+}
+
+.callout li {
+    font-size: var(--fl-size-300);
+}
+
+.callout-note {
+    border-inline-start-color: var(--clr-accent-stroke);
+    background: var(--clr-accent-tint);
+}
+
+.callout-note .callout-icon { color: var(--clr-accent-ink); }
+
+.callout-tip {
+    border-inline-start-color: var(--clr-success);
+    background: var(--clr-success-tint);
+}
+
+.callout-tip .callout-icon { color: var(--clr-success); }
+
+.callout-warning {
+    border-inline-start-color: var(--clr-warning);
+    background: var(--clr-warning-tint);
+}
+
+.callout-warning .callout-icon { color: var(--clr-warning); }
+
+.callout-danger {
+    border-inline-start-color: var(--clr-danger);
+    background: var(--clr-danger-tint);
+}
+
+.callout-danger .callout-icon { color: var(--clr-danger); }
+
+/* ============================================================================
+   14. BUTTONS
+   Fluent 2's Button at the medium size: 32px tall, 4px radius, semibold 14px
+   label, a hairline stroke on every variant so the shape survives on any fill.
+   ============================================================================ */
+
+.button-primary,
+.button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fl-space-s);
+    min-height: 2rem;
+    padding: var(--fl-space-xs) var(--fl-space-m);
+    font-family: inherit;
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    line-height: var(--fl-leading-300);
+    text-decoration: none !important;
+    white-space: nowrap;
+    border-radius: var(--fl-radius-md);
+    border: var(--fl-stroke-thin) solid transparent;
+    transition: background-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                border-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.button-primary svg,
+.button-secondary svg {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+}
+
+.button-primary {
+    background: var(--clr-accent);
+    color: var(--clr-accent-on) !important;
+    border-color: var(--clr-accent);
+}
+
+.button-primary:hover {
+    background: var(--clr-accent-hover);
+    border-color: var(--clr-accent-hover);
+    color: var(--clr-accent-on) !important;
+}
+
+.button-primary:active {
+    background: var(--clr-accent-pressed);
+    border-color: var(--clr-accent-pressed);
+}
+
+.button-secondary {
+    background: var(--clr-surface-1);
+    color: var(--clr-fg-1) !important;
+    border-color: var(--clr-stroke-outline);
+}
+
+.button-secondary:hover {
+    background: var(--clr-surface-1-hover);
+    border-color: var(--clr-stroke-accessible);
+    color: var(--clr-fg-1) !important;
+}
+
+.button-secondary:active {
+    background: var(--clr-surface-1-pressed);
+}
+
+.button-danger {
+    color: var(--clr-danger) !important;
+    border-color: var(--clr-danger);
+}
+
+.button-danger:hover {
+    color: var(--clr-danger) !important;
+    border-color: var(--clr-danger);
+    background: var(--clr-danger-tint);
+}
+
+.button-primary:disabled,
+.button-secondary:disabled {
+    background: var(--clr-surface-3);
+    color: var(--clr-fg-disabled) !important;
+    border-color: var(--clr-stroke-divider);
+}
+
+/* A button sized for a landing page rather than for a toolbar. */
+.button-large {
+    min-height: 2.75rem;
+    padding: var(--fl-space-mnw) var(--fl-space-xxl);
+    font-size: var(--fl-size-400);
+    border-radius: var(--fl-radius-md);
+}
+
+.button-large svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+/* ============================================================================
+   15. HOME PAGE
+   ============================================================================ */
+
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: var(--fl-space-6xl);
+    align-items: center;
+    padding: var(--fl-space-4xl) 0 var(--fl-space-6xl);
+}
+
+.hero-copy {
+    min-width: 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fl-space-s);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.02em;
+    color: var(--clr-accent-ink);
+    background: var(--clr-accent-tint);
+    border: var(--fl-stroke-thin) solid var(--clr-accent-tint-strong);
+    border-radius: var(--fl-radius-circular);
+    padding: var(--fl-space-xs) var(--fl-space-m);
+    margin-bottom: var(--fl-space-xl);
+    text-decoration: none;
+}
+
+.hero-badge svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.hero h1 {
+    font-family: var(--fl-font-display);
+    font-size: clamp(2.25rem, 1.4rem + 2.8vw, 3.5rem);
+    line-height: 1.1;
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: -0.025em;
+    color: var(--clr-fg-1);
+    margin: 0 0 var(--fl-space-l);
+    /* Keeps a two-line headline from leaving one orphaned word on line two. */
+    text-wrap: balance;
+    border: none;
+    padding: 0;
+}
+
+.hero .accent {
+    color: var(--clr-accent-ink);
+}
+
+.hero p {
+    max-width: 34rem;
+    margin: 0 0 var(--fl-space-3xl);
+    font-size: var(--fl-size-500);
+    line-height: var(--fl-leading-500);
+    color: var(--clr-fg-3);
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fl-space-m);
+    margin-bottom: var(--fl-space-xl);
+}
+
+/* The install command, presented as the thing you copy rather than as prose. */
+.hero-install {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fl-space-m);
+    max-width: 100%;
+    padding: var(--fl-space-s) var(--fl-space-s) var(--fl-space-s) var(--fl-space-l);
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-1);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+}
+
+.page-content .hero-install code {
+    padding: 0;
+    background: none;
+    border: none;
+    font-size: var(--fl-size-300);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.hero-install .code-block-copy {
+    height: 1.75rem;
+}
+
+/* ---- the hero's product shot ---------------------------------------------
+   A faithful, static reproduction of the splash this very site boots with:
+   the fastest way to show what the library does is to show what it looks like.
+   Marked aria-hidden in the markup - it is an illustration of the paragraph
+   beside it, not new information. */
+
+.hero-visual {
+    position: relative;
+    min-width: 0;
+}
+
+.splash-shot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fl-space-m);
+    aspect-ratio: 4 / 3;
+    padding: var(--fl-space-3xl);
+    text-align: center;
+    color: #FFFFFF;
+    background:
+        radial-gradient(28rem 20rem at 50% -10%, rgba(15, 108, 189, 0.45), transparent 70%),
+        linear-gradient(180deg, #1F1F1F 0%, #141414 100%);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-2xl);
+    box-shadow: var(--fl-shadow-28);
+    overflow: hidden;
+}
+
+.splash-shot-chrome {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-snug);
+    height: 2rem;
+    padding: 0 var(--fl-space-m);
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: var(--fl-stroke-thin) solid rgba(255, 255, 255, 0.08);
+}
+
+.splash-shot-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.splash-shot-logo {
+    width: 3.5rem;
+    height: 3.5rem;
+    filter: drop-shadow(0 0.5rem 1.5rem rgba(0, 0, 0, 0.5));
+}
+
+/* Qualified by .page-content, and .splash-shot named in every one of them,
+   because the shot's paragraphs sit inside the article and `.page-content p`
+   would otherwise paint them in the light theme's body colour - dark grey text
+   on the shot's near-black surface. */
+.page-content .splash-shot p {
+    margin: 0;
+    color: #FFFFFF;
+}
+
+.page-content .splash-shot .splash-shot-title {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-500);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.page-content .splash-shot .splash-shot-sub {
+    font-size: var(--fl-size-300);
+    color: #ADADAD;
+}
+
+.splash-shot-bar {
+    width: min(18rem, 100%);
+    height: 0.25rem;
+    margin-top: var(--fl-space-s);
+    border-radius: var(--fl-radius-circular);
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.splash-shot-fill {
+    display: block;
+    height: 100%;
+    width: 68%;
+    border-radius: var(--fl-radius-circular);
+    background: linear-gradient(90deg, #0F6CBD, #479EF5);
+    /* Runs once and stops. A looping bar in a hero is an attention magnet with
+       nothing to say after the first second. */
+    animation: splash-fill var(--fl-dur-slower) var(--fl-curve-decelerate-mid) 1 both;
+    animation-duration: 1200ms;
+}
+
+@keyframes splash-fill {
+    from { width: 4%; }
+    to { width: 68%; }
+}
+
+.page-content .splash-shot .splash-shot-percent {
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-300);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- stat strip ---------------------------------------------------------- */
+
+.stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+    margin: 0 0 var(--fl-space-5xl);
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-xxs);
+}
+
+.stat-value {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-600);
+    line-height: var(--fl-leading-600);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+.stat-label {
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-300);
+    color: var(--clr-fg-3);
+}
+
+/* ---- section headers on the landing page --------------------------------- */
+
+.section-head {
+    max-width: 42rem;
+    margin: 0 0 var(--fl-space-xxl);
+}
+
+.section-eyebrow {
+    display: block;
+    margin-bottom: var(--fl-space-s);
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-accent-ink);
+}
+
+.page-container.home-page .page-content h2 {
+    font-size: var(--fl-size-700);
+    line-height: var(--fl-leading-700);
+    margin: 0 0 var(--fl-space-m);
+    padding: 0;
+    border: none;
+}
+
+.section-head p {
+    margin: 0;
+    font-size: var(--fl-size-400);
+    color: var(--clr-fg-3);
+}
+
+.home-section {
+    margin: 0 0 var(--fl-space-6xl);
+}
+
+/* ---- feature cards ------------------------------------------------------- */
+
+.feature-grid {
+    display: grid;
+    /* min() rather than a bare 17rem: below that width an auto-fill track keeps
+       its floor and the grid overhangs its container instead of collapsing. */
+    grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+}
+
+.feature-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+    color: var(--clr-fg-1) !important;
+    text-decoration: none !important;
+    transition: border-color var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                box-shadow var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                transform var(--fl-dur-fast) var(--fl-curve-decelerate-mid);
+}
+
+.feature-card:hover {
+    border-color: var(--clr-accent-stroke);
+    box-shadow: var(--fl-shadow-8);
+    transform: translateY(-0.125rem);
+}
+
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: var(--fl-space-l);
+    color: var(--clr-accent-ink);
+    background: var(--clr-accent-tint);
+    border-radius: var(--fl-radius-lg);
+}
+
+.feature-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.feature-card h3 {
+    margin: 0 0 var(--fl-space-s) !important;
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+.feature-card p {
+    margin: 0;
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+}
+
+.feature-more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fl-space-xs);
+    margin-top: var(--fl-space-l);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-ink);
+}
+
+.feature-more svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: transform var(--fl-dur-fast) var(--fl-curve-decelerate-mid);
+}
+
+.feature-card:hover .feature-more svg {
+    transform: translateX(0.1875rem);
+}
+
+/* ---- reading paths -------------------------------------------------------
+   Ordered rather than catalogued, so a first-time reader is handed a route
+   through the docs instead of an index. */
+
+.path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+}
+
+.path-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+    color: var(--clr-fg-1) !important;
+    text-decoration: none !important;
+    transition: border-color var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                box-shadow var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                transform var(--fl-dur-fast) var(--fl-curve-decelerate-mid);
+}
+
+.path-card:hover {
+    border-color: var(--clr-accent-stroke);
+    box-shadow: var(--fl-shadow-8);
+    transform: translateY(-0.125rem);
+}
+
+.path-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-bottom: var(--fl-space-l);
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-on);
+    background: var(--clr-accent);
+    border-radius: var(--fl-radius-circular);
+}
+
+.path-card h3 {
+    margin: 0 0 var(--fl-space-s) !important;
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+.path-card p {
+    margin: 0;
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-2);
+}
+
+/* ---- the comparison table ------------------------------------------------
+   Given a column-aware treatment on the home page: the "with Bswup" column is
+   the argument the page is making, so it is the one that is emphasised. */
+
+.compare-table th:last-child,
+.compare-table td:last-child {
+    background: var(--clr-accent-tint);
+}
+
+.compare-table th:last-child {
+    color: var(--clr-accent-ink);
+}
+
+/* ============================================================================
+   16. NUMBERED STEPS
+   An <ol> whose markers are drawn rather than inherited, so a sequence reads
+   as a procedure at a glance. list-style is dropped and the marker is a
+   ::before, because a native marker cannot be given a background without
+   taking the whole list item with it.
+   ============================================================================ */
+
+.page-content ol.docs-steps {
+    list-style: none;
+    margin: var(--fl-space-l) 0 var(--fl-space-xxl);
+    padding: 0;
+    display: grid;
+    gap: var(--fl-space-m);
+    counter-reset: docs-step;
+}
+
+.page-content ol.docs-steps > li {
+    counter-increment: docs-step;
+    position: relative;
+    padding-left: var(--fl-space-4xl);
+    color: var(--clr-fg-2);
+}
+
+.page-content ol.docs-steps > li::before {
+    content: counter(docs-step);
+    position: absolute;
+    left: 0;
+    top: 0.125rem;
+    width: 1.625rem;
+    height: 1.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-ink);
+    background: var(--clr-accent-tint);
+    border: var(--fl-stroke-thin) solid var(--clr-accent-tint-strong);
+    border-radius: var(--fl-radius-circular);
+}
+
+/* ============================================================================
+   17. FLOW DIAGRAM
+   An inline SVG rather than an image: it inherits the tokens below, so it
+   repaints with the theme toggle and stays crisp at any width instead of
+   shipping two raster copies.
+   ============================================================================ */
+
+.diagram-wrapper {
+    overflow-x: auto;
+    margin: var(--fl-space-xxl) 0;
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+}
+
+/* A floor rather than a fixed width: below it the wrapper's overflow-x takes
+   over, because the labels inside are real text that cannot reflow when the
+   viewBox scales down. */
+.flow-diagram {
+    display: block;
+    width: 100%;
+    min-width: 34rem;
+    height: auto;
+}
+
+.flow-box {
+    fill: var(--clr-surface-3);
+    stroke: var(--clr-stroke-divider);
+    stroke-width: 1;
+    rx: 6;
+}
+
+.flow-box-accent {
+    fill: var(--clr-accent-tint);
+    stroke: var(--clr-accent-stroke);
+}
+
+.flow-box-final {
+    fill: var(--clr-surface-4);
+    stroke: var(--clr-stroke-outline);
+}
+
+.flow-label {
+    font-family: var(--fl-font-text);
+    font-size: 12.5px;
+    fill: var(--clr-fg-2);
+}
+
+.flow-heading {
+    font-family: var(--fl-font-display);
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--clr-fg-1);
+}
+
+.flow-subheading {
+    font-family: var(--fl-font-text);
+    font-size: 11.5px;
+    fill: var(--clr-fg-3);
+}
+
+.flow-arrow {
+    stroke: var(--clr-stroke-accessible);
+    stroke-width: 1.5;
+}
+
+.flow-arrowhead {
+    fill: var(--clr-stroke-accessible);
+}
+
+.flow-divider {
+    stroke: var(--clr-stroke-divider);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+}
+
+/* ============================================================================
+   18. PLAYGROUND
+   ============================================================================ */
+
+.playground-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+    margin: var(--fl-space-xxl) 0;
+}
+
+.playground-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+}
+
+.playground-card h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-s);
+    margin: 0 0 var(--fl-space-m) !important;
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    line-height: var(--fl-leading-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+.playground-card h3 svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: none;
+    color: var(--clr-accent-ink);
+}
+
+.playground-card p {
+    font-size: var(--fl-size-300);
+    margin-bottom: var(--fl-space-m);
+}
+
+.playground-card .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fl-space-s);
+    margin-top: auto;
+    padding-top: var(--fl-space-m);
+}
+
+.status-list {
+    margin: 0;
+    display: grid;
+    gap: 0;
+    font-size: var(--fl-size-300);
+}
+
+/* The values here are sentences ("yes - an update is staged", a full worker
+   scope URL), not short tokens, so the row wraps and the value falls under its
+   label rather than being squeezed into a column a few characters wide. */
+.status-list > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--fl-space-l);
+    padding: var(--fl-space-s) 0;
+    border-bottom: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.status-list > div:last-child {
+    border-bottom: none;
+}
+
+.status-list dt {
+    color: var(--clr-fg-3);
+}
+
+.status-list dd {
+    margin: 0;
+    font-weight: var(--fl-weight-semibold);
+    text-align: right;
+    color: var(--clr-fg-1);
+    overflow-wrap: anywhere;
+}
+
+.cache-list {
+    margin: var(--fl-space-s) 0 0 !important;
+    padding-left: var(--fl-space-xl) !important;
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-2);
+}
+
+.cache-list li {
+    font-size: var(--fl-size-200);
+    margin-bottom: var(--fl-space-xs);
+    overflow-wrap: anywhere;
+}
+
+.event-log {
+    list-style: none;
+    margin: var(--fl-space-m) 0 var(--fl-space-xxl) !important;
+    padding: var(--fl-space-s) !important;
+    max-height: 24rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+    background: var(--clr-surface-1);
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+}
+
+/* The timestamp and the event name never shrink, and an event name runs to
+   UPDATE_CHECK_FAILED - together they leave a phone almost no room for the
+   detail, so the detail is allowed to drop onto its own line instead. */
+.event-log li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--fl-space-mnw);
+    padding: var(--fl-space-xs) var(--fl-space-s);
+    margin: 0;
+    border-radius: var(--fl-radius-sm);
+    align-items: baseline;
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-2);
+}
+
+.event-log li:nth-child(odd) {
+    background: var(--clr-surface-3);
+}
+
+.event-time {
+    color: var(--clr-fg-3);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.event-type {
+    color: var(--clr-accent-ink);
+    font-weight: var(--fl-weight-semibold);
+    flex-shrink: 0;
+}
+
+.event-detail {
+    color: var(--clr-fg-2);
+    overflow-wrap: anywhere;
+}
+
+.event-empty {
+    color: var(--clr-fg-3);
+}
+
+/* ============================================================================
+   19. MCP EXPLORER
+   ============================================================================ */
+
+.mcp-examples {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fl-space-s);
+    margin: var(--fl-space-xl) 0 var(--fl-space-m);
+}
+
+.mcp-examples-label {
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-3);
+}
+
+.mcp-explorer {
+    padding: var(--fl-space-xl);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+}
+
+.mcp-controls,
+.mcp-arguments {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: var(--fl-space-m) var(--fl-space-l);
+}
+
+.mcp-arguments {
+    margin-top: var(--fl-space-m);
+}
+
+.mcp-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-xs);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+}
+
+/* The type and the required flag ride along with the argument's name, which is
+   the whole label an agent gets from the schema too - so it is what the form
+   shows. */
+.mcp-field em {
+    font-style: normal;
+    font-weight: var(--fl-weight-regular);
+    color: var(--clr-fg-3);
+}
+
+.mcp-field select,
+.mcp-field input,
+.mcp-field textarea {
+    font-family: inherit;
+    font-weight: var(--fl-weight-regular);
+    font-size: var(--fl-size-300);
+    padding: var(--fl-space-snug) var(--fl-space-s);
+    color: var(--clr-fg-1);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    border-bottom-color: var(--clr-stroke-accessible);
+    border-radius: var(--fl-radius-md);
+    transition: border-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.mcp-field select:hover,
+.mcp-field input:hover,
+.mcp-field textarea:hover {
+    border-color: var(--clr-stroke-accessible);
+}
+
+.mcp-field select:focus,
+.mcp-field input:focus,
+.mcp-field textarea:focus {
+    border-bottom-color: var(--clr-accent-stroke);
+    box-shadow: 0 var(--fl-stroke-thin) 0 0 var(--clr-accent-stroke);
+}
+
+.mcp-field textarea {
+    /* A service-worker file is code: proportional text would rewrap it into
+       something nobody writing a worker recognizes. */
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+    line-height: 1.65;
+    resize: vertical;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+.mcp-description {
+    margin: var(--fl-space-m) 0 0 !important;
+    font-size: var(--fl-size-300) !important;
+    color: var(--clr-fg-3);
+}
+
+.mcp-explorer .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fl-space-s);
+    margin-top: var(--fl-space-l);
+}
+
+.mcp-panes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+    margin-top: var(--fl-space-l);
+}
+
+.mcp-pane h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--fl-space-s);
+    margin: 0 0 var(--fl-space-s) !important;
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    font-weight: var(--fl-weight-semibold);
+}
+
+.mcp-pane-meta {
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-regular);
+    color: var(--clr-fg-3);
+}
+
+/* Both panes are capped at the same height so a 400-line tool result cannot
+   push the request that produced it off the screen. */
+.mcp-pane pre {
+    margin: 0;
+    max-height: 28rem;
+    overflow: auto;
+    padding: var(--fl-space-m);
+    background: var(--clr-surface-3);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+    font-size: var(--fl-size-200);
+    line-height: 1.65;
+    color: var(--clr-fg-1);
+}
+
+.page-content .mcp-loading {
+    color: var(--clr-fg-3);
+}
+
+/* The live handshake: the server's identity and the instructions it hands the
+   model. */
+
+.mcp-handshake {
+    margin: var(--fl-space-l) 0 var(--fl-space-xxl);
+    padding: var(--fl-space-l);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-xl);
+}
+
+.mcp-handshake dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fl-space-s) var(--fl-space-3xl);
+    margin: 0 0 var(--fl-space-m);
+}
+
+.mcp-handshake dt {
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--clr-fg-3);
+}
+
+.mcp-handshake dd {
+    margin: var(--fl-space-xxs) 0 0;
+    font-size: var(--fl-size-300);
+}
+
+.mcp-instructions {
+    max-height: 22rem;
+    overflow: auto;
+    margin: 0;
+    padding: var(--fl-space-m);
+    background: var(--clr-surface-3);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+    font-size: var(--fl-size-200);
+    line-height: 1.65;
+    white-space: pre-wrap;
+    color: var(--clr-fg-1);
+}
+
+/* Completion suggestions for a resource template's placeholder. */
+
+.mcp-completions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fl-space-s);
+    margin-bottom: var(--fl-space-m);
+}
+
+.mcp-completions-hint {
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-3);
+}
+
+.mcp-chip {
+    padding: var(--fl-space-xs) var(--fl-space-mnw);
+    background: var(--clr-surface-3);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    border-radius: var(--fl-radius-circular);
+    font-family: var(--fl-font-mono);
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-1);
+    transition: border-color var(--fl-dur-faster) var(--fl-curve-easy-ease),
+                color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.mcp-chip:hover {
+    border-color: var(--clr-accent-stroke);
+    color: var(--clr-accent-ink);
+}
+
+/* What the server declares about a tool, next to the tool's name. */
+
+.mcp-badge {
+    display: inline-block;
+    margin-left: var(--fl-space-s);
+    padding: 0 var(--fl-space-snug);
+    border-radius: var(--fl-radius-circular);
+    background: var(--clr-success-tint);
+    border: var(--fl-stroke-thin) solid var(--clr-success-stroke);
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-100);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.02em;
+    color: var(--clr-success);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.mcp-badge-title {
+    display: block;
+    margin-top: var(--fl-space-xs);
+    font-family: var(--fl-font-text);
+    font-size: var(--fl-size-200);
+    color: var(--clr-fg-3);
+    white-space: normal;
+}
+
+/* ============================================================================
+   20. FOOTER
+   ============================================================================ */
+
+.footer {
+    width: 100%;
+    margin-top: var(--fl-space-6xl);
+    background-color: var(--clr-surface-1);
+    border-top: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.footer a {
+    font-size: var(--fl-size-300);
+    text-decoration: none;
+    color: var(--clr-fg-2);
+    transition: color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.footer a:hover {
+    color: var(--clr-accent-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.footer section {
+    width: 100%;
+    max-width: var(--shell-max-width);
+    margin: 0 auto;
+    padding: var(--fl-space-5xl) var(--fl-space-3xl);
+}
+
+.footer section:first-child {
+    display: grid;
+    gap: var(--fl-space-4xl);
+    grid-template-columns: minmax(16rem, 24rem) 1fr;
+    align-items: start;
+}
+
+.footer section:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fl-space-xl);
+    align-items: center;
+    padding-top: var(--fl-space-xxl);
+    padding-bottom: var(--fl-space-xxl);
+    justify-content: space-between;
+    border-top: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.footer-blurb {
+    margin: 0;
+    font-size: var(--fl-size-300);
+    line-height: var(--fl-leading-prose);
+    color: var(--clr-fg-3);
+}
+
+.bit-logo {
+    width: 2rem;
+    height: 1.6875rem;
+    margin-bottom: var(--fl-space-l);
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.footer-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    gap: var(--fl-space-xxl);
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-s);
+}
+
+.footer-column-title {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.02em;
+    margin-bottom: var(--fl-space-xs);
+    color: var(--clr-fg-1);
+}
+
+/* The update prompt.
+
+   bit-bswup.progress.css pins this button at `top: 10px; right: 10px` with a
+   z-index of nine digits, which on this site puts it straight on top of the
+   header's own controls. It is not part of the splash - the splash is gone by
+   the time an update is ready - so it is restyled here as what it actually is:
+   a notification about the page you are reading, floating clear of the chrome
+   at the opposite corner from the back-to-top button.
+
+   `display` is deliberately not set: the library owns showing and hiding it. */
+#bit-bswup-reload {
+    top: auto;
+    right: auto;
+    bottom: var(--fl-space-xl);
+    left: var(--fl-space-xl);
+    max-width: calc(100vw - var(--fl-space-4xl));
+    padding: var(--fl-space-mnw) var(--fl-space-xl);
+    font-family: var(--fl-font-text);
+    font-size: var(--fl-size-300);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-on);
+    background: var(--clr-accent);
+    border: none;
+    border-radius: var(--fl-radius-md);
+    box-shadow: var(--fl-shadow-16);
+    cursor: pointer;
+    transition: background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+#bit-bswup-reload:hover {
+    background: var(--clr-accent-hover);
+}
+
+#bit-bswup-reload:active {
+    background: var(--clr-accent-pressed);
+}
+
+/* The back-to-top control floats above the page once there is a page to go
+   back up; demo.js toggles .is-visible. */
+.go-to-top {
+    position: fixed;
+    right: var(--fl-space-xl);
+    bottom: var(--fl-space-xl);
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--clr-fg-1);
+    background-color: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-outline);
+    border-radius: var(--fl-radius-circular);
+    box-shadow: var(--fl-shadow-8);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.5rem);
+    transition: opacity var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                transform var(--fl-dur-fast) var(--fl-curve-decelerate-mid),
+                visibility var(--fl-dur-fast);
+}
+
+.go-to-top svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.go-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.go-to-top:hover {
+    background-color: var(--clr-surface-1-hover);
+    border-color: var(--clr-stroke-accessible);
+}
+
+.address-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-xs);
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-3);
+}
+
+.address-info .address,
+.address-info .tel,
+.address-info .country {
+    padding-left: var(--fl-space-xl);
+    background-repeat: no-repeat;
+    background-position: left 0.25rem;
+    background-size: 0.875rem;
+}
+
+.address-info .country {
+    color: var(--clr-fg-3);
+}
+
+.address-info .address {
+    background-image: url('images/footer/location-icon.svg');
+}
+
+.address-info .tel {
+    background-image: url('images/footer/tel-icon.svg');
+}
+
+.social-link-group {
+    display: flex;
+    align-items: center;
+    gap: var(--fl-space-mnw);
+}
+
+.social-link {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--fl-radius-circular);
+    background-color: var(--clr-fg-3);
+    background-size: 1.125rem;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+}
+
+.twitter-link { background-image: url('images/footer/twitter-icon.svg'); }
+.twitter-link:hover { background-color: #1DA1F2; }
+.github-link { background-image: url('images/footer/github-icon.svg'); }
+.github-link:hover { background-color: #24292F; }
+.youtube-link { background-image: url('images/footer/youtube-icon.svg'); }
+.youtube-link:hover { background-color: #FF0000; }
+.linkedin-link { background-image: url('images/footer/linkedin-icon.svg'); }
+.linkedin-link:hover { background-color: #0077B5; }
+
+.copy-right-txt {
+    font-size: var(--fl-size-300);
+    color: var(--clr-fg-3);
+}
+
+.footer-legal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-s);
+    align-items: flex-end;
+}
+
+/* ============================================================================
+   21. MISC
+   ============================================================================ */
+
+.docs-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--fl-space-l);
+    padding: var(--fl-space-6xl) 0;
+}
+
+.docs-not-found h1 {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-900);
+    line-height: var(--fl-leading-900);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-fg-1);
+    margin: 0;
+}
+
+.docs-not-found p {
+    max-width: 32rem;
+    margin: 0;
+    font-size: var(--fl-size-500);
+    color: var(--clr-fg-3);
+}
+
+/* ---- pager ----------------------------------------------------------------
+   The previous/next pair that closes every documentation page. */
+
+.pager {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: var(--fl-space-l);
+    margin-top: var(--fl-space-5xl);
+    padding-top: var(--fl-space-xxl);
+    border-top: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+}
+
+.pager a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-space-xxs);
+    padding: var(--fl-space-m) var(--fl-space-l);
+    background: var(--clr-surface-1);
+    border: var(--fl-stroke-thin) solid var(--clr-stroke-divider);
+    border-radius: var(--fl-radius-lg);
+    text-decoration: none !important;
+    color: var(--clr-fg-1) !important;
+    overflow-wrap: anywhere;
+    transition: border-color var(--fl-dur-fast) var(--fl-curve-easy-ease),
+                box-shadow var(--fl-dur-fast) var(--fl-curve-easy-ease);
+}
+
+.pager a:hover {
+    border-color: var(--clr-accent-stroke);
+    box-shadow: var(--fl-shadow-4);
+}
+
+.pager .pager-label {
+    font-family: var(--fl-font-small);
+    font-size: var(--fl-size-200);
+    font-weight: var(--fl-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--clr-fg-3);
+}
+
+.pager .pager-next {
+    text-align: right;
+    grid-column: -2;
+}
+
+.pager b {
+    font-family: var(--fl-font-display);
+    font-size: var(--fl-size-400);
+    font-weight: var(--fl-weight-semibold);
+    color: var(--clr-accent-ink);
+}
+
+/* ============================================================================
+   22. RESPONSIVE
+   Breakpoints: 1400px drops the "On this page" rail, 1000px turns the
+   navigation into a drawer, 600px is the phone.
+   ============================================================================ */
+
+@media screen and (max-width: 87.5rem) {
+    .docs-toc {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 75rem) {
+    .hero {
+        grid-template-columns: 1fr;
+        gap: var(--fl-space-4xl);
+        padding-bottom: var(--fl-space-4xl);
+    }
+
+    .hero-visual {
+        max-width: 34rem;
+    }
+}
+
+@media screen and (max-width: 62.5rem) {
+    .header .container {
+        gap: var(--fl-space-s);
+        padding: 0 var(--fl-space-m);
+    }
+
+    .menu-btn {
+        display: inline-flex;
+    }
+
+    .brand {
+        margin-right: var(--fl-space-xs);
+    }
+
+    /* The menu button has just appeared in the bar; the field gives that width
+       back rather than crowding the links. */
+    .docs-search-input {
+        width: 10rem;
+    }
+
+    .docs-search-input:focus {
+        width: 13rem;
+    }
+
+    .docs-search-kbd {
+        display: none;
+    }
+
+    .docs-search-input {
+        padding-right: var(--fl-space-mnw);
+    }
+
+    .nav-panel {
+        position: fixed;
+        top: var(--shell-header-height);
+        bottom: 0;
+        left: 0;
+        z-index: 90;
+        flex-basis: 0;
+        width: min(20rem, 84vw);
+        box-shadow: none;
+        transform: translateX(-100%);
+        transition: transform var(--fl-dur-normal) var(--fl-curve-decelerate-mid);
+    }
+
+    /* The drawer is the fixed overlay now, so the inner box has nothing left to
+       stick to - it just fills it and scrolls. */
+    .nav-panel-sticky {
+        position: static;
+        height: 100%;
+    }
+
+    body.nav-panel-open .nav-panel {
+        transform: translateX(0);
+        box-shadow: var(--fl-shadow-28);
+    }
+
+    body.nav-panel-open .nav-panel-backdrop {
+        display: block;
+        position: fixed;
+        inset: var(--shell-header-height) 0 0 0;
+        z-index: 80;
+        background: var(--clr-scrim);
+    }
+
+    .page-container {
+        padding: var(--fl-space-3xl) var(--fl-space-xxl) var(--fl-space-5xl);
+    }
+
+    .footer section {
+        padding: var(--fl-space-4xl) var(--fl-space-xxl);
+    }
+
+    .footer section:first-child {
+        grid-template-columns: 1fr;
+        gap: var(--fl-space-3xl);
+    }
+}
+
+@media screen and (max-width: 37.5rem) {
+    .header .link {
+        padding: 0 var(--fl-space-s);
+    }
+
+    /* Home, Docs, the two icon buttons and the brand already fill the bar at
+       this width. NuGet is the one header link that is also in the footer's
+       quick links, so it is the one that goes. */
+    .header .link[target="_blank"] {
+        display: none;
+    }
+
+    /* The bar is a fixed budget and the search box is the only thing on it that
+       can shrink, so at this width it shrinks to nothing: brand, two links and
+       three round buttons already fill the row. The wordmark is what gives way -
+       the mark alone still identifies the site, and the link keeps its
+       accessible name - which buys the field back about 95px, enough to show
+       its placeholder rather than just its magnifier. */
+    .brand-text {
+        display: none;
+    }
+
+    .brand {
+        margin-right: 0;
+    }
+
+    /* Phone widths: the field takes whatever the brand, the two remaining links
+       and the icon buttons leave, instead of staying a fixed stub that
+       truncates its own placeholder. There is nothing left to grow into on
+       focus, so the width animation stops too. */
+    .header-group + .header-group {
+        flex: 1;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    .docs-search {
+        flex: 1;
+    }
+
+    .docs-search-input,
+    .docs-search-input:focus {
+        width: 100%;
+        transition: border-color var(--fl-dur-faster) var(--fl-curve-easy-ease);
+    }
+
+    .page-container {
+        padding: var(--fl-space-xxl) var(--fl-space-l) var(--fl-space-4xl);
+    }
+
+    /* Every control in the chrome gets a 44px target on a touch screen, which
+       the 32px desktop metric does not meet. */
+    .icon-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .nav-list a {
+        min-height: 2.75rem;
+    }
+
+    .hero {
+        padding-top: var(--fl-space-xxl);
+    }
+
+    .hero-actions .button-large {
+        width: 100%;
+    }
+
+    .hero-install {
+        width: 100%;
+    }
+
+    /* The key column is held on one line at desktop widths so it reads as a
+       label. On a phone the table already scrolls, and keeping it unbreakable
+       there spends most of the scroll width on a column that is only a few
+       words long - so it wraps instead and the description gets the room. */
+    .page-content td:first-child {
+        white-space: normal;
+    }
+
+    .footer section {
+        padding: var(--fl-space-3xl) var(--fl-space-l);
+    }
+
+    .footer section:last-child {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-legal {
+        align-items: flex-start;
+    }
+
+    .go-to-top {
+        right: var(--fl-space-l);
+        bottom: var(--fl-space-l);
+    }
+
+    #bit-bswup-reload {
+        left: var(--fl-space-l);
+        bottom: var(--fl-space-l);
+        max-width: calc(100vw - 5rem);
+    }
+}
+
+@media screen and (max-width: 30rem) {
+    /* The narrowest phones. The bar is now carrying a drawer button, the mark,
+       two links, a search box and two round buttons, and the search box is the
+       only one of them that can give way - which leaves it showing its
+       magnifier and nothing else.
+
+       On a documentation page the drawer already leads everywhere these two
+       links do (its first entry, Introduction, IS the home page), so they are
+       what goes instead. The home page has no drawer, so :has() leaves them
+       alone there - and in a browser without :has() nothing changes, which is
+       the cramped-but-working layout above. */
+    body:has(.nav-panel) .header .link {
+        display: none;
+    }
+}
+
+/* ============================================================================
+   23. REDUCED MOTION
+   Every transition on this site is a courtesy - none of them carry meaning
+   that survives only in the motion - so they are simply switched off rather
+   than replaced with something gentler.
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .feature-card:hover,
+    .path-card:hover {
+        transform: none;
+    }
+}
+
+/* ============================================================================
+   24. FORCED COLORS
+   In Windows High Contrast mode the system supplies the palette; what it
+   cannot supply is a boundary that was drawn with a background colour rather
+   than a border, so those are restated here.
+   ============================================================================ */
+
+@media (forced-colors: active) {
+    .nav-list a.active::before,
+    .header .link.active::after,
+    .path-step,
+    .feature-icon {
+        forced-color-adjust: none;
+        background: Highlight;
+    }
+
+    .callout,
+    .code-block,
+    .feature-card,
+    .path-card,
+    .playground-card,
+    .docs-table-wrapper,
+    .mcp-explorer,
+    .stat-strip {
+        border: 1px solid CanvasText;
+    }
+}
+
+/* ============================================================================
+   25. PRINT
+   A documentation page is a thing people print and paste into a ticket.
+   ============================================================================ */
+
+@media print {
+    .header,
+    .nav-panel,
+    .nav-panel-backdrop,
+    .docs-toc,
+    .footer,
+    .skip-link,
+    .go-to-top,
+    .heading-anchor,
+    .code-block-copy,
+    .pager {
+        display: none !important;
+    }
+
+    body {
+        background: #FFFFFF;
+        color: #000000;
+    }
+
+    .page-container {
+        padding: 0;
+        max-width: none;
+    }
+
+    .page-content {
+        max-width: none;
+    }
+
+    .code-block pre {
+        max-height: none;
+        white-space: pre-wrap;
+    }
+
+    .page-content a {
+        text-decoration: underline;
+    }
+
+    /* A link that is only a colour is invisible once printed. */
+    .page-content a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.85em;
+        color: #555555;
+    }
+}

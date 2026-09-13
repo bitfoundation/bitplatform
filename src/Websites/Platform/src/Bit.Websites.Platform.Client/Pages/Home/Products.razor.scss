@@ -1,8 +1,12 @@
+﻿@import '../../Styles/abstracts/_vars.scss';
 @import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
 
 ::deep .accordion {
-    border: none;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border: 1px solid $bit-color-border-secondary;
+    transition: border-color 0.2s $MotionEase, box-shadow 0.2s $MotionEase, background-color 0.2s $MotionEase;
 
     .bit-acd-hdr,
     .bit-acd-con {
@@ -14,7 +18,14 @@
         padding-top: 0;
     }
 
+    &:hover {
+        border-color: $bit-color-border-primary;
+        background-color: $bit-color-background-secondary;
+        box-shadow: 0 12px 32px -20px rgba(82, 74, 221, 0.5);
+    }
+
     &.expanded {
+        border-color: $bit-color-border-primary;
         background-color: $bit-color-background-secondary;
     }
 }
@@ -25,15 +36,12 @@
     padding: 1rem;
     align-items: flex-start;
 
-    &:hover {
-        background-color: $bit-color-background-secondary;
-    }
-
     ::deep {
         .header-icon {
             font-size: 1.25rem;
             margin-top: 0.8rem;
             margin-right: 0.625rem;
+            transition: transform 0.2s $MotionEase;
 
             @include lt-lg {
                 font-size: 1rem;
@@ -121,8 +129,10 @@
     flex-wrap: wrap;
     align-items: center;
     margin: rem2(25px) 0;
-    border-radius: rem2(4px);
+    border-radius: rem2(8px);
     background-color: #060e2d;
+    border: 1px solid rgba(140, 133, 255, 0.25);
+    box-shadow: 0 16px 40px -24px rgba(6, 14, 45, 0.9);
 
     @include lt-md {
         padding: 1.5rem;
@@ -141,9 +151,6 @@
     .animation-container {
         display: flex;
         position: relative;
-
-        * {
-        }
     }
 
     .animated {
@@ -155,14 +162,6 @@
     .delayed {
         left: 0;
         position: absolute;
-    }
-
-    .a-1 {
-        animation-duration: 8s;
-    }
-
-    .d-1 {
-        animation-delay: 4s;
     }
 
     .a-2 {

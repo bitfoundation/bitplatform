@@ -1,7 +1,4 @@
 //+:cnd:noEmit
-using System.Reflection;
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
 //#if (multitenant == true)
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -12,12 +9,12 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class MainLayout : IAsyncDisposable
 {
     private static readonly BitModalParameters ModalParameters = new() { Classes = new() { Root = "modal" } };
-    private static readonly BitProModalParameters ProModalParameters = new() { Classes = new() { Root = "modal" } };
-
 
     [CascadingParameter] public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
 
+    [AutoInject] private Dom dom = default!;
+    [AutoInject] private Document document = default!;
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
@@ -63,15 +60,12 @@ public partial class MainLayout : IAsyncDisposable
             // dependencies, its value remains null. 
             // Even though Server.Web and Server.Api may be deployed on different servers, 
             // we can still assume that if the client is displaying a pre-rendered result, it is online.
-            IsOnline ??= IsOnline ?? inPrerenderSession is true ? true : null;
+            if (inPrerenderSession)
+            {
+                IsOnline ??= true;
+            }
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
-
-            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CULTURE_CHANGED, async _ =>
-            {
-                SetCurrentDir();
-                StateHasChanged();
-            }));
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
             {
@@ -106,17 +100,6 @@ public partial class MainLayout : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }));
 
-            //#if (multitenant == true)
-            unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.CURRENT_TENANT_CHANGED, async payload =>
-            {
-                // Published by the pages/menus that change the current tenant (See ManageMyTenantsPage). Switching, signing in/out and
-                // leaving a tenant already update this through the authentication-state change, so this mainly covers renaming the current tenant.
-                currentTenant = (TenantDto?)payload;
-
-                await InvokeAsync(StateHasChanged);
-            }));
-            //#endif
-
             await SetCurrentUser(AuthenticationStateTask);
 
             SetCurrentDir();
@@ -137,6 +120,10 @@ public partial class MainLayout : IAsyncDisposable
         if (firstRender)
         {
             await keyboard.Add(ButilKeyCodes.KeyX, OpenDiagnosticModal, ButilModifiers.Ctrl | ButilModifiers.Shift);
+
+            // Stamps the booted culture onto <html> for the static hosts, whose index.html carries no lang/dir;
+            // a no-op re-stamp on Server.Web, where App.razor already rendered the same values.
+            await ApplyCultureToDocument();
         }
     }
 
@@ -157,6 +144,7 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
+    private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
         var authUser = (await task).User;
@@ -176,7 +164,7 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
-            if (authUser.GetUserId() != currentUser?.Id)
+            if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
             {
                 currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
             }
@@ -185,6 +173,8 @@ public partial class MainLayout : IAsyncDisposable
             await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
             //#endif
         }
+
+        lastAuthUser = authUser;
     }
 
     //#if (multitenant == true)
@@ -200,7 +190,7 @@ public partial class MainLayout : IAsyncDisposable
             return;
         }
 
-        if (currentTenant?.Id == tenantId) return; // Already showing this tenant (e.g. a page already published it).
+        if (currentTenant?.Id == tenantId) return;
 
         currentTenant = await tenantController.GetCurrentTenant(cancellationToken);
     }
@@ -209,6 +199,25 @@ public partial class MainLayout : IAsyncDisposable
     private void SetCurrentDir()
     {
         currentDir = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? BitDir.Rtl : null;
+    }
+
+    /// <summary>
+    /// Stamps the current culture's name and directionality onto the &lt;html&gt; element, so assistive technologies,
+    /// css <c>:lang()</c> rules and the document's layout direction follow the rendered language.
+    /// </summary>
+    private async Task ApplyCultureToDocument()
+    {
+        if (CultureInfoManager.InvariantGlobalization || RendererInfo.IsInteractive is false) return;
+
+        var culture = CultureInfo.CurrentUICulture;
+
+        await using var html = await dom.DocumentElement();
+        if (html is not null)
+        {
+            await html.SetAttribute("lang", culture.Name);
+        }
+
+        await document.SetDir(culture.TextInfo.IsRightToLeft ? DocumentDir.Rtl : DocumentDir.Ltr);
     }
 
     private void SetRouteData()

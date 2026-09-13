@@ -9,7 +9,7 @@ public static class HttpContextExtensions
     {
         public AppResponseCacheAttribute? GetResponseCacheAttribute()
         {
-            var att = context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().FirstOrDefault();
+            var att = context.GetEndpoint()?.Metadata.OfType<AppResponseCacheAttribute>().LastOrDefault();
 
             if (att?.MaxAge == -1 && att?.SharedMaxAge == -1)
                 throw new InvalidOperationException("Invalid configuration: Both MaxAge and SharedMaxAge are unset. At least one of them must be specified in the ResponseCache attribute.");
@@ -40,7 +40,7 @@ public static class HttpContextExtensions
             // explicitly sends a token, it takes precedence over any potentially stale or unrelated cookies.
             // This aligns with the 'AutoCsrfProtectionFilter' logic, which treats header-based requests as secure.
             string? authHeader = context.Request.Headers.Authorization;
-            if (string.IsNullOrEmpty(authHeader) is false && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(authHeader) is false && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 return authHeader["Bearer ".Length..].Trim();
             }

@@ -4,6 +4,10 @@
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- The demo and the tests only run on the latest TFM, so compiling net9.0 and net8.0 on every Debug
+             build triples the inner-loop work for output nothing consumes. Release (pack, CI) still builds
+             all three; pass -p:BuildAllTfms=true to get them in Debug too. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
         <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">

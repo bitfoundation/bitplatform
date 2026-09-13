@@ -1,13 +1,13 @@
-﻿@page "/besql"
+@page "/besql"
 @page "/besql/overview"
 @inherits AppComponentBase
 
-<PageOutlet Url="besql/overview"
+<PageOutlet Url="besql"
             Title="Overview - Besql"
-            Description="overview of the bit Besql" />
+            Description="bit Besql brings Entity Framework Core and SQLite to the browser in Blazor WebAssembly apps, enabling offline-capable data storage." />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>Besql</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>Besql</BitText>
     <br />
     <BitText Typography="BitTypography.H5" Gutter>Blazor Entity Framework SQLite utilities</BitText>
     <br />
@@ -25,7 +25,7 @@
     </div>
     <br />
     <div class="video-container">
-        <iframe src="https://www.youtube.com/embed/ClpMKUboJmA?si=_P1DM9_-KcYRPWDl"
+        <iframe loading="lazy" src="https://www.youtube.com/embed/ClpMKUboJmA?si=_P1DM9_-KcYRPWDl"
                 width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
         </iframe>
@@ -33,7 +33,7 @@
     <br />
     <div class="section-card-txt">
         You can find the sample source-code of the above video
-        <a href="https://github.com/bitfoundation/bitplatform-samples/tree/develop/videos/Bit.Besql" target="_blank">here</a>.
+        <a href="https://github.com/bitfoundation/bitplatform-samples/tree/develop/videos/Bit.Besql" target="_blank" rel="noopener">here</a>.
     </div>
     <br />
     <BitText Typography="BitTypography.H6" Gutter>Supported browsers</BitText>

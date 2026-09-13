@@ -5,10 +5,15 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
+        <!-- ECMAScript level the shipped JS bundles are emitted at. Must match "target" in both
+             tsconfig.json and tsconfig.sw.json: tsc downlevels the syntax, and the Release
+             minifier is given this same value so it does not raise it back (see MinifyAssets).
+             ES2019 keeps the service worker parseable by older Safari/iOS, which matters because
+             a browser that cannot parse it loses offline support with no visible error. Raising
+             this is a breaking change for consumers, so also drop the matching lib entries in
+             the tsconfigs (they are pinned to the same level to make violations compile errors
+             rather than runtime failures on old devices). -->
+        <BswupJsTarget>es2019</BswupJsTarget>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,41 +26,142 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
     </ItemGroup>
 
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
     <ItemGroup>
-        <Content Remove="tsconfig.json" />
-        <None Include="tsconfig.json" />
+        <Content Remove="package*.json;tsconfig*.json" />
+        <None Include="package*.json;tsconfig*.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
-    </ItemGroup>
+    <!-- Restores npm packages, compiles the TypeScript bundles and CSS, then (in Release) minifies
+         the JS bundles. The sub-targets are incremental via their Inputs/Outputs; a full
+         regenerate-from-source on each `dotnet build`/`pack` is forced by
+         BuildBswupAssetsOnCrossTargeting deleting the outputs first (see its comment). -->
+    <Target Name="BuildBswupAssets" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;MinifyAssets;BuildCss" />
 
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
-        <CallTarget Targets="InstallNodejsDependencies"/>
-        <CallTarget Targets="BuildJavaScript"/>
-        <CallTarget Targets="BuildCss"/>
+    <!-- The bundles (wwwroot/bit-bswup*.js and wwwroot/bit-bswup.progress.css) are generated,
+         git-ignored files. On a clean build they do not exist when the default "wwwroot/**"
+         Content glob is evaluated, so the static web asset discovery in
+         ResolveProjectStaticWebAssets would miss them and consumers get a 404 for
+         _content/Bit.Bswup/bit-bswup.js (this is what breaks the demo on a fresh checkout).
+         ResolveProjectStaticWebAssets runs BeforeTargets="AssignTargetPaths" and does NOT depend
+         on ResolveStaticWebAssetsInputs, so the old ResolveStaticWebAssetsInputsDependsOn hook
+         never ran early enough. Hooking BeforeTargets="ResolveProjectStaticWebAssets" guarantees
+         the bundles are generated first (DependsOnTargets) and then explicitly added to
+         @(Content) so discovery picks them up. The Remove-before-Include keeps each to a single
+         Content entry (avoiding a duplicate / conflicting-target-path error) for builds where the
+         glob already captured them. -->
+    <Target Name="IncludeBswupAssetsAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBswupAssets">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-bswup.js" />
+            <Content Include="wwwroot\bit-bswup.js" />
+            <Content Remove="wwwroot\bit-bswup.progress.js" />
+            <Content Include="wwwroot\bit-bswup.progress.js" />
+            <Content Remove="wwwroot\bit-bswup.sw.js" />
+            <Content Include="wwwroot\bit-bswup.sw.js" />
+            <Content Remove="wwwroot\bit-bswup.sw-cleanup.js" />
+            <Content Include="wwwroot\bit-bswup.sw-cleanup.js" />
+            <Content Remove="wwwroot\bit-bswup.progress.css" />
+            <Content Include="wwwroot\bit-bswup.progress.css" />
+        </ItemGroup>
     </Target>
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <!-- Force a full regenerate-from-source in the single outer (cross-targeting) build, which is
+         what `dotnet build` / `dotnet pack` (no -f) use. Removing the generated outputs (and the
+         minify stamp) first means the incremental sub-targets cannot treat them as "up to date",
+         so tsc/esbuild always re-emit the bundles from the TypeScript/CSS sources. This is what
+         makes a build reliably overwrite whatever currently sits in wwwroot - stale, unminified,
+         or manually edited content alike. The regeneration runs exactly once here, before the
+         parallel inner per-TFM builds start; those then see the fresh outputs and skip (the
+         sub-targets are incremental), which avoids the esbuild/Move race across inner builds. -->
+    <Target Name="BuildBswupAssetsOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'">
+        <Delete Files="wwwroot\bit-bswup.js;wwwroot\bit-bswup.progress.js;wwwroot\bit-bswup.sw.js;wwwroot\bit-bswup.sw-cleanup.js;wwwroot\bit-bswup.progress.css;$(BaseIntermediateOutputPath)$(Configuration)\bit-bswup.min.stamp" />
+        <CallTarget Targets="BuildBswupAssets" />
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js">
+    <!-- Records the configuration of the last build in a file whose timestamp only advances when
+         the configuration actually changes (WriteOnlyWhenDifferent). BuildJavaScript lists it as
+         an Input, which is what makes its incrementality configuration-aware: without it, a
+         single-TFM (-f) Debug build right after a Release build would see the wwwroot outputs as
+         newer than the .ts sources and skip tsc, silently keeping the Release-MINIFIED bundles
+         (cross-targeting builds are immune - BuildBswupAssetsOnCrossTargeting deletes the outputs
+         first). The path is TFM- and config-independent (obj\) on purpose: the parallel inner
+         per-TFM builds all see content that already matches and never rewrite the file, so its
+         timestamp stays put and they skip tsc instead of racing it. -->
+    <Target Name="RecordBswupBuildConfiguration">
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <WriteLinesToFile File="$(BaseIntermediateOutputPath)bit-bswup.last-configuration" Lines="$(Configuration)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    </Target>
+
+    <!-- Compiles the TypeScript bundles. Incremental on the .ts/tsconfig inputs vs the emitted
+         wwwroot .js outputs, so a no-op when nothing changed - except after a configuration
+         switch, which the last-configuration input forces through (see
+         RecordBswupBuildConfiguration). This always emits the unminified bundles; Release
+         minification is handled separately by MinifyAssets. -->
+    <Target Name="BuildJavaScript" DependsOnTargets="RecordBswupBuildConfiguration" Inputs="Scripts/bit-bswup.ts;Scripts/bit-bswup.progress.ts;Scripts/bit-bswup.sw.ts;Scripts/bit-bswup.sw-cleanup.ts;tsconfig.json;tsconfig.sw.json;package.json;package-lock.json;$(BaseIntermediateOutputPath)bit-bswup.last-configuration" Outputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js">
+        <!-- Page scripts (DOM lib) and service-worker scripts (WebWorker lib) are compiled by
+             separate tsconfigs because the DOM and WebWorker type libraries cannot coexist in
+             one compilation. Both emit into wwwroot. -->
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.js --minify --outfile=wwwroot/bit-bswup.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.progress.js --minify --outfile=wwwroot/bit-bswup.progress.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bswup.sw.js --minify --outfile=wwwroot/bit-bswup.sw.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node_modules/.bin/tsc -p tsconfig.sw.json" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- Release-only minification of the JS bundles. Incremental, but deliberately NOT keyed off
+         a configuration stamp the way tsc is: it is keyed off the emitted wwwroot bundles (the
+         tsc output) versus a single config-specific, TFM-independent stamp.
+
+         Why this exact shape:
+         - Debug and Release share the same wwwroot output files. A Debug build emits UNMINIFIED
+           bundles; when it does, those files' timestamps advance past this stamp, so the next
+           Release build re-minifies them (fixing the "Release didn't overwrite the unminified
+           files" bug). A plain config stamp could not catch this because a stamp from a prior
+           Release build survives an intervening Debug build.
+         - The stamp is TFM-independent ($(BaseIntermediateOutputPath)$(Configuration)\, i.e.
+           obj\<Config>\) so that in a cross-targeting build the outer build minifies once and
+           stamps, and the parallel inner per-TFM builds then see this target up to date and SKIP.
+           Without that, the inner builds would all run esbuild against the same shared wwwroot
+           files at once and race on the temp/Move (MSB3680). The Move (temp -> final) also avoids
+           leaving a half-written bundle if an in-place minify were interrupted. -->
+    <Target Name="MinifyAssets"
+            Condition="'$(Configuration)' == 'Release'"
+            DependsOnTargets="BuildJavaScript"
+            Inputs="wwwroot/bit-bswup.js;wwwroot/bit-bswup.progress.js;wwwroot/bit-bswup.sw.js;wwwroot/bit-bswup.sw-cleanup.js"
+            Outputs="$(BaseIntermediateOutputPath)$(Configuration)\bit-bswup.min.stamp">
+        <!-- The outer cross-targeting build never compiles, so MSBuild has not created its
+             intermediate directory; create it before Touch writes the stamp there. -->
+        <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
+        <!-- The esbuild target below is NOT optional, and must stay in sync with "target" in
+             tsconfig.json / tsconfig.sw.json. esbuild defaults to esnext, and its minifier
+             actively rewrites code *up* to the target: it collapses the
+             `a === null || a === void 0 ? void 0 : a.b` that tsc emits when downleveling back
+             into `a?.b`. With no explicit target the Release bundles (the ones that ship in the
+             NuGet package) silently regain optional chaining and nullish coalescing, discarding
+             the whole point of the tsc target and raising the browser floor only for published
+             apps - Debug builds, being unminified, would still look fine. Keep BswupJsTarget in
+             lockstep with the tsconfigs. -->
+        <!-- Batched over @(BswupBundle): the Exec runs once per bundle, the Move then renames
+             every .min.js over its unminified original in one task. Adding a bundle means
+             adding one ItemGroup entry (and its Inputs entry above). -->
+        <ItemGroup>
+            <BswupBundle Include="bit-bswup;bit-bswup.progress;bit-bswup.sw;bit-bswup.sw-cleanup" />
+        </ItemGroup>
+        <Exec Command="node_modules/.bin/esbuild wwwroot/%(BswupBundle.Identity).js --minify --target=$(BswupJsTarget) --outfile=wwwroot/%(BswupBundle.Identity).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move SourceFiles="@(BswupBundle->'wwwroot/%(Identity).min.js')" DestinationFiles="@(BswupBundle->'wwwroot/%(Identity).js')" OverwriteReadOnlyFiles="true" />
+        <!-- Touched last so the stamp is always newer than the (re-minified) bundles, keeping the
+             target up to date until tsc next rewrites them. -->
+        <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit-bswup.min.stamp" AlwaysCreate="true" />
     </Target>
 
     <Target Name="BuildCss" Inputs="Styles/bit-bswup.progress.css" Outputs="wwwroot/bit-bswup.progress.css">
         <Exec Command="node_modules/.bin/esbuild Styles/bit-bswup.progress.css --minify --outfile=wwwroot/bit-bswup.progress.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <ItemGroup>
-        <Content Remove="package*.json" />
-        <Content Remove="tsconfig.json" />
-        <None Include="package*json" />
-        <None Include="tsconfig.json" />
-    </ItemGroup>
-    
 </Project>

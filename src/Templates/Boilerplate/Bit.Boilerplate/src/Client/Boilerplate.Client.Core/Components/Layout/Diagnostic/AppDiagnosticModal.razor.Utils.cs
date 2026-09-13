@@ -1,13 +1,4 @@
 using System.Text;
-using System.Runtime.CompilerServices;
-using Boilerplate.Shared.Features.Identity;
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR.Client;
-//#endif
-//#if (offlineDb == true)
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Client.Core.Infrastructure.Data;
-//#endif
 
 namespace Boilerplate.Client.Core.Components.Layout.Diagnostic;
 
@@ -15,8 +6,22 @@ public partial class AppDiagnosticModal
 {
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private AuthManager authManager = default!;
-    [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private LocalStorage localStorage = default!;
+    [AutoInject] private CacheStorage cacheStorage = default!;
+    //#if (signalR == true)
+    [AutoInject] private IndexedDb indexedDb = default!;
+    //#endif
+    [AutoInject] private SessionStorage sessionStorage = default!;
+    //#if (api == "Integrated")
     [AutoInject] private IUserController userController = default!;
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
+    //#endif
+    [AutoInject] private IStorageService storageService = default!;
+    //#if (api == "Integrated")
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+    //#endif
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
     //#if (offlineDb == true)
@@ -35,70 +40,35 @@ public partial class AppDiagnosticModal
             : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
     }
 
-    private async Task CallDiagnosticApi()
-    {
-        string? signalRConnectionId = null;
-        string? pushNotificationSubscriptionDeviceId = null;
-
-        //#if (signalR == true)
-        try
-        {
-            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get SignalR ConnectionId for diagnostic.");
-        }
-        //#endif
-
-        //#if (notification == true)
-        try
-        {
-            pushNotificationSubscriptionDeviceId = (await pushNotificationService.GetSubscription(CurrentCancellationToken))!.DeviceId;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get Push Notification Subscription DeviceId for diagnostic.");
-        }
-        //#endif
-
-        var serverResult = await diagnosticController.PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken);
-
-        StringBuilder resultBuilder = new(serverResult);
-        try
-        {
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
-            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
-            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
-
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"Env version: {Environment.Version}");
-            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
-            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
-
-            resultBuilder.AppendLine();
-
-            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
-                resultBuilder.AppendLine($"ServerGC: {serverGC}");
-
-            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
-                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
-        }
-        catch (Exception exp)
-        {
-            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
-        }
-
-        await messageBoxService.Show("Diagnostic Result", resultBuilder.ToString());
-    }
-
     private async Task OpenDevTools()
     {
         await JSRuntime.InvokeVoidAsync("App.openDevTools");
     }
+
+    //#if (api == "Integrated")
+    /// <summary>
+    /// Opens Hangfire's dashboard on the api, already signed in as this user. A plain browser navigation carries only
+    /// a cookie, which <see cref="IUserController.UpdateSession"/> writes with the token's own expiry - so the token
+    /// is refreshed first to buy a full lifetime rather than whatever is left of the current one.
+    /// </summary>
+    private async Task OpenHangfireDashboard()
+    {
+        await AuthManager.RefreshToken(requestedBy: nameof(OpenHangfireDashboard));
+
+        await userController.UpdateSession(new()
+        {
+            AppVersion = TelemetryContext.AppVersion,
+            DeviceInfo = TelemetryContext.Platform,
+            CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(), // Left out, it would mute the session.
+            //#endif
+            PlatformType = AppPlatform.Type
+        }, CurrentCancellationToken);
+
+        await externalNavigationService.NavigateTo(new Uri(AbsoluteServerAddress, "hangfire").ToString());
+    }
+    //#endif
 
     private async Task CallGC()
     {
@@ -125,7 +95,14 @@ public partial class AppDiagnosticModal
         //#if (offlineDb == true)
         try
         {
-            await syncService.Push(); // Try to push any pending changes before clearing the DB.
+            // Try to push any pending changes before clearing the DB. This deliberately takes the overload that
+            // accepts a DbContext rather than SyncService.Push(), which returns without doing anything when the app
+            // believes it is offline - the state in which unpushed changes are most likely to exist.
+            using var pushCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+            pushCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(pushCts.Token);
+            await syncService.Sync(dbContext, pullRecentChanges: false, pushCts.Token);
         }
         catch (Exception exp)
         {
@@ -142,9 +119,16 @@ public partial class AppDiagnosticModal
             logger.LogWarning(exp, "Failed to sign out during ClearAppStorage.");
         }
 
-        await storageService.Clear(); // Blazor Hybrid stores key/value pairs outside webview's storage.
+        try
+        {
+            await storageService.Clear(); // Blazor Hybrid stores key/value pairs outside webview's storage.
+        }
+        catch (Exception exp)
+        {
+            logger.LogWarning(exp, "Failed to clear the storage service during ClearAppStorage.");
+        }
 
-        await JSRuntime.ClearWebStorages();
+        await ClearWebStorages();
 
         //#if (offlineDb == true)
         try
@@ -167,6 +151,52 @@ public partial class AppDiagnosticModal
         else
         {
             NavigationManager.Refresh(forceReload: true);
+        }
+    }
+
+    /// <summary>
+    /// Clears the browser / web view storages of this origin.
+    /// </summary>
+    private async Task ClearWebStorages()
+    {
+        await Attempt(nameof(CacheStorage), async () =>
+        {
+            if (await cacheStorage.IsSupported() is false) return;
+
+            foreach (var cacheName in await cacheStorage.Keys())
+            {
+                await cacheStorage.Delete(cacheName);
+            }
+        });
+
+        await Attempt(nameof(LocalStorage), localStorage.Clear);
+
+        await Attempt(nameof(SessionStorage), sessionStorage.Clear);
+
+        //#if (signalR == true)
+        // The conversation the AI chat panel keeps on this device (See AppAiChatPanel.RestoreHistory). The panel drops
+        // its connection on delete, which would otherwise block it.
+        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AppAiChatPanel.HistoryDatabase).AsTask());
+        //#endif
+
+        await Attempt(nameof(Cookie), async () =>
+        {
+            foreach (var item in await cookie.GetAll())
+            {
+                await cookie.Remove(new ButilCookie { Name = item.Name, Path = "/" });
+            }
+        });
+
+        async Task Attempt(string storageName, Func<Task> clear)
+        {
+            try
+            {
+                await clear();
+            }
+            catch (Exception exp)
+            {
+                logger.LogWarning(exp, "Failed to clear {Storage} during ClearAppStorage.", storageName);
+            }
         }
     }
 

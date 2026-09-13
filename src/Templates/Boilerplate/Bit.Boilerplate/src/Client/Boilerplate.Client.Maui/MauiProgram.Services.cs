@@ -1,11 +1,14 @@
 //+:cnd:noEmit
-using Microsoft.Extensions.Logging;
+// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// - src/Client/Boilerplate.Client.Windows/Program.Services.cs
+
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
 //#endif
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Options;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -29,8 +32,13 @@ public static partial class MauiProgram
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
             services.AddScoped<IAppUpdateService, MauiAppUpdateService>();
+            services.AddScoped<IPermissionService, MauiPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
             services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
+            if (AppPlatform.IsWindows is false)
+            {
+                services.AddScoped<FileSaveService, MauiFileSaveService>();
+            }
 
             services.AddScoped<HttpClient>(sp =>
             {
@@ -47,10 +55,7 @@ public static partial class MauiProgram
             services.AddSingleton<IStorageService, MauiStorageService>();
             var settings = new ClientMauiSettings();
             configuration.Bind(settings);
-            services.AddSingleton(sp =>
-            {
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientMauiSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
 
@@ -83,7 +88,7 @@ public static partial class MauiProgram
                 });
 
             var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
             if (useOtlpExporter)
             {
@@ -91,7 +96,7 @@ public static partial class MauiProgram
             }
 
             //#if (appInsights == true)
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            if (string.IsNullOrWhiteSpace(settings.ApplicationInsights?.ConnectionString) is false)
             {
                 openTelemetry.UseAzureMonitorExporter(options =>
                 {
@@ -102,7 +107,7 @@ public static partial class MauiProgram
 
             if (AppPlatform.IsWindows)
             {
-                builder.Logging.AddEventLog(options => configuration.GetRequiredSection("Logging:EventLog").Bind(options));
+                builder.Logging.AddEventLog(options => configuration.Bind("Logging:EventLog", options));
             }
 
             services.AddOptions<ClientMauiSettings>()
@@ -118,7 +123,7 @@ public static partial class MauiProgram
 #elif Mac
             services.AddClientMauiProjectMacCatalystServices(builder.Configuration);
 #elif Windows
-        services.AddClientMauiProjectWindowsServices(builder.Configuration);
+            services.AddClientMauiProjectWindowsServices(builder.Configuration);
 #endif
             //+:cnd:noEmit
         }

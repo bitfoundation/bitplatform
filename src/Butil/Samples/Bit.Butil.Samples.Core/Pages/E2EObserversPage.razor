@@ -1,0 +1,1389 @@
+@page "/e2e-observers"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+@inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.NetworkInformation networkInformation
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+@inject Bit.Butil.IndexedDb indexedDb
+@inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.OriginPrivateFileSystem opfs
+@inject Bit.Butil.StorageBuckets storageBuckets
+@inject Bit.Butil.WebLocks webLocks
+@inject Bit.Butil.ObjectUrls objectUrls
+@inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Navigator navigator
+@inject Bit.Butil.UserAgent userAgent
+@inject Bit.Butil.Screen screen
+@inject Bit.Butil.ScreenOrientation screenOrientation
+@inject Bit.Butil.MediaSession mediaSession
+@inject Bit.Butil.Notification notification
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.StorageAccess storageAccess
+@inject Bit.Butil.Window butilWindow
+@inject Bit.Butil.Location butilLocation
+@inject Bit.Butil.Document butilDocument
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.MediaCapabilities mediaCapabilities
+@inject Bit.Butil.MediaSource mediaSource
+@inject Bit.Butil.WebCodecs webCodecs
+@inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+@inject Bit.Butil.DocumentPictureInPicture documentPictureInPicture
+@inject Bit.Butil.RemotePlayback remotePlayback
+@inject Bit.Butil.Presentation presentation
+@inject Bit.Butil.WebXr webXr
+@inject Bit.Butil.Bluetooth bluetooth
+@inject Bit.Butil.Usb usb
+@inject Bit.Butil.Serial serial
+@inject Bit.Butil.Hid hid
+@inject Bit.Butil.Midi midi
+@inject Bit.Butil.Sensors sensors
+@inject Bit.Butil.ComputePressure computePressure
+@inject Bit.Butil.DevicePosture devicePosture
+@inject Bit.Butil.WindowManagement windowManagement
+@inject Bit.Butil.LocalFonts localFonts
+@inject Bit.Butil.AudioOutput audioOutput
+@inject Bit.Butil.Credentials credentials
+@inject Bit.Butil.FedCm fedCm
+@inject Bit.Butil.WebOtp webOtp
+@inject Bit.Butil.DigitalCredentials digitalCredentials
+@inject Bit.Butil.PaymentRequest paymentRequest
+@inject Bit.Butil.PaymentHandler paymentHandler
+@inject Bit.Butil.DigitalGoods digitalGoods
+@inject IJSRuntime js
+
+@*
+    Second deterministic harness, focused on async/observer-based APIs. Same contract as /e2e:
+    every control has a stable id and results land in #status.
+*@
+
+<PageTitle>Butil - E2E Observers</PageTitle>
+
+<h1>Butil E2E Observers</h1>
+
+<div data-testid="status" id="status">@_status</div>
+
+<section>
+    <h3>Performance</h3>
+    <button id="perf-mark-measure" @onclick="PerfMarkMeasure">mark + measure</button>
+    <button id="perf-observer" @onclick="PerfObserver">PerformanceObserver(mark)</button>
+    <button id="perf-typed-observer" @onclick="PerfTypedObserver">typed observer(measure)</button>
+    <button id="perf-navigation" @onclick="PerfNavigation">navigation timing</button>
+    <button id="perf-resources" @onclick="PerfResources">resource timing</button>
+    <button id="perf-vitals" @onclick="PerfWebVitals">web vitals</button>
+    <button id="perf-buffered-read" @onclick="PerfBufferedRead">first read of a buffered observer-only type</button>
+</section>
+
+<section>
+    <h3>Storage Manager + Network</h3>
+    <button id="storage-estimate" @onclick="StorageEstimate">storage.estimate</button>
+    <button id="network-status" @onclick="NetworkStatus">connection status</button>
+</section>
+
+<section>
+    @* Hardware buses only ever get as far as a support probe here: every device they reach needs a
+       chooser the user has to click through, which is exactly what this suite must not depend on.
+       What is testable is that the whole surface resolves and answers - see the demo pages for the
+       parts that need real hardware. *@
+    <h3>Hardware buses</h3>
+    <button id="hw-support" @onclick="HardwareSupport">support probe</button>
+    <button id="hw-reads" @onclick="HardwareReads">permissionless reads</button>
+</section>
+
+<section>
+    <h3>Observers</h3>
+    <div id="observed-target" @ref="_target" style="width:120px;height:40px;border:1px solid #888;">target</div>
+    <button id="intersection-observe" @onclick="ObserveIntersection">observe intersection</button>
+    <button id="resize-observe" @onclick="ObserveResize">observe resize</button>
+    <button id="resize-trigger" @onclick="TriggerResize">resize target</button>
+    <button id="resize-observe-gated" @onclick="ObserveResizeGated">observe resize (rate limited)</button>
+    <button id="mutation-observe" @onclick="ObserveMutation">observe mutation</button>
+</section>
+
+<section>
+    <h3>BroadcastChannel</h3>
+    <button id="broadcast-subscribe" @onclick="BroadcastSubscribe">subscribe</button>
+    <button id="broadcast-post" @onclick="BroadcastPost">post</button>
+</section>
+
+<section>
+    <h3>IndexedDB</h3>
+    <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
+    <button id="idb-advanced" @onclick="IndexedDbAdvanced">ranges + cursors + transactions</button>
+    <button id="idb-migrate" @onclick="IndexedDbMigrate">schema migration</button>
+    <button id="idb-connection-callbacks" @onclick="IndexedDbConnectionCallbacks">versionchange + blocked</button>
+</section>
+
+<section>
+    <h3>CacheStorage</h3>
+    <button id="cache-roundtrip" @onclick="CacheRoundTrip">putText + match + delete</button>
+</section>
+
+<section>
+    <h3>Origin private file system</h3>
+    <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
+    <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
+    <button id="opfs-sync-aliases" @onclick="OpfsSyncPathAliases">sync access handle (aliased paths)</button>
+</section>
+
+<section>
+    <h3>Storage buckets</h3>
+    <button id="buckets-roundtrip" @onclick="StorageBucketsRoundTrip">open + write + keys + delete</button>
+</section>
+
+<section>
+    <h3>Web Locks</h3>
+    <button id="lock-run" @onclick="LockRun">acquire + run + release</button>
+</section>
+
+<section>
+    <h3>Object URLs</h3>
+    <button id="objurl-create" @onclick="ObjectUrlCreate">createObjectURL</button>
+</section>
+
+<section>
+    <h3>CookieStore</h3>
+    <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+    <button id="cookiestore-change" @onclick="CookieStoreChangeEvent">subscribe change</button>
+</section>
+
+<section>
+    <h3>Change subscriptions</h3>
+    <button id="subs-attach" @onclick="ChangeSubscriptions">battery + network + permissions</button>
+</section>
+
+<section>
+    <h3>Performance entries</h3>
+    <button id="perf-entries" @onclick="PerfEntries">mark + getEntries + clear</button>
+</section>
+
+<section>
+    <h3>Platform</h3>
+    <button id="nav-info" @onclick="NavInfo">navigator info</button>
+    <button id="nav-input-pending" @onclick="NavInputPending">isInputPending</button>
+    <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
+    <button id="ua-extract-string" @onclick="UaExtractString">userAgent.extract(string)</button>
+    <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+    <button id="screen-orientation-watch" @onclick="ScreenOrientationWatch">orientation change</button>
+    <button id="notification-missing" @onclick="NotificationMissing">notification permission without the API</button>
+    <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
+</section>
+
+<section>
+    @* The media APIs that can be exercised without a prompt, a device or a network fetch. The
+       video element below is the attachment point for the MediaSource check; it stays muted and
+       is never played, so nothing here needs an autoplay gesture. *@
+    <h3>Media</h3>
+    <video id="media-target" @ref="_mediaTarget" muted preload="auto" width="80" height="60"></video>
+    <button id="mediacaps-decoding" @onclick="MediaCapabilitiesDecoding">mediaCapabilities.decodingInfo</button>
+    <button id="mediasource-types" @onclick="MediaSourceTypes">mediaSource.isTypeSupported</button>
+    <button id="mediasource-open" @onclick="MediaSourceOpen">mediaSource.open + addSourceBuffer</button>
+    <button id="webcodecs-roundtrip" @onclick="WebCodecsRoundTrip">webCodecs encode + decode</button>
+    <button id="webaudio-graph" @onclick="WebAudioGraph">webAudio graph + analyser</button>
+    <button id="webaudio-decode" @onclick="WebAudioDecode">webAudio.decodeAudioData</button>
+    <button id="eme-clearkey" @onclick="EmeClearKey">encryptedMedia clear key</button>
+    <button id="media-support" @onclick="MediaSupport">support probes</button>
+    <button id="mediasession-actions" @onclick="MediaSessionActions">mediaSession action names</button>
+</section>
+
+@* Identity and commerce, headless-safe: every call here either only reads a feature-detection
+   flag or asks for something the browser answers with "nothing" - no sheet, no chooser, no
+   prompt, and nothing that waits on a service worker or the network. *@
+<section>
+    <h3>Identity &amp; commerce</h3>
+    <button id="identity-support" @onclick="IdentitySupport">identity support checks</button>
+    <button id="identity-quiet" @onclick="IdentityQuiet">silent get + aborts</button>
+    <button id="commerce-support" @onclick="CommerceSupport">commerce support checks</button>
+    <button id="commerce-quiet" @onclick="CommerceQuiet">abort + store queries</button>
+</section>
+
+@code {
+    private string _status = "ready";
+    private ElementReference _target;
+    private ElementReference _mediaTarget;
+
+    private ButilSubscription? _intersectionSub;
+    private ButilSubscription? _resizeSub;
+    private ButilSubscription? _mutationSub;
+    private ButilSubscription? _perfObserverSub;
+    private ButilSubscription? _typedObserverSub;
+    private ButilSubscription? _broadcastSub;
+
+    private int _resizeWidth = 120;
+
+    private void Set(string value) { _status = value; StateHasChanged(); }
+
+    // ─── Performance ─────────────────────────────────────────────────────────────
+    private async Task PerfMarkMeasure()
+    {
+        await performance.Mark("butil-e2e-a");
+        await performance.Mark("butil-e2e-b");
+        await performance.Measure("butil-e2e-measure", "butil-e2e-a", "butil-e2e-b");
+        var entries = await performance.GetEntries("butil-e2e-measure", "measure");
+        Set($"perf:measure:{entries.Length > 0}");
+    }
+
+    private async Task PerfObserver()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        // The harness button can be pressed more than once; drop the previous observer first so a
+        // second run does not leave the first one still reporting into a dead handler.
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        _perfObserverSub = await performance.SubscribeObserver(["mark"], entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        }, buffered: false);
+
+        await performance.Mark("butil-e2e-observed-mark");
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"perf:observer:{fired}");
+    }
+
+    private async Task PerfTypedObserver()
+    {
+        // Measures are deterministic - unlike long tasks or layout shifts, one can be produced on
+        // demand - so this proves the typed relay without depending on the browser being slow.
+        var tcs = new TaskCompletionSource<bool>();
+
+        // Same as above: a repeated activation replaces the subscription, so release the old one.
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
+        _typedObserverSub = await performance.SubscribeObserver<PerformanceEntry>(
+            [PerformanceEntryTypes.Measure],
+            entries =>
+            {
+                var typed = entries.FirstOrDefault(e => e.Name == "butil-e2e-typed-measure");
+                if (typed is not null) tcs.TrySetResult(typed.EntryType == "measure");
+            },
+            buffered: false);
+
+        await performance.Mark("butil-e2e-typed-a");
+        await performance.Mark("butil-e2e-typed-b");
+        await performance.Measure("butil-e2e-typed-measure", "butil-e2e-typed-a", "butil-e2e-typed-b");
+
+        var deserialized = await WaitFor(tcs, 5000);
+        Set($"perf:typed-observer:{deserialized}");
+    }
+
+    private async Task PerfNavigation()
+    {
+        var entries = await performance.GetNavigationEntries();
+        var page = entries.FirstOrDefault();
+        // A navigation entry always exists once the document has loaded, and its response has to
+        // have started - the fields being non-default is what proves the typed deserialization.
+        var ok = page is not null && page.EntryType == "navigation" && page.ResponseStart > 0 && page.Type?.Length > 0;
+        Set($"perf:navigation:{ok}");
+    }
+
+    private async Task PerfResources()
+    {
+        var resources = await performance.GetResourceEntries();
+        // The harness page itself loads scripts, so the buffer is never empty here; every entry has
+        // to be a resource with a name and a start time.
+        var ok = resources.Length > 0 && resources.All(r => r.EntryType == "resource" && r.Name.Length > 0);
+        Set($"perf:resources:{ok}");
+    }
+
+    private async Task PerfWebVitals()
+    {
+        var vitals = await performance.GetWebVitals();
+        // TTFB comes from the navigation entry, so it is the one metric present on every engine
+        // and without any user interaction.
+        var ok = vitals is not null && vitals.Ttfb is >= 0;
+        Set($"perf:vitals:{ok}");
+    }
+
+    private async Task PerfBufferedRead()
+    {
+        // Long tasks never reach the timeline and are only ever observed - and unlike an LCP
+        // candidate one can be produced on demand, which is what makes this deterministic. Block the
+        // main thread, let the blocking task end so the engine records it, and only then make the
+        // very first read of the type. That read is what starts the observer behind it, so it can
+        // only see the long task if the module drains the fresh observer's records rather than
+        // waiting for the callback a later task would have run.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+        await Task.Delay(50);
+
+        var tasks = await performance.GetLongTasks();
+        var ok = tasks.Length > 0 && tasks.All(t => t.EntryType == "longtask" && t.Duration > 0);
+        Set($"perf:buffered-read:{ok}");
+    }
+
+    // ─── Storage Manager + Network ───────────────────────────────────────────────
+    private async Task StorageEstimate()
+    {
+        var est = await storageManager.Estimate();
+        // Quota is reported on every evergreen browser; usage may be 0 on a clean origin.
+        Set($"storage:estimate:{est.Quota.HasValue}");
+    }
+
+    private async Task NetworkStatus()
+    {
+        var status = await networkInformation.GetStatus();
+        Set($"network:online:{status.Online}");
+    }
+
+    // ─── Hardware buses ─────────────────────────────────────────────────────────
+    // Whether a given bus is implemented depends on the browser the suite happens to run, so these
+    // assert that the calls resolve and answer, not what they answer.
+    private async Task HardwareSupport()
+    {
+        _ = await bluetooth.IsSupported();
+        _ = await usb.IsSupported();
+        _ = await serial.IsSupported();
+        _ = await hid.IsSupported();
+        _ = await midi.IsSupported();
+        _ = await sensors.IsSupported(SensorType.Accelerometer);
+        _ = await computePressure.IsSupported();
+        _ = await devicePosture.IsSupported();
+        _ = await windowManagement.IsSupported();
+        _ = await localFonts.IsSupported();
+        _ = await audioOutput.IsSupported();
+        Set("hw:support:ok");
+    }
+
+    // The reads that need no permission and no device, so they have one right answer everywhere:
+    // a non-foldable is "continuous", and the two listings come back empty rather than refusing.
+    // LocalFonts.Query() is deliberately not here - it prompts for the local-fonts permission, which
+    // a headless run has nothing to answer with. QueryPermission only reads state, so it stays.
+    private async Task HardwareReads()
+    {
+        var posture = await devicePosture.GetPosture();
+        _ = await windowManagement.IsExtended();
+        _ = await sensors.QueryPermission(SensorType.Accelerometer);
+        var sources = await computePressure.GetKnownSources();
+        var outputs = await audioOutput.GetDevices();
+        var ports = await midi.GetPorts();
+        Set($"hw:reads:{posture}:{sources is not null}/{outputs is not null}/{ports is null}");
+    }
+
+    // ─── Observers ───────────────────────────────────────────────────────────────
+    private async Task ObserveIntersection()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _intersectionSub = await _target.ObserveIntersection(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        // The target is on-screen, so the observer fires an initial entry immediately.
+        var fired = await WaitFor(tcs, 5000);
+        Set($"intersection:{fired}");
+    }
+
+    private async Task ObserveResize()
+    {
+        // The gated variant below shares this field; a run that clicks both must not leave the first
+        // observer firing into a stale closure, or watching alongside the second.
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
+        var tcs = new TaskCompletionSource<bool>();
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length > 0) tcs.TrySetResult(true);
+        });
+        var fired = await WaitFor(tcs, 5000);
+        Set($"resize:observed:{fired}");
+    }
+
+    private async Task TriggerResize()
+    {
+        _resizeWidth += 40;
+        await _target.SetAttribute("style", $"width:{_resizeWidth}px;height:40px;border:1px solid #888;");
+        Set($"resize:triggered:{_resizeWidth}");
+    }
+
+    // The correctness half of the rate limit; Bit.Butil.Tests.Benchmarks measures how much traffic
+    // it removes, and this checks the thing that measurement cannot see - that the size the element
+    // *settles* at still arrives.
+    //
+    // Every one of the five resizes below lands inside a single 300 ms interval, so all of them are
+    // suppressed. A leading-edge-only gate would leave the handler holding the width the element had
+    // when the observer was attached, permanently. The trailing send is what makes the last one
+    // arrive, a little late, and that is what this waits for.
+    private const int GatedFinalWidth = 230;
+
+    // What a content-box ResizeObserver reports for that width: the target carries a 1px border on
+    // each side, and the content box is what is left inside them.
+    private const int GatedFinalContentWidth = GatedFinalWidth - 2;
+
+    private async Task ObserveResizeGated()
+    {
+        if (_resizeSub is not null) { await _resizeSub.DisposeAsync(); _resizeSub = null; }
+
+        var last = 0d;
+        var settled = new TaskCompletionSource<bool>();
+
+        _resizeSub = await _target.ObserveResize(js, entries =>
+        {
+            if (entries.Length == 0) return;
+            last = entries[^1].InlineSize;
+            if (Math.Abs(last - GatedFinalContentWidth) < 1) settled.TrySetResult(true);
+        }, minInterval: TimeSpan.FromMilliseconds(300));
+
+        foreach (var width in new[] { 150, 170, 190, 210, GatedFinalWidth })
+        {
+            await _target.SetAttribute("style", $"width:{width}px;height:40px;border:1px solid #888;");
+            await Task.Delay(20);
+        }
+
+        var arrived = await WaitFor(settled, 5000);
+        Set($"resize:gated:{arrived}:{last:0}");
+    }
+
+    private async Task ObserveMutation()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        _mutationSub = await _target.ObserveMutations(js, records =>
+        {
+            if (records.Length > 0) tcs.TrySetResult(true);
+        }, new MutationObserverOptions { Attributes = true });
+
+        // Mutate an attribute to trigger the observer.
+        await _target.SetAttribute("data-butil", Guid.NewGuid().ToString("N"));
+
+        var fired = await WaitFor(tcs, 5000);
+        Set($"mutation:{fired}");
+    }
+
+    // ─── BroadcastChannel ────────────────────────────────────────────────────────
+    private async Task BroadcastSubscribe()
+    {
+        _broadcastReceived = new TaskCompletionSource<string>();
+        _broadcastSub = await broadcastChannel.Subscribe("butil-e2e-channel", msg =>
+        {
+            _broadcastReceived?.TrySetResult(msg.GetProperty("text").GetString() ?? "");
+        });
+        Set("broadcast:subscribed");
+    }
+
+    private TaskCompletionSource<string>? _broadcastReceived;
+
+    private async Task BroadcastPost()
+    {
+        // Post from a second BroadcastChannel in JS land so the subscriber (which doesn't receive
+        // its own messages) actually fires.
+        await js.InvokeVoidAsync("eval",
+            "(function(){const c=new BroadcastChannel('butil-e2e-channel');c.postMessage({text:'pong'});c.close();})()");
+
+        var received = _broadcastReceived is null ? "" : await WaitForValue(_broadcastReceived, 5000);
+        Set($"broadcast:received:{received}");
+    }
+
+    // ─── IndexedDB ───────────────────────────────────────────────────────────────
+    private async Task IndexedDbRoundTrip()
+    {
+        await using var db = await indexedDb.Open("butil-e2e-db", 1,
+        [
+            new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }
+        ]);
+
+        await db.Put("items", new IdbItem { Id = "k1", Value = "stored" });
+        var item = await db.Get<IdbItem>("items", "k1");
+        Set($"idb:get:{item?.Value}");
+    }
+
+    // Walks the whole extended surface - ranges, cursors, index queries, batched transactions and
+    // binary values - and reports the first check that fails so a red test names the culprit.
+    // The connection callbacks, which JavaScript dispatches through the interop reference the handle hands
+    // it: a second connection asking for a higher version makes the browser tell the first one to get out
+    // of the way. The blocked callback is registered as well and must NOT fire - Butil's own connection
+    // closes itself as it reports the versionchange, so the upgrade is never held up - which is the other
+    // half of what this arrangement promises.
+    private async Task IndexedDbConnectionCallbacks()
+    {
+        var name = $"butil-e2e-versionchange-{Guid.NewGuid():N}";
+        IndexedDbStoreSchema[] stores = [new IndexedDbStoreSchema { Name = "items", KeyPath = "id" }];
+
+        var versionChanged = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var first = await indexedDb.Open(name, 1, stores, onVersionChange: () => versionChanged.TrySetResult(true));
+
+        // Deliberately not awaited yet: this open cannot complete while the first connection is still
+        // holding the database, which is the situation both callbacks describe.
+        var upgrade = indexedDb.Open(name, 2, stores, onBlocked: () => blocked.TrySetResult(true)).AsTask();
+
+        var told = await WaitFor(versionChanged, 5000);
+
+        // Waited on rather than slept through: IndexedDB fires blocked *before* it proceeds with an
+        // upgrade, so an upgrade that has gone through while the first connection is still un-disposed
+        // is proof both that the versionchange handler closed that connection and that no blocked
+        // callback is still on its way. Letting a short timer expire and calling a callback that has
+        // not arrived yet "not blocked" would only ever be a race against how fast the browser is.
+        var yielded = (await Task.WhenAny(upgrade, Task.Delay(5000))) == upgrade;
+        var wasBlocked = yielded is false || blocked.Task.IsCompleted;
+
+        // A no-op when the upgrade is already through, and what unblocks it when it is not - so the
+        // failing run reports which of the three values went wrong instead of hanging on the await below.
+        await first.DisposeAsync();
+
+        var second = await upgrade;
+        var upgraded = second.Version == 2;
+        await second.DisposeAsync();
+        await indexedDb.DeleteDatabase(name);
+
+        Set($"idb:connection-callbacks:{told}/{wasBlocked}/{upgraded}");
+    }
+
+    private async Task IndexedDbAdvanced()
+    {
+        const string dbName = "butil-e2e-adv";
+        const string store = "rows";
+        const string blobs = "blobs";
+        const string index = "by-group";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using var db = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = index, KeyPath = "group" }]
+            },
+            new IndexedDbStoreSchema { Name = blobs }
+        ]);
+
+        var failure = await RunIdbChecks(db, store, blobs, index);
+        Set(failure is null ? "idb:adv:ok" : $"idb:adv:fail:{failure}");
+    }
+
+    private async Task<string?> RunIdbChecks(IndexedDbHandle db, string store, string blobs, string index)
+    {
+        // 10 rows, ids 1..10, alternating groups - one transaction, so this also exercises Transact.
+        var writes = Enumerable.Range(1, 10)
+            .Select(i => IndexedDbOperation.Put(store, new IdbRow { Id = i, Group = i % 2 == 0 ? "even" : "odd", Text = $"row{i}" }))
+            .ToArray();
+        var keys = await db.Transact(writes, durability: IndexedDbDurability.Relaxed);
+        if (keys.Length != 10 || keys[0].GetInt32() != 1) return "transact-keys";
+
+        if (await db.Count(store) != 10) return "count";
+
+        // Key ranges.
+        var midRange = IndexedDbKeyRange.Bound(3, 6);
+        if ((await db.GetAll<IdbRow>(store, midRange)).Length != 4) return "range-getall";
+        if (await db.Count(store, midRange) != 4) return "range-count";
+        if ((await db.GetAll<IdbRow>(store, IndexedDbKeyRange.Bound(3, 6, lowerOpen: true))).Length != 3) return "range-open";
+        if ((await db.GetAllKeys(store, IndexedDbKeyRange.LowerBound(8))).Length != 3) return "range-keys";
+
+        // Cursors: paging, skipping, and reverse order.
+        var page = await db.GetPage<IdbRow>(store, skip: 2, take: 3);
+        if (page.Length != 3 || page[0].Value!.Id != 3 || page[0].PrimaryKey.GetInt32() != 3) return "page";
+
+        var reverse = await db.GetPage<IdbRow>(store, direction: IndexedDbCursorDirection.Previous, take: 2);
+        if (reverse.Length != 2 || reverse[0].Value!.Id != 10 || reverse[1].Value!.Id != 9) return "page-reverse";
+
+        var rangedPage = await db.GetKeyPage(store, IndexedDbKeyRange.Bound(4, 8), take: 2);
+        if (rangedPage.Length != 2 || rangedPage[0].PrimaryKey.GetInt32() != 4) return "page-range";
+
+        // Index queries.
+        if (await db.CountByIndex(store, index, "even") != 5) return "index-count";
+        if ((await db.GetAllKeysByIndex(store, index, "odd")).Length != 5) return "index-keys";
+        if ((await db.GetKeyByIndex(store, index, "even")).GetInt32() != 2) return "index-getkey";
+
+        var distinct = await db.GetKeyPageByIndex(store, index, direction: IndexedDbCursorDirection.NextUnique);
+        if (distinct.Length != 2) return "index-distinct";
+
+        // Index cursor keys are the index key, not the primary key.
+        var indexPage = await db.GetPageByIndex<IdbRow>(store, index, "even", take: 1);
+        if (indexPage.Length != 1 || indexPage[0].Key.GetString() != "even" || indexPage[0].PrimaryKey.GetInt32() != 2) return "index-page";
+
+        // A rolled-back batch must leave nothing behind: the duplicate Add aborts the whole thing.
+        var rolledBack = false;
+        try
+        {
+            await db.Transact(
+            [
+                IndexedDbOperation.Put(store, new IdbRow { Id = 99, Group = "temp", Text = "should vanish" }),
+                IndexedDbOperation.Add(store, new IdbRow { Id = 1, Group = "temp", Text = "duplicate" })
+            ]);
+        }
+        catch
+        {
+            rolledBack = true;
+        }
+        if (rolledBack is false) return "rollback-not-raised";
+        if (await db.Get<IdbRow>(store, 99) is not null) return "rollback-leaked";
+
+        // Deleting through an index has no native equivalent - it walks a cursor.
+        if (await db.DeleteByIndex(store, index, "odd") != 5) return "index-delete";
+        if (await db.Count(store) != 5) return "index-delete-count";
+
+        // Range delete.
+        await db.Delete(store, IndexedDbKeyRange.LowerBound(8));
+        if (await db.Count(store) != 3) return "range-delete";
+
+        // Binary values bypass JSON entirely.
+        var payload = new byte[] { 1, 2, 3, 250, 251, 252 };
+        await db.PutBytes(blobs, payload, key: "bin");
+        var readBack = await db.GetBytes(blobs, "bin");
+        if (readBack is null || readBack.SequenceEqual(payload) is false) return "bytes";
+
+        // Schema introspection.
+        var storeInfo = await db.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.KeyPath.SequenceEqual(["id"]) is false || storeInfo.IndexNames.Contains(index) is false) return "store-info";
+
+        var indexInfo = await db.GetIndexInfo(store, index);
+        if (indexInfo is null || indexInfo.KeyPath.SequenceEqual(["group"]) is false || indexInfo.Unique) return "index-info";
+
+        var blobInfo = await db.GetStoreInfo(blobs);
+        if (blobInfo is null || blobInfo.KeyPath.Length != 0) return "blob-store-info";
+
+        if (await db.GetStoreInfo("no-such-store") is not null) return "missing-store-info";
+
+        var info = await db.GetInfo();
+        if (info is null || info.Version != 1 || info.StoreNames.Contains(blobs) is false) return "db-info";
+
+        // Key ordering, straight from the browser.
+        if (await indexedDb.Compare(1, 2) >= 0 || await indexedDb.Compare(2, 2) != 0) return "compare";
+
+        return null;
+    }
+
+    // Opening at a higher version runs the upgrade: a new store and index appear, a dropped index
+    // goes away, and the handle reports the version transition it performed.
+    private async Task IndexedDbMigrate()
+    {
+        const string dbName = "butil-e2e-migrate";
+        const string store = "rows";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using (var v1 = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = "by-group", KeyPath = "group" }]
+            }
+        ]))
+        {
+            if (v1.WasUpgraded is false) { Set("idb:migrate:fail:v1-not-upgraded"); return; }
+            if (v1.OldVersion != 0) { Set("idb:migrate:fail:v1-oldversion"); return; }
+            await v1.Put(store, new IdbRow { Id = 1, Group = "keep", Text = "survives the migration" });
+        }
+
+        await using var v2 = await indexedDb.Open(dbName, 2,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes =
+                [
+                    new IndexedDbIndexSchema { Name = "by-group", Drop = true },
+                    new IndexedDbIndexSchema { Name = "by-text", KeyPath = "text", Unique = true }
+                ]
+            },
+            new IndexedDbStoreSchema { Name = "added-in-v2", KeyPath = "id", AutoIncrement = true }
+        ]);
+
+        if (v2.OldVersion != 1 || v2.NewVersion != 2) { Set($"idb:migrate:fail:versions:{v2.OldVersion}->{v2.NewVersion}"); return; }
+        if (v2.StoreNames.Contains("added-in-v2") is false) { Set("idb:migrate:fail:new-store"); return; }
+
+        var storeInfo = await v2.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.IndexNames.Contains("by-group")) { Set("idb:migrate:fail:index-not-dropped"); return; }
+        if (storeInfo.IndexNames.Contains("by-text") is false) { Set("idb:migrate:fail:index-not-added"); return; }
+
+        var newIndex = await v2.GetIndexInfo(store, "by-text");
+        if (newIndex is null || newIndex.Unique is false) { Set("idb:migrate:fail:index-flags"); return; }
+
+        // Records written before the upgrade must still be there.
+        if (await v2.Get<IdbRow>(store, 1) is null) { Set("idb:migrate:fail:data-lost"); return; }
+
+        // The generated key of an autoIncrement store is only observable through the write's result.
+        var generated = await v2.Put("added-in-v2", new { text = "auto" });
+        if (generated.GetInt32() != 1) { Set($"idb:migrate:fail:autoincrement:{generated}"); return; }
+
+        Set("idb:migrate:ok");
+    }
+
+    // ─── CacheStorage ────────────────────────────────────────────────────────────
+    private async Task CacheRoundTrip()
+    {
+        const string cacheName = "butil-e2e-cache";
+        const string url = "https://butil.e2e/cached-resource";
+        await cacheStorage.PutText(cacheName, url, "hello-cache");
+        var match = await cacheStorage.Match(cacheName, url);
+        var body = match.Found ? System.Text.Encoding.UTF8.GetString(match.Body) : "";
+        var deleted = await cacheStorage.DeleteEntry(cacheName, url);
+        await cacheStorage.Delete(cacheName);
+        Set($"cache:roundtrip:{match.Found}/{body}/{deleted}");
+    }
+
+    // ─── Origin private file system ────────────────────────────────────────────
+    private async Task OpfsRoundTrip()
+    {
+        const string directory = "butil-e2e";
+        const string path = "butil-e2e/note.txt";
+
+        // Start from a clean tree: the harness runs more than once against the same profile.
+        await opfs.Remove(directory, recursive: true);
+
+        var written = await opfs.WriteText(path, "hello-opfs");
+        var read = await opfs.ReadText(path);
+        var entries = await opfs.List(directory);
+        var info = await opfs.GetFileInfo(path);
+        var removed = await opfs.Remove(directory, recursive: true);
+        var exists = await opfs.Exists(path);
+
+        Set($"opfs:roundtrip:{written}/{read}/{entries.Length}/{info?.Size}/{removed}/{exists}");
+    }
+
+    private async Task OpfsSyncAccess()
+    {
+        const string path = "butil-e2e-sync/log.bin";
+
+        await opfs.Remove(path);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            // createSyncAccessHandle is worker-only and not everywhere; the suite also has to pass
+            // where it is absent, and every call below would silently report a failed write there.
+            Set("opfs:sync:unsupported");
+            return;
+        }
+
+        var written = await opfs.SyncWrite(path, System.Text.Encoding.UTF8.GetBytes("record-1;"));
+        var appended = await opfs.SyncAppend(path, System.Text.Encoding.UTF8.GetBytes("record-2;"));
+        var size = await opfs.SyncSize(path);
+        var slice = await opfs.SyncRead(path, offset: 9, length: 9);
+        var text = slice is null ? "null" : System.Text.Encoding.UTF8.GetString(slice);
+        await opfs.Remove("butil-e2e-sync", recursive: true);
+
+        Set($"opfs:sync:True/{written}/{appended}/{size}/{text}");
+    }
+
+    // The worker serializes sync operations per file, and a sync access handle is an exclusive lock -
+    // so two overlapping appends to one file only survive if both take the same queue. These three
+    // spellings are one file, and a queue keyed on the raw string would give them three queues and
+    // have the later handles fail with NoModificationAllowedError.
+    private async Task OpfsSyncPathAliases()
+    {
+        const string directory = "butil-e2e-alias";
+
+        await opfs.Remove(directory, recursive: true);
+
+        if (await opfs.IsSyncAccessSupported() is false)
+        {
+            Set("opfs:aliases:unsupported");
+            return;
+        }
+
+        // Created up front: three concurrent creates of the same missing file is a different race
+        // than the one under test.
+        await opfs.SyncWrite($"{directory}/log.bin", []);
+
+        var record = System.Text.Encoding.UTF8.GetBytes("abc");
+        var appends = await Task.WhenAll(
+            opfs.SyncAppend($"{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"./{directory}/log.bin", record).AsTask(),
+            opfs.SyncAppend($"{directory}//log.bin", record).AsTask());
+
+        // -1 is what the interop reports for a failed sync operation, so a bypassed queue shows up
+        // as a negative here rather than only as a short file.
+        var failures = appends.Count(count => count < 0);
+        var size = await opfs.SyncSize($"{directory}/log.bin");
+        await opfs.Remove(directory, recursive: true);
+
+        Set($"opfs:aliases:{failures}/{size}");
+    }
+
+    // ─── Storage buckets ───────────────────────────────────────────────────────
+    private async Task StorageBucketsRoundTrip()
+    {
+        const string bucket = "butil-e2e";
+
+        if (await storageBuckets.IsSupported() is false)
+        {
+            // Chromium-only API, and the suite also has to pass where it is absent.
+            Set("buckets:roundtrip:unsupported");
+            return;
+        }
+
+        await storageBuckets.Delete(bucket);
+
+        var opened = await storageBuckets.Open(bucket);
+        var written = await storageBuckets.WriteText(bucket, "letters/draft.txt", "unsent");
+        var read = await storageBuckets.ReadText(bucket, "letters/draft.txt");
+
+        // Not valid UTF-8 on purpose: these four bytes are what tells ReadBytes apart from
+        // ReadText, which would decode 0xC3 0x28 into replacement characters and lose them.
+        byte[] payload = [0x00, 0xC3, 0x28, 0xFF];
+        var wroteBytes = await storageBuckets.WriteBytes(bucket, "letters/seal.bin", payload);
+        var readBytes = await storageBuckets.ReadBytes(bucket, "letters/seal.bin");
+        var bytesMatch = readBytes is not null && readBytes.SequenceEqual(payload);
+
+        var keys = await storageBuckets.Keys();
+        var deleted = await storageBuckets.Delete(bucket);
+
+        Set($"buckets:roundtrip:{opened?.Name}/{written}/{read}/{wroteBytes}/{bytesMatch}/{keys.Contains(bucket)}/{deleted}");
+    }
+
+    // ─── Web Locks ─────────────────────────────────────────────────────────────
+    private async Task LockRun()
+    {
+        var ran = false;
+        var heldExclusively = false;
+        await webLocks.Run("butil-e2e-lock", async () =>
+        {
+            ran = true;
+            var snapshot = await webLocks.Query();
+            heldExclusively = snapshot.Held.Any(l => l.Name == "butil-e2e-lock");
+        });
+        Set($"lock:run:{ran}/{heldExclusively}");
+    }
+
+    // ─── Object URLs ─────────────────────────────────────────────────────────────
+    private async Task ObjectUrlCreate()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes("blob-bytes");
+        var url = await objectUrls.Create(bytes, "text/plain");
+        var ok = url.StartsWith("blob:", StringComparison.Ordinal);
+        await objectUrls.Revoke(url);
+        Set($"objurl:create:{ok}");
+    }
+
+    // ─── CookieStore ─────────────────────────────────────────────────────────────
+    private async Task CookieStoreRoundTrip()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:unsupported");
+            return;
+        }
+
+        await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-cs", Value = "csval", Path = "/" });
+        var item = await cookieStore.Get("butil-e2e-cs");
+        await cookieStore.Delete("butil-e2e-cs");
+        Set($"cookiestore:get:{item?.Value}");
+    }
+
+    private TaskCompletionSource<string>? _cookieChanged;
+
+    // The change event is the one thing document.cookie can never give you, so this asserts a real
+    // round trip: subscribe, write, and wait for the browser to report the write back.
+    private async Task CookieStoreChangeEvent()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:change:unsupported");
+            return;
+        }
+
+        _cookieChanged = new TaskCompletionSource<string>();
+        var sub = await cookieStore.SubscribeChange(change =>
+        {
+            var name = change.Changed.FirstOrDefault()?.Name;
+            if (name == "butil-e2e-change") _cookieChanged?.TrySetResult(name);
+        });
+
+        if (sub is null) { Set("cookiestore:change:no-subscription"); return; }
+
+        try
+        {
+            await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-change", Value = "v", Path = "/" });
+            var received = await WaitForValue(_cookieChanged, 5000);
+            Set($"cookiestore:change:{(received == "butil-e2e-change" ? "ok" : "timeout")}");
+        }
+        finally
+        {
+            await sub.DisposeAsync();
+            await cookieStore.Delete("butil-e2e-change");
+        }
+    }
+
+    // Battery/network/permission changes can't be provoked from a headless page, so this asserts
+    // the subscription contract instead: attach, get the documented shape back, detach cleanly.
+    private async Task ChangeSubscriptions()
+    {
+        // Battery: a subscription where the API exists, null where it doesn't - never a throw.
+        var batterySupported = await battery.IsSupported();
+        var batterySub = await battery.SubscribeChange(_ => { });
+        if (batterySupported != (batterySub is not null)) { Set("subs:fail:battery-mismatch"); return; }
+        if (batterySub is not null) await batterySub.DisposeAsync();
+
+        // Network: always subscribable, because online/offline exist everywhere.
+        var networkSub = await networkInformation.SubscribeChange(_ => { });
+        await networkSub.DisposeAsync();
+
+        // Permissions: a recognized descriptor reports a real state and hands back a subscription.
+        var (state, permSub) = await permissions.SubscribeChange("geolocation", _ => { });
+        if (state == PermissionState.Unknown || permSub is null) { Set($"subs:fail:permissions:{state}"); return; }
+        await permSub.DisposeAsync();
+
+        // An unrecognized descriptor is Unknown with nothing to dispose.
+        var (bogusState, bogusSub) = await permissions.SubscribeChange("not-a-real-permission", _ => { });
+        if (bogusState != PermissionState.Unknown || bogusSub is not null) { Set("subs:fail:permissions-bogus"); return; }
+
+        Set("subs:ok");
+    }
+
+    // ─── Platform extras ───────────────────────────────────────────────────────
+    private async Task PlatformExtras()
+    {
+        // Newly surfaced getters: assert the plumbing, not specific machine-dependent values.
+        if (await navigator.IsCookieEnabled() is false) { Set("extras:fail:cookieEnabled"); return; }
+
+        var activation = await navigator.GetUserActivation();
+        if (activation is null || activation.HasBeenActive is false) { Set("extras:fail:userActivation"); return; }
+
+        if (await butilWindow.GetDevicePixelRatio() <= 0) { Set("extras:fail:devicePixelRatio"); return; }
+        if (await butilWindow.IsInIframe()) { Set("extras:fail:isInIframe"); return; }
+        if (await butilWindow.GetFrameCount() != 0) { Set("extras:fail:frameCount"); return; }
+        await butilWindow.IsCrossOriginIsolated();   // no COOP/COEP here, so only the call is asserted
+
+        // Top-level page: no ancestors.
+        if ((await butilLocation.GetAncestorOrigins()).Length != 0) { Set("extras:fail:ancestorOrigins"); return; }
+
+        if (await butilDocument.GetReadyState() != "complete") { Set("extras:fail:readyState"); return; }
+        if (string.IsNullOrWhiteSpace(await butilDocument.GetLastModified())) { Set("extras:fail:lastModified"); return; }
+
+        // Screen availLeft/availTop are reported as 0 where unimplemented, so only sanity-check them.
+        if (await screen.GetAvailableLeft() < 0 || await screen.GetAvailableTop() < 0) { Set("extras:fail:screen-avail"); return; }
+
+        if (await speechSynthesis.IsPaused()) { Set("extras:fail:speech-paused"); return; }
+
+        // Chromium reports a per-API usage breakdown; elsewhere it is empty, which is also valid.
+        var estimate = await storageManager.Estimate();
+        if (estimate.UsageDetails is null) { Set("extras:fail:usageDetails"); return; }
+
+        await storageAccess.IsRequestForSupported();   // presence check only - granting needs a real embed
+
+        Set("extras:ok");
+    }
+
+    // ─── Performance entries ───────────────────────────────────────────────────
+    private async Task PerfEntries()
+    {
+        await performance.ClearMarks();
+        await performance.Mark("butil-e2e-entry");
+        var entries = await performance.GetEntries("butil-e2e-entry", "mark");
+        await performance.ClearMarks();
+        var cleared = await performance.GetEntries("butil-e2e-entry", "mark");
+        Set($"perf:entries:{entries.Length > 0}/{cleared.Length == 0}");
+    }
+
+    // ─── Platform ─────────────────────────────────────────────────────────────
+    private async Task NavInfo()
+    {
+        var language = await navigator.GetLanguage();
+        var cores = await navigator.GetHardwareConcurrency();
+        var online = await navigator.IsOnLine();
+        Set($"nav:info:{language.Length > 0 && cores > 0 && online}");
+    }
+
+    private async Task NavInputPending()
+    {
+        // Whether input is pending depends on what the user is doing, so the assertion is that both
+        // forms answer at all - a browser without navigator.scheduling has to report false rather
+        // than throw, and that is the half of this a headless run actually exercises.
+        var pending = await navigator.IsInputPending();
+        var continuous = await navigator.IsInputPending(includeContinuous: true);
+        Set($"nav:input-pending:ok:{pending is true or false}/{continuous is true or false}");
+    }
+
+    private async Task UaExtract()
+    {
+        // Whatever engine the suite runs in names itself, its engine and its system, so this holds
+        // for Chromium, Firefox and WebKit alike without pinning any of them to a version.
+        var props = await userAgent.Extract();
+        var ok = props is not null && !string.IsNullOrEmpty(props.UserAgentValue)
+                 && props.Name is { Length: > 0 } && props.Layout is { Length: > 0 } && props.OsName is { Length: > 0 };
+        Set($"ua:extract:{ok}");
+    }
+
+    private async Task UaExtractString()
+    {
+        // The other half of Extract: a string that did not come from this browser. Being a fixed
+        // input it is the deterministic test of the parsing itself - an iPhone, named as one.
+        var props = await userAgent.Extract(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1");
+        Set($"ua:extract-string:{props?.Name}/{props?.Version}/{props?.Layout}/{props?.OsName}/{props?.OsVersion}/{props?.Product}");
+    }
+
+    private async Task ScreenMetrics()
+    {
+        var width = await screen.GetWidth();
+        var height = await screen.GetHeight();
+        var depth = await screen.GetColorDepth();
+        Set($"screen:metrics:{width > 0 && height > 0 && depth > 0}");
+    }
+
+    // The rotation itself comes from the test, which emulates one over CDP once the status says the
+    // subscription is live; the event carries the orientation type as a spec keyword to be mapped.
+    private async Task ScreenOrientationWatch()
+    {
+        var changed = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await using var subscription = await screenOrientation.SubscribeChange(
+            state => changed.TrySetResult($"{state.Type}/{state.Angle}"));
+
+        Set("screen:orientation-watching");
+
+        var orientation = await WaitForValue(changed, 10_000);
+        Set($"screen:orientation-change:{(orientation.Length > 0 ? orientation : "none")}");
+    }
+
+    // The test removes window.Notification first, standing in for an engine without the API (an iOS
+    // page that was not installed to the home screen). Both reads have to answer rather than throw.
+    private async Task NotificationMissing()
+    {
+        var supported = await notification.IsSupported();
+        var current = await notification.GetPermission();
+        var requested = await notification.RequestPermission();
+        Set($"notification:missing:{supported}/{current}/{requested}");
+    }
+
+    // ─── Identity & commerce ─────────────────────────────────────────────────────
+    // The support checks assert only that every identifier resolves and returns a bool: which
+    // engine implements what is the browser's business, and asserting an engine's answer here
+    // would make the suite fail on the next engine that ships one of these.
+    private async Task IdentitySupport()
+    {
+        _ = await credentials.IsSupported();
+        _ = await credentials.IsPasswordSupported();
+        _ = await credentials.IsFederatedSupported();
+        _ = await fedCm.IsSupported();
+        _ = await fedCm.IsLoginStatusSupported();
+        _ = await webOtp.IsSupported();
+        _ = await digitalCredentials.IsSupported();
+        _ = await digitalCredentials.IsProtocolSupported("openid4vp");
+        Set("identity:support:ok");
+    }
+
+    private async Task IdentityQuiet()
+    {
+        // Silent mediation is the one that shows no UI at all: with nothing stored it answers
+        // with no credential rather than opening a chooser.
+        var credential = await credentials.Get(new CredentialRequestOptions { Mediation = CredentialMediation.Silent });
+        var otpAborted = await webOtp.Abort();
+        var walletAborted = await digitalCredentials.Abort();
+        Set($"identity:quiet:{(credential is null ? "none" : credential.Type)}/{otpAborted}/{walletAborted}");
+    }
+
+    private async Task CommerceSupport()
+    {
+        _ = await paymentRequest.IsSupported();
+        _ = await paymentHandler.IsSupported();
+        _ = await digitalGoods.IsSupported();
+        Set("commerce:support:ok");
+    }
+
+    private async Task CommerceQuiet()
+    {
+        // No sheet has been opened and no app store is behind a test browser, so all three are
+        // the "nothing to do" answers rather than anything engine-specific.
+        var aborted = await paymentRequest.Abort();
+        var consumed = await digitalGoods.Consume("butil-e2e-token");
+        var purchases = await digitalGoods.ListPurchases();
+        Set($"commerce:quiet:{aborted}/{consumed}/{purchases.Length}");
+    }
+
+    private static async Task<bool> WaitFor(TaskCompletionSource<bool> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task && tcs.Task.Result;
+    }
+
+    private static async Task<string> WaitForValue(TaskCompletionSource<string> tcs, int timeoutMs)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        return completed == tcs.Task ? tcs.Task.Result : "";
+    }
+
+    public class IdbItem
+    {
+        public string Id { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+
+    public class IdbRow
+    {
+        public int Id { get; set; }
+        public string Group { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+
+    // ─── Media ───────────────────────────────────────────────────────────────────
+    private async Task MediaCapabilitiesDecoding()
+    {
+        // VP8 in WebM at a modest size: the one combination every Chromium build can decode, so the
+        // answer is deterministic in a headless run.
+        var info = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Video = new VideoConfiguration
+            {
+                ContentType = "video/webm;codecs=vp8",
+                Width = 640,
+                Height = 360,
+                Bitrate = 800_000,
+                Framerate = 30
+            }
+        });
+
+        // Opus in WebM, with the Boolean spatial-rendering member set: as universally decodable as
+        // VP8, and the one query that carries AudioConfiguration.SpatialRendering over the boundary.
+        var audio = await mediaCapabilities.DecodingInfo(new MediaDecodingConfiguration
+        {
+            Type = MediaDecodingType.MediaSource,
+            Audio = new AudioConfiguration
+            {
+                ContentType = "audio/webm;codecs=opus",
+                Channels = "2",
+                Samplerate = 48000,
+                SpatialRendering = false
+            }
+        });
+
+        Set($"mediacaps:decoding:{info is not null}/{info?.Supported}/{audio is not null}/{audio?.Supported}");
+    }
+
+    private async Task MediaSourceTypes()
+    {
+        var supported = await mediaSource.IsSupported();
+        var typeOk = await mediaSource.IsTypeSupported("video/webm;codecs=\"vp8\"");
+        Set($"mediasource:types:{supported}/{typeOk}");
+    }
+
+    private async Task MediaSourceOpen()
+    {
+        await using var source = await mediaSource.Open(_mediaTarget);
+        if (source is null)
+        {
+            Set("mediasource:open:null/False");
+            return;
+        }
+
+        var buffer = await source.AddSourceBuffer("video/webm;codecs=\"vp8\"");
+        var state = await source.GetReadyState();
+        var buffered = buffer is null ? 0 : (await buffer.GetBuffered()).Length;
+        if (buffer is not null) await buffer.DisposeAsync();
+
+        // Open, a buffer created, and nothing buffered yet because nothing has been appended.
+        Set($"mediasource:open:{state}/{buffer is not null}/{buffered}");
+    }
+
+    private async Task WebCodecsRoundTrip()
+    {
+        var config = new VideoEncoderConfig { Codec = "vp8", Width = 64, Height = 48, Bitrate = 100_000, Framerate = 10 };
+        if (await webCodecs.IsConfigSupported(config) is false)
+        {
+            Set("webcodecs:roundtrip:unsupported");
+            return;
+        }
+
+        var chunks = new List<EncodedVideoChunk>();
+        var encoder = await webCodecs.CreateVideoEncoder(config, chunk => chunks.Add(chunk));
+        if (encoder is null)
+        {
+            Set("webcodecs:roundtrip:no-encoder");
+            return;
+        }
+
+        await using (encoder)
+        {
+            var pixels = new byte[64 * 48 * 4];
+            for (var i = 0; i < pixels.Length; i++) pixels[i] = (byte)(i % 251);
+
+            await using var frame = await webCodecs.CreateFrame(pixels, "RGBA", 64, 48, 0);
+            await encoder.Encode(frame!, keyFrame: true);
+            await encoder.Flush();
+        }
+
+        var frames = 0;
+        var decoder = await webCodecs.CreateVideoDecoder(
+            new VideoDecoderConfig { Codec = "vp8", CodedWidth = 64, CodedHeight = 48, Description = chunks.FirstOrDefault()?.DecoderDescription },
+            async decoded => { frames++; await decoded.DisposeAsync(); });
+
+        if (decoder is null)
+        {
+            Set($"webcodecs:roundtrip:{chunks.Count > 0}/no-decoder");
+            return;
+        }
+
+        await using (decoder)
+        {
+            foreach (var chunk in chunks) await decoder.Decode(chunk);
+            await decoder.Flush();
+        }
+
+        Set($"webcodecs:roundtrip:{chunks.Count > 0}/{frames > 0}");
+    }
+
+    private async Task WebAudioGraph()
+    {
+        // An analyser reports its buffer even while the context is suspended, so this needs no
+        // autoplay gesture - which is what makes it safe in a headless run.
+        var oscillator = await webAudio.CreateOscillator(AudioOscillatorType.Sine, 440);
+        var analyser = await webAudio.CreateAnalyser(fftSize: 512);
+        if (oscillator is null || analyser is null)
+        {
+            Set("webaudio:graph:null");
+            return;
+        }
+
+        await oscillator.Connect(analyser);
+        await analyser.ConnectToDestination();
+
+        var wave = await analyser.GetByteTimeDomainData();
+        var spectrum = await analyser.GetByteFrequencyData();
+        var rate = await webAudio.GetSampleRate();
+
+        await analyser.DisposeAsync();
+        await oscillator.DisposeAsync();
+
+        Set($"webaudio:graph:{wave?.Length}/{spectrum?.Length}/{rate > 0}");
+    }
+
+    private async Task WebAudioDecode()
+    {
+        await using var buffer = await webAudio.DecodeAudioData(BuildWav());
+        if (buffer is null)
+        {
+            Set("webaudio:decode:null");
+            return;
+        }
+
+        Set($"webaudio:decode:{buffer.NumberOfChannels}/{buffer.Duration > 0.4 && buffer.Duration < 0.6}");
+    }
+
+    private async Task EmeClearKey()
+    {
+        // Clear Key is the key system every engine has, and its licence is a JSON document this page
+        // can produce itself - so the whole exchange runs with no server and no user interaction.
+        var keyId = new byte[] { 0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x70, 0x81, 0x92, 0xa3, 0xb4, 0xc5, 0xd6, 0xe7, 0xf8, 0x09 };
+        var key = new byte[] { 0x0f, 0x1e, 0x2d, 0x3c, 0x4b, 0x5a, 0x69, 0x78, 0x87, 0x96, 0xa5, 0xb4, 0xc3, 0xd2, 0xe1, 0xf0 };
+
+        await using var keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+        {
+            InitDataTypes = ["keyids"],
+            VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/webm;codecs=\"vp8\"" }]
+        });
+
+        if (keys is null)
+        {
+            Set("eme:clearkey:no-keys");
+            return;
+        }
+
+        var licensed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        MediaKeySessionHandle? session = null;
+        session = await keys.CreateSession(
+            onMessage: async message =>
+            {
+                var licence = System.Text.Encoding.UTF8.GetBytes(
+                    $$"""{"keys":[{"kty":"oct","kid":"{{Base64Url(keyId)}}","k":"{{Base64Url(key)}}"}],"type":"temporary"}""");
+                await session!.Update(licence);
+            },
+            // Only a usable key settles it: an earlier status change carrying no usable key is a
+            // step on the way, not a verdict, and completing on it would lock in a false negative.
+            onKeyStatusesChange: statuses =>
+            {
+                if (statuses.Any(s => s.Status == MediaKeyStatus.Usable)) licensed.TrySetResult(true);
+            });
+
+        if (session is null)
+        {
+            Set("eme:clearkey:no-session");
+            return;
+        }
+
+        await using (session)
+        {
+            var requested = await session.GenerateRequest("keyids",
+                System.Text.Encoding.UTF8.GetBytes($$"""{"kids":["{{Base64Url(keyId)}}"]}"""));
+
+            var usable = await Task.WhenAny(licensed.Task, Task.Delay(5000)) == licensed.Task && licensed.Task.Result;
+            Set($"eme:clearkey:{requested}/{usable}");
+        }
+    }
+
+    private async Task MediaSupport()
+    {
+        // Support probes for the APIs whose answer depends on the engine: what matters here is that
+        // every call completes and reports something, not which way it goes.
+        var docPip = await documentPictureInPicture.IsSupported();
+        var remote = await remotePlayback.IsSupported();
+        var present = await presentation.IsSupported();
+        var xr = await webXr.IsSupported();
+        var inlineXr = await webXr.IsSessionSupported(XrSessionMode.Inline);
+        var eme = await encryptedMedia.IsSupported();
+        var codecs = await webCodecs.IsSupported();
+        var caps = await mediaCapabilities.IsSupported();
+
+        Set($"media:support:{docPip}/{remote}/{present}/{xr}/{inlineXr}/{eme}/{codecs}/{caps}");
+    }
+
+    // An engine answers an action name it does not recognise with a TypeError, which SetActionHandler
+    // reports as false - so a true here is the proof the name crossing the boundary is the spec's.
+    // These are the newer actions Chromium implements; registering shows no UI in a headless run.
+    private async Task MediaSessionActions()
+    {
+        MediaSessionAction[] actions = [MediaSessionAction.PreviousSlide, MediaSessionAction.NextSlide, MediaSessionAction.EnterPictureInPicture];
+
+        var results = new List<bool>();
+        foreach (var action in actions)
+        {
+            results.Add(await mediaSession.SetActionHandler(action, _ => { }));
+            await mediaSession.ClearActionHandler(action);
+        }
+
+        Set($"mediasession:actions:{string.Join("/", results)}");
+    }
+
+    private static string Base64Url(byte[] value)
+        => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    /// <summary>Half a second of 8-bit mono silence-ish tone as a wav, for the decode check.</summary>
+    private static byte[] BuildWav()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate / 2;
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);
+        WriteInt16(20, 1);
+        WriteInt16(22, 1);
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);
+        WriteInt16(32, 1);
+        WriteInt16(34, 8);
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            data[44 + i] = (byte)(128 + Math.Sin(2 * Math.PI * 440 * i / sampleRate) * 30);
+        }
+
+        return data;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_intersectionSub is not null) await _intersectionSub.DisposeAsync();
+        if (_resizeSub is not null) await _resizeSub.DisposeAsync();
+        if (_mutationSub is not null) await _mutationSub.DisposeAsync();
+        if (_perfObserverSub is not null) await _perfObserverSub.DisposeAsync();
+        if (_typedObserverSub is not null) await _typedObserverSub.DisposeAsync();
+        if (_broadcastSub is not null) await _broadcastSub.DisposeAsync();
+    }
+}

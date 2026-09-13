@@ -1,31 +1,100 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" 
-     @ontouchmove="OnTouchMove" @ontouchend="OnDraggingEnd" @ontouchleave="OnDraggingEnd"
-     @onpointermove="OnPointerMove" @onpointerup="OnDraggingEnd" @onpointerleave="OnDraggingEnd" 
+@{
+    var icon = BitIconInfo.From(GutterIcon, GutterIconName);
+
+    @* A gutter nobody can move is not a control any more: it keeps its place in the layout but leaves the
+       tab order, so the keyboard is not stopped at something that answers to nothing. Read-only and disabled
+       differ only in the look - both take the resize away. *@
+    var interactive = _IsInteractive;
+
+    @* The separator reports where it stands as a percentage of the splitter, which is the range APG asks for.
+       It is only rendered from here once the value is known; until then the setup call measures the panels and
+       writes it onto the element itself, so a splitter that was never sized is not left claiming a position. *@
+    var valueNow = _ValueNow;
+
+    @* The pointer's way to fold the panel away. It is only ever offered where the reader is allowed to fold
+       the panel and allowed to touch the splitter at all - everywhere else the gutter is just a rule. *@
+    var collapseButton = interactive && Collapsible && ShowCollapseButton;
+    var collapseIcon = collapseButton ? BitIconInfo.From(Collapsed ? ExpandIcon : CollapseIcon,
+                                                         (Collapsed ? ExpandIconName : CollapseIconName) ?? _DefaultCollapseIconName)
+                                      : null;
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div class="bit-spl-pnl bit-spl-fpn" @ref="_firstPanelRef">
+    <div id="@_FirstPanelId"
+         @ref="_firstPanelRef"
+         style="@Styles?.FirstPanel"
+         class="bit-spl-pnl bit-spl-fpn @Classes?.FirstPanel">
         @FirstPanel
     </div>
-    <div class="bit-spl-gtr" @ref="_splitterGutterRef" @onpointerdown="OnPointerDown" @onpointerdown:preventDefault @ontouchstart="OnTouchStart" @ontouchstart:preventDefault>
-        @{
-            var icon = BitIconInfo.From(GutterIcon, GutterIconName);
-        }
-        @if (icon is not null)
+
+    @* The separator is the control of a splitter - it is what the pointer drags, what the keyboard moves and
+       what a screen reader is handed - so the accessible name, the tab stop and the value all live on it
+       rather than on the box around it, where a name on a plain div would not be announced at all.
+
+       And only while it can be moved: a separator becomes the widget form of its role by being focusable, and
+       a position, a range and a name of its own are not attributes the structural form is allowed to carry.
+       One that cannot be moved is the plain rule it looks like. *@
+    <div @ref="_gutterRef"
+         role="separator"
+         tabindex="@(interactive ? (TabIndex ?? "0") : null)"
+         aria-orientation="@(Vertical ? "horizontal" : "vertical")"
+         aria-label="@(interactive ? AriaLabel : null)"
+         aria-controls="@(interactive ? _FirstPanelId : null)"
+         aria-valuemin="@(interactive ? "0" : null)"
+         aria-valuemax="@(interactive ? "100" : null)"
+         aria-valuenow="@(interactive && valueNow is not null ? Css(valueNow.Value) : null)"
+         aria-valuetext="@(interactive && valueNow is not null ? $"{Css(valueNow.Value)}%" : null)"
+         style="@Styles?.Gutter"
+         class="bit-spl-gtr @Classes?.Gutter">
+        @if (GutterTemplate is not null)
         {
-            <i class="bit-spl-gic @icon.GetCssClasses()" />
+            @GutterTemplate
+        }
+        else if (icon is not null)
+        {
+            <i aria-hidden="true" style="@Styles?.GutterIcon" class="bit-spl-gic @icon.GetCssClasses() @Classes?.GutterIcon" />
         }
         else
         {
-            <div class="bit-spl-gti"></div>
+            <div aria-hidden="true" style="@Styles?.GutterIndicator" class="bit-spl-gti @Classes?.GutterIndicator"></div>
+        }
+
+        @* Everything this does the separator around it already does from the keyboard, with Enter and with
+           Ctrl and an arrow key, so it is a way in for the pointer rather than a control of its own: out of
+           the tab order and out of the accessibility tree, where a screen reader would otherwise be read the
+           same action twice - once as a separator and once as a button sitting inside it. *@
+        @if (collapseButton)
+        {
+            <div aria-hidden="true"
+                 @onclick="HandleCollapseButtonClick"
+                 style="@Styles?.CollapseButton"
+                 class="bit-spl-cbt @Classes?.CollapseButton">
+                <i style="@Styles?.CollapseButtonIcon"
+                   class="bit-spl-cbi @collapseIcon?.GetCssClasses() @Classes?.CollapseButtonIcon" />
+            </div>
         }
     </div>
-    <div class="bit-spl-pnl bit-spl-spn" @ref="_secondPanelRef">
+
+    <div id="@_SecondPanelId"
+         @ref="_secondPanelRef"
+         style="@Styles?.SecondPanel"
+         class="bit-spl-pnl bit-spl-spn @Classes?.SecondPanel">
         @SecondPanel
     </div>
+
+    @* The line a lazy drag moves in place of the panels. It is always here rather than rendered when the
+       drag starts, because the drag is the JavaScript side's from the pointer down onwards and there is no
+       render of the page between the two. It is out of the layout and out of the accessibility tree until a
+       lazy drag shows it. *@
+    <div @ref="_previewRef"
+         aria-hidden="true"
+         style="@Styles?.Preview"
+         class="bit-spl-prv @Classes?.Preview"></div>
 </div>

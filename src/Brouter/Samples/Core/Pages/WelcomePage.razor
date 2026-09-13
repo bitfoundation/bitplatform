@@ -1,0 +1,19 @@
+﻿@* Constrained middle optional: nonfile rejects first segments that look like file names, which is
+   its classic use - routing language-prefixed URLs without swallowing static-asset requests. *@
+
+<h1>Welcome</h1>
+
+<dl>
+    <dt>lang</dt>
+    <dd>@(Lang ?? "(null)")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/en/welcome" class="btn">/en/welcome</BrouterLink>
+    <BrouterLink Href="/style.css/welcome" class="btn">/style.css/welcome → 404</BrouterLink>
+    <BrouterLink Href="/welcome" class="btn">/welcome → 404</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Lang { get; set; }
+}

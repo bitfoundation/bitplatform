@@ -5,7 +5,6 @@ using Boilerplate.Server.Api.Features.Todo;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif
-using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -22,6 +21,8 @@ public partial class User : IdentityUser<Guid>
 
     [PersonalData]
     public DateTimeOffset? BirthDate { get; set; }
+
+    public DateTimeOffset CreatedOn { get; set; }
 
     /// <summary>
     /// The date and time of the last token request. Ensures only the latest generated token is valid and can only be used once.

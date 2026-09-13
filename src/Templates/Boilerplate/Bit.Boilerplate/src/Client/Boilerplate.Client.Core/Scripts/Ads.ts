@@ -5,6 +5,7 @@ export class Ads {
     private static rewardedSlot: any;
     private static rewardPayload: any;
     private static slotReadyEvent: any;
+    private static listenersRegistered = false;
     private static dotnetObj: DotNetObject | undefined;
 
     public static async init(adUnitPath: string, dotnetObj?: DotNetObject) {
@@ -18,6 +19,11 @@ export class Ads {
         }
 
         gtag.cmd.push(async () => {
+            // An earlier attempt that timed out or was not filled can still be holding a slot. It is destroyed
+            // before a new one is defined, so its events cannot arrive later and complete this attempt with the
+            // state of the previous one.
+            Ads.destroySlot();
+
             Ads.rewardedSlot = gtag.defineOutOfPageSlot(adUnitPath, gtag.enums.OutOfPageFormat.REWARDED);
 
             if (!Ads.rewardedSlot) {
@@ -26,43 +32,67 @@ export class Ads {
             }
             Ads.rewardedSlot.addService(gtag.pubads());
 
-            gtag.pubads().addEventListener('rewardedSlotReady', async (event: any) => {
-                Ads.slotReadyEvent = event;
-                await Ads.dotnetObj?.invokeMethodAsync('AdReady');
-            });
-
-            gtag.pubads().addEventListener('rewardedSlotClosed', async () => {
-                await Ads.dotnetObj?.invokeMethodAsync('AdClosed', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
-                Ads.rewardPayload = null;
-
-                if (Ads.rewardedSlot) {
-                    gtag.destroySlots([Ads.rewardedSlot]);
-                }
-            });
-
-            gtag.pubads().addEventListener('rewardedSlotGranted', async (event: any) => {
-                Ads.rewardPayload = event.payload;
-                await Ads.dotnetObj?.invokeMethodAsync('AdRewardGranted', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
-            });
-
-            gtag.pubads().addEventListener('slotRenderEnded', async (event: any) => {
-                await Ads.dotnetObj?.invokeMethodAsync('AdSlotRendered', event.isEmpty);
-
-                if (event.slot === Ads.rewardedSlot && event.isEmpty) {
-                    await Ads.dotnetObj?.invokeMethodAsync('AdNotAvailable');
-                }
-            });
+            // Showing an ad destroys its slot, so init runs again for every ad. Google Publisher Tag neither
+            // de-duplicates listeners nor lets an anonymous one be removed, so these are registered once per
+            // document while the slot above is redefined on every init.
+            if (!Ads.listenersRegistered) {
+                Ads.listenersRegistered = true;
+                Ads.addEventListeners();
+            }
 
             gtag.enableServices();
             gtag.display(Ads.rewardedSlot);
         });
     }
 
-    public static async watch() {
-        if (!Ads.slotReadyEvent) return;
+    public static async watch(): Promise<boolean> {
+        if (!Ads.slotReadyEvent) return false;
 
         Ads.slotReadyEvent.makeRewardedVisible();
         await Ads.dotnetObj?.invokeMethodAsync('AdVisible');
+        return true;
+    }
+
+    private static addEventListeners() {
+        gtag.pubads().addEventListener('rewardedSlotReady', async (event: any) => {
+            Ads.slotReadyEvent = event;
+            await Ads.dotnetObj?.invokeMethodAsync('AdReady');
+        });
+
+        gtag.pubads().addEventListener('rewardedSlotClosed', async () => {
+            await Ads.dotnetObj?.invokeMethodAsync('AdClosed', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
+            Ads.rewardPayload = null;
+
+            // Without this, watch() would call makeRewardedVisible on a destroyed slot and nothing would ever
+            // complete the pending watch.
+            Ads.destroySlot();
+        });
+
+        gtag.pubads().addEventListener('rewardedSlotGranted', async (event: any) => {
+            Ads.rewardPayload = event.payload;
+            await Ads.dotnetObj?.invokeMethodAsync('AdRewardGranted', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
+        });
+
+        gtag.pubads().addEventListener('slotRenderEnded', async (event: any) => {
+            await Ads.dotnetObj?.invokeMethodAsync('AdSlotRendered', event.isEmpty);
+
+            if (event.slot === Ads.rewardedSlot && event.isEmpty) {
+                // Released before .NET is told, so the failed attempt leaves nothing behind that a retry could
+                // inherit or that could fire a late ready event against the retry's slot.
+                Ads.destroySlot();
+
+                await Ads.dotnetObj?.invokeMethodAsync('AdNotAvailable');
+            }
+        });
+    }
+
+    private static destroySlot() {
+        if (Ads.rewardedSlot) {
+            gtag.destroySlots([Ads.rewardedSlot]);
+        }
+
+        Ads.rewardedSlot = null;
+        Ads.slotReadyEvent = null;
     }
 
     private static initScriptPromises: { [key: string]: Promise<unknown> } = {};
@@ -82,6 +112,9 @@ export class Ads {
                 await Promise.all(notAddedScripts.map(addScript));
                 res();
             } catch (e: any) {
+                // A blocked or offline load is not permanent: caching the rejection would fail every later retry
+                // on a network that works again.
+                delete Ads.initScriptPromises[key];
                 rej(e);
             }
         });
@@ -97,7 +130,12 @@ export class Ads {
                 script.crossOrigin = "anonymous";
 
                 script.onload = res;
-                script.onerror = rej;
+                script.onerror = e => {
+                    // The tag has to go with the cache entry, otherwise the check above reads the dead tag as
+                    // already loaded and the retry resolves without ever loading anything.
+                    script.remove();
+                    rej(e);
+                };
                 document.body.appendChild(script);
             })
         }

@@ -6,12 +6,14 @@
 public enum BitNavMode
 {
     /// <summary>
-    /// the value of selected key will change using NavigationManager and the current url inside the component.
+    /// The component follows the browser: it selects the item whose URL points at the page the app
+    /// currently sits on, and it re-selects on every navigation.
     /// </summary>
     Automatic,
 
     /// <summary>
-    /// selected key changes will be sent back to the parent component and the component won't change its value.
+    /// The selection is driven by clicks and by the SelectedItem binding instead of by the current URL,
+    /// which is what a component that switches between the panels of a single page needs.
     /// </summary>
     Manual
 }

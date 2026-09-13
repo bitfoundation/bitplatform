@@ -1,0 +1,164 @@
+/* Local chrome for the MCP page: the argument forms and the wire log. Everything else on the page
+   reuses the site's .bb-* classes, so only what has no equivalent there is defined here. */
+
+.mcp-field {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin: .9rem 0;
+}
+
+    .mcp-field label {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .85rem;
+        font-weight: 600;
+        font-family: var(--bb-mono);
+        color: var(--bb-text);
+    }
+
+    /* The fields themselves are the site's own inputs (app.css) - what a JSON argument needs on
+       top of that is a monospaced face and room for a long value. */
+    .mcp-field input,
+    .mcp-field textarea,
+    .mcp-field select {
+        font-family: var(--bb-mono);
+        font-size: .85rem;
+        width: 100%;
+        max-width: 46rem;
+    }
+
+.mcp-hint,
+.mcp-muted {
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+}
+
+.mcp-description {
+    color: var(--bb-text-muted);
+    font-size: .9rem;
+    margin: .2rem 0 .8rem;
+}
+
+.mcp-status {
+    color: var(--bb-text-muted);
+    font-size: .88rem;
+    font-style: italic;
+}
+
+.mcp-result-meta {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 1rem 0 .35rem;
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+}
+
+/* The outputs are long by nature - a tool answer is a document. They scroll in place rather than
+   pushing the next section a screen and a half down. */
+.mcp-output,
+.mcp-wire {
+    max-height: 22rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.mcp-exchange {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    padding: .5rem .75rem;
+    margin-bottom: .5rem;
+}
+
+    .mcp-exchange summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem;
+        cursor: pointer;
+        font-size: .88rem;
+    }
+
+    .mcp-exchange .mcp-exchange-index {
+        color: var(--bb-text-muted);
+        font-family: var(--bb-mono);
+        font-size: .8rem;
+    }
+
+.mcp-wire-label {
+    margin: .75rem 0 .25rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+}
+
+/* The name and self-declared annotations of the selected tool or prompt, above its description. */
+.mcp-badges {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .2rem 0 .35rem;
+    font-size: .95rem;
+}
+
+/* The server's own instructions: long, worth reading once, not worth scrolling past every visit. */
+.mcp-instructions {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    padding: .5rem .75rem;
+    margin: 1rem 0;
+}
+
+    .mcp-instructions summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem;
+        cursor: pointer;
+        font-size: .88rem;
+    }
+
+.mcp-subhead {
+    margin: 1.6rem 0 .35rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--bb-text);
+}
+
+/* Two dozen documentation pages is a list to scan, not a section to scroll past. */
+.mcp-scroll {
+    max-height: 24rem;
+    overflow: auto;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+/* What completion/complete answered with: values to click, not prose to read. */
+.mcp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin: .35rem 0 .8rem;
+}
+
+.mcp-chip {
+    padding: .25rem .6rem;
+    border: 1px solid var(--bb-border);
+    border-radius: 999px;
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    font-family: var(--bb-mono);
+    font-size: .78rem;
+    cursor: pointer;
+}
+
+    .mcp-chip:hover {
+        border-color: var(--bb-primary);
+        color: var(--bb-primary-hover);
+        background: var(--bb-primary-soft);
+    }

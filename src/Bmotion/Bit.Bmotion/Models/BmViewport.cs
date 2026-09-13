@@ -28,6 +28,15 @@ public class BmViewport
     /// </summary>
     public string Amount { get; set; } = "some";
 
+    /// <summary>
+    /// CSS selector of the scrollable ancestor to measure visibility against -
+    /// <c>IntersectionObserver</c>'s <c>root</c> (motion.dev's <c>viewport.root</c>). Use it when the
+    /// element scrolls inside a container rather than the page, e.g. <c>Root = ".chat-scroller"</c>.
+    /// <c>null</c> (default) measures against the browser viewport. A selector that matches nothing
+    /// falls back to the viewport.
+    /// </summary>
+    public string? Root { get; set; }
+
     internal object ToJsObject()
     {
         var amount = Amount?.Trim().ToLowerInvariant();
@@ -47,6 +56,8 @@ public class BmViewport
             // IntersectionObserver rootMargin string instead of an empty/invalid value.
             ["margin"]    = string.IsNullOrWhiteSpace(Margin) ? "0px" : Margin,
             ["threshold"] = threshold,
+            // null = the browser viewport (IntersectionObserver's default root).
+            ["root"]      = string.IsNullOrWhiteSpace(Root) ? null : Root,
         };
     }
 }

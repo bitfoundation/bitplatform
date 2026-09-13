@@ -1,7 +1,6 @@
 ﻿.example-content {
-    width: 17rem;
+    width: 18rem;
     display: flex;
-    overflow-x: auto;
     flex-flow: column wrap;
 }
 
@@ -35,6 +34,15 @@
 }
 
 ::deep {
+    .custom-friday {
+        color: white;
+        background-color: blueviolet;
+    }
+
+    .custom-hovered-days {
+        background-color: #9726ff2e;
+    }
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;

@@ -3,7 +3,7 @@
 public enum BitFileUploadStatus
 {
     /// <summary>
-    /// File uploading progress is pended because the server cannot be contacted.
+    /// The file is selected and queued, and its uploading has not started yet.
     /// </summary>
     Pending,
 

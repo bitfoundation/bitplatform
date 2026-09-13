@@ -1,7 +1,6 @@
 using Android.App;
 using Android.Content;
 using Firebase.Messaging;
-using Plugin.LocalNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
@@ -9,6 +8,8 @@ namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 [IntentFilter(["com.google.firebase.MESSAGING_EVENT"])]
 public partial class PushNotificationFirebaseMessagingService : FirebaseMessagingService
 {
+    private static int lastNotificationId = 0;
+
     private IPushNotificationService PushNotificationService => IPlatformApplication.Current!.Services.GetRequiredService<IPushNotificationService>();
 
     public override async void OnNewToken(string token)
@@ -41,10 +42,11 @@ public partial class PushNotificationFirebaseMessagingService : FirebaseMessagin
             var title = notification!.Title;
             var body = notification.Body;
 
-            if (string.IsNullOrEmpty(title) is false)
+            if (string.IsNullOrWhiteSpace(title) is false)
             {
                 await LocalNotificationCenter.Current.Show(new()
                 {
+                    NotificationId = Interlocked.Increment(ref lastNotificationId),
                     Title = title!,
                     Description = body!,
                     ReturningData = JsonSerializer.Serialize(message.Data ?? new Dictionary<string, string> { })

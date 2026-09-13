@@ -27,20 +27,20 @@
     h6 {
         margin-top: 1.5em;
         margin-bottom: 0.5em;
-        font-weight: 600;
+        font-weight: $tg-fw-semibold;
         line-height: 1.25;
     }
 
     h1 {
         font-size: 2em;
         padding-bottom: 0.3em;
-        border-bottom: 1px solid $clr-brd-sec;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
     }
 
     h2 {
         font-size: 1.5em;
         padding-bottom: 0.3em;
-        border-bottom: 1px solid $clr-brd-sec;
+        border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
     }
 
     h3 {
@@ -78,7 +78,7 @@
         margin: 0;
         padding: 0.2em 0.4em;
         font-size: 85%;
-        border-radius: 6px;
+        border-radius: $shp-radius-control;
         background-color: $clr-bg-sec;
         font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     }
@@ -88,7 +88,7 @@
         overflow: auto;
         font-size: 85%;
         line-height: 1.45;
-        border-radius: 6px;
+        border-radius: $shp-radius-surface;
         margin-bottom: 1em;
         background-color: $clr-bg-sec;
 
@@ -106,7 +106,7 @@
         margin: 0 0 1em 0;
         padding: 0 1em;
         color: $clr-fg-sec;
-        border-inline-start: 0.25em solid $clr-brd-pri;
+        border-inline-start: $shp-border-width-thick $shp-border-style $clr-brd-pri;
     }
 
     ul,
@@ -150,11 +150,11 @@
         th,
         td {
             padding: 6px 13px;
-            border: 1px solid $clr-brd-pri;
+            border: $shp-border-width $shp-border-style $clr-brd-pri;
         }
 
         th {
-            font-weight: 600;
+            font-weight: $tg-fw-semibold;
         }
 
         tr:nth-child(2n) {

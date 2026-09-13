@@ -10,8 +10,8 @@ state and avoid restarting Blazor upon returning from External Sign-in, the Popu
 after authentication. Using app.js, it can notify the main Window via window.opener.postMessage({ key: 'PUBLISH_MESSAGE', ... }),
 allowing the main Window to resume its operations.
 
-When publishing Client.Web (BlazorWebAssembly Standalone) and Server.Api, there won't be any WebInteropAppEndpoint,
-in this case, uncomment the Route attribute below to make this component accessible via /web-interop-app route. -->
+This page is plain static HTML served from the web app's own origin (wwwroot), at PageUrls.WebInteropApp
+(/web-interop-app.html). Client.Windows and Client.Maui link this same file rather than copying it. -->
 
 <html>
 <head>

@@ -1,0 +1,127 @@
+﻿@inject IJSRuntime JS
+
+@* The site header: the mark, the library's name and the two top-level destinations at one end;
+   the search, the repository and the theme switch at the other.
+
+   It is the one piece of chrome the landing page and the docs share, and it adapts to which of
+   the two it is sitting on: the menu button only exists on a docs page, because the landing page
+   has no nav panel to open. *@
+
+<header class="app-header">
+    <div class="app-header-inner">
+        <div class="header-start">
+            @* Only exists on a docs page, and only at the widths where the nav panel is a drawer;
+               CSS hides it above them. *@
+            @if (IsHomePage is false)
+            {
+                <button type="button" class="icon-btn menu-btn" @onclick="OnToggleNav"
+                        aria-label="Toggle navigation" aria-controls="nav-panel"
+                        aria-expanded="@(IsNavOpen ? "true" : "false")"
+                        disabled="@IsHydrating">
+                    <Icon Path="@Icons.Menu" />
+                </button>
+            }
+
+            <a class="header-brand" href="/" aria-label="Bmotion home">
+                <span class="logo" aria-hidden="true"></span>
+                <span class="wordmark">Bmotion</span>
+            </a>
+
+            <span class="header-version">@Version</span>
+
+            <nav class="header-links" aria-label="Sections">
+                <a class="link@(IsHomePage ? " active" : "")" href="/"
+                   aria-current="@(IsHomePage ? "page" : null)">Home</a>
+                <a class="link@(IsHomePage ? "" : " active")" href="/basic"
+                   aria-current="@(IsHomePage ? null : "page")">Docs</a>
+            </nav>
+        </div>
+
+        <div class="header-end">
+            @* The page is prerendered on the server, so it is visible - and inert - until the
+               WebAssembly runtime takes over. Say so instead of letting clicks silently do
+               nothing, and instead of leaving the still animations looking broken. *@
+            @if (IsHydrating)
+            {
+                <span class="hydrating" title="Prerendered HTML - the WebAssembly runtime is still loading.">
+                    <i></i><span>loading</span>
+                </span>
+            }
+
+            @* Below the width where it has room for its label it collapses to the icon, which is
+               why the accessible name is on the button rather than only in the text inside it. *@
+            <button type="button" class="header-search" @onclick="OnOpenSearch"
+                    aria-label="Search the docs" aria-keyshortcuts="Control+K Meta+K"
+                    disabled="@IsHydrating">
+                <Icon Path="@Icons.Search" />
+                <span class="search-label">Search docs</span>
+                <span class="kbd" aria-hidden="true">@ShortcutHint</span>
+            </button>
+
+            <a class="icon-btn" target="_blank" rel="noopener noreferrer"
+               aria-label="Bit.Bmotion on GitHub (opens in a new tab)"
+               href="https://github.com/bitfoundation/bitplatform">
+                <span class="github-mark" aria-hidden="true"></span>
+            </a>
+
+            @* Exact complements: CSS shows the sun in the dark theme and the moon in the light
+               one, so exactly one of the pair is ever visible - including on the prerendered
+               document, which carries no data-theme attribute yet. *@
+            <button type="button" class="icon-btn dark-theme" @onclick="ToggleTheme"
+                    title="Switch to the light theme" aria-label="Switch to the light theme">
+                <Icon Path="@Icons.Sun" />
+            </button>
+            <button type="button" class="icon-btn light-theme" @onclick="ToggleTheme"
+                    title="Switch to the dark theme" aria-label="Switch to the dark theme">
+                <Icon Path="@Icons.Moon" />
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    /// <summary>The release the docs describe, shown next to the name.</summary>
+    private const string Version = "net8+";
+
+    /// <summary>True while the prerendered markup is on screen and the WebAssembly runtime is still loading.</summary>
+    [Parameter] public bool IsHydrating { get; set; }
+
+    /// <summary>Whether the nav drawer is currently open, for the menu button's aria-expanded.</summary>
+    [Parameter] public bool IsNavOpen { get; set; }
+
+    /// <summary>Raised by the menu button at the widths where the nav panel is a drawer.</summary>
+    [Parameter] public EventCallback OnToggleNav { get; set; }
+
+    /// <summary>Raised by the search button. The layout owns the palette, so it owns opening it.</summary>
+    [Parameter] public EventCallback OnOpenSearch { get; set; }
+
+    /// <summary>
+    /// The shortcut printed on the search button's keycap. The layout resolves it once from the
+    /// browser rather than guessing: the same physical key is Ctrl on Windows and Linux and Cmd on
+    /// a Mac, and a keycap showing the wrong one is worse than no keycap at all.
+    /// </summary>
+    [Parameter] public string ShortcutHint { get; set; } = "Ctrl K";
+
+    /// <summary>
+    /// True on the landing page. The layout owns this - it is the same flag that decides whether
+    /// the page gets the docs shell at all - so the two can never disagree about which of the
+    /// site's two faces is on screen.
+    /// </summary>
+    [Parameter] public bool IsHomePage { get; set; }
+
+    // The attribute the stylesheets key off is owned by the theme script, which also persists the
+    // choice; the component only asks it to flip. Nothing here has to know the resulting theme -
+    // the two buttons are shown and hidden by CSS.
+    private async Task ToggleTheme()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmToggleTheme");
+        }
+        catch
+        {
+            // The theme is a preference, not a feature: if the script is missing there is nothing
+            // to report to the reader, and the page keeps working in whichever theme is applied.
+        }
+    }
+}

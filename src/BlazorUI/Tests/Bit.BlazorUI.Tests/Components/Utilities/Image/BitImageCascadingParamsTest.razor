@@ -1,0 +1,21 @@
+﻿@* Covers BitImageParams: the cascaded values fill in the parameters the image did not set itself, and
+   never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitImageParams[]
+                         {
+                             new()
+                             {
+                                 Class = "cascaded",
+                                 Rounded = true,
+                                 Bordered = true,
+                                 Width = "10rem",
+                                 AspectRatio = "16/9",
+                                 ImageFit = BitImageFit.Cover,
+                                 Loading = BitImageLoading.Lazy,
+                                 Decoding = BitImageDecoding.Async,
+                                 StartVisible = true
+                             }
+                         })">
+    <BitImage Src="images/bit-logo-blue.png" />
+    <BitImage Src="images/bit-logo-blue.png" Width="20rem" ImageFit="BitImageFit.Contain" />
+</BitParams>

@@ -50,13 +50,13 @@ public static class WebApplicationBuilderExtensions
                     var policyBuilder = policy.AddPolicy<AppResponseCachePolicy>();
                 }, excludeDefaultPolicy: true);
             });
-            if (settings.ResponseCaching?.EnableCdnEdgeCaching is true)
+            if (settings.ResponseCaching?.EnableCdnEdgeCaching is not false || settings.ResponseCaching?.EnableOutputCaching is not false)
             {
                 services.AddSingleton<AspNetCore.Antiforgery.IAntiforgery, SharedResponseCacheCompatibleAntiforgery>();
             }
 
             //#if(redis == true)
-            // Add default Redis connection for Hangfire, SignalR backplane, and distributed locking (persistence Redis with AOF)
+            // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
             builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
 
             // Add optional Redis connection for caching (ephemeral Redis without persistence)
@@ -65,29 +65,50 @@ public static class WebApplicationBuilderExtensions
 
             services
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 .AddFusionCacheRedisDistributedLocker()
                 .AddFusionCacheStackExchangeRedisBackplane()
                 .ConfigureRedisOptions()
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#endif
                 .AddFusionCache()
                 .AsHybridCache()
                 .WithRegisteredMemoryCache()
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 .WithRegisteredBackplane()
                 .WithRegisteredDistributedCache()
                 .WithRegisteredDistributedLocker()
+                //#if (IsInsideProjectTemplate == true)
+                */
                 //#endif
-                .WithDefaultEntryOptions(options => options.Size = 1)
-                // Auto-clone cached objects to avoid further issues after scaling out and switching to distributed caching.
-                .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = true)
+                //#endif
+                .WithDefaultEntryOptions(options => options.Size = AppMemoryCache.EstimatedEntrySizeInBytes)
+                // Auto-clone hands out a copy instead of the cached instance, so code that mutates what it reads from the cache
+                // breaks here the same way it would once you scale out and values start coming back deserialized from L2.
+                // It costs a serialize/deserialize per read though (including every output cache hit, since FusionOutputCacheStore
+                // shares these options), so it stays on in development to surface those bugs and off everywhere else.
+                .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = builder.Environment.IsDevelopment())
                 .WithSerializer(new FusionCacheSystemTextJsonSerializer())
                 .WithCacheKeyPrefix("Boilerplate:Cache:");
 
             services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
             // Registering Microsoft's IDistributedCache here doesn't mean you have to use it in your code. It's only for libraries that might rely on it.
-            //#if(redis == true)
+            //#if (redis == true)
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             services.AddStackExchangeRedisCache(_ => { });
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
             //#else
             services.AddDistributedMemoryCache();
             //#endif
@@ -204,7 +225,7 @@ public static class WebApplicationBuilderExtensions
                         })
                         .AddHttpClientInstrumentation()
                         .AddFusionCacheInstrumentation()
-                        .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
+                        .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is not true /* Ignore Hangfire */)
                         .AddHangfireInstrumentation();
                 })
                 .ConfigureResource(resource =>
@@ -229,7 +250,7 @@ public static class WebApplicationBuilderExtensions
         private TBuilder AddOpenTelemetryExporters()
         {
             var useOtlpExporter = string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrEmpty(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+                || string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
             if (useOtlpExporter)
             {
@@ -257,10 +278,10 @@ public static class WebApplicationBuilderExtensions
         {
             builder.Services.AddOutputCache(configureOptions: static caching =>
                 caching.AddPolicy("HealthChecks",
-                build: static policy => policy.Expire(TimeSpan.FromSeconds(10))));
+                build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
-                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), name: "binStorage", tags: ["live"]);
+                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live"]);
         }
     }
 }

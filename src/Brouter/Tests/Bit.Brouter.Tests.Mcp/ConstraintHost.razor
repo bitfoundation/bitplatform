@@ -1,0 +1,18 @@
+﻿@* One constrained route and the unconstrained route it competes with, exactly as the documentation
+   site declares its constraint tester. Which of the two renders is the constraint's real verdict on
+   the value in the URL. *@
+
+<Brouter>
+    <Routes>
+        <Broute Path="@Template">
+            <Content><div data-testid="outcome">matched</div></Content>
+        </Broute>
+        <Broute Path="/c/{kind}/{value}">
+            <Content><div data-testid="outcome">rejected</div></Content>
+        </Broute>
+    </Routes>
+</Brouter>
+
+@code {
+    [Parameter, EditorRequired] public string Template { get; set; } = default!;
+}

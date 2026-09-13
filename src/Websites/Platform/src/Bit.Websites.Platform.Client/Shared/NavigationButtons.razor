@@ -1,11 +1,11 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 
 <div class="container">
     <div class="button">
         @if (string.IsNullOrWhiteSpace(Prev) is false)
         {
             <a class="link" href="@PrevUrl">
-                <i class="bit-icon bit-icon--ChevronRight" style="transform:rotate(180deg)"></i>
+                <BitIcon IconName="ChevronRight" Style="transform:rotate(180deg)" />
                 <span class="left">@Prev</span>
             </a>
         }
@@ -15,7 +15,7 @@
         {
             <a class="link" href="@NextUrl">
                 <span class="right">@Next</span>
-                <i class="bit-icon bit-icon--ChevronRight"></i>
+                <BitIcon IconName="ChevronRight" />
             </a>
         }
     </div>

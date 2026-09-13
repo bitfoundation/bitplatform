@@ -1,212 +1,159 @@
-﻿@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../Styles/abstracts/_docs.scss';
 
-.main-container {
+.showcase {
     width: 100%;
-    display: flex;
-    flex-flow: row nowrap;
+    display: grid;
+    gap: $doc-space-xl;
     align-items: flex-start;
-    justify-content: space-between;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
 
     @include lt-lg {
-        flex-flow: column nowrap;
-        justify-content: flex-start;
+        gap: $doc-space-md;
+        grid-template-columns: 1fr;
     }
 }
 
-.content-container {
-    width: 50%;
+.showcase-lead {
+    margin-top: $doc-space-2xs;
+}
+
+.showcase-list {
     display: flex;
+    gap: $doc-space-2xs;
     flex-flow: column nowrap;
-    justify-content: flex-start;
+    margin-top: $doc-space-md;
 
+    // On a phone the column would push the live preview - the thing worth seeing - a screen and a
+    // half down the page, so the same rows become one swipeable strip above it.
     @include lt-lg {
-        width: 100%;
-
-        &:last-child {
-            margin-left: 0;
-        }
-    }
-
-    &.sample-side {
-        top: rem2(70px);
-        position: sticky;
+        overflow-x: auto;
+        flex-flow: row nowrap;
+        scroll-snap-type: x mandatory;
+        padding-bottom: $doc-space-2xs;
+        scrollbar-width: thin;
     }
 }
 
-.component-list {
+.showcase-row {
     width: 100%;
     display: flex;
-    max-width: rem2(500px);
-    flex-flow: column nowrap;
-
-    @include lt-lg {
-        display: none;
-    }
-}
-
-.component-row {
-    outline: 0;
-    width: 100%;
-    height: 100%;
     cursor: pointer;
-    user-select: none;
-    padding: rem2(20px);
-    position: relative;
-    display: inline-flex;
-    flex-flow: row nowrap;
-    text-decoration: none;
-    margin-top: rem2(10px);
-    box-sizing: border-box;
+    text-align: start;
     align-items: flex-start;
-    border-radius: rem2(2px);
-    transition-property: all;
-    transition-duration: 150ms;
-    justify-content: flex-start;
+    gap: $doc-space-xs;
+    padding: $doc-space-xs $doc-space-sm;
     background-color: transparent;
     border: rem2(1px) solid transparent;
+    border-radius: $bit-shape-radius-surface;
+    transition: border-color $bit-motion-duration $bit-motion-easing,
+                background-color $bit-motion-duration $bit-motion-easing;
 
     &:hover {
-        background-color: $bit-color-background-primary-active;
+        background-color: $bit-color-background-primary;
     }
 
-    .component-icon {
-        display: flex;
-        height: rem2(36px);
-        border-radius: 50%;
-        align-items: center;
-        min-width: rem2(36px);
-        justify-content: center;
-        margin-right: rem2(20px);
-
-        @include lt-lg {
-            margin-bottom: rem2(10px);
-        }
+    &:focus-visible {
+        @include doc-focus-ring;
     }
 
-    .component-info-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: flex-start;
-        flex-flow: column nowrap;
-        justify-content: space-around;
-    }
-
-    .component-name {
-        margin: 0;
-        line-height: 1.5;
-        font-weight: 700;
-        letter-spacing: 0;
-        font-size: rem2(14px);
-        color: $bit-color-foreground-primary;
-    }
-
-    .component-desc {
-        line-height: 1.5;
-        text-align: left;
-        font-weight: 400;
-        letter-spacing: 0;
-        font-size: rem2(14px);
-        margin-top: rem2(5px);
-        margin-bottom: rem2(5px);
-        color: $bit-color-foreground-secondary;
+    &.active {
+        border-color: $bit-color-border-secondary;
+        background-color: $bit-color-background-primary;
     }
 
     @include lt-lg {
-        align-items: flex-start;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
+        scroll-snap-align: start;
+        width: rem2(240px);
+        flex-shrink: 0;
     }
 }
 
-.component-row--active {
+// The glyphs are drawn with fill and stroke set to currentColor's role, so the icon follows the
+// accent the "Make it yours" swatches apply rather than being baked to one blue.
+.showcase-row-icon {
+    display: flex;
+    flex-shrink: 0;
+    width: rem2(32px);
+    height: rem2(32px);
+    align-items: center;
+    border-radius: 50%;
+    justify-content: center;
+
+    ::deep svg path {
+        fill: $bit-color-primary;
+        stroke: $bit-color-primary;
+    }
+}
+
+.showcase-row-text {
+    display: flex;
+    min-width: 0;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+}
+
+.showcase-row-name {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+    color: $bit-color-foreground-primary;
+}
+
+.showcase-row-desc {
+    line-height: 1.5;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}
+
+
+// ── Stage ─────────────────────────────────────────────────────────────────────────────────────
+// Sticky on wide screens so the running component stays in view while the list beside it is
+// browsed; on narrow ones the list is above it and there is nothing to stay level with.
+.showcase-stage {
+    display: flex;
+    gap: $doc-space-sm;
+    flex-flow: column nowrap;
+
+    @include gt-md {
+        position: sticky;
+        top: calc(var(--demo-header-height) + #{$doc-space-sm});
+    }
+}
+
+.showcase-preview {
+    overflow: hidden;
+
+    @include doc-surface;
+}
+
+.showcase-preview-head {
+    display: flex;
+    align-items: center;
+    gap: $doc-space-2xs;
+    padding: $doc-space-2xs $doc-space-sm;
     background-color: $bit-color-background-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
 }
 
-.example-preview {
-    box-shadow: $bit-box-shadow-callout;
-    border-radius: rem2(2px) rem2(2px) 0 0;
-    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-
-    @include lt-lg {
-        margin-top: rem2(20px);
-    }
-}
-
-.component-container {
-    padding: rem2(20px);
-    min-height: rem2(50px);
-}
-
-.example-code {
-    border-radius: 0 0 rem2(4px) rem2(4px);
-
-    pre {
-        margin: 0;
-        border: none;
-        direction: ltr;
-        overflow: auto;
-        border-radius: 0;
-        max-height: rem2(300px);
-        min-height: rem2(200px);
-
-        &::-webkit-scrollbar-thumb:hover {
-            border-radius: rem2(8px);
-            background-color: #c8c6c4 !important;
-            border: rem2(4px) solid #c8c6c4 !important;
-        }
-    }
+.showcase-preview-body {
+    display: flex;
+    gap: $doc-space-xs;
+    overflow-x: auto;
+    flex-flow: column nowrap;
+    padding: $doc-space-md;
+    min-height: rem2(240px);
 }
 
 ::deep {
-    .component-link {
-        margin: 0;
-        color: #0072E5;
-        line-height: 1.5;
-        font-weight: 700;
-        letter-spacing: 0;
-        align-items: center;
+    .showcase-more {
         display: inline-flex;
-        font-size: rem2(14px);
-        min-height: rem2(24px);
-        text-decoration: none;
-        padding-top: rem2(16px);
-
-        &:hover {
-            color: #0059B2;
-        }
+        align-items: center;
+        white-space: nowrap;
+        font-size: $bit-typography-fs-xs;
+        font-weight: $bit-typography-fw-semibold;
     }
 
-    .component-row--active {
-        .component-icon {
-            path {
-                fill: $bit-color-primary;
-                stroke: $bit-color-primary;
-            }
-        }
-    }
-
-    .component-icon {
-        path {
-            fill: $bit-color-primary;
-            stroke: $bit-color-primary;
-        }
-    }
-
-    .component-carousel {
-        height: rem2(280px);
-
-        @include gt-md {
-            display: none;
-        }
-    }
-
-    .link-chevron-right {
-        font-weight: 700;
-        font-size: rem2(12px);
-        margin-top: rem2(3px);
-        margin-left: rem2(4px);
+    .showcase-more-chevron {
+        font-size: rem2(10px);
+        margin-inline-start: rem2(4px);
     }
 }

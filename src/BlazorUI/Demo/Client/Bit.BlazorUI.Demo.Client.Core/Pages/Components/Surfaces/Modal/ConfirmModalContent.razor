@@ -1,0 +1,16 @@
+﻿@* The content of a modal shown as a question: each answer closes the modal with the value the caller
+   awaiting BitModalReference.Result gets back. *@
+<BitStack Style="padding:1rem" Gap="1rem">
+    <BitText Typography="BitTypography.H6">@Question</BitText>
+    <BitSeparator />
+    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+        <BitButton OnClick="() => modalReference.CloseWith(true)">Yes</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="() => modalReference.CloseWith(false)">No</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
+
+    [Parameter] public string? Question { get; set; }
+}

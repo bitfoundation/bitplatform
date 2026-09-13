@@ -1,0 +1,211 @@
+@page "/contact-picker"
+@inject Bit.Butil.ContactPicker contactPicker
+
+<PageTitle>ContactPicker - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="ContactPicker"
+            Lead="Let users share entries from their address book through the platform's native contact picker - your app only ever sees the contacts the user explicitly selects."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Contact_Picker_API"
+            InjectAs="ContactPicker contactPicker" />
+
+<Callout Type="warning" Title="Mobile Chromium only">
+    The Contact Picker API is available exclusively on Chromium-based mobile browsers (Chrome
+    on Android, and derivatives). Desktop browsers, Firefox and Safari do not implement it -
+    on this machine <code>IsSupported</code> will almost certainly return false. There is no
+    programmatic access to the address book: the user always drives the native picker.
+</Callout>
+
+<Callout Type="info" Title="User gesture required">
+    <code>Select</code> must be called from a user-gesture handler (a click or tap). Calls made
+    outside a gesture - or while a picker is already open - are rejected by the browser, so keep
+    the call in a try/catch.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.contacts. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.ContactPicker contactPicker
+
+var supported = await contactPicker.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Available properties"
+                 Api="GetProperties"
+                 Description="Returns the list of contact properties the platform can expose. Common values are name, email, tel, address and icon - pass a subset of these to Select."
+                 Code=@("""
+var properties = await contactPicker.GetProperties();
+// e.g. ["name", "email", "tel", "address", "icon"]
+""")>
+        <div class="controls">
+            <button @onclick="GetProperties">GetProperties</button>
+        </div>
+        <DemoConsole @ref="propertiesOutput" Title="properties output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick contacts"
+                 Api="Select"
+                 Description="Opens the native picker and returns the user's selection as typed ContactInfo objects. Choose which properties to request; passing null (or an empty array) falls back to the default set of name, email and tel. Set multiple to let the user pick more than one contact."
+                 Code=@("""
+var contacts = await contactPicker.Select(
+    properties: new[] { "name", "email", "tel" },
+    multiple: true);
+
+foreach (var contact in contacts)
+{
+    var names = string.Join(", ", contact.Name);
+    var emails = string.Join(", ", contact.Email);
+    var phones = string.Join(", ", contact.Tel);
+}
+""")>
+        <div class="field">
+            <span class="field-label">Properties to request</span>
+            <div class="controls">
+                <label><input type="checkbox" @bind="_propName" /> name</label>
+                <label><input type="checkbox" @bind="_propEmail" /> email</label>
+                <label><input type="checkbox" @bind="_propTel" /> tel</label>
+                <label><input type="checkbox" @bind="_propAddress" /> address</label>
+                <label><input type="checkbox" @bind="_propIcon" /> icon</label>
+            </div>
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_multiple" /> Allow multiple</label>
+        </div>
+        <div class="controls">
+            <button @onclick="SelectContacts">Select</button>
+        </div>
+        @if (_contacts.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">@_contacts.Length contact(s) selected</span>
+                <ul style="margin:0;padding-left:1.2rem">
+                    @foreach (var contact in _contacts)
+                    {
+                        <li>
+                            <strong>@(contact.Name.Length > 0 ? string.Join(", ", contact.Name) : "(no name)")</strong>
+                            @if (contact.Email.Length > 0)
+                            {
+                                <span> - @(string.Join(", ", contact.Email))</span>
+                            }
+                            @if (contact.Tel.Length > 0)
+                            {
+                                <span> - @(string.Join(", ", contact.Tel))</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        <DemoConsole @ref="pickOutput" Title="pick contacts output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.contacts. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetProperties"
+               Signature="ValueTask<string[]> GetProperties()"
+               Description="Returns the properties the platform can expose. Common values: name, email, tel, address, icon." />
+    <ApiMember Name="Select"
+               Signature="ValueTask<ContactInfo[]> Select(string[]? properties = null, bool multiple = false)"
+               Description="Opens the contact picker and returns the user's selection. Null/empty properties fall back to name, email and tel. Must be invoked from a user-gesture handler." />
+    <ApiMember Name="ContactInfo.Name"
+               Signature="string[] Name { get; set; }"
+               Description="The selected contact's names." />
+    <ApiMember Name="ContactInfo.Email"
+               Signature="string[] Email { get; set; }"
+               Description="The selected contact's email addresses." />
+    <ApiMember Name="ContactInfo.Tel"
+               Signature="string[] Tel { get; set; }"
+               Description="The selected contact's phone numbers." />
+    <ApiMember Name="ContactInfo.Address"
+               Signature="string[] Address { get; set; }"
+               Description="Postal addresses serialized as plain strings." />
+    <ApiMember Name="ContactInfo.Icon"
+               Signature="string[] Icon { get; set; }"
+               Description="Avatar images as self-contained data: URLs (base64) - no object-URL lifetime to manage." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole propertiesOutput = default!;
+    private DemoConsole pickOutput = default!;
+    private bool _propName = true;
+    private bool _propEmail = true;
+    private bool _propTel = true;
+    private bool _propAddress;
+    private bool _propIcon;
+    private bool _multiple = true;
+    private ContactInfo[] _contacts = [];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await contactPicker.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task GetProperties()
+    {
+        try
+        {
+            if (!await contactPicker.IsSupported())
+            {
+                await propertiesOutput.Warn("Contact Picker is not supported in this browser.");
+                return;
+            }
+
+            var properties = await contactPicker.GetProperties();
+            await propertiesOutput.Success("GetProperties →", string.Join(", ", properties));
+        }
+        catch (Exception ex)
+        {
+            await propertiesOutput.Error("GetProperties failed →", ex.Message);
+        }
+    }
+
+    private async Task SelectContacts()
+    {
+        try
+        {
+            if (!await contactPicker.IsSupported())
+            {
+                await pickOutput.Warn("Contact Picker is not supported in this browser - try Chrome on Android.");
+                return;
+            }
+
+            var properties = new List<string>();
+            if (_propName) properties.Add("name");
+            if (_propEmail) properties.Add("email");
+            if (_propTel) properties.Add("tel");
+            if (_propAddress) properties.Add("address");
+            if (_propIcon) properties.Add("icon");
+
+            _contacts = await contactPicker.Select(properties.ToArray(), _multiple);
+            if (_contacts.Length == 0)
+            {
+                await pickOutput.Warn("Select →", "no contacts picked (user cancelled).");
+                return;
+            }
+
+            await pickOutput.Success($"Select → {_contacts.Length} contact(s) picked.");
+        }
+        catch (Exception ex)
+        {
+            await pickOutput.Error("Select failed →", ex.Message);
+        }
+    }
+}

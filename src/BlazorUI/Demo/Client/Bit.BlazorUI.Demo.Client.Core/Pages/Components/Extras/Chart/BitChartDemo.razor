@@ -24,7 +24,7 @@
         </BitText>
     </NotesTemplate>
     <Examples>
-        <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
+        <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient" ForceAnimation>
             <BitPivotItem HeaderText="Line" Key="line">
                 <_BitChartLineDemo />
             </BitPivotItem>

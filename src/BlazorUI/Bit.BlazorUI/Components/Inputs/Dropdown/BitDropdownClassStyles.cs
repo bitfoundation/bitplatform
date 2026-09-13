@@ -13,6 +13,16 @@ public class BitDropdownClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description container of the BitDropdown.
+    /// </summary>
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of the BitDropdown.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the main container of the BitDropdown.
     /// </summary>
     public string? Container { get; set; }
@@ -41,6 +51,16 @@ public class BitDropdownClassStyles
     /// Custom CSS classes/styles for the callout of the BitDropdown.
     /// </summary>
     public string? Callout { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the callout header template of the BitDropdown.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the callout footer template of the BitDropdown.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the responsive panel's label container of the BitDropdown.
@@ -93,6 +113,16 @@ public class BitDropdownClassStyles
     public string? Chips { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the overflow chip of the BitDropdown.
+    /// </summary>
+    public string? OverflowChip { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the chips's remove button of the BitDropdown.
+    /// </summary>
+    public string? ChipsRemoveButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the chips's remove icon of the BitDropdown.
     /// </summary>
     public string? ChipsRemoveIcon { get; set; }
@@ -111,6 +141,37 @@ public class BitDropdownClassStyles
     /// Custom CSS classes/styles for the search box's clear icon of the BitDropdown.
     /// </summary>
     public string? SearchBoxClearIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the hint the callout shows while the typed text is still shorter
+    /// than the MinSearchLength of the BitDropdown.
+    /// </summary>
+    public string? SearchHint { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item container of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item button of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item check box of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllCheckBox { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item check icon of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllCheckIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the select all item text of the multi-select BitDropdown.
+    /// </summary>
+    public string? SelectAllText { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the scroll container of the BitDropdown.
@@ -153,9 +214,40 @@ public class BitDropdownClassStyles
     public string? ItemText { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the highlighted part of the item text of the BitDropdown.
+    /// </summary>
+    public string? ItemHighlight { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the item divider of the BitDropdown.
     /// </summary>
     public string? ItemDivider { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the row that offers to create a new item out of the typed text in
+    /// the Dynamic ComboBox mode of the BitDropdown.
+    /// </summary>
+    public string? DynamicItem { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the empty state content of the BitDropdown.
+    /// </summary>
+    public string? EmptyContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading state container of the BitDropdown.
+    /// </summary>
+    public string? LoadingContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading state text of the BitDropdown.
+    /// </summary>
+    public string? LoadingText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading spinner of the BitDropdown.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the dropdown's prefix container.

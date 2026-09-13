@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -10,10 +9,15 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 {
     private List<TItem> _items = [];
     private string _name = default!;
+    private bool _autoFocusDone;
     private string _labelId = default!;
     private bool _optionsOrderDirty;
+    private bool _defaultValueApplied;
+    private TItem? _inputTargetItem;
+    private bool _inputTargetDirty = true;
+    private TValue? _appliedDefaultValue;
+    private string _descriptionId = default!;
     private string _optionsContainerId = default!;
-    private IEnumerable<TItem>? _oldItems;
 
 
 
@@ -25,6 +29,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// Determines if the ChoiceGroup is auto focused on first render, focusing its checked item, or its first
+    /// enabled item when nothing is checked. Nothing is focused when the ChoiceGroup is read-only or the
+    /// target item is disabled.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// Keeps the assigned Index of each option in sync with the markup order of the options, even when
@@ -51,6 +62,31 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The description (helper text) of the ChoiceGroup, rendered under its label. The group references it
+    /// through its aria-describedby, so screen readers announce it along with the name of the group.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom RenderFragment for the description (helper text) of the ChoiceGroup.
+    /// Takes precedence over <see cref="Description"/> when both are set.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Expands the ChoiceGroup to the full width of its container instead of hugging its widest item.
+    /// In the horizontal layout the items also share that width equally.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// The gap between the items of the ChoiceGroup.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
 
     /// <summary>
     /// Renders the items in the ChoiceGroup horizontally.
@@ -80,6 +116,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     [Parameter] public RenderFragment<TItem>? ItemPrefixTemplate { get; set; }
 
     /// <summary>
+    /// Used to add a suffix to each item, rendered after the content of the item.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
+
+    /// <summary>
     /// Used to customize the label for the Item content.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
@@ -88,6 +129,21 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// The label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// The position of the content of each item relative to its radio circle. The default is
+    /// <see cref="BitLabelPosition.End"/>, which renders the circle first and the content after it.
+    /// Items rendered as image or icon tiles lay their own content out and ignore this parameter.
+    /// </summary>
+    /// <remarks>
+    /// Replaces the removed Reversed parameter, which only offered the two horizontal positions.
+    /// Migrate an existing <c>Reversed="true"</c> (in either layout) to
+    /// <c>LabelPosition="BitLabelPosition.Start"</c>; <c>Reversed="false"</c> was the default and needs
+    /// no replacement. A binding of the form <c>Reversed="@flag"</c> becomes
+    /// <c>LabelPosition="@(flag ? BitLabelPosition.Start : BitLabelPosition.End)"</c>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
 
     /// <summary>
     /// Custom RenderFragment for the label of the ChoiceGroup.
@@ -106,20 +162,24 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     public bool NoCircle { get; set; }
 
     /// <summary>
+    /// Callback for when an item of the ChoiceGroup loses focus.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnBlur { get; set; }
+
+    /// <summary>
     /// Callback for when the option clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnClick { get; set; }
 
     /// <summary>
+    /// Callback for when an item of the ChoiceGroup receives focus.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnFocus { get; set; }
+
+    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
-
-    /// <summary>
-    /// Reverses the label and radio button location.
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool Reversed { get; set; }
 
     /// <summary>
     /// The size of the BitChoiceGroup.
@@ -143,6 +203,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         InitDefaultValue();
 
+        UpdateIsSelected();
+
         StateHasChanged();
     }
 
@@ -154,6 +216,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         _optionsOrderDirty = true;
 
         SetIndexItems();
+
+        InvalidateInputTarget();
 
         StateHasChanged();
     }
@@ -185,6 +249,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         SetIndexItems();
 
+        InvalidateInputTarget();
+
+        // The new indexes feed the generated input ids, which the options pass down as a parameter, so
+        // each one has to be pushed a re-render; the parent's own StateHasChanged does not reach an option
+        // whose parameters have not changed.
+        RefreshOptions();
+
         StateHasChanged();
     }
 
@@ -205,6 +276,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         _name = $"BitChoiceGroup-{UniqueId}-input-name";
         _labelId = $"BitChoiceGroup-{UniqueId}-label";
+        _descriptionId = $"BitChoiceGroup-{UniqueId}-description";
         _optionsContainerId = $"BitChoiceGroup-{UniqueId}-options-container";
 
         InitDefaultValue();
@@ -251,16 +323,33 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         // choice group's own parameters (Value, Styles, NoCircle, ...) change, so push a re-render to each one.
         RefreshOptions();
 
-        if (ChildContent is not null || Options is not null || Items is null || Items.Any() is false) return;
+        // A new DefaultValue has to be applied again, the previous one has already had its chance.
+        if (EqualityComparer<TValue>.Default.Equals(DefaultValue, _appliedDefaultValue) is false)
+        {
+            _appliedDefaultValue = DefaultValue;
+            _defaultValueApplied = false;
+        }
 
-        if (_oldItems is not null && Items.SequenceEqual(_oldItems)) return;
+        if (ChildContent is null && Options is null)
+        {
+            // The comparison is against the items the component currently holds (not against the previously
+            // assigned collection), so an in-place mutation of the same collection instance is detected too,
+            // and clearing the collection actually clears the rendered items.
+            var items = Items ?? [];
 
-        _oldItems = Items;
-        _items = [.. Items];
+            if (_items.SequenceEqual(items) is false)
+            {
+                _items = [.. items];
 
-        SetIndexItems();
+                SetIndexItems();
+            }
+        }
 
         InitDefaultValue();
+
+        // Value can change without the items changing (one-way binding, a programmatic assignment, ...),
+        // so the IsSelected of every item is refreshed on each parameters set, not only when the items change.
+        UpdateIsSelected();
     }
 
     protected override string RootElementClass => "bit-chg";
@@ -277,7 +366,18 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
-        ClassBuilder.Register(() => Reversed ? "bit-chg-rvs" : string.Empty);
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Top => "bit-chg-ltp",
+            BitLabelPosition.Bottom => "bit-chg-lbm",
+            BitLabelPosition.Start => "bit-chg-lst",
+            BitLabelPosition.End => "bit-chg-led",
+            _ => "bit-chg-led"
+        });
+
+        ClassBuilder.Register(() => FullWidth ? "bit-chg-flw" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-chg-rdo" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {
@@ -313,6 +413,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-item-gap:{Gap}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -320,57 +422,132 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
 
 
+    // Applies the DefaultValue of the uncontrolled mode at most once per assigned DefaultValue, so a later
+    // change of the items (or an option registering itself afterwards) cannot revert the user's own choice.
     private void InitDefaultValue()
     {
-        if (ValueHasBeenSet)
-        {
-            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), Value));
-            if (item is not null)
-            {
-                SetIsSelectedForSelectedItem(item);
-            }
-        }
-        else if (DefaultValue is not null)
-        {
-            var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
-            if (item is not null)
-            {
-                SetIsSelectedForSelectedItem(item);
-                Value = DefaultValue;
-            }
-        }
+        if (ValueHasBeenSet || _defaultValueApplied || DefaultValue is null) return;
+
+        var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
+        if (item is null) return;
+
+        _defaultValueApplied = true;
+
+        Value = DefaultValue;
     }
 
     private void SetIndexItems()
     {
-        if (_items.Any() is false) return;
-
         for (var i = 0; i < _items.Count; i++)
         {
-            var index = i;
-            var item = _items[i];
-            SetIndex(item, index);
+            SetIndex(_items[i], i);
         }
     }
 
-    private string GetAriaLabelledBy() => AriaLabelledBy ?? _labelId;
+    // The internal label element is only rendered (and therefore only worth referencing) when there is a
+    // label to show. Referencing it unconditionally would point the radiogroup at an empty element, and
+    // since aria-labelledby wins over aria-label that would leave the group without an accessible name.
+    internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
-    internal string? GetInputId(TItem item) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{GetValue(item)}";
+    private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
+
+    // Same reasoning as the label: the description element is only rendered when there is a description to
+    // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
+    // the markup, so it is what ends up rendered no matter what (a null even removes the splatted value);
+    // an aria-describedby the consumer splatted has to be carried over here to survive. It does not replace
+    // the description of the group: aria-describedby is a space separated list of IDREFs, so both are kept.
+    internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    private string? GetAriaDescribedBy()
+    {
+        HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
+        var splattedDescribedBy = splatted?.ToString();
+
+        if (HasDescription is false) return splattedDescribedBy;
+
+        return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
+    }
+
+    // The index is used instead of the value, because a value is free-form (it can contain spaces or any
+    // other character that is not valid in an id) and is not guaranteed to be unique among the items,
+    // while the id has to be a valid, unique IDREF for the label's "for" and for aria-describedby.
+    // The index arrives as a render parameter of the item (the render position in the items mode, the
+    // stamped option index in the options mode) rather than being searched for here: a lookup by reference
+    // would cost O(n) per item per render and would collide when the same instance appears twice.
+    internal string? GetInputId(TItem item, int index) => GetId(item) ?? $"ChoiceGroup-{UniqueId}-Input-{index}";
+
+    // Keeps the InputElement of the base class pointing at the input the Tab key would land on: the input
+    // of the checked item, or the first enabled one when nothing is checked (the browser skips a disabled
+    // radio when tabbing into the group). Called by each item after render; also performs the one-time AutoFocus.
+    internal async Task SetInputElement(TItem item, ElementReference inputElement)
+    {
+        if (ReferenceEquals(item, GetInputTargetItem()) is false) return;
+
+        InputElement = inputElement;
+
+        if (AutoFocus && _autoFocusDone is false)
+        {
+            // Latched on the attempt, not on the success: AutoFocus means "focused on first render", so a
+            // group that is read-only (or whose target item is disabled) at that moment must not steal the
+            // focus at some later render, when it happens to become interactive.
+            _autoFocusDone = true;
+
+            if (ReadOnly || GetIsItemEnabled(item) is false) return;
+
+            try
+            {
+                await InputElement.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
+            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+            catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
+        }
+    }
+
+    // Memoized so the per-item SetInputElement calls after a render cost O(1) instead of each one scanning
+    // the items again; anything that can move the tab stop (a parameters set, a change, an option
+    // registering, unregistering or reordering) invalidates it.
+    private TItem? GetInputTargetItem()
+    {
+        if (_inputTargetDirty)
+        {
+            _inputTargetDirty = false;
+            _inputTargetItem = _items.FirstOrDefault(GetIsCheckedItem)
+                            ?? _items.FirstOrDefault(GetIsItemEnabled)
+                            ?? _items.FirstOrDefault();
+        }
+
+        return _inputTargetItem;
+    }
+
+    internal void InvalidateInputTarget() => _inputTargetDirty = true;
+
+    internal async Task HandleFocus(TItem item)
+    {
+        await OnFocus.InvokeAsync(item);
+    }
+
+    internal async Task HandleBlur(TItem item)
+    {
+        await OnBlur.InvokeAsync(item);
+    }
 
     internal async Task HandleClick(TItem item)
     {
-        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
+        if (ReadOnly || GetIsItemEnabled(item) is false) return;
 
         await OnClick.InvokeAsync(item);
     }
 
     internal void HandleChange(TItem item)
     {
-        if (IsEnabled is false || ReadOnly || GetIsEnabled(item) is false) return;
-
-        SetIsSelectedForSelectedItem(item);
+        if (ReadOnly || GetIsItemEnabled(item) is false) return;
 
         CurrentValue = GetValue(item);
+
+        // After the value has been written, so an assignment the base class rejects
+        // (a bound Value without a way to write it back) does not leave a wrong IsSelected behind.
+        UpdateIsSelected();
 
         RefreshOptions();
 
@@ -395,69 +572,82 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
     }
 
+    // The parts are joined with a semicolon: they are separate declaration lists and a value that does not
+    // already end with one (a plain "color:red" of an item's Style) would otherwise merge into the next part.
     internal string GetItemContainerCssStyles(TItem item)
     {
-        StringBuilder cssStyle = new();
+        List<string> styles = [];
 
-        if (GetStyle(item).HasValue())
+        var itemStyle = GetStyle(item);
+        if (itemStyle.HasValue())
         {
-            cssStyle.Append(GetStyle(item));
+            styles.Add(itemStyle!);
         }
 
-        if (string.IsNullOrEmpty(Styles?.ItemContainer) is false)
+        if (Styles?.ItemContainer.HasValue() ?? false)
         {
-            cssStyle.Append(' ').Append(Styles?.ItemContainer);
+            styles.Add(Styles.ItemContainer!);
         }
 
-        if (GetIsCheckedItem(item))
+        if (GetIsCheckedItem(item) && (Styles?.ItemChecked.HasValue() ?? false))
         {
-            cssStyle.Append(' ').Append(Styles?.ItemChecked);
+            styles.Add(Styles.ItemChecked!);
         }
 
-        return cssStyle.ToString();
+        return string.Join(';', styles);
     }
 
     internal string GetItemContainerCssClasses(TItem item)
     {
-        StringBuilder cssClass = new("bit-chg-icn");
+        List<string> classes = ["bit-chg-icn"];
 
-        if (GetClass(item).HasValue())
+        var itemClass = GetClass(item);
+        if (itemClass.HasValue())
         {
-            cssClass.Append(' ').Append(GetClass(item));
+            classes.Add(itemClass!);
         }
 
-        if (string.IsNullOrEmpty(Classes?.ItemContainer) is false)
+        if (Classes?.ItemContainer.HasValue() ?? false)
         {
-            cssClass.Append(' ').Append(Classes?.ItemContainer);
+            classes.Add(Classes.ItemContainer!);
         }
 
-        if (ItemTemplate is not null) return cssClass.ToString();
-
+        // The checked and disabled markers are emitted for every rendering mode, including the templated
+        // ones, so Classes.ItemChecked stays in sync with Styles.ItemChecked and a custom template can
+        // style its checked and disabled states through the same hooks the built-in rendering uses.
         if (GetIsCheckedItem(item))
         {
-            cssClass.Append(' ').Append("bit-chg-ich");
-            cssClass.Append(' ').Append(Classes?.ItemChecked);
+            classes.Add("bit-chg-ich");
+
+            if (Classes?.ItemChecked.HasValue() ?? false)
+            {
+                classes.Add(Classes.ItemChecked!);
+            }
         }
 
-        if (ItemLabelTemplate is not null) return cssClass.ToString();
-
-        if (IsEnabled is false || GetIsEnabled(item) is false)
+        if (GetIsItemEnabled(item) is false)
         {
-            cssClass.Append(' ').Append("bit-chg-ids");
+            classes.Add("bit-chg-ids");
         }
 
-        if (GetImageSrc(item).HasValue() || GetIcon(item) is not null)
+        // Only meaningful for the built-in item content, a template renders its own image or icon.
+        if (GetTemplate(item) is null && ItemTemplate is null && ItemLabelTemplate is null &&
+            (GetImageSrc(item).HasValue() || GetIcon(item) is not null))
         {
-            cssClass.Append(' ').Append("bit-chg-ihi");
+            classes.Add("bit-chg-ihi");
         }
 
-        return cssClass.ToString();
+        return string.Join(' ', classes);
     }
 
+    // The tile layout only applies to the built-in image/icon markup of an item, so it follows the exact
+    // same conditions that markup is rendered under; a template renders its own content and lays it out itself.
     internal string GetItemLabelCssClasses(TItem item)
     {
-        var hasImageOrIcon = GetImageSrc(item).HasValue() || GetIcon(item) is not null;
-        return hasImageOrIcon && ItemLabelTemplate is null && Inline is false
+        if (Inline) return string.Empty;
+        if (GetTemplate(item) is not null || ItemTemplate is not null || ItemLabelTemplate is not null) return string.Empty;
+
+        return GetImageSrc(item).HasValue() || GetIcon(item) is not null
                 ? "bit-chg-ili"
                 : string.Empty;
     }
@@ -488,6 +678,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
+
+    /// <summary>
+    /// An item is only interactive when both the ChoiceGroup and the item itself are enabled.
+    /// </summary>
+    internal bool GetIsItemEnabled(TItem item) => IsEnabled && GetIsEnabled(item);
 
     internal bool GetIsEnabled(TItem item)
     {
@@ -592,26 +787,60 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return item.GetValueFromProperty<string?>(NameSelectors.ImageAlt.Name);
     }
 
-    internal BitImageSize GetImageSize(TItem item)
+    // Null when no size was provided, so the image keeps its intrinsic size instead of collapsing
+    // to the 0x0 an unset size would otherwise render as.
+    internal BitImageSize? GetImageSize(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.ImageSize ?? new BitImageSize(0, 0);
+            return choiceGroupItem.ImageSize;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
-            return choiceGroupOption.ImageSize ?? new BitImageSize(0, 0);
+            return choiceGroupOption.ImageSize;
         }
 
-        if (NameSelectors is null) return new BitImageSize(0, 0);
+        if (NameSelectors is null) return null;
 
         if (NameSelectors.ImageSize.Selector is not null)
         {
-            return NameSelectors.ImageSize.Selector!(item) ?? new BitImageSize(0, 0);
+            return NameSelectors.ImageSize.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name) ?? new BitImageSize(0, 0);
+        return item.GetValueFromProperty<BitImageSize?>(NameSelectors.ImageSize.Name);
+    }
+
+    internal string GetImageWrapperCssStyles(TItem item)
+    {
+        var imageSize = GetImageSize(item);
+
+        List<string> styles = [];
+
+        if (imageSize is not null)
+        {
+            styles.Add(FormattableString.Invariant($"width:{imageSize.Value.Width}px;height:{imageSize.Value.Height}px"));
+        }
+
+        if (Styles?.ItemImageWrapper.HasValue() ?? false)
+        {
+            styles.Add(Styles.ItemImageWrapper!);
+        }
+
+        return string.Join(';', styles);
+    }
+
+    // The checked state only swaps the image when a dedicated one was provided, otherwise the item keeps
+    // showing its normal image instead of losing it as soon as it gets selected.
+    internal string? GetImageSrcForState(TItem item, bool isChecked)
+    {
+        var imageSrc = GetImageSrc(item);
+
+        if (isChecked is false) return imageSrc;
+
+        var selectedImageSrc = GetSelectedImageSrc(item);
+
+        return selectedImageSrc.HasValue() ? selectedImageSrc : imageSrc;
     }
 
     internal string? GetPrefix(TItem item)
@@ -634,6 +863,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Prefix.Name);
+    }
+
+    internal string? GetSuffix(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Suffix;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Suffix;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Suffix.Selector is not null)
+        {
+            return NameSelectors.Suffix.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Suffix.Name);
     }
 
     internal string? GetSelectedImageSrc(TItem item)
@@ -680,6 +931,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
     }
 
+    internal string? GetDescription(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Description;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Description;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Description.Selector is not null)
+        {
+            return NameSelectors.Description.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
+    }
+
     internal string? GetText(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -700,6 +973,28 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
+    }
+
+    internal string? GetTitle(TItem item)
+    {
+        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        {
+            return choiceGroupItem.Title;
+        }
+
+        if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
+        {
+            return choiceGroupOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
     internal TValue? GetValue(TItem item)
@@ -795,11 +1090,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             choiceGroupItem.Index = value;
+            return;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             choiceGroupOption.Index = value;
+            return;
         }
 
         if (NameSelectors is null) return;
@@ -812,11 +1109,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
             choiceGroupItem.IsSelected = value;
+            return;
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
         {
             choiceGroupOption.IsSelected = value;
+            return;
         }
 
         if (NameSelectors is null) return;
@@ -824,13 +1123,16 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         item.SetValueToProperty(NameSelectors.IsSelected, value);
     }
 
-    private void SetIsSelectedForSelectedItem(TItem item)
+    // Mirrors the current value onto the IsSelected of every item. The value can change without the items
+    // changing at all (one-way binding, a programmatic assignment, a reset to null), so this runs on every
+    // parameters set and after every change, not only when an item is picked.
+    private void UpdateIsSelected()
     {
-        foreach (var itm in _items)
-        {
-            SetIsSelected(itm, false);
-        }
+        InvalidateInputTarget();
 
-        SetIsSelected(item, true);
+        foreach (var item in _items)
+        {
+            SetIsSelected(item, GetIsCheckedItem(item));
+        }
     }
 }

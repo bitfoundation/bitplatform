@@ -1,0 +1,18 @@
+@* A three-level nested chain behind the first-batch probe: registration cascades one render wave
+   per level (Broute render -> CascadingValue render -> child Broute init), which is exactly the
+   cadence the boot sentinel's quiet-round threshold must bridge without leaving the batch. *@
+
+<InitialBatchProbe />
+<Brouter>
+    <Broute Path="/docs">
+        <ChildContent>
+            <Broute Path="guide">
+                <ChildContent>
+                    <Broute Path="intro">
+                        <Content><InitialMountContent /></Content>
+                    </Broute>
+                </ChildContent>
+            </Broute>
+        </ChildContent>
+    </Broute>
+</Brouter>

@@ -1,0 +1,506 @@
+﻿@page "/intersection-observer"
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<PageTitle>IntersectionObserver - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="IntersectionObserver"
+            Lead="Know when an element enters or leaves the viewport without polling: ObserveIntersection is an extension method on any ElementReference that streams strongly typed entries to a C# callback - the foundation for lazy loading, infinite scroll, scroll-spy navs and view-tracking."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" />
+
+<div class="stack">
+<DemoSection Title="Observe an element"
+             Api="ObserveIntersection"
+             Description="Capture the element reference, then call ObserveIntersection with the IJSRuntime and a handler. The browser reports an initial entry immediately, then again every time the visibility crosses a threshold. Scroll the box below (or the whole page) after starting to see entries arrive."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="target">Watch me</div>
+
+@code {
+    private ElementReference target;
+    private ButilSubscription? subscription;
+
+    private async Task Start()
+    {
+        subscription = await target.ObserveIntersection(js, entries =>
+        {
+            foreach (var entry in entries)
+            {
+                Console.WriteLine($"visible={entry.IsIntersecting} ratio={entry.IntersectionRatio:F2}");
+            }
+        });
+    }
+}
+""")
+             Language="razor">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="targetRef"
+             class="demo-marker">
+            observed target
+        </div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
+    <div class="controls">
+        <button @onclick="StartObserving" disabled="@(basicSub is not null)">Start observing</button>
+        <button class="danger" @onclick="() => StopObserving(basicOutput)" disabled="@(basicSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="basicOutput" Title="observe output" />
+</DemoSection>
+
+<DemoSection Title="Thresholds"
+             Api="IntersectionObserverOptions.Thresholds"
+             Description="By default the observer only fires at the 0 boundary - fully hidden versus at-all visible. Pass an array of thresholds between 0 and 1 to get a callback each time the visible fraction crosses one of them, which is how progress-style reveal effects are built."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            var ratio = entries[^1].IntersectionRatio;
+            // fires at 0%, 25%, 50%, 75% and 100% visibility
+        }, new IntersectionObserverOptions
+        {
+            Thresholds = [0, 0.25, 0.5, 0.75, 1],
+        });
+    }
+}
+""")
+             Language="razor">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="thresholdTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
+    <div class="controls">
+        <button @onclick="StartThresholds" disabled="@(thresholdSub is not null)">Observe with 5 thresholds</button>
+        <button class="danger" @onclick="() => StopThresholds(thresholdsOutput)" disabled="@(thresholdSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="thresholdsOutput" Title="thresholds output" />
+</DemoSection>
+
+<DemoSection Title="Root margin"
+             Api="IntersectionObserverOptions.RootMargin"
+             Description="RootMargin grows or shrinks the intersection root with CSS-style margins before visibility is computed. Negative margins make the observer report the element later (it must be well inside the viewport); positive margins fire earlier - the classic trick for pre-loading images a screen ahead."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            // reported once the target is 80px inside the viewport
+        }, new IntersectionObserverOptions
+        {
+            RootMargin = "-80px 0px -80px 0px",
+        });
+    }
+}
+""")
+             Language="razor">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="marginTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
+    <div class="controls">
+        <button @onclick="StartRootMargin" disabled="@(marginSub is not null)">Observe with -80px margins</button>
+        <button class="danger" @onclick="() => StopRootMargin(rootMarginOutput)" disabled="@(marginSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="rootMarginOutput" Title="root margin output" />
+</DemoSection>
+
+<DemoSection Title="Rate limiting"
+             Api="IntersectionObserverOptions.MinInterval"
+             Description="A scroll through a long list crosses thresholds on nearly every frame, and each crossing is an interop round trip. MinInterval caps how often the handler is called. The gate is leading-edge with a trailing send, so the batch that leaves the element in its settled state is always delivered: a lazy-loading tracker never misses the 'now visible' it is waiting for, it only hears it a little later. Observe below and scroll the target in and out."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            // called at most once every 200 ms, and always once more
+            // after the scroll settles
+        }, new IntersectionObserverOptions
+        {
+            Thresholds = [0, 0.25, 0.5, 0.75, 1],
+            MinInterval = TimeSpan.FromMilliseconds(200),
+        });
+    }
+}
+""")
+             Language="razor">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="gatedTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
+    <div class="controls">
+        <button @onclick="StartGated" disabled="@(gatedSub is not null)">Observe with a 200 ms gate</button>
+        <button class="danger" @onclick="() => StopGated(gatedOutput)" disabled="@(gatedSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="gatedOutput" Title="rate limiting output" />
+</DemoSection>
+
+<DemoSection Title="Reading entries"
+             Api="IntersectionObserverEntry"
+             Description="Each callback receives the latest batch of entries. Beyond IsIntersecting and IntersectionRatio, every entry carries the target's bounding rect, the intersection rect, the root bounds and a high-resolution timestamp."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="target">...</div>
+
+@code {
+    private ElementReference target;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await target.ObserveIntersection(js, entries =>
+        {
+            var entry = entries[^1];
+
+            var visible = entry.IsIntersecting;      // bool
+            var ratio = entry.IntersectionRatio;     // 0..1
+            var when = entry.Time;                   // ms, DOMHighResTimeStamp
+            Rect? bounds = entry.BoundingClientRect; // target geometry
+            Rect? overlap = entry.IntersectionRect;  // visible part
+            Rect? root = entry.RootBounds;           // root geometry
+        });
+    }
+}
+""")
+             Language="razor">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
+        <div style="height:10rem;">Scroll down inside this box...</div>
+        <div @ref="entriesTargetRef" class="demo-marker">observed target</div>
+        <div style="height:10rem;">...and back up again.</div>
+    </div>
+    <div class="controls">
+        <button @onclick="StartEntries" disabled="@(entriesSub is not null)">Start observing</button>
+        <button class="danger" @onclick="StopEntries" disabled="@(entriesSub is null)">Stop</button>
+        <button class="secondary" @onclick="LogLatestEntry" disabled="@(latestEntry is null)">Log latest entry as JSON</button>
+    </div>
+    <DemoConsole @ref="entriesOutput" Title="entries output" />
+</DemoSection>
+
+<DemoSection Title="Stopping"
+             Api="ButilSubscription"
+             Description="ObserveIntersection returns a ButilSubscription. Disposing it unobserves the element and releases the interop reference - do it when the user navigates away at the latest, as this page does in DisposeAsync."
+             Code=@("""
+@implements IAsyncDisposable
+
+private ButilSubscription? subscription;
+
+public async ValueTask DisposeAsync()
+{
+    if (subscription is not null)
+    {
+        await subscription.DisposeAsync();
+    }
+}
+""")
+             Language="razor">
+    <div class="controls">
+        <button class="danger" @onclick="StopEverything">Dispose all observers on this page</button>
+    </div>
+    <DemoConsole @ref="stoppingOutput" Title="stopping output" />
+</DemoSection>
+</div>
+
+<Callout Type="info" Title="The root is always the viewport">
+    This wrapper does not expose the <code>root</code> option, so visibility is measured against the browser
+    viewport. That still accounts for clipping by scrollable ancestors - a target hidden inside a scrolled
+    container reports as not intersecting - which covers the vast majority of lazy-loading scenarios.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="ObserveIntersection" Signature="Task<ButilSubscription> ObserveIntersection(IJSRuntime js, Action<IntersectionObserverEntry[]> handler, IntersectionObserverOptions? options = null)" Description="Extension method on ElementReference. Starts observing and returns a disposable subscription." />
+    <ApiMember Name="IntersectionObserverOptions.RootMargin" Signature="string? RootMargin { get; set; }" Description="CSS-style margin around the root, e.g. &quot;0px 0px -50px 0px&quot;." />
+    <ApiMember Name="IntersectionObserverOptions.Thresholds" Signature="double[]? Thresholds { get; set; }" Description="One or more thresholds in [0, 1]. Defaults to a single 0 threshold." />
+    <ApiMember Name="IntersectionObserverOptions.MinInterval" Signature="TimeSpan? MinInterval { get; set; }" Description="The shortest time between two calls into the handler. null or zero (the default) forwards every batch. Applied in JavaScript, leading-edge with a trailing send." />
+    <ApiMember Name="IntersectionObserverEntry.IsIntersecting" Signature="bool IsIntersecting { get; set; }" Description="True when the target intersects the root with at least one threshold." />
+    <ApiMember Name="IntersectionObserverEntry.IntersectionRatio" Signature="double IntersectionRatio { get; set; }" Description="Fraction of the target's bounding rect that intersects the root, in [0, 1]." />
+    <ApiMember Name="IntersectionObserverEntry.Time" Signature="double Time { get; set; }" Description="When the intersection was detected (DOMHighResTimeStamp, ms)." />
+    <ApiMember Name="IntersectionObserverEntry.BoundingClientRect" Signature="Rect? BoundingClientRect { get; set; }" Description="The target's bounding rectangle." />
+    <ApiMember Name="IntersectionObserverEntry.IntersectionRect" Signature="Rect? IntersectionRect { get; set; }" Description="The visible portion of the target." />
+    <ApiMember Name="IntersectionObserverEntry.RootBounds" Signature="Rect? RootBounds { get; set; }" Description="The root's bounding rectangle." />
+    <ApiMember Name="ButilSubscription.Id" Signature="Guid Id { get; }" Description="The internal listener id of the subscription." />
+    <ApiMember Name="ButilSubscription.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Stops observing and releases the interop reference. Idempotent." />
+</ApiTable>
+
+@code {
+    private DemoConsole basicOutput = default!;
+    private DemoConsole thresholdsOutput = default!;
+    private DemoConsole rootMarginOutput = default!;
+    private DemoConsole gatedOutput = default!;
+    private DemoConsole entriesOutput = default!;
+    private DemoConsole stoppingOutput = default!;
+
+    // One observed target per section: the whole demonstration is what the callback says as the
+    // target scrolls, which is unreadable if the target is in a section the reader has left behind.
+    private ElementReference targetRef;
+    private ElementReference thresholdTargetRef;
+    private ElementReference marginTargetRef;
+    private ElementReference gatedTargetRef;
+    private ElementReference entriesTargetRef;
+
+    private ButilSubscription? basicSub;
+    private ButilSubscription? thresholdSub;
+    private ButilSubscription? marginSub;
+    private ButilSubscription? gatedSub;
+    private ButilSubscription? entriesSub;
+
+    private IntersectionObserverEntry? latestEntry;
+
+    private async Task StartObserving()
+    {
+        try
+        {
+            basicSub = await targetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = basicOutput.Log($"default → visible={latestEntry.IsIntersecting}, ratio={latestEntry.IntersectionRatio:F2}");
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            await basicOutput.Log("Observing with default options - scroll the box");
+        }
+        catch (Exception ex)
+        {
+            await basicOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopObserving(DemoConsole output)
+    {
+        try
+        {
+            if (basicSub is null) return;
+
+            await basicSub.DisposeAsync();
+            basicSub = null;
+            await output.Warn("Default observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartGated()
+    {
+        try
+        {
+            gatedSub = await gatedTargetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = gatedOutput.Info($"gated → ratio={latestEntry.IntersectionRatio:P0} at {DateTime.Now:HH:mm:ss.fff}");
+                _ = InvokeAsync(StateHasChanged);
+            }, new IntersectionObserverOptions
+            {
+                Thresholds = [0, 0.25, 0.5, 0.75, 1],
+                MinInterval = TimeSpan.FromMilliseconds(200),
+            });
+
+            await gatedOutput.Log("Observing with the same thresholds, rate-limited to one call every 200 ms");
+        }
+        catch (Exception ex)
+        {
+            await gatedOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopGated(DemoConsole output)
+    {
+        try
+        {
+            if (gatedSub is null) return;
+
+            await gatedSub.DisposeAsync();
+            gatedSub = null;
+            await output.Warn("Rate-limited observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartThresholds()
+    {
+        try
+        {
+            thresholdSub = await thresholdTargetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = thresholdsOutput.Info($"thresholds → ratio={latestEntry.IntersectionRatio:P0}");
+                _ = InvokeAsync(StateHasChanged);
+            }, new IntersectionObserverOptions
+            {
+                Thresholds = [0, 0.25, 0.5, 0.75, 1],
+            });
+
+            await thresholdsOutput.Log("Observing with thresholds [0, 0.25, 0.5, 0.75, 1]");
+        }
+        catch (Exception ex)
+        {
+            await thresholdsOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopThresholds(DemoConsole output)
+    {
+        try
+        {
+            if (thresholdSub is null) return;
+
+            await thresholdSub.DisposeAsync();
+            thresholdSub = null;
+            await output.Warn("Thresholds observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartRootMargin()
+    {
+        try
+        {
+            marginSub = await marginTargetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = rootMarginOutput.Info($"rootMargin → visible={latestEntry.IsIntersecting} (with -80px margins)");
+                _ = InvokeAsync(StateHasChanged);
+            }, new IntersectionObserverOptions
+            {
+                RootMargin = "-80px 0px -80px 0px",
+            });
+
+            await rootMarginOutput.Log("Observing with RootMargin \"-80px 0px -80px 0px\"");
+        }
+        catch (Exception ex)
+        {
+            await rootMarginOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopRootMargin(DemoConsole output)
+    {
+        try
+        {
+            if (marginSub is null) return;
+
+            await marginSub.DisposeAsync();
+            marginSub = null;
+            await output.Warn("RootMargin observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartEntries()
+    {
+        try
+        {
+            entriesSub = await entriesTargetRef.ObserveIntersection(js, entries =>
+            {
+                if (entries.Length == 0) return;
+
+                latestEntry = entries[^1];
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            await entriesOutput.Log("Observing - scroll the box, then read the latest entry back.");
+        }
+        catch (Exception ex)
+        {
+            await entriesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopEntries()
+    {
+        if (entriesSub is null) return;
+
+        await entriesSub.DisposeAsync();
+        entriesSub = null;
+        await entriesOutput.Log("Stopped.");
+    }
+
+    private async Task LogLatestEntry()
+    {
+        try
+        {
+            if (latestEntry is null) return;
+
+            await entriesOutput.Success("Latest entry →", latestEntry);
+        }
+        catch (Exception ex)
+        {
+            await entriesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopEverything()
+    {
+        await StopObserving(stoppingOutput);
+        await StopThresholds(stoppingOutput);
+        await StopRootMargin(stoppingOutput);
+        await StopGated(stoppingOutput);
+
+        if (entriesSub is not null)
+        {
+            await entriesSub.DisposeAsync();
+            entriesSub = null;
+            await stoppingOutput.Log("Entries observer disposed.");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (basicSub is not null) await basicSub.DisposeAsync();
+        if (thresholdSub is not null) await thresholdSub.DisposeAsync();
+        if (marginSub is not null) await marginSub.DisposeAsync();
+        if (gatedSub is not null) await gatedSub.DisposeAsync();
+        if (entriesSub is not null) await entriesSub.DisposeAsync();
+    }
+}

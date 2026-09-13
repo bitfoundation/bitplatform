@@ -22,12 +22,12 @@ jobs:
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
@@ -36,6 +36,9 @@ jobs:
           node-version: 24
 
       - name: Use Bit.ResxTranslator
+        env:
+          OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+          OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
           dotnet tool install --global Bit.ResxTranslator
           bit-resx-translate
@@ -47,7 +50,7 @@ jobs:
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
-#if (notifications == true)
+#if (notification == true)
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
@@ -85,7 +88,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@5cfb776471c748b351e1ebf5770e208a54ace016 # v2.2.19
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
         with:
           app-name: ${{ vars.APP_SERVICE_NAME }}
           slot-name: 'production'
@@ -100,6 +103,65 @@ jobs:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 #endif
 
+#if (api == "Standalone")
+  build_api:
+    name: build api
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.ENV_NAME }}
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Update core appsettings.json
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        with:
+          files: 'src/**/appsettings*json'
+        env:
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+
+      - name: Publish
+        run: dotnet publish src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj -c Release --self-contained -r linux-x64 -o server-api -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
+
+      - name: Upload api artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: api-bundle
+          path: server-api
+          include-hidden-files: true # Required for wwwroot/.well-known folder
+
+  deploy_api:
+    name: deploy api
+    needs: build_api
+    runs-on: ubuntu-24.04
+    environment:
+      name: ${{ inputs.ENV_NAME }}
+      url: ${{ steps.deploy-api-to-webapp.outputs.webapp-url }}
+
+    steps:
+
+      - name: Retrieve api bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: api-bundle
+
+      - name: Deploy to Azure Web App
+        id: deploy-api-to-webapp
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
+        with:
+          app-name: ${{ vars.API_APP_SERVICE_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.API_AZURE_PUBLISH_PROFILE }}
+          package: .
+#endif
+
   build_blazor_hybrid_windows:
     name: build blazor hybrid (windows)
     runs-on: windows-2025
@@ -107,12 +169,12 @@ jobs:
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
   
       - name: Setup .NET
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
@@ -121,6 +183,9 @@ jobs:
           node-version: 24
 
       - name: Use Bit.ResxTranslator
+        env:
+          OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+          OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
           dotnet tool install --global Bit.ResxTranslator
           bit-resx-translate
@@ -156,12 +221,12 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
@@ -170,13 +235,16 @@ jobs:
           node-version: 24
 
       - name: Extract Android signing key
-        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2
+        uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
         with:
           fileDir: './src/Client/Boilerplate.Client.Maui/'
           fileName: 'Boilerplate.keystore'
           encodedString: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
 
       - name: Use Bit.ResxTranslator
+        env:
+          OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+          OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
           dotnet tool install --global Bit.ResxTranslator
           bit-resx-translate
@@ -209,19 +277,19 @@ jobs:
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net10.0-android/*-Signed.*
 
   build_blazor_hybrid_iOS:
-    name: build blazor hybrid (iOS-macOS)
+    name: build blazor hybrid (iOS)
     runs-on: macOS-26
     environment: ${{ inputs.ENV_NAME }}
 
     steps:
 
       - name: Checkout source code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
@@ -234,6 +302,9 @@ jobs:
           node-version: 24
 
       - name: Use Bit.ResxTranslator
+        env:
+          OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
+          OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
           dotnet tool install --global Bit.ResxTranslator
           bit-resx-translate
@@ -255,7 +326,7 @@ jobs:
           p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
       - name: Download Apple Provisioning Profiles
-        uses: Apple-Actions/download-provisioning-profiles@c62019de00bb4395ed414e4a17c98f4e279636de # v6.0.0
+        uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
         with:
           bundle-id: ${{ vars.APP_ID }}
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}

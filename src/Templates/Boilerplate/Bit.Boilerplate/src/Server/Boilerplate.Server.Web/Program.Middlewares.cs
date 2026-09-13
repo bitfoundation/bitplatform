@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Hangfire;
 using Scalar.AspNetCore;
 using Boilerplate.Server.Api;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#endif
 
@@ -25,8 +27,7 @@ public static partial class Program
             var configuration = app.Configuration;
             var env = app.Environment;
 
-            ServerWebSettings settings = new();
-            configuration.Bind(settings);
+            var settings = app.Services.GetRequiredService<ServerWebSettings>();
 
             app.UseAppForwardedHeaders();
 
@@ -55,16 +56,23 @@ public static partial class Program
                 app.UseDirectoryBrowser();
             }
 
-            app.UseStaticFiles(options: new()
+            app.Use(async (context, next) =>
             {
-                OnPrepareResponse = staticFileResponseContext =>
+                context.Response.OnStarting(async () =>
                 {
-                    if (env.IsDevelopment() is false)
+                    if (env.IsDevelopment())
+                    {
+                        var cacheControl = context.Response.GetTypedHeaders().CacheControl ?? new();
+                        cacheControl.NoCache = true;
+                        context.Response.GetTypedHeaders().CacheControl = cacheControl;
+                    }
+                    else
                     {
                         // Caching static files on the Browser and CDN's edge servers.
-                        if (staticFileResponseContext.Context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
+                        if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase))
+                            && env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                         {
-                            staticFileResponseContext.Context.Response.GetTypedHeaders().CacheControl = new()
+                            context.Response.GetTypedHeaders().CacheControl = new()
                             {
                                 Public = true,
                                 NoTransform = true,
@@ -72,12 +80,29 @@ public static partial class Program
                             };
                         }
                     }
-                }
+                });
+
+                await next.Invoke();
             });
+
+            app.UseStaticFiles();
 
             // https://yurl.chayev.com/
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/.well-known"), wellKnownApp =>
             {
+                // iOS asks for the extension-less path, but the file on disk is the .json one - Azure Static Web Apps
+                // decides Content-Type from the extension and would serve an extension-less file as octet-stream,
+                // which Apple rejects, so staticwebapp.config.json rewrites the same way. One file, two hosts.
+                wellKnownApp.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.Equals("/.well-known/apple-app-site-association", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Request.Path = "/.well-known/apple-app-site-association.json";
+                    }
+
+                    await next.Invoke();
+                });
+
                 wellKnownApp.UseStaticFiles(new StaticFileOptions()
                 {
                     FileProvider = env.WebRootFileProvider,
@@ -88,12 +113,26 @@ public static partial class Program
 
             //#if (api == "Integrated")
             app.UseCors();
-            app.UseRateLimiter();
             app.UseMiddleware<ForceUpdateMiddleware>();
             //#endif
 
             app.UseAuthentication();
+            //#if (api == "Integrated")
+            app.UseRateLimiter(); // After UseAuthentication, so rate limit partitions can use HttpContext.User.
+            //#endif
             app.UseAuthorization();
+
+            //#if (api == "Integrated")
+            app.UseHangfireDashboard(options: new()
+            {
+                DarkModeEnabled = true,
+                Authorization = [new HangfireDashboardAuthorizationFilter()]
+            });
+
+            app.ScheduleAppRecurringJobs();
+            //#endif
+
+            app.UseCultureUrlRedirection();
 
             app.UseOutputCache();
 
@@ -106,12 +145,6 @@ public static partial class Program
             app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
             app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
-            app.UseHangfireDashboard(options: new()
-            {
-                DarkModeEnabled = true,
-                Authorization = [new HangfireDashboardAuthorizationFilter()]
-            });
-
             app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
             {
                 RouteParameter = routeParameter,
@@ -119,7 +152,7 @@ public static partial class Program
             }).WithTags("Test").CacheOutput("AppResponseCachePolicy").ExcludeFromDescription();
 
             //#if (signalR == true)
-            if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false
+            if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false
                 && settings.WebAppRender.BlazorMode is not BlazorWebAppMode.BlazorWebAssembly)
             {
                 // Azure SignalR is going to send blazor server / auto messages to the Azure Cloud which is useless in this case,
@@ -134,10 +167,16 @@ public static partial class Program
                 throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
             }
             app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-            app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
-                                                       //#endif
+            app.MapMcp(OAuthResources.McpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.McpPath)); // Chatbot tools. Isolated from /dev-mcp.
+            //#endif
+
+            // The feature AND two factor, for the app's own bearer scheme or a token issued for this resource; every
+            // requirement is read off OAuthResources (OAuthEndpoints.AuthorizationFor).
+            app.MapMcp(OAuthResources.DevMcpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.DevMcpPath));
 
             app.MapOpenIdConfiguration();
+
+            app.MapOAuthEndpoints();
 
             app.MapControllers()
                .RequireAuthorization()
@@ -153,9 +192,12 @@ public static partial class Program
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-            if (settings.WebAppRender.PrerenderEnabled is false)
+            if (settings.WebAppRender.RenderMode is not null && settings.WebAppRender.PrerenderEnabled is false)
             {
-                blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
+                // In the interactive modes with pre-rendering off, nothing of the page is produced on the server -
+                // blazor emits only a marker comment and the client renders everything - so endpoint authorization has
+                // nothing to protect here and the client handles it.
+                blazorApp.AllowAnonymous();
             }
         }
 
@@ -171,16 +213,33 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
+                int? statusCode = null;
+
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        statusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                        statusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
                     }
+                }
+
+                if (statusCode is not null)
+                {
+                    // Applied as the response starts, not before the endpoint runs: a 404 already set by then makes
+                    // RazorComponentEndpointInvoker drop the rendered page and leave an empty body for status code pages.
+                    // Only over a 200 - the page itself; a redirect (the culture one, for instance) must stay a redirect.
+                    context.Response.OnStarting(() =>
+                    {
+                        if (context.Response.StatusCode is StatusCodes.Status200OK)
+                        {
+                            context.Response.StatusCode = statusCode.Value;
+                        }
+                        return Task.CompletedTask;
+                    });
                 }
 
                 await next.Invoke(context);
@@ -199,13 +258,21 @@ public static partial class Program
 
                         var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
                         qs.Remove("try_refreshing_token");
-                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, new QueryString(qs.ToString()));
-                        httpContext.Response.Redirect($"{PageUrls.NotAuthorized}?return-url={returnUrl}&isForbidden={(is403 ? "true" : "false")}");
+                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path,
+                                                                QueryString.Create(qs.Select(kv => KeyValuePair.Create(kv.Key, kv.Value?.ToString()))));
+                        // return-url has to be encoded as a single value: interpolating it raw would let its inner '&'
+                        // separators split into extra outer parameters and truncate the url SignIn navigates back to.
+                        var redirectQuery = QueryString.Create(new KeyValuePair<string, string?>[]
+                        {
+                            new("return-url", returnUrl),
+                            new("isForbidden", is403 ? "true" : "false")
+                        });
+                        httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
                     }
                     else if (httpContext.Response.StatusCode is 404 &&
                         httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
                     {
-                        httpContext.Response.Redirect($"{PageUrls.NotFound}?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                        httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
                     }
                 }
             });

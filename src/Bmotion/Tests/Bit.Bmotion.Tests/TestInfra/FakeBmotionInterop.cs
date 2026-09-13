@@ -32,6 +32,12 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     /// <summary>Value returned by <see cref="RegisterElementAsync"/>.</summary>
     public bool RegisterElementResult { get; set; } = true;
 
+    /// <summary>
+    /// Value returned by <see cref="PlayScrollTimelineAsync"/>: <c>true</c> = a native scroll
+    /// timeline drove it, <c>false</c> = the scroll-scrub fallback, <c>null</c> = could not start.
+    /// </summary>
+    public bool? ScrollTimelineResult { get; set; } = true;
+
     /// <summary>Optional rect provider for <see cref="GetBoundingRectAsync"/> keyed by element id.</summary>
     public Func<string, BmotionBoundingRect?>? BoundingRectProvider { get; set; }
 
@@ -158,15 +164,21 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── FLIP layout ───────────────────────────────────────────────────────────
-    public ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId)
+    public ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId, BmotionMeasureOptions options = default)
     {
-        Record("getBoundingRect", elementId);
+        Record("getBoundingRect", elementId, options);
         return ValueTask.FromResult(BoundingRectProvider?.Invoke(elementId));
     }
 
-    public ValueTask PlayWaapiFlipAsync(string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr, string? finalTransform)
+    /// <summary>Captured refs from <see cref="PlayWaapiFlipAsync"/>, so tests can fire the FLIP completion callback.</summary>
+    public readonly Dictionary<string, object> FlipRefs = new();
+
+    public ValueTask PlayWaapiFlipAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
+        string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
     {
-        Record("playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform);
+        if (dotnetRef is not null) FlipRefs[elementId] = dotnetRef.Value;
+        Record("playWaapiFlip", elementId, dx, dy, sx, sy, durationMs, easingStr, finalTransform, originX, originY);
         return ValueTask.CompletedTask;
     }
 
@@ -188,6 +200,19 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     public ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit)
     {
         Record("cancelWaapiAnimation", elementId, token, commit);
+        return ValueTask.CompletedTask;
+    }
+
+    // ── Scroll-driven timelines ───────────────────────────────────────────────
+    public ValueTask<bool?> PlayScrollTimelineAsync(string elementId, int token, object keyframes, object timeline)
+    {
+        Record("playScrollTimelineAnimation", elementId, token, keyframes, timeline);
+        return ValueTask.FromResult(ScrollTimelineResult);
+    }
+
+    public ValueTask CancelScrollTimelineAsync(string elementId, int token)
+    {
+        Record("cancelScrollTimelineAnimation", elementId, token);
         return ValueTask.CompletedTask;
     }
 

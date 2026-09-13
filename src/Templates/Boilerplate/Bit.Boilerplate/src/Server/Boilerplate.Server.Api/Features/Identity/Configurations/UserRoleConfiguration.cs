@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Features.Identity.Models;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 //#endif

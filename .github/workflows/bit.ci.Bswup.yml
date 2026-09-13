@@ -21,28 +21,34 @@ jobs:
     steps:
 
     - name: Checkout source code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
           persist-credentials: false
 
     - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
     - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: 9.0.x
 
     - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: 8.0.x
 
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+        cache: npm
+        # Both lock files feed the shared npm cache: Bit.Bswup's drives the
+        # InstallNodejsDependencies build step, the tests' drives `npm ci` below.
+        cache-dependency-path: |
+          src/Bswup/Bit.Bswup/package-lock.json
+          src/Bswup/Tests/bit-bswup-js/package-lock.json
 
     - name: dotnet workload restore
       run:  cd src/Bswup && dotnet workload restore
@@ -53,3 +59,14 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Bswup/Bit.Bswup.slnx
+
+    - name: dotnet test (MCP server)
+      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
+
+    # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
+    # the build step itself (e.g. the minifier re-introducing downleveled syntax).
+    - name: JS tests (service worker, page script, progress UI)
+      run: |
+        cd src/Bswup/Tests/bit-bswup-js
+        npm ci
+        npm test

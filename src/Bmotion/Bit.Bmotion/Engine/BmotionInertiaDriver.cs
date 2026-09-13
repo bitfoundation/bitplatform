@@ -45,6 +45,15 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
         double velocity = config.InertiaVelocity;
 
         double projected = from + power * velocity;
+        // Snap-to-grid / snap-to-page hook (motion.dev's modifyTarget): the consumer rounds the
+        // projected resting place to whatever grid it wants. Run it before clamping so a snapped
+        // target can't escape the constraints, and ignore a non-finite result rather than letting
+        // it poison the decay math (which would make the rest test unsatisfiable - see above).
+        if (config.ModifyTarget is { } modify)
+        {
+            double snapped = modify(projected);
+            if (double.IsFinite(snapped)) projected = snapped;
+        }
         if (config.InertiaMax.HasValue) projected = Math.Min(projected, config.InertiaMax.Value);
         if (config.InertiaMin.HasValue) projected = Math.Max(projected, config.InertiaMin.Value);
 

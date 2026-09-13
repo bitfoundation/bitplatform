@@ -22,13 +22,26 @@ export class WebInteropApp {
             }
         }
         catch (err: any) {
+            // Report the failure back to the app. This is the ONLY path that faults the TaskCompletionSource the
+            // Hybrid app is awaiting, so it must run for the WebAuthn actions too - it used to bail out whenever
+            // `localHttpPort` was absent, and the WebAuthn interop URLs never carried it, so cancelling a biometric
+            // prompt left the sign-in UI spinning until the app was restarted.
             const urlParams = new URLSearchParams(location.search);
+            const action = urlParams.get('actionName');
             const localHttpPort = urlParams.get('localHttpPort')?.toString();
-            if (!localHttpPort) return;
+
+            // The WebAuthn pages are served BY the local server, so a relative URL is correct for them. The
+            // external-sign-in page is served from the web-app origin, so it needs the absolute loopback URL.
+            const isServedByLocalHttpServer = action === 'GetWebAuthnCredential' || action === 'CreateWebAuthnCredential';
+            if (!isServedByLocalHttpServer && !localHttpPort) return; // Blazor WebAssembly, Auto or Server.
+
+            const logErrorUrl = isServedByLocalHttpServer
+                ? `api/LogError`
+                : `http://localhost:${localHttpPort}/api/LogError`;
 
             // Blazor Hybrid:
             const errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${err.toString()}`;
-            await fetch('api/LogError', {
+            await fetch(logErrorUrl, {
                 method: 'POST',
                 credentials: 'omit',
                 body: errMsg
@@ -80,12 +93,19 @@ export class WebInteropApp {
         });
     }
 
+    /// The per-process token the local HTTP server requires on every request. It is placed in the interop URL by
+    /// MauiWebAuthnService / WindowsWebAuthnService, so only the app itself can drive those endpoints.
+    private static sessionToken() {
+        return new URLSearchParams(location.search).get('token') ?? '';
+    }
+
     private static async getWebAuthnCredential() {
         // Blazor Hybrid:
-        const webAuthnCredentialOptions = await (await fetch(`api/GetWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
+        const token = encodeURIComponent(WebInteropApp.sessionToken());
+        const webAuthnCredentialOptions = await (await fetch(`api/GetWebAuthnCredentialOptions?token=${token}`, { credentials: 'omit' })).json();
         const webAuthnCredential = await BitButil.webAuthn.getCredential(webAuthnCredentialOptions);
 
-        await fetch(`api/WebAuthnCredential`, {
+        await fetch(`api/WebAuthnCredential?token=${token}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -98,10 +118,11 @@ export class WebInteropApp {
 
     private static async createWebAuthnCredential() {
         // Blazor Hybrid:
-        const webAuthnCredentialOptions = await (await fetch(`api/GetCreateWebAuthnCredentialOptions`, { credentials: 'omit' })).json();
+        const token = encodeURIComponent(WebInteropApp.sessionToken());
+        const webAuthnCredentialOptions = await (await fetch(`api/GetCreateWebAuthnCredentialOptions?token=${token}`, { credentials: 'omit' })).json();
         const webAuthnCredential = await BitButil.webAuthn.createCredential(webAuthnCredentialOptions);
 
-        await fetch(`api/CreateWebAuthnCredential`, {
+        await fetch(`api/CreateWebAuthnCredential?token=${token}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

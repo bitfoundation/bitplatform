@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Legacy;
-namespace Bit.BlazorUI.Legacy.Demo.MarkdownEditor;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.MarkdownEditor;
 
 public partial class BitMarkdownEditorLegacyDemo
 {

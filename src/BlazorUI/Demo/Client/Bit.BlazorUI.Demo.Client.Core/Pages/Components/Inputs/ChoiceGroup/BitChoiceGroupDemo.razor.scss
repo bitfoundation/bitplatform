@@ -11,10 +11,24 @@
         }
     }
 
+    .custom-description {
+        gap: rem2(4px);
+        display: flex;
+        align-items: center;
+    }
+
     .custom-class {
         color: dodgerblue;
         margin-inline: 16px;
         text-shadow: dodgerblue 0 0 8px;
+    }
+
+    // Kept in sync with the <style> block the LabelTemplate samples ship, so the rendered demo
+    // actually shows the styling the copyable code claims.
+    .custom-label {
+        color: red;
+        font-size: 18px;
+        font-weight: bold;
     }
 
     .custom-item {
@@ -31,11 +45,11 @@
         font-weight: bold;
     }
 
+    // Only the look of the dot is customized here, never its position: the ChoiceGroup centers the dot
+    // in the circle itself, so a hard coded offset would fight that and depend on component internals.
     .custom-radio-btn::after {
         width: 8px;
         height: 8px;
-        border: none;
-        inset-inline-start: 6px;
         background-color: whitesmoke;
     }
 

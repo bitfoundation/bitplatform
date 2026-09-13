@@ -1,0 +1,331 @@
+@page "/geolocation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Geolocation geolocation
+
+<PageTitle>Geolocation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Geolocation"
+            Lead="Read the device's position once or subscribe to continuous updates - typed coordinates, accuracy metadata and strongly-typed errors instead of raw callbacks."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API"
+            InjectAs="Geolocation geolocation" />
+
+<Callout Type="info" Title="Permission and secure context">
+    Geolocation only works in a secure context (HTTPS or localhost), and the browser prompts the
+    user for permission on first use. A denied prompt surfaces as a
+    <code>GeolocationException</code> with <code>Code == GeolocationErrorCode.PermissionDenied</code>
+    - always wrap calls in a try/catch.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.geolocation. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Geolocation geolocation
+
+var supported = await geolocation.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Current position"
+                 Api="GetCurrentPosition"
+                 Description="One-shot read of the device position. GeolocationOptions maps to the browser's PositionOptions: EnableHighAccuracy trades power for precision, Timeout caps how long the device may take (milliseconds), and MaximumAge allows a cached fix up to the given age."
+                 Code=@("""
+try
+{
+    var pos = await geolocation.GetCurrentPosition(new GeolocationOptions
+    {
+        EnableHighAccuracy = true,
+        Timeout = 10_000,
+        MaximumAge = 0,
+    });
+
+    var lat = pos.Coords.Latitude;
+    var lng = pos.Coords.Longitude;
+    var accuracy = pos.Coords.Accuracy; // meters
+}
+catch (GeolocationException ex)
+{
+    // ex.Code: PermissionDenied, PositionUnavailable, Timeout or Unknown
+}
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Timeout (ms)</span>
+                <input type="number" min="0" @bind="_timeout" />
+            </div>
+            <div class="field">
+                <span class="field-label">Maximum age (ms)</span>
+                <input type="number" min="0" @bind="_maximumAge" />
+            </div>
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_highAccuracy" /> Enable high accuracy</label>
+        </div>
+        <div class="controls">
+            <button @onclick="GetCurrent">GetCurrentPosition</button>
+        </div>
+        <DemoConsole @ref="currentOutput" Title="current position output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch position"
+                 Api="Watch / ClearWatch"
+                 Description="Subscribes to continuous position updates. Watch returns a Guid you pass to ClearWatch to stop; the position handler runs on the Blazor sync context, so updating component state from it is safe."
+                 Code=@("""
+var watchId = await geolocation.Watch(
+    onPosition: pos => { /* fires on every movement */ },
+    onError: ex => { /* GeolocationException */ });
+
+// later:
+await geolocation.ClearWatch(watchId);
+""")>
+        <div class="controls">
+            <button @onclick="StartWatch">Start watch</button>
+            <button class="danger" @onclick="StopWatch">Stop watch</button>
+        </div>
+        @if (_watchId is not null)
+        {
+            <div class="field">
+                <span class="field-label">Active watch</span>
+                <span><code>@_watchId</code> - @_watchUpdates update(s) received</span>
+            </div>
+        }
+        <DemoConsole @ref="watchOutput" Title="watch position output" />
+    </DemoSection>
+
+    <DemoSection Title="Subscription-style watch"
+                 Api="SubscribeWatch / ClearAllWatches"
+                 Description="SubscribeWatch is the same as Watch but returns a ButilSubscription, so a component can hold one field and dispose it in DisposeAsync - no Guid bookkeeping. ClearAllWatches stops every watch this Geolocation instance has started."
+                 Code=@("""
+private ButilSubscription? _sub;
+
+_sub = await geolocation.SubscribeWatch(pos => { /* ... */ });
+
+// stop this one:
+await _sub.DisposeAsync();
+
+// or stop everything started by this instance:
+await geolocation.ClearAllWatches();
+""")>
+        <div class="controls">
+            <button @onclick="StartSubscription">SubscribeWatch</button>
+            <button class="secondary" @onclick="StopSubscription">Dispose subscription</button>
+            <button class="danger" @onclick="ClearAll">ClearAllWatches</button>
+        </div>
+        <DemoConsole @ref="subscriptionOutput" Title="subscription watch output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Timeout default">
+    When you pass no options, <code>Timeout</code> defaults to <code>long.MaxValue</code> - the call
+    waits indefinitely for a fix. Set an explicit timeout when a slow GPS lock should fail fast.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.geolocation. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetCurrentPosition"
+               Signature="Task<GeolocationPosition> GetCurrentPosition(GeolocationOptions? options = null)"
+               Description="Returns the device's current position once. Throws GeolocationException on denial, unavailability or timeout." />
+    <ApiMember Name="Watch"
+               Signature="Task<Guid> Watch(Action<GeolocationPosition>? onPosition, Action<GeolocationException>? onError = null, GeolocationOptions? options = null)"
+               Description="Subscribes to continuous position updates; returns the watch id. The handler runs on the Blazor sync context." />
+    <ApiMember Name="ClearWatch"
+               Signature="ValueTask ClearWatch(Guid id)"
+               Description="Stops a previously registered watch." />
+    <ApiMember Name="SubscribeWatch"
+               Signature="Task<ButilSubscription> SubscribeWatch(Action<GeolocationPosition>? onPosition, Action<GeolocationException>? onError = null, GeolocationOptions? options = null)"
+               Description="Watch variant that returns an IAsyncDisposable subscription handle instead of a Guid." />
+    <ApiMember Name="ClearAllWatches"
+               Signature="ValueTask ClearAllWatches()"
+               Description="Stops every watch this instance has started." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Clears all watches and releases the JS callback reference. Called automatically on scope/circuit teardown." />
+    <ApiMember Name="InvokePosition"
+               Signature="void InvokePosition(Guid id, GeolocationPosition position)"
+               Description="JSInvokable interop plumbing for watch updates - not intended for app code." />
+    <ApiMember Name="InvokeError"
+               Signature="void InvokeError(Guid id, int code, string message)"
+               Description="JSInvokable interop plumbing for watch errors - not intended for app code." />
+    <ApiMember Name="GeolocationOptions.EnableHighAccuracy"
+               Signature="bool EnableHighAccuracy { get; set; }"
+               Description="Request the most accurate result possible (may be slower / use more power)." />
+    <ApiMember Name="GeolocationOptions.MaximumAge"
+               Signature="long MaximumAge { get; set; }"
+               Description="Maximum acceptable age of a cached position in milliseconds. 0 means never use a cache." />
+    <ApiMember Name="GeolocationOptions.Timeout"
+               Signature="long Timeout { get; set; }"
+               Description="How long the device may take to return a position before a GeolocationException is raised. Defaults to long.MaxValue." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole currentOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole subscriptionOutput = default!;
+    private bool _highAccuracy;
+    private long _timeout = 10_000;
+    private long _maximumAge;
+    private Guid? _watchId;
+    private int _watchUpdates;
+    private ButilSubscription? _sub;
+
+    private GeolocationOptions Options => new()
+    {
+        EnableHighAccuracy = _highAccuracy,
+        Timeout = _timeout,
+        MaximumAge = _maximumAge,
+    };
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await geolocation.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task GetCurrent()
+    {
+        try
+        {
+            var pos = await geolocation.GetCurrentPosition(Options);
+            await LogPosition(currentOutput, "GetCurrentPosition", pos);
+        }
+        catch (GeolocationException ex)
+        {
+            await currentOutput.Error(ex.Code, "→", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await currentOutput.Error("GetCurrentPosition failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatch()
+    {
+        await StopWatch();
+
+        try
+        {
+            _watchUpdates = 0;
+            _watchId = await geolocation.Watch(
+                onPosition: pos =>
+                {
+                    _watchUpdates++;
+                    _ = LogPosition(watchOutput, "Watch", pos);
+                    StateHasChanged();
+                },
+                onError: ex => _ = watchOutput.Error("Watch error →", ex.Code, ex.Message),
+                options: Options);
+
+            await watchOutput.Log("Watch started →", _watchId);
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("Watch failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatch()
+    {
+        if (_watchId is null) return;
+
+        try
+        {
+            await geolocation.ClearWatch(_watchId.Value);
+            await watchOutput.Log("Watch cleared →", _watchId);
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("ClearWatch failed →", ex.Message);
+        }
+        finally
+        {
+            _watchId = null;
+            _watchUpdates = 0;
+        }
+    }
+
+    private async Task StartSubscription()
+    {
+        await StopSubscription();
+
+        try
+        {
+            _sub = await geolocation.SubscribeWatch(
+                onPosition: pos => _ = LogPosition(subscriptionOutput, "SubscribeWatch", pos),
+                onError: ex => _ = subscriptionOutput.Error("SubscribeWatch error →", ex.Code, ex.Message),
+                options: Options);
+
+            await subscriptionOutput.Log("Subscription started →", _sub.Id);
+        }
+        catch (Exception ex)
+        {
+            await subscriptionOutput.Error("SubscribeWatch failed →", ex.Message);
+        }
+    }
+
+    private async Task StopSubscription()
+    {
+        if (_sub is null) return;
+
+        await _sub.DisposeAsync();
+        _sub = null;
+        await subscriptionOutput.Log("Subscription disposed.");
+    }
+
+    private async Task ClearAll()
+    {
+        try
+        {
+            await geolocation.ClearAllWatches();
+            _watchId = null;
+            _watchUpdates = 0;
+            _sub = null;
+            await subscriptionOutput.Log("All watches cleared.");
+        }
+        catch (Exception ex)
+        {
+            await subscriptionOutput.Error("ClearAllWatches failed →", ex.Message);
+        }
+    }
+
+    private async Task LogPosition(DemoConsole output, string source, GeolocationPosition pos)
+    {
+        var c = pos.Coords;
+        await output.Success($"{source} →",
+            $"lat={c.Latitude:F6}, lng={c.Longitude:F6}, accuracy={c.Accuracy:F1}m" +
+            (c.Altitude is null ? "" : $", alt={c.Altitude:F1}m") +
+            (c.Speed is null ? "" : $", speed={c.Speed:F1}m/s"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null)
+        {
+            await _sub.DisposeAsync();
+            _sub = null;
+        }
+
+        try
+        {
+            await geolocation.ClearAllWatches();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

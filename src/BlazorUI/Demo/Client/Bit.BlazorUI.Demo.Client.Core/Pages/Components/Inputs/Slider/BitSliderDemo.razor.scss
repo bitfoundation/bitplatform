@@ -1,111 +1,54 @@
-﻿.flex-container {
-    gap: 2rem;
+.example-box {
+    gap: 0.5rem;
     display: flex;
-    overflow: auto;
-    min-height: 23rem;
+    max-width: 30rem;
+    flex-direction: column;
 
-    &.column {
-        min-height: unset;
-        flex-direction: column;
+    &.row {
+        gap: 2rem;
+        max-width: unset;
+        flex-direction: row;
+        align-items: flex-start;
     }
 }
 
-.custom-wrapper {
+// The vertical examples sit side by side, and each one takes only the width its own labels need.
+.row {
     gap: 2rem;
     display: flex;
     flex-wrap: wrap;
-    width: max-content;
-    flex-direction: column;
-    padding-block-start: 1.25rem;
-    padding-inline-start: 1.25rem;
+    align-items: flex-start;
+}
+
+.template-label {
+    gap: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+// The content of the ThumbLabelTemplate example: an icon beside the number, both on one line.
+.thumb-template {
+    gap: 0.25rem;
+    display: inline-flex;
+    align-items: center;
 }
 
 ::deep {
-    .custom-input {
-        &::-webkit-slider-thumb {
-            width: 1.5rem;
-            height: 1.5rem;
-            border-radius: 50%;
-            margin-top: -0.75rem;
-            border-color: whitesmoke;
-            background-color: whitesmoke;
-            box-shadow: 0 0 0.5rem 0 lightgray;
-        }
-
-        &:hover::-webkit-slider-thumb {
-            border-color: whitesmoke;
-            background-color: whitesmoke;
-        }
-
-        &::-moz-range-thumb {
-            width: 1.5rem;
-            height: 1.5rem;
-            border-radius: 50%;
-            margin-top: -0.75rem;
-            border-color: whitesmoke;
-            background-color: whitesmoke;
-            box-shadow: 0 0 0.5rem 0 lightgray;
-        }
-
-        &:hover::-moz-range-thumb {
-            border-color: whitesmoke;
-            background-color: whitesmoke;
-        }
-
-        &::-webkit-slider-runnable-track {
-            height: 0.125rem;
-            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
-        }
-
-        &:hover::-webkit-slider-runnable-track {
-            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
-        }
-
-        &::-moz-range-track {
-            height: 0.125rem;
-            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
-        }
-
-        &:hover::-moz-range-track {
-            background: linear-gradient(dodgerblue, dodgerblue) 0/var(--sx) 100% no-repeat, whitesmoke;
-        }
+    .custom-class {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid dodgerblue;
+        box-shadow: dodgerblue 0 0 1rem;
     }
 
-    .custom-slider-box {
-        background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
+    // The fill of the "Custom classes" example: a gradient instead of a flat accent.
+    .custom-fill {
+        background: linear-gradient(90deg, mediumseagreen, seagreen);
+    }
 
-        &:hover {
-            background: linear-gradient(0deg, seagreen calc(0.5rem * 0.5), transparent 0);
-        }
-
-        &:hover::before {
-            background-color: darkgreen;
-        }
-
-        &::before {
-            background-color: green;
-        }
-
-        .custom-range-input {
-            &::-webkit-slider-thumb {
-                background-color: white;
-                border: 0.25rem solid green;
-            }
-
-            &:hover::-webkit-slider-thumb {
-                background-color: white;
-                border: 0.25rem solid darkgreen;
-            }
-
-            &::-moz-range-thumb {
-                background-color: white;
-                border: 0.25rem solid green;
-            }
-
-            &:hover::-moz-range-thumb {
-                background-color: white;
-                border: 0.25rem solid darkgreen;
-            }
-        }
+    // Square marks rather than round ones, to show that a class reaches every tick.
+    .custom-mark {
+        border-radius: 0;
+        background-color: seagreen;
     }
 }

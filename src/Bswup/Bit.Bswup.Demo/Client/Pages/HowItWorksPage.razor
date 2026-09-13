@@ -1,0 +1,344 @@
+﻿@page "/how-it-works"
+
+<PageOutlet Slug="how-it-works" />
+
+<h1>How It Works</h1>
+<p class="docs-lead">
+    The mental model behind Bswup: who starts Blazor, what the service worker actually caches, how an
+    update is staged, and which requests the worker takes over. Read this once and the whole
+    <a href="script-options">reference</a> stops looking like a pile of switches.
+</p>
+
+<h2>The five moving parts</h2>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Piece</th><th>Runs in</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>bit-bswup.js</code></td>
+                <td>The page</td>
+                <td>Registers the worker, owns the install/update handshake, decides <em>when</em> Blazor starts, polls for updates, and raises every <a href="events">lifecycle event</a>.</td>
+            </tr>
+            <tr>
+                <td><code>bit-bswup.sw.js</code></td>
+                <td>The service worker</td>
+                <td>Precaches assets, verifies them, serves fetches, handles the SPA navigation fallback, and stages new versions. Pulled in by your <code>service-worker.js</code>.</td>
+            </tr>
+            <tr>
+                <td><code>bit-bswup.progress.js</code> + <code>BswupProgress</code></td>
+                <td>The page</td>
+                <td>The optional built-in <a href="progress-ui">progress UI</a>: splash, progress bar, reload button, failure panel.</td>
+            </tr>
+            <tr>
+                <td><code>BitBswup</code></td>
+                <td>The page</td>
+                <td>The global <a href="javascript-api">JavaScript API</a>: check for updates, activate a staged version, request durable storage, reset a broken client.</td>
+            </tr>
+            <tr>
+                <td><code>service-worker-assets.js</code></td>
+                <td>Build output</td>
+                <td>The manifest .NET generates at publish time: every asset URL plus its SRI hash. Bswup's entire notion of "the app" comes from this file.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Why Blazor's start is deferred</h2>
+<p>
+    The single most important line in the setup is <code>autostart="false"</code> on the Blazor script.
+    Without it, Blazor and the service worker race: Blazor starts pulling the runtime and your assemblies
+    over the network at the same moment the worker starts precaching the very same files. The user pays
+    for every byte twice, and there is no point in the timeline where a splash could honestly report
+    progress - the download it is measuring is not the download the app is waiting on.
+</p>
+<p>
+    With auto-start off, <strong>Bswup owns the boot</strong>. On a first install it holds Blazor back
+    until the cache is populated, then starts it - and every asset request Blazor makes is answered from
+    the cache it just filled. On every later visit the cache is already warm, so Bswup starts Blazor
+    immediately and the app boots offline-fast.
+</p>
+
+<h2>The two lifecycles</h2>
+<p>
+    Nearly every question about Bswup's behavior resolves to "is this a first install or an update?" They
+    are genuinely different flows, and most options behave differently in each:
+</p>
+
+<div class="diagram-wrapper">
+    <svg class="flow-diagram" viewBox="0 0 800 520" role="img" aria-labelledby="lifecycle-title lifecycle-desc" preserveAspectRatio="xMidYMid meet">
+        <title id="lifecycle-title">The Bswup first-install and update lifecycles</title>
+        <desc id="lifecycle-desc">
+            Two parallel sequences. First install: the page loads with Blazor deferred; Bswup registers the
+            worker, which precaches assets; DOWNLOAD_PROGRESS drives the splash; DOWNLOAD_FINISHED arrives
+            with firstInstall true; reload() runs the CLAIM_CLIENTS handshake; FIRST_INSTALL_CLAIMED fires
+            and Blazor starts. Update: an update check finds a new worker; UPDATE_FOUND is raised and the
+            new worker installs; the download runs behind the running app; UPDATE_READY signals a fully
+            staged version; the user accepts and SKIP_WAITING activates it; ACTIVATE prunes old caches and
+            every open tab reloads onto the new version.
+        </desc>
+
+        <text class="flow-heading" x="195" y="26" text-anchor="middle">First install</text>
+        <text class="flow-subheading" x="195" y="46" text-anchor="middle">the app is not running yet</text>
+        <text class="flow-heading" x="605" y="26" text-anchor="middle">Update</text>
+        <text class="flow-subheading" x="605" y="46" text-anchor="middle">the app is already running</text>
+
+        <line class="flow-divider" x1="400" y1="14" x2="400" y2="506" />
+
+        <g class="flow-col-install">
+            <rect class="flow-box" x="45" y="70" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="97" text-anchor="middle">Page loads - Blazor start is deferred</text>
+            <line class="flow-arrow" x1="195" y1="114" x2="195" y2="138" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="45" y="144" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="171" text-anchor="middle">register() - the worker installs</text>
+            <line class="flow-arrow" x1="195" y1="188" x2="195" y2="212" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box flow-box-accent" x="45" y="218" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="245" text-anchor="middle">DOWNLOAD_PROGRESS drives the splash</text>
+            <line class="flow-arrow" x1="195" y1="262" x2="195" y2="286" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="45" y="292" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="319" text-anchor="middle">DOWNLOAD_FINISHED (firstInstall: true)</text>
+            <line class="flow-arrow" x1="195" y1="336" x2="195" y2="360" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="45" y="366" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="393" text-anchor="middle">reload() - CLAIM_CLIENTS handshake</text>
+            <line class="flow-arrow" x1="195" y1="410" x2="195" y2="434" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box flow-box-final" x="45" y="440" width="300" height="44" rx="3" />
+            <text class="flow-label" x="195" y="467" text-anchor="middle">Blazor starts - no page reload</text>
+        </g>
+
+        <g class="flow-col-update">
+            <rect class="flow-box" x="455" y="70" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="97" text-anchor="middle">Check: navigation / timer / focus / API</text>
+            <line class="flow-arrow" x1="605" y1="114" x2="605" y2="138" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="455" y="144" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="171" text-anchor="middle">UPDATE_FOUND - new worker installs</text>
+            <line class="flow-arrow" x1="605" y1="188" x2="605" y2="212" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box flow-box-accent" x="455" y="218" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="245" text-anchor="middle">Download runs behind the live app</text>
+            <line class="flow-arrow" x1="605" y1="262" x2="605" y2="286" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="455" y="292" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="319" text-anchor="middle">UPDATE_READY - version fully staged</text>
+            <line class="flow-arrow" x1="605" y1="336" x2="605" y2="360" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box" x="455" y="366" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="393" text-anchor="middle">User accepts - SKIP_WAITING</text>
+            <line class="flow-arrow" x1="605" y1="410" x2="605" y2="434" marker-end="url(#flow-arrowhead)" />
+
+            <rect class="flow-box flow-box-final" x="455" y="440" width="300" height="44" rx="3" />
+            <text class="flow-label" x="605" y="467" text-anchor="middle">ACTIVATE - prune caches - tabs reload</text>
+        </g>
+
+        <defs>
+            <marker id="flow-arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path class="flow-arrowhead" d="M 0 0 L 10 5 L 0 10 z" />
+            </marker>
+        </defs>
+    </svg>
+</div>
+
+<h3>First install, step by step</h3>
+<ol class="docs-steps">
+    <li>
+        The page loads. <code>bit-bswup.js</code> reads its configuration (script attributes over the
+        <a href="script-options#options"><code>options</code></a> object over the defaults) and calls
+        <code>register()</code> with <code>updateViaCache: 'none'</code>, so the browser never serves the
+        worker script or its imports from the HTTP cache.
+    </li>
+    <li>
+        The worker installs. It fetches <code>service-worker-assets.js</code>, filters the manifest through
+        <a href="service-worker#assetsinclude"><code>assetsInclude</code></a> /
+        <a href="service-worker#assetsexclude"><code>assetsExclude</code></a>, appends your
+        <a href="service-worker#externalassets"><code>externalAssets</code></a>, and downloads the result
+        into a fresh, version-named cache bucket. Under the default <code>lax</code>
+        <a href="service-worker#errortolerance">tolerance</a> the whole download runs inside the install
+        event's <code>waitUntil</code>, so the browser keeps the worker alive until it settles.
+    </li>
+    <li>
+        Every finished asset raises <code>DOWNLOAD_PROGRESS</code>. This is what fills the splash bar - and
+        the reason the percentage is honest: it counts the same bytes the app is waiting on.
+    </li>
+    <li>
+        <code>DOWNLOAD_FINISHED</code> arrives with <code>firstInstall: true</code>. Calling
+        <code>data.reload()</code> posts <code>CLAIM_CLIENTS</code> to the new worker, which claims this
+        page so its future requests are served from the cache that was just filled.
+    </li>
+    <li>
+        The claim is confirmed, <code>FIRST_INSTALL_CLAIMED</code> is raised, and Bswup calls
+        <code>Blazor.start()</code>. <strong>There is no page reload</strong> - the user sees a splash turn
+        into a running app.
+    </li>
+</ol>
+<Callout Type="note" Title="If any of that goes wrong, the app still boots">
+    A fatal install failure, or <a href="script-options#stalltimeout"><code>stallTimeout</code></a> seconds
+    of total worker silence, makes Bswup start Blazor directly from the network. The page runs uncontrolled -
+    exactly as if no service worker existed - and the install is retried on the next load. A first visit
+    never ends in a frozen splash.
+</Callout>
+
+<h3>Updates, step by step</h3>
+<ol class="docs-steps">
+    <li>
+        Something triggers an update check: a navigation, the browser's own ~24-hour re-check,
+        <a href="script-options#updateinterval"><code>updateInterval</code></a>,
+        <a href="script-options#updateonvisibility"><code>updateOnVisibility</code></a>, or your call to
+        <a href="javascript-api#checkforupdate"><code>BitBswup.checkForUpdate()</code></a>.
+    </li>
+    <li>
+        The browser re-fetches <code>service-worker.js</code>. If a byte changed anywhere in the import
+        chain, it treats the worker as new and installs it - <code>UPDATE_FOUND</code>. If nothing changed,
+        Bswup raises <code>UPDATE_NOT_FOUND</code>; if the check itself failed, <code>UPDATE_CHECK_FAILED</code>.
+    </li>
+    <li>
+        The new worker precaches the new version into its own bucket, <strong>behind the running app</strong>.
+        The old worker keeps serving every request from the old bucket, so the running app never sees a
+        half-migrated cache. The splash is deliberately not shown.
+    </li>
+    <li>
+        When the new version is fully staged the worker parks in the <em>waiting</em> state and
+        <code>UPDATE_READY</code> fires. Since v-10-6-0 nothing reloads on its own: the reload button
+        appears and the user decides.
+    </li>
+    <li>
+        Accepting posts <code>SKIP_WAITING</code>. The new worker activates, prunes the stale buckets, and
+        the tab reloads onto the new version.
+    </li>
+</ol>
+
+<h2>When an update reloads your tabs</h2>
+<p>
+    A finished update applies itself and reloads the tab, because <a href="progress-ui"><code>AutoReload</code></a>
+    defaults to <code>true</code>. An unprompted reload is not a cosmetic annoyance though - it discards whatever
+    the user had typed, scrolled to, or half-completed - so set <code>AutoReload="false"</code> to have the update
+    announce itself through the reload button and let the user accept it. But the opposite failure is worse and
+    much less obvious, so Bswup handles it for you:
+</p>
+<Callout Type="warning" Title="The stale-tab hazard">
+    A service worker is single-instance per origin, so accepting an update in <em>one</em> tab activates the
+    new version for <em>every</em> tab. Any other tab is now running old application code while its asset
+    requests are answered from the new version's cache - mismatched boot config and assembly hashes, which
+    surfaces as bizarre runtime errors rather than an honest "please reload". Bswup has the new worker claim
+    all clients, and every other tab reloads itself via <code>controllerchange</code>. One tab decides; all
+    tabs stay consistent.
+</Callout>
+
+<h2 id="request-pipeline">The request pipeline</h2>
+<p>
+    Once the worker controls the page, every request passes through it. The order below is the order the
+    worker actually evaluates - the first rule that matches wins:
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>#</th><th>Rule</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>URL matches <a href="service-worker#prohibitedurls"><code>prohibitedUrls</code></a></td>
+                <td><code>403 Forbidden</code> with a fixed <code>text/plain</code> body, for every method.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Not a <code>GET</code>, or the URL matches <a href="service-worker#serverhandledurls"><code>serverHandledUrls</code></a></td>
+                <td>Left alone entirely - the browser handles it as if no worker existed.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>A navigation, not <a href="service-worker#serverrenderedurls">server-rendered</a>, <a href="service-worker#forceprerender"><code>forcePrerender</code></a> off</td>
+                <td>Served the app shell (<a href="service-worker#defaulturl"><code>defaultUrl</code></a>) - unless the navigated URL is itself a concrete managed asset, in which case that asset is served.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>The URL resolves to a managed asset</td>
+                <td>Served from cache. A miss goes to the network and is written back, so an asset skipped by a lax install (or evicted) becomes offline-capable after its first successful fetch.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Anything else</td>
+                <td>Left alone. Your API calls, third-party beacons, and anything outside the manifest never enter the worker's logic.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<Callout Type="tip" Title="Decide first, commit second">
+    Rules 2 and 5 matter more than they look. Calling <code>respondWith()</code> is a commitment: the worker
+    then owns the response and the browser will <em>not</em> fall back to its own network stack, so one
+    rejected fetch inside the worker becomes a hard network error for the page. Bswup routes every request
+    synchronously and only takes over the ones it manages - which is exactly why a network blip on an
+    unrelated request can never freeze your app behind a stalled progress bar.
+</Callout>
+
+<h2>The caching model</h2>
+<ul>
+    <li>
+        <strong>One bucket per version, per scope.</strong> Buckets are named
+        <code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code>. The scope qualifier keeps several Bswup
+        apps on one origin from evicting each other's caches; the version comes from Blazor's
+        <code>assetsManifest.version</code> unless you override it with
+        <a href="service-worker#cacheversion"><code>cacheVersion</code></a>.
+    </li>
+    <li>
+        <strong>The version rotates only when an asset hash changes.</strong> A publish that changes nothing
+        reuses the same bucket, so users re-download nothing.
+    </li>
+    <li>
+        <strong>Old buckets are pruned on activation</strong>, never while an update is staged or staging -
+        a prune can't race a newer install's freshly written bucket.
+    </li>
+    <li>
+        <strong>Each asset is cache-busted by its own hash</strong> (<code>?v=</code>), and with
+        <a href="service-worker#enableintegritycheck"><code>enableIntegrityCheck</code></a> that hash is also
+        enforced as Subresource Integrity - a corrupted or tampered asset fails to install rather than
+        silently poisoning the cache.
+    </li>
+    <li>
+        <strong>Hash-less assets carry no version to diff</strong>, so they are re-downloaded once per
+        update rather than per request (turn that off with
+        <a href="service-worker#disablehashlessassetsupdate"><code>disableHashlessAssetsUpdate</code></a>).
+    </li>
+</ul>
+
+<h2>What Bswup deliberately does not do</h2>
+<ul>
+    <li>
+        <strong>It is not a runtime data cache.</strong> Bswup caches your <em>application</em> - the shell,
+        runtime, assemblies, and static assets. API responses and user data are yours to handle; route them
+        past the worker with <a href="service-worker#serverhandledurls"><code>serverHandledUrls</code></a>.
+    </li>
+    <li>
+        <strong><code>prohibitedUrls</code> is not a security boundary.</strong> It is enforced only inside
+        the worker, which is bypassed on the very first visit, on a hard reload, and by anything talking to
+        your server directly. Enforce access control on the server.
+    </li>
+    <li>
+        <strong>It does not replace your HTTP caching.</strong> The two compose: long-lived
+        <code>Cache-Control</code> makes repeat visits fast, and the worker's hash-based versioning means a
+        stale HTTP cache is never a correctness problem. The exception is the worker scripts themselves -
+        see the <a href="recipes#hosting">hosting checklist</a>.
+    </li>
+</ul>
+
+<Callout Type="tip" Title="Watch it happen">
+    Everything on this page is observable on this very site. The <a href="playground">Live Playground</a>
+    streams each event as it is raised, lists the live cache buckets, and wires the JavaScript API to
+    buttons.
+</Callout>
+
+<div class="pager">
+    <a href="getting-started">
+        <span class="pager-label">Previous</span>
+        <b>← Getting Started</b>
+    </a>
+    <a class="pager-next" href="script-options">
+        <span class="pager-label">Next</span>
+        <b>Script Options →</b>
+    </a>
+</div>

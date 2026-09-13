@@ -1,0 +1,307 @@
+/* ---------- The trigger in the header ----------
+
+   A button shaped like the search field it replaces, so it still reads as "type here" - the
+   difference is that what it opens is a dialog with room for grouped results, and that it can be
+   reached without the pointer ever touching it. */
+.bb-search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    height: 32px;
+    min-width: 220px;
+    padding: 0 .375rem 0 .625rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface-sunken);
+    color: var(--bb-text-soft);
+    font-family: inherit;
+    font-size: .875rem;
+    cursor: pointer;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-search-trigger:hover {
+    border-color: var(--bb-border-strong);
+    background: var(--bb-surface);
+    color: var(--bb-text-muted);
+}
+
+.bb-search-trigger > svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+}
+
+.bb-search-trigger-label {
+    flex: 1;
+    text-align: start;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bb-search-trigger-keys {
+    display: flex;
+    gap: 2px;
+    flex: none;
+}
+
+/* ---------- The dialog ---------- */
+
+/* Anchored near the top rather than centred: the list grows downward as the reader types, and a
+   centred dialog would move under their eyes every time it did. */
+.bb-palette-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: max(6vh, 3rem) 1rem 2rem;
+    background: var(--bb-scrim);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: bb-palette-scrim-in var(--bb-motion-duration-short) var(--bb-motion-easing) both;
+}
+
+.bb-palette {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 640px);
+    max-height: min(70vh, 560px);
+    overflow: hidden;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-xl);
+    box-shadow: var(--bb-shadow-dialog);
+    animation: bb-palette-in var(--bb-motion-duration) var(--bb-motion-enter) both;
+}
+
+@keyframes bb-palette-scrim-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bb-palette-in {
+    from { opacity: 0; transform: translateY(-.75rem) scale(.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Input row ---------- */
+
+/* Zero-size, but present in the tab order: the focus trap's two ends. Never `display: none` and
+   never `visibility: hidden` - either of those takes the element out of the tab order, which is
+   the one thing it is here for. */
+.bb-focus-sentinel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bb-palette-input {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--bb-border);
+    flex: none;
+}
+
+.bb-palette-input > svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    color: var(--bb-text-soft);
+}
+
+.bb-palette-input input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--bb-text);
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    padding: 0;
+}
+
+.bb-palette-input input::placeholder {
+    color: var(--bb-text-soft);
+}
+
+/* The pointer's way out. Keyboard readers have Escape, which the label names. */
+.bb-palette-esc {
+    flex: none;
+    padding: .1875rem .4375rem;
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface);
+    color: var(--bb-text-soft);
+    font-family: var(--bb-mono);
+    font-size: .6875rem;
+    cursor: pointer;
+}
+
+.bb-palette-esc:hover {
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+}
+
+/* ---------- Results ---------- */
+
+.bb-palette-results {
+    overflow-y: auto;
+    padding: .5rem;
+    flex: 1;
+}
+
+.bb-palette-group {
+    padding: .625rem .75rem .25rem;
+    margin: 0;
+}
+
+/* A three-line row: what it is, what it covers, and where it goes. The URL is on the row on
+   purpose - on a site about routing, the address IS part of the answer. */
+.bb-palette-hit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "title url"
+        "desc  url";
+    align-items: center;
+    column-gap: 1rem;
+    padding: .5rem .75rem;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    border-inline-start: 2px solid transparent;
+}
+
+.bb-palette-hit.bb-active {
+    background: var(--bb-primary-soft);
+    border-inline-start-color: var(--bb-primary);
+}
+
+.bb-palette-hit-title {
+    grid-area: title;
+    font-size: .9375rem;
+    font-weight: 600;
+    color: var(--bb-text);
+    line-height: 1.4;
+}
+
+.bb-palette-hit.bb-active .bb-palette-hit-title {
+    color: var(--bb-primary-hover);
+}
+
+.bb-palette-hit-desc {
+    grid-area: desc;
+    font-size: .8125rem;
+    line-height: 1.4;
+    color: var(--bb-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bb-palette-hit-url {
+    grid-area: url;
+    font-family: var(--bb-mono);
+    font-size: .75rem;
+    color: var(--bb-text-soft);
+    white-space: nowrap;
+}
+
+.bb-palette-empty {
+    margin: 0;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--bb-text-muted);
+    font-size: .9375rem;
+}
+
+.bb-palette-empty em {
+    font-style: normal;
+    font-family: var(--bb-mono);
+    color: var(--bb-text);
+}
+
+/* ---------- Footer legend ---------- */
+
+.bb-palette-foot {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    padding: .5rem 1rem;
+    border-top: 1px solid var(--bb-border);
+    background: var(--bb-surface-sunken);
+    color: var(--bb-text-soft);
+    font-size: .75rem;
+    flex: none;
+}
+
+.bb-palette-foot span {
+    display: inline-flex;
+    align-items: center;
+    gap: .3125rem;
+}
+
+/* ---------- Narrow ---------- */
+
+@media (max-width: 900px) {
+    /* The label and the shortcut both stop paying for themselves once the bar is tight: the
+       shortcut needs a hardware keyboard, and the magnifier says the rest. */
+    .bb-search-trigger {
+        min-width: 0;
+        width: 32px;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .bb-search-trigger-label,
+    .bb-search-trigger-keys {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .bb-palette-scrim {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    /* Full screen on a phone: 640px of dialog inside a 380px viewport is a dialog with margins,
+       and the margins are the part the reader cannot use. */
+    .bb-palette {
+        width: 100%;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+    }
+
+    /* The URL is the first thing to go: it is the longest run of unbreakable text in the row and
+       the least useful half of the answer on a screen this narrow. */
+    .bb-palette-hit {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "title"
+            "desc";
+    }
+
+    .bb-palette-hit-url {
+        display: none;
+    }
+
+    .bb-palette-hit-desc {
+        white-space: normal;
+    }
+
+    .bb-palette-foot {
+        display: none;
+    }
+}

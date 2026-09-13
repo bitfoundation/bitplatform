@@ -2,8 +2,6 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.TextShimmer;
 
 public partial class BitTextShimmerDemo
 {
-    private bool forceAnimation;
-
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -40,13 +38,6 @@ public partial class BitTextShimmerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The custom html element used for the root node.",
-        },
-        new()
-        {
-            Name = "ForceAnimation",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Keeps the shimmer animating even if the user has requested reduced motion (prefers-reduced-motion).",
         },
         new()
         {

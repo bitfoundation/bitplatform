@@ -1,70 +1,76 @@
 @import "../../../Styles/functions.scss";
 
 .bit-tgi {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    box-sizing: border-box;
     font-family: $tg-font-family;
-
-    &.bit-dis {
-        .bit-tgi-lbl {
-            color: $clr-fg-dis;
-        }
-
-        .bit-tgi-cnt {
-            cursor: default;
-            color: $clr-fg-dis;
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
-        }
-    }
-
-    &.bit-inv {
-        .bit-tgi-cnt {
-            border-color: $clr-err;
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover:not(.bit-dis) {
-            .bit-tgi-cnt {
-                border-color: $clr-brd-pri-hover;
-            }
-        }
-    }
-}
-
-.bit-tgi-nbd {
-    .bit-tgi-cnt {
-        border-color: transparent;
-    }
-}
-
-.bit-tgi-fcs {
-    .bit-tgi-cnt {
-        border-color: $clr-pri;
-        outline: none;
-
-        &::after {
-            content: "";
-            height: 2px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            position: absolute;
-            background-color: $clr-pri;
-            border-radius: 0 0 $shp-border-radius $shp-border-radius;
-        }
-    }
+    font-size: var(--bit-tgi-fontsize);
 }
 
 .bit-tgi-lbl {
     display: block;
-    font-weight: 600;
-    font-size: spacing(1.75);
+    font-weight: $tg-fw-semibold;
+    font-size: inherit;
     line-height: spacing(2.5);
     padding: spacing(0.625) 0;
     color: $clr-fg-pri;
+    overflow-wrap: break-word;
+}
+
+//the helper text and the counter share a line under the field, the count sitting at its end whether or
+//not there is a sentence to sit next to.
+.bit-tgi-dsr {
+    gap: spacing(1);
+    display: flex;
+    align-items: baseline;
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+//the helper text under the field, a touch smaller than the field itself so that the sentence explaining
+//the tags never outweighs the tags it explains.
+.bit-tgi-dsc {
+    margin: 0;
+    display: block;
+    max-width: 100%;
+    //a flex item does not shrink below the width of its longest unbroken word unless it is allowed to,
+    //which would push the counter out of the line instead of wrapping the sentence next to it.
+    min-inline-size: 0;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(0.625) 0 0;
+    font-size: calc(var(--bit-tgi-fontsize) - #{spacing(0.25)});
+}
+
+//the count of the tags: the same size as the helper text, never wrapping, and pushed to the end of the
+//line when it stands on its own.
+.bit-tgi-cnr {
+    margin: 0;
+    flex-shrink: 0;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    margin-inline-start: auto;
+    box-sizing: border-box;
+    padding: spacing(0.625) 0 0;
+    font-variant-numeric: tabular-nums;
+    font-size: calc(var(--bit-tgi-fontsize) - #{spacing(0.25)});
+}
+
+//the announcement of an added, removed or rejected tag, and the sentence telling what the keyboard can
+//do with a tag: read out by screen readers, never drawn.
+.bit-tgi-lvr,
+.bit-tgi-vsh {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tgi-cnt {
@@ -73,26 +79,87 @@
     cursor: text;
     position: relative;
     align-items: center;
-    gap: spacing(0.375);
-    min-height: spacing(4.5);
-    padding: spacing(0.375) spacing(0.5);
-    border-radius: $shp-border-radius;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    gap: var(--bit-tgi-gap);
+    box-sizing: border-box;
+    min-height: var(--bit-tgi-minheight);
+    padding: var(--bit-tgi-padding);
+    border-radius: $shp-radius-control;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+}
+
+//the tags share the wrapping line of the container above rather than forming a box of their own, while
+//still carrying the list semantics that the role restores after display:contents strips it.
+.bit-tgi-tgs {
+    display: contents;
 }
 
 .bit-tgi-tag {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
+    box-sizing: border-box;
     gap: spacing(0.375);
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
-    border-radius: $shp-border-radius;
-    background-color: $clr-bg-sec;
-    color: $clr-fg-pri;
-    font-size: spacing(1.5);
+    border-radius: $shp-radius-chip;
+    //the rule is drawn in every tag variant, transparent where it is not painted, so that switching from
+    //a filled chip to an outlined one never moves the text in it by the width of a border.
+    //The three colors are read out of custom properties the tag variant sets rather than being painted by
+    //the variant itself, which keeps this rule as specific as a single class: a class of one's own, handed
+    //to a chip through Classes, GetTagClass or a scoped stylesheet, has to be able to repaint it.
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: var(--bit-tgi-tag-brd);
+    color: var(--bit-tgi-tag-clr);
+    background-color: var(--bit-tgi-tag-bg);
+    font-size: var(--bit-tgi-tagfontsize);
     max-width: 100%;
     overflow: hidden;
+
+    //an inset outline rather than the shared focus ring: the field around the tag is already wearing
+    //that ring (it holds the focus too, through :focus-within), and two of them drawn one inside the
+    //other read as noise. Drawing it inside the chip also keeps it off the tags standing next to it.
+    //It is drawn with the color of the text of the chip rather than with the accent, since on a filled
+    //chip the accent is what the ring would be drawn on top of.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
+//a chip that can be picked up says so under the pointer, and the one being dragged is faded out so that
+//the row reads as a gap waiting to be filled rather than as a chip in two places at once.
+.bit-tgi-tag[draggable="true"] {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.bit-tgi-tag-drg {
+    opacity: 0.4;
+}
+
+//the chip the dragged one would land on: an inset outline rather than a border, so that nothing in the
+//row moves by a pixel while the drag is hovering over it.
+.bit-tgi-tag-dro {
+    outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
+//the prefix and the suffix of the field: they sit on the line the tags and the input share rather than
+//in a box of their own, and they never shrink, a "to:" cut in half meaning nothing.
+.bit-tgi-pre,
+.bit-tgi-suf {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: border-box;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    line-height: spacing(2.25);
 }
 
 .bit-tgi-ttx {
@@ -102,7 +169,60 @@
     line-height: spacing(2.25);
 }
 
-.bit-tgi-dbt {
+//the little input that replaces a tag while it is being corrected in place: it borrows the type and the
+//colors of the chip around it, so the tag does not visibly change into something else while it is edited.
+//It sizes itself to the text it holds through a field-sizing where that is supported, and falls back to a
+//width wide enough for a short tag everywhere else.
+.bit-tgi-eip {
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    box-sizing: content-box;
+    background: none transparent;
+    width: spacing(8);
+    field-sizing: content;
+    min-width: spacing(4);
+    line-height: spacing(2.25);
+}
+
+//the chip standing for the tags folded away: it is drawn as one of them rather than as a button, since
+//that is what it takes the place of, but it is a real tab stop of its own.
+.bit-tgi-tgl {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    font: inherit;
+    line-height: spacing(2.25);
+    padding: spacing(0.125) spacing(0.5);
+    border-radius: $shp-radius-chip;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: var(--bit-tgi-tag-brd);
+    color: var(--bit-tgi-tag-clr);
+    background-color: var(--bit-tgi-tag-bg);
+    font-size: var(--bit-tgi-tagfontsize);
+    white-space: nowrap;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-tgi-tgl-clr-hover);
+            border-color: var(--bit-tgi-tgl-brd-hover);
+            background-color: var(--bit-tgi-tgl-bg-hover);
+        }
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+}
+
+.bit-tgi-dbt,
+.bit-tgi-cbt {
     padding: 0;
     border: none;
     display: flex;
@@ -112,17 +232,55 @@
     flex-shrink: 0;
     color: inherit;
     background-color: transparent;
-    font-size: spacing(1.25);
+    font-size: var(--bit-tgi-iconsize);
     line-height: 1;
+}
+
+//the dismiss button lives inside a chip that is painted with the color of the field, so it answers the
+//pointer by fading rather than by taking a foreground color of its own, which would be the one color the
+//chip is not wearing.
+.bit-tgi-dbt {
+    //the glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and the chip it sits
+    //in is too short to carry that height. It takes what the chip can give instead: the full height of
+    //the chip and a pad on either side of the glyph, which multiplies the target without spilling out
+    //of the chip onto the one next to it.
+    align-self: stretch;
+    padding-inline: spacing(0.375);
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-sec;
+            opacity: 0.75;
         }
+    }
+
+    //the same inset outline as the tag, and for the same reason: the field is already ringed.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
+        outline-offset: 0;
     }
 }
 
-.bit-tgi-dsi {
+//the clear button sits at the end of the field rather than inside a tag, so it keeps a little room
+//around itself and follows the secondary foreground until it is pointed at.
+.bit-tgi-cbt {
+    margin-inline-start: auto;
+    color: $clr-fg-sec;
+    padding-inline: spacing(0.25);
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri;
+        }
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline-offset: 0;
+    }
+}
+
+.bit-tgi-dsi,
+.bit-tgi-cli {
     font-size: inherit;
 }
 
@@ -133,9 +291,278 @@
     outline: none;
     padding: spacing(0.125) spacing(0.25);
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: inherit;
+    font-family: inherit;
     line-height: spacing(2.25);
     background: none transparent;
     color: $clr-fg-pri;
-    font-family: $tg-font-family;
+
+    &::placeholder {
+        color: $clr-fg-ter;
+    }
+}
+
+
+//Outline - the default: a full rule around the field, filled with the page surface.
+.bit-tgi-otl {
+    .bit-tgi-cnt {
+        border-color: $clr-brd-pri;
+        background-color: $clr-bg-pri;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+}
+
+//Fill: the field is painted with the secondary surface and carries no rule of its own.
+.bit-tgi-fil {
+    .bit-tgi-cnt {
+        border-color: transparent;
+        background-color: $clr-bg-sec;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            background-color: $clr-bg-sec-hover;
+        }
+    }
+}
+
+//Text: only an underline is painted, for a tags field that should not outweigh the content around it.
+.bit-tgi-txt {
+    .bit-tgi-cnt {
+        border-radius: 0;
+        border-color: $clr-brd-pri;
+        background-color: transparent;
+        border-width: 0 0 $shp-border-width 0;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+}
+
+.bit-tgi-nbd {
+    .bit-tgi-cnt {
+        border-color: transparent;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: transparent;
+        }
+    }
+}
+
+//The tags carry the color role of the field the way a BitTag does, which is what makes the role visible
+//at rest rather than only in the ring of a focused field. The three tag variants are the three of the
+//BitTag, and the ring the chips are focused with follows whichever of them is painting them: on a filled
+//chip it is the color the text is written in, everywhere else the color itself.
+
+//Fill - the default: the chip is filled with the color and written in the color's own text color.
+.bit-tgi-tgf {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr-txt);
+    --bit-tgi-tag-brd: var(--bit-tgi-clr);
+    --bit-tgi-tag-bg: var(--bit-tgi-clr);
+    --bit-tgi-tag-ring: var(--bit-tgi-clr-txt);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-txt);
+    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-bg-hover: var(--bit-tgi-clr-hover);
+}
+
+//Outline: the chip is left unfilled and the color is drawn as its rule and its text.
+.bit-tgi-tgo {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-brd: var(--bit-tgi-clr);
+    --bit-tgi-tag-bg: transparent;
+    --bit-tgi-tag-ring: var(--bit-tgi-clr);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-bg-hover: transparent;
+}
+
+//Text: only the text of the chip is painted, for tags that should not outweigh the field holding them.
+.bit-tgi-tgt {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-brd: transparent;
+    --bit-tgi-tag-bg: transparent;
+    --bit-tgi-tag-ring: var(--bit-tgi-clr);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-brd-hover: transparent;
+    --bit-tgi-tgl-bg-hover: transparent;
+}
+
+//a read-only field still takes the caret (the tags are read and copied out of it), but nothing in it can
+//be picked up or dropped, so the grab cursor of a draggable chip would be a promise it does not keep.
+.bit-tgi-rdl {
+    .bit-tgi-tag {
+        cursor: default;
+    }
+}
+
+.bit-tgi-req {
+    .bit-tgi-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+
+//the focus ring is declared after the variants on purpose: it is as specific as they are, so only the
+//source order keeps a focused field from being painted over by its variant colors. It follows the whole
+//field rather than the input alone, so that a tag reached with the arrow keys lights it up as well.
+.bit-tgi .bit-tgi-cnt:focus-within {
+    @include focus-ring(var(--bit-tgi-clr-focus));
+
+    border-color: var(--bit-tgi-clr);
+}
+
+.bit-tgi-txt .bit-tgi-cnt:focus-within {
+    @include focus-underline-ring(var(--bit-tgi-clr-focus));
+
+    border-color: var(--bit-tgi-clr);
+}
+
+.bit-tgi-nbd .bit-tgi-cnt:focus-within {
+    border-color: transparent;
+}
+
+.bit-tgi.bit-dis {
+    .bit-tgi-lbl,
+    .bit-tgi-dsc,
+    .bit-tgi-cnr,
+    .bit-tgi-pre,
+    .bit-tgi-suf {
+        color: $clr-fg-dis;
+    }
+
+    .bit-tgi-cnt {
+        cursor: default;
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+
+    //the tags are the content of a disabled field, so they are dimmed along with it instead of staying
+    //the one part of it that still reads as enabled.
+    .bit-tgi-tag,
+    .bit-tgi-tgl {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+
+    .bit-tgi-inp {
+        color: $clr-fg-dis;
+
+        &::placeholder {
+            color: $clr-fg-dis;
+        }
+    }
+}
+
+.bit-tgi.bit-inv {
+    //the helper text is what says why the tags were refused, so it reads as the message of the error
+    //state rather than as a hint standing next to it, and the failure is not carried by a color alone.
+    .bit-tgi-dsc {
+        color: $clr-err;
+    }
+
+    .bit-tgi-cnt {
+        border-color: $clr-err;
+
+        &:focus-within {
+            @include focus-ring($clr-err-focus);
+
+            border-color: $clr-err-focus;
+        }
+    }
+
+    &.bit-tgi-txt .bit-tgi-cnt:focus-within {
+        @include focus-underline-ring($clr-err-focus);
+
+        border-color: $clr-err-focus;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-err;
+        }
+    }
+}
+
+
+//Windows High Contrast strips the background and the border colors an author paints with, which takes
+//the tags of every variant down with them: they are drawn with a surface color and, in the Fill variant,
+//a rule that is invisible on purpose. Both are re-established with the system colors here.
+@media (forced-colors: active) {
+    .bit-tgi-fil .bit-tgi-cnt,
+    .bit-tgi-tag,
+    .bit-tgi-tgl {
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
+
+    .bit-tgi.bit-dis {
+        .bit-tgi-lbl,
+        .bit-tgi-dsc,
+        .bit-tgi-cnr,
+        .bit-tgi-inp,
+        .bit-tgi-tag,
+        .bit-tgi-tgl,
+        .bit-tgi-pre,
+        .bit-tgi-suf {
+            color: GrayText;
+        }
+
+        .bit-tgi-cnt,
+        .bit-tgi-tag,
+        .bit-tgi-tgl {
+            border-color: GrayText;
+        }
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tgi-#{$role} {
+        --bit-tgi-clr: #{role($tokens, main)};
+        --bit-tgi-clr-txt: #{role($tokens, on)};
+        --bit-tgi-clr-hover: #{role($tokens, hover)};
+        --bit-tgi-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+.bit-tgi-sm {
+    --bit-tgi-gap: #{spacing(0.25)};
+    --bit-tgi-fontsize: #{$tg-fs-xs};
+    --bit-tgi-iconsize: #{spacing(1.125)};
+    --bit-tgi-tagfontsize: #{$tg-fs-xs};
+    --bit-tgi-minheight: #{spacing(3.5)};
+    --bit-tgi-padding: #{spacing(0.25)} #{spacing(0.375)};
+}
+
+.bit-tgi-md {
+    --bit-tgi-gap: #{spacing(0.375)};
+    --bit-tgi-fontsize: #{$tg-fs-sm};
+    --bit-tgi-iconsize: #{spacing(1.25)};
+    --bit-tgi-tagfontsize: #{$tg-fs-xs};
+    --bit-tgi-minheight: #{spacing(4.5)};
+    --bit-tgi-padding: #{spacing(0.375)} #{spacing(0.5)};
+}
+
+.bit-tgi-lg {
+    --bit-tgi-gap: #{spacing(0.5)};
+    --bit-tgi-fontsize: #{$tg-fs-md};
+    --bit-tgi-iconsize: #{spacing(1.5)};
+    --bit-tgi-tagfontsize: #{$tg-fs-sm};
+    --bit-tgi-minheight: #{spacing(5.5)};
+    --bit-tgi-padding: #{spacing(0.5)} #{spacing(0.625)};
 }

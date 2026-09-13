@@ -1,14 +1,15 @@
 {
+    // [mirror] the Docker profile is kept in sync with:
+    // - src/Server/Boilerplate.Server.Api/Properties/launchSettings.json
     "profiles": {
         "Boilerplate.Server.Web": {
             "commandName": "Project",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "IN_APP_SCSS_COMPILER_ENABLED": "true"
+                "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         //#if (api == "Integrated")
         "Boilerplate.Server.Web-Scalar": {
@@ -19,7 +20,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         //#endif
         "Boilerplate.Server.Web-BlazorWebAssembly": {
@@ -27,12 +28,11 @@
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "WebAppRender:BlazorMode": "BlazorWebAssembly",
-                "IN_APP_SCSS_COMPILER_ENABLED": "true"
+                "WebAppRender:BlazorMode": "BlazorWebAssembly"
             },
             "dotnetRunMessages": true,
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         "WSL": {
             "commandName": "WSL2",
@@ -40,7 +40,7 @@
             "launchUrl": "http://localhost:5030/",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://*:5030"
+                "ASPNETCORE_URLS": "http://localhost:5030;http://*:5030"
             }
         },
         "Docker": {
@@ -48,9 +48,15 @@
             "launchBrowser": true,
             "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/",
             "environmentVariables": {
-                "ASPNETCORE_HTTP_PORTS": "5030",
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ConnectionStrings__sqlite": "Data Source=/container_volume/App_Data/BoilerplateDb.db;"
+                //#if (database == "Sqlite")
+                "ConnectionStrings__sqlite": "Data Source=/container_volume/App_Data/BoilerplateDb.db;",
+                //#else
+                // The appsettings default for this database points at the developer's own machine ((localdb) / localhost),
+                // which is not reachable from inside the container. Add the override this profile needs, for example
+                // "ConnectionStrings__mssqldb": "Data Source=host.docker.internal;...",
+                //#endif
+                "ASPNETCORE_HTTP_PORTS": "5030"
             },
             "DockerfileRunArguments": "-v C:\\DockerVolumes\\AC87AA5B-4B37-4E52-8468-2D5DF24AF256:/container_volume",
             "publishAllPorts": true,
@@ -61,16 +67,14 @@
             "commandName": "IISExpress",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "IN_APP_SCSS_COMPILER_ENABLED": "true"
+                "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
         "IIS": {
             "commandName": "IIS",
             "launchBrowser": true,
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "IN_APP_SCSS_COMPILER_ENABLED": "true"
+                "ASPNETCORE_ENVIRONMENT": "Development"
             }
         }
     },

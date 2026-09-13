@@ -4,7 +4,14 @@
 /// Represents icon information for rendering icons in Bit BlazorUI components.
 /// Supports both built-in Fluent UI icons and custom/external icon libraries.
 /// </summary>
-public class BitIconInfo
+/// <remarks>
+/// An icon set names its glyphs in one of two ways, and this type carries both: with CSS classes
+/// (<see cref="BaseClass"/>, <see cref="Prefix"/> and <see cref="Name"/>, which is how Fabric MDL2,
+/// FontAwesome and Bootstrap Icons work), or with a ligature written as the element's own text
+/// (<see cref="Content"/>, which is how Material Icons and Material Symbols work). The two combine:
+/// a ligature set still needs the class that selects its font family.
+/// </remarks>
+public class BitIconInfo : IEquatable<BitIconInfo>
 {
     /// <summary>
     /// Creates a new instance of <see cref="BitIconInfo"/>.
@@ -29,7 +36,7 @@ public class BitIconInfo
     /// The name of the icon or the CSS class for external icons.
     /// </param>
     /// <param name="baseClass">
-    /// The base CSS class for the icon. 
+    /// The base CSS class for the icon.
     /// Set to null or empty string for external icon libraries that don't need a base class.
     /// </param>
     /// <param name="prefix">
@@ -61,6 +68,26 @@ public class BitIconInfo
     /// </summary>
     public string? Prefix { get; set; }
 
+    /// <summary>
+    /// Gets or sets the text rendered inside the icon element - the ligature of a ligature-based icon set.
+    /// </summary>
+    /// <remarks>
+    /// Material Icons and Material Symbols name each glyph with a ligature written as the element's
+    /// text rather than with a class of its own, so those sets need this alongside the
+    /// <see cref="BaseClass"/> that selects the font family. Class-based sets leave it null.
+    /// <br />
+    /// Only a component that renders the icon's content puts this on the page - <see cref="BitIcon"/>
+    /// does. Everywhere the library draws a glyph of its own inside another control, only the classes
+    /// are rendered, so a ligature-based set has to be given to a <see cref="BitIcon"/>.
+    /// </remarks>
+    public string? Content { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this instance names no glyph at all - nothing to put in a class
+    /// attribute, and nothing to write as the element's text.
+    /// </summary>
+    public bool IsEmpty => Name.HasNoValue() && BaseClass.HasNoValue() && Content.HasNoValue();
+
 
 
     /// <summary>
@@ -69,7 +96,9 @@ public class BitIconInfo
     /// <returns>The complete CSS class string for the icon.</returns>
     public string GetCssClasses()
     {
-        if (Name.HasNoValue()) return string.Empty;
+        // A ligature set names its glyph in the element's text, so its family class stands on its own
+        // with no name behind it. Anything else with no name has no class to give.
+        if (Name.HasNoValue()) return BaseClass.HasValue() ? BaseClass! : string.Empty;
 
         if (BaseClass.HasNoValue() && Prefix.HasNoValue())
         {
@@ -175,6 +204,57 @@ public class BitIconInfo
     }
 
     /// <summary>
+    /// Creates a <see cref="BitIconInfo"/> for a Material Icons glyph.
+    /// </summary>
+    /// <param name="iconName">
+    /// The Material Icons ligature (e.g., "home", "arrow_forward").
+    /// </param>
+    /// <param name="style">
+    /// The Material Icons style - "outlined", "round", "sharp" or "two-tone".
+    /// Leave it null for the filled default.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="BitIconInfo"/> instance configured for Material Icons.
+    /// </returns>
+    /// <remarks>
+    /// Material Icons names each glyph with a ligature rather than with a class of its own, so the
+    /// name lands on <see cref="Content"/> and the classes carry nothing but the font family.
+    /// </remarks>
+    public static BitIconInfo Mi(string iconName, string? style = null)
+    {
+        return new BitIconInfo
+        {
+            Content = iconName,
+            BaseClass = style.HasValue() ? $"material-icons-{style}" : "material-icons"
+        };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="BitIconInfo"/> for a Material Symbols glyph.
+    /// </summary>
+    /// <param name="iconName">
+    /// The Material Symbols ligature (e.g., "home", "arrow_forward").
+    /// </param>
+    /// <param name="style">
+    /// The Material Symbols style - "outlined" (the default), "rounded" or "sharp".
+    /// </param>
+    /// <returns>
+    /// A new <see cref="BitIconInfo"/> instance configured for Material Symbols.
+    /// </returns>
+    /// <remarks>
+    /// Material Symbols names each glyph with a ligature rather than with a class of its own, so the
+    /// name lands on <see cref="Content"/> and the classes carry nothing but the font family.
+    /// </remarks>
+    public static BitIconInfo Ms(string iconName, string style = "outlined")
+    {
+        return new BitIconInfo
+        {
+            Content = iconName,
+            BaseClass = style.HasValue() ? $"material-symbols-{style}" : "material-symbols-outlined"
+        };
+    }
+
+    /// <summary>
     /// Resolves the effective icon from either a <see cref="BitIconInfo"/> or an icon name string.
     /// The <paramref name="icon"/> parameter takes precedence when both are provided.
     /// </summary>
@@ -190,13 +270,58 @@ public class BitIconInfo
     /// <remarks>
     /// This method is useful for components to unify the handling of
     /// the <c>Icon</c> and <c>IconName</c> parameters.
+    /// <br />
+    /// Precedence only means something while there is something to prefer: an instance that names no
+    /// glyph at all (<see cref="IsEmpty"/>) is no icon, so a name given beside it is still used
+    /// rather than silently dropped.
     /// </remarks>
     public static BitIconInfo? From(BitIconInfo? icon, string? iconName)
     {
-        if (icon is not null) return icon;
+        if (icon is not null && icon.IsEmpty is false) return icon;
 
-        if (iconName.HasNoValue()) return null;
+        if (iconName.HasNoValue()) return icon;
 
         return Bit(iconName!);
     }
+
+
+
+    /// <summary>
+    /// Determines whether the specified instance describes the same glyph as this one.
+    /// </summary>
+    /// <remarks>
+    /// Two descriptions of the same glyph are the same icon. Without this, every render that builds
+    /// an icon inline - the implicit conversion from a string, a call to one of the factories - hands
+    /// the component a brand new instance and makes it rebuild its class attribute for a value that
+    /// never changed.
+    /// </remarks>
+    /// <param name="other">
+    /// The instance to compare with this one.
+    /// </param>
+    /// <returns>
+    /// true when both describe the same glyph; otherwise, false.
+    /// </returns>
+    public bool Equals(BitIconInfo? other)
+    {
+        if (other is null) return false;
+
+        if (ReferenceEquals(this, other)) return true;
+
+        return string.Equals(Name, other.Name, StringComparison.Ordinal)
+            && string.Equals(BaseClass, other.BaseClass, StringComparison.Ordinal)
+            && string.Equals(Prefix, other.Prefix, StringComparison.Ordinal)
+            && string.Equals(Content, other.Content, StringComparison.Ordinal);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) => Equals(obj as BitIconInfo);
+
+    /// <inheritdoc />
+    public override int GetHashCode() => HashCode.Combine(Name, BaseClass, Prefix, Content);
+
+    /// <summary>
+    /// Returns the CSS classes this instance renders with.
+    /// </summary>
+    /// <returns>The value of <see cref="GetCssClasses"/>.</returns>
+    public override string ToString() => GetCssClasses();
 }

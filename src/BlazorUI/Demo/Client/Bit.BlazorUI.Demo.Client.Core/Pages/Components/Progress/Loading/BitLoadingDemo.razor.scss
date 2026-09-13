@@ -16,3 +16,36 @@
     min-width: rem2(176px);
     flex-direction: column;
 }
+
+// The classes the Style & Class example hands to the components themselves. They are written as
+// ::deep rules anchored on the plain wrappers above, because the scope attribute only ever lands on
+// elements written in this file - never on the root a component renders for a Class parameter.
+::deep .custom-class {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: darkslateblue;
+
+    .bit-ldn-rng-chl {
+        border-top-color: gold;
+    }
+
+    .bit-ldn-lbl {
+        color: gold;
+    }
+}
+
+::deep .custom-root {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: whitesmoke;
+}
+
+::deep .custom-child {
+    border-radius: 0;
+    background-color: seagreen;
+}
+
+::deep .custom-label {
+    color: seagreen;
+    font-weight: bold;
+}

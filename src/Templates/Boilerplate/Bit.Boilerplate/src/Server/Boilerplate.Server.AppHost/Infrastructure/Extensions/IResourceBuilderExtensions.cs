@@ -14,7 +14,9 @@ public static class IResourceBuilderExtensions
         ///     <item><strong>Workload:</strong> Vector Similarity Search + Re-ranking (requires sort memory).</item>
         /// </list>
         /// </summary>
-        /// <param name="totalContainerMemoryMB">Total RAM limit allocated to the container (Default: 4096MB).</param>
+        /// <param name="totalContainerMemoryMB">The amount of RAM the tuning below assumes the container has (Default: 4096MB).
+        /// It is applied as <c>--memory-reservation</c>, a soft reclaim protection - nothing caps the container at this
+        /// value, so match it to the memory your container runtime actually grants (Docker Desktop / .wslconfig).</param>
         public IResourceBuilder<PostgresServerResource> WithOptimizedSetup(int totalContainerMemoryMB = 4 * 1024)
         {
             // SAFETY MARGIN:

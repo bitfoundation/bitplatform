@@ -1,0 +1,41 @@
+@* Shared by the router's <NotFound> fragment (client-side navigation to an unknown route) and
+   by NotFoundPage (a deep link the server could not route). Both paths show the same page.
+
+   A dead end is the one page that has to offer a way out of itself: the three destinations below
+   cover why someone is here at all - a mistyped slug, a link into the catalogue, or an API name
+   they can search for. *@
+
+<div class="status-page">
+    <span class="status-code">404</span>
+
+    <h1>Page not found</h1>
+
+    <p class="page-lead">
+        There is nothing at this address. It may have been a typo, or a link to a page that has
+        since been renamed - the whole catalogue is one search away.
+    </p>
+
+    <div class="status-links">
+        <a class="status-link" href="">
+            <Icon Name="overview" Size="20" />
+            <span class="status-link-text">
+                <span class="status-link-title">Documentation home</span>
+                <span class="status-link-desc">Every API, grouped by area</span>
+            </span>
+        </a>
+        <a class="status-link" href="getting-started">
+            <Icon Name="bolt" Size="20" />
+            <span class="status-link-text">
+                <span class="status-link-title">Getting started</span>
+                <span class="status-link-desc">Install, register, call</span>
+            </span>
+        </a>
+        <a class="status-link" href="browser-support">
+            <Icon Name="shield" Size="20" />
+            <span class="status-link-text">
+                <span class="status-link-title">Browser support</span>
+                <span class="status-link-desc">The whole catalogue in one table</span>
+            </span>
+        </a>
+    </div>
+</div>

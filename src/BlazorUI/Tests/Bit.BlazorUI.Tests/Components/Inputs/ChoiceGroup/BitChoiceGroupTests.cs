@@ -141,7 +141,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Label, label);
         });
 
-        var bitChoiceGroupLabel = component.Find(".bit-chg label");
+        var bitChoiceGroupLabel = component.Find($"#{component.Find(".bit-chg").GetAttribute("aria-labelledby")}");
         Assert.IsTrue(bitChoiceGroupLabel.InnerHtml.Contains(label));
     }
 
@@ -156,7 +156,7 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelContent);
         });
 
-        var bitChoiceGroupLabelContent = component.Find(".bit-chg label").ChildNodes;
+        var bitChoiceGroupLabelContent = component.Find($"#{component.Find(".bit-chg").GetAttribute("aria-labelledby")}").ChildNodes;
         bitChoiceGroupLabelContent.MarkupMatches(labelContent);
     }
 
@@ -232,6 +232,110 @@ public class BitChoiceGroupTests : BunitTestContext
                 Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("display:none"));
                 break;
         }
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderFocusableInputs()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        Assert.AreEqual(4, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            Assert.IsFalse(input.HasAttribute("hidden"));
+            Assert.IsTrue(input.ClassList.Contains("bit-chg-inp"));
+            Assert.IsFalse(input.HasAttribute("tabindex"));
+        }
+    }
+
+    // A read-only group is not a disabled one: it stays reachable so the choice can still be read with the
+    // keyboard and a screen reader, and it keeps submitting its value. What makes it read-only is that the
+    // activation is cancelled, which is covered by BitChoiceGroupShouldNotChangeTheValueWhenReadOnly.
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepInputsReachableAndEnabledWhenReadOnly()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        foreach (var input in inputs)
+        {
+            Assert.IsFalse(input.HasAttribute("tabindex"));
+        }
+
+        // Read-only must not disable anything by itself; the one disabled input here is the item that
+        // opts out through its own IsEnabled, which read-only has nothing to do with.
+        Assert.AreEqual(1, inputs.Count(i => i.HasAttribute("disabled")));
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+        Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-readonly"));
+        Assert.IsFalse(bitChoiceGroup.HasAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderMultipleDescriptions()
+    {
+        var items = new List<BitChoiceGroupItem<string>>()
+        {
+            new() { Text = "Item A", Value = "A", Description = "Description A" },
+            new() { Text = "Item B", Value = "B" },
+            new() { Text = "Item C", Value = "C", Description = "Description C" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var descriptions = component.FindAll(".bit-chg-dsc");
+
+        Assert.AreEqual(2, descriptions.Count);
+        Assert.AreEqual("Description A", descriptions[0].TextContent);
+        Assert.AreEqual("Description C", descriptions[1].TextContent);
+        Assert.AreNotEqual(descriptions[0].Id, descriptions[1].Id);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldTakeCustomGap()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Gap, "2rem");
+        });
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+
+        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-item-gap:2rem"));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitChoiceGroupShouldTakeCorrectGroupAria(bool horizontal)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Horizontal, horizontal);
+        });
+
+        var bitChoiceGroup = component.Find(".bit-chg");
+
+        Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-required"));
+        Assert.AreEqual(horizontal ? "horizontal" : "vertical", bitChoiceGroup.GetAttribute("aria-orientation"));
     }
 
     private List<BitChoiceGroupItem<string>> GetChoiceGroupItems()

@@ -1,3 +1,5 @@
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
 .toolbar {
     gap: 0.5rem;
     display: flex;
@@ -12,7 +14,7 @@
     padding: 0 1rem;
     align-items: center;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--bit-clr-brd-sec);
+    border-bottom: 1px solid $bit-color-border-secondary;
 }
 
 .provider-item {
@@ -22,18 +24,18 @@
     flex-direction: column;
     justify-content: center;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--bit-clr-brd-sec);
+    border-bottom: 1px solid $bit-color-border-secondary;
 }
 
 .post {
     padding: 1rem;
-    border-bottom: 1px solid var(--bit-clr-brd-sec);
+    border-bottom: 1px solid $bit-color-border-secondary;
 }
 
 .post-header {
     font-size: 0.75rem;
     margin-bottom: 0.25rem;
-    color: var(--bit-clr-fg-sec);
+    color: $bit-color-foreground-secondary;
 }
 
 .tile {
@@ -44,7 +46,7 @@
     justify-content: center;
     box-sizing: border-box;
     height: calc(100% - 1rem);
-    border: 1px solid var(--bit-clr-brd-sec);
+    border: 1px solid $bit-color-border-secondary;
 }
 
 .group-header {
@@ -54,7 +56,7 @@
     padding: 0.5rem 1rem;
     align-items: center;
     box-sizing: border-box;
-    background-color: var(--bit-clr-bg-sec);
+    background-color: $bit-color-background-secondary;
 }
 
 .contact {
@@ -64,7 +66,7 @@
     flex-direction: column;
     justify-content: center;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--bit-clr-brd-sec);
+    border-bottom: 1px solid $bit-color-border-secondary;
 }
 
 .message {
@@ -80,12 +82,12 @@
         max-width: 70%;
         padding: 0.5rem 1rem;
         border-radius: 1rem;
-        background-color: var(--bit-clr-bg-sec);
+        background-color: $bit-color-background-secondary;
     }
 
     &.mine .bubble {
-        color: var(--bit-clr-pri-text);
-        background-color: var(--bit-clr-pri);
+        color: $bit-color-primary-text;
+        background-color: $bit-color-primary;
     }
 }
 
@@ -99,11 +101,11 @@
     .list,
     .chat-list {
         height: 25rem;
-        border: 1px solid var(--bit-clr-brd-sec);
+        border: 1px solid $bit-color-border-secondary;
     }
 
     .horizontal-list {
         height: 9rem;
-        border: 1px solid var(--bit-clr-brd-sec);
+        border: 1px solid $bit-color-border-secondary;
     }
 }

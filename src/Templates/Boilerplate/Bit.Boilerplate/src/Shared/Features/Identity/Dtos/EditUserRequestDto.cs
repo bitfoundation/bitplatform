@@ -8,7 +8,7 @@ public partial class EditUserRequestDto
     public string? FullName { get; set; }
 
     [Display(Name = nameof(AppStrings.Gender))]
-    public Gender Gender { get; set; }
+    public Gender? Gender { get; set; }
 
     [Display(Name = nameof(AppStrings.BirthDate))]
     public DateTimeOffset? BirthDate { get; set; }

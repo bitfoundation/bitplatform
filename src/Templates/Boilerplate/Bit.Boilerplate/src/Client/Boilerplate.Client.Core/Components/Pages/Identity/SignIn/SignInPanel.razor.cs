@@ -1,7 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-using Microsoft.AspNetCore.Components.Routing;
-
 namespace Boilerplate.Client.Core.Components.Pages.Identity.SignIn;
 
 public partial class SignInPanel
@@ -18,16 +14,18 @@ public partial class SignInPanel
     private SignInPanelType internalSignInPanelType;
     private readonly SignInRequestDto model = new();
     private AppDataAnnotationsValidator? validatorRef;
-    private string GetReturnUrl() => ReturnUrl ?? ReturnUrlQueryString ?? PageUrls.Home;
+    private string GetSafeReturnUrl()
+    {
+        var returnUrl = ReturnUrl ?? ReturnUrlQueryString;
+
+        return Uri.IsAppRelativeUrl(returnUrl, requireLeadingSlash: false) ? returnUrl : PageUrls.Home;
+    }
 
     [Parameter]
     public string? ReturnUrl { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "return-url")]
     public string? ReturnUrlQueryString { get; set; }
-
-    [Parameter, SupplyParameterFromQuery(Name = "userName")]
-    public string? UserNameQueryString { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "email")]
     public string? EmailQueryString { get; set; }
@@ -56,24 +54,28 @@ public partial class SignInPanel
 
         internalSignInPanelType = SignInPanelType;
 
-        model.UserName = UserNameQueryString;
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
 
-        if (string.IsNullOrEmpty(OtpQueryString) is false)
+        if (string.IsNullOrWhiteSpace(OtpQueryString) is false)
         {
             model.Otp = OtpQueryString;
 
             if (InPrerenderSession is false &&
-                (string.IsNullOrEmpty(model.UserName) is false ||
-                 string.IsNullOrEmpty(model.Email) is false ||
-                 string.IsNullOrEmpty(model.PhoneNumber) is false))
+                (string.IsNullOrWhiteSpace(model.Email) is false ||
+                 string.IsNullOrWhiteSpace(model.PhoneNumber) is false))
             {
                 await DoSignIn();
+
+                // The one-time code is spent, whether or not it worked. It has no input of its own while the
+                // panel is in its password/magic-link layout, so anything left here would be invisible to the
+                // user and would still make the next submit an OTP sign-in: the server picks the credential
+                // type from this field alone (IdentityController.SignIn -> isOtpSignIn).
+                model.Otp = null;
             }
         }
 
-        if (string.IsNullOrEmpty(ErrorQueryString) is false)
+        if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
             SnackBarService.Error(ErrorQueryString);
         }
@@ -90,6 +92,8 @@ public partial class SignInPanel
         args.PreventNavigation();
 
         webAuthnAssertion = null;
+
+        isNewUser = false;
 
         isOtpSent = false;
         model.Otp = null;
@@ -141,7 +145,7 @@ public partial class SignInPanel
 
                 if (isNewUser is false)
                 {
-                    model.ReturnUrl = GetReturnUrl();
+                    model.ReturnUrl = GetSafeReturnUrl();
 
                     requiresTwoFactor = await AuthManager.SignIn(model, CurrentCancellationToken);
 
@@ -149,26 +153,11 @@ public partial class SignInPanel
                 else
                 {
                     // Check out SignInModalService for more details
-                    if (string.IsNullOrEmpty(model.Email) is false)
-                    {
-                        var signInResponse = await identityController.ConfirmEmail(new()
-                        {
-                            Token = model.Otp,
-                            Email = model.Email
-                        }, CurrentCancellationToken);
+                    var signInResponse = string.IsNullOrWhiteSpace(model.Email) is false
+                        ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
+                        : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
-                        await AuthManager.StoreTokens(signInResponse, true);
-                    }
-                    else
-                    {
-                        var signInResponse = await identityController.ConfirmPhone(new()
-                        {
-                            Token = model.Otp,
-                            PhoneNumber = model.PhoneNumber
-                        }, CurrentCancellationToken);
-
-                        await AuthManager.StoreTokens(signInResponse, true);
-                    }
+                    await AuthManager.StoreTokens(signInResponse, model.RememberMe);
                 }
 
                 if (requiresTwoFactor is false)
@@ -185,7 +174,7 @@ public partial class SignInPanel
                 }
                 else
                 {
-                    NavigationManager.NavigateTo(GetReturnUrl(), replace: true);
+                    NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
                 }
             }
         }
@@ -213,24 +202,23 @@ public partial class SignInPanel
             pubSubUnsubscribe?.Invoke();
             pubSubUnsubscribe = PubSubService.Subscribe(ClientAppMessages.EXTERNAL_SIGN_IN_CALLBACK, async (uriString) =>
             {
-                // Check out SignInModalService for more details
-                var uri = uriString!.ToString();
-                var queryIndex = uri!.IndexOf('?');
+                var uri = uriString?.ToString();
+                if (Uri.IsAppRelativeUrl(uri) is false) return;
+
+                var queryIndex = uri.IndexOf('?');
+                if (queryIndex < 0) return; // No query string means nothing to apply; `uri[-1..]` would throw.
                 var queryParams = AppQueryStringCollection.Parse(uri[queryIndex..]);
 
-                string? GetValue(object? value)
+                static string? GetValue(object? value)
                 {
                     var valueAsString = value?.ToString();
 
-                    if (string.IsNullOrEmpty(valueAsString)) return null;
-
-                    return Uri.UnescapeDataString(valueAsString);
+                    return string.IsNullOrWhiteSpace(valueAsString) ? null : valueAsString;
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);
-                ReturnUrlQueryString = GetValue(returnUrl ?? PageUrls.Home);
-                queryParams.TryGetValue("userName", out var userName);
-                UserNameQueryString = GetValue(userName);
+                var returnUrlValue = GetValue(returnUrl);
+                ReturnUrlQueryString = Uri.IsAppRelativeUrl(returnUrlValue, requireLeadingSlash: false) ? returnUrlValue : PageUrls.Home;
                 queryParams.TryGetValue("email", out var email);
                 EmailQueryString = GetValue(email);
                 queryParams.TryGetValue("phoneNumber", out var phoneNumber);
@@ -245,7 +233,7 @@ public partial class SignInPanel
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetSafeReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }
@@ -319,9 +307,9 @@ public partial class SignInPanel
                 return;
             }
 
-            var request = new IdentityRequestDto { UserName = model.UserName, Email = model.Email, PhoneNumber = model.PhoneNumber };
+            var request = new IdentityRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
 
-            await identityController.SendOtp(request, GetReturnUrl(), CurrentCancellationToken);
+            await identityController.SendOtp(request, GetSafeReturnUrl(), CurrentCancellationToken);
 
             isOtpSent = true;
         }

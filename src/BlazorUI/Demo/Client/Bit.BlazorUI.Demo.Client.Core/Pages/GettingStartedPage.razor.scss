@@ -1,0 +1,230 @@
+@import '../Styles/abstracts/_docs.scss';
+
+// The three things you need before step 1. A short row of peers that are read rather than clicked,
+// so it borrows the Overview page's card exactly - a reader arriving from there should not notice
+// they have changed page.
+.req-grid {
+    display: grid;
+    gap: $doc-space-sm;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @include lt-lg {
+        grid-template-columns: 1fr;
+    }
+}
+
+.req {
+    display: flex;
+    min-width: 0;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+
+    @include doc-surface;
+}
+
+.req-title {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+    color: $bit-color-foreground-primary;
+}
+
+.req-text {
+    line-height: 1.5;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}
+
+
+// The two lookup tables on the page - which optional package to add, and which host file to open.
+// Real tables, because both answer "given this, what is that", and the docs layer gives a bare
+// <table> no borders of its own.
+.gs-table {
+    width: 100%;
+    text-align: start;
+    border-collapse: collapse;
+    font-size: $bit-typography-fs-xs;
+
+    @include doc-surface;
+
+    th, td {
+        text-align: start;
+        line-height: 1.6;
+        vertical-align: top;
+        padding: $doc-space-2xs $doc-space-sm;
+    }
+
+    thead th {
+        color: $bit-color-foreground-tertiary;
+        font-size: $bit-typography-fs-2xs;
+        font-weight: $bit-typography-fw-semibold;
+        letter-spacing: rem2(1px);
+        text-transform: uppercase;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    // The left column is the thing being looked up - a package name, a hosting model - so it is set
+    // in the foreground color, and holds its line rather than wrapping away from the row it labels.
+    tbody th {
+        white-space: nowrap;
+        color: $bit-color-foreground-primary;
+        font-weight: $bit-typography-fw-semibold;
+    }
+
+    tbody td {
+        color: $bit-color-foreground-secondary;
+    }
+
+    tbody tr + tr th,
+    tbody tr + tr td {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    // On a phone there is no width left to hold that line with, and a wrapped package name still
+    // beats a row squeezed to one word per line.
+    @include xs {
+        tbody th {
+            white-space: normal;
+        }
+    }
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+
+// Step 5's payoff: the components from the code box above, rendered by the library the reader has
+// just installed, on whichever preset and scheme they have the site set to. A screenshot cannot do
+// that, which is the whole reason this panel exists rather than a picture of one.
+.gs-preview {
+    overflow: hidden;
+
+    @include doc-surface;
+}
+
+.gs-preview-head {
+    display: flex;
+    flex-flow: row wrap;
+    gap: $doc-space-2xs;
+    align-items: baseline;
+    padding: $doc-space-2xs $doc-space-sm;
+    background-color: $bit-color-background-secondary;
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+}
+
+.gs-preview-label {
+    @include doc-eyebrow;
+}
+
+.gs-preview-note {
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-tertiary;
+}
+
+// The controls are the subject here, so they get room and a baseline of their own rather than the
+// prose rhythm around them.
+.gs-preview-body {
+    display: flex;
+    flex-flow: row wrap;
+    gap: $doc-space-sm;
+    padding: $doc-space-md;
+    align-items: flex-end;
+
+    @include xs {
+        flex-flow: column nowrap;
+        align-items: stretch;
+    }
+}
+
+
+// Symptom, then cause and fix. Hairline-separated rows in one surface rather than a grid of cards:
+// a reader scanning this is looking for their own line, and cards would invite reading all seven.
+.trouble-list {
+    overflow: hidden;
+
+    @include doc-surface;
+}
+
+.trouble {
+    display: flex;
+    gap: rem2(4px);
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+
+    & + & {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+}
+
+.trouble-symptom {
+    margin: 0;
+    line-height: 1.5;
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+    color: $bit-color-foreground-primary;
+}
+
+.trouble-fix {
+    margin: 0;
+    line-height: 1.6;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+
+// Where to go once the install is behind you.
+.next-grid {
+    display: grid;
+    gap: $doc-space-sm;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(240px), 1fr));
+}
+
+.next {
+    display: flex;
+    min-width: 0;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+    text-decoration: none;
+    padding: $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface;
+    @include doc-surface-interactive;
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+.next-title {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.next-text {
+    line-height: 1.5;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}
+
+
+// The glyphs are BitIcons, so their elements never carry this file's scope attribute - the rule has
+// to descend from a card written here.
+.req ::deep .req-icon,
+.next ::deep .next-icon {
+    font-size: rem2(20px);
+    margin-bottom: $doc-space-3xs;
+}
+
+// The site's prose rhythm (.doc-prose > * + *) is a global rule that stops at a section's own
+// children, and a pivot panel is several levels below one. What the panel holds is the same
+// paragraph-then-code pair the section holds directly, so it takes the same air - reached through
+// ::deep because a CodeBox renders its own root, which this file's scope attribute never lands on.
+.gs-doc ::deep .gs-stack > * + * {
+    margin-top: $doc-space-sm;
+}

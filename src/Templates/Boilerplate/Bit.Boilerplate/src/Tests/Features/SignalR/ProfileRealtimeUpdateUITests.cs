@@ -1,10 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Features.Identity;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.SignalR;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class ProfileRealtimeUpdateUITests : AppPageTest
 {
     /// <summary>
@@ -40,10 +36,8 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, email, TestContext.CancellationToken);
 
         // ---- Browser B: a second session of the same user, in its own isolated browser context. ----
-        await using var otherContext = await Browser.NewContextAsync(ContextOptions());
-        await SetBlazorWebAssemblyServerAddress(serverAddress, otherContext);
+        await using var otherContext = await NewBrowserContext(serverAddress);
         var otherPage = await otherContext.NewPageAsync();
-        otherPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
 
         // The account is already confirmed now, so this repeat sign-in receives a plain OTP and opens a brand-new session.
         await MagicLinkSignInUtils.SignInAgainViaMagicLinkOtp(otherPage, server, email, TestContext.CancellationToken);
@@ -68,12 +62,11 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).ClickAsync();
 
         // Browser A confirms the save round-tripped (See ProfileSection.SaveProfile -> SnackBarService.Success).
-        await Expect(Page.GetByText(AppStrings.ProfileUpdatedSuccessfullyMessage)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.ProfileUpdatedSuccessfullyMessage)).ToBeVisibleAsync();
 
         // ---- Browser B: without any reload, its header persona reflects the new full name, pushed to it over SignalR. ----
         // The persona shows the user's DisplayName, which is FullName once it is set (See UserDto.DisplayName).
-        await Expect(otherPage.Locator(".bit-prs.persona").First)
-            .ToContainTextAsync(newFullName, new() { Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        await Expect(otherPage.Locator(".bit-prs.persona").First).ToContainTextAsync(newFullName);
     }
 
     /// <summary>

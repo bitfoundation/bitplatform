@@ -3,7 +3,6 @@
 using Boilerplate.Server.Api.Infrastructure.Data;
 //#endif
 using Boilerplate.Server.Web.Infrastructure.Services;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Server.Web;
 
@@ -47,7 +46,7 @@ public static partial class Program
 
         //-:cnd:noEmit
 #if Development
-        _ = ScssCompilerService.WatchScssFiles(app);
+        await FileWatcherService.StartAsync(app);
 #endif
         //+:cnd:noEmit
 
@@ -62,7 +61,7 @@ public static partial class Program
             scope.ServiceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
-            }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+            }, displayKind: ExceptionDisplayKind.None);
         }
         else
         {

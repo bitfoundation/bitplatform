@@ -24,6 +24,7 @@ namespace Bit.Butil;
 // dispatches the [JSInvokable] callbacks, never the JSON generic, and it keeps its own RUC/RDC attributes
 // so a trimming/AOT consumer is still warned at the real call site. Scoped to this type (not assembly-wide).
 [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
+[ButilService(typeof(BroadcastChannel))]
 public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
 {
     internal const string MessageMethodName = nameof(InvokeBroadcastChannelMessage);
@@ -96,6 +97,7 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Closes every channel opened through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

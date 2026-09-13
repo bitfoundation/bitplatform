@@ -1,9 +1,9 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 .bit-chg {
     display: flex;
     gap: spacing(1);
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     width: fit-content;
     padding: spacing(1);
     flex-direction: column;
@@ -13,17 +13,27 @@
     --bit-chg-flex-flow: column nowrap;
     --bit-chg-justify-content: flex-start;
 
+    // Wins over the "fit-content" above through the extra class, so the declaration order
+    // of the two rules in this file cannot silently decide which width applies.
+    &.bit-chg-flw {
+        width: 100%;
+    }
+
     &.bit-chg-req {
         .bit-chg-lbl {
             &::after {
                 content: " *";
                 color: $clr-req;
-                padding-right: spacing(1.5);
+                padding-inline-end: spacing(1.5);
             }
         }
     }
 
     &.bit-inv {
+        .bit-chg-inp:focus-visible + .bit-chg-itl {
+            @include focus-ring($clr-err-focus);
+        }
+
         .bit-chg-rad {
             color: $clr-err;
             border-color: $clr-err;
@@ -43,9 +53,17 @@
 .bit-chg-lbl {
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     overflow-wrap: break-word;
+}
+
+.bit-chg-gds {
+    display: block;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-cnt {
@@ -58,15 +76,55 @@
     --bit-chg-flex-flow: row wrap;
 }
 
-.bit-chg-rvs {
+// Fills the container instead of hugging the widest item. In the horizontal layout the items also share
+// the width equally, so the group reads as a set of evenly distributed options rather than a left aligned
+// row trailed by empty space. "min-width: fit-content" keeps an item from being squeezed below its own
+// content, so a long item pushes the row to wrap instead of collapsing every item into a narrow column.
+.bit-chg-flw {
+    .bit-chg-cnt {
+        width: 100%;
+    }
+
+    &.bit-chg-hor {
+        .bit-chg-icn {
+            flex: 1 1 0;
+            min-width: fit-content;
+        }
+    }
+}
+
+// The position of the content of an item relative to its radio circle. The markup order inside an item
+// label is [prefix, circle, content, suffix], so each position is just the flex-direction that puts the
+// content on the requested side of the circle. These are custom properties rather than a direct
+// "flex-direction" declaration on purpose: the tile layout of an image or icon item (.bit-chg-ili)
+// overrides flex-direction at a single class of specificity, and a descendant selector here would beat
+// it and break the tile.
+.bit-chg-led {
+    --bit-chg-flex-direction: row;
+    --bit-chg-justify-content: flex-start;
+}
+
+// Start also pushes the items to the end of the group, so that in the vertical layout the circles line up
+// in a single column at the far edge instead of drifting with the width of each item's content.
+.bit-chg-lst {
     --bit-chg-justify-content: flex-end;
     --bit-chg-flex-direction: row-reverse;
+}
+
+.bit-chg-ltp {
+    --bit-chg-justify-content: flex-start;
+    --bit-chg-flex-direction: column-reverse;
+}
+
+.bit-chg-lbm {
+    --bit-chg-flex-direction: column;
+    --bit-chg-justify-content: flex-start;
 }
 
 .bit-chg-icn {
     border: none;
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     align-items: center;
     box-sizing: border-box;
@@ -100,23 +158,28 @@
         transform: translateY(-50%);
         width: var(--bit-chg-circle-size);
         border: $shp-border-width $shp-border-style $clr-brd-pri;
-        transition: border-color 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        transition: border-color $mot-duration $mot-easing;
     }
 
+    // Centered with "inset:0 + margin:auto" rather than an inset/translate pair, which would disagree in
+    // RTL: a logical inset flips side there while a physical translate does not, so the two would compound
+    // and push the dot off center by half its width instead of cancelling out.
+    // The dot has its own size (rather than being derived as half the circle) so that the space left over
+    // around it is always an even number of pixels. Halving an odd leftover would put the dot on a half
+    // pixel while the ring stays on the pixel grid, which reads as an off center dot at the small and
+    // large sizes; only the medium size happens to divide evenly.
     &::after {
-        top: 50%;
+        inset: 0;
         opacity: 0;
         content: "";
-        aspect-ratio: 1;
+        margin: auto;
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        inset-inline-start: 50%;
-        transform: translate(-50%, -50%);
         background-color: $clr-fg-sec-hover;
-        transition-property: background-color;
-        width: calc(var(--bit-chg-circle-size) / 2);
-        transition: border-width 0.2s cubic-bezier(0.4, 0, 0.23, 1);
+        width: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
+        height: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
+        transition: opacity $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
     }
 
     @media (hover: hover) {
@@ -132,12 +195,50 @@
     }
 }
 
+// The input is visually hidden but stays focusable, so the browser provides the full native radio
+// group keyboard interaction (a single tab stop landing on the checked item, arrow keys moving the
+// selection with wrapping and RTL awareness, and Space checking the focused item).
+.bit-chg-inp {
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    border: none;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: none;
+    clip-path: inset(50%);
+}
+
+// The input carries the focus but is visually hidden, so the ring is rendered on the label it labels.
+// Every item label carries .bit-chg-itl and the tile layout only adds .bit-chg-ili on top of it, so the
+// single rule here covers both the plain and the tile item without them stacking two rings on each other.
+.bit-chg-inp:focus-visible + .bit-chg-itl {
+    @include focus-ring(var(--bit-chg-clr-focus));
+}
+
 .bit-chg-itl {
     display: flex;
     cursor: pointer;
     gap: spacing(0.75);
     align-items: center;
+
+    // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
+    // border radius) is rounded on a plain item too instead of only on a tile.
+    border-radius: $shp-radius-control;
     flex-direction: var(--bit-chg-flex-direction);
+}
+
+.bit-chg-txd {
+    display: flex;
+    flex-direction: column;
+}
+
+.bit-chg-dsc {
+    display: block;
+    color: $clr-fg-sec;
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-ili {
@@ -153,14 +254,15 @@
     box-sizing: content-box;
     justify-content: center;
     min-height: spacing(2.5);
-    transition: all 0.2s ease;
+    transition: all $mot-duration $mot-easing;
+    border-radius: $shp-radius-control;
     padding-block-start: spacing(2.75);
     border: $shp-border-width $shp-border-style transparent;
 
     .bit-chg-rad {
         position: absolute;
         top: calc(var(--bit-chg-circle-size) / 4);
-        right: calc(var(--bit-chg-circle-size) / 4);
+        inset-inline-end: calc(var(--bit-chg-circle-size) / 4);
 
         &::before {
             opacity: 0;
@@ -180,19 +282,19 @@
     }
 }
 
-.bit-chg-ncr {
-}
-
 .bit-chg-itx {
     display: inline-block;
 }
 
+// A minimum rather than a fixed height: it still reserves the two lines the tile layout is designed
+// around (so a row of tiles keeps a common baseline), but a longer text or a description grows the tile
+// instead of being silently cut off by the overflow below.
 .bit-chg-itw {
     display: block;
     overflow: hidden;
-    font-weight: 400;
-    height: spacing(4);
+    font-weight: $tg-fw-regular;
     position: relative;
+    min-height: spacing(4);
     max-width: spacing(8);
     white-space: pre-wrap;
     line-height: spacing(1.875);
@@ -206,7 +308,7 @@
 
 .bit-chg-iic {
     padding: 0 spacing(3.75);
-    transition: opacity 0.2s ease;
+    transition: opacity $mot-duration $mot-easing;
 
     .bit-chg-iiw {
         border-style: none;
@@ -231,7 +333,6 @@
 .bit-chg-ico {
     speak: none;
     display: inline-block;
-    //width: var(--bit-chg-ico-size);
 }
 
 .bit-chg-inl {
@@ -248,10 +349,6 @@
     .bit-chg-icw {
         padding: 0;
         font-size: calc(var(--bit-chg-fontsize) + spacing(0.25));
-    }
-
-    .bit-chg-ico {
-        //width: unset;
     }
 }
 
@@ -301,7 +398,57 @@
     }
 
     .bit-chg-itx {
-        font-weight: bold;
+        font-weight: $tg-fw-bold;
+    }
+}
+
+// Read-only keeps the enabled colors (it is not a disabled group) but drops every affordance that
+// promises the value can be changed: the pointer cursor and the hover feedback of the circle and the tile.
+.bit-chg-rdo {
+    .bit-chg-itl,
+    .bit-chg-ili {
+        cursor: default;
+    }
+
+    @media (hover: hover) {
+        // An unchecked item must not preview a selection that cannot be made, so its hover is reset
+        // to the resting look: no dot, no highlighted ring and no tile border.
+        .bit-chg-icn:not(.bit-chg-ich) {
+            .bit-chg-rad:hover {
+                &::before {
+                    border-color: $clr-brd-pri;
+                }
+
+                &::after {
+                    opacity: 0;
+                }
+            }
+
+            .bit-chg-ili:hover {
+                border-color: transparent;
+
+                .bit-chg-rad::before {
+                    opacity: 0;
+                }
+            }
+        }
+
+        // The checked item keeps its dot and its border, they just stop brightening on hover.
+        .bit-chg-ich {
+            .bit-chg-rad:hover {
+                &::before {
+                    border-color: var(--bit-chg-clr);
+                }
+
+                &::after {
+                    background-color: var(--bit-chg-clr);
+                }
+            }
+
+            .bit-chg-ili:hover {
+                border-color: var(--bit-chg-clr);
+            }
+        }
     }
 }
 
@@ -309,21 +456,21 @@
     .bit-chg-rad {
         cursor: default;
         pointer-events: none;
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
 
         &::before {
-            border-color: $clr-brd-dis;
+            border-color: var(--bit-chg-clr-dis);
         }
 
         &::after {
-            background-color: $clr-bg-dis;
+            background-color: var(--bit-chg-clr-dis);
         }
     }
 
     .bit-chg-ili {
         cursor: default;
         border-color: transparent;
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
 
         @media (hover: hover) {
             &:hover {
@@ -333,155 +480,202 @@
     }
 
     .bit-chg-icw {
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
     }
 
     .bit-chg-ico {
-        color: $clr-fg-dis;
+        color: var(--bit-chg-clr-dis-text);
+    }
+
+    .bit-chg-dsc {
+        color: var(--bit-chg-clr-dis-text);
     }
 }
 
+// Per-role color blocks - intentionally hand-written, NOT an @each loop over $bit-color-roles.
+// Like BitCheckbox, BitChoiceGroup diverges from the shared role vocabulary: the semantic roles
+// pin fixed neutral chrome (--bit-chg-clr-bg -> bg-sec) rather than
+// role slots, and the surface tiers use the matching-tier contrast (sfg -> bg-sec, not the map's
+// `on` = bg-pri). Looping over role($tokens, on) would recolor the secondary/tertiary surface
+// roles - a visual regression. Keep them explicit. (See BitCheckbox for the same rationale.)
 .bit-chg-pri {
     --bit-chg-clr: #{$clr-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-pri-hover};
+    --bit-chg-clr-dis: #{$clr-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-pri-focus};
 }
 
 .bit-chg-sec {
     --bit-chg-clr: #{$clr-sec};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-sec-hover};
+    --bit-chg-clr-dis: #{$clr-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-sec-focus};
 }
 
 .bit-chg-ter {
     --bit-chg-clr: #{$clr-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-ter-hover};
+    --bit-chg-clr-dis: #{$clr-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-ter-focus};
 }
 
 .bit-chg-inf {
     --bit-chg-clr: #{$clr-inf};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-inf};
     --bit-chg-clr-hover: #{$clr-inf-hover};
+    --bit-chg-clr-dis: #{$clr-inf-dis};
+    --bit-chg-clr-dis-text: #{$clr-inf-dis-text};
+    --bit-chg-clr-focus: #{$clr-inf-focus};
 }
 
 .bit-chg-suc {
     --bit-chg-clr: #{$clr-suc};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-suc};
     --bit-chg-clr-hover: #{$clr-suc-hover};
+    --bit-chg-clr-dis: #{$clr-suc-dis};
+    --bit-chg-clr-dis-text: #{$clr-suc-dis-text};
+    --bit-chg-clr-focus: #{$clr-suc-focus};
 }
 
 .bit-chg-wrn {
     --bit-chg-clr: #{$clr-wrn};
-    --bit-chg-clr-brd: #{$clr-wrn};
     --bit-chg-clr-hover: #{$clr-wrn-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-wrn-dis};
+    --bit-chg-clr-dis-text: #{$clr-wrn-dis-text};
+    --bit-chg-clr-focus: #{$clr-wrn-focus};
 }
 
 .bit-chg-swr {
     --bit-chg-clr: #{$clr-swr};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-swr};
     --bit-chg-clr-hover: #{$clr-swr-hover};
+    --bit-chg-clr-dis: #{$clr-swr-dis};
+    --bit-chg-clr-dis-text: #{$clr-swr-dis-text};
+    --bit-chg-clr-focus: #{$clr-swr-focus};
 }
 
 .bit-chg-err {
     --bit-chg-clr: #{$clr-err};
-    --bit-chg-clr-brd: #{$clr-err};
     --bit-chg-clr-hover: #{$clr-err-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-err-dis};
+    --bit-chg-clr-dis-text: #{$clr-err-dis-text};
+    --bit-chg-clr-focus: #{$clr-err-focus};
 }
 
 .bit-chg-pbg {
     --bit-chg-clr: #{$clr-bg-pri};
     --bit-chg-clr-bg: #{$clr-fg-pri};
-    --bit-chg-clr-brd: #{$clr-bg-pri};
     --bit-chg-clr-hover: #{$clr-bg-pri-hover};
+    --bit-chg-clr-dis: #{$clr-bg-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-pri-focus};
 }
 
 .bit-chg-sbg {
     --bit-chg-clr: #{$clr-bg-sec};
     --bit-chg-clr-bg: #{$clr-fg-pri};
-    --bit-chg-clr-brd: #{$clr-bg-sec};
     --bit-chg-clr-hover: #{$clr-bg-sec-hover};
+    --bit-chg-clr-dis: #{$clr-bg-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-sec-focus};
 }
 
 .bit-chg-tbg {
     --bit-chg-clr: #{$clr-bg-ter};
-    --bit-chg-clr-brd: #{$clr-bg-ter};
     --bit-chg-clr-hover: #{$clr-bg-ter-hover};
     --bit-chg-clr-bg: #{$clr-fg-pri};
+    --bit-chg-clr-dis: #{$clr-bg-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-bg-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-bg-ter-focus};
 }
 
 .bit-chg-pfg {
     --bit-chg-clr: #{$clr-fg-pri};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-pri};
     --bit-chg-clr-hover: #{$clr-fg-pri-hover};
+    --bit-chg-clr-dis: #{$clr-fg-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-pri-focus};
 }
 
 .bit-chg-sfg {
     --bit-chg-clr: #{$clr-fg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-sec};
     --bit-chg-clr-hover: #{$clr-fg-sec-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-fg-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-sec-focus};
 }
 
 .bit-chg-tfg {
     --bit-chg-clr: #{$clr-fg-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-fg-ter};
     --bit-chg-clr-hover: #{$clr-fg-ter-hover};
+    --bit-chg-clr-dis: #{$clr-fg-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-fg-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-fg-ter-focus};
 }
 
 .bit-chg-pbr {
     --bit-chg-clr: #{$clr-brd-pri};
-    --bit-chg-clr-brd: #{$clr-brd-pri};
     --bit-chg-clr-hover: #{$clr-brd-pri-hover};
     --bit-chg-clr-bg: #{$clr-bg-sec};
+    --bit-chg-clr-dis: #{$clr-brd-pri-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-pri-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-pri-focus};
 }
 
 .bit-chg-sbr {
     --bit-chg-clr: #{$clr-brd-sec};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-sec};
     --bit-chg-clr-hover: #{$clr-brd-sec-hover};
+    --bit-chg-clr-dis: #{$clr-brd-sec-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-sec-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-sec-focus};
 }
 
 .bit-chg-tbr {
     --bit-chg-clr: #{$clr-brd-ter};
     --bit-chg-clr-bg: #{$clr-bg-sec};
-    --bit-chg-clr-brd: #{$clr-brd-ter};
     --bit-chg-clr-hover: #{$clr-brd-ter-hover};
+    --bit-chg-clr-dis: #{$clr-brd-ter-dis};
+    --bit-chg-clr-dis-text: #{$clr-brd-ter-dis-text};
+    --bit-chg-clr-focus: #{$clr-brd-ter-focus};
 }
 
+// The dot size of each size is picked so that the circle size minus the dot size stays an even number of
+// pixels at the default spacing scale, which is what keeps the centered dot on the pixel grid: 14-6, 20-10
+// and 26-12. Deriving it as half the circle instead would leave an odd 7 and 13 for small and large.
 .bit-chg-sm {
     --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(3)};
-    --bit-chg-fontsize: #{spacing(1.5)};
-    --bit-chg-circle-size: #{spacing(1.75)};
-    --bit-chg-dot-position: #{spacing(0.8125)};
+    --bit-chg-fontsize: #{$tg-fs-xs};
+    --bit-chg-circle-size: #{$siz-sel-sm};
+    --bit-chg-dot-size: #{spacing(0.75)};
 }
 
 .bit-chg-md {
     --bit-chg-item-gap: #{spacing(1)};
     --bit-chg-ico-size: #{spacing(4)};
-    --bit-chg-fontsize: #{spacing(1.75)};
-    --bit-chg-circle-size: #{spacing(2.5)};
-    --bit-chg-dot-position: #{spacing(1)};
+    --bit-chg-fontsize: #{$tg-fs-sm};
+    --bit-chg-circle-size: #{$siz-sel-md};
+    --bit-chg-dot-size: #{spacing(1.25)};
 }
 
 .bit-chg-lg {
     --bit-chg-item-gap: #{spacing(2)};
     --bit-chg-ico-size: #{spacing(5)};
-    --bit-chg-fontsize: #{spacing(2)};
-    --bit-chg-circle-size: #{spacing(3.25)};
-    --bit-chg-dot-position: #{spacing(1.25)};
+    --bit-chg-fontsize: #{$tg-fs-md};
+    --bit-chg-circle-size: #{$siz-sel-lg};
+    --bit-chg-dot-size: #{spacing(1.5)};
 }
 
 .bit-chg-hor {
@@ -495,5 +689,31 @@
 
     &.bit-chg-lg {
         --bit-chg-item-gap: #{spacing(3)};
+    }
+}
+
+// forced-colors: the checked radio dot is a background-painted ::after, which High Contrast
+// strips; repaint dot and ring with the system Highlight color so the checked option stays
+// visible. Placed last so it wins the same-specificity cascade over the normal checked rules.
+@media (forced-colors: active) {
+    .bit-chg-ich .bit-chg-rad {
+        &::before {
+            border-color: Highlight;
+        }
+
+        &::after {
+            background-color: Highlight;
+        }
+    }
+
+    // Declared after the checked rules so a checked + disabled radio renders GrayText.
+    .bit-chg-ids .bit-chg-rad {
+        &::before {
+            border-color: GrayText;
+        }
+
+        &::after {
+            background-color: GrayText;
+        }
     }
 }

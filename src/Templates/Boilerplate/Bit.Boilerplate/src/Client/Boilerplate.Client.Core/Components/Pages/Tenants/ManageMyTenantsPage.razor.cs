@@ -1,5 +1,4 @@
 using Bit.BlazorUI;
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Shared.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
 
@@ -10,8 +9,10 @@ public partial class ManageMyTenantsPage
     private bool isLoading;
     private bool isSaving;
     private bool isInviting;
-    private bool isLeaving;
     private bool isGlobalAdmin;
+    private Guid? leavingTenantId;
+    private TenantDto? tenantToLeave;
+    private bool isLeaveTenantDialogOpen;
     private TenantDto? currentTenant;
     private TenantDto newTenant = new();
     private TenantDto editingTenant = new();
@@ -56,7 +57,17 @@ public partial class ManageMyTenantsPage
     private bool IsSelected(TenantDto tenant) => tenant.Id == currentTenant?.Id;
 
     // A pending invitation (Accept action) is only relevant for regular users; global admins always just switch.
-    private bool IsPendingInvitation(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is not true && isGlobalAdmin is false;
+    private bool IsPendingInvitation(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is false && isGlobalAdmin is false;
+
+    // Whether the current user has a membership row for this tenant at all. Null means she has none, which only happens
+    // for a global admin (she is listed every active tenant) - and leaving a tenant she never joined can only 404.
+    private bool IsMemberOf(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is not null;
+
+    // Keyed off AcceptedOn exactly like the server: leaving a membership that was never accepted DELETES it (declining
+    // the invitation) rather than resetting it, and that is irreversible without a fresh invite. Deliberately not
+    // IsPendingInvitation, which also ands in isGlobalAdmin and so would promise the recoverable outcome to a global
+    // admin whose row the server is about to delete.
+    private bool IsDecliningInvitation(TenantDto tenant) => tenant.CurrentUserHasAcceptedThisTenantInvitation is false;
 
     // Reopening a section starts its form fresh, discarding any edits left over from a previous (un-saved) visit.
     private void OnSectionExpand(BitAccordionListOption section)
@@ -89,7 +100,7 @@ public partial class ManageMyTenantsPage
 
         if (await AuthManager.SwitchTenant(tenant.Id, CurrentCancellationToken))
         {
-            await Refresh();
+            Refresh();
         }
     }
 
@@ -109,7 +120,7 @@ public partial class ManageMyTenantsPage
 
             if (await AuthManager.SwitchTenant(createdTenant.Id, CurrentCancellationToken))
             {
-                await Refresh();
+                Refresh();
                 return;
             }
 
@@ -139,10 +150,10 @@ public partial class ManageMyTenantsPage
 
         try
         {
-            // Update only ever targets the current tenant (See ITenantController.Update / AppFeatures.Management.Tenant_Write).
+            // Update only ever targets the current tenant (See ITenantController.Update / AppFeatures.Management.Tenant_Manage).
             await tenantController.Update(editingTenant, CurrentCancellationToken);
 
-            await LoadTenants();
+            Refresh();
         }
         catch (ResourceValidationException e)
         {
@@ -163,13 +174,23 @@ public partial class ManageMyTenantsPage
     /// The server moves the user's affected sessions to her next accepted tenant or none, then the token gets refreshed
     /// so the client picks up the new (or empty) tenant claim.
     /// </summary>
-    private async Task LeaveTenant(TenantDto tenant)
+    private void ConfirmLeaveTenant(TenantDto tenant)
     {
-        if (isLeaving) return;
+        tenantToLeave = tenant;
+        isLeaveTenantDialogOpen = true;
+    }
+
+    private async Task LeaveTenant()
+    {
+        if (leavingTenantId is not null) return;
+
+        if (tenantToLeave is null) return;
+
+        var tenant = tenantToLeave;
 
         if (await AuthManager.TryEnterElevatedAccessMode(CurrentCancellationToken) is false) return;
 
-        isLeaving = true;
+        leavingTenantId = tenant.Id;
 
         try
         {
@@ -178,9 +199,7 @@ public partial class ManageMyTenantsPage
             // Refreshing the token makes the server re-evaluate the tenant claim (falling back to another accepted tenant or none).
             await AuthManager.RefreshToken(requestedBy: "LeaveTenant");
 
-            SnackBarService.Success(Localizer[nameof(AppStrings.LeftTenantSuccessfullyMessage)]);
-
-            await Refresh();
+            Refresh();
         }
         catch (KnownException e)
         {
@@ -188,7 +207,8 @@ public partial class ManageMyTenantsPage
         }
         finally
         {
-            isLeaving = false;
+            leavingTenantId = null;
+            tenantToLeave = null;
         }
     }
 
@@ -222,9 +242,13 @@ public partial class ManageMyTenantsPage
         }
     }
 
-    private async Task Refresh()
+    /// <summary>
+    /// Soft restarts the app after an operation that changed the current tenant (switched, created, renamed, left),
+    /// so everything showing tenant scoped data is rebuilt - including this page, whose <see cref="LoadTenants"/>
+    /// runs again as it is created.
+    /// </summary>
+    private void Refresh()
     {
-        await LoadTenants();
-        PubSubService.Publish(ClientAppMessages.CURRENT_TENANT_CHANGED, currentTenant);
+        PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
     }
 }

@@ -1,0 +1,43 @@
+﻿@* The site's icon set, in one place. The geometry lives in Icon.razor.cs.
+
+   Every glyph is drawn on the same 24x24 grid with a 1.5 stroke, round caps and
+   round joins, and paints with `currentColor` - so an icon inherits the colour
+   of whatever it sits in, repaints with the theme toggle, and the family stays
+   visually consistent the way Fluent 2 asks an icon set to.
+
+   Inline SVG rather than an icon font or a sprite sheet: a font is a blocking
+   network request this offline-first site would have to justify, and a sprite
+   needs a <use> reference that a Blazor re-render would have to keep alive.
+
+   Accessibility is decided by the CALLER, not by the glyph, because the same
+   glyph is decorative in one place and meaningful in another:
+     - Decorative (there is visible text beside it) -> leave Label unset; the
+       svg is rendered aria-hidden.
+     - Meaningful (it stands alone) -> pass Label; the svg becomes an img-role
+       graphic carrying that name.
+   An icon inside a button normally stays decorative and the BUTTON carries the
+   accessible name, which is what the default covers.
+
+   An unknown name renders nothing at all - a missing glyph must never be a
+   missing page. *@
+
+@if (_geometry is not null)
+{
+    <svg class="@Class"
+         viewBox="0 0 24 24"
+         width="@Size"
+         height="@Size"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="1.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         focusable="false"
+         role="@(Label is null ? null : "img")"
+         aria-hidden="@(Label is null ? "true" : null)"
+         aria-label="@Label">
+        @* Compile-time constants from the table in the code-behind - never a value
+           that came in from a request, a query string or a user. *@
+        @((MarkupString)_geometry)
+    </svg>
+}

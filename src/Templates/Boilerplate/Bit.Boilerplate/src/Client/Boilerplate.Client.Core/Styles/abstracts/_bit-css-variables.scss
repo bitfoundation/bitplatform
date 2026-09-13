@@ -10,6 +10,9 @@ $bit-color-primary-light: var(--bit-clr-pri-light);
 $bit-color-primary-light-hover: var(--bit-clr-pri-light-hover);
 $bit-color-primary-light-active: var(--bit-clr-pri-light-active);
 $bit-color-primary-text: var(--bit-clr-pri-text);
+$bit-color-primary-disabled: var(--bit-clr-pri-dis);
+$bit-color-primary-disabled-text: var(--bit-clr-pri-dis-text);
+$bit-color-primary-focus: var(--bit-clr-pri-focus);
 
 //secondary
 $bit-color-secondary: var(--bit-clr-sec);
@@ -22,6 +25,9 @@ $bit-color-secondary-light: var(--bit-clr-sec-light);
 $bit-color-secondary-light-hover: var(--bit-clr-sec-light-hover);
 $bit-color-secondary-light-active: var(--bit-clr-sec-light-active);
 $bit-color-secondary-text: var(--bit-clr-sec-text);
+$bit-color-secondary-disabled: var(--bit-clr-sec-dis);
+$bit-color-secondary-disabled-text: var(--bit-clr-sec-dis-text);
+$bit-color-secondary-focus: var(--bit-clr-sec-focus);
 
 //tertiary
 $bit-color-tertiary: var(--bit-clr-ter);
@@ -34,6 +40,9 @@ $bit-color-tertiary-light: var(--bit-clr-ter-light);
 $bit-color-tertiary-light-hover: var(--bit-clr-ter-light-hover);
 $bit-color-tertiary-light-active: var(--bit-clr-ter-light-active);
 $bit-color-tertiary-text: var(--bit-clr-ter-text);
+$bit-color-tertiary-disabled: var(--bit-clr-ter-dis);
+$bit-color-tertiary-disabled-text: var(--bit-clr-ter-dis-text);
+$bit-color-tertiary-focus: var(--bit-clr-ter-focus);
 
 //info
 $bit-color-info: var(--bit-clr-inf);
@@ -46,6 +55,9 @@ $bit-color-info-light: var(--bit-clr-inf-light);
 $bit-color-info-light-hover: var(--bit-clr-inf-light-hover);
 $bit-color-info-light-active: var(--bit-clr-inf-light-active);
 $bit-color-info-text: var(--bit-clr-inf-text);
+$bit-color-info-disabled: var(--bit-clr-inf-dis);
+$bit-color-info-disabled-text: var(--bit-clr-inf-dis-text);
+$bit-color-info-focus: var(--bit-clr-inf-focus);
 
 //success
 $bit-color-success: var(--bit-clr-suc);
@@ -58,6 +70,9 @@ $bit-color-success-light: var(--bit-clr-suc-light);
 $bit-color-success-light-hover: var(--bit-clr-suc-light-hover);
 $bit-color-success-light-active: var(--bit-clr-suc-light-active);
 $bit-color-success-text: var(--bit-clr-suc-text);
+$bit-color-success-disabled: var(--bit-clr-suc-dis);
+$bit-color-success-disabled-text: var(--bit-clr-suc-dis-text);
+$bit-color-success-focus: var(--bit-clr-suc-focus);
 
 //warning
 $bit-color-warning: var(--bit-clr-wrn);
@@ -70,6 +85,9 @@ $bit-color-warning-light: var(--bit-clr-wrn-light);
 $bit-color-warning-light-hover: var(--bit-clr-wrn-light-hover);
 $bit-color-warning-light-active: var(--bit-clr-wrn-light-active);
 $bit-color-warning-text: var(--bit-clr-wrn-text);
+$bit-color-warning-disabled: var(--bit-clr-wrn-dis);
+$bit-color-warning-disabled-text: var(--bit-clr-wrn-dis-text);
+$bit-color-warning-focus: var(--bit-clr-wrn-focus);
 
 //severe-warning
 $bit-color-severe-warning: var(--bit-clr-swr);
@@ -82,6 +100,9 @@ $bit-color-severe-warning-light: var(--bit-clr-swr-light);
 $bit-color-severe-warning-light-hover: var(--bit-clr-swr-light-hover);
 $bit-color-severe-warning-light-active: var(--bit-clr-swr-light-active);
 $bit-color-severe-warning-text: var(--bit-clr-swr-text);
+$bit-color-severe-warning-disabled: var(--bit-clr-swr-dis);
+$bit-color-severe-warning-disabled-text: var(--bit-clr-swr-dis-text);
+$bit-color-severe-warning-focus: var(--bit-clr-swr-focus);
 
 //error
 $bit-color-error: var(--bit-clr-err);
@@ -94,6 +115,9 @@ $bit-color-error-light: var(--bit-clr-err-light);
 $bit-color-error-light-hover: var(--bit-clr-err-light-hover);
 $bit-color-error-light-active: var(--bit-clr-err-light-active);
 $bit-color-error-text: var(--bit-clr-err-text);
+$bit-color-error-disabled: var(--bit-clr-err-dis);
+$bit-color-error-disabled-text: var(--bit-clr-err-dis-text);
+$bit-color-error-focus: var(--bit-clr-err-focus);
 
 //foreground
 $bit-color-foreground-primary: var(--bit-clr-fg-pri);
@@ -105,6 +129,9 @@ $bit-color-foreground-primary-dark-active: var(--bit-clr-fg-pri-dark-active);
 $bit-color-foreground-primary-light: var(--bit-clr-fg-pri-light);
 $bit-color-foreground-primary-light-hover: var(--bit-clr-fg-pri-light-hover);
 $bit-color-foreground-primary-light-active: var(--bit-clr-fg-pri-light-active);
+$bit-color-foreground-primary-disabled: var(--bit-clr-fg-pri-dis);
+$bit-color-foreground-primary-disabled-text: var(--bit-clr-fg-pri-dis-text);
+$bit-color-foreground-primary-focus: var(--bit-clr-fg-pri-focus);
 $bit-color-foreground-secondary: var(--bit-clr-fg-sec);
 $bit-color-foreground-secondary-hover: var(--bit-clr-fg-sec-hover);
 $bit-color-foreground-secondary-active: var(--bit-clr-fg-sec-active);
@@ -114,6 +141,9 @@ $bit-color-foreground-secondary-dark-active: var(--bit-clr-fg-sec-dark-active);
 $bit-color-foreground-secondary-light: var(--bit-clr-fg-sec-light);
 $bit-color-foreground-secondary-light-hover: var(--bit-clr-fg-sec-light-hover);
 $bit-color-foreground-secondary-light-active: var(--bit-clr-fg-sec-light-active);
+$bit-color-foreground-secondary-disabled: var(--bit-clr-fg-sec-dis);
+$bit-color-foreground-secondary-disabled-text: var(--bit-clr-fg-sec-dis-text);
+$bit-color-foreground-secondary-focus: var(--bit-clr-fg-sec-focus);
 $bit-color-foreground-tertiary: var(--bit-clr-fg-ter);
 $bit-color-foreground-tertiary-hover: var(--bit-clr-fg-ter-hover);
 $bit-color-foreground-tertiary-active: var(--bit-clr-fg-ter-active);
@@ -123,6 +153,9 @@ $bit-color-foreground-tertiary-dark-active: var(--bit-clr-fg-ter-dark-active);
 $bit-color-foreground-tertiary-light: var(--bit-clr-fg-ter-light);
 $bit-color-foreground-tertiary-light-hover: var(--bit-clr-fg-ter-light-hover);
 $bit-color-foreground-tertiary-light-active: var(--bit-clr-fg-ter-light-active);
+$bit-color-foreground-tertiary-disabled: var(--bit-clr-fg-ter-dis);
+$bit-color-foreground-tertiary-disabled-text: var(--bit-clr-fg-ter-dis-text);
+$bit-color-foreground-tertiary-focus: var(--bit-clr-fg-ter-focus);
 $bit-color-foreground-disabled: var(--bit-clr-fg-dis);
 
 //backgrounds
@@ -135,6 +168,9 @@ $bit-color-background-primary-dark-active: var(--bit-clr-bg-pri-dark-active);
 $bit-color-background-primary-light: var(--bit-clr-bg-pri-light);
 $bit-color-background-primary-light-hover: var(--bit-clr-bg-pri-light-hover);
 $bit-color-background-primary-light-active: var(--bit-clr-bg-pri-light-active);
+$bit-color-background-primary-disabled: var(--bit-clr-bg-pri-dis);
+$bit-color-background-primary-disabled-text: var(--bit-clr-bg-pri-dis-text);
+$bit-color-background-primary-focus: var(--bit-clr-bg-pri-focus);
 $bit-color-background-secondary: var(--bit-clr-bg-sec);
 $bit-color-background-secondary-hover: var(--bit-clr-bg-sec-hover);
 $bit-color-background-secondary-active: var(--bit-clr-bg-sec-active);
@@ -144,6 +180,9 @@ $bit-color-background-secondary-dark-active: var(--bit-clr-bg-sec-dark-active);
 $bit-color-background-secondary-light: var(--bit-clr-bg-sec-light);
 $bit-color-background-secondary-light-hover: var(--bit-clr-bg-sec-light-hover);
 $bit-color-background-secondary-light-active: var(--bit-clr-bg-sec-light-active);
+$bit-color-background-secondary-disabled: var(--bit-clr-bg-sec-dis);
+$bit-color-background-secondary-disabled-text: var(--bit-clr-bg-sec-dis-text);
+$bit-color-background-secondary-focus: var(--bit-clr-bg-sec-focus);
 $bit-color-background-tertiary: var(--bit-clr-bg-ter);
 $bit-color-background-tertiary-hover: var(--bit-clr-bg-ter-hover);
 $bit-color-background-tertiary-active: var(--bit-clr-bg-ter-active);
@@ -153,6 +192,9 @@ $bit-color-background-tertiary-dark-active: var(--bit-clr-bg-ter-dark-active);
 $bit-color-background-tertiary-light: var(--bit-clr-bg-ter-light);
 $bit-color-background-tertiary-light-hover: var(--bit-clr-bg-ter-light-hover);
 $bit-color-background-tertiary-light-active: var(--bit-clr-bg-ter-light-active);
+$bit-color-background-tertiary-disabled: var(--bit-clr-bg-ter-dis);
+$bit-color-background-tertiary-disabled-text: var(--bit-clr-bg-ter-dis-text);
+$bit-color-background-tertiary-focus: var(--bit-clr-bg-ter-focus);
 $bit-color-background-disabled: var(--bit-clr-bg-dis);
 $bit-color-background-overlay: var(--bit-clr-bg-overlay);
 
@@ -166,6 +208,9 @@ $bit-color-border-primary-dark-active: var(--bit-clr-brd-pri-dark-active);
 $bit-color-border-primary-light: var(--bit-clr-brd-pri-light);
 $bit-color-border-primary-light-hover: var(--bit-clr-brd-pri-light-hover);
 $bit-color-border-primary-light-active: var(--bit-clr-brd-pri-light-active);
+$bit-color-border-primary-disabled: var(--bit-clr-brd-pri-dis);
+$bit-color-border-primary-disabled-text: var(--bit-clr-brd-pri-dis-text);
+$bit-color-border-primary-focus: var(--bit-clr-brd-pri-focus);
 $bit-color-border-secondary: var(--bit-clr-brd-sec);
 $bit-color-border-secondary-hover: var(--bit-clr-brd-sec-hover);
 $bit-color-border-secondary-active: var(--bit-clr-brd-sec-active);
@@ -175,6 +220,9 @@ $bit-color-border-secondary-dark-active: var(--bit-clr-brd-sec-dark-active);
 $bit-color-border-secondary-light: var(--bit-clr-brd-sec-light);
 $bit-color-border-secondary-light-hover: var(--bit-clr-brd-sec-light-hover);
 $bit-color-border-secondary-light-active: var(--bit-clr-brd-sec-light-active);
+$bit-color-border-secondary-disabled: var(--bit-clr-brd-sec-dis);
+$bit-color-border-secondary-disabled-text: var(--bit-clr-brd-sec-dis-text);
+$bit-color-border-secondary-focus: var(--bit-clr-brd-sec-focus);
 $bit-color-border-tertiary: var(--bit-clr-brd-ter);
 $bit-color-border-tertiary-hover: var(--bit-clr-brd-ter-hover);
 $bit-color-border-tertiary-active: var(--bit-clr-brd-ter-active);
@@ -184,10 +232,13 @@ $bit-color-border-tertiary-dark-active: var(--bit-clr-brd-ter-dark-active);
 $bit-color-border-tertiary-light: var(--bit-clr-brd-ter-light);
 $bit-color-border-tertiary-light-hover: var(--bit-clr-brd-ter-light-hover);
 $bit-color-border-tertiary-light-active: var(--bit-clr-brd-ter-light-active);
+$bit-color-border-tertiary-disabled: var(--bit-clr-brd-ter-dis);
+$bit-color-border-tertiary-disabled-text: var(--bit-clr-brd-ter-dis-text);
+$bit-color-border-tertiary-focus: var(--bit-clr-brd-ter-focus);
 $bit-color-border-disabled: var(--bit-clr-brd-dis);
 
 //required
-$bit-color-requried: var(--bit-clr-req);
+$bit-color-required: var(--bit-clr-req);
 
 //neutrals
 $bit-color-neutrals-white: var(--bit-clr-ntr-white);
@@ -218,6 +269,16 @@ $bit-color-neutrals-gray220: var(--bit-clr-ntr-gray220);
 //shadows-callout
 $bit-box-shadow-callout: var(--bit-shd-cal);
 $bit-box-shadow-callout2: var(--bit-shd-cal2);
+
+//shadow sizes
+$bit-box-shadow-sm: var(--bit-shd-sm);
+$bit-box-shadow-nm: var(--bit-shd-nm);
+$bit-box-shadow-md: var(--bit-shd-md);
+$bit-box-shadow-lg: var(--bit-shd-lg);
+$bit-box-shadow-xl: var(--bit-shd-xl);
+$bit-box-shadow-2xl: var(--bit-shd-2xl);
+$bit-box-shadow-inner: var(--bit-shd-inner);
+$bit-box-shadow-focus-ring: var(--bit-shd-focus-ring);
 
 //shadows
 $bit-box-shadow-1: var(--bit-shd-1);
@@ -259,6 +320,41 @@ $bit-zindex-base: var(--bit-zin-base);
 $bit-shape-border-radius: var(--bit-shp-brd-radius);
 $bit-shape-border-width: var(--bit-shp-brd-width);
 $bit-shape-border-style: var(--bit-shp-brd-style);
+$bit-shape-focus-ring-width: var(--bit-shp-focus-ring-width);
+$bit-shape-focus-ring-offset: var(--bit-shp-focus-ring-offset);
+
+//semantic aliases (intent tier)
+$bit-semantic-surface-page: var(--bit-sem-surface-page);
+$bit-semantic-surface-elevated: var(--bit-sem-surface-elevated);
+$bit-semantic-surface-muted: var(--bit-sem-surface-muted);
+$bit-semantic-text-primary: var(--bit-sem-text-primary);
+$bit-semantic-text-secondary: var(--bit-sem-text-secondary);
+$bit-semantic-border-default: var(--bit-sem-border-default);
+$bit-semantic-accent-primary: var(--bit-sem-accent-primary);
+$bit-semantic-focus-ring: var(--bit-sem-focus-ring);
+$bit-semantic-focus-color: var(--bit-sem-focus-color);
+
+//motion
+$bit-motion-duration: var(--bit-mot-duration);
+$bit-motion-duration-short: var(--bit-mot-duration-short);
+$bit-motion-duration-long: var(--bit-mot-duration-long);
+$bit-motion-easing: var(--bit-mot-easing);
+//looping animations: these slow down under reduced motion instead of collapsing, since a near-zero
+//looping duration renders as flicker
+$bit-motion-duration-spinner: var(--bit-mot-duration-spinner);
+$bit-motion-easing-spinner: var(--bit-mot-easing-spinner);
+$bit-motion-loop-factor: var(--bit-mot-loop-factor);
+
+//layout
+$bit-layout-density-scale: var(--bit-layout-density-scale);
+
+//breakpoints
+$bit-breakpoint-xs: var(--bit-bp-xs);
+$bit-breakpoint-sm: var(--bit-bp-sm);
+$bit-breakpoint-md: var(--bit-bp-md);
+$bit-breakpoint-lg: var(--bit-bp-lg);
+$bit-breakpoint-xl: var(--bit-bp-xl);
+$bit-breakpoint-xxl: var(--bit-bp-xxl);
 
 /*---- Typography ----*/
 $bit-typography-font-family: var(--bit-tpg-font-family);
@@ -375,6 +471,8 @@ $bit-typography-inherit-font-weight: var(--bit-tpg-inherit-font-weight);
 $bit-typography-inherit-font-size: var(--bit-tpg-inherit-font-size);
 $bit-typography-inherit-line-height: var(--bit-tpg-inherit-line-height);
 $bit-typography-inherit-letter-spacing: var(--bit-tpg-inherit-letter-spacing);
+$bit-typography-inherit-text-transform: var(--bit-tpg-inherit-text-transform);
+$bit-typography-inherit-display: var(--bit-tpg-inherit-display);
 
 // Extras
 $bit-env-inset-top: var(--bit-env-inset-top);

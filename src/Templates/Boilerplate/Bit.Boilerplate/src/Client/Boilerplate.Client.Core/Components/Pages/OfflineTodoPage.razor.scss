@@ -40,7 +40,7 @@ section {
 
     .todo-list {
         width: 100%;
-        background-color: var(--bit-clr-bg-sec);
+        background-color: $bit-color-background-secondary;
         height: calc(#{$bit-env-height-available} - 14rem);
 
         @include lt-md {

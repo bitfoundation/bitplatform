@@ -1,40 +1,85 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
-        id="@_Id"
-        role="tab"
-        type="button"
-        name="@HeaderText"
-        aria-label="@AriaLabel"
-        data-content="@HeaderText"
-        style="@StyleBuilder.Value"
-        class="@ClassBuilder.Value"
-        tabindex="@Parent?.GetPivotItemTabIndex(this)"
-        aria-selected="@(IsSelected ? "true": "false")">
-    <span style="@Parent?.Styles?.HeaderItemContent" class="@Parent?.Classes?.HeaderItemContent">
+@* The tab is a div rather than a button so that it can hold a dismiss button of its own without
+   nesting one interactive element inside another. Its activation keys are handled by the tablist.
+
+   The default of the dragover is prevented only while the tab can actually take a drop: a tab that
+   always prevented it would swallow anything else dropped on it - a file, a link - that the page
+   itself would otherwise be handling. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     @onclick="HandleOnClick"
+     @onfocusin="HandleOnFocusIn"
+     @ondragstart="HandleOnDragStart"
+     @ondragenter="HandleOnDragEnter"
+     @ondragend="HandleOnDragEnd"
+     @ondragover:preventDefault="_IsReorderable"
+     @ondrop="HandleOnDrop"
+     id="@_Id"
+     role="tab"
+     title="@Title"
+     aria-label="@AriaLabel"
+     data-content="@HeaderText"
+     draggable="@(_IsReorderable ? "true" : null)"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value @Parent?.GetItemDragClass(this) @Parent?.GetItemOverflowClass(this)"
+     tabindex="@Parent?.GetItemTabIndex(this)"
+     aria-controls="@Parent?.GetItemPanelId(this)"
+     aria-disabled="@(IsEnabled ? null : "true")"
+     aria-selected="@(IsSelected ? "true": "false")">
+    <span style="@Parent?.Styles?.HeaderItemContent" class="bit-pvti-cnt @Parent?.Classes?.HeaderItemContent">
         @{
             var icon = BitIconInfo.From(Icon, IconName);
         }
         @if (icon is not null)
         {
             <span style="@Parent?.Styles?.HeaderIconContainer" class="@Parent?.Classes?.HeaderIconContainer">
-                <i style="@Parent?.Styles?.HeaderIcon" class="@icon.GetCssClasses() @Parent?.Classes?.HeaderIcon" />
+                <i aria-hidden="true" style="@Parent?.Styles?.HeaderIcon" class="@icon.GetCssClasses() @Parent?.Classes?.HeaderIcon" />
             </span>
         }
 
         @if (Header is not null)
         {
-            @Header
+            @* A header of its own can hold something interactive, and every key of the tabs pattern is
+               handled on the tablist around it: without this the Space typed into an input would
+               activate the tab instead of reaching the input, and Delete would dismiss it. The wrapper
+               lays out as if it were not there, so the content keeps its own place in the header. *@
+            <span class="bit-pvti-hdr" @onkeydown:stopPropagation="true">
+                @Header
+            </span>
         }
         else if (HeaderText.HasValue())
         {
-            <span style="@Parent?.Styles?.HeaderText" class="@Parent?.Classes?.HeaderText">@HeaderText</span>
+            @* The data-content is what the stylesheet lays an invisible bold copy of the label out
+               of, so that a tab does not change width when it becomes the selected (semibold) one. *@
+            <span data-content="@HeaderText"
+                  style="@Parent?.Styles?.HeaderText"
+                  class="bit-pvti-txt @Parent?.Classes?.HeaderText">@HeaderText</span>
         }
 
         @if (ItemCount is not null)
         {
-            <span style="@Parent?.Styles?.HeaderItemCount" class="@Parent?.Classes?.HeaderItemCount">(@ItemCount)</span>
+            <span style="@Parent?.Styles?.HeaderItemCount" class="bit-pvti-cnr @Parent?.Classes?.HeaderItemCount">(@ItemCount)</span>
         }
     </span>
-</button>
+
+    @* Out of the tab order on purpose: the tab holding it is the tab stop, and the Delete key is
+       what dismisses the tab from the keyboard. *@
+    @if (Parent?.GetItemDismissible(this) is true)
+    {
+        var dismissIcon = BitIconInfo.From(Parent.DismissIcon, Parent.DismissIconName ?? "Cancel");
+        @* Its keys are its own as well: the tablist around it would take the Enter that dismisses
+           the tab as an activation of it. *@
+        <button @onclick="HandleOnDismiss"
+                @onclick:stopPropagation="true"
+                @onkeydown:stopPropagation="true"
+                type="button"
+                tabindex="-1"
+                title="@(Parent.DismissTitle ?? "Remove")"
+                aria-label="@Parent.GetDismissAriaLabel(this)"
+                style="@Parent.Styles?.DismissButton"
+                class="bit-pvti-dbt @Parent.Classes?.DismissButton">
+            <i aria-hidden="true" style="@Parent.Styles?.DismissIcon" class="bit-pvti-dsi @dismissIcon?.GetCssClasses() @Parent.Classes?.DismissIcon" />
+        </button>
+    }
+</div>

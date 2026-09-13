@@ -1,0 +1,19 @@
+﻿@page "/discovered/{id:int}"
+
+@* Found by scanning AppAssembly - this route is NOT declared in AppRouter.razor. Route values and
+   query values bind by name, just like a plain Blazor @page. *@
+
+<h1>Discovered <code>@@page</code> route</h1>
+
+<dl>
+    <dt>id (route)</dt>
+    <dd>@Id</dd>
+    <dt>q (query)</dt>
+    <dd>@(Q ?? "-")</dd>
+</dl>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    [Parameter, SupplyParameterFromQuery] public string? Q { get; set; }
+}

@@ -57,7 +57,7 @@ This file contains the **UI markup** using Razor syntax and Bit.BlazorUI compone
 This file contains the **component logic** - all C# code for the component:
 
 ```csharp
-using Boilerplate.Shared.Dtos.Products;
+using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Controllers.Products;
 
 namespace Boilerplate.Client.Core.Components.Pages.Products;
@@ -491,22 +491,22 @@ The documentation includes:
 - Usage patterns
 - Styling guides
 
-### Automatic DeepWiki Integration
+### Automatic MCP Integration
 
-**You don't need to manually search the documentation!** 
+**You don't need to manually search the documentation!**
 
-When you ask questions in **GitHub Copilot Chat** or give commands related to UI components, the system **automatically queries the DeepWiki knowledge base** for `bitfoundation/bitplatform` to find relevant information.
+This project ships the **bitplatform MCP server** configuration for every supported AI coding tool, and `AGENTS.md` directs the agent to its tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide`, `FindBitBlazorUIIcons`). When you ask questions or give commands related to UI components, the agent **automatically queries these tools**, which answer from the shipped assemblies and documentation pages rather than from memory.
 
 **Example interactions:**
 
 - **You ask:** "How do I add a filter to BitDataGrid?"
-  - **Copilot:** Automatically searches DeepWiki and provides the answer with code examples
+  - **Agent:** Calls `SearchBitBlazorUI` / `GetBitBlazorUIComponentExamples` and provides the answer with real code examples
 
 - **You ask:** "How to customize BitButton colors?"
-  - **Copilot:** Retrieves information about `BitColor` enum and styling options
+  - **Agent:** Retrieves the `BitColor` enum and styling options via `GetBitBlazorUIType` and the theming guide
 
 - **You command:** "Add a BitDatePicker with validation"
-  - **Copilot:** Finds the correct implementation pattern and creates the code
+  - **Agent:** Finds the correct implementation pattern and creates the code
 
 **You can ask naturally:**
 - "How do I make a BitModal full screen?"
@@ -515,7 +515,7 @@ When you ask questions in **GitHub Copilot Chat** or give commands related to UI
 - "What properties does BitChart have?"
 - "How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?"
 
-The DeepWiki system handles the documentation lookup automatically!
+The MCP tools handle the documentation lookup automatically!
 
 ---
 
@@ -650,7 +650,7 @@ public abstract partial class AppPageBase : AppComponentBase
 
         if (firstRender)
         {
-            if (string.IsNullOrEmpty(culture) is false)
+            if (string.IsNullOrWhiteSpace(culture) is false)
             {
                 // Validates culture parameter
             }
@@ -698,11 +698,8 @@ public partial class ProductsPage
 
 ---
 
-### AI Wiki: Answered Questions
-* [How can I implement a `Grid System` and layout using `BitGrid` and `BitStack` components, especially if I'm familiar with the Bootstrap grid system?](https://deepwiki.com/search/how-can-i-implement-a-grid-sys_25d76f3c-d0a6-4c75-8b9c-7f86ae317fb6)
-* [What is the optimal way to load page data using `StateHasChanged` in conjunction with a `Skeleton UI` or `Shimmer` ?](https://deepwiki.com/search/what-is-the-optimal-way-to-loa_e9b729ca-d36b-4c61-a855-7d21ceb783ae)
-* [How is SCSS compiled to CSS in real-time within Visual Studio and Visual Studio Code?](https://deepwiki.com/search/how-is-scss-compiled-to-css-in_d4ea9c05-f002-4300-99df-076c167993d5)
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

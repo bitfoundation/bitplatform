@@ -9,7 +9,7 @@ public partial class NugetStatisticsService
 
     public virtual async ValueTask<NugetStatsDto> GetPackageStats(string packageId, CancellationToken cancellationToken)
     {
-        var url = $"/query?q=packageid:{packageId}";
+        var url = $"/query?q=packageid:{Uri.EscapeDataString(packageId)}";
 
         var response = await httpClient.GetFromJsonAsync(url, jsonSerializerOptions.GetTypeInfo<NugetStatsDto>(), cancellationToken)
                                 ?? throw new ResourceNotFoundException().WithData("Reason", $"NuGet package '{packageId}' not found.");

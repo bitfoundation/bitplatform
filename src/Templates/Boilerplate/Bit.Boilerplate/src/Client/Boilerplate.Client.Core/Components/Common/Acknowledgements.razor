@@ -7,7 +7,7 @@
         @foreach (var dep in deps)
         {
             <div class="dep-card" @key="dep.Name">
-                <div class="dep-top">
+                <BitStack Horizontal AutoHeight Class="dep-top" Gap="0.5rem" VerticalAlign="BitAlignment.Center" HorizontalAlign="BitAlignment.SpaceBetween">
                     <BitLink Class="dep-name" Href="@(dep.Url ?? dep.Repo)" Target="_blank">@dep.Name</BitLink>
                     @if (dep.Repo is not null)
                     {
@@ -17,7 +17,7 @@
                             </svg>
                         </BitLink>
                     }
-                </div>
+                </BitStack>
                 <BitTag Class="dep-license"
                         Text="@dep.License"
                         Size="BitSize.Small"
@@ -52,14 +52,14 @@
             {
                 @if (s.Items.Length > 0)
                 {
-                    <div class="ack-section">
-                        <div class="ack-section-head">
+                    <BitStack AutoHeight Class="ack-section" Gap="0.6rem">
+                        <BitStack Horizontal Wrap AutoHeight Class="ack-section-head" Gap="0.5rem" VerticalAlign="BitAlignment.Baseline">
                             <BitText Class="ack-section-title" Typography="BitTypography.Subtitle1">@s.Title</BitText>
                             <span class="ack-count">@s.Items.Length</span>
                             <BitText Class="ack-section-sub" Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground">@s.Subtitle</BitText>
-                        </div>
+                        </BitStack>
                         @cards(s.Items)
-                    </div>
+                    </BitStack>
                 }
             }
         </BitStack>

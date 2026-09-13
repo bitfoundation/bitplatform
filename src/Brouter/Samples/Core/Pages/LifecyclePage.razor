@@ -1,0 +1,80 @@
+﻿@* A singleton Component route (no KeepAlive) whose page implements IBrouterRoute DIRECTLY - the
+   router discovers the interface on the component it instantiates, no base class needed. Switching
+   ids re-commits the SAME instance (OnRenavigated); leaving unmounts it (OnDeactivated with reason
+   Disposing). The log lives in the scoped DemoState so the Disposing entry - written while this
+   page tears down - is still readable when you come back. *@
+
+@implements IBrouterRoute
+@inject DemoState demoState
+
+<h1>Route lifecycle <span class="muted">(instance #@_instanceStamp)</span></h1>
+
+<dl>
+    <dt>id (route)</dt>
+    <dd>@Id</dd>
+    <dt>tab (query)</dt>
+    <dd>@(_tab ?? "-")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/lifecycle/1" class="btn">/lifecycle/1</BrouterLink>
+    <BrouterLink Href="/lifecycle/2" class="btn">/lifecycle/2</BrouterLink>
+    <BrouterLink Href="/lifecycle/2?tab=comments" class="btn">/lifecycle/2?tab=comments</BrouterLink>
+    <BrouterLink Href="/" class="btn">Leave</BrouterLink>
+</div>
+
+<LifecyclePulse />
+
+<div class="card">
+    <h2>Event log</h2>
+    <ul>
+        @foreach (var entry in demoState.LifecycleLog)
+        {
+            <li><code>@entry</code></li>
+        }
+    </ul>
+    <button style="margin-top: .5rem;" @onclick="@(() => demoState.LifecycleLog.Clear())">Clear log</button>
+</div>
+
+<p class="muted">
+    Switching ids keeps the same instance stamp - <code>OnInitialized</code> does not re-run and
+    <code>OnRenavigated</code> is the "arrived here again" signal. Leaving and returning mounts a
+    fresh instance whose first <code>OnActivated</code> has <code>IsFirstActivation</code> set.
+</p>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private string? _tab;
+
+    // The same stamp across a renavigation proves the instance was reused; a new one after leaving
+    // and returning proves it was disposed and rebuilt.
+    private static int _nextStamp;
+    private readonly int _instanceStamp = System.Threading.Interlocked.Increment(ref _nextStamp);
+
+    public ValueTask OnActivatedAsync(BrouterRouteActivation activation)
+    {
+        _tab = activation.Location.GetQuery("tab");
+        Log($"OnActivated ({(activation.IsFirstActivation ? "first" : "reveal")}) at {activation.Location.Path}{activation.Location.Query}");
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnRenavigatedAsync(BrouterRouteRenavigation renavigation)
+    {
+        _tab = renavigation.Location.GetQuery("tab");
+        Log($"OnRenavigated {renavigation.PreviousLocation.Path} -> {renavigation.Location.Path}{renavigation.Location.Query}");
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask OnDeactivatedAsync(BrouterRouteDeactivation deactivation)
+    {
+        // No StateHasChanged: this instance is about to be disposed - the entry is read on return.
+        Log($"OnDeactivated ({deactivation.Reason}) -> {deactivation.Location.Path}");
+        return ValueTask.CompletedTask;
+    }
+
+    private void Log(string message) =>
+        demoState.LifecycleLog.Insert(0, $"{DateTime.Now:HH:mm:ss} #{_instanceStamp} {message}");
+}

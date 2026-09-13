@@ -1,0 +1,37 @@
+/*
+ * Semantic (intent) tokens - the app-facing alias tier
+ * --------------------------------------------------
+ * Purpose-named aliases over the primitive tokens, for APP code (custom CSS, layout chrome) that
+ * wants to express intent ("elevated surface", "default border") instead of a primitive name
+ * (--bit-clr-bg-sec, --bit-clr-brd-pri).
+ *
+ * Positioning - deliberate architectural decision:
+ *   - Components consume primitives and per-role/per-component variables, NOT these aliases.
+ *     That keeps role-based coloring (.bit-xxx-pri/-err/...) working and gives the two tiers
+ *     distinct override semantics: overriding a primitive flows through to components AND these
+ *     aliases; overriding a semantic token retunes app styling only.
+ *   - The tier is palette-agnostic (pure var() references), so it lives in the shared bundle and
+ *     tracks whatever theme is active - including custom palettes that only define primitives.
+ *
+ * Themable from C# via BitTheme.Color.Semantic (each alias is one property; the mapper emits the
+ * same --bit-sem-* names). A contract test pins this file and the mapper to each other, so adding
+ * a token here without a model property (or vice versa) fails the build's test run.
+ */
+// The `:root [bit-theme]` twin re-declares the aliases on scoped-preset elements (any descendant
+// carrying a bit-theme attribute). This is required, not decorative: a custom property's var()
+// references are substituted at the element that DEFINES it, and descendants inherit the already-
+// substituted value - so an alias defined only on :root would freeze the document palette's colors
+// and ignore the scoped region's re-themed primitives. Re-declaring on the scoped element re-runs
+// the substitution against that region's palette.
+:root,
+:root [bit-theme] {
+    --bit-sem-surface-page: var(--bit-clr-bg-pri);
+    --bit-sem-surface-elevated: var(--bit-clr-bg-sec);
+    --bit-sem-surface-muted: var(--bit-clr-bg-ter);
+    --bit-sem-text-primary: var(--bit-clr-fg-pri);
+    --bit-sem-text-secondary: var(--bit-clr-fg-sec);
+    --bit-sem-border-default: var(--bit-clr-brd-pri);
+    --bit-sem-accent-primary: var(--bit-clr-pri);
+    --bit-sem-focus-ring: var(--bit-shd-focus-ring);
+    --bit-sem-focus-color: var(--bit-clr-pri-focus);
+}

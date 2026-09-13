@@ -1,6 +1,3 @@
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Tests.Infrastructure.Services;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
@@ -38,7 +35,10 @@ public static class MagicLinkSignInUtils
     /// </summary>
     public static async Task RequestMagicLinkAndOtpOnCurrentPanel(IPage page, string email)
     {
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        // Filled through FillEnsuringStable because with pre-rendering on, this panel is on screen before the app is
+        // interactive: a value typed into the pre-rendered input is discarded when hydration swaps that subtree out, and
+        // the send button - which only enables once the debounced e-mail is committed - then stays disabled for good.
+        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
 
         // The button stays disabled until the debounced e-mail value is committed, so Playwright waits for it to enable.
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SendMagicLinkButtonText }).ClickAsync();
@@ -58,7 +58,17 @@ public static class MagicLinkSignInUtils
         var captured = await server.WaitForCapturedEmail(email,
             capturedEmail => capturedEmail.Kind is CapturedEmailKind.EmailToken, cancellationToken);
 
-        var confirmUrl = new Uri(server.WebAppServerAddress, captured.Link!.PathAndQuery).ToString();
+        // The rebuild below discards the origin the server actually embedded, so a host-header-derived wrong-origin
+        // link would otherwise be invisible to every magic-link test. Assert loopback + this server's port rather
+        // than strict equality: WebAuthnPasswordlessUITests legitimately rebases ServerAddress onto the "localhost"
+        // alias, so the emailed authority can be localhost:<port> while WebAppServerAddress is 127.0.0.1:<port>.
+        var linkHost = captured.Link!.Host;
+        Assert.IsTrue(linkHost is "localhost" || (IPAddress.TryParse(linkHost, out var linkIp) && IPAddress.IsLoopback(linkIp)),
+            $"The emailed link must carry a loopback origin, but was '{captured.Link.GetLeftPart(UriPartial.Authority)}'.");
+        Assert.AreEqual(server.WebAppServerAddress.Port, captured.Link.Port,
+            $"The emailed link must carry this server's own port, but was '{captured.Link.GetLeftPart(UriPartial.Authority)}'.");
+
+        var confirmUrl = new Uri(server.WebAppServerAddress, captured.Link.PathAndQuery).ToString();
         return (confirmUrl, captured.Token!);
     }
 

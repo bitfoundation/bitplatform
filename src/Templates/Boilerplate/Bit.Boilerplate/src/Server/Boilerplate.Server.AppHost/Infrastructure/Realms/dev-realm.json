@@ -4,13 +4,13 @@
     "enabled": true,
     "displayName": "Boilerplate Dev Realm",
     "sslRequired": "external",
+    "internationalizationEnabled": true,
     "supportedLocales": [
         "en",
         "nl",
         "fa",
         "sv",
-        "hi",
-        "zh",
+        "zh-CN",
         "es",
         "fr",
         "ar",
@@ -27,9 +27,6 @@
             "firstName": "Alice",
             "lastName": "Smith",
             "email": "AliceSmith@email.com",
-            "attributes": {
-                "mx-p-s": [ "5" ]
-            },
             "credentials": [
                 {
                     "type": "password",
@@ -123,9 +120,6 @@
             "id": "g-admin-group-id",
             "name": "g-admin",
             "path": "/g-admin",
-            "attributes": {
-                "mx-p-s": [ "-1" ]
-            },
             "realmRoles": [],
             "clientRoles": {},
             "subGroups": []
@@ -134,9 +128,6 @@
             "id": "t-admin-group-id",
             "name": "t-admin",
             "path": "/t-admin",
-            "attributes": {
-                "mx-p-s": [ "-1" ]
-            },
             "realmRoles": [],
             "clientRoles": {},
             "subGroups": []
@@ -250,6 +241,21 @@
                         "claim.name": "email",
                         "jsonType.label": "String"
                     }
+                },
+                {
+                    "id": "email-verified-mapper",
+                    "name": "email verified",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-property-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "userinfo.token.claim": "true",
+                        "user.attribute": "emailVerified",
+                        "id.token.claim": "true",
+                        "access.token.claim": "true",
+                        "claim.name": "email_verified",
+                        "jsonType.label": "boolean"
+                    }
                 }
             ]
         },
@@ -339,23 +345,6 @@
                         "id.token.claim": "true",
                         "access.token.claim": "true",
                         "claim.name": "roles",
-                        "userinfo.token.claim": "true"
-                    }
-                },
-                {
-                    "id": "client-mx-p-s-mapper",
-                    "name": "client mx-p-s attribute",
-                    "protocol": "openid-connect",
-                    "protocolMapper": "oidc-usermodel-attribute-mapper",
-                    "consentRequired": false,
-                    "config": {
-                        "claim.name": "mx-p-s",
-                        "user.attribute": "mx-p-s",
-                        "jsonType.label": "String",
-                        "multivalued": "false",
-                        "aggregate.attrs": "true",
-                        "id.token.claim": "true",
-                        "access.token.claim": "true",
                         "userinfo.token.claim": "true"
                     }
                 },

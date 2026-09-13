@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Whether this origin may show system notifications.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission_static">Notification.permission</see>
+/// </summary>
 public enum NotificationPermission
 {
     /// <summary>

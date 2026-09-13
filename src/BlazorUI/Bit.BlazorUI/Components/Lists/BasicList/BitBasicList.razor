@@ -1,64 +1,104 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="@Role"
+     tabindex="@TabIndex"
+     aria-label="@AriaLabel"
+     aria-busy="@(_isLoadingMore || Loading ? "true" : null)"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @if (RowTemplate is not null)
+    @if (HeaderTemplate is not null)
     {
-        if (Virtualize)
-        {
-            if (ItemsProvider is null || LoadMore)
+        <div style="@Styles?.Header"
+             class="bit-bsl-hdr @Classes?.Header">
+            @HeaderTemplate
+        </div>
+    }
+
+    @if (_ShowLoading)
+    {
+        <div style="@Styles?.LoadingContent"
+             class="bit-bsl-ldc @Classes?.LoadingContent">
+            @if (LoadingTemplate is not null)
             {
-                <_BitBasicListVirtualize Items="_viewItems"
-                                         ItemSize="@ItemSize"
-                                         EmptyContent="EmptyContent"
-                                         OverscanCount="@OverscanCount">
-                    @RowTemplate(context)
-                </_BitBasicListVirtualize>
+                @LoadingTemplate
             }
             else
             {
-                <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
-                                         EmptyContent="EmptyContent"
-                                         OverscanCount="@OverscanCount"
-                                         Placeholder="VirtualizePlaceholder"
-                                         ItemsProvider="ProvideVirtualizedItems">
-                    @RowTemplate(context)
-                </_BitBasicListVirtualize>
+                <span>...</span>
             }
+        </div>
+    }
+    else if (Virtualize)
+    {
+        if (ItemsProvider is null || LoadMore)
+        {
+            <_BitBasicListVirtualize Items="_viewItems"
+                                     ItemSize="@ItemSize"
+                                     EmptyContent="EmptyContent"
+                                     OverscanCount="@OverscanCount">
+                @_EffectiveRowTemplate(context)
+            </_BitBasicListVirtualize>
         }
         else
         {
-            if (_viewItems.Count > 0)
-            {
-                foreach (var item in _viewItems)
-                {
-                    @RowTemplate(item)
-                }
-            }
-            else if (_isLoadingMore is false)
-            {
-                @EmptyContent
-            }
+            <_BitBasicListVirtualize @ref="_bitBasicListVirtualizeRef"
+                                     ItemSize="@ItemSize"
+                                     EmptyContent="EmptyContent"
+                                     OverscanCount="@OverscanCount"
+                                     Placeholder="VirtualizePlaceholder"
+                                     ItemsProvider="ProvideVirtualizedItems">
+                @_EffectiveRowTemplate(context)
+            </_BitBasicListVirtualize>
         }
+    }
+    else if (_viewItems.Count > 0)
+    {
+        foreach (var item in _viewItems)
+        {
+            @_EffectiveRowTemplate(item)
+        }
+    }
+    else
+    {
+        @EmptyContent
+    }
+
+    @if (_ShowSentinel)
+    {
+        <div @ref="_sentinelElement" class="bit-bsl-snt" aria-hidden="true"></div>
     }
 
     @if (LoadMore && _loadMoreFinished is false)
     {
-        <button @onclick="() => LoadMoreItems(false)"
-                style="@Styles?.LoadMoreButton"
-                class="bit-bsl-lmb @Classes?.LoadMoreButton">
-            @if (LoadMoreTemplate is not null)
-            {
+        @if (LoadMoreTemplate is not null)
+        {
+            @* A template is free to render a button (or any other control) of its own, and a button
+               cannot be nested inside another one, so the clickable wrapper of a template is a plain
+               element carrying the button role rather than a real button element. *@
+            <div role="button"
+                 tabindex="0"
+                 aria-disabled="@(_isLoadingMore || IsEnabled is false ? "true" : null)"
+                 aria-busy="@(_isLoadingMore ? "true" : null)"
+                 @onclick="() => LoadMoreItems(false)"
+                 @onkeydown="HandleLoadMoreKeyDown"
+                 style="@Styles?.LoadMoreButton"
+                 class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 @LoadMoreTemplate(_isLoadingMore)
-            }
-            else
-            {
+            </div>
+        }
+        else
+        {
+            <button type="button"
+                    aria-busy="@(_isLoadingMore ? "true" : null)"
+                    disabled="@(_isLoadingMore || IsEnabled is false)"
+                    @onclick="() => LoadMoreItems(false)"
+                    style="@Styles?.LoadMoreButton"
+                    class="bit-bsl-lmb @Classes?.LoadMoreButton">
                 <div style="@Styles?.LoadMoreText"
                      class="bit-bsl-lmt @Classes?.LoadMoreText">
                     @if (_isLoadingMore)
@@ -70,7 +110,15 @@
                         <span>@LoadMoreText</span>
                     }
                 </div>
-            }
-        </button>
+            </button>
+        }
+    }
+
+    @if (FooterTemplate is not null)
+    {
+        <div style="@Styles?.Footer"
+             class="bit-bsl-ftr @Classes?.Footer">
+            @FooterTemplate
+        </div>
     }
 </div>

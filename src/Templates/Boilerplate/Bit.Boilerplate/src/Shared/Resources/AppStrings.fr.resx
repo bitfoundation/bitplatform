@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>Trop de requêtes</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>Impossible de se connecter au serveur.</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Aucun enregistrement à afficher.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Chargement…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Ajouter</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Effacer les filtres</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>Exporter en CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Exporter en Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Colonnes</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Tout sélectionner</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Sélectionner la ligne</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Sélectionner la ligne : {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtrer…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filtrer par {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Opérateur de filtre pour {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Contient</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Ne contient pas</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Commence par</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Se termine par</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Vrai</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Faux</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Grouper par {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Dégrouper par {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Développer le groupe {0} : {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Réduire le groupe {0} : {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} sur {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Page {0} sur {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / page</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Lignes par page</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Première page</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Page précédente</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Page suivante</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Dernière page</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Fin des résultats -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Afficher/masquer les détails</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Afficher/masquer les éléments enfants</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Faites glisser pour réorganiser, ou placez le focus et utilisez les touches fléchées pour déplacer cette ligne</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Réorganiser la ligne. Appuyez sur Flèche haut ou Flèche bas pour déplacer cette ligne.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Valeur non valide pour {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Trié par {0}, croissant</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Trié par {0}, décroissant</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Tri par {0} supprimé</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filtre appliqué sur {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filtre sur {0} effacé</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Page {0} sur {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Ligne supprimée</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Se connecter avec une clé d’accès</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Ouvrir Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Ouvrir Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>En vous inscrivant, vous acceptez nos</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Instructions système</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Afficher les instructions système pour le chatbot ici.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Assistance</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Analyser l&apos;image du produit</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Tâche de notification push</value>
@@ -792,9 +965,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Code de vérification :</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Saisir le code de vérification.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Vérifier</value>
   </data>
@@ -976,6 +1146,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Supprimer l'élément de tâche</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Trier par ordre croissant</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Trier par ordre décroissant</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -991,18 +1167,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Texte alternatif</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Page</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>sur</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Réessayer</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panneau d'administration</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} éléments</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Nombre de produits des 30 derniers jours</value>
@@ -1040,9 +1213,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Catégories avec nombre de produits</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Rechercher par nom</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Graphique du nombre de produits par catégorie</value>
   </data>
@@ -1073,9 +1243,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DeleteProduct" xml:space="preserve">
     <value>Supprimer le produit</value>
   </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Sélecteur de couleur par défaut</value>
-  </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Modifier le produit {0}</value>
   </data>
@@ -1093,6 +1260,18 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Voici vos données analytiques</value>
+  </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Supprimer la catégorie</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer la catégorie {0}</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Couleurs prédéfinies</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Ce produit n'a pas pu être chargé.</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
@@ -1115,6 +1294,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Achat réussi !</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Aucun produit à afficher pour le moment.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Rechercher des produits</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Les produits n'ont pas pu être chargés.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1148,6 +1336,57 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panneau de chat IA</value>
   </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Dicter votre message</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Arrêter la dictée</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dictée</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>L'accès au microphone est bloqué. Autorisez-le dans vos paramètres afin de pouvoir dicter.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dictée interrompue : {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Lire à voix haute</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Arrêter la lecture</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Transcription de ce que vous avez dit</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Temps restant avant l'arrêt de la dictée</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>La voix nécessite un compte</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>La dictée et la lecture à voix haute fonctionnent toutes deux sur le serveur. Connectez-vous une fois et vous pourrez dicter vos messages et écouter les réponses.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Joindre une image</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>L'image dépasse 10 Mo.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Seules les images peuvent être jointes.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>L'image n'a pas pu être jointe.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Les images nécessitent un compte</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Connectez-vous pour envoyer une image avec votre message.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Salutations{0}! Je suis là pour rendre votre expérience d'application géniale ! Une question ou besoin d'aide ?</value>
   </data>
@@ -1157,21 +1396,23 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Comment installer la version PWA de l'application ?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>J'ai des commentaires à partager !</value>
-  </data>
+  <value>J'ai des commentaires à partager !</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Écrivez un message...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Agrandir</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Restaurer</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1190,6 +1431,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Échec de l'amélioration du compte.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Aucune publicité n'est disponible pour le moment. Veuillez réessayer plus tard.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problème pour regarder la pub ?</value>
   </data>
@@ -1197,9 +1441,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>J'ai des problèmes pour regarder les pubs dans l'application.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Veuillez patienter</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Gestion</value>
   </data>
@@ -1252,17 +1493,29 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Envoyer la notification</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Les notifications sont activées pour cette session.</value>
+  </data>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Les notifications sont mises en sourdine pour cette session.</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
     <value>Activer les notifications</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
+  <data name="TurnNotificationsOff" xml:space="preserve">
     <value>Désactiver les notifications</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Notification de test 1</value>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Les notifications sont activées</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Notification de test 2</value>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Nous l'avons envoyée pour que vous puissiez vérifier que les notifications arrivent sur cet appareil. Touchez-la pour lire notre politique de confidentialité.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Votre connexion en direct au serveur est active. Ce message est arrivé par ce biais, et les prochains changements s'afficheront de la même façon, dès qu'ils se produisent.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1331,6 +1584,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer cet utilisateur SuperAdmin</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Vous ne pouvez pas révoquer les sessions de cet utilisateur SuperAdmin</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Vous ne pouvez pas supprimer votre session actuelle</value>
   </data>
@@ -1355,6 +1611,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>URL de la page</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>L'URL de la page doit être une URL relative au sein de l'application, par exemple /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Vous n'êtes pas autorisé</value>
   </data>
@@ -1370,10 +1629,87 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="ImageTooSmall" xml:space="preserve">
     <value>L'image est trop petite. Dimensions minimales requises : {0}x{1}, mais les dimensions actuelles sont {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Le fichier téléversé n'est pas une image prise en charge.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>L'image fournie ne contient pas de voiture.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Ajouter {0} à ce groupe d'utilisateurs</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Retirer {0} de ce groupe d'utilisateurs</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Accorder {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Révoquer {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Accorder toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Révoquer toutes les fonctionnalités {0}</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Actualiser le groupe d'utilisateurs sélectionné</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Actualiser l'utilisateur sélectionné</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Aucune session ne correspond à votre recherche.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Saisissez le code à 6 chiffres de votre application d'authentification.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Ouvrir ce compte dans votre application d'authentification</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>Code QR pour configurer votre application d'authentification</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Cette session n'est plus valide. Veuillez vous reconnecter.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Révoquer cette session</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>L'image doit faire {0} ou moins.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Seuls les fichiers image peuvent être utilisés</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre numéro de téléphone. Saisissez-en un autre.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>C'est déjà votre adresse e-mail. Saisissez-en une autre.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Plus d'onglets</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Ouvrir le menu de navigation</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Menu du compte</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Passer au thème sombre</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Passer au thème clair</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Locataire</value>
   </data>
@@ -1404,9 +1740,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir quitter le locataire {0} ?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Vous avez quitté le locataire avec succès.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Changer de locataire</value>
   </data>
@@ -1424,6 +1757,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Le nom de locataire '{0}' est déjà utilisé.</value>
+  </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Le nom de locataire '{0}' est réservé et ne peut pas être utilisé.</value>
   </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Locataire introuvable.</value>
@@ -1449,6 +1785,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Le domaine '{0}' est déjà utilisé.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Le domaine '{0}' est réservé et ne peut pas être utilisé.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Vous n'avez pas encore sélectionné de locataire. Passez à l'un de vos locataires ou créez-en un nouveau pour commencer.</value>
   </data>
@@ -1470,5 +1809,227 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="Inactive" xml:space="preserve">
     <value>Inactif</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Refuser l'invitation</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Refuser l'invitation à {0} ? Cette action est irréversible - vous aurez besoin d'une nouvelle invitation pour rejoindre.</value>
+  </data>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Fuseau horaire</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Sélectionner le fuseau horaire</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Rechercher un fuseau horaire</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Aucun fuseau horaire ne correspond à votre recherche.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
+  </data>
+  <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Confidentialité</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Téléchargez une copie de vos données</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Vos choix de confidentialité</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Votre connexion, la mémorisation de votre langue et le signalement des erreurs ne figurent pas dans cette liste : l'application ne peut pas fonctionner sans les deux premiers, et les rapports d'erreur ne contiennent aucun identifiant de votre appareil.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Analyse d'utilisation</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Nous permet de reconnaître votre appareil d'une visite à l'autre afin de voir quelles pages sont utilisées et combien de temps elles prennent. Le désactiver n'arrête pas les rapports d'erreur.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Publicité</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Charge le script publicitaire, qui définit ses propres identifiants. Rien n'est chargé tant que vous ne l'activez pas.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Votre vie privée</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Nous souhaitons stocker sur votre appareil des informations dont cette application n'a pas besoin pour fonctionner. Votre connexion, la mémorisation de votre langue et le signalement des erreurs ont lieu dans tous les cas.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Paramètres de confidentialité</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Paramètres du compte</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Téléchargez vos données</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Obtenez une copie de tout ce que cette application conserve à votre sujet : votre compte, les appareils sur lesquels vous êtes connecté, votre photo de profil et le contenu que vous avez créé. Le tout arrive sous forme de fichier zip contenant data.json et vos fichiers.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Chaque partie du fichier indique aussi pourquoi elle est conservée, pendant combien de temps, qui d'autre la reçoit et si la suppression de votre compte l'efface.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Télécharger mes données</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Pour faire supprimer vos données à la place, supprimez votre compte depuis</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exporter les données</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Répond à une demande de données qui n'est pas arrivée via l'application.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Regarder une publicité charge le script publicitaire de Google, qui définit ses propres identifiants sur votre appareil. Rien n'est chargé tant que vous n'avez pas accepté.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Accepter et continuer</value>
+  </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Autoriser l'application</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Vérification de cette demande...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Cette demande ne peut pas être autorisée</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>Rien n'a été partagé. Vous pouvez fermer cette page et réessayer depuis l'application.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Aller à la page d'accueil</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>Vous pouvez revenir à l'application</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>Le résultat a été transmis à {0}. Si elle n'est pas revenue au premier plan d'elle-même, basculez vers elle.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>Autoriser {0} ?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Elle demande à agir en votre nom. Ne continuez que si vous avez lancé cette opération depuis une application de confiance.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Application</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Peut accéder à</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Vous renvoie vers</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Elle pourra :</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Votre compte ne peut pas accorder tout ce que cette application a demandé ; les éléments suivants seront donc écartés : {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Cette application s'est décrite elle-même ; personne chez {0} ne s'en est porté garant.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Autoriser</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>L'application à l'origine de cette demande n'a pas pu être identifiée.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>L'adresse vers laquelle cette application veut être renvoyée ne fait pas partie de celles qu'elle a enregistrées.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Cette demande d'autorisation n'est pas valide.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Lire les informations de diagnostic de ce déploiement - configuration, schéma de base de données, tâches en arrière-plan. Elle ne peut rien modifier.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Lire les informations de diagnostic de ce déploiement.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Application autorisée</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Applications</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Applications autorisées</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Applications externes que vos utilisateurs ont autorisées via OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Aucune application n'a encore été autorisée.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Les applications apparaissent ici dès que quelqu'un en autorise une ; rien n'a besoin d'être enregistré à l'avance.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>autorisations actives</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Renvoie les utilisateurs vers :</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Révoquer l'accès</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} détient actuellement {1} autorisation(s). La révocation la déconnecte pour tous ceux qui l'ont autorisée ; ils pourront l'autoriser à nouveau.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} autorisation(s) révoquée(s).</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Préconfigurée</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Auto-décrite</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>Cette application n'a pas pu être identifiée, il n'y a donc nulle part où revenir.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Cette demande d'autorisation n'est pas valide ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Votre compte n'a pas les autorisations que cette application demande.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Cette application exige l'authentification à deux facteurs. Activez-la dans les paramètres de votre compte, reconnectez-vous, puis recommencez depuis l'application.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Espace de travail</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>Vous n'êtes pas membre de l'espace de travail demandé par cette application.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Utiliser l'assistant de cette application en votre nom - lui poser des questions et rechercher ce qu'il peut rechercher. Il ne peut pas agir sur votre appareil.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Utiliser l'assistant de cette application en votre nom.</value>
+  </data>
+  <!--#endif -->
 </root>

@@ -30,12 +30,14 @@ public partial class PricingPage
 
         try
         {
+            // ExceptionDelegatingHandler in the HttpClient pipeline throws a typed exception on any
+            // non-success response; WrapHandled on the submit button surfaces its message.
             await HttpClient.PostAsJsonAsync("api/SupportPackage/BuyPackage", buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+            isSent = true;
         }
         finally
         {
             isSending = false;
-            isSent = true;
         }
     }
 }

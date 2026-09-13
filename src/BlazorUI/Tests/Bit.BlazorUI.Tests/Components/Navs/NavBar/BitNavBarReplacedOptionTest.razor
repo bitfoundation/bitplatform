@@ -1,0 +1,10 @@
+@using Bit.BlazorUI
+
+<BitNavBar TItem="BitNavBarOption" Mode="BitNavMode.Manual">
+    <BitNavBarOption Text="Home" />
+    <BitNavBarOption Text="New" TemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <Template Context="option">
+            <button type="button" class="replaced-option">@option.Text</button>
+        </Template>
+    </BitNavBarOption>
+</BitNavBar>

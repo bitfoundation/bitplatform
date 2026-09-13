@@ -132,7 +132,14 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaDescription) is false)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("aria-describedby")?.Equals(ariaDescription));
+            var descriptionId = chbInput.GetAttribute("aria-describedby");
+
+            Assert.IsNotNull(descriptionId);
+
+            var description = component.Find($"[id='{descriptionId}']");
+
+            Assert.IsTrue(description.ClassList.Contains("bit-chb-dsc"));
+            Assert.AreEqual(ariaDescription, description.TextContent);
         }
         else
         {
@@ -428,6 +435,217 @@ public class BitCheckboxTests : BunitTestContext
         checkBox.Click();
 
         Assert.AreEqual(value is false, bitCheckBox.ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxReadOnlyTest(bool readOnly)
+    {
+        var clicked = false;
+        var changed = false;
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+            parameters.Add(p => p.OnChange, () => changed = true);
+        });
+
+        var chbInput = component.Find("input");
+
+        if (readOnly)
+        {
+            Assert.AreEqual("true", chbInput.GetAttribute("aria-readonly"));
+            Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-rdl"));
+        }
+        else
+        {
+            Assert.IsNull(chbInput.GetAttribute("aria-readonly"));
+            Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-rdl"));
+        }
+
+        chbInput.Click();
+
+        Assert.AreEqual(readOnly is false, clicked);
+        Assert.AreEqual(readOnly is false, changed);
+        Assert.AreEqual(readOnly is false, component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxThreeStateShouldCycleThroughStates()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ThreeState, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        var chb = component.Find(".bit-chb");
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ckd"));
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ind"));
+
+        chbInput.Click();
+        chb = component.Find(".bit-chb");
+        Assert.IsTrue(chb.ClassList.Contains("bit-chb-ckd"));
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ind"));
+
+        chbInput.Click();
+        chb = component.Find(".bit-chb");
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ckd"));
+        Assert.IsTrue(chb.ClassList.Contains("bit-chb-ind"));
+
+        chbInput.Click();
+        chb = component.Find(".bit-chb");
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ckd"));
+        Assert.IsFalse(chb.ClassList.Contains("bit-chb-ind"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxOnChangingShouldBeCancellable(bool cancel)
+    {
+        var changed = false;
+        BitCheckboxChangeArgs changingArgs = default!;
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.OnChanging, (BitCheckboxChangeArgs args) =>
+            {
+                changingArgs = args;
+                args.Cancel = cancel;
+            });
+            parameters.Add(p => p.OnChange, () => changed = true);
+        });
+
+        component.Find("input").Click();
+
+        Assert.IsNotNull(changingArgs);
+        Assert.IsTrue(changingArgs.Value);
+        Assert.IsFalse(changingArgs.Indeterminate);
+
+        Assert.AreEqual(cancel is false, changed);
+        Assert.AreEqual(cancel is false, component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
+    [TestMethod,
+        DataRow(BitLabelPosition.Top, "bit-chb-ltp"),
+        DataRow(BitLabelPosition.Bottom, "bit-chb-lbt"),
+        DataRow(BitLabelPosition.Start, "bit-chb-lst"),
+        DataRow(BitLabelPosition.End, "bit-chb-lnd"),
+        DataRow(null, null)
+    ]
+    public void BitCheckboxLabelPositionTest(BitLabelPosition? labelPosition, string expectedClass)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.LabelPosition, labelPosition);
+        });
+
+        var chb = component.Find(".bit-chb");
+
+        if (expectedClass is not null)
+        {
+            Assert.IsTrue(chb.ClassList.Contains(expectedClass));
+        }
+        else
+        {
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-ltp"));
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-lbt"));
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-lst"));
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-lnd"));
+        }
+    }
+
+    [TestMethod,
+        DataRow(true, true),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(false, false)
+    ]
+    public void BitCheckboxRequiredTest(bool required, bool isEnabled)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Required, required);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.AreEqual(required, chbInput.HasAttribute("required"));
+        Assert.AreEqual(required && isEnabled, component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxUncheckedIconTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.UncheckedIconName, "Cancel");
+        });
+
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-uci"));
+        Assert.IsTrue(component.Find(".bit-chb-box i").ClassList.Contains("bit-icon--Cancel"));
+
+        component.Find("input").Click();
+
+        Assert.IsTrue(component.Find(".bit-chb-box i").ClassList.Contains("bit-icon--Accept"));
+    }
+
+    [TestMethod,
+        DataRow("Blocked"),
+        DataRow(null)
+    ]
+    public void BitCheckboxIndeterminateIconTest(string indeterminateIconName)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, true);
+            parameters.Add(p => p.IndeterminateIconName, indeterminateIconName);
+        });
+
+        var chb = component.Find(".bit-chb");
+        var icon = component.Find(".bit-chb-box i");
+
+        if (indeterminateIconName is not null)
+        {
+            Assert.IsTrue(chb.ClassList.Contains("bit-chb-cii"));
+            Assert.IsTrue(icon.ClassList.Contains($"bit-icon--{indeterminateIconName}"));
+            Assert.IsFalse(icon.ClassList.Contains("bit-chb-idi"));
+        }
+        else
+        {
+            Assert.IsFalse(chb.ClassList.Contains("bit-chb-cii"));
+            Assert.IsTrue(icon.ClassList.Contains("bit-chb-idi"));
+        }
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxAutoFocusTest(bool autoFocus)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+        });
+
+        Assert.AreEqual(autoFocus, component.Find("input").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxInputShouldBeFocusable()
+    {
+        var component = RenderComponent<BitCheckbox>();
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("hidden"));
+        Assert.IsTrue(chbInput.ClassList.Contains("bit-chb-inp"));
     }
 
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;

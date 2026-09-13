@@ -1,8 +1,4 @@
 //+:cnd:noEmit
-//#if (signalR == true)
-using Microsoft.AspNetCore.SignalR;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
-//#endif
 using Boilerplate.Shared.Features.Categories;
 
 namespace Boilerplate.Server.Api.Features.Categories;
@@ -85,7 +81,7 @@ public partial class CategoryController : AppControllerBase, ICategoryController
         await PublishDashboardDataChanged(cancellationToken);
         //#endif
 
-        return entityToUpdate.Map();
+        return await Get(entityToUpdate.Id, cancellationToken);
     }
 
     [HttpDelete("{id}/{version}")]
@@ -115,7 +111,18 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     {
         // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
+        //#if (multitenant == true)
+        // Only this tenant: "AuthenticatedClients" spans every tenant.
+        await appHubContext.Clients.Group(AppHub.TenantGroupName(TenantProvider.GetCurrentTenantId())).Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         await appHubContext.Clients.Group("AuthenticatedClients").Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
     }
     //#endif
 
@@ -123,8 +130,10 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     {
         var entry = DbContext.Entry(category);
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
+        // The `p.Id != category.Id` term matters on a case or accent insensitive collation: IsModified compares
+        // ordinally, so renaming "BMW" to "Bmw" reaches this query, and without it the row matches itself.
         if ((entry.State is EntityState.Added || entry.Property(c => c.Name).IsModified)
-            && await DbContext.Categories.AnyAsync(p => p.Name == category.Name, cancellationToken))
+            && await DbContext.Categories.AnyAsync(p => p.Id != category.Id && p.Name == category.Name, cancellationToken))
             throw new ResourceValidationException((nameof(CategoryDto.Name), [Localizer[nameof(AppStrings.DuplicateCategoryName), category.Name!]]));
     }
 }

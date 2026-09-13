@@ -6,7 +6,7 @@
 public enum BitSwipeOrientation
 {
     /// <summary>
-    /// Not orientation lock for swipe trap.
+    /// No orientation lock for the swipe trap.
     /// </summary>
     None,
 
@@ -18,5 +18,10 @@ public enum BitSwipeOrientation
     /// <summary>
     /// Vertical orientation lock of trapping the swipe action.
     /// </summary>
-    Vertical
+    Vertical,
+
+    /// <summary>
+    /// Locks the trap to the first orientation the gesture moves along, trapping that axis and zeroing the other.
+    /// </summary>
+    Auto
 }

@@ -318,10 +318,13 @@ namespace BitBlazorUI {
     ]);
     // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
     // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the
-    // navigation keys, Enter (commit) and F2 (enter edit) are kept with the embedded control.
+    // navigation keys, Enter (commit), F2 (enter edit) and Space are kept with the embedded control.
+    // Space matters because a row acting as its own detail toggle (see BitDataGridRow) handles it on
+    // the row element: letting it bubble would type-and-toggle in an editor input, and would toggle a
+    // second time on top of the click a nested button synthesizes from Space.
     const nestedControlKeys = new Set([
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'F2'
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'F2', ' '
     ]);
     // Controls inside an editor that have their own Enter/Escape semantics and must not have those
     // keys cancelled by the grid (buttons, selects, textareas, links and contenteditable regions).
@@ -374,6 +377,14 @@ namespace BitBlazorUI {
             // Suppress the grid-owned keys here so arrow/page/home/end never scroll the viewport.
             if (target.classList?.contains('bit-dtg-cell') && target.hasAttribute('tabindex')) {
                 if (cellNavKeys.has(e.key)) e.preventDefault();
+                return;
+            }
+
+            // The row itself is the detail toggle when the toggle column is hidden and cell navigation
+            // is off (see BitDataGridRow): it is focusable and activates on Enter/Space like a button,
+            // so Space must not also scroll the page. Enter has no default worth cancelling on a div.
+            if (e.key === ' ' && target.classList?.contains('bit-dtg-row') && target.hasAttribute('tabindex')) {
+                e.preventDefault();
                 return;
             }
 

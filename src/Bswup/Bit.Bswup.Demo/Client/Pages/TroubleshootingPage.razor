@@ -1,0 +1,289 @@
+﻿@page "/troubleshooting"
+
+<PageOutlet Slug="troubleshooting" />
+
+<h1>Troubleshooting &amp; FAQ</h1>
+<p class="docs-lead">
+    Service worker problems are notoriously hard to read: the symptom shows up in the app, but the cause
+    lives in a background thread with its own lifecycle. This page maps the symptoms people actually report
+    back to their causes.
+</p>
+
+<h2>Diagnose it first</h2>
+<p>Four steps that identify most problems before you change a single setting:</p>
+<ol class="docs-steps">
+    <li>
+        <strong>Turn the logs up.</strong> Set <code>log="verbose"</code> on the
+        <a href="script-options">script tag</a> and <code>self.enableDiagnostics = true</code> in
+        <code>service-worker.js</code>. The page-side handshake and the worker then narrate themselves to
+        the console.
+    </li>
+    <li>
+        <strong>Look at the registration.</strong> Dev tools → Application → Service Workers shows the scope,
+        which worker is active, and whether one is stuck <em>waiting</em>. Dev tools → Application → Cache
+        Storage shows the buckets and their contents.
+    </li>
+    <li>
+        <strong>Check the version.</strong>
+        <a href="javascript-api#version"><code>BitBswup.version</code></a> in the console reports the Bswup
+        build the page is running.
+    </li>
+    <li>
+        <strong>Watch the events.</strong> The <a href="playground">Live Playground</a> on this site does all
+        of the above with buttons - and your app can do the same in a few lines by chaining a handler.
+    </li>
+</ol>
+
+<h2>Install and startup</h2>
+
+<h3 id="stuck-splash">The app never appears - the splash sits there forever</h3>
+<p>
+    <strong>Cause.</strong> Almost always a <em>silent</em> install failure. The most common is the browser
+    terminating the service worker mid-install (Chromium caps installs at roughly five minutes), which
+    reports nothing at all: no error, no lifecycle event.
+</p>
+<p>
+    <strong>Fix.</strong> Nothing, in current versions - this is what
+    <a href="script-options#stalltimeout"><code>stallTimeout</code></a> exists for. After 60 seconds of total
+    worker silence on a first install, Bswup gives up waiting and starts Blazor directly from the network.
+    If you are seeing a permanent splash, check that you have not set <code>stallTimeout="0"</code>, and look
+    for a handler of your own that throws before revealing the app.
+</p>
+
+<h3 id="progress-frozen">The progress bar freezes partway through</h3>
+<p>
+    <strong>Cause.</strong> A large asset is genuinely still downloading, or an asset is failing repeatedly.
+    Progress only advances per completed asset, so one slow 30 MB <code>.wasm</code> looks identical to a
+    stall.
+</p>
+<p>
+    <strong>Fix.</strong> Check the Network tab first. If assets really are failing, they are reported through
+    the <a href="events#error-payload"><code>error</code> event</a> - under the default <code>lax</code>
+    tolerance with <code>fatal: false</code>, which means the install continues and the asset is fetched from
+    the network on first use. Transient failures (rejected fetches, 408/429/5xx) are already retried with
+    backoff; tune with <a href="service-worker#maxretries"><code>maxRetries</code></a> and
+    <code>retryDelay</code>.
+</p>
+
+<h3 id="no-service-worker">Nothing installs at all - no worker, no caches</h3>
+<p><strong>Causes, in order of likelihood:</strong></p>
+<ul>
+    <li><strong>Not HTTPS.</strong> Service workers only register over HTTPS or <code>localhost</code>.</li>
+    <li><strong>Missing manifest.</strong> Without <code>&lt;ServiceWorkerAssetsManifest&gt;</code> in the WebAssembly project, <code>service-worker-assets.js</code> is never generated and the worker has nothing to cache.</li>
+    <li><strong>Only one worker file edited.</strong> <code>service-worker.js</code> is used in development; <code>service-worker.published.js</code> is what published builds ship. See <a href="#works-locally">below</a>.</li>
+    <li><strong>Scope rejected.</strong> A <code>scope</code> above the worker script's own folder needs a <code>Service-Worker-Allowed</code> header. Bswup retries with the default scope and logs a warning rather than losing the worker entirely, so look for that warning.</li>
+</ul>
+
+<h3 id="works-locally">It works locally but not when published</h3>
+<p>
+    <strong>Cause.</strong> The two service worker files diverged. <code>wwwroot/service-worker.js</code> is
+    used during development, and <code>wwwroot/service-worker.published.js</code> is what a published build
+    actually deploys, through the <code>ServiceWorker</code> item's <code>PublishedContent</code> mapping.
+</p>
+<p><strong>Fix.</strong> Keep the same content in both, and confirm the item is in the project file:</p>
+<CodeBlock Language="xml" Code="@CsprojCode" />
+
+<h2>Updates</h2>
+
+<h3 id="stale-clients">Users keep running an old version</h3>
+<p>
+    <strong>Cause.</strong> Either the browser is not <em>checking</em>, or it is being served a cached worker
+    script. By default a browser re-checks the worker only on navigation and roughly every 24 hours, so a
+    long-lived SPA tab can run a stale build for a very long time.
+</p>
+<p><strong>Fix.</strong> Both halves:</p>
+<CodeBlock Language="html" Code="@PollingCode" />
+<p>
+    Then make sure your host sends <code>Cache-Control: no-cache</code> for <code>service-worker.js</code> and
+    <code>bit-bswup.sw.js</code> - see the <a href="recipes#hosting">deployment checklist</a>. Bswup already
+    registers with <code>updateViaCache: 'none'</code>, but support is uneven on older Safari/iOS and proxies
+    are not bound by it.
+</p>
+
+<h3 id="no-update-button">An update downloads but the reload button never appears</h3>
+<p>
+    <strong>Cause.</strong> Usually custom splash markup written before v-10-6-0. The built-in handling no
+    longer reveals the overlay for updates - a background update must not paint over the running app - so a
+    reload button left <em>inside</em> <code>#bit-bswup</code> can never become visible.
+</p>
+<p>
+    <strong>Fix.</strong> Move <code>&lt;button id="bit-bswup-reload"&gt;</code> outside the overlay and give
+    it its own <code>z-index</code>. The <code>BswupProgress</code> component already does this for you,
+    including with custom <code>ChildContent</code>. See the
+    <a href="migration">migration guide</a>.
+</p>
+
+<h3 id="update-not-detected">Publishing a new build raises no update</h3>
+<p>
+    <strong>Cause.</strong> The browser compares the worker script byte-for-byte. If
+    <code>service-worker.js</code> and everything it imports are unchanged, there is no new worker - even
+    though your app's assets changed.
+</p>
+<p>
+    <strong>Fix.</strong> The default setup already handles this: <code>service-worker-assets.js</code> is part
+    of the import chain and its contents change whenever an asset hash changes. If you have moved the manifest
+    out of that chain, stamp <a href="service-worker#cacheversion"><code>cacheVersion</code></a> from your
+    build instead.
+</p>
+
+<h3 id="everything-redownloads">Every publish re-downloads the entire app</h3>
+<p>
+    <strong>Cause.</strong> The cache bucket name rotated. It tracks Blazor's asset-manifest hash, so
+    <em>any</em> asset hash change rotates it - including the noisy rebuild hashes .NET produces locally.
+</p>
+<p>
+    <strong>Fix.</strong> This is correct behavior for a real publish. For development, pin
+    <code>cacheVersion</code> to a constant; for CI, stamp it with a value that bumps once per release - see
+    <a href="recipes#cache-version">Stamp the cache version from your build</a>.
+</p>
+
+<h2>Offline</h2>
+
+<h3 id="offline-broken">Going offline and reloading shows a network error</h3>
+<p>
+    <strong>Cause.</strong> The SPA fallback has nothing to serve. Bswup announces this at startup:
+</p>
+<CodeBlock Language="text" Code="@DefaultUrlWarning" />
+<p>
+    <strong>Fix.</strong> <a href="service-worker#defaulturl"><code>defaultUrl</code></a> must name an entry
+    that really exists in <code>service-worker-assets.js</code> or <code>externalAssets</code>. For a
+    standalone WebAssembly app that is <code>index.html</code> (the default). For a Blazor Web App or
+    <code>_Host.cshtml</code> setup the shell is the root URL, which is not in the manifest, so add it:
+</p>
+<CodeBlock Language="javascript" Code="@DefaultUrlFix" />
+
+<h3 id="deep-links">The home page works offline but deep links do not</h3>
+<p>
+    <strong>Cause.</strong> Usually one of two things. Either the cached shell is a <em>prerendered</em> copy of
+    the home page - so every offline deep link flashes home content before the router corrects it - or your
+    host redirects the shell URL (<code>/</code> → <code>/index.html</code>, common on Cloudflare Pages and
+    Netlify) and the browser rejects a redirected response for a navigation.
+</p>
+<p>
+    <strong>Fix.</strong> The redirect case is handled automatically - Bswup rebuilds the response before
+    serving it to a navigation. For the prerendering case, set
+    <a href="service-worker#noprerenderquery"><code>noPrerenderQuery</code></a> and honor it in your host
+    document so the copy the worker caches is route-agnostic. This site does exactly that; view the source of
+    <code>Server/Components/App.razor</code> in the repository for the pattern.
+</p>
+
+<h3 id="media">Cached audio or video will not play in Safari</h3>
+<p>
+    <strong>Cause and fix.</strong> Safari refuses media served as a <code>200</code> in response to a ranged
+    request. Since v-10-6-0 Bswup answers requests carrying a <code>Range</code> header with a real
+    <code>206 Partial Content</code> sliced from the cached body, so upgrading fixes it. Media must be declared
+    as an asset (it is in the manifest, or added via <code>externalAssets</code>) for the slice to be possible.
+</p>
+
+<h3 id="storage-evicted">The app stops working offline after a while</h3>
+<p>
+    <strong>Cause.</strong> The browser reclaimed the cache. Everything Bswup stores lives in <em>best-effort</em>
+    storage by default: browsers evict it under disk pressure, and Safari deletes all storage for a site not
+    interacted with for seven days.
+</p>
+<p>
+    <strong>Fix.</strong> Request persistent storage - ideally from a user gesture, where grant odds are best.
+    See <a href="recipes#durable-storage">Ask for durable storage at the right moment</a>. An
+    <code>install-infra</code> error means the install died before or while touching CacheStorage, which is
+    usually quota exhaustion or a restricted private-browsing mode; it is always fatal, and Bswup boots the app
+    from the network instead.
+</p>
+
+<h2>Frequently asked</h2>
+
+<h3>Does Bswup work with Blazor Server or Blazor Web Apps?</h3>
+<p>
+    Bswup targets <strong>Blazor WebAssembly</strong> - it caches a client-side app so it can boot without the
+    network, which is only meaningful when the app runs in the browser. That includes a Blazor Web App using the
+    Interactive WebAssembly render mode (this documentation site is exactly that: server-prerendered, then
+    interactive WebAssembly). A pure Blazor Server app keeps a live circuit to the server and has nothing to
+    boot offline.
+</p>
+
+<h3>Do I have to write a handler function?</h3>
+<p>
+    No. Use the <a href="progress-ui">built-in progress UI</a> and you write none. And if no handler is ever
+    registered at all, a first install still completes - Bswup drives the finish handshake itself so the app
+    boots; updates are simply left staged until the next full restart.
+</p>
+
+<h3>Can I use my own UI instead of the built-in splash?</h3>
+<p>
+    Three levels, in increasing order of control: pass <code>ChildContent</code> to
+    <code>BswupProgress</code> to replace the markup while keeping the behavior; pass the
+    <code>Handler</code> parameter to <em>layer</em> your own logic after the built-in handling (see
+    <a href="recipes#update-banner">Replace the reload button with your own banner</a>); or skip the component
+    entirely and write a <a href="events">handler function</a> that drives whatever markup you like.
+</p>
+
+<h3>What happens in a browser with no service worker support, or in private mode?</h3>
+<p>
+    The app boots normally, straight from the network, with no offline support. Bswup starts Blazor itself
+    rather than waiting for a worker that will never arrive. The same applies on the very first visit before
+    anything is installed, and on a hard reload, which bypasses the worker by design.
+</p>
+
+<h3>Does it interfere with my API calls or other caches?</h3>
+<p>
+    No. The worker only takes over requests it manages - assets from the manifest, your declared
+    <code>externalAssets</code>, and SPA navigations. Everything else is left to the browser exactly as if no
+    worker were installed. Cache buckets your app owns are likewise left alone, including by
+    <code>forceRefresh()</code>'s default filter, since they can hold data with no other copy.
+</p>
+
+<h3>How do I remove Bswup from an app that is already deployed?</h3>
+<p>
+    Swap the worker's contents for the self-destructing cleanup worker - it purges the caches, unregisters
+    itself, and detaches every client. See <a href="cleanup">Backing Out of Bswup</a>. To reset a single broken
+    client without changing the deployment, use
+    <a href="javascript-api#forcerefresh"><code>BitBswup.forceRefresh()</code></a>.
+</p>
+
+<h3>How is this different from the service worker in the standard Blazor template?</h3>
+<p>
+    The template gives you a worker that precaches silently and, on an update, waits for every tab to close
+    before the new version takes effect - with no progress, no prompt, and no recovery path when an install
+    fails. Bswup replaces that with a visible install, an update the user accepts explicitly and that stays
+    consistent across tabs, retries and error tolerance for flaky networks, a watchdog so a failed install can
+    never freeze the app, and a small API to drive all of it. There is a side-by-side comparison
+    <a href="/">on the home page</a>, and <a href="how-it-works">How It Works</a> covers the mechanics.
+</p>
+
+<Callout Type="tip" Title="Still stuck?">
+    Open an issue on
+    <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">GitHub</a>
+    with your <code>service-worker.js</code>, your script tag, and the console output at
+    <code>log="verbose"</code> with <code>enableDiagnostics</code> on - those three almost always contain the
+    answer.
+</Callout>
+
+<div class="pager">
+    <a href="recipes">
+        <span class="pager-label">Previous</span>
+        <b>← Recipes</b>
+    </a>
+    <a class="pager-next" href="cleanup">
+        <span class="pager-label">Next</span>
+        <b>Backing Out of Bswup →</b>
+    </a>
+</div>
+
+@code {
+    private const string CsprojCode = @"<PropertyGroup>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+</PropertyGroup>
+
+<ItemGroup>
+    <ServiceWorker Include=""wwwroot\service-worker.js"" PublishedContent=""wwwroot\service-worker.published.js"" />
+</ItemGroup>";
+
+    private const string PollingCode = @"<script src=""_content/Bit.Bswup/bit-bswup.js""
+        updateInterval=""3600""
+        updateOnVisibility=""true""></script>";
+
+    private const string DefaultUrlWarning = @"BitBswup SW: defaultUrl ('/') matches no asset - navigations will NOT be served
+from cache and the app will not work offline.";
+
+    private const string DefaultUrlFix = @"self.defaultUrl = '/';
+self.externalAssets = [{ ""url"": ""/"" }];   // the shell is not in service-worker-assets.js";
+}

@@ -1,4 +1,3 @@
-@namespace Bit.BlazorUI.Legacy.Demo.RichTextEditor
 @page "/components/legacy/richtexteditor"
 @inherits AppComponentBase
 
@@ -29,31 +28,31 @@
         </NotesTemplate>
         <Examples>
             <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy />
+                <BitRichTextEditorLegacy />
             </DemoExample>
 
             <DemoExample Title="Placeholder" RazorCode="@example2RazorCode" Id="example2">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Placeholder="This is a custom placeholder" />
+                <BitRichTextEditorLegacy Placeholder="This is a custom placeholder" />
             </DemoExample>
 
             <DemoExample Title="Readonly" RazorCode="@example3RazorCode" Id="example3">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Placeholder="This editor is readonly!" ReadOnly />
+                <BitRichTextEditorLegacy Placeholder="This editor is readonly!" ReadOnly />
             </DemoExample>
 
             <DemoExample Title="Reversed" RazorCode="@example4RazorCode" Id="example4">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Placeholder="The toolbar location is reversed!" Reversed />
+                <BitRichTextEditorLegacy Placeholder="The toolbar location is reversed!" Reversed />
             </DemoExample>
 
             <DemoExample Title="FullToolbar" RazorCode="@example5RazorCode" Id="example5">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Style="min-height: 300px" FullToolbar />
+                <BitRichTextEditorLegacy Style="min-height: 300px" FullToolbar />
             </DemoExample>
 
             <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Styles="@(new() { Toolbar = "border-color: red", Editor = "border-color: blue" })" />
+                <BitRichTextEditorLegacy Styles="@(new() { Toolbar = "border-color: red", Editor = "border-color: blue" })" />
             </DemoExample>
 
             <DemoExample Title="Get APIs" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy @ref="getEditorRef" />
+                <BitRichTextEditorLegacy @ref="getEditorRef" />
                 <br />
                 <BitButton OnClick="GetText">GetText</BitButton>
                 <BitButton OnClick="GetHtml">GetHtml</BitButton>
@@ -70,11 +69,11 @@
                 <BitButton OnClick="SetHtml">SetHtml</BitButton>
                 <BitButton OnClick="SetContent">SetContent</BitButton>
                 <br /><br />
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy @ref="setEditorRef" />
+                <BitRichTextEditorLegacy @ref="setEditorRef" />
             </DemoExample>
 
             <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy Style="min-height: 300px">
+                <BitRichTextEditorLegacy Style="min-height: 300px">
                     <ToolbarTemplate>
                         <span class="ql-formats">
                             <select class="ql-font"></select>
@@ -122,12 +121,12 @@
                         <div><em>this is italic</em></div>
                         <div><b><em>this is italic & bold</em></b></div>
                     </EditorTemplate>
-                </Bit.BlazorUI.Legacy.BitRichTextEditorLegacy>
+                </BitRichTextEditorLegacy>
             </DemoExample>
 
             <DemoExample Title="Custom fonts" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy OnQuillReady="HandleOnQuillReady"
-                                   Classes="@(new() { Editor = "custom-font-editor", Toolbar = "custom-font-toolbar" })">
+                <BitRichTextEditorLegacy OnQuillReady="HandleOnQuillReady"
+                                         Classes="@(new() { Editor = "custom-font-editor", Toolbar = "custom-font-toolbar" })">
                     <ToolbarTemplate>
                         <select class="ql-font">
                             <option selected>Segoe UI</option>
@@ -139,7 +138,7 @@
                     <EditorTemplate>
                         <p>this is a sample of adding custom fonts to the BitRichTextEditorLegacy!</p>
                     </EditorTemplate>
-                </Bit.BlazorUI.Legacy.BitRichTextEditorLegacy>
+                </BitRichTextEditorLegacy>
             </DemoExample>
 
             <DemoExample Title="Quill custom modules" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
@@ -148,7 +147,7 @@
                     The following sample shows how to use the "imageResize" custom module
                     (<a href="https://github.com/bitignite/quill-image-resize-module">https://github.com/bitignite/quill-image-resize-module</a>).
                 </div><br />
-                <Bit.BlazorUI.Legacy.BitRichTextEditorLegacy FullToolbar Modules="@modules" />
+                <BitRichTextEditorLegacy FullToolbar Modules="@modules" />
             </DemoExample>
         </Examples>
     </DemoPage>

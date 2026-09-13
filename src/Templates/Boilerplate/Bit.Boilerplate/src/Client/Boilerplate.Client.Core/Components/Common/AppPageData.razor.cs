@@ -2,19 +2,50 @@ namespace Boilerplate.Client.Core.Components.Common;
 
 public partial class AppPageData
 {
+    /// <summary>
+    /// The head section <see cref="AppHeadCoordinator"/> hosts an outlet for, so a page's head tags and the
+    /// app-wide ones both reach the document's single HeadOutlet.
+    /// </summary>
+    public const string HeadSectionName = "app-page-head";
+
     private string? _lastPublishedMessage;
 
     [AutoInject] private PubSubService pubSubService = default!;
+    [AutoInject] private NavigationManager navigationManager = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     [Parameter] public string? PageTitle { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? SubTitle { get; set; }
     [Parameter] public bool ShowGoBackButton { get; set; }
 
+    /// <summary>
+    /// This page's own meta description. Left unset, the app-wide one is used as a fallback.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Whatever else this page wants in the document head - a sharing card, a schema. It renders into
+    /// <see cref="HeadSectionName"/> rather than as a HeadContent of the page's own, which would shadow every other one.
+    /// A tag every page needs goes in <see cref="Layout.AppHead"/> instead.
+    /// </summary>
+    [Parameter] public RenderFragment? Head { get; set; }
+
+    /// <summary>
+    /// Without it, <c>?utm_source=x</c> is a page of its own to a search engine: <c>AppResponseCachePolicy</c>'s
+    /// <c>QueryKeys = "*"</c> gives every query variant its own cache entry and its own crawlable url.
+    /// </summary>
+    private string CanonicalUrl => new Uri(navigationManager.Uri).GetCanonicalUrl();
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
+        Publish();
+    }
+
+    private void Publish()
+    {
         var publishMessage = $"{PageTitle}-{Title}-{SubTitle}-{ShowGoBackButton}";
 
         if (_lastPublishedMessage == publishMessage) return;

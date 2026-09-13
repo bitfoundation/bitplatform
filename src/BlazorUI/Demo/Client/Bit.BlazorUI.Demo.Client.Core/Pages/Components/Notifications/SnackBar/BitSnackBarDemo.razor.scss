@@ -1,4 +1,4 @@
-﻿.example-box {
+.example-box {
     gap: 2rem;
     display: flex;
     flex-flow: row wrap;
@@ -6,6 +6,12 @@
     &.column {
         flex-direction: column;
     }
+}
+
+.buttons-container {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
 }
 
 ::deep {

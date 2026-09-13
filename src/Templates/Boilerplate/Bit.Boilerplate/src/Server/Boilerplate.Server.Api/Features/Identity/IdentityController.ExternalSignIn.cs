@@ -1,6 +1,4 @@
 //+:cnd:noEmit
-using Boilerplate.Server.Api.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication;
 
 namespace Boilerplate.Server.Api.Features.Identity;
 
@@ -9,8 +7,13 @@ public partial class IdentityController
     [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IAuthenticationSchemeProvider authenticationSchemeProvider = default!;
 
+    /// <summary>
+    /// Deliberately not cached: the returned URL embeds the caller's origin, which GetWebAppUrl resolves from the X-Origin
+    /// header. The output cache does vary by that header (See AppResponseCachePolicy.CacheRequestAsync), but a CDN edge
+    /// does not unless it is configured to, so a shared-cached response would hand one origin's sign-in URL to a caller
+    /// coming from another, sending the resulting sign-in link to the wrong origin.
+    /// </summary>
     [HttpGet]
-    [AppResponseCache(SharedMaxAge = 3600 * 24 * 7, MaxAge = 60 * 5)]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
     {
         var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
@@ -34,6 +37,9 @@ public partial class IdentityController
         string? signInPageUri;
         ExternalLoginInfo? info = null;
 
+        if (localHttpPort is not null and (< 1 or > 65535))
+            throw new BadRequestException().WithData("localHttpPort", localHttpPort);
+
         try
         {
             info = await signInManager.GetExternalLoginInfoAsync() ?? throw new BadRequestException().WithData("Reason", "External login info is missing.");
@@ -42,10 +48,14 @@ public partial class IdentityController
 
             var user = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 
-            if (user is null && (string.IsNullOrEmpty(email) is false || string.IsNullOrEmpty(phoneNumber) is false))
+            var isLinked = user is not null;
+
+            if (user is null && (string.IsNullOrWhiteSpace(email) is false || string.IsNullOrWhiteSpace(phoneNumber) is false))
             {
                 user = await userManager.FindUser(new() { Email = email, PhoneNumber = phoneNumber });
             }
+
+            var isNewUser = user is null;
 
             if (user is null)
             {
@@ -60,15 +70,17 @@ public partial class IdentityController
 
                 await userStore.SetUserNameAsync(user, Guid.CreateVersion7().ToString(), cancellationToken);
 
-                if (string.IsNullOrEmpty(email) is false)
+                if (string.IsNullOrWhiteSpace(email) is false)
                 {
                     await userEmailStore.SetEmailAsync(user, email, cancellationToken);
                 }
 
-                if (string.IsNullOrEmpty(phoneNumber) is false)
+                if (string.IsNullOrWhiteSpace(phoneNumber) is false)
                 {
                     await userPhoneNumberStore.SetPhoneNumberAsync(user, phoneNumber!, cancellationToken);
                 }
+
+                user.CreatedOn = TimeProvider.GetUtcNow();
 
                 if (info.LoginProvider is "Keycloak")
                 {
@@ -82,17 +94,34 @@ public partial class IdentityController
                     // Therefore, we assign a role to these users by default.
                     await userManager.CreateUserWithDemoRole(user);
                 }
-
-                await userManager.AddLoginAsync(user, info);
             }
 
-            if (string.IsNullOrEmpty(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
+            if (isLinked is false)
+            {
+                var addLoginResult = await userManager.AddLoginAsync(user, info);
+
+                if (addLoginResult.Succeeded is false)
+                {
+                    if (isNewUser)
+                    {
+                        // Only this request could reach that row: a provider asserting neither an email nor a phone
+                        // number leaves the identifier fallback above nothing to match it by, so without the login it
+                        // would be unreachable forever and every retry would add another one.
+                        await userManager.DeleteAsync(user);
+                    }
+
+                    throw new ResourceValidationException(addLoginResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+                }
+            }
+
+            // Confirmation is only as good as the provider's own verification of the identifier
+            if (string.IsNullOrWhiteSpace(email) is false && string.Equals(email, user.Email, StringComparison.OrdinalIgnoreCase) && await userManager.IsEmailConfirmedAsync(user) is false)
             {
                 await userEmailStore.SetEmailConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
             }
 
-            if (string.IsNullOrEmpty(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
+            if (string.IsNullOrWhiteSpace(phoneNumber) is false && string.Equals(phoneNumber, user.PhoneNumber, StringComparison.OrdinalIgnoreCase) && await userManager.IsPhoneNumberConfirmedAsync(user) is false)
             {
                 await userPhoneNumberStore.SetPhoneNumberConfirmedAsync(user, true, cancellationToken);
                 await userManager.UpdateAsync(user);
@@ -104,19 +133,19 @@ public partial class IdentityController
             var refreshToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "refresh_token")?.Value;
             var accessToken = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "access_token")?.Value;
             var expiresAt = info.AuthenticationTokens?.FirstOrDefault(t => t.Name == "expires_at")?.Value;
-            if (string.IsNullOrEmpty(idToken) is false)
+            if (string.IsNullOrWhiteSpace(idToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "id_token", idToken);
             }
-            if (string.IsNullOrEmpty(refreshToken) is false)
+            if (string.IsNullOrWhiteSpace(refreshToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "refresh_token", refreshToken);
             }
-            if (string.IsNullOrEmpty(accessToken) is false)
+            if (string.IsNullOrWhiteSpace(accessToken) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "access_token", accessToken);
             }
-            if (string.IsNullOrEmpty(expiresAt) is false)
+            if (string.IsNullOrWhiteSpace(expiresAt) is false)
             {
                 await userManager.SetAuthenticationTokenAsync(user, info.LoginProvider, "expires_at", expiresAt);
             }
@@ -125,7 +154,11 @@ public partial class IdentityController
         }
         catch (Exception exp)
         {
-            serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", info?.Principal?.GetDisplayName() } });
+            var principalName = info?.Principal?.FindFirstValue("preferred_username")
+                                ?? info?.Principal?.GetEmail()
+                                ?? info?.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", principalName } });
             signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
         }
         finally
@@ -148,7 +181,7 @@ public partial class IdentityController
         var schemes = await authenticationSchemeProvider.GetAllSchemesAsync();
 
         var providers = schemes
-            .Where(s => string.IsNullOrEmpty(s.DisplayName) is false && s.Name != IdentityConstants.ExternalScheme)
+            .Where(s => string.IsNullOrWhiteSpace(s.DisplayName) is false && s.Name != IdentityConstants.ExternalScheme)
             .Select(s => s.Name)
             .ToArray();
 

@@ -2,27 +2,29 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
-using Boilerplate.Client.Core.Infrastructure.Services;
 
 namespace Boilerplate.Server.Web.Components;
 
 public partial class App
 {
-    private static readonly IComponentRenderMode noPrerenderBlazorWebAssembly = new InteractiveWebAssemblyRenderMode(prerender: false);
     [CascadingParameter] public HttpContext HttpContext { get; set; } = default!;
 
     [AutoInject] ServerWebSettings serverWebSettings = default!;
-    [AutoInject] IStringLocalizer<AppStrings> localizer = default!;
     [AutoInject] AbsoluteServerAddressProvider absoluteServerAddress = default!;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        if (CultureInfoManager.InvariantGlobalization is false)
+        // Not written when the response is headed for a shared cache: a Set-Cookie of ANY name makes a CDN refuse to
+        // cache the whole response (Cloudflare answers cf-cache-status: BYPASS), which would cost every pre-rendered
+        // page its edge entry. The client persists the same cookie right after boot instead - See
+        // CultureService.PersistCurrentCulture.
+        if (CultureInfoManager.InvariantGlobalization is false && HttpContext?.IsSharedResponseCacheEnabled() is false)
         {
-            HttpContext?.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
-                                                 CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)));
+            HttpContext.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,
+                                                CookieRequestCultureProvider.MakeCookieValue(new(CultureInfo.CurrentUICulture)),
+                                                new() { IsEssential = true });
         }
     }
 }

@@ -14,6 +14,10 @@ public class PageInfo
 
     public BitIconInfo? IconInfo { get; set; }
 
+    public string? Tooltip { get; set; }
+
+    public string? OpenIn { get; set; }
+
     public bool IsCurrent { get; set; }
 
     public bool IsEnabled { get; set; } = true;

@@ -1,41 +1,83 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../Styles/abstracts/_docs.scss';
 
+// The component pages share the prose pages' article shell (see DocsArticle and the .doc-* rules in
+// Styles/app.scss), so what is left here is only the two things those pages do not have: the
+// reduced-motion escape hatch, and the API tables.
 
-.demo-page {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
+// The page-wide escape hatch from the reduced-motion collapse. It is meaningless when motion is not
+// being reduced, so it only exists in that state; --demo-motion-bar-height (app.scss) is 0 outside
+// this query, which is what keeps the other sticky bars in their original place.
+.motion-bar {
+    display: none;
 }
 
-.page-container.example {
-    width: 80%;
-    flex-grow: 1;
-}
+@media (prefers-reduced-motion: reduce) {
+    .motion-bar {
+        z-index: 10;
+        display: flex;
+        position: sticky;
+        align-items: center;
+        margin-bottom: $doc-space-md;
+        padding: $doc-space-2xs $doc-space-sm;
 
-.page-section {
-    scroll-margin: rem2(80px);
-}
+        // Both halves of the bar's box come from app.scss rather than from the toggle inside it: the
+        // pivot bar of a multi-API page pins itself directly under this one, and it can only do that
+        // if the height it offsets by is the height this bar actually takes. A floor rather than a
+        // fixed height, so a preset that draws its switch track shorter than the label beside it
+        // still leaves the row tall enough to read.
+        top: calc(var(--demo-motion-bar-top) + #{$bit-env-inset-top});
+        min-height: var(--demo-motion-bar-height);
 
-.video-container {
-    display: flex;
-    justify-content: center;
+        // The label is held to one line for the same reason: that height is derived from the switch
+        // track rather than measured, so a label wrapping on a narrow screen would make this bar
+        // taller than the value the pivot bar offsets by - and pin that bar inside this one.
+        ::deep .bit-tgl-stx {
+            white-space: nowrap;
+        }
 
-    video {
-        width: 80%;
-        border-width: $bit-shape-border-width;
-        border-style: $bit-shape-border-style;
-        border-radius: $bit-shape-border-radius;
-        border-color: $bit-color-border-tertiary;
+        // Drawn as one more surface in the column under it - same corner family, stroked all round -
+        // so it does not read as a stray rule across the page.
+        @include doc-surface;
+
+        .bit-ios & {
+            top: calc(var(--demo-motion-bar-top) + env(safe-area-inset-top));
+        }
     }
 }
 
 ::deep {
-    .sec-con {
-        scroll-margin: rem2(80px);
+    .video-container video {
+        width: 80%;
+        border-width: $bit-shape-border-width;
+        border-style: $bit-shape-border-style;
+        border-radius: $bit-shape-radius-surface;
+        border-color: $bit-color-border-tertiary;
     }
 
+    // A one-line note above an example's live preview, rendered by the demo pages themselves.
+    .example-desc {
+        margin-bottom: rem2(8px);
+    }
+
+    .title {
+        overflow-wrap: anywhere;
+        margin-bottom: rem2(50px);
+    }
+
+    // The anchors a parameter's type link jumps to (a sub-class or a sub-enum table).
+    .sec-con {
+        scroll-margin-top: var(--demo-section-scroll-margin);
+    }
+
+    .subclass-title,
+    .subenum-title,
+    .params-title {
+        overflow-wrap: anywhere;
+        margin-top: $doc-space-md;
+    }
+
+    // The densest thing on a documentation page and the most re-read, so it gets a sticky header, a
+    // hairline grid and a row highlight - and nothing else.
     .table-view {
         width: 100%;
         overflow: auto;
@@ -43,7 +85,10 @@
         border-spacing: 0;
         display: inline-grid;
         box-sizing: border-box;
-        margin-bottom: rem2(64px);
+        margin-bottom: rem2(40px);
+        border: rem2(1px) solid $bit-color-border-secondary;
+
+        @include doc-scrollbar(8px);
     }
 
     .th-row {
@@ -53,7 +98,7 @@
         position: sticky;
         min-height: rem2(42px);
         color: $bit-color-foreground-primary;
-        background-color: $bit-color-background-primary;
+        background-color: $bit-color-background-secondary;
         border-bottom: rem2(1px) solid $bit-color-border-secondary;
     }
 
@@ -62,6 +107,10 @@
         display: flex;
         min-width: max-content;
         border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
+        &:hover {
+            background-color: $bit-color-background-secondary;
+        }
 
         &:last-child {
             border: none;
@@ -76,7 +125,7 @@
         overflow: hidden;
         padding: rem2(12px);
         align-items: center;
-        font-size: rem2(14px);
+        font-size: rem2(13px);
         box-sizing: border-box;
         text-overflow: ellipsis;
         justify-content: flex-start;
@@ -91,21 +140,25 @@
         display: flex;
         text-align: left;
         overflow: hidden;
+        line-height: 1.6;
         padding: rem2(12px);
         text-overflow: clip;
         white-space: normal;
-        font-size: rem2(11px);
+        font-size: rem2(12px);
         box-sizing: border-box;
         word-break: break-word;
         align-items: flex-start;
         justify-content: flex-start;
-        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-family: var(--demo-font-mono);
 
         &:last-child {
             border: none;
         }
     }
 
+    // A parameter table is a fixed set of four columns and the reader scans down the first one, so
+    // the name and type columns are held to a width rather than sized by content; the description
+    // takes whatever is left.
     .params-table {
         .th-cell,
         .td-cell {
@@ -120,9 +173,6 @@
             &:nth-child(3) {
                 width: 10rem;
             }
-
-            &:nth-child(4) {
-            }
         }
     }
 
@@ -135,9 +185,6 @@
 
             &:nth-child(2) {
                 width: 5rem;
-            }
-
-            &:nth-child(3) {
             }
         }
     }

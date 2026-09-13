@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Client.Core.Infrastructure.Services;
-
 namespace Boilerplate.Tests.Features.Identity;
 
 [TestClass, TestCategory("IntegrationTest")]

@@ -39,12 +39,6 @@ public partial class BitTextShimmer : BitComponentBase
     [Parameter] public string? Element { get; set; }
 
     /// <summary>
-    /// Keeps the shimmer animating even if the user has requested reduced motion (prefers-reduced-motion).
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public bool ForceAnimation { get; set; }
-
-    /// <summary>
     /// The bright highlight color that sweeps across the text. When null, a theme-aware default color is used.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -66,11 +60,6 @@ public partial class BitTextShimmer : BitComponentBase
 
 
     protected override string RootElementClass => "bit-tsh";
-
-    protected override void RegisterCssClasses()
-    {
-        ClassBuilder.Register(() => ForceAnimation ? "bit-tsh-fam" : string.Empty);
-    }
 
     protected override void RegisterCssStyles()
     {

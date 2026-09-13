@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace Boilerplate.Client.Core.Components;
 
 public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
@@ -38,6 +36,11 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     [AutoInject] protected SnackBarService SnackBarService = default!;
 
     [AutoInject] protected ITelemetryContext TelemetryContext = default!;
+
+    /// <summary>
+    /// <inheritdoc cref="Infrastructure.Services.TimeZoneService"/>
+    /// </summary>
+    [AutoInject] protected TimeZoneService TimeZoneService = default!;
 
     /// <summary>
     /// <inheritdoc cref="ISharedServiceCollectionExtensions.ConfigureAuthorizationCore"/>
@@ -265,8 +268,12 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         await currentCts.TryCancel();
     }
 
+    private bool disposed;
     public async ValueTask DisposeAsync()
     {
+        if (disposed) return;
+        disposed = true;
+
         try
         {
             if (cts != null)
@@ -302,7 +309,7 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         {
             parameters[nameof(InPrerenderSession)] = InPrerenderSession;
         }
-        if (string.IsNullOrEmpty(argExpression) is false)
+        if (string.IsNullOrWhiteSpace(argExpression) is false)
         {
             parameters["Expression"] = argExpression;
         }

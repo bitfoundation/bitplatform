@@ -5,6 +5,7 @@ using Boilerplate.Server.Api.Features.Tenants;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 
 namespace Boilerplate.Server.Api.Features.Identity.Models;
 
@@ -51,6 +52,21 @@ public partial class UserSession
     //#endif
 
     //#if (signalR == true)
+    /// <summary>
+    /// The SignalR connection of the tab or app that connected MOST RECENTLY on this session - not all of them.
+    /// <para>
+    /// A user session is one sign-in on one device, but the user can open the app several times on that device:
+    /// several browser tabs of the same profile, or the Windows exe started more than once. Each of those builds
+    /// its own SignalR connection while reading the same access token, so they all report the same session id and
+    /// each one overwrites this column as it connects. The last writer wins, and the earlier tabs stay open and
+    /// signed in with no way for the server to address them through this column.
+    /// </para>
+    /// <para>
+    /// So anything sent here reaches ONE tab or app. That is fine for what it is used for - a device-level action
+    /// the user is watching for (an AI chatbot tool acting on the device) - but do not treat it as "notify this
+    /// session". For that, target all the sessions of the user instead.
+    /// </para>
+    /// </summary>
     public string? SignalRConnectionId { get; set; }
     //#endif
 
@@ -68,7 +84,17 @@ public partial class UserSession
     public string? CultureName { get; set; }
 
     /// <summary>
-    /// The version of the application used for this session.
+    /// The version of the application used for this session, as a sortable number - see <see cref="AppVersionCodes"/>.
     /// </summary>
-    public string? AppVersion { get; set; }
+    public long? AppVersionCode { get; set; }
+
+    /// <summary><see cref="AppVersionCode"/> for display.</summary>
+    [NotMapped]
+    public string? AppVersion => AppVersionCodes.Decode(AppVersionCode);
+
+    /// <summary>
+    /// Set when an external application authorized over OAuth holds this session rather than one of the user's own
+    /// devices - which is what makes a grant revocable from Settings -&gt; Sessions like anything else.
+    /// </summary>
+    public OAuthGrant? OAuthGrant { get; set; }
 }

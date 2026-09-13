@@ -17,6 +17,29 @@ public class TrustedOriginsTests
     }
 
     /// <summary>
+    /// Tokens name the origin they were minted at and <c>TrustedOrigins</c> ships empty, so unless the request's own
+    /// origin counts a production deployment refuses every token it issued. Pinned with a non-loopback host, because
+    /// the Development-only loopback regex hides it from the integration suite.
+    /// </summary>
+    [TestMethod]
+    public void IsTrustedIssuer_Should_TrustTheRequestsOwnOrigin_WithNothingConfigured()
+    {
+        var settings = new ServerSharedSettings { TrustedOrigins = [] };
+        var request = new DefaultHttpContext().Request;
+        (request.Scheme, request.Host) = ("https", new HostString("myapp.example"));
+
+        Assert.IsTrue(settings.IsTrustedIssuer("https://myapp.example", request),
+            "A token minted at the origin the request arrived on must be accepted without any TrustedOrigins entry.");
+        Assert.IsFalse(settings.IsTrustedIssuer("https://other.example", request),
+            "Any other origin still needs to be trusted explicitly.");
+        Assert.IsTrue(settings.IsTrustedIssuer("https://other.example", request) is false
+                      && new ServerSharedSettings { TrustedOrigins = ["https://other.example"] }.IsTrustedIssuer("https://other.example", request),
+            "And an explicit entry is what makes it trusted.");
+        Assert.IsFalse(settings.IsTrustedIssuer("Boilerplate", request),
+            "A bare name is not an origin, however it got into a token.");
+    }
+
+    /// <summary>
     /// A <c>*</c> in an entry stands in for any run of characters within the authority, so <c>https://*.myapp.com</c>
     /// trusts every tenant subdomain while still refusing the apex, sibling domains and look-alike suffixes.
     /// </summary>
@@ -90,6 +113,54 @@ public class TrustedOriginsTests
     public void IsTrustedOrigin_Should_TrustLocalhostByDefault(string requestOrigin)
     {
         Assert.IsTrue(IsTrusted(requestOrigin), $"'{requestOrigin}' should be trusted by the built-in local-origin rule.");
+    }
+
+    /// <summary>
+    /// The built-in regex's wildcarded alternatives must be bounded by a dot, so that a host which merely <em>ends</em>
+    /// with the trusted text is refused. Without that boundary <c>evildevtunnels.ms</c> and <c>attacker-github.dev</c>
+    /// are registrable domains that the server trusts - and a trusted origin is admitted by CORS
+    /// (<c>SetIsOriginAllowed</c>, including the credentialed policy), accepted as an external-sign-in and
+    /// email-confirmation return target, and accepted as a WebAuthn origin.
+    /// <para>
+    /// The regex is matched against the whole url rather than the authority (<see cref="ServerSharedSettings.IsTrustedOrigin"/>
+    /// passes <c>origin.ToString()</c>), so the wildcard also has to be confined to host-label characters: otherwise it
+    /// runs past the authority and a <em>path</em> is enough to be trusted (<c>https://evil.com/.devtunnels.ms</c>).
+    /// </para>
+    /// <para>
+    /// The devtunnels/github.dev alternatives exist only in the <c>Development</c> arm, and <c>Development</c> is a
+    /// real compile constant (<c>src/Directory.Build.props</c> derives it from the Configuration and pushes it into
+    /// <c>DefineConstants</c>). Only the rows that expect those hosts to be <em>trusted</em> depend on that arm and are
+    /// guarded; every row that expects a refusal holds in both arms and stays unconditional, which is the half that
+    /// matters. The guard has to sit inside a <c>-:cnd:noEmit</c> region: the template engine reads an unwrapped C#
+    /// preprocessor conditional as one of its own, evaluates the undeclared symbol as false, and silently deletes the
+    /// block from every generated project.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    // The genuine local origins stay trusted...
+    [DataRow("http://localhost", true)]
+    //-:cnd:noEmit
+#if Development
+    [DataRow("https://mytunnel.devtunnels.ms", true)]
+    [DataRow("https://myspace.github.dev", true)]
+    [DataRow("https://match-zero-believe-reel.trycloudflare.com", true)]
+#endif
+    //+:cnd:noEmit
+    // ...but a domain that merely ends with the trusted text must not be...
+    [DataRow("https://evildevtunnels.ms", false)]
+    [DataRow("https://attacker-github.dev", false)]
+    [DataRow("https://eviltrycloudflare.com", false)]
+    // ...nor may a path be able to carry the trusted text out of the authority...
+    [DataRow("https://evil.com/.devtunnels.ms", false)]
+    [DataRow("https://evil.com/x/.github.dev", false)]
+    [DataRow("https://evil.com/x/.trycloudflare.com", false)]
+    // ...nor may the loopback names be used as a prefix of someone else's domain.
+    [DataRow("https://localhost.evil.com", false)]
+    [DataRow("http://127.0.0.1.evil.com", false)]
+    public void IsTrustedOrigin_Should_BoundTheBuiltInWildcardsAtADot(string requestOrigin, bool expected)
+    {
+        Assert.AreEqual(expected, IsTrusted(requestOrigin),
+            $"'{requestOrigin}' should{(expected ? "" : " not")} be trusted by the built-in origin rule.");
     }
 
     /// <summary>

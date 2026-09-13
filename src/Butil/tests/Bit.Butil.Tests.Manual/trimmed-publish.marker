@@ -1,0 +1,6 @@
+﻿Publish-only marker. The csproj copies this file to the publish output when PublishTrimmed is on, and
+never to the build output that `dotnet run` executes, so Program.cs can tell a trimmed run from an
+untrimmed one by whether the file sits next to the executable.
+
+Inferring that from the assembly instead - "the services nothing references are gone, so this must be
+trimmed" - cannot tell a trimmed build from a service name that went stale after a rename.

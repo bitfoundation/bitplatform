@@ -1,0 +1,18 @@
+@* The [Authorize]-protected /secure page is declared behind an @if, so it registers AFTER the
+   initial navigation and reaches the screen through the late-registration rematch rather than the
+   boot path. Composed like DiscoveryHost (no Found, no auth parameters), so SecurePage would
+   render natively - which must fail closed. *@
+
+<Brouter>
+    <Broute Path="/home">
+        <Content><div data-testid="lra-home">home</div></Content>
+    </Broute>
+    @if (ShowSecure)
+    {
+        <Broute Path="/secure" Component="typeof(SecurePage)" />
+    }
+</Brouter>
+
+@code {
+    [Parameter] public bool ShowSecure { get; set; }
+}

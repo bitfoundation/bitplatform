@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// Available on Chromium-based mobile browsers only. Users always see a native picker
 /// - there's no programmatic access to a user's contacts.
 /// </remarks>
+[ButilService(typeof(ContactPicker))]
 public class ContactPicker(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.contacts</c>.</summary>

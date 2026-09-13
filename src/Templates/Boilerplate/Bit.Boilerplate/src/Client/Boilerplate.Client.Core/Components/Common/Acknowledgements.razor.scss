@@ -6,19 +6,6 @@
     min-width: 0;
 }
 
-.ack-section {
-    gap: 0.6rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.ack-section-head {
-    gap: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-}
-
 .ack-count {
     flex: none;
     line-height: 1.4;
@@ -46,16 +33,12 @@
 
     &:hover {
         transform: translateY(-0.0625rem);
-        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+        box-shadow: $bit-box-shadow-4;
     }
 }
 
 .dep-top {
-    gap: 0.5rem;
-    display: flex;
     min-width: 0;
-    align-items: center;
-    justify-content: space-between;
 }
 
 ::deep {

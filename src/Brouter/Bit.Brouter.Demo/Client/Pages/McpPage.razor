@@ -1,0 +1,1163 @@
+<PageTitle>MCP server · Brouter docs</PageTitle>
+
+@* The MCP server this site hosts (Server/Controllers/McpController.cs), exercised against itself.
+   Everything below is a real session: the page speaks JSON-RPC over the Streamable HTTP transport
+   to /mcp - the same endpoint an AI agent connects to - and shows every message on the wire, in
+   both directions. Nothing here is a recording. *@
+
+@using System.Globalization
+@using System.Text.Json
+@using System.Text.Json.Nodes
+@inject McpDemoClient mcp
+
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site ships an <strong>MCP server</strong> so an AI agent can build with Brouter from the
+        library it actually has, instead of from what it remembers. The page below is a live MCP
+        client: it handshakes with <code>/mcp</code>, lists the tools, resources and prompts, calls
+        them, and prints every JSON-RPC message it sends and receives.
+    </p>
+</div>
+
+<div class="bb-note">
+    <strong>Model Context Protocol</strong> is how an agent discovers and calls capabilities at runtime.
+    A server offers three kinds: <em>tools</em> the model may call, <em>resources</em> a client can attach
+    to a conversation, and <em>prompts</em> a person can pick as a ready-made workflow. This one answers
+    from the shipped <code>Bit.Brouter</code> assembly, its README and this site's own pages - so its
+    answers move with the library rather than aging next to it.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title">
+        <span class="bb-dot @(mcp.IsConnected ? "bb-dot-success" : "bb-dot-warning")"></span> Handshake
+    </h3>
+    <p class="bb-card-desc">
+        Every session opens with <code>initialize</code>: the two sides agree on a protocol revision -
+        a server without the requested one refuses with <code>-32022</code> and names the revisions it
+        has - and the server states which capabilities it offers. The client answers with
+        <code>notifications/initialized</code>, a message with no <code>id</code> and therefore no
+        reply, and only after that may it call anything.
+    </p>
+    <p class="bb-card-desc">
+        This server runs the transport in its <strong>stateless</strong> mode, which is the default:
+        no <code>Mcp-Session-Id</code> comes back, every POST stands on its own, and the deployment can
+        sit behind a load balancer without session affinity. What each later request does have to
+        carry is the negotiated <code>MCP-Protocol-Version</code> header.
+    </p>
+
+    @if (_status is not null)
+    {
+        <p class="mcp-status">@_status</p>
+    }
+
+    <dl class="bb-params">
+        <dt>Endpoint</dt>
+        <dd><code>POST /mcp</code> · Streamable HTTP</dd>
+        <dt>Protocol</dt>
+        <dd>@(mcp.ProtocolVersion ?? "-") <span class="mcp-muted">(asked for @McpDemoClient.RequestedProtocolVersion)</span></dd>
+        <dt>Server</dt>
+        <dd>@(Value(mcp.ServerInfo?["title"]) ?? Value(mcp.ServerInfo?["name"]) ?? "-") @Value(mcp.ServerInfo?["version"])</dd>
+        <dt>Session id</dt>
+        <dd><code>@(mcp.SessionId ?? "none - stateless")</code></dd>
+        <dt>Capabilities</dt>
+        <dd>
+            @if (mcp.Capabilities is JsonObject capabilities && capabilities.Count > 0)
+            {
+                @foreach (var capability in capabilities)
+                {
+                    <span class="bb-badge bb-badge-success">@capability.Key</span>
+                }
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </dd>
+    </dl>
+
+    @* The one thing a server says that reaches an agent which never calls anything - so it belongs
+       on the page rather than three screens down in the wire log. *@
+    @if (mcp.Instructions is not null)
+    {
+        <details class="mcp-instructions">
+            <summary>
+                <strong>Server instructions</strong>
+                <span class="mcp-muted">@mcp.Instructions.Length characters, from the <code>initialize</code> result</span>
+            </summary>
+            <p class="mcp-hint">
+                A client puts this in front of the model once, before a single tool has been called. That
+                makes it the only text here an agent reads whether or not it decides to look anything up -
+                which is why it spends its words on working rules ("do not write a parameter from memory")
+                rather than on describing the library, a job the tools do far better.
+            </p>
+            <pre class="bb-code mcp-wire">@mcp.Instructions</pre>
+        </details>
+    }
+
+    <div class="bb-try">
+        <button class="btn btn-primary" disabled="@_busy" @onclick="StartSessionAsync">
+            @(mcp.IsConnected ? "Re-handshake" : "Connect")
+        </button>
+        @* Only a stateful server has something to close: the DELETE exists to release the session
+           state it kept, and there is none to release without a session id. *@
+        @if (mcp.SessionId is not null)
+        {
+            <button class="btn btn-outline" disabled="@_busy" @onclick="EndSessionAsync">
+                Close session (HTTP DELETE)
+            </button>
+        }
+        <button class="btn btn-outline" disabled="@_busy" @onclick="() => mcp.ClearExchanges()">Clear the log</button>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+    <p class="bb-card-desc">
+        <code>tools/list</code> returned @_tools.Length tool@(_tools.Length == 1 ? "" : "s"), each with the JSON
+        schema of its arguments - that schema is all a model gets, which is why the descriptions read
+        like instructions. Pick one, fill the arguments and call it: the request and the response land
+        in the wire log at the bottom of the page.
+    </p>
+    <p class="bb-card-desc">
+        The badges beside a selected tool's name are what it declares about itself.
+        <span class="bb-badge bb-badge-success">read-only</span> is the one that changes a client's behavior:
+        a tool that cannot modify anything is one an agent may run without stopping to ask a person first.
+        <span class="bb-badge">closed world</span> says the answers come from a known body of material rather
+        than from the internet, and <span class="bb-badge bb-badge-warn">structured output</span> means the tool
+        publishes an <code>outputSchema</code> and answers with a validated object, not only with text.
+    </p>
+    <p class="bb-card-desc">
+        Only two of them carry that last badge, and deliberately: a structured answer goes over the wire
+        <em>twice</em> - once as the object, once as the JSON text the spec asks a server to send on its
+        behalf for clients that cannot read one - so it earns its cost where the answer is something a
+        caller acts on rather than reads. A ranked search hit carrying its own follow-up call, and a
+        parse verdict, are that; a page of documentation is not, and comes back as Markdown, which is
+        also smaller than either half of the same thing as JSON.
+    </p>
+    <p class="bb-card-desc">
+        The reference tools share one rule worth knowing before you try them: each takes the key of the
+        thing you want - a type name, a slug, a heading, a path - and <em>leaving it out</em> asks for the
+        index of what there is. That is why there is no separate "list" tool beside any of them: a tool
+        costs its name, description and schema in every single request a client makes, forever, and an
+        optional argument says the same thing for nothing.
+    </p>
+
+    @if (_tools.Length == 0)
+    {
+        <p class="bb-empty">No tools yet - the session has not listed them.</p>
+    }
+    else
+    {
+        <div class="mcp-field">
+            <label for="mcp-tool">Tool</label>
+            <select id="mcp-tool" value="@_selectedTool?.Name" @onchange="OnToolChanged">
+                @foreach (var tool in _tools)
+                {
+                    <option value="@tool.Name">@tool.Name</option>
+                }
+            </select>
+        </div>
+
+        @if (_selectedTool is not null)
+        {
+            <p class="mcp-badges">
+                <strong>@(_selectedTool.Title ?? _selectedTool.Name)</strong>
+                @if (_selectedTool.ReadOnly)
+                {
+                    <span class="bb-badge bb-badge-success">read-only</span>
+                }
+                @if (_selectedTool.ClosedWorld)
+                {
+                    <span class="bb-badge">closed world</span>
+                }
+                @if (_selectedTool.HasOutputSchema)
+                {
+                    <span class="bb-badge bb-badge-warn">structured output</span>
+                }
+            </p>
+            <p class="mcp-description">@_selectedTool.Description</p>
+
+            @if (_selectedTool.Arguments.Length == 0)
+            {
+                <p class="mcp-muted">This tool takes no arguments.</p>
+            }
+            else
+            {
+                @foreach (var argument in _selectedTool.Arguments)
+                {
+                    <div class="mcp-field" @key="argument.Name">
+                        <label for="@($"mcp-arg-{argument.Name}")">
+                            @argument.Name
+                            <span class="bb-badge @(argument.Required ? "bb-badge-danger" : "")">@(argument.Required ? "required" : argument.Type)</span>
+                        </label>
+                        @if (argument.Options is not null)
+                        {
+                            @* The schema declares an enum, so there is nothing to type: a value outside
+                               the list is not a typo the server has to explain, it is unreachable. *@
+                            <select id="@($"mcp-arg-{argument.Name}")" @bind="_toolArguments[argument.Name]">
+                                @foreach (var option in argument.Options)
+                                {
+                                    <option value="@option">@option</option>
+                                }
+                            </select>
+                        }
+                        else if (argument.Multiline)
+                        {
+                            <textarea id="@($"mcp-arg-{argument.Name}")" rows="4" @bind="_toolArguments[argument.Name]"></textarea>
+                        }
+                        else
+                        {
+                            <input id="@($"mcp-arg-{argument.Name}")" @bind="_toolArguments[argument.Name]" />
+                        }
+                        @if (argument.Description is not null)
+                        {
+                            <span class="mcp-hint">@argument.Description</span>
+                        }
+                    </div>
+                }
+            }
+
+            <div class="bb-try">
+                <button class="btn btn-primary" disabled="@(_busy || IsIncomplete(_selectedTool.Arguments, _toolArguments))" @onclick="CallToolAsync">Call tool</button>
+                @if (_examples.ContainsKey(_selectedTool.Name))
+                {
+                    <button class="btn btn-outline" disabled="@_busy" @onclick="FillExample">Fill an example</button>
+                }
+            </div>
+        }
+
+        @if (_toolOutput is not null)
+        {
+            <p class="mcp-result-meta">
+                <span class="bb-badge @(_toolFailed ? "bb-badge-danger" : "bb-badge-success")">@(_toolFailed ? "error" : "ok")</span>
+                @_toolOutput.Length characters · @_toolElapsed.ToString("F0") ms
+            </p>
+            <pre class="bb-code mcp-output">@Clip(_toolOutput)</pre>
+
+            @* A tool with an output schema answers twice over: the object under structuredContent for
+               a client that can use it, and the same thing as text for one that cannot. The spec
+               requires both, so when they match there is nothing to show a second time - only
+               something to say. *@
+            @if (_toolStructured is not null)
+            {
+                <p class="mcp-result-meta">
+                    <span class="bb-badge bb-badge-warn">structuredContent</span>
+                    @if (_toolStructuredMirrorsText)
+                    {
+                        <span>
+                            the same object again, validated against the tool's <code>outputSchema</code> - what is
+                            printed above is the copy the spec requires for clients that cannot read a structured result.
+                        </span>
+                    }
+                    else
+                    {
+                        <span>validated against the tool's <code>outputSchema</code></span>
+                    }
+                </p>
+                @if (_toolStructuredMirrorsText is false)
+                {
+                    <pre class="bb-code mcp-output">@Clip(_toolStructured)</pre>
+                }
+            }
+        }
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Resources</h3>
+    <p class="bb-card-desc">
+        Resources are addressed by URI rather than called, so a client can attach them to a
+        conversation up front or let a person browse and pin them. Fixed ones come from
+        <code>resources/list</code>; the parameterised ones come from
+        <code>resources/templates/list</code> and are filled in before reading.
+    </p>
+
+    @if (_resources.Length + _resourceTemplates.Length == 0)
+    {
+        <p class="bb-empty">No resources yet - the session has not listed them.</p>
+    }
+    else
+    {
+        <h4 class="mcp-subhead"><code>resources/list</code> · @_resources.Length ready to read</h4>
+        <p class="mcp-hint">
+            Every documentation page is listed one by one rather than only as a template, because a
+            template is not something a person can pick from a list - nothing on the wire says which
+            slugs exist.
+        </p>
+
+        <div class="mcp-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr>
+                        <th>URI</th>
+                        <th>What it is</th>
+                        <th>Read</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var resource in _resources)
+                    {
+                        <tr @key="resource.Uri">
+                            <td><code>@resource.Uri</code></td>
+                            <td>
+                                @if (resource.Title is not null)
+                                {
+                                    <strong>@resource.Title</strong>
+
+                                    <text> - </text>
+                                }
+                                @resource.Description
+                            </td>
+                            <td class="bb-table-action">
+                                <button class="btn btn-outline" disabled="@_busy" @onclick="() => PickResource(resource)">read</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <h4 class="mcp-subhead"><code>resources/templates/list</code> · @_resourceTemplates.Length parameterised</h4>
+        <p class="mcp-hint">
+            A template is a URI with a hole in it, and the hole is where a client would otherwise have
+            to guess. It does not have to: <code>completion/complete</code> asks the server what belongs
+            there, which is how the suggestions below are produced - by the same request an editor makes
+            while someone types.
+        </p>
+
+        <div class="mcp-field">
+            <label for="mcp-template">Template</label>
+            <select id="mcp-template" value="@_selectedTemplate?.Uri" @onchange="OnTemplateChangedAsync">
+                <option value="">- pick one -</option>
+                @foreach (var template in _resourceTemplates)
+                {
+                    <option value="@template.Uri">@template.Uri</option>
+                }
+            </select>
+            @if (_selectedTemplate?.Description is not null)
+            {
+                <span class="mcp-hint">@_selectedTemplate.Description</span>
+            }
+        </div>
+
+        @if (_selectedTemplate is not null && _templateArgument.Length > 0)
+        {
+            <div class="mcp-field">
+                <label for="mcp-template-arg">
+                    @_templateArgument
+                    <span class="bb-badge bb-badge-success">completable</span>
+                </label>
+                <input id="mcp-template-arg" list="mcp-template-completions" @bind="_templateValue" @bind:event="oninput" />
+                <datalist id="mcp-template-completions">
+                    @foreach (var value in _completions)
+                    {
+                        <option value="@value"></option>
+                    }
+                </datalist>
+                <span class="mcp-hint">
+                    The value is URI-escaped into the template, so one carrying a slash - a source path,
+                    say - still names a single resource: <code>brouter://source/Demo%2FClient%2FAppRouter.razor</code>.
+                </span>
+            </div>
+
+            <div class="bb-try">
+                <button class="btn btn-outline" disabled="@_busy" @onclick="() => CompleteTemplateAsync(_templateValue)">
+                    Ask the server what fits
+                </button>
+                <button class="btn btn-primary" disabled="@(_busy || _templateValue.Length == 0)" @onclick="UseTemplate">
+                    Build the URI
+                </button>
+            </div>
+
+            @if (_completions.Length > 0)
+            {
+                <p class="mcp-result-meta">
+                    <span class="bb-badge bb-badge-success">completion/complete</span>
+                    @_completionTotal value@(_completionTotal == 1 ? "" : "s") for <code>@_templateArgument</code>
+                </p>
+                <div class="mcp-chips">
+                    @foreach (var value in _completions.Take(MaxShownCompletions))
+                    {
+                        <button type="button" class="mcp-chip" @key="value" @onclick="() => UseCompletion(value)">@value</button>
+                    }
+                </div>
+            }
+        }
+
+        <div class="mcp-field">
+            <label for="mcp-resource-uri">resources/read · uri</label>
+            <input id="mcp-resource-uri" @bind="_resourceUri" @bind:event="oninput" />
+        </div>
+
+        <div class="bb-try">
+            <button class="btn btn-primary" disabled="@(_busy || _resourceUri.Length == 0)" @onclick="ReadResourceAsync">Read resource</button>
+        </div>
+
+        @if (_resourceOutput is not null)
+        {
+            <p class="mcp-result-meta">
+                <span class="bb-badge @(_resourceFailed ? "bb-badge-danger" : "bb-badge-success")">@(_resourceFailed ? "error" : "ok")</span>
+                @_resourceOutput.Length characters
+            </p>
+            <pre class="bb-code mcp-output">@Clip(_resourceOutput)</pre>
+        }
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Prompts</h3>
+    <p class="bb-card-desc">
+        A prompt is a workflow a person picks - in most clients they appear as slash commands. What
+        <code>prompts/get</code> returns is the message that gets put in front of the model, and these
+        four spend their words on the order to call the tools in, because an agent with a handful of tools
+        usually fails by sequence rather than by ignorance.
+    </p>
+
+    @if (_prompts.Length == 0)
+    {
+        <p class="bb-empty">No prompts yet - the session has not listed them.</p>
+    }
+    else
+    {
+        <div class="mcp-field">
+            <label for="mcp-prompt">Prompt</label>
+            <select id="mcp-prompt" value="@_selectedPrompt?.Name" @onchange="OnPromptChanged">
+                @foreach (var prompt in _prompts)
+                {
+                    <option value="@prompt.Name">@prompt.Name</option>
+                }
+            </select>
+        </div>
+
+        @if (_selectedPrompt is not null)
+        {
+            <p class="mcp-badges"><strong>@(_selectedPrompt.Title ?? _selectedPrompt.Name)</strong></p>
+            <p class="mcp-description">@_selectedPrompt.Description</p>
+
+            @foreach (var argument in _selectedPrompt.Arguments)
+            {
+                <div class="mcp-field" @key="argument.Name">
+                    <label for="@($"mcp-prompt-arg-{argument.Name}")">
+                        @argument.Name
+                        <span class="bb-badge @(argument.Required ? "bb-badge-danger" : "")">@(argument.Required ? "required" : "optional")</span>
+                    </label>
+                    <input id="@($"mcp-prompt-arg-{argument.Name}")"
+                           list="@($"mcp-prompt-completions-{argument.Name}")"
+                           @bind="_promptArguments[argument.Name]" />
+                    <datalist id="@($"mcp-prompt-completions-{argument.Name}")">
+                        @foreach (var value in _promptCompletions.GetValueOrDefault(argument.Name) ?? [])
+                        {
+                            <option value="@value"></option>
+                        }
+                    </datalist>
+                    @if (argument.Description is not null)
+                    {
+                        <span class="mcp-hint">@argument.Description</span>
+                    }
+                    @* A prompt argument declares no schema - name, description and whether it is
+                       required is all prompts/list carries - so a client that wants to offer values
+                       has exactly one way to get them, and this is it. *@
+                    <div class="bb-try">
+                        <button class="btn btn-outline" disabled="@_busy"
+                                @onclick="() => CompletePromptArgumentAsync(argument.Name)">
+                            Ask the server what fits
+                        </button>
+                    </div>
+                    @if (_promptCompletions.TryGetValue(argument.Name, out var suggestions) && suggestions.Length > 0)
+                    {
+                        <div class="mcp-chips">
+                            @foreach (var value in suggestions.Take(MaxShownCompletions))
+                            {
+                                <button type="button" class="mcp-chip" @key="value"
+                                        @onclick="() => _promptArguments[argument.Name] = value">
+                                    @value
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="bb-try">
+                <button class="btn btn-primary" disabled="@(_busy || IsIncomplete(_selectedPrompt.Arguments, _promptArguments))" @onclick="GetPromptAsync">Get prompt</button>
+            </div>
+        }
+
+        @if (_promptOutput is not null)
+        {
+            <pre class="bb-code mcp-output">@Clip(_promptOutput)</pre>
+        }
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The wire log</h3>
+    <p class="bb-card-desc">
+        Every message this page has exchanged with the server, oldest first - the JSON-RPC envelope
+        that went out and the one that came back (indented for reading, otherwise as they were), with
+        the HTTP status, the response's content type and how long the round trip took. Notifications have no <code>id</code>, so the server answers
+        them with <code>202</code> and an empty body.
+    </p>
+
+    @if (mcp.Exchanges.Count == 0)
+    {
+        <p class="bb-empty">Nothing sent yet.</p>
+    }
+
+    @foreach (var (exchange, index) in mcp.Exchanges.Select((e, i) => (e, i)))
+    {
+        <details class="mcp-exchange" open="@(index >= mcp.Exchanges.Count - 2)" @key="exchange">
+            <summary>
+                <span class="mcp-exchange-index">#@(index + 1)</span>
+                <code>@exchange.Method</code>
+                @if (exchange.Error is not null)
+                {
+                    <span class="bb-badge bb-badge-danger">error</span>
+                }
+                else if (exchange.IsNotification)
+                {
+                    <span class="bb-badge bb-badge-warn">no reply expected</span>
+                }
+                <span class="mcp-muted">@exchange.StatusCode · @exchange.ElapsedMs.ToString("F0") ms · @exchange.StartedAt.ToString("HH:mm:ss")</span>
+            </summary>
+
+            <p class="mcp-wire-label">→ request</p>
+            <pre class="bb-code mcp-wire">@exchange.RequestJson</pre>
+
+            <p class="mcp-wire-label">← response @(exchange.ContentType is null ? null : $"({exchange.ContentType})")</p>
+            <pre class="bb-code mcp-wire">@Clip(exchange.Error is not null && exchange.ResponseJson is null ? exchange.Error : exchange.ResponseJson ?? "")</pre>
+        </details>
+    }
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Point your own client at it</h3>
+    <p class="bb-card-desc">
+        The endpoint is plain Streamable HTTP, so any MCP client connects to it with a URL and nothing
+        else. Against a local run of this demo:
+    </p>
+    <pre class="bb-code"><span class="c">// .mcp.json (Claude Code, VS Code, and anything else reading this shape)</span>
+{
+  <span class="s">"mcpServers"</span>: {
+    <span class="s">"brouter"</span>: {
+      <span class="s">"type"</span>: <span class="s">"http"</span>,
+      <span class="s">"url"</span>: <span class="s">"https://localhost:7185/mcp"</span>
+    }
+  }
+}</pre>
+    <p class="bb-card-desc">
+        Or drive it from a terminal - one POST is a whole handshake:
+    </p>
+    <pre class="bb-code">curl -sN https://localhost:7185/mcp \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -H <span class="s">"Accept: application/json, text/event-stream"</span> \
+  -d <span class="s">'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{
+       "protocolVersion":"2025-11-25","capabilities":{},
+       "clientInfo":{"name":"curl","version":"1.0"}}}'</span></pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The same tools over plain HTTP</h3>
+    <p class="bb-card-desc">
+        <code>McpController</code> is an MVC controller as well as an MCP tool type: every tool is also
+        a <code>GET</code> under <code>/api/mcp/…</code>. That is a debugging convenience - open one in
+        a browser tab and read exactly what an agent would be handed, with no client in the way.
+    </p>
+    <ul class="bb-link-list">
+        <li><a href="/api/mcp/GetBrouterApi" target="_blank" rel="noopener">/api/mcp/GetBrouterApi</a> <span class="mcp-muted">- no argument: the index of types</span></li>
+        <li><a href="/api/mcp/SearchBrouter?query=block%20navigation%20unsaved%20changes" target="_blank" rel="noopener">/api/mcp/SearchBrouter?query=block navigation unsaved changes</a></li>
+        <li><a href="/api/mcp/GetBrouterApi?typeName=Broute" target="_blank" rel="noopener">/api/mcp/GetBrouterApi?typeName=Broute</a></li>
+        <li><a href="/api/mcp/InspectBrouterRouteTemplates?templates=/files/%7Bname%7D.%7Bext?%7D" target="_blank" rel="noopener">/api/mcp/InspectBrouterRouteTemplates?templates=/files/{name}.{ext?}</a></li>
+        <li><a href="/api/mcp/GetBrouterSourceFile?path=Demo/Client/AppRouter.razor" target="_blank" rel="noopener">/api/mcp/GetBrouterSourceFile?path=Demo/Client/AppRouter.razor</a></li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How the server is put together</h3>
+    <p class="bb-card-desc">
+        Three files and one registration. The tools are ordinary methods - the attributes are what make
+        them callable, and the <code>[Description]</code> text is the whole interface a model sees.
+    </p>
+    <pre class="bb-code"><span class="c">// Server/Program.cs</span>
+builder.Services.AddMcpServer(options =&gt;
+{
+    options.ServerInfo = <span class="k">new</span> Implementation { Name = <span class="s">"bit-brouter"</span>, Version = BrouterServerInstructions.BrouterVersion };
+
+    <span class="c">// Read once, before any tool is called - the only text that reaches an incurious agent.</span>
+    options.ServerInstructions = BrouterServerInstructions.Text;
+})
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly()
+    <span class="c">// What belongs in a {slug} or a {typeName}: no client can guess it, so it asks.</span>
+    .WithCompleteHandler((request, ct) =&gt; ValueTask.FromResult(<span class="k">new</span> CompleteResult
+    {
+        Completion = BrouterCompletions.Complete(request.Params?.Argument?.Name, request.Params?.Argument?.Value)
+    }))
+    .WithListResourcesHandler((request, ct) =&gt; ValueTask.FromResult(<span class="k">new</span> ListResourcesResult
+    {
+        Resources = [.. McpResources.ListDocumentationPages()]
+    }));
+
+app.MapControllers();
+app.MapMcp(<span class="s">"/mcp"</span>);
+
+<span class="c">// Server/Controllers/McpController.cs - a tool and an HTTP endpoint at once</span>
+[<span class="k">HttpGet</span>]
+[<span class="k">McpServerTool</span>(Name = <span class="k">nameof</span>(InspectBrouterRouteTemplates), Title = <span class="s">"Inspect route templates"</span>,
+             ReadOnly = <span class="k">true</span>, OpenWorld = <span class="k">false</span>, UseStructuredContent = <span class="k">true</span>)]
+[<span class="k">Description</span>(<span class="s">"Parses a route template with Bit.Brouter's own parser and reports what it means…"</span>)]
+<span class="k">public</span> BrouterRouteAnalysisDto InspectBrouterRouteTemplates(<span class="k">string</span> templates)
+    =&gt; BrouterTemplateInspector.Analyze(SplitTemplates(templates), brouterOptions.Value.Constraints);</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/typed-routes" class="btn btn-outline">← Typed routes</BrouterLink>
+        <BrouterLink Href="/docs/migration" class="btn btn-primary">Migration →</BrouterLink>
+    </div>
+</div>
+
+@code {
+    private const int MaxShownCharacters = 6_000;
+
+    // Enough to show that the server answered with a list, few enough that the list is still a row
+    // of things to click rather than a wall. The count above them is the real total either way.
+    private const int MaxShownCompletions = 24;
+
+    private static readonly JsonSerializerOptions _indented = new()
+    {
+        WriteIndented = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    private sealed record ArgumentInfo(string Name, string Type, string? Description, bool Required, bool Multiline, string[]? Options);
+    private sealed record ToolInfo(string Name, string? Title, string? Description, ArgumentInfo[] Arguments, bool ReadOnly, bool ClosedWorld, bool HasOutputSchema);
+    private sealed record PromptInfo(string Name, string? Title, string? Description, ArgumentInfo[] Arguments);
+    private sealed record ResourceInfo(string Uri, string? Title, string? Description, bool IsTemplate);
+
+    // Argument sets, by tool or prompt name, that make one show what it is for on the first click -
+    // so trying it out does not start with inventing a plausible input.
+    private static readonly Dictionary<string, Dictionary<string, string>> _examples = new(StringComparer.Ordinal)
+    {
+        ["SearchBrouter"] = new() { ["query"] = "block navigation unsaved changes" },
+        ["GetBrouterSetupGuide"] = new() { ["renderMode"] = "wasm" },
+        ["GetBrouterDocsPage"] = new() { ["slug"] = "guards" },
+        ["GetBrouterGuideSection"] = new() { ["heading"] = "Async guards" },
+        ["GetBrouterApi"] = new() { ["typeName"] = "Broute" },
+        ["GetBrouterSourceFile"] = new() { ["path"] = "Demo/Client/AppRouter.razor" },
+        // A comma inside range(...) is part of the constraint, not a separator - which is exactly
+        // what makes this the interesting example to send.
+        ["InspectBrouterRouteTemplates"] = new() { ["templates"] = "/products/{id:int}\n/products/{slug}\n/reports/{year:int:range(2000,2100)}" },
+        ["add-brouter-to-app"] = new() { ["renderMode"] = "wasm" },
+        ["implement-brouter-feature"] = new() { ["feature"] = "warn before leaving a half-filled form" },
+        ["debug-brouter-routing"] = new() { ["symptom"] = "/files/report.pdf renders the 404 route" },
+    };
+
+    private ToolInfo[] _tools = [];
+    private ToolInfo? _selectedTool;
+    private readonly Dictionary<string, string> _toolArguments = new(StringComparer.Ordinal);
+    private string? _toolOutput;
+    private string? _toolStructured;
+    private bool _toolStructuredMirrorsText;
+    private bool _toolFailed;
+    private double _toolElapsed;
+
+    private ResourceInfo[] _resources = [];
+    private ResourceInfo[] _resourceTemplates = [];
+    private ResourceInfo? _selectedTemplate;
+    private string _templateArgument = string.Empty;
+    private string _templateValue = string.Empty;
+    private string[] _completions = [];
+    private int _completionTotal;
+    private string _resourceUri = "brouter://api/BrouterOptions";
+    private string? _resourceOutput;
+    private bool _resourceFailed;
+
+    private PromptInfo[] _prompts = [];
+    private PromptInfo? _selectedPrompt;
+    private readonly Dictionary<string, string> _promptArguments = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string[]> _promptCompletions = new(StringComparer.Ordinal);
+    private string? _promptOutput;
+
+    private string? _status;
+    private bool _busy;
+
+    // The session is opened from the first interactive render: during prerendering there is no
+    // browser to send from, and this page renders on the server as well - the MCP server hands its
+    // own documentation page out through GetBrouterDocsPage, which renders this very component.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await StartSessionAsync();
+    }
+
+    private async Task StartSessionAsync()
+    {
+        _busy = true;
+        _status = "Handshaking with /mcp…";
+        StateHasChanged();
+
+        try
+        {
+            var call = await mcp.ConnectAsync();
+
+            if (call.IsSuccess is false)
+            {
+                _status = $"initialize failed: {call.Error}";
+                return;
+            }
+
+            _status = null;
+            StateHasChanged();
+
+            await ListToolsAsync();
+            await ListResourcesAsync();
+            await ListPromptsAsync();
+        }
+        finally
+        {
+            _busy = false;
+
+            // This also runs from OnAfterRenderAsync, which does not re-render on its own.
+            StateHasChanged();
+        }
+    }
+
+    private async Task EndSessionAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            await mcp.DisconnectAsync();
+
+            _tools = [];
+            _resources = [];
+            _resourceTemplates = [];
+            _prompts = [];
+            _selectedTool = null;
+            _selectedPrompt = null;
+            _selectedTemplate = null;
+            _completions = [];
+            _promptCompletions.Clear();
+            _status = "The session is closed. Connect again to list anything.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ListToolsAsync()
+    {
+        var call = await mcp.CallAsync("tools/list");
+
+        // The server lists them in whatever order it discovered the methods; a dropdown is easier to
+        // find a name in when it is sorted.
+        _tools = call.Result?["tools"] is JsonArray tools
+            ? [.. tools.Select(tool => new ToolInfo(
+                Value(tool?["name"]) ?? "?",
+                Value(tool?["title"]),
+                Value(tool?["description"]),
+                ArgumentsOf(tool?["inputSchema"]),
+                // Absent is not the same as false for either hint - the protocol's defaults are
+                // "might modify" and "open world" - so only an explicit true earns the badge.
+                ReadOnly: tool?["annotations"]?["readOnlyHint"]?.GetValue<bool>() is true,
+                ClosedWorld: tool?["annotations"]?["openWorldHint"]?.GetValue<bool>() is false,
+                HasOutputSchema: tool?["outputSchema"] is not null)).OrderBy(tool => tool.Name, StringComparer.Ordinal)]
+            : [];
+
+        SelectTool(_tools.FirstOrDefault(tool => tool.Name == "SearchBrouter") ?? _tools.FirstOrDefault());
+
+        StateHasChanged();
+    }
+
+    private async Task ListResourcesAsync()
+    {
+        var listed = await mcp.CallAsync("resources/list");
+
+        _resources = listed.Result?["resources"] is JsonArray resources
+            ? [.. resources.Select(resource => new ResourceInfo(
+                Value(resource?["uri"]) ?? "?",
+                Value(resource?["title"]),
+                Value(resource?["description"]),
+                IsTemplate: false))]
+            : [];
+
+        StateHasChanged();
+
+        // Templates are listed separately: they are not readable as they stand, so a client that
+        // treated them as resources would offer URIs that cannot be fetched.
+        var templated = await mcp.CallAsync("resources/templates/list");
+
+        _resourceTemplates = templated.Result?["resourceTemplates"] is JsonArray templates
+            ? [.. templates.Select(template => new ResourceInfo(
+                Value(template?["uriTemplate"]) ?? "?",
+                Value(template?["title"]),
+                Value(template?["description"]),
+                IsTemplate: true))]
+            : [];
+
+        StateHasChanged();
+    }
+
+    private async Task ListPromptsAsync()
+    {
+        var call = await mcp.CallAsync("prompts/list");
+
+        _prompts = call.Result?["prompts"] is JsonArray prompts
+            ? [.. prompts.Select(prompt => new PromptInfo(
+                Value(prompt?["name"]) ?? "?",
+                Value(prompt?["title"]),
+                Value(prompt?["description"]),
+                prompt?["arguments"] is JsonArray arguments
+                    ? [.. arguments.Select(argument => new ArgumentInfo(
+                        Value(argument?["name"]) ?? "?",
+                        "string",
+                        Value(argument?["description"]),
+                        argument?["required"]?.GetValue<bool>() ?? false,
+                        Multiline: false,
+                        Options: null))]
+                    : []))]
+            : [];
+
+        SelectPrompt(_prompts.FirstOrDefault());
+
+        StateHasChanged();
+    }
+
+    private async Task CallToolAsync()
+    {
+        if (_selectedTool is null) return;
+
+        _busy = true;
+
+        try
+        {
+            var call = await mcp.CallAsync("tools/call", new JsonObject
+            {
+                ["name"] = _selectedTool.Name,
+                ["arguments"] = ArgumentsFor(_selectedTool.Arguments, _toolArguments)
+            });
+
+            // A tool that fails does not fail the call: the result comes back with isError set and
+            // the reason as text, so the model can read what went wrong and try something else.
+            _toolFailed = call.IsSuccess is false || call.Result?["isError"]?.GetValue<bool>() is true;
+            _toolElapsed = call.Exchange.ElapsedMs;
+            _toolOutput = call.Error ?? TextOf(call.Result, "content");
+            _toolStructured = call.Result?["structuredContent"]?.ToJsonString(_indented);
+
+            // The text block a structured tool also has to send is that same object serialized, so
+            // the two almost always match - and printing six thousand identical characters twice
+            // makes a point that one sentence makes better.
+            _toolStructuredMirrorsText = _toolStructured is not null && _toolStructured == _toolOutput;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ReadResourceAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var call = await mcp.CallAsync("resources/read", new JsonObject { ["uri"] = _resourceUri });
+
+            _resourceFailed = call.IsSuccess is false;
+            _resourceOutput = call.Error ?? TextOf(call.Result, "contents");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task GetPromptAsync()
+    {
+        if (_selectedPrompt is null) return;
+
+        _busy = true;
+
+        try
+        {
+            var call = await mcp.CallAsync("prompts/get", new JsonObject
+            {
+                ["name"] = _selectedPrompt.Name,
+                ["arguments"] = ArgumentsFor(_selectedPrompt.Arguments, _promptArguments)
+            });
+
+            _promptOutput = call.Error ?? string.Join("\n\n", (call.Result?["messages"] as JsonArray)?
+                .Select(message => $"[{Value(message?["role"])}] {Value(message?["content"]?["text"])}") ?? []);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>
+    /// Asks the server what belongs in one placeholder, with whatever has been typed so far as the
+    /// context. This is a real <c>completion/complete</c> request and shows up in the wire log like
+    /// any other - a client with a text box would send it on a debounce as someone types; a button
+    /// keeps the log readable while making the same point.
+    /// </summary>
+    private async Task CompleteAsync(JsonObject reference, string argumentName, string typed, Action<string[], int> onCompleted)
+    {
+        _busy = true;
+
+        try
+        {
+            var call = await mcp.CallAsync("completion/complete", new JsonObject
+            {
+                ["ref"] = reference,
+                ["argument"] = new JsonObject { ["name"] = argumentName, ["value"] = typed }
+            });
+
+            var completion = call.Result?["completion"];
+
+            string[] values = completion?["values"] is JsonArray array
+                ? [.. array.Select(value => Value(value) ?? string.Empty)]
+                : [];
+
+            // "total" is optional: a server may answer with values and no count at all, in which case
+            // the number of values IS the count as far as anyone can tell.
+            onCompleted(values, completion?["total"]?.GetValue<int>() ?? values.Length);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task CompleteTemplateAsync(string typed)
+    {
+        if (_selectedTemplate is null || _templateArgument.Length == 0) return Task.CompletedTask;
+
+        return CompleteAsync(
+            new JsonObject { ["type"] = "ref/resource", ["uri"] = _selectedTemplate.Uri },
+            _templateArgument,
+            typed,
+            (values, total) => (_completions, _completionTotal) = (values, total));
+    }
+
+    private Task CompletePromptArgumentAsync(string argumentName)
+    {
+        if (_selectedPrompt is null) return Task.CompletedTask;
+
+        return CompleteAsync(
+            new JsonObject { ["type"] = "ref/prompt", ["name"] = _selectedPrompt.Name },
+            argumentName,
+            _promptArguments.GetValueOrDefault(argumentName) ?? string.Empty,
+            (values, _) => _promptCompletions[argumentName] = values);
+    }
+
+    private async Task OnTemplateChangedAsync(ChangeEventArgs args)
+    {
+        _selectedTemplate = _resourceTemplates.FirstOrDefault(template => template.Uri == args.Value?.ToString());
+        _templateArgument = PlaceholderOf(_selectedTemplate?.Uri);
+        _templateValue = string.Empty;
+        _completions = [];
+        _completionTotal = 0;
+
+        // An empty value asks for everything the placeholder accepts, which is what a person opening
+        // the field wants to see. The browser then filters the datalist locally as they type.
+        if (_selectedTemplate is not null && _templateArgument.Length > 0) await CompleteTemplateAsync(string.Empty);
+    }
+
+    private void UseCompletion(string value)
+    {
+        _templateValue = value;
+
+        UseTemplate();
+    }
+
+    /// <summary>Fills the placeholder in and puts the result where <c>resources/read</c> takes it from.</summary>
+    private void UseTemplate()
+    {
+        if (_selectedTemplate is null || _templateArgument.Length == 0) return;
+
+        // Escaped as one URI component: a source path carries slashes, and unescaped they would name
+        // a different resource - or no resource at all.
+        _resourceUri = _selectedTemplate.Uri.Replace($"{{{_templateArgument}}}", Uri.EscapeDataString(_templateValue), StringComparison.Ordinal);
+        _resourceOutput = null;
+    }
+
+    /// <summary>The single <c>{placeholder}</c> in a URI template, or empty when it has none.</summary>
+    private static string PlaceholderOf(string? uriTemplate)
+    {
+        if (uriTemplate is null) return string.Empty;
+
+        var start = uriTemplate.IndexOf('{', StringComparison.Ordinal);
+        if (start < 0) return string.Empty;
+
+        var end = uriTemplate.IndexOf('}', start);
+
+        return end < 0 ? string.Empty : uriTemplate[(start + 1)..end];
+    }
+
+    private void OnToolChanged(ChangeEventArgs args)
+        => SelectTool(_tools.FirstOrDefault(tool => tool.Name == args.Value?.ToString()));
+
+    private void SelectTool(ToolInfo? tool)
+    {
+        _selectedTool = tool;
+        _toolOutput = null;
+        _toolStructured = null;
+        _toolStructuredMirrorsText = false;
+        _toolArguments.Clear();
+
+        if (tool is null) return;
+
+        foreach (var argument in tool.Arguments)
+        {
+            // A dropdown has no empty state to fall back to, so an enumerated argument starts on its
+            // first value rather than on a blank the <select> could not represent anyway.
+            _toolArguments[argument.Name] = argument.Options?.FirstOrDefault() ?? string.Empty;
+        }
+
+        FillExample();
+    }
+
+    private void FillExample()
+    {
+        if (_selectedTool is not null) FillExample(_selectedTool.Name, _toolArguments);
+    }
+
+    private static void FillExample(string name, Dictionary<string, string> values)
+    {
+        if (_examples.TryGetValue(name, out var example) is false) return;
+
+        foreach (var (argument, value) in example)
+        {
+            if (values.ContainsKey(argument)) values[argument] = value;
+        }
+    }
+
+    /// <summary>Whether a required argument is still empty - the call would come back as an error.</summary>
+    private static bool IsIncomplete(ArgumentInfo[] declared, Dictionary<string, string> values)
+        => declared.Any(argument => argument.Required && (values.GetValueOrDefault(argument.Name) ?? string.Empty).Length == 0);
+
+    private void OnPromptChanged(ChangeEventArgs args)
+        => SelectPrompt(_prompts.FirstOrDefault(prompt => prompt.Name == args.Value?.ToString()));
+
+    private void SelectPrompt(PromptInfo? prompt)
+    {
+        _selectedPrompt = prompt;
+        _promptOutput = null;
+        _promptArguments.Clear();
+        _promptCompletions.Clear();
+
+        if (prompt is null) return;
+
+        foreach (var argument in prompt.Arguments)
+        {
+            _promptArguments[argument.Name] = string.Empty;
+        }
+
+        FillExample(prompt.Name, _promptArguments);
+    }
+
+    private void PickResource(ResourceInfo resource)
+    {
+        _resourceUri = resource.Uri;
+        _resourceOutput = null;
+    }
+
+    /// <summary>The declared arguments of a tool, read from the JSON schema the server published for it.</summary>
+    private static ArgumentInfo[] ArgumentsOf(JsonNode? schema)
+    {
+        if (schema?["properties"] is not JsonObject properties) return [];
+
+        HashSet<string> required = schema["required"] is JsonArray names
+            ? [.. names.Select(name => Value(name) ?? string.Empty)]
+            : [];
+
+        return [.. properties.Select(property => new ArgumentInfo(
+            property.Key,
+            TypeOf(property.Value?["type"]),
+            Value(property.Value?["description"]),
+            required.Contains(property.Key),
+            // The one argument that is a list rather than a value deserves a box it fits in.
+            Multiline: property.Key is "templates",
+            // An enumerated argument is a closed set on the wire, so the form makes it one too.
+            Options: property.Value?["enum"] is JsonArray values
+                ? [.. values.Select(value => Value(value) ?? string.Empty)]
+                : null))];
+    }
+
+    /// <summary>Turns the filled-in text boxes into the JSON the argument's declared type asks for.</summary>
+    private static JsonObject ArgumentsFor(ArgumentInfo[] declared, Dictionary<string, string> values)
+    {
+        var arguments = new JsonObject();
+
+        foreach (var argument in declared)
+        {
+            var value = values.GetValueOrDefault(argument.Name) ?? string.Empty;
+
+            // An omitted optional argument is not the same as an empty one: leaving it out is what
+            // lets the server apply the default declared in the schema.
+            if (value.Length == 0) continue;
+
+            arguments[argument.Name] = argument.Type switch
+            {
+                // The wire format is JSON, so a number on it is invariant no matter what the
+                // browser's locale would make of the separators the person typed.
+                "integer" when long.TryParse(value, CultureInfo.InvariantCulture, out var whole) => JsonValue.Create(whole),
+                "number" when double.TryParse(value, CultureInfo.InvariantCulture, out var number) => JsonValue.Create(number),
+                "boolean" when bool.TryParse(value, out var flag) => JsonValue.Create(flag),
+                _ => JsonValue.Create(value)
+            };
+        }
+
+        return arguments;
+    }
+
+    /// <summary>The text blocks of a tool result or a resource read, which is what a model is handed.</summary>
+    private static string TextOf(JsonNode? result, string property)
+    {
+        if (result?[property] is not JsonArray blocks) return result?.ToString() ?? string.Empty;
+
+        return Prettify(string.Join("\n\n", blocks.Select(block => Value(block?["text"]) ?? block?.ToString() ?? string.Empty)));
+    }
+
+    /// <summary>
+    /// Indents a text block that is itself JSON - several tools answer with a serialized DTO, and a
+    /// model reads that fine on one line while a person does not. The wire log below has the
+    /// message exactly as it arrived either way.
+    /// </summary>
+    private static string Prettify(string text)
+    {
+        var trimmed = text.TrimStart();
+
+        if (trimmed.StartsWith('{') is false && trimmed.StartsWith('[') is false) return text;
+
+        try
+        {
+            return JsonNode.Parse(text)?.ToJsonString(_indented) ?? text;
+        }
+        catch (JsonException)
+        {
+            return text;
+        }
+    }
+
+    /// <summary>A JSON value as text, whatever its underlying kind - null when the member is absent.</summary>
+    private static string? Value(JsonNode? node)
+        => node is JsonValue value ? value.ToString() : node?.ToString();
+
+    /// <summary>The declared type of a schema property; a nullable one declares several, the first is its type.</summary>
+    private static string TypeOf(JsonNode? type) => type switch
+    {
+        JsonArray types => Value(types.FirstOrDefault()) ?? "string",
+        null => "string",
+        _ => Value(type) ?? "string"
+    };
+
+    private static string Clip(string text) => text.Length <= MaxShownCharacters
+        ? text
+        : $"{text[..MaxShownCharacters]}\n\n[clipped for display - {text.Length} characters in total]";
+}

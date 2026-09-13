@@ -28,6 +28,11 @@ public partial class BitFcTimelineMonthView
     private string? _dragResourceId;
     private DateTime? _dragDay;
 
+    // The day cells exist only as add/drop targets, so a read-only timeline must not expose a
+    // focusable no-op button per day and resource. A null attribute value is omitted from the markup.
+    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
     private RenderFragment RenderLanes(List<List<BitFullCalendarEvent>> lanes, DateTime monthStart, int daysInMonth) => builder =>
     {
         var inv = System.Globalization.CultureInfo.InvariantCulture;
@@ -90,6 +95,9 @@ public partial class BitFcTimelineMonthView
 
     private async Task OnSlotClickAsync(string resourceId, DateTime day)
     {
+        if (State.ReadOnly)
+            return;
+
         if (OnAddClick.HasDelegate)
         {
             var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, State.StartOfDayHour);
@@ -112,8 +120,12 @@ public partial class BitFcTimelineMonthView
             await OnSlotClickAsync(resourceId, day);
     }
 
-    private string SlotAriaLabel(DateTime day, string rowLabel)
+    private string? SlotAriaLabel(DateTime day, string rowLabel)
     {
+        // The cell is inert in read-only mode, so it carries no label to announce.
+        if (State.ReadOnly)
+            return null;
+
         return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("D", State.Culture)}";
     }
 

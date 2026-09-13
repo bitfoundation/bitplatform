@@ -1,10 +1,20 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const _streams: { [id: string]: MediaStream } = {};
 
     butil.mediaDevices = {
         isSupported() { return !!(window.navigator as any).mediaDevices; },
+        // Cross-module accessor: mediaRecorder.ts records a stream this module owns, and the
+        // handle .NET passes around is only ever the id. Not called from .NET.
+        getStream(id: string) { return _streams[id]; },
+        // The other direction: webAudio.ts produces a stream of its own (a MediaStreamAudioDestination)
+        // and parks it here so that .NET can treat it like any other stream - attach it to an element,
+        // or hand it to MediaRecorder. Not called from .NET.
+        registerStream(id: string, stream: MediaStream) {
+            stopStream(_streams[id]);
+            _streams[id] = stream;
+        },
         async enumerate() {
             const md = (window.navigator as any).mediaDevices;
             if (!md?.enumerateDevices) return [];
@@ -36,6 +46,67 @@ var BitButil = BitButil || {};
             } catch {
                 return false;
             }
+        },
+        isDisplaySupported() { return !!(window.navigator as any).mediaDevices?.getDisplayMedia; },
+        async getDisplayMedia(id: string, audio: boolean, videoConstraints: any, options: any) {
+            const md = (window.navigator as any).mediaDevices;
+            if (!md?.getDisplayMedia) return false;
+            const constraints: any = { video: videoConstraints ?? true, audio };
+            // The picker-shaping members live on the constraints object itself, not under video.
+            // Undefined ones are dropped so a runtime that doesn't know a member isn't handed one.
+            if (options) {
+                for (const key of ['displaySurface', 'selfBrowserSurface', 'surfaceSwitching', 'systemAudio', 'monitorTypeSurfaces', 'preferCurrentTab']) {
+                    if (options[key] !== null && options[key] !== undefined) constraints[key] = options[key];
+                }
+            }
+
+            // A CaptureController is the only way to say whether the captured tab or window should be
+            // brought to the front when capture starts. The default is to focus it, which is wrong
+            // for anything where the user stays in this page - a recorder, a conferencing tool.
+            let controller: any = null;
+            if (options?.focusBehavior && typeof (window as any).CaptureController === 'function') {
+                controller = new (window as any).CaptureController();
+                constraints.controller = controller;
+            }
+
+            try {
+                const stream = await md.getDisplayMedia(constraints);
+
+                // setFocusBehavior is only honoured up to the end of the task the promise settled in,
+                // so it has to happen here rather than on a later call from .NET.
+                if (controller) {
+                    try { controller.setFocusBehavior(options.focusBehavior); }
+                    catch { /* window/monitor capture, or the moment has passed */ }
+                }
+
+                // Same reasoning as getUserMedia: never orphan a previous stream under this id.
+                stopStream(_streams[id]);
+                _streams[id] = stream;
+                return true;
+            } catch {
+                // The user dismissed the picker, or the embedder blocks display-capture.
+                return false;
+            }
+        },
+        // The user can end a screen share from the browser's own "Stop sharing" bar, which we only
+        // learn about through the track's 'ended' event - .NET has no other way to notice.
+        onDisplayEnded(id: string, dotNetRef: any, method: string) {
+            const stream = _streams[id];
+            if (!stream) return;
+            const notify = () => butil.utils.dispatch(dotNetRef, method, id);
+            stream.getVideoTracks().forEach(t => t.addEventListener('ended', notify, { once: true }));
+        },
+        getDisplaySettings(id: string) {
+            const track = _streams[id]?.getVideoTracks()[0];
+            if (!track) return null;
+            const s: any = track.getSettings?.() ?? {};
+            return {
+                label: track.label ?? '',
+                displaySurface: s.displaySurface ?? '',
+                width: s.width ?? 0,
+                height: s.height ?? 0,
+                frameRate: s.frameRate ?? 0
+            };
         },
         attach(id: string, element: HTMLMediaElement) {
             const stream = _streams[id];

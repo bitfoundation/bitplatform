@@ -12,7 +12,8 @@ public partial class EmailServiceJobsRunner
     [AutoInject] ApiServerExceptionHandler serverExceptionHandler = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
-    [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via email, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/)]
+    [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30] /*We primarily send tokens via email, which expire after 2 minutes by default. It's not worth retrying more than 3 times, with a 30-second delay between attempts.*/,
+                    OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public async Task SendEmailJob(string toEmailAddress, string toName, string subject, string body,
         PerformContext context = null!,
         CancellationToken cancellationToken = default)
@@ -40,7 +41,7 @@ public partial class EmailServiceJobsRunner
                 { "ToEmailAddress", toEmailAddress },
                 { "JobId", context.BackgroundJob.Id }
             });
-            if (exp is not KnownException && cancellationToken.IsCancellationRequested is false)
+            if (cancellationToken.IsCancellationRequested || exp is not KnownException)
                 throw; // To retry the job
         }
     }

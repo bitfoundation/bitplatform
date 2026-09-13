@@ -66,7 +66,7 @@ public partial class JobProgress
                 StateHasChanged();
             });
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
 
         }

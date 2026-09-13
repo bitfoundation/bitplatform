@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ConfirmPage
@@ -31,17 +28,19 @@ public partial class ConfirmPage
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneTokenQueryString { get; set; }
 
+    private string GetSafeReturnUrl() => Uri.IsAppRelativeUrl(ReturnUrlQueryString, requireLeadingSlash: false) ? ReturnUrlQueryString : PageUrls.Home;
+
 
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();
 
-        if (string.IsNullOrEmpty(EmailQueryString) is false)
+        if (string.IsNullOrWhiteSpace(EmailQueryString) is false)
         {
             emailModel.Email = EmailQueryString;
             showEmailConfirmation = true;
 
-            if (string.IsNullOrEmpty(EmailTokenQueryString) is false)
+            if (string.IsNullOrWhiteSpace(EmailTokenQueryString) is false)
             {
                 emailModel.Token = EmailTokenQueryString;
                 if (InPrerenderSession is false)
@@ -51,12 +50,12 @@ public partial class ConfirmPage
             }
         }
 
-        if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        if (string.IsNullOrWhiteSpace(PhoneNumberQueryString) is false)
         {
             phoneModel.PhoneNumber = PhoneNumberQueryString;
             showPhoneConfirmation = true;
 
-            if (string.IsNullOrEmpty(PhoneTokenQueryString) is false)
+            if (string.IsNullOrWhiteSpace(PhoneTokenQueryString) is false)
             {
                 phoneModel.Token = PhoneTokenQueryString;
                 if (InPrerenderSession is false)
@@ -66,7 +65,7 @@ public partial class ConfirmPage
             }
         }
 
-        if (string.IsNullOrEmpty(EmailQueryString) && string.IsNullOrEmpty(PhoneNumberQueryString))
+        if (string.IsNullOrWhiteSpace(EmailQueryString) && string.IsNullOrWhiteSpace(PhoneNumberQueryString))
         {
             showEmailConfirmation = showPhoneConfirmation = true;
         }
@@ -74,7 +73,7 @@ public partial class ConfirmPage
 
     private async Task ConfirmEmail()
     {
-        if (isWaiting || string.IsNullOrEmpty(emailModel.Email) || string.IsNullOrEmpty(emailModel.Token)) return;
+        if (isWaiting || string.IsNullOrWhiteSpace(emailModel.Email) || string.IsNullOrWhiteSpace(emailModel.Token)) return;
 
         await WrapRequest(async () =>
         {
@@ -86,7 +85,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isEmailConfirmed = true;
         });
@@ -94,17 +93,17 @@ public partial class ConfirmPage
 
     private async Task ResendEmailToken()
     {
-        if (isWaiting || string.IsNullOrEmpty(emailModel.Email)) return;
+        if (isWaiting || string.IsNullOrWhiteSpace(emailModel.Email)) return;
 
         await WrapRequest(async () =>
         {
-            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = ReturnUrlQueryString }, CurrentCancellationToken);
+            await identityController.SendConfirmEmailToken(new() { Email = emailModel.Email, ReturnUrl = GetSafeReturnUrl() }, CurrentCancellationToken);
         });
     }
 
     private async Task ConfirmPhone()
     {
-        if (isWaiting || string.IsNullOrEmpty(phoneModel.PhoneNumber) || string.IsNullOrEmpty(phoneModel.Token)) return;
+        if (isWaiting || string.IsNullOrWhiteSpace(phoneModel.PhoneNumber) || string.IsNullOrWhiteSpace(phoneModel.Token)) return;
 
         await WrapRequest(async () =>
         {
@@ -116,7 +115,7 @@ public partial class ConfirmPage
 
             await AuthManager.StoreTokens(signInResponse, true);
 
-            NavigationManager.NavigateTo(ReturnUrlQueryString ?? PageUrls.Home, replace: true);
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), replace: true);
 
             isPhoneConfirmed = true;
         });
@@ -124,7 +123,7 @@ public partial class ConfirmPage
 
     private async Task ResendPhoneToken()
     {
-        if (isWaiting || string.IsNullOrEmpty(phoneModel.PhoneNumber)) return;
+        if (isWaiting || string.IsNullOrWhiteSpace(phoneModel.PhoneNumber)) return;
 
         await WrapRequest(async () =>
         {

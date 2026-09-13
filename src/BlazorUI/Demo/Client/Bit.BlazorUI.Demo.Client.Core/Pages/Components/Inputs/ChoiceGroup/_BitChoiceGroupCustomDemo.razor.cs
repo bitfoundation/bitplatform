@@ -4,11 +4,28 @@ public partial class _BitChoiceGroupCustomDemo
 {
     private string oneWayValue = "A";
     private string twoWayValue = "A";
+    private string readOnlyValue = "A";
+    private bool showAutoFocus;
+    private string? uncontrolledValue = "A";
+
+    private string? changedValue;
+    private string? clickedCustom;
+    private string? focusedCustom;
+    private string? blurredCustom;
+
+    private int dynamicCounter = 3;
+    private string? dynamicValue = "1";
+    private List<Order> dynamicCustoms =
+    [
+        new() { Name = "Custom 1", ItemValue = "1" },
+        new() { Name = "Custom 2", ItemValue = "2" },
+        new() { Name = "Custom 3", ItemValue = "3" }
+    ];
     private string itemTemplateValue = "Day";
     private string itemTemplateValue2 = "Day";
     private string itemLabelTemplateValue = "Day";
-    public ChoiceGroupValidationModel validationModel = new();
-    public string? successMessage;
+    private ChoiceGroupValidationModel validationModel = new();
+    private string? successMessage;
 
 
     private readonly List<Order> basicCustoms =
@@ -93,6 +110,41 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Custom D", ItemValue = "D", Class = "custom-item" }
     ];
 
+    private readonly List<Order> prefixCustoms =
+    [
+        new() { Name = "Standard", ItemValue = "Standard", Prefix = "$0 - " },
+        new() { Name = "Express", ItemValue = "Express", Prefix = "$10 - " },
+        new() { Name = "Overnight", ItemValue = "Overnight", Prefix = "$25 - " }
+    ];
+
+    private readonly List<Order> suffixCustoms =
+    [
+        new() { Name = "Standard", ItemValue = "Standard", Fee = "Free" },
+        new() { Name = "Express", ItemValue = "Express", Fee = "$10" },
+        new() { Name = "Overnight", ItemValue = "Overnight", Fee = "$25" }
+    ];
+
+    private readonly List<Order> descriptionCustoms =
+    [
+        new() { Name = "Daily", ItemValue = "Daily", Summary = "Backs up every night at 2 AM." },
+        new() { Name = "Weekly", ItemValue = "Weekly", Summary = "Backs up every Sunday at 2 AM." },
+        new() { Name = "Monthly", ItemValue = "Monthly", Summary = "Backs up on the first day of each month." }
+    ];
+
+    private readonly List<Order> deploymentCustoms =
+    [
+        new() { Name = "Development", ItemValue = "Development" },
+        new() { Name = "Staging", ItemValue = "Staging" },
+        new() { Name = "Production", ItemValue = "Production" }
+    ];
+
+    private readonly List<Order> titleCustoms =
+    [
+        new() { Name = "1 h", ItemValue = "1h", Tooltip = "Delivered within one hour of dispatch" },
+        new() { Name = "24 h", ItemValue = "24h", Tooltip = "Delivered within one business day" },
+        new() { Name = "72 h", ItemValue = "72h", Tooltip = "Delivered within three business days" }
+    ];
+
     private readonly List<Order> itemLabelTemplateCustoms =
     [
         new() { Name = "Day", ItemValue = "Day", IconName = BitIconName.CalendarDay },
@@ -115,6 +167,24 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "ویژه ت", ItemValue = "D" }
     ];
 
+
+    private void AddDynamicCustom()
+    {
+        dynamicCounter++;
+        dynamicCustoms = [.. dynamicCustoms, new Order { Name = $"Custom {dynamicCounter}", ItemValue = $"{dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicCustom()
+    {
+        if (dynamicCustoms.Count <= 1) return;
+
+        dynamicCustoms = [.. dynamicCustoms.Take(dynamicCustoms.Count - 1)];
+    }
+
+    private void ReverseDynamicCustoms()
+    {
+        dynamicCustoms = [.. Enumerable.Reverse(dynamicCustoms)];
+    }
 
     private void HandleValidSubmit()
     {

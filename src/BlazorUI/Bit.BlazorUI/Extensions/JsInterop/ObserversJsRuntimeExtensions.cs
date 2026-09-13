@@ -15,11 +15,27 @@ internal static class ObserversJsRuntimeExtensions
     }
 
     internal static ValueTask BitObserversUnregisterResize<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
-        this IJSRuntime jsRuntime, 
-        string id, 
-        ElementReference element, 
+        this IJSRuntime jsRuntime,
+        string id,
+        ElementReference element,
         DotNetObjectReference<T> obj) where T : class
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterResize", id, element, obj);
+    }
+
+
+    internal static ValueTask BitObserversRegisterIntersection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime,
+        string id,
+        ElementReference element,
+        DotNetObjectReference<T> obj,
+        string rootMargin) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.registerIntersection", id, element, obj, rootMargin);
+    }
+
+    internal static ValueTask BitObserversUnregisterIntersection(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.unregisterIntersection", id);
     }
 }

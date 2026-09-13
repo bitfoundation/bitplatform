@@ -1,12 +1,12 @@
 @namespace Bit.BlazorUI
 
 @*
-  Top-level mode switch (Event ⇄ Timeline). The whole switch is rendered only when at least one
-  resource is supplied, because the Timeline mode is meaningless without resources and a lone
-  Event tab adds no value.
+  Top-level mode switch (Event ⇄ Timeline). The whole switch is rendered only when the Timeline
+  mode is actually reachable - it needs at least one resource and at least one allowed view it can
+  lay out - because a lone Event tab adds no value.
 *@
 
-@if (State.Resources.Count > 0)
+@if (State.IsTimelineModeAvailable)
 {
     <div class="bit-bfc-mode-tabs" role="tablist">
         @foreach (var mode in _modes)

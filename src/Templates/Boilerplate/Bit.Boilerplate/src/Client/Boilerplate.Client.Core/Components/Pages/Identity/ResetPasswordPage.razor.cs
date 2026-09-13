@@ -1,6 +1,3 @@
-using Boilerplate.Shared.Features.Identity;
-using Boilerplate.Shared.Features.Identity.Dtos;
-
 namespace Boilerplate.Client.Core.Components.Pages.Identity;
 
 public partial class ResetPasswordPage
@@ -42,11 +39,11 @@ public partial class ResetPasswordPage
         model.PhoneNumber = PhoneNumberQueryString;
         model.Token = TokenQueryString;
 
-        if (string.IsNullOrEmpty(EmailQueryString) is false)
+        if (string.IsNullOrWhiteSpace(EmailQueryString) is false)
         {
             showEmail = true;
         }
-        else if (string.IsNullOrEmpty(PhoneNumberQueryString) is false)
+        else if (string.IsNullOrWhiteSpace(PhoneNumberQueryString) is false)
         {
             showPhone = true;
         }
@@ -75,8 +72,8 @@ public partial class ResetPasswordPage
 
     private void HandleContinue()
     {
-        if (string.IsNullOrEmpty(model.Token)) return;
-        if (string.IsNullOrEmpty(model.Email) && string.IsNullOrEmpty(model.PhoneNumber)) return;
+        if (string.IsNullOrWhiteSpace(model.Token)) return;
+        if (string.IsNullOrWhiteSpace(model.Email) && string.IsNullOrWhiteSpace(model.PhoneNumber)) return;
 
         isTokenEntered = true;
     }
@@ -111,7 +108,12 @@ public partial class ResetPasswordPage
 
         try
         {
-            var resendModel = new SendResetPasswordTokenRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
+            var resendModel = new SendResetPasswordTokenRequestDto
+            {
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                ReturnUrl = ReturnUrlQueryString
+            };
 
             await identityController.SendResetPasswordToken(resendModel, CurrentCancellationToken);
 

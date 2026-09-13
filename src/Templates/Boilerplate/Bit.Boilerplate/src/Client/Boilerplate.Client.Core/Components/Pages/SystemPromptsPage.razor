@@ -22,7 +22,7 @@
 
             @foreach (var systemPrompt in systemPrompts)
             {
-                <BitPivotItem HeaderText="@systemPrompt.PromptKind.ToString()">
+                <BitPivotItem HeaderText="@GetPromptKindText(systemPrompt.PromptKind)">
 
                     <BitSticky Top="5rem" Style="margin-bottom:8px">
                         <BitButton IconName="@BitIconName.Save" OnClick="WrapHandled(() => SaveChanges(systemPrompt))" AutoLoading>
@@ -30,7 +30,8 @@
                         </BitButton>
                     </BitSticky>
 
-                    <BitMarkdownEditor @bind-Value="systemPrompt.Markdown" Mode="BitMarkdownEditorMode.Split" />
+                    <BitMarkdownEditor @bind-Value="systemPrompt.Markdown"
+                                       Height="max(20rem, calc(var(--bit-env-height-avl) - 15rem))" />
                 </BitPivotItem>
             }
 

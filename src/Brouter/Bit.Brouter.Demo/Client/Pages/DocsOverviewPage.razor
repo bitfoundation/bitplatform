@@ -1,0 +1,98 @@
+<PageTitle>Overview · Brouter docs</PageTitle>
+
+@* The documentation home. It renders on its own - outside the app's <Brouter> and its layout -
+   when the MCP server hands this page to an agent, so everything on it has to come from the
+   catalog or from the markup itself: no router calls, no JS interop while initializing. *@
+
+<div class="bb-intro">
+    <h1>Brouter documentation</h1>
+    <p class="bb-subtitle">
+        Brouter is a modern, declarative, nestable router for Blazor - framework-parity route
+        templates plus the capabilities modern router libraries are measured by: guards, data
+        loaders with stale-while-revalidate caching, keep-alive, view transitions, and a source
+        generator for compile-time-safe URLs.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Why another router?</h3>
+    <p class="bb-card-desc">
+        Blazor's built-in <code>Router</code> stops at matching a URL to a component. Everything
+        else a modern SPA expects from its router - nested layouts, navigation guards, route-level
+        data loading with caching, page transitions, kept-alive page state - is left to every app
+        to hand-roll. Brouter provides all of it declaratively, while staying superset-compatible:
+        every <code>&#64;page</code> template matches identically, <code>[Authorize]</code> keeps
+        being enforced by the framework's own components, and the built-in Router's templates port
+        over verbatim. Its API design is informed by React Router, Vue Router, Angular Router,
+        SvelteKit and TanStack Router - and by ASP.NET Core's route matcher.
+    </p>
+    <p class="bb-card-desc">
+        These docs are a working showcase: this site is a Blazor app routed by Brouter itself, and
+        nearly every page links to live routes you can click. The
+        <BrouterLink Href="/playground">playground</BrouterLink> indexes all of them.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/docs/getting-started" class="btn btn-primary">Getting started →</BrouterLink>
+        <BrouterLink Href="/docs/navigation-pipeline" class="btn btn-outline">How a navigation works →</BrouterLink>
+        <BrouterLink Href="/docs/migration" class="btn btn-outline">Migrating from the built-in Router →</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Three ways in</h3>
+    <p class="bb-card-desc">
+        The pages below read in order, but nobody has to. Pick the entry point that matches what
+        you are doing right now.
+    </p>
+    <div class="bb-grid">
+        <section class="bb-card">
+            <h4 class="bb-card-title">Learn it</h4>
+            <p class="bb-card-desc">
+                Install the package, then follow the pipeline that runs behind every navigation -
+                what happens before the URL moves, and what each step can do about it.
+            </p>
+            <BrouterLink Href="/docs/getting-started" class="btn btn-outline">Start reading →</BrouterLink>
+        </section>
+        <section class="bb-card">
+            <h4 class="bb-card-title">Look it up</h4>
+            <p class="bb-card-desc">
+                Every component parameter, service member, option and value type in one page, with
+                its default - the page to keep open while you write code.
+            </p>
+            <BrouterLink Href="/docs/api" class="btn btn-outline">API reference →</BrouterLink>
+        </section>
+        <section class="bb-card">
+            <h4 class="bb-card-title">Copy an answer</h4>
+            <p class="bb-card-desc">
+                Protected areas, unsaved-changes prompts, revalidation after a mutation, breadcrumbs,
+                query-state filters - task-shaped solutions, written as code.
+            </p>
+            <BrouterLink Href="/docs/recipes" class="btn btn-outline">Recipes →</BrouterLink>
+        </section>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Every page, by topic</h3>
+    <p class="bb-card-desc">
+        The whole table of contents, with what each page covers. This is the same catalog the
+        sidebar, the search box and the previous/next pager are built from - and the same one the
+        MCP server hands to an AI agent.
+    </p>
+    <div class="bb-grid">
+        @foreach (var section in DocsCatalog.Sections)
+        {
+            <section class="bb-card" @key="section.Title">
+                <h4 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> @section.Title</h4>
+                <ul class="bb-link-list">
+                    @foreach (var entry in section.Pages.Where(page => page.Slug.Length > 0))
+                    {
+                        <li @key="entry.Slug">
+                            <BrouterLink Href="@entry.Url" title="@entry.Description">@entry.Title</BrouterLink>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+</div>

@@ -1,0 +1,20 @@
+// Fluent 2 design-system preset for bit BlazorUI.
+//
+// Ships with Bit.BlazorUI.Extras rather than with the core package: the core stylesheet carries the
+// components and the Fluent (v1) defaults, and a design system is an opt-in re-skin of those - so it
+// is a separate bundle, served as _content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css.
+//
+// Override-only bundle: link it AFTER the main bit.blazorui.css (which carries the components and
+// the Fluent defaults) and activate it with bit-theme="fluent2" (follows the light palette),
+// "fluent2-light" or "fluent2-dark" - on <html> for the whole app or on any element for a scoped
+// region. Every rule here declares nothing but --bit-* tokens - a preset never restyles a component
+// class - so the file stays small and the attribute is the only switch.
+@import "colors.fluent2-light.scss";
+
+@import "colors.fluent2-dark.scss";
+
+@import "shadows.fluent2-light.scss";
+
+@import "shadows.fluent2-dark.scss";
+
+@import "tokens.fluent2.scss";

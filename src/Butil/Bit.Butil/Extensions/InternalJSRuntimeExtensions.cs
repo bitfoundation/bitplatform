@@ -44,6 +44,8 @@ internal static class InternalJSRuntimeExtensions
         // for JS functions that are synchronous; using it for a Promise-returning function
         // either throws on deserialization or silently fires-and-forgets. Callers that know
         // their JS function is synchronous opt in via InvokeVoidFast.
+        if (BitButil.LazyScriptsEnabled) return InvokeVoidLazy(jsRuntime, identifier, cancellationToken, args);
+
         return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
@@ -65,6 +67,7 @@ internal static class InternalJSRuntimeExtensions
     internal static ValueTask InvokeVoidFast(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return default;
+        if (BitButil.LazyScriptsEnabled) return InvokeVoidFastLazy(jsRuntime, identifier, cancellationToken, args);
 
         return BitButil.FastInvokeEnabled
             ? jsRuntime.FastInvokeVoidAsync(identifier, cancellationToken, args)
@@ -113,6 +116,8 @@ internal static class InternalJSRuntimeExtensions
 
         // Always the safe async path - see the note on InvokeVoid. Callers whose JS function is
         // synchronous opt in via InvokeFast.
+        if (BitButil.LazyScriptsEnabled) return InvokeLazy<TValue>(jsRuntime, identifier, cancellationToken, args);
+
         return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
 
@@ -145,6 +150,38 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Invokes a JS listener-registration function - one that reports whether it actually attached
+    /// by returning a boolean - and tells the caller whether the registration took.
+    /// </summary>
+    /// <remarks>
+    /// Plain <see cref="Invoke{TValue}(IJSRuntime, string, object?[])"/> can't be used for this:
+    /// during prerender/SSR it hands back <c>default(bool)</c>, which is indistinguishable from the
+    /// JS side refusing to attach. Nothing is registered during prerender and nothing failed either
+    /// - the caller's subscription is simply inert until the app is interactive - so this reports
+    /// success there, and only a real <c>false</c> from JS means "the listener is not attached".
+    /// </remarks>
+    internal static async ValueTask<bool> InvokeRegister(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return true;
+
+        return await jsRuntime.Invoke<bool>(identifier, args);
+    }
+
+    /// <summary>
+    /// <see cref="InvokeRegister"/> for a registration function that reports failure by returning
+    /// the reason as a string, and null when it attached. The reason travels back with the call
+    /// rather than through the error callback, so the caller raises it exactly once and can put the
+    /// real message on the exception it throws.
+    /// </summary>
+    /// <remarks>Prerender/SSR reports success, for the reason given on <see cref="InvokeRegister"/>.</remarks>
+    internal static async ValueTask<string?> InvokeRegisterOrError(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return null;
+
+        return await jsRuntime.Invoke<string?>(identifier, args);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for value-returning calls. Honors <see cref="BitButil.FastInvokeEnabled"/>
     /// and, when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.
@@ -163,12 +200,91 @@ internal static class InternalJSRuntimeExtensions
     internal static ValueTask<TValue> InvokeFast<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return SafeDefault<TValue>();
+        if (BitButil.LazyScriptsEnabled) return InvokeFastLazy<TValue>(jsRuntime, identifier, cancellationToken, args);
 
         return BitButil.FastInvokeEnabled
             ? jsRuntime.FastInvokeAsync<TValue>(identifier, cancellationToken, args)
             : jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
 
+
+    // The lazy-scripts variants of the four entry points above: the same calls, preceded by making sure the
+    // module behind the identifier has been imported (see ButilScriptLoader). Separate async methods so the
+    // default path stays free of a state machine and lazy mode pays for it only until the module is loaded
+    // (EnsureLoaded completes synchronously from then on).
+
+    private static async ValueTask InvokeVoidLazy(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Same forwarding as InvokeVoidFast: only trim-safe primitives from the opted-in synchronous APIs reach the fast path.")]
+    private static async ValueTask InvokeVoidFastLazy(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+
+        if (BitButil.FastInvokeEnabled) await jsRuntime.FastInvokeVoidAsync(identifier, cancellationToken, args);
+        else await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+    }
+
+    private static async ValueTask<TValue> InvokeLazy<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        return await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Same forwarding as InvokeFast: only trim-safe primitives from the opted-in synchronous APIs reach the fast path.")]
+    private static async ValueTask<TValue> InvokeFastLazy<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+
+        return BitButil.FastInvokeEnabled
+            ? await jsRuntime.FastInvokeAsync<TValue>(identifier, cancellationToken, args)
+            : await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+
+
+    /// <summary>
+    /// Bridges a <see cref="CancellationToken"/> to a JavaScript-side abort: when the token fires, the
+    /// given interop function is invoked (fire-and-forget) with the given arguments. Returns the
+    /// registration to dispose once the call it guards has settled - or <c>default</c> when the token
+    /// can never be cancelled, so a <see cref="CancellationToken.None"/> caller pays nothing.
+    /// </summary>
+    /// <remarks>
+    /// One implementation for every cancellable wrapper (<see cref="Fetch"/>, <see cref="WebOtp"/>,
+    /// <see cref="DigitalCredentials"/>), because the callback runs in whatever context cancels the
+    /// token - a component's <c>Dispose</c>, a timer thread - and has nothing to hand an exception to.
+    /// A circuit that is already gone makes the interop call throw or fault; both are swallowed here,
+    /// the way any teardown-time interop failure is, rather than surfacing out of the caller's
+    /// <c>CancellationTokenSource.Cancel()</c> or as an unobserved task exception. An already-cancelled
+    /// token runs the callback synchronously inside this method, which is what dispatches the abort
+    /// <em>before</em> the call it belongs to - the JavaScript side holds such an abort against the
+    /// call's handle (see <c>abortable.ts</c>).
+    /// </remarks>
+    internal static CancellationTokenRegistration RegisterJsAbort(this IJSRuntime jsRuntime, CancellationToken cancellationToken, string identifier, params object?[]? args)
+    {
+        if (cancellationToken.CanBeCanceled is false) return default;
+
+        return cancellationToken.Register(static state =>
+        {
+            var (js, id, arguments) = ((IJSRuntime, string, object?[]?))state!;
+            try
+            {
+                var pending = js.InvokeVoid(id, arguments);
+                if (pending.IsCompletedSuccessfully is false) _ = Observe(pending);
+            }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException()) { }
+        }, (jsRuntime, identifier, args));
+
+        // Awaited only to observe a failure: the abort itself is the whole of the work, and there is no
+        // caller left to report it to.
+        static async Task Observe(ValueTask pending)
+        {
+            try { await pending; }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException() || exception is JSException) { }
+        }
+    }
 
     /// <summary>
     /// True for exceptions that are safe to swallow while tearing down a wrapper (its

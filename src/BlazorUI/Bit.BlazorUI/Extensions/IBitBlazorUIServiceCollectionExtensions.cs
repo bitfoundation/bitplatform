@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
@@ -18,16 +19,41 @@ public static class IBitBlazorUIServiceCollectionExtensions
     /// </param>
     public static IServiceCollection AddBitBlazorUIServices(this IServiceCollection services, bool trySingleton = false)
     {
-        services.TryAddScoped<BitThemeManager>();
+        services.TryAddScoped<BitThemeNotifications>(sp =>
+            new BitThemeNotifications(sp.GetService<ILoggerFactory>())
+            {
+                // Lets a bare ThemeChanged subscription wire up the JS notifier on its own; resolved
+                // lazily per call so construction stays cycle-free (manager -> receiver -> notifications)
+                // and disposal of the scope surfaces as ObjectDisposedException, which the trigger handles.
+                RegistrationTrigger = () => sp.GetRequiredService<BitThemeManager>().EnsureThemeNotificationsRegisteredAsync(),
+            });
+
+        // BitThemeJsNotifierReceiver is internal (consumers should listen on
+        // BitThemeNotifications.ThemeChanged), but DI still resolves it for us.
+        services.TryAddScoped<BitThemeJsNotifierReceiver>(sp =>
+            new BitThemeJsNotifierReceiver(
+                sp.GetRequiredService<BitThemeNotifications>(),
+                sp.GetService<ILoggerFactory>()));
+
+        services.TryAddScoped<BitThemeManager>(sp =>
+            new BitThemeManager(
+                sp.GetRequiredService<IJSRuntime>(),
+                sp.GetRequiredService<BitThemeJsNotifierReceiver>(),
+                sp.GetService<ILoggerFactory>()));
+
+        services.TryAddScoped<BitExternalThemeLoader>();
+
         services.TryAddScoped<BitPageVisibility>();
 
+        // The logger factory is optional: it is what turns "the modal never showed up" into a line naming the
+        // missing container, and an app that registers none still gets a working service.
         if (trySingleton)
         {
-            services.TryAddSingleton<BitModalService>();
+            services.TryAddSingleton(sp => new BitModalService(sp.GetService<ILoggerFactory>()));
         }
         else
         {
-            services.TryAddScoped<BitModalService>();
+            services.TryAddScoped(sp => new BitModalService(sp.GetService<ILoggerFactory>()));
         }
 
         return services;

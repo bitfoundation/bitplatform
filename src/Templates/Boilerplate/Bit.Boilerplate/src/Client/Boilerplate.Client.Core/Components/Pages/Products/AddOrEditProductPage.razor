@@ -18,6 +18,20 @@
             <BitEllipsisLoading />
         </BitStack>
     }
+    else if (loadFailed)
+    {
+        <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem">
+            <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(AppStrings.ProductCouldNotBeLoaded)]</BitText>
+            <BitStack Horizontal HorizontalAlign="BitAlignment.Center">
+                <BitButton ButtonType="BitButtonType.Button" OnClick="WrapHandled(GoBack)" Variant="BitVariant.Outline">
+                    @Localizer[nameof(AppStrings.Cancel)]
+                </BitButton>
+                <BitButton AutoLoading ButtonType="BitButtonType.Button" OnClick="WrapHandled(Reload)">
+                    @Localizer[nameof(AppStrings.TryAgain)]
+                </BitButton>
+            </BitStack>
+        </BitStack>
+    }
     else
     {
         <BitStack FillContent>
@@ -46,6 +60,8 @@
                     <ValidationMessage For="() => product.Price" />
 
                     <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.AllExtended" @bind-Value="product.DescriptionHTML" @ref="bitRichTextEditor" />
+                    <ValidationMessage For="() => product.DescriptionHTML" />
+                    <ValidationMessage For="() => product.DescriptionText" />
 
                     <BitFileUpload @ref="fileUploadRef"
                                    AutoReset

@@ -5,14 +5,9 @@ namespace Bit.Butil;
 /// </summary>
 public class WebLockSnapshot
 {
+    /// <summary>The locks currently granted, across every tab of this origin.</summary>
     public WebLockInfo[] Held { get; set; } = [];
-    public WebLockInfo[] Pending { get; set; } = [];
-}
 
-/// <summary>One entry inside a <see cref="WebLockSnapshot"/>.</summary>
-public class WebLockInfo
-{
-    public string Name { get; set; } = string.Empty;
-    public string Mode { get; set; } = "exclusive";
-    public string ClientId { get; set; } = string.Empty;
+    /// <summary>The requests still waiting for a lock to be released.</summary>
+    public WebLockInfo[] Pending { get; set; } = [];
 }

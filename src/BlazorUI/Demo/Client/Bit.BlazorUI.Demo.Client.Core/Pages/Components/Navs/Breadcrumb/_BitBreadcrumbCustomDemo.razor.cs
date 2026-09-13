@@ -22,6 +22,22 @@ public partial class _BitBreadcrumbCustomDemo
         new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
     ];
 
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithTarget =
+    [
+        new() { Name = "Custom 1", Address = "/components/breadcrumb" },
+        new() { Name = "Custom 2", Address = "/components/breadcrumb" },
+        new() { Name = "bit BlazorUI", Address = "https://blazorui.bitplatform.dev", OpenIn = "_blank", Tooltip = "Opens the bit BlazorUI website in a new tab" },
+        new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
+    ];
+
+    private readonly List<PageInfo> CustomBreadcrumbItemsWithLongText =
+    [
+        new() { Name = "Very long folder name 1", Address = "/components/breadcrumb", Tooltip = "Very long folder name 1" },
+        new() { Name = "Very long folder name 2", Address = "/components/breadcrumb", Tooltip = "Very long folder name 2" },
+        new() { Name = "Very long folder name 3", Address = "/components/breadcrumb", Tooltip = "Very long folder name 3" },
+        new() { Name = "Very long folder name 4", Address = "/components/breadcrumb", Tooltip = "Very long folder name 4", IsCurrent = true }
+    ];
+
     private readonly List<PageInfo> CustomBreadcrumbItemsWithIcon =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb", Icon = BitIconName.AdminELogoInverse32 },
@@ -110,6 +126,8 @@ public partial class _BitBreadcrumbCustomDemo
     {
         Text = { Selector = c => c.Name },
         Href = { Selector = c => c.Address },
+        Title = { Selector = c => c.Tooltip },
+        Target = { Selector = c => c.OpenIn },
         IsSelected = { Selector = c => c.IsCurrent },
         Class = { Selector = c => c.HtmlClass },
         Style = { Selector = c => c.HtmlStyle },

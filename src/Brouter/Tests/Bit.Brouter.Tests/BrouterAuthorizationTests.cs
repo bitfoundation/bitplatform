@@ -93,33 +93,56 @@ public class BrouterAuthorizationTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
+    public void Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // AutoAuthLayoutHost sets only DefaultLayout, composing the framework RouteView - which
         // performs no authorization check at all - so Brouter's own guard must throw rather than
-        // silently render the [Authorize] page.
-        _ = RenderComponent<AutoAuthLayoutHost>();
-
-        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.IsInstanceOfType<InvalidOperationException>(exception);
+        // silently render the [Authorize] page. The single-batch initial mount (see
+        // BrouterInitializer) renders the matched page inside the first render pass, so the
+        // fail-closed throw surfaces synchronously from the mount itself.
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => RenderComponent<AutoAuthLayoutHost>());
         StringAssert.Contains(exception.Message, "authorization");
     }
 
     [TestMethod]
-    public async Task Authorize_page_rendered_natively_fails_closed()
+    public void Authorize_page_rendered_natively_fails_closed()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // DiscoveryHost sets no Found and no auth parameters, so SecurePage would render natively -
         // which must throw rather than silently skip the [Authorize] check (mirroring RouteView).
-        _ = RenderComponent<DiscoveryHost>();
+        // As above, the initial mount renders the page in the first render pass, so the throw
+        // surfaces synchronously from the mount.
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => RenderComponent<DiscoveryHost>());
+        StringAssert.Contains(exception.Message, "authorization");
+    }
+
+    [TestMethod]
+    public async Task Authorize_page_reached_by_the_late_registration_rematch_fails_closed()
+    {
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/secure");
+
+        // Mount at /secure before the route exists: nothing matches, so no auth check runs yet.
+        var cut = RenderComponent<LateRegisteredAuthHost>(p => p.Add(h => h.ShowSecure, false));
+
+        // Reveal the [Authorize] route. It now reaches the screen through the rematch rather than
+        // the boot navigation - a different pipeline entry point that must fail closed just the
+        // same. The rematch runs as a component lifecycle task (BrouterRematchRunner), so the
+        // fail-closed throw reaches the renderer instead of being swallowed by a detached
+        // continuation - which would leave the developer with no signal at all.
+        cut.Render(p => p.Add(h => h.ShowSecure, true));
 
         var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.IsInstanceOfType<InvalidOperationException>(exception);
         StringAssert.Contains(exception.Message, "authorization");
+        Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count,
+            "an [Authorize] page must never render without an authorization check");
     }
 }

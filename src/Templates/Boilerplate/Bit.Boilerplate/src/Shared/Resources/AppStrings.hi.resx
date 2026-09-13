@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>बहुत अधिक अनुरोध</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>सर्वर से कनेक्ट करने में असमर्थ।</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>प्रदर्शित करने के लिए कोई रिकॉर्ड नहीं है।</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>लोड हो रहा है…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>क्रियाएँ</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ जोड़ें</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>फ़िल्टर साफ़ करें</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>CSV निर्यात करें</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Excel निर्यात करें</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>कॉलम</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>संपादित करें</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>हटाएँ</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>सहेजें</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>रद्द करें</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>सभी चुनें</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>पंक्ति चुनें</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>पंक्ति चुनें: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>फ़िल्टर…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>{0} के अनुसार फ़िल्टर करें</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>सभी</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>{0} के लिए फ़िल्टर ऑपरेटर</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>शामिल है</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>शामिल नहीं है</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>से शुरू होता है</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>से समाप्त होता है</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>सत्य</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>असत्य</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>{0} के अनुसार समूहित करें</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>{0} के अनुसार समूह हटाएँ</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>समूह {0} विस्तृत करें: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>समूह {0} संक्षिप्त करें: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{2} में से {0}–{1}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>पृष्ठ {0} / {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / पृष्ठ</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>प्रति पृष्ठ पंक्तियाँ</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>पहला पृष्ठ</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>पिछला पृष्ठ</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>अगला पृष्ठ</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>अंतिम पृष्ठ</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- परिणामों का अंत -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>विवरण दिखाएँ/छिपाएँ</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>उप-आइटम दिखाएँ/छिपाएँ</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>पुनः क्रमित करने के लिए खींचें, या फ़ोकस करके तीर कुंजियों से इस पंक्ति को ले जाएँ</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>पंक्ति पुनः क्रमित करें। इस पंक्ति को ले जाने के लिए ऊपर या नीचे तीर दबाएँ।</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>{0} के लिए अमान्य मान।</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>{0} के अनुसार आरोही क्रम में क्रमबद्ध</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>{0} के अनुसार अवरोही क्रम में क्रमबद्ध</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>{0} के अनुसार क्रमबद्धता हटाई गई</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>{0} पर फ़िल्टर लागू किया गया</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>{0} पर फ़िल्टर हटाया गया</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>पृष्ठ {0} / {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>पंक्ति हटाई गई</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@
   <data name="Ok" xml:space="preserve">
     <value>ठीक है</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>बंद करें</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>पासकी से साइन इन करें</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail खोलें</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook खोलें</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>साइन अप करके, आप इनसे सहमत होते हैं:</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>सिस्टम प्रॉम्प्ट्स</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>यहाँ चैटबॉट के लिए सिस्टम प्रॉम्प्ट्स देखें।</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>सहायता</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>उत्पाद छवि का विश्लेषण करें</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>पुष नोटिफिकेशन जॉब</value>
@@ -706,7 +879,7 @@
     <value>अलग उपयोगकर्ता के रूप में साइन इन करें</value>
   </data>
   <data name="YouAreSignedInAs" xml:space="preserve">
-    <value>आप {0} के रूप में साइन इन हैं</value>
+    <value>आप साइन इन हैं</value>
   </data>
   <data name="ForgotPasswordLink" xml:space="preserve">
     <value>पासवर्ड भूल गए?</value>
@@ -791,9 +964,6 @@
   </data>
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>सत्यापन कोड:</value>
-  </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>सत्यापन कोड दर्ज करें।</value>
   </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>सत्यापित करें</value>
@@ -976,6 +1146,12 @@
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>कार्य आइटम हटाएं</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>आरोही क्रम में क्रमबद्ध करें</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>अवरोही क्रम में क्रमबद्ध करें</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -991,18 +1167,15 @@
     <value>वैकल्पिक पाठ</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>पृष्ठ</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>में से</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>पुनः प्रयास करें</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>प्रशासक पैनल</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} आइटम</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>पिछले 30 दिनों में उत्पादों की संख्या</value>
@@ -1040,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>उत्पाद संख्या के साथ श्रेणियां</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>नाम पर खोजें</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>प्रति श्रेणी उत्पाद गणना चार्ट</value>
   </data>
@@ -1073,9 +1243,6 @@
   <data name="DeleteProduct" xml:space="preserve">
     <value>उत्पाद हटाएं</value>
   </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>डिफ़ॉल्ट रंग पिकर</value>
-  </data>
   <data name="EditProduct" xml:space="preserve">
     <value>उत्पाद {0} संपादित करें</value>
   </data>
@@ -1093,6 +1260,18 @@
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>यह आपका विश्लेषणात्मक डेटा है</value>
+  </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>श्रेणी हटाएं</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>क्या आप निश्चित हैं कि आप श्रेणी {0} को हटाना चाहते हैं?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>पूर्व निर्धारित रंग</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>यह उत्पाद लोड नहीं किया जा सका।</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
@@ -1115,6 +1294,15 @@
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>क्रय सफल!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>अभी दिखाने के लिए कोई उत्पाद नहीं है।</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>उत्पाद खोजें</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>उत्पाद लोड नहीं किए जा सके।</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1148,6 +1336,57 @@
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>एआई चैट पैनल</value>
   </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>अपना संदेश बोलें</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>श्रुतलेख रोकें</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>श्रुतलेख</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए सेटिंग में अनुमति दें।</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>श्रुतलेख रुक गया: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>ज़ोर से पढ़ें</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>पढ़ना रोकें</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>आपने जो कहा उसे लिखा जा रहा है</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>बोलकर लिखना बंद होने में शेष समय</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>आवाज़ के लिए खाता आवश्यक है</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>बोलकर लिखना और ज़ोर से पढ़ना दोनों सर्वर पर चलते हैं। एक बार साइन इन करें और आप चैट से बोलकर बात कर सकते हैं और उसका जवाब सुन सकते हैं।</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>छवि संलग्न करें</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>छवि 10 MB से बड़ी है।</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>केवल छवियाँ ही संलग्न की जा सकती हैं।</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>छवि संलग्न नहीं की जा सकी।</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>छवियों के लिए खाता आवश्यक है</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>अपने संदेश के साथ छवि भेजने के लिए साइन इन करें।</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>नमस्ते{0}! मैं यहां आपके ऐप अनुभव को शानदार बनाने के लिए हूं! कोई प्रश्न है या मदद चाहिए?</value>
   </data>
@@ -1157,21 +1396,23 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>मैं ऐप का PWA संस्करण कैसे स्थापित कर सकता हूं?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
-  </data>
+  <value>मेरे पास कुछ प्रतिक्रिया साझा करने के लिए है!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>एक संदेश लिखें...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>बड़ा करें</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>पुनर्स्थापित करें</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1190,6 +1431,9 @@
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>खाता अपग्रेड विफल।</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>अभी कोई विज्ञापन उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>विज्ञापन देखने में समस्या?</value>
   </data>
@@ -1197,9 +1441,6 @@
     <value>मुझे ऐप में विज्ञापन देखने में समस्या हो रही है।</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>कृपया प्रतीक्षा करें</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>प्रबंधन</value>
   </data>
@@ -1252,17 +1493,29 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>सूचना भेजें</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>सूचनाएं सक्षम करें</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>इस सत्र पर सूचनाएँ सक्षम हैं।</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>सूचनाएं अक्षम करें</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>इस सत्र पर सूचनाएँ म्यूट हैं।</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>टेस्ट सूचना 1</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>सूचनाएँ</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>टेस्ट सूचना 2</value>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>सूचनाएँ चालू करें</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>सूचनाएँ बंद करें</value>
+  </data>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>सूचनाएँ चालू हैं</value>
+  </data>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>हमने यह भेजा ताकि आप देख सकें कि सूचनाएँ इस डिवाइस तक पहुँचती हैं। हमारी गोपनीयता नीति पढ़ने के लिए इस पर टैप करें।</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>सर्वर से आपका लाइव कनेक्शन चालू है। यह संदेश उसी से आया है, और आगे के बदलाव भी इसी तरह उसी पल दिखेंगे।</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1331,6 +1584,9 @@
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>आप इस SuperAdmin उपयोगकर्ता को हटा नहीं सकते</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>आप इस SuperAdmin उपयोगकर्ता के सत्र रद्द नहीं कर सकते</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>आप अपना वर्तमान सत्र हटा नहीं सकते</value>
   </data>
@@ -1355,6 +1611,9 @@
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>पृष्ठ URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>पेज URL ऐप के भीतर एक सापेक्ष URL होना चाहिए, जैसे /products।</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>आप अधिकृत नहीं हैं</value>
   </data>
@@ -1370,10 +1629,87 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>छवि बहुत छोटी है। न्यूनतम आवश्यक आयाम {0}x{1} हैं, लेकिन वर्तमान आयाम {2}x{3} हैं।</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>अपलोड की गई फ़ाइल एक समर्थित छवि नहीं है।</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>प्रदान की गई छवि में कार नहीं है।</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>{0} को इस उपयोगकर्ता समूह में जोड़ें</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>{0} को इस उपयोगकर्ता समूह से हटाएं</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>{0} प्रदान करें</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>{0} रद्द करें</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>{0} की सभी सुविधाएं प्रदान करें</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>{0} की सभी सुविधाएं रद्द करें</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>चयनित उपयोगकर्ता समूह को रीफ़्रेश करें</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>चयनित उपयोगकर्ता को रीफ़्रेश करें</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>आपकी खोज से कोई सत्र मेल नहीं खाता।</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>अपने प्रमाणक ऐप से 6 अंकों का कोड दर्ज करें।</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>इस खाते को अपने प्रमाणक ऐप में खोलें</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>आपके प्रमाणक ऐप को सेट करने के लिए QR कोड</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>यह सत्र अब मान्य नहीं है। कृपया फिर से साइन इन करें।</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>इस सत्र को रद्द करें</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>छवि {0} या उससे छोटी होनी चाहिए।</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>केवल छवि फ़ाइलों का उपयोग किया जा सकता है</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>यह पहले से ही आपका फ़ोन नंबर है। कोई दूसरा दर्ज करें।</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>यह पहले से ही आपका ईमेल पता है। कोई दूसरा दर्ज करें।</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>और टैब</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>नेविगेशन मेनू खोलें</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>खाता मेनू</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>डार्क थीम पर स्विच करें</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>लाइट थीम पर स्विच करें</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>टेनेंट</value>
   </data>
@@ -1404,9 +1740,6 @@
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>क्या आप वाकई {0} टेनेंट छोड़ना चाहते हैं?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>आपने टेनेंट सफलतापूर्वक छोड़ दिया है।</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>टेनेंट बदलें</value>
   </data>
@@ -1424,6 +1757,9 @@
   </data>
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>टेनेंट नाम '{0}' पहले से उपयोग में है।</value>
+  </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>टेनेंट नाम '{0}' आरक्षित है और इसका उपयोग नहीं किया जा सकता।</value>
   </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>टेनेंट नहीं मिला।</value>
@@ -1449,6 +1785,9 @@
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>डोमेन '{0}' पहले से उपयोग में है।</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>डोमेन '{0}' आरक्षित है और इसका उपयोग नहीं किया जा सकता।</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>आपने अभी तक कोई टेनेंट नहीं चुना है। शुरू करने के लिए अपने किसी टेनेंट पर स्विच करें या एक नया टेनेंट बनाएं।</value>
   </data>
@@ -1470,5 +1809,227 @@
     <data name="Inactive" xml:space="preserve">
     <value>निष्क्रिय</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>निमंत्रण अस्वीकार करें</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>{0} का निमंत्रण अस्वीकार करें? इसे पूर्ववत नहीं किया जा सकता - शामिल होने के लिए आपको नए निमंत्रण की आवश्यकता होगी।</value>
+  </data>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>समय क्षेत्र</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र चुनें</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>समय क्षेत्र खोजें</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>आपकी खोज से मेल खाने वाला कोई समय क्षेत्र नहीं है।</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
+  </data>
+  <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>गोपनीयता</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>अपने डेटा की एक प्रति डाउनलोड करें</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>आपके गोपनीयता विकल्प</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना इस सूची में नहीं हैं: पहले दो के बिना ऐप काम नहीं कर सकता, और त्रुटि रिपोर्ट में आपके डिवाइस का कोई पहचानकर्ता नहीं होता।</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>उपयोग विश्लेषण</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>इससे हम आपके डिवाइस को विज़िट के बीच पहचान पाते हैं ताकि देख सकें कि कौन से पेज उपयोग होते हैं और उनमें कितना समय लगता है। इसे बंद करने से त्रुटि रिपोर्ट बंद नहीं होतीं।</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>विज्ञापन</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>विज्ञापन स्क्रिप्ट लोड करता है, जो अपने पहचानकर्ता सेट करती है। जब तक आप इसे चालू नहीं करते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>आपकी गोपनीयता</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>हम आपके डिवाइस पर कुछ जानकारी संग्रहीत करना चाहते हैं जिसकी इस ऐप को काम करने के लिए आवश्यकता नहीं है। आपको साइन इन रखना, आपकी भाषा याद रखना और त्रुटियों की रिपोर्ट करना किसी भी स्थिति में होता है।</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>स्वीकार करें</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>गोपनीयता सेटिंग्स</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>खाता सेटिंग्स</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>अपना डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>इस ऐप के पास आपके बारे में जो कुछ है उसकी एक प्रति प्राप्त करें: आपका खाता, वे डिवाइस जिन पर आप साइन इन हैं, आपकी प्रोफ़ाइल तस्वीर और आपके बनाए गए कंटेंट। यह data.json और आपकी फ़ाइलों वाली एक zip फ़ाइल के रूप में मिलती है।</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>फ़ाइल का हर हिस्सा यह भी बताता है कि उसे क्यों रखा जाता है, कितने समय तक, और कौन उसे प्राप्त करता है, तथा क्या आपका खाता हटाने पर वह हट जाता है।</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>मेरा डेटा डाउनलोड करें</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>इसके बजाय अपना डेटा हटवाना चाहते हैं, तो अपना खाता यहाँ से हटाएँ</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>डेटा निर्यात करें</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>ऐसे डेटा अनुरोध का उत्तर देता है जो ऐप के माध्यम से नहीं आया।</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>विज्ञापन देखने पर Google की विज्ञापन स्क्रिप्ट लोड होती है, जो आपके डिवाइस पर अपने पहचानकर्ता सेट करती है। जब तक आप सहमत नहीं होते, कुछ भी लोड नहीं होता।</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>सहमत हूँ और जारी रखें</value>
+  </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>एप्लिकेशन को अनुमति दें</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>इस अनुरोध की जाँच हो रही है...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>इस अनुरोध को अधिकृत नहीं किया जा सकता</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>कुछ भी साझा नहीं किया गया। आप यह पेज बंद करके एप्लिकेशन से दोबारा कोशिश कर सकते हैं।</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>होम पेज पर जाएँ</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>आप एप्लिकेशन पर वापस जा सकते हैं</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>परिणाम {0} को सौंप दिया गया। अगर वह अपने आप सामने न आए, तो उस पर स्विच करें।</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>{0} को अनुमति दें?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>यह आपकी ओर से काम करने की अनुमति माँग रहा है। आगे तभी बढ़ें जब आपने इसे किसी भरोसेमंद एप्लिकेशन से शुरू किया हो।</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>पहुँच सकता है</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>आपको वापस भेजता है</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>यह ये कर सकेगा:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>आपका खाता वह सब कुछ नहीं दे सकता जो इस एप्लिकेशन ने माँगा है, इसलिए ये छोड़ दिए जाएँगे: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>इस एप्लिकेशन ने खुद अपना परिचय दिया है; {0} पर किसी ने इसकी पुष्टि नहीं की है।</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>अनुमति दें</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>यह अनुरोध करने वाले एप्लिकेशन की पहचान नहीं हो सकी।</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस पते पर वापस भेजा जाना चाहता है, वह उसके पंजीकृत पतों में से नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है।</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना - कॉन्फ़िगरेशन, डेटाबेस स्कीमा, बैकग्राउंड जॉब। यह कुछ भी बदल नहीं सकता।</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>बाहरी एप्लिकेशन जिन्हें आपके उपयोगकर्ताओं ने OAuth के ज़रिए अनुमति दी है।</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>अभी तक किसी एप्लिकेशन को अनुमति नहीं दी गई है।</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>जैसे ही कोई किसी एप्लिकेशन को अनुमति देता है, वह यहाँ दिखने लगता है; पहले से कुछ पंजीकृत करने की ज़रूरत नहीं।</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>सक्रिय अनुमतियाँ</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>उपयोगकर्ताओं को वापस भेजता है:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>पहुँच रद्द करें</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} के पास इस समय {1} अनुमति है। रद्द करने पर वह उन सभी के लिए साइन आउट हो जाएगा जिन्होंने अनुमति दी थी; वे दोबारा अनुमति दे सकते हैं।</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} अनुमति रद्द की गई।</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>पूर्व-कॉन्फ़िगर</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>स्व-वर्णित</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>इस एप्लिकेशन की पहचान नहीं हो सकी, इसलिए लौटने के लिए कोई जगह नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है ({0})।</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>आपके खाते के पास वे अनुमतियाँ नहीं हैं जो यह एप्लिकेशन माँग रहा है।</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>इस एप्लिकेशन के लिए दो-कारक प्रमाणीकरण ज़रूरी है। इसे अपने खाते की सेटिंग्स में चालू करें, दोबारा साइन इन करें, फिर एप्लिकेशन से नए सिरे से शुरू करें।</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>कार्यक्षेत्र</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस कार्यक्षेत्र की माँग कर रहा है, आप उसके सदस्य नहीं हैं।</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना - उससे सवाल पूछना और जो वह खोज सकता है उसे खोजना। यह आपके डिवाइस पर कुछ नहीं कर सकता।</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना।</value>
+  </data>
+  <!--#endif -->
 </root>

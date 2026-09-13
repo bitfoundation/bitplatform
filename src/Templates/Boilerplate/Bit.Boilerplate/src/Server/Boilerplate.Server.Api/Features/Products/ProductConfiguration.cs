@@ -24,10 +24,17 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
         builder.HasIndex(p => p.ShortId).IsUnique();
 
+        builder.HasOne(p => p.Category)
+               .WithMany(c => c.Products)
+               .HasForeignKey(p => p.CategoryId)
+               .OnDelete(DeleteBehavior.Restrict);
+
         //#if (multitenant == true)
         void HasData(Product product)
         {
             product.TenantId = TenantConfiguration.FallbackTenantId;
+            product.CurrencyIso ??= "USD";
+            product.CurrencySymbol ??= "$";
             builder.HasData(product);
         }
         //#endif
@@ -37,6 +44,8 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (multitenant != true)
         void HasData(Product product)
         {
+            product.CurrencyIso ??= "USD";
+            product.CurrencySymbol ??= "$";
             builder.HasData(product);
         }
         //#endif
@@ -53,7 +62,7 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (database == "PostgreSQL" || database == "SqlServer")
         if (AppDbContext.IsEmbeddingEnabled)
         {
-            builder.Property(p => p.Embedding).HasColumnType("vector(384)"); // Dimensions depend on the model used, here assuming 384 because of LocalTextEmbeddingGenerationService.
+            builder.Property(p => p.Embedding).HasColumnType("vector(384)"); // Dimensions depend on the embedding model configured under `AI` - 384 suits a small local model; text-embedding-3-small produces 1536.
         }
         else
         {
@@ -69,7 +78,9 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#endif
 
         var defaultVersion = 1;
-        DateTimeOffset baseDate = DateTimeOffset.Parse("2022-07-12", styles: DateTimeStyles.AssumeUniversal);
+        // InvariantCulture is load bearing: OnModelCreating runs on whatever culture is ambient, and without it this
+        // literal throws under ar-SA (UmAlQura) and parses as the year 2643 under fa-IR (Persian calendar).
+        DateTimeOffset baseDate = DateTimeOffset.Parse("2022-07-12", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
 
         // --- Benz Entries (19 cars) ---
         // https://www.mercedes-benz.ca/en/all-vehicles

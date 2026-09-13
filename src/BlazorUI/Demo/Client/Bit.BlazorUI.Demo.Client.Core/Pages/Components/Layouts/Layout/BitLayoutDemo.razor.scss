@@ -1,5 +1,8 @@
-﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
+// Every example lives in a box of its own so the layout inside it has a parent with a definite height:
+// that is what the sticky examples scroll in, and what shows that the layout takes the height it is
+// given instead of a viewport of its own.
 .container {
     height: 300px;
     padding: 1rem;
@@ -7,37 +10,51 @@
     border: 1px solid $bit-color-border-disabled;
 }
 
-.text-container {
-    gap: 1rem;
-    display: flex;
-}
-
-.header {
-    padding: 0.5rem;
-    border: 1px solid gray;
-}
-
-.main {
-    width: 100%;
-    height: 100%;
-    padding: 0.5rem;
-    border: 1px solid gray;
-}
-
-.nav-menu {
-    width: 100%;
-    height: 100%;
-    padding: 0.5rem;
-    border: 1px solid gray;
-}
-
+.header,
 .footer {
     padding: 0.5rem;
+    box-sizing: border-box;
     border: 1px solid gray;
+}
+
+// The three sections of the middle row are stretched to the height of the row and given its whole width by
+// the layout, so the box inside each of them takes all of it: a box that only wrapped its text would draw a
+// border around the words rather than around the section it stands for. They are border-boxes, so the padding
+// and the border are taken out of that width and height instead of being added to it and overflowing the row.
+.nav-panel,
+.main,
+.aside {
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    border: 1px solid gray;
+}
+
+// The sections whose own height is set by the layout: the box inside them has to take all of it,
+// otherwise the border drawn here would not show the height that was asked for.
+.fill {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+// Taller than the box that holds it, so there is something to scroll past a pinned section.
+.tall {
+    height: 600px;
+}
+
+// The bordered example draws its dividers with the layout itself, so the sections bring padding only.
+.pad {
+    padding: 0.5rem;
 }
 
 ::deep {
-    .header2 {
+    .custom-root {
+        overflow: hidden;
+        border: 1px solid gray;
+    }
+
+    .custom-header {
         color: black;
         display: flex;
         padding: 1rem;
@@ -46,11 +63,7 @@
         background-color: lightgreen;
     }
 
-    .main2 {
-        border: 1px solid green;
-    }
-
-    .nav-menu2 {
+    .custom-nav-panel {
         color: black;
         display: flex;
         align-items: center;
@@ -59,7 +72,7 @@
         border: 1px solid lightgreen;
     }
 
-    .main-content2 {
+    .custom-main-content {
         color: black;
         display: flex;
         align-items: center;
@@ -68,7 +81,16 @@
         background-color: lightgoldenrodyellow;
     }
 
-    .footer2 {
+    .custom-aside {
+        color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid darkorange;
+        background-color: lightyellow;
+    }
+
+    .custom-footer {
         color: black;
         display: flex;
         padding: 1rem;

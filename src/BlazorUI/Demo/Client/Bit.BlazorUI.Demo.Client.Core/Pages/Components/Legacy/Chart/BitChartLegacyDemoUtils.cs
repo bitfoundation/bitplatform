@@ -1,7 +1,6 @@
-﻿using Bit.BlazorUI.Legacy;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
-namespace Bit.BlazorUI.Legacy.Demo.Chart;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.Chart;
 
 public static class BitChartLegacyDemoUtils
 {

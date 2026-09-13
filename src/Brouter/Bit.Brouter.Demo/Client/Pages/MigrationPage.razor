@@ -1,0 +1,103 @@
+<PageTitle>Migration · Brouter docs</PageTitle>
+
+<div class="bb-intro">
+    <h1>Migrating from the built-in Router</h1>
+    <p class="bb-subtitle">
+        Drop-in by design: <code>&#64;page</code> pages keep working, authorization stays
+        Microsoft's code, and the built-in <code>&lt;Found&gt;</code> template ports over verbatim.
+        Migrate first, adopt features incrementally.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The parameter mapping</h3>
+    <p class="bb-card-desc">
+        The built-in Router's companion components - <code>RouteView</code>,
+        <code>AuthorizeRouteView</code>, <code>FocusOnNavigate</code> - consume a
+        <code>RouteData</code>, not the Router itself. Brouter builds that <code>RouteData</code>
+        for every matched page and hands it to those framework components for you.
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Built-in Router stack</th><th>Brouter</th></tr></thead>
+        <tbody>
+            <tr><td>&lt;Found&gt; + AuthorizeRouteView + fragments</td><td>Flat <code>Authorizing</code>/<code>NotAuthorized</code> fragments on <code>&lt;Brouter&gt;</code>, or an unchanged <code>&lt;Found Context="routeData"&gt;</code> for full control</td></tr>
+            <tr><td>RouteView / AuthorizeRouteView DefaultLayout</td><td><code>DefaultLayout</code> on <code>&lt;Brouter&gt;</code></td></tr>
+            <tr><td>AuthorizeRouteView Resource</td><td><code>Resource</code> on <code>&lt;Brouter&gt;</code></td></tr>
+            <tr><td>&lt;NotFound&gt;</td><td><code>&lt;NotFound&gt;</code> unchanged, or a <code>NotFoundUrl</code> redirect</td></tr>
+            <tr><td>&lt;Navigating&gt;</td><td><code>&lt;Navigating&gt;</code> unchanged</td></tr>
+            <tr><td>AppAssembly / AdditionalAssemblies / OnNavigateAsync</td><td>Same-named parameters</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Zero-template authorization</h3>
+    <p class="bb-card-desc">
+        For the common case - <code>[Authorize]</code> on pages, a layout, fallback UI - no routing
+        template is needed at all. Setting any of <code>NotAuthorized</code> /
+        <code>Authorizing</code> / <code>Resource</code> routes every component-rendering route
+        through the framework's own <code>AuthorizeRouteView</code>: policy evaluation, per-page
+        <code>&#64;layout</code> resolution and live authentication-state changes are all
+        Microsoft's implementation. With nothing configured, Brouter's native rendering
+        <strong>fails closed</strong> - instantiating an <code>[Authorize]</code> component throws
+        with guidance rather than silently skipping the check.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Brouter</span> AppAssembly=<span class="s">"@@typeof(App).Assembly"</span> DefaultLayout=<span class="s">"@@typeof(MainLayout)"</span>&gt;
+    &lt;<span class="k">Authorizing</span>&gt;Checking credentials…&lt;/<span class="k">Authorizing</span>&gt;
+    &lt;<span class="k">NotAuthorized</span>&gt;&lt;RedirectToLogin /&gt;&lt;/<span class="k">NotAuthorized</span>&gt;
+    &lt;<span class="k">NotFound</span>&gt;Sorry, there's nothing here.&lt;/<span class="k">NotFound</span>&gt;
+    &lt;<span class="k">Navigating</span>&gt;Loading…&lt;/<span class="k">Navigating</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+    <p class="bb-card-desc">
+        As with the built-in stack, the app still provides
+        <code>AddCascadingAuthenticationState()</code> and <code>AddAuthorizationCore()</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Full control: the Found template</h3>
+    <p class="bb-card-desc">
+        Need arbitrary per-navigation markup around the page - telemetry publishers, a custom
+        <code>AuthorizeRouteView</code> subclass, <code>FocusOnNavigate</code>? The built-in
+        Router's <code>&lt;Found Context="routeData"&gt;</code> block ports over verbatim.
+        <code>Found</code> applies to every route that renders a <code>Component</code>; routes
+        rendering a <code>Content</code> fragment and outlet-hosted children deliberately ignore it
+        (nested outlets are Brouter's own layout model).
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Brouter</span> AppAssembly=<span class="s">"@@typeof(App).Assembly"</span>&gt;
+    &lt;<span class="k">Found</span> Context=<span class="s">"routeData"</span>&gt;
+        &lt;<span class="k">AuthorizeRouteView</span> RouteData=<span class="s">"@@routeData"</span> DefaultLayout=<span class="s">"@@typeof(MainLayout)"</span>&gt;
+            &lt;<span class="k">NotAuthorized</span>&gt;&lt;RedirectToLogin /&gt;&lt;/<span class="k">NotAuthorized</span>&gt;
+        &lt;/<span class="k">AuthorizeRouteView</span>&gt;
+        &lt;<span class="k">FocusOnNavigate</span> RouteData=<span class="s">"@@routeData"</span> Selector=<span class="s">"h1"</span> /&gt;
+    &lt;/<span class="k">Found</span>&gt;
+&lt;/<span class="k">Brouter</span>&gt;</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Observing RouteData from anywhere</h3>
+    <p class="bb-card-desc">
+        The committed navigation's framework <code>RouteData</code> (or null on not-found) is
+        cascaded unnamed-by-type to every descendant - breadcrumbs, telemetry and route-data
+        publishers can observe it with a plain <code>[CascadingParameter]</code>, no template
+        plumbing.
+    </p>
+    <pre class="bb-code"><span class="k">@@code</span> {
+    [<span class="k">CascadingParameter</span>] <span class="k">public</span> RouteData? RouteData { <span class="k">get</span>; <span class="k">set</span>; }
+
+    <span class="k">protected override void</span> OnParametersSet()
+    {
+        <span class="c">// fires on every committed navigation</span>
+    }
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> A practical migration path</h3>
+    <ul class="bb-detail-list">
+        <li>Swap <code>&lt;Router&gt;</code> for <code>&lt;Brouter&gt;</code>, keeping <code>AppAssembly</code>, <code>&lt;Found&gt;</code>, <code>&lt;NotFound&gt;</code> and <code>&lt;Navigating&gt;</code> as they are - or drop <code>&lt;Found&gt;</code> for the flat authorization parameters.</li>
+        <li>Register <code>AddBitBrouterServices()</code> and verify the app behaves identically - templates, layouts and authorization should be unchanged.</li>
+        <li>Adopt features where they earn their keep: a <BrouterLink Href="/docs/guards">guard</BrouterLink> on an admin area, a <BrouterLink Href="/docs/data-loading">loader</BrouterLink> on a data-heavy page, <BrouterLink Href="/docs/view-transitions">view transitions</BrouterLink> app-wide.</li>
+        <li>Hand-declare a <code>&lt;Broute&gt;</code> shadow over a discovered <code>&#64;page</code> when a page needs route-level behavior without being rewritten (see <BrouterLink Href="/docs/page-discovery">&#64;page discovery</BrouterLink>).</li>
+    </ul>
+</div>

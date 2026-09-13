@@ -12,4 +12,11 @@ public partial class BitModalContainer
     {
         return BitModalParameters.Merge(modalParameters, containerParameters);
     }
+
+    // Read off the merged parameters rather than the modal's own, so that a container can set the policy for
+    // every modal it renders and a single modal can still say otherwise.
+    protected override bool? GetCloseOnNavigation(BitModalReference modalReference)
+    {
+        return GetMergedParameters(modalReference)?.CloseOnNavigation;
+    }
 }

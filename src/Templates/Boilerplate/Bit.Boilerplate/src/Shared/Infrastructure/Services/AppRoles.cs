@@ -11,7 +11,7 @@ public class AppRoles
     //#if (multitenant == true)
     /// <summary>
     /// Each tenant has its own role named t-admin (Scoped by Role's TenantId).
-    /// Has the features returned by <see cref="AppFeatures.GetTenantAdminFeatures"/> automatically assigned (See IAuthTokenProvider.ReadClaims and AppJwtSecureDataFormat.Unprotect).
+    /// Has the features returned by <see cref="AppFeatures.GetTenantAdminFeatures"/> automatically assigned (See <see cref="AppFeatures.GetRoleImpliedFeatures"/>).
     /// </summary>
     public const string TenantAdmin = "t-admin";
     //#endif
@@ -19,12 +19,18 @@ public class AppRoles
 
     public const string Demo = "demo";
 
+    /// <summary>
+    /// Roles the system itself depends on, so they may not be renamed or deleted.
+    /// <see cref="Demo"/> is included because new accounts are assigned to it by name during sign-up
+    /// (See UserManagerExtensions.CreateUserWithDemoRole).
+    /// </summary>
     public static bool IsBuiltInRole(string name)
     {
         return name is GlobalAdmin
             //#if (multitenant == true)
             or TenantAdmin
             //#endif
+            or Demo
             ;
     }
 }

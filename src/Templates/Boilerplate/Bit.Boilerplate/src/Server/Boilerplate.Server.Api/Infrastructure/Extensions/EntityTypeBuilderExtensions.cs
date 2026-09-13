@@ -9,27 +9,22 @@ public static class EntityTypeBuilderExtensions
         where T : class
     {
         /// <summary>
-        /// Adds a filtered unique index (single or composite) whose uniqueness only applies to the rows where
-        /// <paramref name="filterColumn"/> has a value (multiple NULLs remain allowed). The column identifier in the
-        /// filter is quoted per database provider.
+        /// Adds a unique index (single or composite) whose uniqueness only applies to the rows where
+        /// filterColumn has a value, so multiple NULLs remain allowed.
         /// </summary>
-        /// <param name="property">The indexed column(s), e.g. <c>t => t.Domain</c> or <c>t => new { t.A, t.B }</c>.</param>
-        /// <param name="filterColumn">
-        /// The column the filter tests. Defaults to <paramref name="property"/>, which only works for a single-column index;
-        /// a composite index must pass this explicitly (e.g. index on <c>new { A, TenantId }</c>, filter on <c>t => t.TenantId</c>).
-        /// </param>
         public IndexBuilder<T> HasUniqueIndexOnNullable(
             Expression<Func<T, object?>> property,
             Expression<Func<T, object?>>? filterColumn = null)
         {
-            var columnName = GetMemberName(filterColumn ?? property);
-
             var index = builder.HasIndex(property).IsUnique();
 
+            //#if (database != "MySql")
+            var columnName = GetMemberName(filterColumn ?? property);
             //#if (database == "PostgreSQL")
             index.HasFilter($"\"{columnName}\" IS NOT NULL");
-            //#else
+            //#elseif (database != "PostgreSQL")
             index.HasFilter($"[{columnName}] IS NOT NULL");
+            //#endif
             //#endif
 
             return index;

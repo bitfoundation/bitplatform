@@ -1,0 +1,62 @@
+﻿@import '../Styles/abstracts/_docs.scss';
+
+// Two surfaces at the foot of the article, pushed to opposite ends so "back" and "forward" land
+// where the reader's eye already expects them. When only one of them exists an empty span holds the
+// other end open, so "next" never slides over to where "previous" should be.
+.doc-pager {
+    display: grid;
+    gap: $doc-space-sm;
+    margin-top: $doc-space-xl;
+    padding-top: $doc-space-lg;
+    grid-template-columns: 1fr 1fr;
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+
+    @include sm {
+        grid-template-columns: 1fr;
+    }
+}
+
+.doc-pager-link {
+    gap: $doc-space-xs;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    text-decoration: none;
+    padding: $doc-space-xs $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface;
+    @include doc-surface-interactive;
+
+    &.next {
+        text-align: end;
+        justify-content: flex-end;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+.doc-pager-text {
+    display: flex;
+    min-width: 0;
+    flex-flow: column nowrap;
+}
+
+.doc-pager-label {
+    @include doc-eyebrow;
+}
+
+.doc-pager-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+::deep .doc-pager-chevron {
+    flex-shrink: 0;
+    color: $bit-color-foreground-tertiary;
+}

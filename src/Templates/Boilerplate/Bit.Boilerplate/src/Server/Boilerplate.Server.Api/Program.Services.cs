@@ -1,11 +1,27 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
+using ImageMagick;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Boilerplate.Server.Api.Features.Identity;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
+using Boilerplate.Server.Api.Features.Diagnostic;
+using Boilerplate.Server.Api.Features.Attachments;
+using Boilerplate.Server.Api.Features.PersonalData;
+//#if (notification == true)
+using Boilerplate.Server.Api.Features.PushNotification;
+//#endif
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
+//#if (sample == true || offlineDb == true)
+using Boilerplate.Server.Api.Features.Todo;
+//#endif
 //#if (signalR == true)
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Boilerplate.Shared.Features.Chatbot;
-using Boilerplate.Server.Api.Infrastructure.SignalR;
 //#endif
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 using System.ClientModel.Primitives;
@@ -20,7 +36,6 @@ using Microsoft.OpenApi;
 using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Twilio;
@@ -31,6 +46,7 @@ using FluentStorage;
 using FluentEmail.Core;
 using FluentStorage.Storage;
 using Hangfire.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 //#if (redis == true)
 using StackExchange.Redis;
 using Hangfire.Redis.StackExchange;
@@ -42,20 +58,15 @@ using AdsPush.Abstraction;
 //#if (filesStorage == "AzureBlobStorage")
 using Azure.Storage.Blobs;
 //#endif
-using Boilerplate.Server.Api.Features.Identity.Models;
-using Boilerplate.Server.Api.Features.Identity.Services;
 using Medallion.Threading;
 //#if (offlineDb == true)
 using CommunityToolkit.Datasync.Server;
 //#endif
-using Boilerplate.Shared.Features.Identity;
 using Boilerplate.Server.Api.Features.Statistics;
 using Boilerplate.Shared.Infrastructure.Resources;
-using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
-using Boilerplate.Server.Api.Infrastructure.Services;
 //#if (module == "Sales" || module == "Admin")
 using Boilerplate.Server.Api.Features.Products;
 //#endif
@@ -78,17 +89,30 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
+        ConfigureImageMagickResourceLimits();
+
+        services.AddOAuth();
+
         services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
         services.AddScoped<PhoneServiceJobsRunner>();
+        services.AddScoped<UserErasureService>();
+        services.AddScoped<UserSessionsRetentionJobRunner>();
+        services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+        services.AddScoped<ServerDiagnosticService>();
+
+        services.AddPersonalDataServices();
         //#if (signalR == true)
-        // Add MCP server with chatbot tools
-        services.AddMcpServer()
-            .WithHttpTransport()
-            .WithToolsFromAssembly();
+        services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         //#endif
+        services.AddDevMcp()
+        //#if (signalR == true)
+            .WithToolsFromAssembly() // Chatbot tools, served on /mcp only (See DevMcpServiceCollectionExtensions).
+        //#endif
+            ;
         //#if (module == "Sales" || module == "Admin")
         //#if (database == "PostgreSQL" || database == "SqlServer")
         services.AddScoped<ProductEmbeddingService>();
@@ -147,23 +171,23 @@ public static partial class Program
         {
             var adsPushSenderBuilder = new AdsPushSenderBuilder();
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false)
             {
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureApns(appSettings.AdsPushAPNS, sp.GetRequiredService<IHttpClientFactory>().CreateClient("APNS"));
             }
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushFirebase?.PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false)
             {
                 appSettings.AdsPushFirebase.PrivateKey = appSettings.AdsPushFirebase.PrivateKey.Replace(@"\n", string.Empty);
 
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureFirebase(appSettings.AdsPushFirebase, AdsPushTarget.Android);
             }
 
-            if (string.IsNullOrEmpty(appSettings.AdsPushVapid?.PrivateKey) is false)
+            if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid?.PrivateKey) is false)
             {
-                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.PublicKey))
+                if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid.PublicKey))
                     throw new InvalidOperationException("VAPID public key is required");
-                if (string.IsNullOrEmpty(appSettings.AdsPushVapid.Subject))
+                if (string.IsNullOrWhiteSpace(appSettings.AdsPushVapid.Subject))
                     throw new InvalidOperationException("VAPID subject is required"); // While it would work on Android, Windows, Linux, Apple requires subject, so we enforce it for all platforms to avoid confusion and potential issues.
 
                 adsPushSenderBuilder = adsPushSenderBuilder.ConfigureVapid(appSettings.AdsPushVapid, sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vapid"));
@@ -174,14 +198,21 @@ public static partial class Program
         });
         services.AddScoped<PushNotificationService>();
         services.AddScoped<PushNotificationJobRunner>();
+        services.AddScoped<PushSubscriptionsRetentionJobRunner>();
         //#endif
 
         // Register distributed lock factory
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent").GetDatabase());
         }));
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#else
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
@@ -227,7 +258,8 @@ public static partial class Program
                     .AllowCredentials();
             });
         });
-        services.AddRateLimiter();
+
+        services.AddRateLimiter(options => options.AddAppRateLimitPolicies());
 
         services.AddSingleton(sp =>
         {
@@ -245,11 +277,15 @@ public static partial class Program
 
         services
             .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
-            .AddJsonOptions(options => options.JsonSerializerOptions.ApplyDefaultOptions())
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ApplyDefaultOptions();
+                options.JsonSerializerOptions.Converters.Add(new SelectExpandWrapperJsonConverter());
+            })
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
-            .AddOData(options => options.EnableQueryFeatures())
+            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 100))
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -263,6 +299,8 @@ public static partial class Program
         {
             options.ReportApiVersions = true;
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.DefaultApiVersion = new ApiVersion(1);
         })
         .AddMvc() // For API Controllers
         .AddApiExplorer(options =>
@@ -275,9 +313,10 @@ public static partial class Program
         var signalRBuilder = services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
+            configuration.GetRequiredSection("HubOptions").Bind(options);
         }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
-        if (string.IsNullOrEmpty(configuration["Azure:SignalR:ConnectionString"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
         {
             signalRBuilder.AddAzureSignalR(options =>
             {
@@ -285,6 +324,9 @@ public static partial class Program
             });
         }
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         else
         {
             // Use Redis as SignalR backplane for scaling out across multiple server instances
@@ -293,21 +335,26 @@ public static partial class Program
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
             });
         }
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#endif
         //#endif
 
         //#if (database == "PostgreSQL")
-        var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
-        dataSourceBuilder.UseVector();
-        dataSourceBuilder.EnableDynamicJson();
-        var dataSource = dataSourceBuilder.Build();
-        services.AddSingleton(dataSource);
+        services.AddSingleton(_ =>
+        {
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
+            dataSourceBuilder.UseVector();
+            dataSourceBuilder.EnableDynamicJson();
+            return dataSourceBuilder.Build();
+        });
         //#endif
 
         services.AddDbContextPool<AppDbContext>(AddDbContext);
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
 
-        void AddDbContext(DbContextOptionsBuilder options)
+        void AddDbContext(IServiceProvider sp, DbContextOptionsBuilder options)
         {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
@@ -338,7 +385,7 @@ public static partial class Program
                     errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
-            options.UseNpgsql(dataSource, dbOptions =>
+            options.UseNpgsql(sp.GetRequiredService<Npgsql.NpgsqlDataSource>(), dbOptions =>
             {
                 dbOptions.UseVector();
                 dbOptions.SetPostgresVersion(18, 0);
@@ -391,19 +438,41 @@ public static partial class Program
         {
             options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
 
+            // The spec says to ignore a header parameter named Authorization, so the bearer token is a security scheme
+            // instead. Clients and UIs (Scalar, generators) only offer a sign-in box for this.
+            const string bearerSchemeName = "Bearer";
+
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Components ??= new();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes[bearerSchemeName] = new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Get your JWT token by signing in through the Identity/SignIn endpoint."
+                };
+
+                return Task.CompletedTask;
+            });
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
-                var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
+                // MapControllers().RequireAuthorization() makes every action authorized, so [AllowAnonymous] is what
+                // marks the exceptions - the AuthorizeAttribute on an action only narrows an already required token.
+                var isAnonymousAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is IAllowAnonymous);
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
 
-                operation.Parameters = [new OpenApiParameter()
+                operation.Parameters ??= [];
+
+                if (isAnonymousAction is false)
                 {
-                    In = ParameterLocation.Header,
-                    Name = HeaderNames.Authorization,
-                    Example = "Bearer XXX.YYY...",
-                    Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
-                    Required = isAuthorizedAction
-                }];
+                    operation.Security =
+                    [
+                        new OpenApiSecurityRequirement() { [new OpenApiSecuritySchemeReference(bearerSchemeName, context.Document)] = [] }
+                    ];
+                }
 
                 if (isODataEnabledAction)
                 {
@@ -423,7 +492,8 @@ public static partial class Program
 
         services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>()
-            .ProtectKeysWithCertificate(AppCertificateService.GetAppCertificate(configuration));
+            .ProtectKeysWithCertificate(AppCertificateService.GetActiveAppCertificate(configuration))
+            .UnprotectKeysWithAnyCertificate(AppCertificateService.GetAllAppCertificates(configuration));
 
         AddIdentity(builder);
 
@@ -432,12 +502,12 @@ public static partial class Program
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
             var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
-            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "localhost"));
+            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"));
             var host = endpoint.Host;
             var port = endpoint.Port is -1 ? 25 : endpoint.Port;
             var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
             var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
-            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false") is not "false";
+            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
 
             SmtpClient smtpClient = new(host, port)
             {
@@ -489,6 +559,8 @@ public static partial class Program
 
         });
 
+        // ServerDomain (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
+        // caller-supplied origin. See ".docs/24 - Security note" for what that means for Blazor Hybrid passkeys.
         services.AddScoped(sp =>
         {
             var webAppUrl = sp.GetRequiredService<IHttpContextAccessor>()
@@ -509,7 +581,7 @@ public static partial class Program
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
         services.AddHttpClient("AI");
 
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.ChatApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
             // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.AI.OpenAI#microsoftextensionsaiopenai
             services.AddChatClient(sp => new OpenAI.Chat.ChatClient(model: appSettings.AI.OpenAI.ChatModel, credential: new(appSettings.AI.OpenAI.ChatApiKey), options: new()
@@ -527,7 +599,7 @@ public static partial class Program
             //#endif
         }
 
-        if (string.IsNullOrEmpty(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.EmbeddingApiKey) is false)
         {
             services.AddEmbeddingGenerator(sp => new OpenAI.Embeddings.EmbeddingClient(model: appSettings.AI.OpenAI.EmbeddingModel, credential: new(appSettings.AI.OpenAI.EmbeddingApiKey), options: new()
             {
@@ -538,7 +610,7 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
-        else if (string.IsNullOrEmpty(appSettings.AI?.HuggingFace?.EmbeddingEndpoint) is false)
+        else if (string.IsNullOrWhiteSpace(appSettings.AI?.HuggingFace?.EmbeddingEndpoint) is false)
         {
             services.AddEmbeddingGenerator(sp => new Microsoft.SemanticKernel.Connectors.HuggingFace.HuggingFaceEmbeddingGenerator(
                   new Uri(appSettings.AI.HuggingFace.EmbeddingEndpoint),
@@ -548,25 +620,63 @@ public static partial class Program
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
             // .UseDistributedCache()
         }
+
+        //#if (signalR == true)
+        // Speech in and speech out for the AI chat panel (See ChatbotController.TranscribeSpeech / SynthesizeSpeech).
+        // They are Microsoft.Extensions.AI abstractions rather than the browser's Web Speech api, so a phone's web
+        // view, a home-screen pwa and the MAUI app all behave the same - Web Speech is missing or crippled in most
+        // of them. Each one is optional on its own: with no key the corresponding button is never offered.
+#pragma warning disable MEAI001 // ISpeechToTextClient and ITextToSpeechClient are still experimental.
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.SpeechToTextApiKey) is false)
+        {
+            services.AddSpeechToTextClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.SpeechToTextModel, credential: new(appSettings.AI.OpenAI.SpeechToTextApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.SpeechToTextEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsISpeechToTextClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.TextToSpeechApiKey) is false)
+        {
+            services.AddTextToSpeechClient(sp => new OpenAI.Audio.AudioClient(model: appSettings.AI.OpenAI.TextToSpeechModel, credential: new(appSettings.AI.OpenAI.TextToSpeechApiKey), options: new()
+            {
+                Endpoint = appSettings.AI.OpenAI.TextToSpeechEndpoint,
+                Transport = new HttpClientPipelineTransport(sp.GetRequiredService<IHttpClientFactory>().CreateClient("AI"))
+            }).AsITextToSpeechClient())
+            .UseLogging()
+            .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
+        }
+#pragma warning restore MEAI001
         //#endif
+        //#endif
+
+        var hangfireOptions = appSettings.Hangfire ?? throw new InvalidOperationException($"The {nameof(ServerApiSettings.Hangfire)} configuration section is required.");
 
         // Configure Hangfire to use Redis for persistent background job storage
         services.AddHangfire((sp, hangfireConfiguration) =>
         {
-            if (appSettings.Hangfire?.UseIsolatedStorage is not true)
+            if (hangfireOptions.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent"), new RedisStorageOptions
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#else
-                hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder => AddDbContext(sp, optionsBuilder), new()
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
-                });
+                }).WithJobExpirationTimeout(hangfireOptions.JobExpiration);
                 //#endif
             }
             else
@@ -582,7 +692,8 @@ public static partial class Program
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
-                .UseDatabaseCreator();
+                .UseDatabaseCreator()
+                .WithJobExpirationTimeout(hangfireOptions.JobExpiration);
             }
 
             hangfireConfiguration.UseRecommendedSerializerSettings();
@@ -624,13 +735,15 @@ public static partial class Program
                     var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
                     return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
                 },
-                options => options.Duration = TimeSpan.FromHours(1));
+                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
             return result;
         }
 
+        //#if (module == "Sales" || module == "Admin")
         builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
+        //#endif
 
         builder.AddAIAgent("SupportAgent", (sp, _) =>
         {
@@ -639,14 +752,6 @@ public static partial class Program
             return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
-        }, lifetime: ServiceLifetime.Scoped);
-
-        builder.AddAIAgent("FollowUpSuggestionsAgent", (sp, _) =>
-        {
-            var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.FollowUpSuggestion, sp),
-                    name: "FollowUpSuggestionsAgent",
-                    description: "Generates follow-up suggestions based on user interactions", tools: [.. aiFunctions]);
         }, lifetime: ServiceLifetime.Scoped);
     }
     //#endif
@@ -658,7 +763,6 @@ public static partial class Program
         var env = builder.Environment;
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
-        var identityOptions = appSettings.Identity;
 
         services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -687,9 +791,14 @@ public static partial class Program
         })
         .AddBearerToken(IdentityConstants.BearerScheme /*Checkout AppBearerTokenOptionsConfigurator*/ );
 
+        // Tokens issued to external apps over OAuth: same certificate and issuer, different audience. Only the
+        // endpoints that opt in accept this scheme.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, AppOAuthBearerOptionsConfigurator>());
+        authenticationBuilder.AddJwtBearer(AppAuthSchemes.OAUTH_BEARER);
+
         services.AddAuthorization();
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Google:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false)
         {
             authenticationBuilder.AddGoogle(options =>
             {
@@ -699,7 +808,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:GitHub:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false)
         {
             authenticationBuilder.AddGitHub(options =>
             {
@@ -708,7 +817,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Twitter:ConsumerKey"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false)
         {
             authenticationBuilder.AddTwitter(options =>
             {
@@ -718,7 +827,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Apple:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false)
         {
             authenticationBuilder.AddApple(options =>
             {
@@ -730,7 +839,7 @@ public static partial class Program
             });
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:AzureAD:ClientId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false)
         {
             authenticationBuilder.AddMicrosoftIdentityWebApp(options =>
             {
@@ -748,7 +857,7 @@ public static partial class Program
             }, openIdConnectScheme: "AzureAD");
         }
 
-        if (string.IsNullOrEmpty(configuration["Authentication:Facebook:AppId"]) is false)
+        if (string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false)
         {
             authenticationBuilder.AddFacebook(options =>
             {
@@ -760,7 +869,7 @@ public static partial class Program
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"]
             ?? configuration["Authentication:Keycloak:KeycloakUrl"];
 
-        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        if (string.IsNullOrWhiteSpace(keycloakBaseUrl) is false)
         {
             // In order to have better understanding of Keycloak integration, checkout .docs/07- ASP.NET Core Identity - Authentication & Authorization.md
             authenticationBuilder.AddOpenIdConnect("Keycloak", options =>
@@ -795,15 +904,48 @@ public static partial class Program
         services.ConfigureHttpClientFactoryForExternalIdentityProviders();
     }
 
+    /// <summary>
+    /// Reads a single `key=value` entry out of a `;`-separated connection string.
+    /// Trimming and the case-insensitive comparison are required, not cosmetic: connection strings are commonly
+    /// written with a space after the separator, and a plain ordinal StartsWith on an untrimmed segment makes
+    /// every key after the first invisible - which silently drops SMTP credentials rather than failing loudly.
+    /// Only the FIRST '=' is consumed, so values containing '=' (e.g. base64 padding) survive intact.
+    /// </summary>
     private static string GetConnectionStringValue(string connectionString, string key, string? defaultValue = null)
     {
+        var prefix = $"{key}=";
         var parts = connectionString.Split(';');
         foreach (var part in parts)
         {
-            if (part.StartsWith($"{key}="))
-                return part[$"{key}=".Length..];
+            var trimmedPart = part.Trim();
+            if (trimmedPart.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return trimmedPart[prefix.Length..];
         }
         return defaultValue ?? throw new ArgumentException($"Invalid connection string: '{key}' not found.");
+    }
+
+    /// <summary>
+    /// A feature that holds personal data registers its source here: what is missing from this list is missing from
+    /// every export and every erasure. See <see cref="Features.PersonalData.IPersonalDataSource"/>.
+    /// </summary>
+    private static IServiceCollection AddPersonalDataServices(this IServiceCollection services)
+    {
+        services.AddScoped<PersonalDataExportService>();
+
+        services.AddScoped<IPersonalDataSource, IdentityPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, UserSessionsPersonalDataSource>();
+        services.AddScoped<IPersonalDataSource, AttachmentsPersonalDataSource>();
+        //#if (notification == true)
+        services.AddScoped<IPersonalDataSource, PushNotificationsPersonalDataSource>();
+        //#endif
+        //#if (multitenant == true)
+        services.AddScoped<IPersonalDataSource, TenantsPersonalDataSource>();
+        //#endif
+        //#if (sample == true || offlineDb == true)
+        services.AddScoped<IPersonalDataSource, TodoItemsPersonalDataSource>();
+        //#endif
+
+        return services;
     }
 
     private static WebApplicationBuilder AddServerApiHealthChecks(this WebApplicationBuilder builder)
@@ -816,8 +958,12 @@ public static partial class Program
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
             .AddDbContextCheck<AppDbContext>()
             .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages")
-            .AddCheck<TwilioHealthCheck>("sms");
+            // These two reach a remote dependency, so they are bounded and they report Degraded rather than Unhealthy.
+            // `/health` is the readiness contract (See MapAppHealthChecks), and Degraded keeps it at 200: an object
+            // storage hiccup or an SMS provider outage must not pull every otherwise healthy instance out of the load
+            // balancer rotation. The status is still visible in `/healthz`.
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5));
 
         //#if (cloudflare == true)
         // Cloudflare Cache Purge API
@@ -825,7 +971,7 @@ public static partial class Program
         {
             var cloudflareApiToken = appSettings.Cloudflare.ApiToken;
             healthChecksBuilder.AddUrlGroup(
-                new Uri($"https://api.cloudflare.com/client/v4/zones/{appSettings.Cloudflare.ZoneId}"),
+                appSettings.Cloudflare.ZoneIds.Select(zoneId => new Uri($"https://api.cloudflare.com/client/v4/zones/{zoneId}")),
                 name: "cloudflare",
                 tags: [],
                 configureClient: (_, client) =>
@@ -837,7 +983,7 @@ public static partial class Program
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        if (string.IsNullOrEmpty(keycloakBaseUrl) is false)
+        if (string.IsNullOrWhiteSpace(keycloakBaseUrl) is false)
         {
             var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
             healthChecksBuilder.AddUrlGroup(
@@ -848,5 +994,27 @@ public static partial class Program
         }
 
         return builder;
+    }
+
+    /// <summary>
+    /// Configures global ImageMagick resource limits to prevent denial-of-service (DoS) attacks from untrusted image uploads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ImageMagick defaults to machine-derived resource caps (e.g., using physical RAM, 2x memory map, 4x memory area, and unlimited disk space).
+    /// Malicious or unusually large uploads (e.g., a small 6MB PNG declaring 30,000x30,000 pixel dimensions) can force Magick.NET to 
+    /// allocate gigabytes of pixel data in memory or exhaust temporary disk space.
+    /// </para>
+    /// <para>
+    /// Because Magick.NET-Q16 allocates 2 bytes per channel, explicit bounds are applied to width, height, area, memory, and disk usage.
+    /// </para>
+    /// </remarks>
+    private static void ConfigureImageMagickResourceLimits()
+    {
+        ResourceLimits.Memory = 256 * 1024 * 1024;    // 256 MB pixel cache before spilling
+        ResourceLimits.Disk = 1024 * 1024 * 1024;     // 1 GB, instead of MagickResourceInfinity
+        ResourceLimits.Width = 16384;
+        ResourceLimits.Height = 16384;
+        ResourceLimits.Area = 16384 * 16384;
     }
 }

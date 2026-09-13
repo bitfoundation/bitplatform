@@ -1,0 +1,15 @@
+﻿@import "../../../Styles/functions.scss";
+
+// The element has no look of its own: whatever tag it renders keeps the styling of that tag, which is the
+// whole point of a component whose markup the consumer decides. The only thing the root class carries is
+// the disabled state, since that is a parameter of the component rather than something the tag brings.
+.bit-elm {
+    // The disabled attribute only exists on the form elements, so on every other tag the state would be
+    // announced by aria-disabled and yet stay fully clickable. Dimming the box and taking it out of hit
+    // testing is what makes "is not enabled" mean the same thing whichever tag the element renders.
+    &.bit-dis {
+        cursor: default;
+        opacity: $opa-dis;
+        pointer-events: none;
+    }
+}

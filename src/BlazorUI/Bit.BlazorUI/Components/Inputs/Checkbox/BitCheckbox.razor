@@ -1,11 +1,35 @@
 @namespace Bit.BlazorUI
 @inherits BitInputBase<bool>
 
+@* stopping propagation on the root covers both the original label click and the click the label forwards to the input *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
+
+    @* the input precedes the label so its focus-visible state can style the box through a sibling selector *@
+    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           @onclick="@HandleOnCheckboxClick"
+           @onclick:stopPropagation="StopPropagation"
+           @onclick:preventDefault="@(IsEnabled is false || ReadOnly)"
+           name="@Name"
+           id="@_inputId"
+           type="checkbox"
+           class="bit-chb-inp"
+           value="@CurrentValue"
+           checked="@CurrentValue"
+           required="@Required"
+           autofocus="@AutoFocus"
+           disabled="@(IsEnabled is false)"
+           aria-label="@AriaLabel"
+           aria-setsize="@AriaSetSize"
+           aria-labelledby="@AriaLabelledby"
+           aria-posinset="@AriaPositionInSet"
+           aria-disabled="@(IsEnabled is false)"
+           aria-readonly="@(ReadOnly ? "true" : null)"
+           aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)" />
 
     <label title="@Title"
            for="@_inputId"
@@ -17,12 +41,12 @@
         }
         else
         {
-            var icon = BitIconInfo.From(CheckIcon, CheckIconName ?? "Accept");
+            var icon = GetStateIcon();
             <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
                 <i aria-hidden="true"
                    aria-label="@CheckIconAriaLabel"
                    style="@Styles?.Icon"
-                   class="bit-chb-ico @icon?.GetCssClasses() @Classes?.Icon" />
+                   class="bit-chb-ico @(icon is null && Indeterminate ? "bit-chb-idi" : null) @icon?.GetCssClasses() @Classes?.Icon" />
             </div>
 
             @if (LabelTemplate is not null)
@@ -38,19 +62,9 @@
         }
     </label>
 
-    <input @ref="InputElement" @attributes="InputHtmlAttributes"
-           @onclick="@HandleOnCheckboxClick"
-           hidden
-           name="@Name"
-           id="@_inputId"
-           type="checkbox"
-           value="@CurrentValue"
-           checked="@CurrentValue"
-           disabled="@(IsEnabled is false)"
-           aria-label="@AriaLabel"
-           aria-setsize="@AriaSetSize"
-           aria-labelledby="@AriaLabelledby"
-           aria-posinset="@AriaPositionInSet"
-           aria-describedby="@AriaDescription"
-           aria-disabled="@(IsEnabled is false)" />
+    @* rendered as a sibling of the input so the description drives aria-describedby without leaking into the accessible name *@
+    @if (AriaDescription.HasValue())
+    {
+        <span id="@($"{_Id}-dsc")" class="bit-chb-dsc">@AriaDescription</span>
+    }
 </div>

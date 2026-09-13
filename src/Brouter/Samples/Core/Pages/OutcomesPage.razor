@@ -1,0 +1,37 @@
+﻿@* Awaited navigation: NavigateAsync reports how a navigation actually ended. Outcomes are kept in
+   the scoped DemoState so they survive a navigation that left this page. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+@inject NavigationManager navManager
+
+<h1>Awaited navigation outcomes</h1>
+
+<dl>
+    <dt>last outcome</dt>
+    <dd>@(State.LastOutcome ?? "none yet")</dd>
+</dl>
+
+<div class="row">
+    <button @onclick="@(() => Go("/data"))">/data - Succeeded</button>
+    <button @onclick="@(() => Go("/blocked"))">/blocked - Cancelled</button>
+    <button @onclick="@(() => Go("/g1"))">/g1 - Succeeded or Redirected</button>
+    <button @onclick="@(() => Go("/no/such/page"))">/no/such/page - NotFound</button>
+    <button @onclick="navManager.NotFound">NavigationManager.NotFound()</button>
+</div>
+
+<p class="muted">Come Back after a successful navigation to read its recorded outcome.</p>
+
+@code {
+    private async Task Go(string url)
+    {
+        var outcome = await brouter.NavigateAsync(url);
+        State.LastOutcome = outcome.Status switch
+        {
+            BrouterNavigationStatus.Redirected => $"{outcome.Status} -> {outcome.RedirectedTo}",
+            BrouterNavigationStatus.Failed => $"{outcome.Status}: {outcome.Exception?.Message}",
+            _ => outcome.Status.ToString(),
+        } + $" (target: {url})";
+        StateHasChanged();
+    }
+}

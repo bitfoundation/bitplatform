@@ -39,10 +39,11 @@ public interface ITelemetryContext
 
     public string? PageUrl { get; set; }
 
+    /// <summary>
+    /// The zone the app actually renders date/times in - the user's preference, kept fresh by
+    /// <c>TimeZoneService.ApplyPreferredTimeZone</c>; the device's zone until that first resolves.
+    /// </summary>
     public string? TimeZone { get; set; }
-    public string? Culture { get; set; }
-
-    public string? Environment { get; set; }
 
     /// <summary>
     /// <inheritdoc cref="Parameters.IsOnline"/>
@@ -51,20 +52,23 @@ public interface ITelemetryContext
 
     public Dictionary<string, object?> ToDictionary(Dictionary<string, object?>? additionalParameters = null)
     {
-        var data = new Dictionary<string, object?>(additionalParameters ?? [])
-        {
-            { nameof(UserId), UserId },
-            { nameof(UserSessionId), UserSessionId },
-            { "ClientAppSessionId", AppSessionId },
-            { nameof(Platform), Platform },
-            { nameof(AppVersion), AppVersion },
-            { nameof(PageUrl), PageUrl },
-            { nameof(TimeZone), TimeZone },
-            { "ClientDateTime", TimeProvider.GetUtcNow().ToString("u") },
-            { nameof(Culture), Culture },
-            { nameof(Environment), Environment },
-            { nameof(IsOnline), IsOnline }
-        };
+        var data = new Dictionary<string, object?>(additionalParameters ?? []);
+
+        data[nameof(UserId)] = UserId;
+        data[nameof(UserSessionId)] = UserSessionId;
+        data["ClientAppSessionId"] = AppSessionId;
+        data[nameof(Platform)] = Platform;
+        data[nameof(AppVersion)] = AppVersion;
+        data[nameof(PageUrl)] = PageUrl;
+        var timeZoneId = TimeZone ?? TimeZoneInfo.Local.Id;
+        data[nameof(TimeZone)] = timeZoneId;
+        data["ClientDateTime"] = (TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var clientTimeZone)
+            ? TimeZoneInfo.ConvertTime(TimeProvider.GetUtcNow(), clientTimeZone)
+            : TimeProvider.GetUtcNow()).ToString("yyyy-MM-dd HH:mm:ss zzz");
+        // Culture stays ambient - always current, where a stored one would go stale after an in-place language switch.
+        data["Culture"] = CultureInfo.CurrentUICulture.Name;
+        data["Environment"] = AppEnvironment.Current;
+        data[nameof(IsOnline)] = IsOnline;
 
         if (AppPlatform.IsBlazorHybrid)
         {

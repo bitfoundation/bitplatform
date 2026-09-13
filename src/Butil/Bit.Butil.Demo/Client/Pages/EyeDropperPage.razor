@@ -1,0 +1,133 @@
+@page "/eye-dropper"
+@inject Bit.Butil.EyeDropper eyeDropper
+
+<PageTitle>EyeDropper - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="EyeDropper"
+            Lead="Sample any pixel on the screen - even outside the browser window - with the EyeDropper API and get the color back as an sRGB hex string, straight into C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper_API"
+            InjectAs="EyeDropper eyeDropper" />
+
+<Callout Type="warning" Title="Experimental - Chromium desktop only">
+    The EyeDropper API is experimental and currently implemented only in Chromium-based desktop
+    browsers (Chrome, Edge, Opera). Firefox, Safari and mobile browsers do not support it -
+    always gate usage behind <code>IsSupported</code>.
+</Callout>
+
+<Callout Type="info" Title="User gesture required">
+    <code>Open</code> must be called from a user-gesture handler such as a button click - the
+    browser rejects the request otherwise. The user can cancel the picker at any time with
+    <span class="kbd">Esc</span>, in which case <code>Open</code> returns <code>null</code>.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes window.EyeDropper. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.EyeDropper eyeDropper
+
+var supported = await eyeDropper.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Pick a color"
+                 Api="Open"
+                 Description="Opens the eyedropper cursor and resolves with the picked sRGB color in hex form (for example #1f2937). The cursor can sample any pixel on the screen, including other applications. A null result means the user cancelled or the runtime couldn't show the picker."
+                 Code=@("""
+var hex = await eyeDropper.Open();
+
+if (hex is not null)
+{
+    // hex == "#1f2937" - feed it straight into a style or a theme
+}
+""")>
+        <div class="controls">
+            <button @onclick="PickColor">Open eyedropper</button>
+        </div>
+        @if (_picked is not null)
+        {
+            <div class="field">
+                <span class="field-label">Picked color</span>
+                <span>
+                    <span class="swatch" style="background:@_picked"></span>
+                    <code style="margin-left:0.5rem">@_picked</code>
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="pickOutput" Title="pick color output" />
+    </DemoSection>
+
+    <DemoSection Title="Handle cancellation"
+                 Api="Open"
+                 Description="Unlike the raw JS API, which rejects the promise on cancel, Butil normalizes both cancellation and picker failures to a null return - so no try/catch is needed for the common flow. A try/catch remains a good idea for unexpected interop failures."
+                 Code=@("""
+var hex = await eyeDropper.Open();
+
+if (hex is null)
+{
+    // user pressed Esc, or the picker couldn't be shown
+    return;
+}
+
+ApplyAccentColor(hex);
+""") />
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.EyeDropper." />
+    <ApiMember Name="Open"
+               Signature="ValueTask<string?> Open()"
+               Description="Opens the eyedropper and returns the picked sRGB color in hex form (e.g. #1f2937). Returns null when the user cancels or the runtime can't show the picker. Must be called from a user-gesture handler." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole pickOutput = default!;
+    private string? _picked;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await eyeDropper.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task PickColor()
+    {
+        try
+        {
+            if (!await eyeDropper.IsSupported())
+            {
+                await pickOutput.Warn("EyeDropper is not supported in this browser - try a Chromium-based desktop browser.");
+                return;
+            }
+
+            var hex = await eyeDropper.Open();
+            if (hex is null)
+            {
+                await pickOutput.Warn("Open →", "cancelled (or the picker couldn't be shown).");
+                return;
+            }
+
+            _picked = hex;
+            await pickOutput.Success("Open →", hex);
+        }
+        catch (Exception ex)
+        {
+            await pickOutput.Error("Open failed →", ex.Message);
+        }
+    }
+}

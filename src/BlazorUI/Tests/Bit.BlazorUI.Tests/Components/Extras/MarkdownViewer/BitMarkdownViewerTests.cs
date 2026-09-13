@@ -429,6 +429,45 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.DoesNotContain("\u202E", component.Markup);
     }
 
+    [TestMethod,
+        DataRow("۱."),          // Extended Arabic-Indic (Persian) digit one
+        DataRow("١."),          // Arabic-Indic digit one
+        DataRow("१."),          // Devanagari digit one
+        DataRow("１."),          // Fullwidth digit one
+        DataRow("۱) item"),
+        DataRow("۱. item")]
+    public void BitMarkdownViewerShouldNotTreatNonAsciiDigitsAsOrderedListMarkers(string markdown)
+    {
+        // .NET's \d matches every Unicode decimal digit, so these lines used to be taken
+        // for ordered list markers and then fed to int.Parse, which throws (only ASCII
+        // digits parse). CommonMark restricts the marker to ASCII digits, so they must
+        // render as ordinary paragraph text.
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+        });
+
+        var markup = component.Markup;
+
+        Assert.DoesNotContain("<ol", markup);
+        Assert.Contains(markdown[..1], markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldStillRenderAsciiOrderedLists()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "3. three\n4. four");
+        });
+
+        var markup = component.Markup;
+
+        Assert.Contains("<ol", markup);
+        Assert.Contains("start=\"3\"", markup);
+        Assert.AreEqual(2, component.FindAll(".bit-mdv ol li").Count);
+    }
+
     [TestMethod]
     public void BitMarkdownViewerShouldRespectMaxLength()
     {

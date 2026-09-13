@@ -189,6 +189,15 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
             // so the DotNetObjectReference and callback don't leak.
             _subscriptionKeys.Clear();
             _onScroll = null;
+            // The materialized motion values will never emit again, so drop their subscriber lists
+            // and upstream links: anything derived from them (Transform / Motion.Spring chains, or
+            // element bindings) would otherwise keep the whole graph reachable from this tracker
+            // for as long as the consumer holds any one derived value.
+            _progressXValue?.Dispose();
+            _progressYValue?.Dispose();
+            _scrollXValue?.Dispose();
+            _scrollYValue?.Dispose();
+            _targetProgressValue?.Dispose();
             _dotnet?.Dispose();
             // Note: IBmotionInterop itself is DI-scoped and disposed by the DI container
         }

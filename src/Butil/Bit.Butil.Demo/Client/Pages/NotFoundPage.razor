@@ -1,0 +1,9 @@
+﻿@page "/not-found"
+
+@* Target of app.UseStatusCodePagesWithReExecute("/not-found") in the host's Program.cs. Without
+   it a deep link to an unknown URL matches no endpoint and the server answers with a bare 404:
+   the router's <NotFound> fragment only covers routes missed during client-side navigation. *@
+
+<PageTitle>Not found - Bit.Butil</PageTitle>
+
+<NotFoundContent />

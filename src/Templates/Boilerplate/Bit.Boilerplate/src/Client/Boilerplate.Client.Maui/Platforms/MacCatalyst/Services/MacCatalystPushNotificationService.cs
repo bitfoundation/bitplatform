@@ -1,7 +1,11 @@
+// [mirror] IPushNotificationService - subscription and permission flow - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs
+// - src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs
+
 using UIKit;
 using UserNotifications;
-using Plugin.LocalNotification;
-using Microsoft.Extensions.Logging;
+
+using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.MacCatalyst.Services;
 
@@ -37,7 +41,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
 
         try
         {
-            while (string.IsNullOrEmpty(Token))
+            while (string.IsNullOrWhiteSpace(Token))
             {
                 // After the NotificationsSupported Task completes with a result of true,
                 // we use UNUserNotificationCenter.Current.Delegate.
@@ -48,6 +52,7 @@ public partial class MacCatalystPushNotificationService : PushNotificationServic
         catch (Exception exp)
         {
             Logger.LogError(exp, "Unable to resolve token for APNS.");
+            return null;
         }
 
         var subscription = new PushNotificationSubscriptionDto

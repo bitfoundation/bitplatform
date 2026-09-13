@@ -24,6 +24,12 @@ public partial class BitFcCalendarWeekView
     private int? _dragHour;
     private int? _dragMinute;
 
+    // The hour slots exist only as add/drop targets, so a read-only grid must not expose hundreds
+    // of focusable no-op buttons to keyboard and assistive-technology users. A null attribute value
+    // is omitted from the rendered markup.
+    private string? _slotRole => State.ReadOnly ? null : "button";
+    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
     private async Task SelectEvent(BitFullCalendarEvent ev)
     {
         if (OnEventClick.HasDelegate)
@@ -37,6 +43,11 @@ public partial class BitFcCalendarWeekView
 
     private async Task OnHourClickAsync(DateTime day, int hour, int minute = 0)
     {
+        // The slot is purely an add affordance, so a read-only grid leaves it inert - including the
+        // date selection, which the user can still perform from the header and the mini calendar.
+        if (State.ReadOnly)
+            return;
+
         State.SetSelectedDate(day);
 
         if (OnAddClick.HasDelegate)
@@ -59,8 +70,12 @@ public partial class BitFcCalendarWeekView
             await OnHourClickAsync(day, hour, minute);
     }
 
-    private string HourSlotAriaLabel(DateTime day, int hour, int minute = 0)
+    private string? HourSlotAriaLabel(DateTime day, int hour, int minute = 0)
     {
+        // The slot is inert in read-only mode, so it carries no label to announce.
+        if (State.ReadOnly)
+            return null;
+
         var start = day.Date.AddHours(hour).AddMinutes(minute);
         return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}";
     }

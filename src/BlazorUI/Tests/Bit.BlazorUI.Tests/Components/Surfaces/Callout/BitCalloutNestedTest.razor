@@ -1,0 +1,23 @@
+﻿<BitCallout Class="outer-callout" AutoClose="AutoCloseOuter" @ref="Outer">
+    <Anchor>
+        <button class="outer-anchor">Outer</button>
+    </Anchor>
+    <Content>
+        <BitCallout Class="inner-callout" @ref="Inner">
+            <Anchor>
+                <button class="inner-anchor">Inner</button>
+            </Anchor>
+            <Content>
+                <div class="inner-content">Inner content</div>
+            </Content>
+        </BitCallout>
+    </Content>
+</BitCallout>
+
+@code {
+    [Parameter] public bool AutoCloseOuter { get; set; }
+
+    public BitCallout Outer { get; set; } = default!;
+
+    public BitCallout Inner { get; set; } = default!;
+}

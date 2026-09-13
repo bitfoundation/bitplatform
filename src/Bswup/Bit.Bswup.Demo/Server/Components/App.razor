@@ -1,0 +1,202 @@
+@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+}
+
+@{
+    // Honors the Bswup service-worker "no-prerender" escape hatch (self.noPrerenderQuery in
+    // wwwroot/service-worker*.js): the worker fetches the app shell with this query attached so
+    // the copy it caches is route-agnostic. Without it the cached shell would be the prerendered
+    // HOME page, and every offline deep link would flash home content before the router
+    // corrected it. Interactive WebAssembly either way - only the prerendered pass is skipped.
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    var renderMode = new InteractiveWebAssemblyRenderMode(prerender: !noPrerender);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* The title and the description of a page come from its PageOutlet, through HeadOutlet at the
+       bottom of this head - one per page, and correct for the URL that was requested.
+
+       They are only written here when prerendering is off, because HeadOutlet then renders
+       nothing until the WebAssembly runtime has booted and there would be no title at all in the
+       meantime. That request is the service worker fetching the app shell (see above), so these
+       are the values the shell carries offline until the router picks a page - deliberately the
+       generic ones, since the shell is route-agnostic. When the document IS prerendered, writing
+       them here as well would put a second <title> in the head, and the browser (like a crawler)
+       keeps the FIRST one - every page would be titled with the site's front door. *@
+    @if (noPrerender)
+    {
+        <title>bit Bswup - Blazor Service Worker Update Progress</title>
+        <meta name="description" content="Install progress, controlled background updates and offline support for Blazor WebAssembly apps - with a single script tag." />
+    }
+    @* One tag per scheme, matching the page canvas in each theme block of app.css. A single
+       fixed value would paint the browser chrome dark behind a light page.
+
+       These cover the case where the site's theme still follows the OS preference. Once the
+       header's toggle overrides it, demo.js writes a third tag carrying the chosen colour -
+       otherwise a reader on a dark desktop who switched this site to light would keep the dark
+       browser chrome. *@
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <script>
+        // Applied before first paint so the persisted theme never flashes. The attribute is
+        // data-theme on <html>, which app.css keys every theme rule off. It is always written
+        // to a concrete value: the stylesheet's light and dark rules are exact complements of
+        // [data-theme$='dark'], so an absent attribute would resolve to light regardless of
+        // the system preference.
+        (function () {
+            var theme = 'light';
+            try {
+                var stored = localStorage.getItem('bswup-demo-theme');
+                theme = stored === 'dark' || stored === 'light'
+                    ? stored
+                    : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            } catch (e) { }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />
+    <link rel="stylesheet" href="app.css" />
+
+    @* Site-wide structured data. It belongs here rather than in PageOutlet because none of it is
+       per-page: the same three entities describe every URL, and the host document is the one
+       place that is rendered statically for every one of them - including the requests where
+       HeadOutlet renders nothing (see the title above).
+
+       Written as literal JSON on purpose: '@@' is Razor's escape for a single '@@', so the
+       schema.org keywords survive, and nothing here is interpolated - a value that came from C#
+       would be HTML-encoded ('&' -> '&amp;') and break the JSON. *@
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@graph": [
+                {
+                    "@@type": "Organization",
+                    "@@id": "https://bswup.bitplatform.dev/#organization",
+                    "name": "bit platform",
+                    "url": "https://bitplatform.dev/",
+                    "logo": "https://bswup.bitplatform.dev/icon-512.png",
+                    "sameAs": [
+                        "https://github.com/bitfoundation/bitplatform",
+                        "https://twitter.com/bitplatformhq",
+                        "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog",
+                        "https://www.linkedin.com/company/bitplatformhq"
+                    ]
+                },
+                {
+                    "@@type": "WebSite",
+                    "@@id": "https://bswup.bitplatform.dev/#website",
+                    "name": "bit Bswup",
+                    "url": "https://bswup.bitplatform.dev/",
+                    "inLanguage": "en",
+                    "description": "Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps.",
+                    "publisher": { "@@id": "https://bswup.bitplatform.dev/#organization" }
+                },
+                {
+                    "@@type": "SoftwareApplication",
+                    "@@id": "https://bswup.bitplatform.dev/#software",
+                    "name": "Bit.Bswup",
+                    "alternateName": "bit Bswup",
+                    "applicationCategory": "DeveloperApplication",
+                    "operatingSystem": "Any",
+                    "url": "https://bswup.bitplatform.dev/",
+                    "downloadUrl": "https://www.nuget.org/packages/Bit.Bswup",
+                    "codeRepository": "https://github.com/bitfoundation/bitplatform",
+                    "programmingLanguage": ["C#", "JavaScript"],
+                    "description": "A Blazor WebAssembly service worker with an install progress UI, controlled background updates, resilient downloads and offline support - configured from a single script tag.",
+                    "license": "https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE",
+                    "author": { "@@id": "https://bswup.bitplatform.dev/#organization" },
+                    "offers": {
+                        "@@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "USD"
+                    }
+                }
+            ]
+        }
+    </script>
+
+    <HeadOutlet @rendermode="@renderMode" />
+</head>
+
+<body>
+    @* The splash is the BswupProgress component rather than the hand-written markup the
+       standalone index.html carried. That workaround existed because a standalone Blazor
+       WebAssembly app has no server-rendered host document: on a first install Blazor only
+       boots after the download finishes, so a component-rendered splash would have appeared
+       too late. Here App.razor IS the host document and is rendered statically on the server,
+       so the component's markup - and the data-bit-bswup-* configuration bit-bswup.progress.js
+       self-initializes from - is in the first byte of HTML, before any script runs.
+
+       Rendered before the scripts below on purpose (the script's MutationObserver would pick
+       up a late element, but that is the fallback path). The parameters mirror the data-*
+       attributes index.html used, so behavior is unchanged. #bit-bswup-reload and its
+       screen-reader status region are NOT hand-written here: BswupProgress always renders
+       them itself, outside the overlay, and a second copy would be a duplicate id shadowing
+       the component's working button. *@
+    <BswupProgress AutoReload="false"
+                   ShowLogs="false"
+                   ShowAssets="false"
+                   AppContainer="#app"
+                   HideApp="true"
+                   AutoHide="true"
+                   Handler="bswupDemoHandler">
+        <div class="bit-bswup-container splash-container">
+            <img class="splash-logo" src="icon-512.png" alt="bit Bswup" width="80" height="80" />
+            <p class="bit-bswup-title">bit Bswup</p>
+            <p class="bit-bswup-description">Preparing the app for offline use, please wait...</p>
+            <div class="bit-bswup-progress">
+                <div id="bit-bswup-progress-bar"
+                     role="progressbar"
+                     aria-label="Update download progress"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"
+                     style="width: 0%"></div>
+            </div>
+            <p id="bit-bswup-percent">0%</p>
+            <ul id="bit-bswup-assets" style="display: none;"></ul>
+            <div id="bit-bswup-error" class="bit-bswup-error" style="display: none;" role="alert">
+                <p class="bit-bswup-error-title">Update failed to install</p>
+                <p id="bit-bswup-error-message" class="bit-bswup-error-message"></p>
+                <pre id="bit-bswup-error-details" class="bit-bswup-error-details"></pre>
+                <button id="bit-bswup-error-retry" type="button">Retry</button>
+            </div>
+        </div>
+    </BswupProgress>
+
+    @* Kept as a plain element (not the render-mode boundary itself) because BswupProgress
+       toggles its visibility by selector during a first install - see AppContainer above. *@
+    <div id="app">
+        <Routes @rendermode="@renderMode" />
+    </div>
+
+    <script src="demo.js"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    @* blazorScript is omitted on purpose: bit-bswup.js auto-detects both default entry scripts
+       (blazor.web.js and blazor.webassembly.js), fingerprints and query strings included - the
+       attribute is only needed for non-default script paths.
+
+       The docs site dogfoods Bswup itself: hourly update polling plus a check every time the
+       tab returns to the foreground. bit-bswup.progress.js registers the default
+       bitBswupHandler and drives the splash above; bswupDemoHandler (demo.js) is chained after
+       it - via the Handler parameter - to feed the Live Playground event log. *@
+    <script src="_content/Bit.Bswup/bit-bswup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBswupHandler"
+            updateInterval="3600"
+            updateOnVisibility="true"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+@* The app shell: a skip link, the sticky header, the content band, and the footer. Docs pages add
+   their own nav panel, breadcrumb and "on this page" rail from DocsShell.
+
+   The band is painted with the secondary background so the surfaces inside it read as raised -
+   the arrangement Fluent uses for a page built out of cards, and the reason the docs column can
+   drop its own frames and still read as a stack of sections. *@
+
+<div class="page">
+    @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
+       can jump straight past the chrome to the page. *@
+    <a class="bb-skip-link" href="#bb-main">Skip to content</a>
+
+    <Header />
+
+    <div class="bb-site-content">
+        <main id="bb-main" tabindex="-1">
+            <article>
+                @Body
+            </article>
+        </main>
+    </div>
+
+    <Footer />
+</div>

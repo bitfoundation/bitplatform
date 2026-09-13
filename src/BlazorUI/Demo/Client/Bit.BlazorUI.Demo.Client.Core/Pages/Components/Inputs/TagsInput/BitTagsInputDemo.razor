@@ -1,167 +1,942 @@
-@page "/components/tagsinput"
+﻿@page "/components/tagsinput"
 @page "/components/tags-input"
 
 <PageOutlet Url="components/tagsinput"
             Title="TagsInput"
-            Description="A tags input (TagsInput) provides an input field for adding and managing tags (keywords)." />
+            Description="A tags (chips/tokens) input for Blazor: confirm a tag with Enter or a separator of your own, pick one from a suggestion list or accept nothing else, paste a whole separated list at once, cap the count and the length, reject what fails a pattern or a validator and hear why, normalize through a transformer, correct a chip in place, walk and reorder the chips from the keyboard or by dragging, fold a long list away, style each chip by its value, drive it all from code, and bind the list to an EditForm." />
 
-<div>
-    <DemoPage Name="TagsInput"
-              Description="A tags input (TagsInput) provides an input field for adding and managing tags (keywords)."
-              Parameters="componentParameters"
-              SubClasses="componentSubClasses"
-              PublicMembers="componentPublicMembers"
-              GitHubUrl="Inputs/TagsInput/BitTagsInput.razor"
-              GitHubDemoUrl="Inputs/TagsInput/BitTagsInputDemo.razor">
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>Basic examples of BitTagsInput including a default, read-only, and disabled state.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Add tag..." />
+<DemoPage Name="TagsInput"
+          Description="The TagsInput turns free text into a list of short values: the user types a tag, confirms it with the Enter key (or with a separator character of your own), and it becomes a removable chip sitting in front of the input. It binds to a collection of strings, offers the known values through the browser's own suggestion list - and can be restricted to those values alone - splits pasted text over its separators so a comma separated list, or a column copied out of a spreadsheet, arrives as a whole row of tags, and keeps the entries in shape on the way in: trimming them, running them through a transformer of yours, capping their length and their number, and rejecting the ones that repeat, that are too short, that do not match a pattern or that a validator of yours turns down - every rejection reported with the rule that caused it rather than being swallowed. The chips form a proper accessible list: a single stop of the tab order that the arrow keys walk through, each carrying its position in the whole list, removable with Delete or Backspace as well as with its dismiss button, correctable in place with a double click or the F2 key, and movable by dragging it or with Alt and the arrow keys - with every addition, removal, edit, move and rejection announced to screen readers, and every browser default that would have got in the way held back. A long list folds away behind a chip that says how many are left, each chip can be styled by its own value, the whole component can be driven from code, and every change can be watched or called off before it happens. It comes in three sizes, three variants and the whole accent palette, carries a label, a described helper text, a prefix, a suffix, a tag counter and a clear button, posts its value as a single field in a plain HTML form, and takes part in an EditForm validation like any other input."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          GitHubUrl="Inputs/TagsInput/BitTagsInput.razor"
+          GitHubDemoUrl="Inputs/TagsInput/BitTagsInputDemo.razor">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>
+            Type a word and press <b>Enter</b>: it becomes a chip in front of the input, and its dismiss button
+            takes it back off. <b>ReadOnly</b> keeps the tags visible and navigable while refusing every change
+            to them, so the dismiss buttons are not rendered at all, and <b>IsEnabled="false"</b> dims the whole
+            field along with the tags in it.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Placeholder="Add tag..." />
+            <BitTagsInput Placeholder="ReadOnly" ReadOnly DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" />
+            <BitTagsInput Placeholder="Disabled" IsEnabled="false" DefaultValue="@(new List<string> { "Tag 1", "Tag 2" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
+        <div>
+            <b>Label</b> renders the caption above the field and ties it to the input, so clicking it puts the
+            caret in there and screen readers announce it with the field. <b>LabelTemplate</b> replaces the text
+            with markup of your own when a plain string is not enough. Combined with the inherited
+            <b>Required</b>, the label carries the asterisk that marks the field as mandatory.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Tags" Placeholder="Add tag..." />
+            <BitTagsInput Label="Tags" Required Placeholder="Required" />
+            <BitTagsInput Placeholder="Add tag...">
+                <LabelTemplate>
+                    <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                        <BitIcon IconName="@BitIconName.Tag" />
+                        <BitText Typography="BitTypography.Body1">Custom label</BitText>
+                    </BitStack>
+                </LabelTemplate>
+            </BitTagsInput>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Description" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            <b>Description</b> renders a hint under the field, which the input references through its
+            <code>aria-describedby</code> attribute, so it is announced along with the field rather than only
+            being drawn. It is where the rules of the field belong: the accepted format, the number of tags
+            allowed, the separator that splits them. <b>DescriptionTemplate</b> takes markup instead of a
+            string, and is referenced exactly the same way.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Skills"
+                          Placeholder="Add a skill..."
+                          Description="Press Enter after each skill. Up to 5 of them." />
+            <BitTagsInput Label="Recipients" Placeholder="Add an address...">
+                <DescriptionTemplate>
+                    <BitStack Horizontal Gap="0.25rem" VerticalAlign="BitAlignment.Center">
+                        <BitIcon IconName="@BitIconName.Info" Style="font-size:0.75rem;" />
+                        <span>Separate the addresses with a comma or a semicolon.</span>
+                    </BitStack>
+                </DescriptionTemplate>
+            </BitTagsInput>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Placeholder" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            <b>Placeholder</b> is the hint shown while the list is still empty. Once there is at least one tag
+            it would only compete with them for the width of the field, so it is dropped - unless a
+            <b>TagsPlaceholder</b> is given, which is what keeps the invitation to add another one visible
+            without repeating the whole sentence.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Placeholder only"
+                          Placeholder="Type a tag and press Enter" />
+            <BitTagsInput Label="Placeholder & TagsPlaceholder"
+                          Placeholder="Type a tag and press Enter"
+                          TagsPlaceholder="add another..."
+                          DefaultValue="@(new List<string> { "blazor" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Variant" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Variant</b> decides how much of a frame the field carries: <b>Outline</b> (the default) draws a
+            full rule around it, <b>Fill</b> paints it with a surface color and drops the rule, and <b>Text</b>
+            keeps only an underline, for a field that should not outweigh the ones around it. <b>NoBorder</b>
+            removes the frame altogether, for a field sitting on a surface that already provides one. It is
+            the frame of the field alone; how the tags in it are painted is the <b>TagVariant</b>.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Fill" Variant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Outline" Variant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Text" Variant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="NoBorder" NoBorder DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Tag variant" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>TagVariant</b> decides how much of the <b>Color</b> the tags themselves are painted with:
+            <b>Fill</b> (the default) fills every chip with it, the way a <b>BitTag</b> is filled,
+            <b>Outline</b> leaves the chip unfilled and draws the color as its rule and its text, and
+            <b>Text</b> keeps only the text in it, for tags that should not outweigh the field holding them.
+            It is independent of the <b>Variant</b>, which is about the frame of the field rather than the
+            tags in it, so the two combine freely.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Fill" TagVariant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Outline" TagVariant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Text" TagVariant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Separators" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            By default the Enter key is the only thing that turns the typed text into a tag. <b>Separators</b>
+            adds characters that do the same: typing one of them commits whatever stands before it, and the
+            character itself never reaches the input. A separator is any string at all - a single character
+            such as a comma or a space, or a longer one such as <code>", "</code>. The very same separators
+            split a paste, so a comma separated list copied out of a spreadsheet or a mail client arrives as a
+            whole row of tags in one go - each piece of it going through the same validation, so the ones that
+            are refused are reported while the rest are still added. A pasted text spread over several lines is
+            joined over the first separator on its way in, since a single line field would otherwise drop the
+            line breaks and leave one run-on tag behind.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Comma or semicolon"
+                          Separators="@([",", ";"])"
+                          Placeholder="a, b; c"
+                          Description="Try pasting: red,green;blue - or a column copied out of a spreadsheet." />
+            <BitTagsInput Label="Space separated"
+                          Separators="@([" "])"
+                          Placeholder="Type words separated by spaces" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Suggestions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>Suggestions</b> offers a set of known values while the user types, through the suggestion list
+            the browser itself renders for a <code>datalist</code> - which is what keeps it reachable,
+            positioned and announced on every platform without a popup of our own. Picking one only fills the
+            input; it is the usual <b>Enter</b> (or a separator) that turns it into a tag, so every rule of the
+            field still applies to it. The values already in the list are left out of the suggestions, unless
+            <b>Duplicates</b> allows them back in, and so are all of them once the <b>MaxTags</b> ceiling
+            leaves nothing to add. A datalist suggests rather than restricts, so free text is still accepted
+            next to it; <b>RestrictToSuggestions</b> is what turns the suggestions into the whole of what the
+            field accepts, rejecting anything else with the <b>NotSuggested</b> reason. What counts as one of
+            the suggestions is decided by <b>Comparison</b>, and the tag that is stored is the suggestion
+            rather than the spelling it was typed with - so with an <b>OrdinalIgnoreCase</b> comparison,
+            typing <b>BLAZOR</b> adds <b>blazor</b>, and a list that has to be grouped or looked up later
+            never holds two spellings of one value.
+            <br /><br />
+            A catalogue of known values is written into the page in full, and rebuilt on every keystroke, so
+            <b>MaxSuggestions</b> caps how many of them are offered at once: beyond it only the values holding
+            what is being typed are kept, and only as many of those as it allows. It changes nothing about
+            what the user is actually shown - the browser filters the list it is handed all over again - only
+            about how much of a catalogue of thousands ever reaches the page.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Free text with suggestions"
+                          Suggestions="frameworkSuggestions"
+                          Placeholder="Start typing: bl, re, vu..."
+                          Description="Type a letter or two to see the list." />
+            <BitTagsInput Label="Suggestions as the only accepted values"
+                          Suggestions="frameworkSuggestions"
+                          RestrictToSuggestions
+                          Placeholder="Only a suggested value is accepted"
+                          Description="Anything that is not one of the suggestions is refused."
+                          OnInvalid="HandleSuggestionInvalid" />
+            @if (suggestionMessage.HasValue())
+            {
+                <div class="invalid-message">@suggestionMessage</div>
+            }
+            <BitTagsInput Label="A long catalogue, 5 offers at a time"
+                          Suggestions="countrySuggestions"
+                          MaxSuggestions="5"
+                          Placeholder="Start typing a country..."
+                          Description="Only the five best matches are ever written into the page." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="MaxTags" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>MaxTags</b> caps how many tags the list may hold. Once the ceiling is reached every further tag
+            is rejected with the <b>MaxTags</b> reason, which the <b>OnInvalid</b> callback receives - so the
+            field can say why nothing happened instead of appearing to ignore the Enter key. A paste that would
+            overflow the cap stops there rather than being rejected as a whole.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Up to 3 tags"
+                          MaxTags="3"
+                          Separators="@([","])"
+                          Placeholder="Add up to 3 tags"
+                          @bind-Value="maxTagsValue"
+                          OnInvalid="HandleMaxTagsInvalid" />
+            <div>Tags: @(maxTagsValue is null ? 0 : maxTagsValue.Count) / 3</div>
+            @if (maxTagsMessage.HasValue())
+            {
+                <div class="invalid-message">@maxTagsMessage</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Length limits" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            <b>MaxLength</b> caps the number of characters of each individual tag. It is a truncation rather
+            than a rejection: the input stops accepting characters beyond it, and a pasted value longer than it
+            is cut down to size instead of being thrown away - which matters for a paste, where throwing the
+            twelfth character away is far better than throwing the whole list away. The little input that
+            replaces a tag while it is corrected in place carries the cap natively, since there the limit of a
+            tag is the limit of the whole field. <b>MinLength</b> works the other way round and does reject: a
+            tag shorter than it never enters the list, and the rejection is reported with the <b>MinLength</b>
+            reason. Both of them count the text after the trimming and the <b>Transformer</b>, so they measure
+            exactly what would be added.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="MaxLength = 10"
+                          MaxLength="10"
+                          Placeholder="Max 10 characters per tag"
+                          Description="Typing beyond the tenth character does nothing." />
+            <BitTagsInput Label="MinLength = 3"
+                          MinLength="3"
+                          Placeholder="At least 3 characters per tag"
+                          Description="Shorter entries are refused." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Pattern & Validator" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>Pattern</b> is a regular expression that every tag has to match; an expression that cannot be
+            compiled is ignored rather than breaking the field, and a match that runs away is timed out and
+            treated as a failure. <b>Validator</b> covers what an expression cannot express - a lookup in a
+            list of allowed values, a checksum, a rule that depends on the other tags - by taking a predicate
+            instead. Both run after the trimming and the transformation, so they see exactly the text that
+            would be added, and both report their rejection through <b>OnInvalid</b>.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Email addresses"
+                          Placeholder="name@example.com"
+                          Separators="@([",", ";", " "])"
+                          Pattern="@emailPattern"
+                          Description="Only well formed addresses are accepted."
+                          OnInvalid="HandlePatternInvalid" />
+            @if (patternMessage.HasValue())
+            {
+                <div class="invalid-message">@patternMessage</div>
+            }
+            <BitTagsInput Label="Known frameworks"
+                          Placeholder="blazor, react, vue, angular"
+                          Validator="ValidateFramework"
+                          Description="Only blazor, react, vue and angular are allowed."
+                          OnInvalid="HandleValidatorInvalid" />
+            @if (validatorMessage.HasValue())
+            {
+                <div class="invalid-message">@validatorMessage</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Transformer" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            <b>Transformer</b> normalizes the text of a tag before anything else is done with it, which is what
+            keeps a list consistent whichever way its entries were typed: lower casing them, stripping a
+            leading <code>#</code>, collapsing the whitespace inside them. It runs before the length, pattern,
+            validator and duplicate checks, so all of them see the normalized text - which means
+            <b>#Blazor</b>, <b>blazor</b> and <b>BLAZOR</b> all collapse into the same tag and the second of
+            them is refused as a duplicate. An exception thrown out of it leaves the text untouched rather than
+            breaking the field.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Hashtags"
+                          Transformer="NormalizeHashtag"
+                          Placeholder="#Blazor, #WEB, # dot net"
+                          Separators="@([","])"
+                          Description="Lower cased, stripped of a leading # and of the whitespace inside." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Duplicates" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            A tag that is already in the list is refused by default, and the refusal is reported through
+            <b>OnTagExists</b> as well as through <b>OnInvalid</b>. <b>Duplicates</b> lifts that rule for the
+            lists where repetition means something. Which tags count as the same one is decided by
+            <b>Comparison</b>: it is <b>Ordinal</b> by default, so <b>Blazor</b> and <b>blazor</b> are two
+            different tags, while <b>OrdinalIgnoreCase</b> makes them one.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Duplicates refused (default)"
+                          Placeholder="Try adding the same tag twice"
+                          DefaultValue="@(new List<string> { "blazor" })"
+                          OnTagExists="HandleTagExists" />
+            @if (duplicateMessage.HasValue())
+            {
+                <div class="invalid-message">@duplicateMessage</div>
+            }
+            <BitTagsInput Label="Case insensitive"
+                          Comparison="StringComparison.OrdinalIgnoreCase"
+                          Placeholder="Try 'BLAZOR'"
+                          DefaultValue="@(new List<string> { "blazor" })" />
+            <BitTagsInput Label="Duplicates allowed"
+                          Duplicates
+                          Placeholder="Add the same tag as often as you like" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Editable tags" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>EditableTags</b> lets a tag be corrected in place instead of having to be removed and typed
+            again: double click a chip, or press <b>Enter</b> or <b>F2</b> on the focused one, and it turns into
+            a little input with its text selected. <b>Enter</b> commits the new text, <b>Escape</b> puts the old
+            one back, and leaving the input commits it too. The text goes through the very same trimming,
+            transformation and validation as a tag being added - except that the tag is not a duplicate of
+            itself and the <b>MaxTags</b> ceiling cannot be reached, since the list does not grow. Committing an
+            empty text removes the tag, and <b>OnEdit</b> receives the old and the new text and can call the
+            change off. The Enter that commits the correction is held back from the form around the field
+            exactly as the one that adds a tag is, and an input method composing a character keeps it as well,
+            so a correction is never committed half way through a word.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Double click a tag to correct it"
+                          EditableTags
+                          MinLength="2"
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web" })"
+                          OnEdit="HandleEdit" />
+            @if (editMessage.HasValue())
+            {
+                <div>@editMessage</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Clear button" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            <b>ShowClearButton</b> renders a button at the end of the field that empties the whole list along
+            with the text left in the input, and raises <b>OnClear</b> with the tags it removed. It is not
+            rendered while the field is read-only, disabled or already empty, and it stays out of the tab order
+            - the <b>Escape</b> key pressed on the input being its keyboard equivalent. Escape takes back what
+            is being typed before it takes anything else, though: while there is text in the input it only
+            clears that text, and it is the second press, on the now empty input, that empties the list -
+            since throwing a whole list of tags away over a half typed word is not an undo but a loss.
+            <b>OnBeforeClear</b> runs first, whichever of the three emptied the field, and receives the whole
+            list along with a <b>Cancel</b> flag - which is where a confirmation belongs, emptying a list of
+            fifty tags by accident being exactly the mistake that is worth one. Pressing the button takes the
+            button itself away with everything else, so the caret is handed back to the input rather than
+            being dropped on the page; a clear that was called off leaves both exactly where they were.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Clearable"
+                          ShowClearButton
+                          Placeholder="Add a few tags, then clear them"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web" })"
+                          OnClear="HandleClear" />
+            @if (clearedMessage.HasValue())
+            {
+                <div>@clearedMessage</div>
+            }
+            <BitTagsInput Label="Guarded by OnBeforeClear"
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          Description="Clearing is refused while there are more than two tags."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web" })"
+                          OnBeforeClear="HandleBeforeClear" />
+            @if (beforeClearMessage.HasValue())
+            {
+                <div>@beforeClearMessage</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Counter" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <b>ShowCounter</b> draws the number of tags under the field, at the end of the line the
+            <b>Description</b> sits on, as a plain count or as <b>count / MaxTags</b> when there is a ceiling to
+            reach. It is drawn rather than announced - the list of chips is what a screen reader counts, and
+            every addition and removal is already spoken by the live region.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Plain count"
+                          ShowCounter
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Count against a ceiling"
+                          ShowCounter
+                          MaxTags="5"
+                          Placeholder="Add up to 5 tags"
+                          Description="Press Enter after each tag."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Keyboard" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            The chips are a single stop of the tab order rather than one per tag, which the arrow keys then
+            walk through: <b>Left</b> and <b>Right</b> (swapped in a right-to-left direction) move between
+            them, <b>Home</b> and <b>End</b> jump to the two ends, <b>Delete</b> and <b>Backspace</b> remove
+            the focused one and hand the focus to its neighbour, <b>Enter</b> and <b>F2</b> open the inline edit
+            when <b>EditableTags</b> is on, <b>Alt</b> with the arrows moves the tag when <b>AllowReorder</b> is,
+            and <b>Escape</b> goes back to the input. Every one of those keys carries a browser default that is
+            held back for it - Home and End would scroll the page away, Alt with an arrow would walk the whole
+            document back through the history - so a gesture of the field never turns into a gesture of the
+            browser.
+            From the input, <b>Backspace</b> on an empty field removes the last tag (which <b>NoBackspaceRemove</b>
+            turns off, and which <b>BackspaceEditsLastTag</b> turns from a removal into a correction, putting
+            the text of that tag back into the input to be fixed and confirmed again rather than letting it
+            simply disappear), and the arrow pointing backwards walks into the last chip. <b>Tab</b> commits
+            the text left in the input instead of leaving it behind - unless <b>NoAddOnTab</b> is set - while
+            <b>Shift+Tab</b> always walks straight out, so the field is never a trap. Losing the focus commits
+            the text as well, which <b>NoAddOnBlur</b> turns off and <b>ClearOnBlur</b> turns into a discard,
+            so a half typed word is not found again hours later in a field the user believes they finished
+            with. <b>Escape</b> takes back the text being
+            typed, and only empties the list on a second press, once there is nothing left to take back and
+            <b>ShowClearButton</b> is on.
+            <br /><br />
+            None of that is visible on a chip that looks like nothing but a word, so once the inline edit or
+            the reordering is on, each tag is announced with a sentence saying which keys it answers to -
+            <b>TagAriaDescription</b> being what replaces, localizes or silences it. Each chip also carries
+            its own position in the whole list, so "the third of six" stays true even where
+            <b>MaxDisplayedTags</b> has folded the other three away. And while an input method is composing a
+            character (Chinese, Japanese, Korean), the Enter that picks a candidate out of the suggestion
+            window is not treated as a confirmation - neither in the input nor in the inline edit - so a tag
+            is never cut in half by it.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Full keyboard support"
+                          Placeholder="Add a few tags, then walk them with the arrow keys"
+                          DefaultValue="@(new List<string> { "one", "two", "three" })" />
+            <BitTagsInput Label="NoAddOnBlur & NoAddOnTab & NoBackspaceRemove"
+                          NoAddOnBlur
+                          NoAddOnTab
+                          NoBackspaceRemove
+                          Placeholder="Only Enter adds a tag here"
+                          DefaultValue="@(new List<string> { "one", "two" })" />
+            <BitTagsInput Label="BackspaceEditsLastTag & ClearOnBlur"
+                          BackspaceEditsLastTag
+                          ClearOnBlur
+                          NoAddOnBlur
+                          Placeholder="Add tag..."
+                          Description="Backspace on the empty input takes the last tag back for correction; leaving the field throws away what was still being typed."
+                          DefaultValue="@(new List<string> { "one", "two" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Reordering" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <div>
+            <b>AllowReorder</b> lets a tag be moved within the list two equal ways. With a pointer, a chip can
+            be picked up and dropped onto the one whose position it should take: the chip being carried is
+            faded out and the one under the pointer is outlined, so the landing place is visible before the
+            button is let go of. Without a pointer, focus a chip and hold <b>Alt</b> while pressing the left or
+            right arrow to walk it one position at a time, or <b>Alt+Home</b> and <b>Alt+End</b> to send it to
+            either end - which is what keeps the reordering usable on a touch screen and with a screen reader,
+            where a drag is not. Either way the focus travels with the tag, so several steps can be taken in a
+            row, and each move is announced along with the position the tag landed on. In a right-to-left
+            direction the arrows are mirrored, exactly as they are for the plain navigation, and the browser's
+            own <b>Alt+arrow</b> history navigation is held back so that reordering a tag never leaves the page.
+            <br /><br />
+            <b>OnReorder</b> reports each move with the tag and the two positions it went between, which is
+            what tells a consumer <i>which</i> tag moved and <i>where to</i> - the bound value alone would have
+            to be diffed against its previous state to find that out. The order of the tags is part of the
+            value, so a move is a change like any other: it is written back through <b>@@bind-Value</b> and
+            reported through <b>OnChange</b> as well.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Drag a tag, or move it with Alt + arrows"
+                          AllowReorder
+                          Placeholder="Add tag..."
+                          Description="Drag a chip onto another one, or focus one with Tab and hold Alt while pressing the arrow keys."
+                          DefaultValue="@(new List<string> { "first", "second", "third", "fourth" })"
+                          OnReorder="HandleReorder" />
+            @if (reorderMessage.HasValue())
+            {
+                <div>@reorderMessage</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="TagTemplate" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <b>TagTemplate</b> replaces the text of every chip with markup of your own, the tag itself being
+            the context. The chip around it - its background, its focus ring and its dismiss button - is still
+            provided by the component, so a template only has to describe what goes inside.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Placeholder="Add tag..." DefaultValue="@(new List<string> { "blazor", "dotnet" })">
+                <TagTemplate Context="tag">
+                    <BitIcon IconName="@BitIconName.Tag" Style="font-size: 0.75rem;" />
+                    <span style="font-weight: 600;">@tag</span>
+                </TagTemplate>
+            </BitTagsInput>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <div>
+            The value is the list of tags itself, bound two ways with <b>@@bind-Value</b>. <b>DefaultValue</b>
+            seeds an uncontrolled field, the one that is read through the <b>OnChange</b> callback rather than
+            through a bound property. Note that removing the last tag leaves the value at <b>null</b> rather
+            than at an empty list, which is what makes a plain <b>[Required]</b> annotation catch an empty
+            field.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Two-way bound" Placeholder="Add tag..." @bind-Value="boundTags" />
+            <div>Tags: @(boundTags is not null ? string.Join(", ", boundTags) : "null")</div>
+            <BitTagsInput Label="Uncontrolled (DefaultValue + OnChange)"
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor" })"
+                          OnChange="v => changedTags = v" />
+            <div>Tags: @(changedTags is not null ? string.Join(", ", changedTags) : "null")</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <div>
+            <b>OnBeforeAdd</b> and <b>OnBeforeRemove</b> run before the list is changed and can call the change
+            off by setting <b>args.Cancel</b>, which is the hook for a confirmation or for a rule that lives on
+            the server. <b>OnAdd</b> receives every tag added in one go (a paste adds several of them at once),
+            <b>OnRemove</b> the one that was taken off, <b>OnInvalid</b> the one that was refused along with the
+            rule that refused it, and <b>OnInput</b> the text of the input as it is typed - which is what an
+            external suggestion list is driven by. <b>OnInput</b> also reports the emptying the component does
+            itself, when the text becomes a tag or the field is cleared, so a suggestion list of your own is
+            never left filtering on a word that is already a chip. <b>OnFocusIn</b>, <b>OnFocusOut</b> and
+            <b>OnKeyDown</b> report the plain input events on top of them.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Try adding 'block'"
+                          Placeholder="Type 'block' to see OnBeforeAdd cancel the add"
+                          OnBeforeAdd="HandleBeforeAdd"
+                          OnBeforeRemove="HandleBeforeRemove"
+                          OnAdd="HandleAdd"
+                          OnRemove="HandleRemove"
+                          OnInvalid="HandleInvalid"
+                          OnInput="text => typedText = text" />
+            <div>Typing: @typedText</div>
+            <div>Last event: @eventsLog</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Public API" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <div>
+            The component can be driven from the outside as well: <b>AddTagAsync</b> and <b>AddTagsAsync</b>
+            add through exactly the same pipeline as typing does (trimming, transformation, every validation
+            rule and every callback), <b>RemoveTagAsync</b> and <b>RemoveTagAtAsync</b> take one off,
+            <b>MoveTagAsync</b> moves one to another position exactly as a drag does - raising <b>OnReorder</b>
+            with it, and without needing <b>AllowReorder</b>, since that parameter is what offers the gesture
+            to the user rather than what permits the list to be reordered - <b>EditTagAsync</b> opens the
+            inline edit of one (which does need <b>EditableTags</b>), <b>SetInputTextAsync</b> writes the text
+            of the input - which is what fills the field from a suggestion list of your own driven by
+            <b>OnInput</b>, and what empties it again once the pick has been turned into a tag -
+            <b>Clear</b> empties the whole list, and
+            <b>FocusAsync</b> puts the caret in the input. All of them do nothing while the field is disabled
+            or read-only, and all of them go through the callbacks, the announcements and the validation that
+            the equivalent gesture does, so nothing reaches the value by a back door.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput @ref="apiTagsInput"
+                          Label="Driven from the outside"
+                          MaxTags="6"
+                          EditableTags
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor" })" />
+            <BitStack Horizontal Wrap Gap="0.5rem">
+                <BitButton OnClick="ApiAddTag">Add "dotnet"</BitButton>
+                <BitButton OnClick="ApiAddTags">Add "web" & "ui"</BitButton>
+                <BitButton OnClick="ApiRemoveTag">Remove "dotnet"</BitButton>
+                <BitButton OnClick="ApiRemoveFirst">Remove first</BitButton>
+                <BitButton OnClick="ApiMoveFirstToEnd">Move first to the end</BitButton>
+                <BitButton OnClick="ApiEditFirst">Edit first</BitButton>
+                <BitButton OnClick="ApiSetInputText">Type "razor" into the input</BitButton>
+                <BitButton OnClick="ApiClear">Clear</BitButton>
+                <BitButton OnClick="ApiFocus">Focus</BitButton>
+            </BitStack>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Form submission" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <div>
+            Enter is the key that confirms a tag, so it is held back from submitting the form around the field
+            - which would otherwise post the form on the very keystroke meant to add a tag.
+            <b>CancelConfirmKeysOnEmpty</b> hands it back once there is nothing left to confirm, so a field
+            whose tags are already in place submits with Enter like any other input. Setting <b>Name</b> posts
+            the whole list as a single field of a plain (non-EditForm) HTML form, the tags joined by the first
+            separator, rather than posting whatever text happened to be left in the input.
+        </div>
+        <br />
+        <div class="example-box">
+            <EditForm Model="cancelModel" OnValidSubmit="() => cancelFormSubmitted = true">
+                <DataAnnotationsValidator />
+                <BitTagsInput Label="Tags"
+                              Name="tags"
+                              Placeholder="Add tags, then press Enter on the empty input"
+                              @bind-Value="cancelModel.Tags"
+                              CancelConfirmKeysOnEmpty />
                 <br />
-                <BitTagsInput Placeholder="ReadOnly" ReadOnly Value="@(new List<string> { "Tag 1", "Tag 2" })" />
+                <div>Form submitted: @cancelFormSubmitted</div>
+            </EditForm>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Validation" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+        <div>
+            Inside an <b>EditForm</b> the field takes part in the validation like any other input: it reports
+            its changes to the <b>EditContext</b>, paints the error state, marks its input with
+            <code>aria-invalid</code> and turns its description red. The value is the list itself, so the
+            annotations that apply to it are the collection ones - <b>[Required]</b> catching the null of an
+            empty field and <b>[MinLength]</b>/<b>[MaxLength]</b> counting its entries.
+        </div>
+        <br />
+        <div class="example-box">
+            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <BitTagsInput Label="Tags"
+                              Required
+                              Placeholder="Add at least one tag..."
+                              Description="At least one tag is required."
+                              @bind-Value="validationModel.Tags" />
+                <ValidationMessage For="() => validationModel.Tags" />
                 <br />
-                <BitTagsInput Placeholder="Disabled" IsEnabled="false" Value="@(new List<string> { "Tag 1", "Tag 2" })" />
-            </div>
-        </DemoExample>
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
-            <div>Demonstrating BitTagsInput with a label displayed above the input.</div><br />
-            <div class="example-box">
-                <BitTagsInput Label="Tags" Placeholder="Add tag..." />
-                <br />
-                <BitTagsInput Placeholder="Add tag...">
-                    <LabelTemplate>
-                        <BitStack Horizontal Gap="0.5rem">
-                            <BitIcon IconName="@BitIconName.Tag" />
-                            <BitText Typography="BitTypography.Body1">Custom label</BitText>
-                        </BitStack>
-                    </LabelTemplate>
-                </BitTagsInput>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Folding the tags away" RazorCode="@example25RazorCode" Id="example25">
+        <div>
+            A field that collects dozens of tags grows into a wall of chips that pushes everything below it
+            off the screen. <b>MaxDisplayedTags</b> draws only the first few of them and folds the rest away
+            behind a chip that says how many are left, which unfolds the list and folds it back again - so a
+            tag that is not drawn is never a tag that cannot be reached, neither with the pointer nor with the
+            keyboard, where the chip is a tab stop of its own. Only how much of the list is drawn changes:
+            the value keeps every one of its tags, the counter keeps counting all of them, and the form keeps
+            posting them. <b>MoreTagsFormat</b> and <b>LessTagsText</b> are what the two labels of the chip
+            are written and localized with, and <b>MoreTagsAriaLabelFormat</b> what it is announced as -
+            since <b>"+3"</b> read out on its own says nothing about what pressing it would do.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Three at a time"
+                          MaxDisplayedTags="3"
+                          ShowCounter
+                          Placeholder="Add tag..."
+                          Description="The rest of the tags are one click away."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui", "wasm", "razor" })" />
+            <BitTagsInput Label="Custom labels"
+                          MaxDisplayedTags="2"
+                          MoreTagsFormat="{0} more..."
+                          LessTagsText="Fold back"
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="NoBorder" RazorCode="@example3RazorCode" Id="example3">
-            <div>Demonstrating the no-border style of BitTagsInput.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="NoBorder" NoBorder />
-            </div>
-        </DemoExample>
+    <DemoExample Title="Accessibility & localization" RazorCode="@example26RazorCode" Id="example26">
+        <div>
+            Nothing about a chip appearing, disappearing or changing place reaches a screen reader on its
+            own - the list sits away from the caret the user is typing at - so the component says every one
+            of those out loud through a polite live region: <b>AddedAnnouncementFormat</b>,
+            <b>AddedManyAnnouncementFormat</b>, <b>RemovedAnnouncementFormat</b>,
+            <b>ClearedAnnouncementFormat</b>, <b>EditedAnnouncementFormat</b>, <b>MovedAnnouncementFormat</b>
+            and <b>InvalidAnnouncementFormat</b>. Most of them take <code>{0}</code> for the tag they are
+            about - the move also taking <code>{1}</code> for the position it landed on and <code>{2}</code>
+            for how many tags there are - and an empty string keeps that particular event silent. The two
+            that stand for a whole batch count instead of naming: a pasted list and a cleared field take
+            <code>{0}</code> as the number of tags, since reading fifty names out is not a confirmation but
+            a wall, and the tags themselves are in the list to be walked through anyway.
+            <br /><br />
+            The names of the parts follow the same idea: <b>TagsAriaLabel</b> names the list the chips form,
+            <b>TagAriaDescription</b> is the sentence telling what the keyboard can do with the one just
+            reached, <b>DismissAriaLabelFormat</b> and <b>DismissTitle</b> name the dismiss button of each
+            tag, <b>EditAriaLabelFormat</b> the little input that replaces a tag while it is corrected, and
+            <b>ClearButtonAriaLabel</b> the button that empties the whole field. Every one of them is a
+            plain string, which is what makes the component translatable without a single line of CSS or
+            markup of your own.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Announcements of your own"
+                          EditableTags
+                          AllowReorder
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          AddedAnnouncementFormat="{0} was added to the list."
+                          AddedManyAnnouncementFormat="{0} tags were added to the list."
+                          RemovedAnnouncementFormat="{0} was taken off the list."
+                          ClearedAnnouncementFormat="The list of {0} tags was emptied."
+                          EditedAnnouncementFormat="{0} is the new text of the tag."
+                          MovedAnnouncementFormat="{0} is now number {1} out of {2}."
+                          InvalidAnnouncementFormat="{0} was refused."
+                          MinLength="3"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Names of your own"
+                          EditableTags
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          TagsAriaLabel="Selected skills"
+                          TagAriaDescription="Press Enter to rename this skill, or Delete to drop it."
+                          DismissAriaLabelFormat="Drop {0}"
+                          DismissTitle="Drop"
+                          EditAriaLabelFormat="Rename {0}"
+                          ClearButtonAriaLabel="Drop every skill"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Binding" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>Demonstrating two-way binding and event callbacks for BitTagsInput.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Add tag..." @bind-Value="boundTags" />
-                <div>Tags: @(boundTags is not null ? string.Join(", ", boundTags) : "null")</div>
-                <br />
-                <BitTagsInput Placeholder="Add tag..."
-                              @bind-Value="eventTags"
-                              OnAdd="tags => addedTag = tags.LastOrDefault()"
-                              OnRemove="tag => removedTag = tag" />
-                <div>Added: @addedTag</div>
-                <div>Removed: @removedTag</div>
-            </div>
-        </DemoExample>
+    <DemoExample Title="Prefix & Suffix" RazorCode="@example27RazorCode" Id="example27">
+        <div>
+            <b>Prefix</b> and <b>Suffix</b> draw a short text inside the field, at its start and at its end,
+            which is not part of the value: the <code>To:</code> of a recipients field, the unit a list of
+            measurements is in. The prefix sits in front of the chips and the suffix after everything else,
+            the clear button included, so it stays at the very end however much of the line the tags have
+            taken. <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take markup instead of a string, for an
+            icon or a badge.
+            <br /><br />
+            Neither of them ever reaches the value, and neither is announced with the field, so the meaning
+            they carry has to be in the <b>Label</b> as well: a screen reader reading "Tags, edit" out of a
+            field whose prefix says <code>To:</code> would otherwise have no idea what the tags are.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Recipients"
+                          Prefix="To:"
+                          Separators="@([",", ";"])"
+                          Placeholder="Add an address..."
+                          DefaultValue="@(new List<string> { "ada@example.com" })" />
+            <BitTagsInput Label="Lengths in centimetres"
+                          Suffix="cm"
+                          Pattern="^[0-9]+$"
+                          Placeholder="Add a number..."
+                          DefaultValue="@(new List<string> { "12", "34" })" />
+            <BitTagsInput Label="Templates"
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })">
+                <PrefixTemplate>
+                    <BitIcon IconName="@BitIconName.Tag" />
+                </PrefixTemplate>
+                <SuffixTemplate>
+                    <BitIcon IconName="@BitIconName.Filter" />
+                </SuffixTemplate>
+            </BitTagsInput>
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Duplicates" RazorCode="@example5RazorCode" Id="example5">
-            <div>Demonstrating BitTagsInput with duplicate tags allowed.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Duplicates allowed" Duplicates />
-            </div>
-        </DemoExample>
+    <DemoExample Title="Styling each tag" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
+        <div>
+            <b>Classes</b> and <b>Styles</b> dress every chip alike, and <b>TagTemplate</b> only changes what is
+            drawn <i>inside</i> one. <b>GetTagClass</b> and <b>GetTagStyle</b> are what tell one chip apart from
+            the next: each of them receives a tag and returns the classes or the declarations that this
+            particular chip should carry on top of the shared ones - the address that is not in the address
+            book drawn in red, the value that came from a saved filter drawn in grey, the tag that is over
+            budget outlined. They are called for every drawn tag on every render, so they belong to a lookup
+            rather than to a computation, and an exception thrown out of one of them leaves that chip looking
+            like all the others instead of breaking the field.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Recipients"
+                          Separators="@([",", ";", " "])"
+                          Placeholder="Add an address..."
+                          Description="An address that is not well formed is drawn in red."
+                          GetTagStyle="GetRecipientStyle"
+                          DefaultValue="@(new List<string> { "ada@example.com", "not-an-address" })" />
+            <BitTagsInput Label="Priorities"
+                          Placeholder="Add: low, medium or high..."
+                          Description="Each level carries a color of its own."
+                          GetTagClass="GetPriorityClass"
+                          DefaultValue="@(new List<string> { "low", "medium", "high" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="MaxTags" RazorCode="@example6RazorCode" Id="example6">
-            <div>Limiting the maximum number of tags.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Max 3 tags" MaxTags="3" />
-            </div>
-        </DemoExample>
+    <DemoExample Title="Color" RazorCode="@example29RazorCode" Id="example29">
+        <div>
+            <b>Color</b> picks the color role the component carries. The tags are painted with it, as much of
+            them as the <b>TagVariant</b> asks for, and so are the border and the focus ring of the focused
+            field, so the color is visible at rest rather than only while the field is focused. The error
+            state of a failing validation always wins over it on the field, which keeps an invalid field
+            recognizable whatever its color is.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Primary" Color="BitColor.Primary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Secondary" Color="BitColor.Secondary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Tertiary" Color="BitColor.Tertiary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Info" Color="BitColor.Info" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Success" Color="BitColor.Success" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Warning" Color="BitColor.Warning" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SevereWarning" Color="BitColor.SevereWarning" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Error" Color="BitColor.Error" DefaultValue="@(new List<string> { "tag" })" />
 
-        <DemoExample Title="Separators" RazorCode="@example7RazorCode" Id="example7">
-            <div>Using custom separator characters to add tags by typing.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Use comma or semicolon" Separators="@(new[] { ",", ";" })" />
-            </div>
-        </DemoExample>
+            <BitTagsInput Label="PrimaryBackground" Color="BitColor.PrimaryBackground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryBackground" Color="BitColor.SecondaryBackground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryBackground" Color="BitColor.TertiaryBackground" DefaultValue="@(new List<string> { "tag" })" />
 
-        <DemoExample Title="TagTemplate" RazorCode="@example8RazorCode" Id="example8">
-            <div>Customizing the appearance of individual tags using a template.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Add tag...">
-                    <TagTemplate Context="tag">
-                        <BitIcon IconName="@BitIconName.Tag" Style="font-size: 0.75rem;" />
-                        <span style="font-weight: 600;">@tag</span>
-                    </TagTemplate>
-                </BitTagsInput>
-            </div>
-        </DemoExample>
+            <BitTagsInput Label="PrimaryForeground" Color="BitColor.PrimaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryForeground" Color="BitColor.SecondaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryForeground" Color="BitColor.TertiaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="PrimaryBorder" Color="BitColor.PrimaryBorder" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryBorder" Color="BitColor.SecondaryBorder" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryBorder" Color="BitColor.TertiaryBorder" DefaultValue="@(new List<string> { "tag" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="MaxLength" RazorCode="@example9RazorCode" Id="example9">
-            <div>Limiting the maximum number of characters per tag.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Max 10 chars per tag" MaxLength="10" />
-            </div>
-        </DemoExample>
+    <DemoExample Title="External Icons" RazorCode="@example30RazorCode" Id="example30">
+        <div>
+            The dismiss button of each tag and the clear button of the field both take their icon either from
+            the built-in Fluent UI set, through <b>DismissIconName</b> and <b>ClearButtonIconName</b>, or from
+            any external icon library through <b>DismissIcon</b> and <b>ClearButtonIcon</b>, which take a
+            <b>BitIconInfo</b> built by <b>BitIconInfo.Fa</b> (FontAwesome), <b>BitIconInfo.Bi</b> (Bootstrap
+            Icons) or <b>BitIconInfo.Css</b> (any CSS classes at all). The <b>BitIconInfo</b> wins over the
+            name when both are given.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Built-in icon names"
+                          ShowClearButton
+                          DismissIconName="@BitIconName.ChromeClose"
+                          ClearButtonIconName="@BitIconName.Delete"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <BitTagsInput Label="FontAwesome"
+                          ShowClearButton
+                          DismissIcon="@BitIconInfo.Fa("solid xmark")"
+                          ClearButtonIcon="@BitIconInfo.Fa("solid trash")"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+            <BitTagsInput Label="Bootstrap Icons"
+                          ShowClearButton
+                          DismissIcon="@BitIconInfo.Bi("x-lg")"
+                          ClearButtonIcon="@BitIconInfo.Bi("trash")"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Paste splitting" RazorCode="@example10RazorCode" Id="example10">
-            <div>Pasting text with separators automatically splits it into multiple tags.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Paste comma-separated text" Separators="@(new[] { "," })" />
-            </div>
-        </DemoExample>
+    <DemoExample Title="Size" RazorCode="@example31RazorCode" Id="example31">
+        <div>
+            <b>Size</b> scales the field, the chips and the text inside them together, so the whole thing stays
+            proportionate at every size. Pick the one that matches the density of the surrounding form: the
+            large size suits a standalone editor, the small one a filter tucked into a toolbar.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Small" Size="BitSize.Small" ShowClearButton DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Medium" Size="BitSize.Medium" ShowClearButton DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Large" Size="BitSize.Large" ShowClearButton DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-            <div>Using OnBeforeAdd, OnBeforeRemove, and OnTagExists callbacks.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Type 'block' to test OnBeforeAdd"
-                              OnBeforeAdd="HandleBeforeAdd"
-                              OnBeforeRemove="HandleBeforeRemove"
-                              OnTagExists="HandleTagExists" />
-                <div>Status: @eventsStatus</div>
-                @if (tagExistsMsg is not null)
-                {
-                    <div style="color: red;">@tagExistsMsg</div>
-                }
-            </div>
-        </DemoExample>
+    <DemoExample Title="Style & Class" RazorCode="@example32RazorCode" Id="example32">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b>
+            reach every part of the component by name: the root, the label, the description, the counter, the
+            input container, the prefix and the suffix, the wrapper of the tags, each tag and its text, the
+            dismiss button and its icon, the chip that folds the tags away, the input, the little input that
+            replaces a tag while it is corrected, and the clear button and its icon - plus the two state slots
+            <b>Focused</b> (the field while its input has the focus) and <b>FocusedTag</b> (the chip the arrow
+            keys are currently on).
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Component's Style & Class:</div>
+            <BitTagsInput Style="box-shadow: aqua 0 0 0.5rem;" DefaultValue="@(new List<string> { "blazor" })" />
+            <BitTagsInput Class="custom-class" DefaultValue="@(new List<string> { "blazor" })" />
+            <br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <BitTagsInput Label="Styles"
+                          ShowClearButton
+                          Description="Every part of the component has a slot of its own."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })"
+                          Styles="@(new() { Label = "color: blueviolet; letter-spacing: 0.1rem;",
+                                            Description = "color: blueviolet;",
+                                            InputContainer = "border-color: blueviolet;",
+                                            Tag = "background: blueviolet; color: white; border-radius: 1rem;",
+                                            FocusedTag = "background: darkviolet;",
+                                            Input = "color: blueviolet;",
+                                            ClearButton = "color: blueviolet;" })" />
+            <BitTagsInput Label="Classes"
+                          ShowClearButton
+                          Description="Every part of the component has a slot of its own."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })"
+                          Classes="@(new() { Root = "custom-root",
+                                             Label = "custom-label",
+                                             Description = "custom-description",
+                                             InputContainer = "custom-container",
+                                             Tag = "custom-tag",
+                                             DismissButton = "custom-dismiss",
+                                             Input = "custom-input",
+                                             ClearButton = "custom-clear" })" />
+        </div>
+    </DemoExample>
 
-        <DemoExample Title="CancelConfirmKeysOnEmpty" RazorCode="@example12RazorCode" Id="example12">
-            <div>Allow pressing Enter to submit a form when the tag input is empty.</div><br />
-            <div class="example-box">
-                <EditForm Model="cancelModel" OnValidSubmit="() => cancelFormSubmitted = true">
-                    <DataAnnotationsValidator />
-                    <BitTagsInput Label="Tags" Placeholder="Add tags, then submit with Enter when empty"
-                                  @bind-Value="cancelModel.Tags"
-                                  CancelConfirmKeysOnEmpty />
-                    <br />
-                    <div>Form submitted: @cancelFormSubmitted</div>
-                </EditForm>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-            <div>Demonstrating form validation with BitTagsInput.</div><br />
-            <div class="example-box">
-                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit">
-                    <DataAnnotationsValidator />
-                    <BitTagsInput Label="Tags (required)" Placeholder="Add tag..." @bind-Value="validationModel.Tags" />
-                    <ValidationMessage For="() => validationModel.Tags" />
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                </EditForm>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
-            <div>Customizing the appearance using Styles and Classes.</div><br />
-            <div class="example-box">
-                <BitTagsInput Placeholder="Custom styles"
-                              Styles="@(new() { Tag = "background: #0078d4; color: white; border-radius: 12px; padding: 2px 8px;",
-                                                DismissButton = "color: white;" })" />
-                <br />
-                <BitTagsInput Placeholder="Custom styles"
-                              Styles="@(new() { InputContainer = "border-color: #0078d4;",
-                                                Input = "color: #0078d4;" })" />
-            </div>
-        </DemoExample>
-    </DemoPage>
-</div>
+    <DemoExample Title="RTL" RazorCode="@example33RazorCode" Id="example33">
+        <div>
+            In a right-to-left direction the chips are laid out from right to left and the arrow keys swap
+            along with them, so the key pointing at the visual left still walks towards the tag drawn there.
+            The value itself keeps its logical order: the first chip is always the first tag of the list.
+        </div>
+        <br />
+        <div class="example-box" dir="rtl">
+            <BitTagsInput Dir="BitDir.Rtl"
+                          Label="برچسب‌ها"
+                          Placeholder="برچسب جدید..."
+                          Description="با کلید Enter برچسب را ثبت کنید."
+                          DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
+            <BitTagsInput Dir="BitDir.Rtl"
+                          Label="با دکمه پاک کردن"
+                          ShowClearButton
+                          Separators="@(["،"])"
+                          Placeholder="برچسب‌ها را با ویرگول جدا کنید"
+                          DefaultValue="@(new List<string> { "بلیزر", "دات‌نت" })" />
+        </div>
+    </DemoExample>
+</DemoPage>

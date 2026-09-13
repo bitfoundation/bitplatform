@@ -16,6 +16,7 @@ public partial class Category
     [Required, MaxLength(64)]
     public string? Name { get; set; }
 
+    [MaxLength(16)]
     public string? Color { get; set; }
 
     public long Version { get; set; }

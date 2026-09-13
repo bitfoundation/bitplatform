@@ -5,10 +5,12 @@
     <div class="code-box">
         @if (HideCopyButton is false)
         {
+            @* Confirms the copy by growing into its "Code copied!" label; until then the content
+               span is collapsed so the custom copy glyph stays centered. *@
             <BitActionButton IconName="@_codeIcon"
                              Title="@_copyCodeMessage"
                              OnClick="@CopyCodeToClipboard"
-                             Class="@($"copy-btn {(_isCodeCopied ? "copied" : string.Empty)}")"
+                             Class="@($"copy-btn{(_isCodeCopied ? " copied" : "")}")"
                              Styles="@(new() { Content = (_isCodeCopied ? string.Empty : "margin: unset") })">
                 @if (_isCodeCopied)
                 {

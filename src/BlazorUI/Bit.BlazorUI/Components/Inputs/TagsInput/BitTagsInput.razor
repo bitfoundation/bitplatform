@@ -1,6 +1,57 @@
 @namespace Bit.BlazorUI
 @inherits BitInputBase<ICollection<string>?>
 
+@{
+    // The tags are walked by index (the dismiss button and the arrow keys both address one that way),
+    // so a collection that is not already indexable is materialized once per render.
+    var tags = CurrentValue is null ? null : CurrentValue as IList<string> ?? [.. CurrentValue];
+    var tagCount = tags?.Count ?? 0;
+
+    var hasLabel = LabelTemplate is not null || Label.HasValue();
+    var hasDescription = DescriptionTemplate is not null || Description.HasValue();
+    var isInteractive = IsEnabled && ReadOnly is false;
+    var showClearButton = ShowClearButton && isInteractive && (tagCount > 0 || _inputText.Length > 0);
+
+    // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
+    // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
+    var showToggle = MaxDisplayedTags > 0 && tagCount > MaxDisplayedTags;
+
+    // A list that has since shrunk back to what fits has nothing left to unfold, so it is folded back:
+    // the chip that unfolded it is gone, and an unfolded state that outlives it would silently ignore
+    // the MaxDisplayedTags the next time the list grows past it again.
+    if (showToggle is false)
+    {
+        _tagsExpanded = false;
+    }
+
+    var displayedTagCount = GetDisplayedTagCount();
+    var hiddenTagCount = tagCount - displayedTagCount;
+
+    var tagHint = GetTagAriaDescription();
+
+    // The element references are what the arrow key navigation moves the focus with; the array is
+    // rebuilt whenever the number of drawn tags changes so that a stale reference is never focused.
+    if (_tagRefs.Length != displayedTagCount)
+    {
+        _tagRefs = new ElementReference[displayedTagCount];
+    }
+
+    // An edit that was open on a tag the parent has since taken away - or that the fold has since closed
+    // over - has nothing left to commit, and neither has one left open on a field that has since been
+    // disabled, made read-only or told to stop offering the inline edit at all: the little input would
+    // otherwise go on taking text in a field that no longer accepts any.
+    if (_editingTagIndex >= displayedTagCount || (_editingTagIndex >= 0 && (isInteractive is false || EditableTags is false)))
+    {
+        _editingTagIndex = -1;
+        _editText = string.Empty;
+    }
+
+    var suggestions = GetSuggestions();
+
+    // The same icon on every tag, so it is resolved once per render rather than once per chip.
+    var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -8,7 +59,12 @@
      dir="@Dir?.ToString().ToLower()">
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_inputId">@LabelTemplate</label>
+        <label id="@_labelId"
+               for="@_inputId"
+               style="@Styles?.Label"
+               class="bit-tgi-lbl @Classes?.Label">
+            @LabelTemplate
+        </label>
     }
     else if (Label.HasValue())
     {
@@ -23,37 +79,148 @@
     <div @onclick="HandleContainerClick"
          style="@Styles?.InputContainer"
          class="bit-tgi-cnt @Classes?.InputContainer">
-        @if (CurrentValue is not null)
+        @* Drawn at the start of the field and never part of the value, which is why the label of the
+           field has to carry the meaning on its own for a screen reader. *@
+        @if (PrefixTemplate is not null)
         {
-            @foreach (var (tag, index) in CurrentValue.Select((t, i) => (t, i)))
-            {
-                <div style="@Styles?.Tag" class="bit-tgi-tag @Classes?.Tag">
-                    @if (TagTemplate is not null)
-                    {
-                        @TagTemplate(tag)
-                    }
-                    else
-                    {
-                        <span style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
-                    }
-
-                    @if (ReadOnly is false && IsEnabled)
-                    {
-                        var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
-                        <button @onclick="() => HandleRemoveTag(index, tag)"
-                                @onclick:stopPropagation="true"
-                                type="button"
-                                title="Remove"
-                                aria-label="Remove @tag"
-                                style="@Styles?.DismissButton"
-                                class="bit-tgi-dbt @Classes?.DismissButton">
-                            <i style="@Styles?.DismissIcon" class="bit-tgi-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" aria-hidden="true" />
-                        </button>
-                    }
-                </div>
-            }
+            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@PrefixTemplate</div>
+        }
+        else if (Prefix.HasValue())
+        {
+            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
         }
 
+        @if (tagCount > 0)
+        {
+            @* The wrapper carries the list semantics that a row of loose divs would not have, while
+               laying its children out in the flex box of the container above through display:contents,
+               so that the tags and the input keep sharing the same wrapping line. The role is written
+               out explicitly because display:contents strips the implicit one in several engines. *@
+            <div role="list"
+                 id="@_tagsId"
+                 aria-label="@(TagsAriaLabel ?? "Tags")"
+                 style="@Styles?.TagsContainer"
+                 class="bit-tgi-tgs @Classes?.TagsContainer">
+                @for (var i = 0; i < displayedTagCount; i++)
+                {
+                    var index = i;
+                    var tag = tags![index];
+                    var isTagFocused = _focusedTagIndex == index;
+                    var isTagEditing = _editingTagIndex == index;
+
+                    @* The tag itself is the focusable element rather than its dismiss button: a single
+                       roving tab stop covers the whole list, which the arrow keys then walk through,
+                       instead of putting one Tab press per tag between the user and the input. *@
+                    @* Dragging a chip onto another one is the pointer equivalent of the Alt+arrow move;
+                       the dragover default has to be prevented for the drop to be allowed at all. *@
+                    @* The position is spelled out rather than left to be counted off the elements: once
+                       MaxDisplayedTags folds the rest away, the tags that are drawn are no longer the
+                       tags there are, and "2 of 2" said over a list of six is worse than nothing. *@
+                    <div @ref="_tagRefs[index]"
+                         @onclick="() => HandleOnTagClick(index)"
+                         @onclick:stopPropagation="true"
+                         @ondblclick="() => HandleOnTagDoubleClick(index)"
+                         @ondblclick:stopPropagation="true"
+                         @onkeydown="e => HandleOnTagKeyDown(e, index)"
+                         @onfocusin="() => HandleOnTagFocusIn(index)"
+                         @ondragstart="() => HandleOnTagDragStart(index)"
+                         @ondragenter="() => HandleOnTagDragEnter(index)"
+                         @ondragover:preventDefault="true"
+                         @ondragend="HandleOnTagDragEnd"
+                         @ondrop="() => HandleOnTagDrop(index)"
+                         @ondrop:preventDefault="true"
+                         role="listitem"
+                         draggable="@(CanDragTag(index) ? "true" : null)"
+                         aria-posinset="@(index + 1)"
+                         aria-setsize="@tagCount"
+                         aria-describedby="@(tagHint is null ? null : _hintId)"
+                         tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
+                         style="@BuildTagStyle(tag, isTagFocused)"
+                         class="@BuildTagClass(tag, index, isTagFocused)">
+                        @if (isTagEditing)
+                        {
+                            @* The little input that replaces the tag while it is being corrected in
+                               place. It carries the accessible name of the tag it stands for, since the
+                               label of the field belongs to the input that adds new tags. *@
+                            @* Every one of these is stopped from bubbling: the tag around it carries its
+                               own handlers for the very same events, which would otherwise run a second
+                               time on the keystroke the edit has already dealt with - Enter would commit
+                               the edit and reopen it, Escape would cancel it and then walk the focus away. *@
+                            @* The MaxLength is a limit of the tag rather than of the field, so unlike the
+                               main input - which a whole separated list may be pasted into at once - this
+                               one carries it natively, and the browser stops the eleventh character
+                               instead of the component silently cutting it off when the edit is committed. *@
+                            <input @ref="_editInputRef"
+                                   @oninput="HandleOnEditInput"
+                                   @onkeydown="HandleOnEditKeyDown"
+                                   @onkeydown:stopPropagation="true"
+                                   @onfocusout="HandleOnEditFocusOut"
+                                   @onclick:stopPropagation="true"
+                                   @ondblclick:stopPropagation="true"
+                                   type="text"
+                                   autocorrect="off"
+                                   spellcheck="false"
+                                   autocomplete="off"
+                                   autocapitalize="none"
+                                   value="@_editText"
+                                   aria-label="@GetEditAriaLabel(tag)"
+                                   style="@Styles?.EditInput"
+                                   class="bit-tgi-eip @Classes?.EditInput"
+                                   maxlength="@(MaxLength > 0 ? MaxLength : (int?)null)" />
+                        }
+                        else if (TagTemplate is not null)
+                        {
+                            @TagTemplate(tag)
+                        }
+                        else
+                        {
+                            @* A tag too long for the field is cut off with an ellipsis, so the whole of
+                               it is kept in the tooltip: a chip reading "verylongta..." is otherwise a
+                               value the pointer cannot read at all. *@
+                            <span title="@tag" style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
+                        }
+
+                        @if (isInteractive && isTagEditing is false)
+                        {
+                            @* Out of the tab order on purpose: the tag holding it is the tab stop, and
+                               the Delete/Backspace keys are what remove it from the keyboard. *@
+                            <button @onclick="() => HandleRemoveTag(index)"
+                                    @onclick:stopPropagation="true"
+                                    type="button"
+                                    tabindex="-1"
+                                    title="@(DismissTitle ?? "Remove")"
+                                    aria-label="@GetDismissAriaLabel(tag)"
+                                    style="@Styles?.DismissButton"
+                                    class="bit-tgi-dbt @Classes?.DismissButton">
+                                <i style="@Styles?.DismissIcon" class="bit-tgi-dsi @dismissIcon?.GetCssClasses() @Classes?.DismissIcon" aria-hidden="true" />
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (showToggle)
+        {
+            @* The chip that stands for the tags folded away. It is a real tab stop rather than a part of
+               the roving one the list is: it is the only way to a tag that is not drawn, so it has to be
+               reachable even from a list whose own tab stop sits on a chip that is currently folded. *@
+            <button @onclick="HandleOnToggleTags"
+                    @onclick:stopPropagation="true"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-controls="@_tagsId"
+                    aria-expanded="@(_tagsExpanded ? "true" : "false")"
+                    aria-label="@(_tagsExpanded ? null : GetMoreTagsAriaLabel(hiddenTagCount))"
+                    style="@Styles?.ToggleButton"
+                    class="bit-tgi-tgl @Classes?.ToggleButton">
+                @(_tagsExpanded ? (LessTagsText ?? "Show less") : GetMoreTagsText(hiddenTagCount))
+            </button>
+        }
+
+        @* autocomplete is turned off on purpose: the browser's own autofill would otherwise be offered
+           over the suggestion list of the field, and a value it saved for a single line text box is the
+           last tag that was typed rather than the list the field holds. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
@@ -61,18 +228,125 @@
                @onfocusout="HandleOnFocusOut"
                @oninput="HandleOnInput"
                type="text"
-               name="@Name"
                id="@_inputId"
+               autocorrect="off"
+               spellcheck="false"
+               autocapitalize="none"
                readonly="@ReadOnly"
                value="@_inputText"
                style="@Styles?.Input"
                autofocus="@AutoFocus"
-               aria-label="@AriaLabel"
-               placeholder="@_currentPlaceholder"
+               placeholder="@GetPlaceholder()"
                disabled="@(IsEnabled is false)"
                class="bit-tgi-inp @Classes?.Input"
+               list="@(suggestions.Count > 0 ? _listId : null)"
                data-separators="@_separatorsJson"
+               data-no-trim="@(NoTrim ? "true" : null)"
+               data-no-add-on-tab="@(NoAddOnTab ? "true" : null)"
                data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
-               aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
+               aria-label="@(hasLabel ? null : AriaLabel)"
+               aria-required="@(Required ? "true" : null)"
+               aria-labelledby="@(hasLabel ? _labelId : null)"
+               aria-describedby="@(hasDescription ? _descriptionId : null)"
+               autocomplete="off" />
+
+        @if (showClearButton)
+        {
+            var clearIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Clear");
+            <button @onclick="HandleClearClick"
+                    @onclick:stopPropagation="true"
+                    type="button"
+                    tabindex="-1"
+                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? "Clear all tags")"
+                    aria-label="@(ClearButtonAriaLabel ?? "Clear all tags")"
+                    style="@Styles?.ClearButton"
+                    class="bit-tgi-cbt @Classes?.ClearButton">
+                <i style="@Styles?.ClearIcon" class="bit-tgi-cli @clearIcon?.GetCssClasses() @Classes?.ClearIcon" aria-hidden="true" />
+            </button>
+        }
+
+        @* Drawn after everything else, the clear button included, so that it always sits at the very
+           end of the field however much of it the tags have taken. *@
+        @if (SuffixTemplate is not null)
+        {
+            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@SuffixTemplate</div>
+        }
+        else if (Suffix.HasValue())
+        {
+            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
+        }
     </div>
+
+    @if (hasDescription || ShowCounter)
+    {
+        <div class="bit-tgi-dsr">
+            @if (hasDescription)
+            {
+                <div id="@_descriptionId"
+                     style="@Styles?.Description"
+                     class="bit-tgi-dsc @Classes?.Description">
+                    @if (DescriptionTemplate is not null)
+                    {
+                        @DescriptionTemplate
+                    }
+                    else
+                    {
+                        @Description
+                    }
+                </div>
+            }
+
+            @if (ShowCounter)
+            {
+                @* Kept away from screen readers: the list of tags above is what they count, and the
+                   additions and removals are already announced by the live region below. *@
+                <div aria-hidden="true"
+                     style="@Styles?.Counter"
+                     class="bit-tgi-cnr @Classes?.Counter">@(MaxTags > 0 ? $"{tagCount}/{MaxTags}" : tagCount.ToString())</div>
+            }
+        </div>
+    }
+
+    @if (tagHint is not null)
+    {
+        @* What the keyboard can do with the tag that has just been reached, announced after it: a chip
+           looks like nothing but a word, so the gestures it answers to are otherwise never discovered.
+           It is referenced rather than drawn, the same sentence serving every tag. *@
+        <div id="@_hintId" class="bit-tgi-vsh">@tagHint</div>
+    }
+
+    @if (suggestions.Count > 0)
+    {
+        @* The suggestion list is the browser's own, which is what keeps it reachable, positioned and
+           announced by every platform without a popup of our own. Picking one only fills the input; it
+           is the usual Enter (or separator) that turns it into a tag, so nothing skips the validation. *@
+        <datalist id="@_listId">
+            @foreach (var suggestion in suggestions)
+            {
+                <option value="@suggestion"></option>
+            }
+        </datalist>
+    }
+
+    @* Adding and removing a tag are changes to a list that sits away from the caret, so nothing about
+       them reaches a screen reader on its own; this is what says them out loud. It is a status rather
+       than an alert, so it never interrupts what is already being read.
+       The message sits in a keyed element so that every announcement replaces the element rather than
+       only rewriting its text: the same message said twice in a row would otherwise change nothing in
+       the DOM, and a live region that did not change is a live region nothing is read out of. *@
+    <div role="status"
+         aria-live="polite"
+         aria-atomic="true"
+         class="bit-tgi-lvr"><span @key="_announcementId">@_announcement</span></div>
+
+    @if (Name.HasValue())
+    {
+        @* The value of a tags input is the whole list, so it is posted as a single named field holding
+           the tags joined by the separator, rather than as the text that happens to be in the input.
+           A disabled component contributes nothing to the form, which is what disabling it reproduces. *@
+        <input type="hidden"
+               name="@Name"
+               value="@FormatValueAsString(CurrentValue)"
+               disabled="@(IsEnabled is false)" />
+    }
 </div>

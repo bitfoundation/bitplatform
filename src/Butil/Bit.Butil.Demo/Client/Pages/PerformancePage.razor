@@ -1,0 +1,719 @@
+@page "/performance"
+@implements IAsyncDisposable
+@inject Bit.Butil.Performance performance
+
+<PageTitle>Performance - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="Performance"
+            Lead="High-resolution timing from C#: read the monotonic clock, drop named marks and measures on the browser's performance timeline, query recorded entries as typed navigation, resource, long-task and Web Vitals shapes, and stream new ones live through PerformanceObserver."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Performance"
+            InjectAs="Performance performance" />
+
+<div class="stack">
+    <DemoSection Title="High-resolution clocks"
+                 Api="Now / TimeOrigin"
+                 Description="Now returns the milliseconds elapsed since the time origin as a monotonic, sub-millisecond timestamp; TimeOrigin is that origin (typically navigation start) in Unix epoch milliseconds."
+                 Code=@("""
+var now = await performance.Now();          // e.g. 5321.4 ms since navigation
+var origin = await performance.TimeOrigin(); // Unix epoch ms
+
+var startedAt = DateTimeOffset.FromUnixTimeMilliseconds((long)origin);
+""")>
+        <div class="controls">
+            <button @onclick="GetNow">Now</button>
+            <button @onclick="GetTimeOrigin">TimeOrigin</button>
+        </div>
+        <DemoConsole @ref="clocksOutput" Title="clocks output" />
+    </DemoSection>
+
+    <DemoSection Title="Marks"
+                 Api="Mark"
+                 Description="Drops a named marker on the browser's performance timeline - visible in the DevTools Performance panel and retrievable through GetEntries."
+                 Code=@("""
+await performance.Mark("checkout:start");
+
+// ... do the work you want to time ...
+
+await performance.Mark("checkout:end");
+""")>
+        <div class="controls">
+            <button @onclick="MarkStart">Mark demo:start</button>
+            <button @onclick="MarkEnd">Mark demo:end</button>
+        </div>
+        <DemoConsole @ref="marksOutput" Title="marks output" />
+    </DemoSection>
+
+    <DemoSection Title="Measures"
+                 Api="Measure / GetEntries"
+                 Description="Creates a named measure between two marks (or from a mark to now) and reads its duration back from the timeline. Place both marks with the buttons below, then measure."
+                 Code=@("""
+await performance.Measure("checkout", "checkout:start", "checkout:end");
+
+var entries = await performance.GetEntries("checkout", "measure");
+var duration = entries[^1].GetProperty("duration").GetDouble();
+""")>
+        <div class="controls">
+            <button @onclick='() => Mark("demo:start", measuresOutput)'>Mark demo:start</button>
+            <button @onclick='() => Mark("demo:end", measuresOutput)'>Mark demo:end</button>
+            <button @onclick="MeasureDemo">Measure demo:start → demo:end</button>
+        </div>
+        <DemoConsole @ref="measuresOutput" Title="measures output" />
+    </DemoSection>
+
+    <DemoSection Title="Querying the timeline"
+                 Api="GetEntries"
+                 Description="Returns every PerformanceEntry recorded so far, optionally filtered by name and/or entry type. Entry shapes vary per type, so they are surfaced as JsonElement."
+                 Code=@("""
+var all = await performance.GetEntries();
+var resources = await performance.GetEntries(type: "resource");
+var myMarks = await performance.GetEntries("checkout:start", "mark");
+""")>
+        <div class="field">
+            <span class="field-label">Entry type filter</span>
+            <select @bind="selectedEntryType">
+                <option value="">(all)</option>
+                <option value="mark">mark</option>
+                <option value="measure">measure</option>
+                <option value="navigation">navigation</option>
+                <option value="resource">resource</option>
+                <option value="paint">paint</option>
+            </select>
+        </div>
+        <div class="controls">
+            <button @onclick="QueryEntries">GetEntries</button>
+        </div>
+        <DemoConsole @ref="entriesOutput" Title="timeline query output" />
+    </DemoSection>
+
+    <DemoSection Title="Navigation timing"
+                 Api="GetNavigationEntries"
+                 Description="The document's own load as a typed PerformanceNavigationTiming: the redirect, DNS, connect, request and response phases, then DOM interactive, DOMContentLoaded and load. Under WebAssembly these describe the host page - the framework files - not the moment your app rendered."
+                 Code=@("""
+PerformanceNavigationTiming[] nav = await performance.GetNavigationEntries();
+
+if (nav.Length > 0)
+{
+    var page = nav[0];
+    var ttfb = page.ResponseStart - page.RequestStart;
+    var dom = page.DomContentLoadedEventEnd;
+    var loaded = page.LoadEventEnd;
+}
+""")>
+        <div class="controls">
+            <button @onclick="GetNavigation">GetNavigationEntries</button>
+        </div>
+        <DemoConsole @ref="navigationOutput" Title="navigation timing output" />
+    </DemoSection>
+
+    <DemoSection Title="Resource timing"
+                 Api="GetResourceEntries"
+                 Description="Every subresource the page fetched, typed as PerformanceResourceTiming - initiator, protocol, phase timings and the three sizes that say whether it was compressed or served from cache. Cross-origin entries report zeros unless the server sends Timing-Allow-Origin."
+                 Code=@("""
+PerformanceResourceTiming[] resources = await performance.GetResourceEntries();
+
+var slowest = resources.OrderByDescending(r => r.Duration).First();
+// slowest.InitiatorType, slowest.NextHopProtocol, slowest.TransferSize
+
+// or narrow to one URL:
+var one = await performance.GetResourceEntries("https://example.com/app.js");
+""")>
+        <div class="controls">
+            <button @onclick="GetResources">GetResourceEntries</button>
+        </div>
+        <DemoConsole @ref="resourcesOutput" Title="resource timing output" />
+    </DemoSection>
+
+    <DemoSection Title="Web Vitals"
+                 Api="GetWebVitals"
+                 Description="LCP, CLS and INP already reduced from the entries they are computed over - the last LCP candidate, the worst CLS session window, the near-worst interaction - plus FCP and TTFB. The first call is what starts CLS and INP accumulating, so call it early and read it again later. Click around the page, then read it a second time."
+                 Code=@("""
+WebVitals? vitals = await performance.GetWebVitals(); // null during prerender/SSR
+
+// vitals.Lcp  - milliseconds, good below 2,500
+// vitals.Cls  - unitless, good below 0.1
+// vitals.Inp  - milliseconds, good below 200; null until the user interacts
+// a metric the engine does not implement is null, which is not a zero score
+""")>
+        <div class="controls">
+            <button @onclick="GetWebVitals">GetWebVitals</button>
+        </div>
+        <DemoConsole @ref="vitalsOutput" Title="web vitals output" />
+    </DemoSection>
+
+    <DemoSection Title="Typed entries and typed observers"
+                 Api="GetTypedEntries&lt;T&gt; / GetLongTasks / GetLongAnimationFrames / GetLayoutShifts / GetLargestContentfulPaints / GetEventTimings / SubscribeObserver&lt;T&gt;"
+                 Description="The generic overloads deserialize each entry into the type that describes its kind. Long tasks, layout shifts and LCP candidates are never stored on the timeline - they only reach a subscriber - so the button below subscribes to all three and then blocks the main thread for 120 ms to produce one."
+                 Code=@("""
+// typed one-shot reads
+LargestContentfulPaint[] lcp = await performance.GetLargestContentfulPaints();
+PerformanceEventTiming[] slow = await performance.GetEventTimings();
+PerformanceEntry[] paints = await performance.GetTypedEntries<PerformanceEntry>(PerformanceEntryTypes.Paint);
+
+// the kinds that are only ever observed
+var subscription = await performance.SubscribeObserver<PerformanceLongTaskTiming>(
+    [PerformanceEntryTypes.LongTask],
+    tasks =>
+    {
+        foreach (var task in tasks)
+        {
+            Console.WriteLine($"{task.Duration:F0} ms blocked by {task.Name}");
+        }
+    });
+
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeTypedObserver">Subscribe (long task + layout shift + LCP)</button>
+            <button class="secondary" @onclick="BlockMainThread">Block the main thread for 120 ms</button>
+            <button @onclick="ReadTypedEntries">Read typed entries</button>
+            <button class="danger" @onclick="UnsubscribeTypedObserver">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="typedOutput" Title="typed entries output" />
+    </DemoSection>
+
+    <DemoSection Title="Live observer"
+                 Api="SubscribeObserver"
+                 Description="Subscribes a PerformanceObserver for one or more entry types and pushes new entries to your C# handler as they are recorded. This demo observes marks and measures - press the mark buttons above after subscribing."
+                 Code=@("""
+var subscription = await performance.SubscribeObserver(
+    ["mark", "measure"],
+    entries =>
+    {
+        foreach (var entry in entries)
+        {
+            var name = entry.GetProperty("name").GetString();
+            var duration = entry.GetProperty("duration").GetDouble();
+        }
+    },
+    buffered: true);
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeObserver">Subscribe (mark + measure)</button>
+            <button class="danger" @onclick="UnsubscribeObserver">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="observerOutput" Title="observer output" />
+    </DemoSection>
+
+    <DemoSection Title="Memory snapshot"
+                 Api="GetMemory"
+                 Description="Reads the Chrome-only performance.memory snapshot of the JavaScript heap. On other browsers every field is null."
+                 Code=@("""
+var memory = await performance.GetMemory(); // null during prerender/SSR
+
+// memory.UsedJsHeapSize, memory.TotalJsHeapSize, memory.JsHeapSizeLimit
+// all fields are null when the browser does not expose performance.memory
+""")>
+        <div class="controls">
+            <button @onclick="GetMemory">GetMemory</button>
+        </div>
+        <DemoConsole @ref="memoryOutput" Title="memory output" />
+    </DemoSection>
+
+    <DemoSection Title="Clearing buffers"
+                 Api="ClearMarks / ClearMeasures / ClearResourceTimings"
+                 Description="Removes marks and measures (all of them, or a single name), and empties the resource-timing buffer - useful when the buffer fills up on long-lived pages."
+                 Code=@("""
+await performance.ClearMarks();            // all marks
+await performance.ClearMarks("checkout:start"); // a single mark
+await performance.ClearMeasures();
+await performance.ClearResourceTimings();
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ClearMarks">ClearMarks</button>
+            <button class="secondary" @onclick="ClearMeasures">ClearMeasures</button>
+            <button class="danger" @onclick="ClearResourceTimings">ClearResourceTimings</button>
+        </div>
+        <DemoConsole @ref="clearOutput" Title="clearing output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Prefer marks over stopwatches">
+    Marks and measures land on the same timeline the DevTools Performance panel records, so your
+    application timings show up right next to the browser's own paint, layout and network entries.
+</Callout>
+
+<Callout Type="warning" Title="GetMemory is Chrome-only">
+    performance.memory was never standardized; Chromium exposes it, Firefox and Safari do not. Always
+    handle the all-null case.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Now" Signature="ValueTask<double> Now()" Description="High-resolution timestamp since the time origin, in milliseconds." />
+    <ApiMember Name="TimeOrigin" Signature="ValueTask<double> TimeOrigin()" Description="The time origin of the document - typically the navigation start, in Unix epoch milliseconds." />
+    <ApiMember Name="Mark" Signature="ValueTask Mark(string name)" Description="Adds a named mark to the browser's performance timeline." />
+    <ApiMember Name="Measure" Signature="ValueTask Measure(string name, string? startMark = null, string? endMark = null)" Description="Creates a named measure between two marks (or between a mark and now)." />
+    <ApiMember Name="ClearMarks" Signature="ValueTask ClearMarks(string? name = null)" Description="Removes performance marks; null clears all of them." />
+    <ApiMember Name="ClearMeasures" Signature="ValueTask ClearMeasures(string? name = null)" Description="Removes performance measures; null clears all of them." />
+    <ApiMember Name="ClearResourceTimings" Signature="ValueTask ClearResourceTimings()" Description="Empties the resource-timing buffer." />
+    <ApiMember Name="GetEntries" Signature="ValueTask<JsonElement[]> GetEntries(string? name = null, string? type = null)" Description="Returns all recorded entries, optionally filtered by name and/or type, as JsonElement values." />
+    <ApiMember Name="GetTypedEntries<T>" Signature="ValueTask<T[]> GetTypedEntries<T>(string entryType, string? name = null)" Description="Returns the entries of one entryType deserialized into the type describing that kind." />
+    <ApiMember Name="GetNavigationEntries" Signature="ValueTask<PerformanceNavigationTiming[]> GetNavigationEntries()" Description="The document's own load timing - one entry, or none during prerender." />
+    <ApiMember Name="GetResourceEntries" Signature="ValueTask<PerformanceResourceTiming[]> GetResourceEntries(string? name = null)" Description="Every subresource fetch with its full phase-by-phase timing breakdown." />
+    <ApiMember Name="GetLongTasks" Signature="ValueTask<PerformanceLongTaskTiming[]> GetLongTasks()" Description="Tasks that blocked the main thread for over 50 ms. Never on the timeline, so the first call starts collecting them - returning what the engine had already buffered - and a later call reads what came in between." />
+    <ApiMember Name="GetLongAnimationFrames" Signature="ValueTask<PerformanceLongAnimationFrameTiming[]> GetLongAnimationFrames()" Description="Frames over 50 ms with the scripts that caused them, named down to the function. Chromium-only." />
+    <ApiMember Name="GetLargestContentfulPaints" Signature="ValueTask<LargestContentfulPaint[]> GetLargestContentfulPaints()" Description="The LCP candidates recorded so far; the last one is the current LCP." />
+    <ApiMember Name="GetLayoutShifts" Signature="ValueTask<LayoutShift[]> GetLayoutShifts()" Description="The layout shifts recorded so far, with the rectangles each moved element occupied." />
+    <ApiMember Name="GetEventTimings" Signature="ValueTask<PerformanceEventTiming[]> GetEventTimings(bool firstInputOnly = false)" Description="The slow interactions INP is computed from, or the page's single first-input entry." />
+    <ApiMember Name="GetWebVitals" Signature="ValueTask<WebVitals?> GetWebVitals()" Description="LCP, CLS and INP as they stand, plus FCP and TTFB. The first call starts CLS and INP accumulating." />
+    <ApiMember Name="GetMemory" Signature="ValueTask<PerformanceMemory?> GetMemory()" Description="Chrome-only JS heap snapshot; all fields are null on browsers without performance.memory." />
+    <ApiMember Name="SubscribeObserver" Signature="Task<ButilSubscription> SubscribeObserver(string[] entryTypes, Action<JsonElement[]> handler, bool buffered = true)" Description="Subscribes a PerformanceObserver for the given entry types and returns a disposable subscription handle." />
+    <ApiMember Name="SubscribeObserver<T>" Signature="Task<ButilSubscription> SubscribeObserver<T>(string[] entryTypes, Action<T[]> handler, bool buffered = true)" Description="The same subscription with each batch deserialized into T - the way to read long tasks, layout shifts and LCP candidates." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects all observers and releases the interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole clocksOutput = default!;
+    private DemoConsole marksOutput = default!;
+    private DemoConsole measuresOutput = default!;
+    private DemoConsole entriesOutput = default!;
+    private DemoConsole observerOutput = default!;
+    private DemoConsole memoryOutput = default!;
+    private DemoConsole clearOutput = default!;
+    private DemoConsole navigationOutput = default!;
+    private DemoConsole resourcesOutput = default!;
+    private DemoConsole vitalsOutput = default!;
+    private DemoConsole typedOutput = default!;
+    private string selectedEntryType = "";
+    private ButilSubscription? observerSub;
+    private readonly List<ButilSubscription> typedSubs = [];
+
+    private async Task GetNavigation()
+    {
+        try
+        {
+            var entries = await performance.GetNavigationEntries();
+            if (entries.Length == 0)
+            {
+                await navigationOutput.Warn("No navigation entry - the document is prerendering, or the buffer was cleared.");
+                return;
+            }
+
+            var page = entries[0];
+            await navigationOutput.Success($"GetNavigationEntries → {page.Type} navigation, {page.RedirectCount} redirect(s), {page.NextHopProtocol}");
+            await navigationOutput.Log($"  TTFB {page.ResponseStart - page.RequestStart:F0} ms · response {page.ResponseEnd - page.ResponseStart:F0} ms");
+            await navigationOutput.Log($"  DOM interactive {page.DomInteractive:F0} ms · DOMContentLoaded {page.DomContentLoadedEventEnd:F0} ms · load {page.LoadEventEnd:F0} ms");
+            await navigationOutput.Log($"  transferred {page.TransferSize:N0} bytes, {page.DecodedBodySize:N0} decoded");
+        }
+        catch (Exception ex)
+        {
+            await navigationOutput.Error("GetNavigationEntries failed →", ex.Message);
+        }
+    }
+
+    private async Task GetResources()
+    {
+        try
+        {
+            var resources = await performance.GetResourceEntries();
+            if (resources.Length == 0)
+            {
+                await resourcesOutput.Warn("The resource-timing buffer is empty.");
+                return;
+            }
+
+            await resourcesOutput.Success($"GetResourceEntries → {resources.Length} resource(s), slowest first:");
+
+            foreach (var resource in resources.OrderByDescending(r => r.Duration).Take(5))
+            {
+                var name = resource.Name.Split('/')[^1];
+                await resourcesOutput.Log($"  {resource.Duration:F0} ms · {resource.InitiatorType} · {name} · {resource.TransferSize:N0} bytes over {resource.NextHopProtocol}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await resourcesOutput.Error("GetResourceEntries failed →", ex.Message);
+        }
+    }
+
+    private async Task GetWebVitals()
+    {
+        try
+        {
+            var vitals = await performance.GetWebVitals();
+            if (vitals is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+                await vitalsOutput.Info("GetWebVitals → no JS runtime yet; read it after the first render.");
+                return;
+            }
+
+            await vitalsOutput.Success($"LCP → {Format(vitals.Lcp, "ms")} · CLS → {Format(vitals.Cls, "")} · INP → {Format(vitals.Inp, "ms")}");
+            await vitalsOutput.Log($"  FCP {Format(vitals.Fcp, "ms")} · TTFB {Format(vitals.Ttfb, "ms")}");
+            await vitalsOutput.Log($"  computed from {vitals.InteractionCount} interaction(s) and {vitals.LayoutShiftCount} layout shift(s)");
+
+            if (vitals.Inp is null)
+            {
+                await vitalsOutput.Info("INP is null until you interact - click around, then read it again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await vitalsOutput.Error("GetWebVitals failed →", ex.Message);
+        }
+    }
+
+    private static string Format(double? value, string unit)
+        => value is null ? "n/a" : unit.Length > 0 ? $"{value:F0} {unit}" : $"{value:F3}";
+
+    private async Task SubscribeTypedObserver()
+    {
+        try
+        {
+            if (typedSubs.Count > 0)
+            {
+                await typedOutput.Warn("Already subscribed.");
+                return;
+            }
+
+            typedSubs.Add(await performance.SubscribeObserver<PerformanceLongTaskTiming>(
+                [PerformanceEntryTypes.LongTask],
+                tasks => _ = InvokeAsync(() => OnLongTasks(tasks))));
+
+            typedSubs.Add(await performance.SubscribeObserver<LayoutShift>(
+                [PerformanceEntryTypes.LayoutShift],
+                shifts => _ = InvokeAsync(() => OnLayoutShifts(shifts))));
+
+            typedSubs.Add(await performance.SubscribeObserver<LargestContentfulPaint>(
+                [PerformanceEntryTypes.LargestContentfulPaint],
+                paints => _ = InvokeAsync(() => OnLargestPaints(paints))));
+
+            await typedOutput.Log("Subscribed to longtask, layout-shift and largest-contentful-paint.");
+        }
+        catch (Exception ex)
+        {
+            await typedOutput.Error("SubscribeObserver<T> failed →", ex.Message);
+        }
+    }
+
+    private async Task OnLongTasks(PerformanceLongTaskTiming[] tasks)
+    {
+        foreach (var task in tasks)
+        {
+            var container = task.Attribution.Length > 0 ? task.Attribution[0].ContainerType : "unknown";
+            await typedOutput.Info($"longtask → {task.Duration:F0} ms in {task.Name} ({container})");
+        }
+    }
+
+    private async Task OnLayoutShifts(LayoutShift[] shifts)
+    {
+        foreach (var shift in shifts)
+        {
+            await typedOutput.Info($"layout-shift → {shift.Value:F4}{(shift.HadRecentInput ? " (after input, excluded from CLS)" : "")}, {shift.Sources.Length} source(s)");
+        }
+    }
+
+    private async Task OnLargestPaints(LargestContentfulPaint[] paints)
+    {
+        foreach (var paint in paints)
+        {
+            var what = string.IsNullOrEmpty(paint.Url) ? "a text block" : paint.Url;
+            await typedOutput.Info($"largest-contentful-paint → {paint.RenderTime:F0} ms, {paint.Size:N0} px², {what}");
+        }
+    }
+
+    private async Task BlockMainThread()
+    {
+        // A real long task: PerformanceObserver only reports work that genuinely blocked the thread,
+        // so nothing short of a busy loop will produce one.
+        var until = DateTime.UtcNow.AddMilliseconds(120);
+        while (DateTime.UtcNow < until) { }
+
+        await typedOutput.Log("Blocked for 120 ms - the observer above should have reported a long task.");
+    }
+
+    private async Task ReadTypedEntries()
+    {
+        try
+        {
+            var paints = await performance.GetTypedEntries<PerformanceEntry>(PerformanceEntryTypes.Paint);
+            foreach (var paint in paints)
+            {
+                await typedOutput.Success($"{paint.Name} → {paint.StartTime:F0} ms");
+            }
+
+            var interactions = await performance.GetEventTimings();
+            await typedOutput.Log($"GetEventTimings → {interactions.Length} slow interaction(s)");
+            foreach (var interaction in interactions.OrderByDescending(e => e.Duration).Take(3))
+            {
+                await typedOutput.Log($"  {interaction.Name} → {interaction.Duration:F0} ms, handlers took {interaction.ProcessingEnd - interaction.ProcessingStart:F0} ms");
+            }
+
+            var frames = await performance.GetLongAnimationFrames();
+            await typedOutput.Log($"GetLongAnimationFrames → {frames.Length} frame(s) (Chromium only)");
+            foreach (var frame in frames.OrderByDescending(f => f.BlockingDuration).Take(3))
+            {
+                var script = frame.Scripts.Length > 0 ? frame.Scripts[0].SourceFunctionName ?? frame.Scripts[0].Invoker : "no script attributed";
+                await typedOutput.Log($"  {frame.Duration:F0} ms frame, {frame.BlockingDuration:F0} ms blocking · {script}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await typedOutput.Error("Reading typed entries failed →", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeTypedObserver()
+    {
+        try
+        {
+            if (typedSubs.Count == 0)
+            {
+                await typedOutput.Warn("Not subscribed.");
+                return;
+            }
+
+            foreach (var sub in typedSubs)
+            {
+                await sub.DisposeAsync();
+            }
+            typedSubs.Clear();
+
+            await typedOutput.Log("Typed observers disconnected.");
+        }
+        catch (Exception ex)
+        {
+            await typedOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task GetNow()
+    {
+        try
+        {
+            var now = await performance.Now();
+            await clocksOutput.Success($"performance.now → {now:F1} ms since the time origin");
+        }
+        catch (Exception ex)
+        {
+            await clocksOutput.Error("Now failed →", ex.Message);
+        }
+    }
+
+    private async Task GetTimeOrigin()
+    {
+        try
+        {
+            var origin = await performance.TimeOrigin();
+            var startedAt = DateTimeOffset.FromUnixTimeMilliseconds((long)origin).ToLocalTime();
+            await clocksOutput.Success($"performance.timeOrigin → {origin:F1} ({startedAt:HH:mm:ss.fff})");
+        }
+        catch (Exception ex)
+        {
+            await clocksOutput.Error("TimeOrigin failed →", ex.Message);
+        }
+    }
+
+    private Task MarkStart() => Mark("demo:start", marksOutput);
+
+    // A measure needs its two marks, so the measuring section can place them itself rather than
+    // sending the reader back to the marking section and then down again.
+    private async Task Mark(string name, DemoConsole output)
+    {
+        try
+        {
+            await performance.Mark(name);
+            await output.Log($"Marked {name}");
+        }
+        catch (Exception ex)
+        {
+            await output.Error("Mark failed →", ex.Message);
+        }
+    }
+
+    private Task MarkEnd() => Mark("demo:end", marksOutput);
+
+    private async Task MeasureDemo()
+    {
+        try
+        {
+            await performance.Measure("demo:duration", "demo:start", "demo:end");
+
+            var entries = await performance.GetEntries("demo:duration", "measure");
+            if (entries.Length == 0)
+            {
+                await measuresOutput.Warn("Measure recorded but no entry found.");
+                return;
+            }
+
+            var duration = entries[^1].GetProperty("duration").GetDouble();
+            await measuresOutput.Success($"demo:duration → {duration:F1} ms between the two marks");
+        }
+        catch (Exception ex)
+        {
+            await measuresOutput.Error("Measure failed (did you place both marks?) →", ex.Message);
+        }
+    }
+
+    private async Task QueryEntries()
+    {
+        try
+        {
+            var type = string.IsNullOrEmpty(selectedEntryType) ? null : selectedEntryType;
+            var entries = await performance.GetEntries(type: type);
+
+            await entriesOutput.Success($"GetEntries({type ?? "all"}) → {entries.Length} entries");
+
+            foreach (var entry in entries.TakeLast(5))
+            {
+                var name = entry.TryGetProperty("name", out var n) ? n.GetString() : "?";
+                var entryType = entry.TryGetProperty("entryType", out var t) ? t.GetString() : "?";
+                await entriesOutput.Log($"  {entryType} · {name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await entriesOutput.Error("GetEntries failed →", ex.Message);
+        }
+    }
+
+    private async Task SubscribeObserver()
+    {
+        try
+        {
+            if (observerSub is not null)
+            {
+                await observerOutput.Warn("Observer already subscribed.");
+                return;
+            }
+
+            observerSub = await performance.SubscribeObserver(["mark", "measure"], entries => _ = InvokeAsync(() => OnEntries(entries)));
+            await observerOutput.Log("Observer subscribed to mark + measure - use the mark/measure buttons above.");
+        }
+        catch (Exception ex)
+        {
+            await observerOutput.Error("SubscribeObserver failed →", ex.Message);
+        }
+    }
+
+    private async Task OnEntries(JsonElement[] entries)
+    {
+        try
+        {
+            foreach (var entry in entries)
+            {
+                var name = entry.TryGetProperty("name", out var n) ? n.GetString() : "?";
+                var entryType = entry.TryGetProperty("entryType", out var t) ? t.GetString() : "?";
+                var duration = entry.TryGetProperty("duration", out var d) ? d.GetDouble() : 0d;
+                await observerOutput.Info($"Observer → {entryType} · {name} · {duration:F1} ms");
+            }
+        }
+        catch (Exception ex)
+        {
+            await observerOutput.Error("Observer handler failed →", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeObserver()
+    {
+        try
+        {
+            if (observerSub is null)
+            {
+                await observerOutput.Warn("Observer is not subscribed.");
+                return;
+            }
+
+            await observerSub.DisposeAsync();
+            observerSub = null;
+            await observerOutput.Log("Observer disconnected.");
+        }
+        catch (Exception ex)
+        {
+            await observerOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task GetMemory()
+    {
+        try
+        {
+            var memory = await performance.GetMemory();
+            if (memory is null)
+            {
+                // Only reachable during prerender/SSR, where there is no JS runtime to read from.
+                await memoryOutput.Info("GetMemory → no JS runtime yet; read it after the first render.");
+                return;
+            }
+
+            if (memory.UsedJsHeapSize is null)
+            {
+                await memoryOutput.Warn("performance.memory is not exposed by this browser (Chrome-only).");
+                return;
+            }
+
+            await memoryOutput.Success($"JS heap → used {FormatBytes(memory.UsedJsHeapSize)} of {FormatBytes(memory.TotalJsHeapSize)} (limit {FormatBytes(memory.JsHeapSizeLimit)})");
+        }
+        catch (Exception ex)
+        {
+            await memoryOutput.Error("GetMemory failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearMarks()
+    {
+        try
+        {
+            await performance.ClearMarks();
+            await clearOutput.Log("All marks cleared.");
+        }
+        catch (Exception ex)
+        {
+            await clearOutput.Error("ClearMarks failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearMeasures()
+    {
+        try
+        {
+            await performance.ClearMeasures();
+            await clearOutput.Log("All measures cleared.");
+        }
+        catch (Exception ex)
+        {
+            await clearOutput.Error("ClearMeasures failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearResourceTimings()
+    {
+        try
+        {
+            await performance.ClearResourceTimings();
+            await clearOutput.Log("Resource-timing buffer emptied.");
+        }
+        catch (Exception ex)
+        {
+            await clearOutput.Error("ClearResourceTimings failed →", ex.Message);
+        }
+    }
+
+    private static string FormatBytes(long? bytes)
+        => bytes is null ? "n/a" : $"{bytes / 1024d / 1024d:F1} MB";
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (observerSub is not null)
+            {
+                await observerSub.DisposeAsync();
+                observerSub = null;
+            }
+
+            foreach (var sub in typedSubs)
+            {
+                await sub.DisposeAsync();
+            }
+            typedSubs.Clear();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

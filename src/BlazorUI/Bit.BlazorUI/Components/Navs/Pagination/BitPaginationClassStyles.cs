@@ -8,9 +8,49 @@ public class BitPaginationClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the page size selector container of the BitPagination.
+    /// </summary>
+    public string? PageSizeSelector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the page size label of the BitPagination.
+    /// </summary>
+    public string? PageSizeLabel { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the page size select of the BitPagination.
+    /// </summary>
+    public string? PageSizeSelect { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the summary of the BitPagination.
+    /// </summary>
+    public string? Summary { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the go to page container of the BitPagination.
+    /// </summary>
+    public string? GoToPage { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the go to page label of the BitPagination.
+    /// </summary>
+    public string? GoToPageLabel { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the go to page input of the BitPagination.
+    /// </summary>
+    public string? GoToPageInput { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the button of the BitPagination.
     /// </summary>
     public string? Button { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the text rendered beside the icon of a navigation button of the BitPagination.
+    /// </summary>
+    public string? ButtonText { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the ellipsis of the BitPagination.

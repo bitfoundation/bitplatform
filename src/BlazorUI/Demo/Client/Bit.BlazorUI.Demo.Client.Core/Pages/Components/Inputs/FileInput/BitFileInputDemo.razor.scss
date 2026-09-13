@@ -1,21 +1,39 @@
-.files-info {
-    margin-top: 16px;
-    padding: 12px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
+.example-box {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
 
-    strong {
-        display: block;
-        margin-bottom: 8px;
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border: 2px dashed mediumseagreen;
     }
 
-    div {
-        padding: 4px 0;
+    .custom-label {
+        color: white;
+        border-color: mediumseagreen;
+        background-color: mediumseagreen;
     }
 
-    .invalid-file {
-        color: #F9423A;
-        font-weight: 500;
+    .custom-dragging {
+        background-color: honeydew;
+    }
+
+    .custom-item {
+        border-color: mediumseagreen;
+    }
+
+    .custom-remove {
+        color: white;
+        background-color: mediumseagreen;
+    }
+
+    .custom-drop-zone .browse-file {
+        border-style: dashed;
+        border-color: #0072CE;
+        background-color: #eaf4fd;
     }
 }
 

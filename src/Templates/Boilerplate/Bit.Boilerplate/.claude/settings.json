@@ -1,0 +1,13 @@
+{
+    "enableAllProjectMcpServers": true,
+    "env": {
+        "DOTNET_NOLOGO": "1"
+    },
+    "permissions": {
+        "allow": [
+            "mcp__bitplatform",
+            "mcp__aspire",
+            "mcp__playwright"
+        ]
+    }
+}

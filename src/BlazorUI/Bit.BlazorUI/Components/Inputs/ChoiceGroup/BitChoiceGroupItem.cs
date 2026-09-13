@@ -13,6 +13,11 @@ public class BitChoiceGroupItem<TValue>
     public string? Class { get; set; }
 
     /// <summary>
+    /// The secondary text to show under the text of the BitChoiceGroup item.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Id attribute of the BitChoiceGroup item.
     /// </summary>
     public string? Id { get; set; }
@@ -71,6 +76,11 @@ public class BitChoiceGroupItem<TValue>
     public string? Style { get; set; }
 
     /// <summary>
+    /// The text to show as a suffix for the BitChoiceGroup item, rendered after its content.
+    /// </summary>
+    public string? Suffix { get; set; }
+
+    /// <summary>
     /// The custom template for the BitChoiceGroup item.
     /// </summary>
     public RenderFragment<BitChoiceGroupItem<TValue>>? Template { get; set; }
@@ -79,6 +89,15 @@ public class BitChoiceGroupItem<TValue>
     /// Text to show as the content of BitChoiceGroup item.
     /// </summary>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// The title attribute (the native tooltip) of the BitChoiceGroup item. This is supplementary text only:
+    /// content that has to reach every user belongs in <see cref="Text"/> (or a template) or in
+    /// <see cref="Description"/>, both of which are visible and exposed to assistive technology.
+    /// <see cref="AriaLabel"/> is not an alternative: it only replaces the accessible name for assistive
+    /// technology and is never visible.
+    /// </summary>
+    public string? Title { get; set; }
 
     /// <summary>
     /// The value returned when BitChoiceGroup item is checked.

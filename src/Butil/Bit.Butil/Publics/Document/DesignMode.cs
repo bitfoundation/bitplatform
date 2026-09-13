@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// Whether the whole document is editable.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode">Document.designMode</see>
+/// </summary>
 public enum DesignMode
 {
     /// <summary>

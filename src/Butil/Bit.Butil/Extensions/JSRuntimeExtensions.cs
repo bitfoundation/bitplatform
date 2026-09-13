@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +8,11 @@ using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The synchronous fast path over <see cref="IJSRuntime"/>, used when <see cref="BitButil.UseFastInvoke"/>
+/// is on. It only applies under Blazor WebAssembly, where the runtime is in-process; everywhere else
+/// these fall through to the ordinary async calls.
+/// </summary>
 public static class JSRuntimeExtensions
 {
     /// <summary>
@@ -15,6 +20,7 @@ public static class JSRuntimeExtensions
     /// Note: In Blazor WebAssembly mode, use this method only for synchronous JavaScript functions.
     /// </summary>
     /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>
@@ -29,6 +35,7 @@ public static class JSRuntimeExtensions
     /// Note: In Blazor WebAssembly mode, use this method only for synchronous JavaScript functions.
     /// </summary>
     /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
@@ -50,6 +57,7 @@ public static class JSRuntimeExtensions
     /// Note: In Blazor WebAssembly mode, use this method only for synchronous JavaScript functions.
     /// </summary>
     /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="cancellationToken">
     /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
@@ -76,6 +84,7 @@ public static class JSRuntimeExtensions
     /// <summary>
     /// Invokes the specified JavaScript function with the fastest speed possible.
     /// </summary>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
@@ -87,6 +96,7 @@ public static class JSRuntimeExtensions
     /// <summary>
     /// Invokes the specified JavaScript function with the fastest speed possible.
     /// </summary>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
@@ -103,6 +113,7 @@ public static class JSRuntimeExtensions
     /// <summary>
     /// Invokes the specified JavaScript function with the fastest speed possible.
     /// </summary>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="cancellationToken">
     /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
@@ -126,6 +137,7 @@ public static class JSRuntimeExtensions
     /// <summary>
     /// Invokes the specified JavaScript function synchronously.
     /// </summary>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <exception cref="InvalidOperationException"></exception>
@@ -139,6 +151,7 @@ public static class JSRuntimeExtensions
     /// Invokes the specified JavaScript function synchronously.
     /// </summary>
     /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsRuntime">The JavaScript runtime to invoke through.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TResult"/> obtained by JSON-deserializing the return value.</returns>

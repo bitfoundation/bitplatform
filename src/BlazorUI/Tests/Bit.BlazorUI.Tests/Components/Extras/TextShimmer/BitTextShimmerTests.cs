@@ -150,7 +150,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var root = component.Find(".bit-tsh");
 
-        Assert.AreEqual(forceAnimation, root.ClassList.Contains("bit-tsh-fam"));
+        Assert.AreEqual(forceAnimation, root.ClassList.Contains("bit-fam"));
     }
 
     [TestMethod]

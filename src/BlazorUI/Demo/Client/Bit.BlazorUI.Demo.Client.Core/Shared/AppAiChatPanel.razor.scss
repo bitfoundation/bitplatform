@@ -1,5 +1,4 @@
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../Styles/abstracts/_docs.scss';
 
 ::deep {
     .scr-container {
@@ -31,28 +30,32 @@
         height: $bit-env-height-available;
     }
 
+    .panel-cnt.maximized {
+        width: 100%;
+        max-width: 100%;
+
+        .body {
+            width: 100%;
+        }
+    }
+
+    // Kept at the size the old icon badge occupied, as a circle so the filled variant reads as a
+    // launcher rather than a stray button.
     .open-panel-button {
         padding: 0;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
         inset-inline-end: 2rem;
-
-        &:hover, &:active {
-            background-color: transparent;
-        }
 
         @include lt-md {
             inset-inline-end: 1rem;
         }
 
-        img {
-            width: 2.5rem;
-            height: 2.5rem;
+        i {
+            font-size: 1.5rem;
             pointer-events: none;
         }
-    }
-
-    .body {
-        width: 600px;
-        max-width: 100%;
     }
 
     .body {

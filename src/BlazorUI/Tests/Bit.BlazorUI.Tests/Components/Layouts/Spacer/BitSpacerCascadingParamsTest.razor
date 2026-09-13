@@ -1,0 +1,31 @@
+@* Covers BitSpacerParams: the cascaded values fill in the parameters the spacer did not set itself,
+   and never overwrite the ones it did. The two groups are kept apart because the fixed sizes of the
+   first one would suppress the flexible parameters of the second. *@
+
+<BitParams Parameters="@(new BitSpacerParams[]
+                         {
+                             new()
+                             {
+                                 Gap = "3rem",
+                                 Vertical = true,
+                                 Size = BitSize.Large,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitSpacer />
+    <BitSpacer Gap="5rem" />
+</BitParams>
+
+<BitParams Parameters="@(new BitSpacerParams[]
+                         {
+                             new()
+                             {
+                                 Grow = "2",
+                                 Vertical = true,
+                                 MinGap = "1rem",
+                                 Element = "span",
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitSpacer />
+</BitParams>

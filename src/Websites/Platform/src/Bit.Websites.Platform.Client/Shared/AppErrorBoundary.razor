@@ -11,7 +11,7 @@ else if (ErrorContent is null)
             <BitButton OnClick="Recover" IconName="Cancel" Variant="BitVariant.Text" />
         </div>
         <div>
-            <img src="/images/error-triangle.svg" />
+            <img src="/images/error-triangle.svg" alt="" />
         </div>
         <h1 class="title">Oops, something went wrong...</h1>
         @if (showException)
@@ -19,8 +19,8 @@ else if (ErrorContent is null)
             <div class="exception">@CurrentException?.ToString()</div>
         }
         <div class="buttons">
-            <BitButton OnClick="Refresh" ButtonStyle="BitButtonStyle.Primary">Refresh</BitButton>
-            <BitButton OnClick="GoHome" ButtonStyle="BitButtonStyle.Standard">Home</BitButton>
+            <BitButton OnClick="Refresh" Variant="BitVariant.Fill">Refresh</BitButton>
+            <BitButton OnClick="GoHome" Variant="BitVariant.Outline">Home</BitButton>
         </div>
     </div>
 }

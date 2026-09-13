@@ -27,7 +27,12 @@ internal static partial class BitMarkdownBlockGrammar
     [GeneratedRegex(@"^ {0,3}([-+*])(?:([ \t]+)(.*))?$")]
     public static partial Regex Bullet();
 
-    [GeneratedRegex(@"^ {0,3}(\d{1,9})([.)])(?:([ \t]+)(.*))?$")]
+    // The digits are matched as [0-9] rather than \d on purpose: CommonMark defines an
+    // ordered list marker as ASCII digits only, while .NET's \d also matches every other
+    // Unicode decimal digit (Arabic-Indic "۱", Devanagari "१", fullwidth "１", ...). Those
+    // must stay paragraph text, and letting them match here also fed a non-ASCII number
+    // to int.Parse in the list parser, which threw a FormatException.
+    [GeneratedRegex(@"^ {0,3}([0-9]{1,9})([.)])(?:([ \t]+)(.*))?$")]
     public static partial Regex Ordered();
 
     [GeneratedRegex(@"^ {0,3}(=+|-+)\s*$")]

@@ -1,5 +1,4 @@
-﻿using Bit.BlazorUI.Legacy;
-namespace Bit.BlazorUI.Legacy.Demo.PdfReader;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.PdfReader;
 
 public partial class BitPdfReaderLegacyDemo
 {

@@ -6,4 +6,9 @@ public static class IJSRuntimeExtensions
     {
         await jsRuntime.InvokeVoidAsync("toggleBodyOverflow", isNavOpen);
     }
+
+    public static async Task BlurActiveElement(this IJSRuntime jsRuntime)
+    {
+        await jsRuntime.InvokeVoidAsync("blurActiveElement");
+    }
 }

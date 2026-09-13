@@ -185,6 +185,14 @@ internal sealed class BmotionTransitionConfig
     /// <summary>Optional upper bound for the inertia target.</summary>
     public double? InertiaMax { get; set; }
 
+    /// <summary>
+    /// Adjusts the projected resting target before the coast begins (motion.dev's
+    /// <c>modifyTarget</c>) - the snap-to-grid / snap-to-page hook. Applied before
+    /// <see cref="InertiaMin"/>/<see cref="InertiaMax"/> clamping, so a snapped target can never
+    /// escape the bounds.
+    /// </summary>
+    public Func<double, double>? ModifyTarget { get; set; }
+
     // ── Orchestration (for Variants) ──────────────────────────────────────────
     /// <summary>
     /// Seconds to stagger each child's animation start. Works in Variant transitions.
@@ -193,6 +201,48 @@ internal sealed class BmotionTransitionConfig
 
     /// <summary>Seconds to delay the first child's animation start.</summary>
     public double? DelayChildren { get; set; }
+
+    /// <summary>Whether this element's own animation runs alongside its children or ahead of them.</summary>
+    public BmWhen When { get; set; } = BmWhen.Together;
+
+    /// <summary>
+    /// Curves the straight line between this animation's start and end <c>x</c>/<c>y</c>
+    /// (see <see cref="BmArc"/>). Ignored unless the target carries both as single values.
+    /// </summary>
+    public BmArc? Path { get; set; }
+
+    /// <summary>
+    /// How long this transition takes to play, in seconds, ignoring <see cref="Delay"/> and
+    /// repeats. Tweens report their duration exactly; springs report their visual duration when
+    /// they have one and otherwise an estimate from the physics, since a spring has no true end.
+    /// <para>
+    /// Used to schedule children behind a parent under <see cref="BmWhen.BeforeChildren"/>.
+    /// </para>
+    /// </summary>
+    internal double EstimatedDurationSeconds()
+    {
+        switch (Type)
+        {
+            case BmotionTransitionType.Spring:
+                if (VisualDuration is { } visual && double.IsFinite(visual)) return Math.Max(visual, 0);
+                // Settling time of a damped oscillator: the envelope decays as e^(-ζω₀t), and
+                // 4/(ζω₀) is where that has fallen to ~2% - the usual "settled" threshold. Both
+                // factors are guarded because a caller can configure a zero/negative spring.
+                double mass = Mass > 0 ? Mass : 1;
+                double omega0 = Math.Sqrt(Math.Max(Stiffness, 1e-6) / mass);
+                double zeta = Damping / (2 * Math.Sqrt(Math.Max(Stiffness, 1e-6) * mass));
+                double decay = zeta * omega0;
+                // An undamped spring never settles; cap rather than report infinity.
+                return decay <= 1e-6 ? 10 : Math.Min(4 / decay, 10);
+
+            case BmotionTransitionType.Inertia:
+                // The exponential decay is ~98% done after four time constants (which are in ms).
+                return Math.Min(Math.Max(TimeConstant, 0) / 1000.0 * 4, 10);
+
+            default:
+                return double.IsFinite(Duration) && Duration > 0 ? Duration : 0;
+        }
+    }
 
     // ── Per-property overrides ────────────────────────────────────────────────
     /// <summary>
@@ -247,8 +297,11 @@ internal sealed class BmotionTransitionConfig
         InertiaRestDelta = InertiaRestDelta,
         InertiaMin = InertiaMin,
         InertiaMax = InertiaMax,
+        ModifyTarget = ModifyTarget,
         StaggerChildren = StaggerChildren,
         DelayChildren = DelayChildren,
+        When = When,
+        Path = Path,
         Properties = CloneProperties(Properties),
         OnUpdate = OnUpdate,
     };

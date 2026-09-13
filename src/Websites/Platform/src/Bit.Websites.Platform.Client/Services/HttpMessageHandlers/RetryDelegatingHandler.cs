@@ -6,6 +6,13 @@ public class RetryDelegatingHandler(ExceptionDelegatingHandler handler)
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        if (request.Method != HttpMethod.Get)
+        {
+            // Retrying a non-idempotent request that already reached the server would repeat its
+            // side effect (e.g. re-delivering a contact-us message on a transient failure).
+            return await base.SendAsync(request, cancellationToken);
+        }
+
         var delays = GetDelays(scaleFirstTry: TimeSpan.FromSeconds(3), maxRetries: 3).ToArray();
 
         Exception? lastExp = null;

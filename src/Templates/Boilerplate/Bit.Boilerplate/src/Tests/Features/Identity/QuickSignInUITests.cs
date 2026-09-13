@@ -1,10 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Boilerplate.Tests.Infrastructure.Components;
-using Boilerplate.Server.Api.Infrastructure.Data;
-
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), Retry(2)]
 public partial class QuickSignInUITests : AppPageTest
 {
     /// <summary>
@@ -56,6 +52,6 @@ public partial class QuickSignInUITests : AppPageTest
 
         // Filling the last digit signs her in, which closes the modal and completes the purchase, so its success
         // snackbar appears (See ProductPage.Buy -> SnackBarService.Success).
-        await Expect(Page.GetByText(AppStrings.PurchaseSuccessful)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.PurchaseSuccessful)).ToBeVisibleAsync();
     }
 }

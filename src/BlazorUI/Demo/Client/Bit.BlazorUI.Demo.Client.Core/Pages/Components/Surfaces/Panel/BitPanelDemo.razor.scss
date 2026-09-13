@@ -1,13 +1,9 @@
 ﻿@import '../../../../Styles/abstracts/functions';
-
-.panel-body {
-    width: 300px;
-    padding: 1rem;
-}
+@import '../../../../Styles/abstracts/bit-css-variables';
 
 .btn-container {
-    display: flex;
     gap: rem2(16px);
+    display: flex;
     flex-flow: column;
     max-width: max-content;
 }
@@ -23,7 +19,34 @@
     }
 }
 
+// The box a panel with AbsolutePosition is laid out inside of. It needs a position of its own for the
+// panel to be placed against, and it hides its overflow so that the panel is clipped by it rather than
+// hanging out of it.
+.absolute-container {
+    gap: rem2(16px);
+    display: flex;
+    padding: rem2(16px);
+    overflow: hidden;
+    position: relative;
+    min-height: rem2(200px);
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    border-radius: rem2(4px);
+    border: 1px solid $bit-color-border-secondary;
+}
+
 ::deep {
+    .panel-body {
+        gap: rem2(16px);
+        width: rem2(300px);
+        display: flex;
+        max-width: 100%;
+        padding: rem2(16px);
+        box-sizing: border-box;
+        flex-flow: column nowrap;
+        align-items: flex-start;
+    }
+
     .custom-class {
         .item {
             width: 3rem;
@@ -43,5 +66,26 @@
 
     .custom-overlay {
         background-color: #ffbd5a66;
+    }
+
+    .custom-header-container {
+        padding: 1.5rem;
+        background-color: tomato;
+    }
+
+    .custom-header {
+        font-size: 2rem;
+    }
+
+    .custom-body {
+        color: black;
+        background-color: lightseagreen;
+    }
+
+    .custom-footer {
+        color: brown;
+        padding: 1.5rem;
+        font-size: 1.5rem;
+        background-color: tomato;
     }
 }

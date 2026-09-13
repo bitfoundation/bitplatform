@@ -1,0 +1,305 @@
+<PageTitle>How a navigation works · Brouter docs</PageTitle>
+
+@* The conceptual spine of the docs: the exact order of every step in a navigation, which phase
+   it runs in, and what each one can do about the navigation. Every other docs page describes one
+   step; this page is the map they all hang off. Step orders here mirror Brouter.cs -
+   OnLocationChanging (decide) and ProcessNavigationAsync (commit). *@
+
+<div class="bb-intro">
+    <h1>How a navigation works</h1>
+    <p class="bb-subtitle">
+        Every Brouter navigation runs the same ordered pipeline. Knowing which step runs when -
+        and which phase it runs in - explains most of the router's behavior, from why a cancelled
+        guard leaves no trace in the address bar to why a loader can't veto a navigation.
+    </p>
+</div>
+
+<div class="bb-note">
+    <strong>The one idea to take away.</strong> A navigation is split into two phases:
+    <strong>decide</strong>, which runs <em>before</em> the URL changes and is the only phase that
+    can stop or reroute the navigation, and <strong>commit</strong>, which runs <em>after</em> the
+    URL has changed and is where data is fetched and the page renders. Everything below is a
+    consequence of that split.
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The shape of a navigation</h3>
+    <p class="bb-card-desc">
+        A click on a <code>&lt;BrouterLink&gt;</code>, a <code>brouter.Navigate(...)</code> call, or
+        a Back/Forward press all enter the same pipeline. The decide phase hangs off Blazor's
+        <code>RegisterLocationChangingHandler</code>, so a veto there means the browser URL is never
+        written at all.
+    </p>
+    <pre class="bb-code">                    <span class="c">┌─────────────── DECIDE (URL has not moved yet) ───────────────┐</span>
+  click / Navigate  <span class="c">│</span>  lazy assemblies → leave guards → OnNavigating →     <span class="c">│</span>
+  Back / Forward  ──<span class="c">▶</span>  match → enter guards → RedirectTo                   <span class="c">│</span>
+                    <span class="c">└──────────────────────────────┬───────────────────────────────┘</span>
+                                       <span class="c">│</span> approved  →  <span class="k">the URL commits</span>
+                    <span class="c">┌──────────────────────────────┴───────────────────────────────┐</span>
+                    <span class="c">│</span>  COMMIT: loaders → render → OnMatch / OnNavigated →   <span class="c">│</span>
+                    <span class="c">│</span>          scroll &amp; focus → lifecycle arrivals          <span class="c">│</span>
+                    <span class="c">└──────────────────────────────────────────────────────────────┘</span>
+
+  cancelled or redirected anywhere in DECIDE
+      <span class="c">→ the navigation is prevented; the address bar never moved</span></pre>
+</div>
+
+@* ============================== Phase 1 ============================== *@
+
+<h2>Phase 1 · Decide - before the URL moves</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> The seven steps, in order</h3>
+    <p class="bb-card-desc">
+        Each step runs to completion (awaited) before the next begins. Any step that cancels or
+        redirects ends the phase immediately - later steps never run.
+    </p>
+    <table class="bb-table">
+        <thead>
+            <tr><th>#</th><th>Step</th><th>What runs</th><th>Can stop it?</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><code>OnNavigateAsync</code></td>
+                <td>Lazy route loading. Assemblies returned here are scanned and registered <em>before</em> matching, so a deep link into a not-yet-loaded area matches within this same navigation.</td>
+                <td>no</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Leave chain <em>(leaf → root)</em></td>
+                <td>Per route: the component-level lock first (<code>OnDeactivatingAsync</code> when the route is being left, <code>OnRenavigatingAsync</code> when it stays matched with new parameters), then the route's <code>LeaveGuard</code> - only for routes actually being deactivated.</td>
+                <td><strong>yes</strong></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><code>IBrouter.OnNavigating</code></td>
+                <td>The global, app-wide hook. Runs once per navigation, after the outgoing page has had its say.</td>
+                <td><strong>yes</strong></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Matching</td>
+                <td>Specificity picks one winning route. Nothing matched? <code>OnNotFound</code> fires, then either a preventive redirect to <code>NotFoundUrl</code> (so the unmatched URL never appears) or approval so the commit phase can render <code>&lt;NotFound&gt;</code> in place.</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><code>Guard</code> chain <em>(root → leaf)</em></td>
+                <td>Enter guards along the winning chain - a parent's guard protects every descendant, and runs first.</td>
+                <td><strong>yes</strong></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td><code>RedirectTo</code></td>
+                <td>A declarative redirect route hands off to its target. Guards run <em>before</em> this, so a redirect route can still be guarded.</td>
+                <td>reroutes</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>Approve</td>
+                <td>The navigation is allowed through and the browser URL commits.</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        Note the direction change between steps 2 and 5: departures run <strong>leaf → root</strong>
+        (the code closest to the state at risk gets the first veto) and arrivals run
+        <strong>root → leaf</strong> (a parent authorizes before its children are considered). The
+        same inversion applies to loaders and lifecycle callbacks in phase 2.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Why "preventive" matters</h3>
+    <p class="bb-card-desc">
+        Most SPA routers let the URL change and then undo it if something objects. That produces a
+        visible address-bar flicker, a history entry that has to be popped back off, and a Back
+        button that no longer means what the user thinks. Because Brouter decides <em>first</em>,
+        cancelling is a non-event: no flicker, no history to repair, and the page the user is on
+        never unmounts. It is also what makes a genuine "you have unsaved changes" prompt possible -
+        the dialog can hold the navigation open and the answer still decides the outcome.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/blocked" class="btn btn-outline">/blocked - watch the URL not move</BrouterLink>
+        <BrouterLink Href="/editor" class="btn btn-outline">/editor - unsaved-changes leave guard</BrouterLink>
+        <BrouterLink Href="/lock/1" class="btn btn-outline">/lock/1 - awaited custom dialog</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Phase 2 ============================== *@
+
+<h2>Phase 2 · Commit - after the URL moves</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> From approved URL to rendered page</h3>
+    <p class="bb-card-desc">
+        The commit phase re-selects the same winner (matching is a pure function of the URL and the
+        route set, so it can't disagree with phase 1) and then does the work that produces pixels.
+        Nothing here can veto the navigation - by this point the decision has been made.
+    </p>
+    <table class="bb-table">
+        <thead>
+            <tr><th>#</th><th>Step</th><th>What runs</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>8</td>
+                <td>Parameter binding</td>
+                <td>Route values are committed to the winner and propagated to every ancestor in the matched chain, so parent layouts see the parameters their own templates declare.</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td><code>Loader</code> chain <em>(root → leaf)</em></td>
+                <td>Loaders run sequentially by default - a parent's data is ready before its child's loader starts - or concurrently with <code>ParallelLoaders</code>. Each consults the stale-while-revalidate cache first, so a fresh hit skips the call entirely. While loaders are outstanding the router-level <code>&lt;Navigating&gt;</code> fragment is revealed.</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>Render</td>
+                <td>The new chain renders. With <code>ViewTransitions</code> enabled this render is wrapped in <code>document.startViewTransition</code>, which is what makes the animation cover the actual DOM swap.</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td><code>OnMatch</code>, then <code>OnNavigated</code></td>
+                <td>The router-component callback, then the global service hook - the place for page titles and analytics, now that the destination is certain.</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>Scroll &amp; focus</td>
+                <td>Deferred until the render has actually landed, because fragment and focus selectors must resolve against the <em>new</em> page's DOM. Precedence: a resolved <code>#fragment</code> wins; else a remembered position on Back/Forward; else <code>ScrollBehavior</code>.</td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>Lifecycle arrivals <em>(root → leaf)</em></td>
+                <td><code>OnActivatedAsync</code> for newly active routes, <code>OnRenavigatedAsync</code> for routes that stayed matched with new parameters. Departures (<code>OnDeactivatedAsync</code>, leaf → root) fire with <code>Reason</code> = <code>Hidden</code> for keep-alive routes or <code>Disposing</code> otherwise.</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="bb-try">
+        <BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent" class="btn btn-outline">/data - loaders, cache, pending UI</BrouterLink>
+        <BrouterLink Href="/lifecycle/1" class="btn btn-outline">/lifecycle/1 - the arrival callbacks, logged live</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Control flow ============================== *@
+
+<h2>Control flow &amp; failure</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Cancel, redirect, throw</h3>
+    <p class="bb-card-desc">
+        Guards, locks and the global hook all steer the navigation through the same context object.
+        The three exits behave differently on purpose:
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Signal</th><th>Effect</th><th>Reported as</th></tr></thead>
+        <tbody>
+            <tr><td><code>ctx.Cancel()</code></td><td>The navigation is prevented. The URL, the history stack and the rendered page are all untouched.</td><td><code>Cancelled</code></td></tr>
+            <tr><td><code>ctx.Redirect(url)</code></td><td>The original navigation is prevented and a new one starts toward <code>url</code>. Redirect targets resolve route-relatively, and redirecting to the current target is a no-op, so loops can't form.</td><td><code>Redirected</code></td></tr>
+            <tr><td>An unhandled exception</td><td><strong>Fails closed</strong>: the navigation is blocked rather than committed into a half-authorized state, and <code>IBrouter.OnError</code> is raised. Cancel and redirect are control flow, not errors - they never raise <code>OnError</code>.</td><td><code>Failed</code></td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        Exceptions in the <em>commit</em> phase - a loader that throws, a failing lifecycle callback -
+        take a different route: they surface in the nearest
+        <BrouterLink Href="/docs/data-loading">error boundary</BrouterLink> (bubbling leaf → root,
+        with the router-level <code>ErrorContent</code> as the last resort) so the rest of the app
+        keeps rendering, and <code>RetryAsync()</code> can re-run the pipeline in place.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/outcomes" class="btn btn-outline">/outcomes - trigger each result and read it back</BrouterLink>
+        <BrouterLink Href="/unstable" class="btn btn-outline">/unstable - a loader throws mid-commit</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Supersession: the newest navigation wins</h3>
+    <p class="bb-card-desc">
+        Users click faster than networks respond. Every await point in the pipeline is
+        version-checked, so when a second navigation starts while the first is still awaiting a
+        slow guard or loader, the older one stops where it is: its remaining steps are skipped, its
+        <code>CancellationToken</code> fires (so your own <code>HttpClient</code> calls abort too),
+        and it never renders, scrolls or fires <code>OnNavigated</code> on behalf of a page the user
+        already left. <code>NavigateAsync</code> reports that as <code>Superseded</code>.
+    </p>
+    <p class="bb-card-desc">
+        This is why long-running guards and loaders should thread <code>ctx.CancellationToken</code>
+        through their async calls - it is the router telling you the answer is no longer wanted.
+        The same token is what lets a lock's confirmation dialog dismiss itself when the pending
+        navigation it was asking about gets replaced.
+    </p>
+</div>
+
+@* ============================== Variants ============================== *@
+
+<h2>The other ways loaders run</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Navigation vs reload vs revalidation vs preload</h3>
+    <p class="bb-card-desc">
+        Not everything that runs a loader is a navigation. Three operations deliberately run a
+        <em>subset</em> of the pipeline, and knowing which subset explains their guarantees.
+    </p>
+    <table class="bb-table">
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Navigation</th>
+                <th><code>ReloadAsync()</code></th>
+                <th><code>RevalidateAsync()</code></th>
+                <th><code>PreloadAsync()</code></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Leave guards &amp; locks</td><td>✓</td><td>- (nothing is being left)</td><td>-</td><td>-</td></tr>
+            <tr><td>OnNavigating / OnNavigated</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Enter guards</td><td>✓</td><td>✓ (matched from nothing)</td><td>-</td><td>-</td></tr>
+            <tr><td>URL changes</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Loaders</td><td>✓</td><td>✓ <code>IsReload</code> (cache evicted)</td><td>✓ <code>IsRevalidation</code></td><td>✓ <code>IsPreload</code></td></tr>
+            <tr><td>Render</td><td>✓</td><td>✓ (old instances disposed first)</td><td>✓ (content stays visible meanwhile)</td><td>-</td></tr>
+            <tr><td>Scroll, focus &amp; view transition</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Route lifecycle</td><td>✓</td><td>✓ <code>Disposing</code> → fresh activation</td><td>-</td><td>-</td></tr>
+            <tr><td>Errors</td><td>boundary + <code>OnError</code></td><td>boundary + <code>OnError</code></td><td>boundary + <code>OnError</code></td><td>swallowed</td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        <strong>Revalidation</strong> is "refresh what's on screen after a mutation": same URL, no
+        guards, no flash of pending UI, and it's a no-op if nothing in the current chain has a
+        loader. <strong>Reload</strong> is the heavy one next to it - the current chain's components
+        are disposed and recreated, so it is what you reach for when the page's <em>derived</em>
+        state is stale and not just its data (switching tenant, impersonating a user). It runs the
+        matching half of the pipeline because its chain is being built from nothing, which is why
+        enter guards and <code>RedirectTo</code> get a say and leave guards do not.
+        <strong>Preloading</strong> is speculative - it must never have side effects, which
+        is exactly why guards are skipped and failures are swallowed. Branch on
+        <code>ctx.IsReload</code> / <code>ctx.IsRevalidation</code> / <code>ctx.IsPreload</code>
+        when a loader should behave differently (skipping a telemetry ping on a preload, say).
+    </p>
+    <p class="bb-card-desc">
+        A reload requested while a navigation is in flight - from the moment that navigation starts,
+        guards included - does nothing: that navigation is already rebuilding the page the user is
+        heading to. Neither does a reload with nothing committed (a not-found fallback or an error
+        boundary on screen): there is no chain to rebuild. The lighter
+        <code>ClearKeepAlive(includeActive: true)</code> throws the instances away without running
+        any of this pipeline at all - see
+        <BrouterLink Href="/docs/lifecycle">lifecycle &amp; keep-alive</BrouterLink>.
+    </p>
+    <p class="bb-card-desc">
+        The last case is the shortest: <code>Navigate(url, forceLoad: true)</code> skips the
+        pipeline entirely. The browser loads a new document, so the SPA process that would have run
+        the guards is replaced outright - which is also why <code>NavigateAsync</code> doesn't
+        offer it, as there would be nothing left alive to resolve the task.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go from here</h3>
+    <ul class="bb-detail-list">
+        <li><BrouterLink Href="/docs/guards">Guards &amp; navigation locks</BrouterLink> - steps 2, 3 and 5 in depth.</li>
+        <li><BrouterLink Href="/docs/data-loading">Data loading</BrouterLink> - step 9, plus the cache that lets it be skipped.</li>
+        <li><BrouterLink Href="/docs/lifecycle">Lifecycle &amp; keep-alive</BrouterLink> - step 13 and what retention changes about it.</li>
+        <li><BrouterLink Href="/docs/scroll-and-focus">Scroll &amp; focus</BrouterLink> - step 12's precedence rules.</li>
+        <li><BrouterLink Href="/docs/api">API reference</BrouterLink> - every parameter, option and context type named above.</li>
+    </ul>
+</div>

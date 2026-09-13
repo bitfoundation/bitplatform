@@ -126,7 +126,37 @@ The build system automatically configures the environment based on build configu
 
 ## 🔄 CI/CD Workflow Overview
 
+<!--#if (pipeline == "Azure")-->
+Your project was generated with `--pipeline Azure`, so it ships **`.azure-devops/workflows/`**, not
+`.github/workflows/`:
+
+- **`ci.yml`** — triggered on `develop`. Sets up .NET and Node, restores workloads, builds `Boilerplate.slnx`,
+  installs Playwright, and runs the test suite; uploads `src/Tests/TestResults` as a pipeline artifact when the
+  tests are what failed.
+- **`cd.yml`** — triggered on `main`. Four jobs: `build_api_blazor` → `deploy_api_blazor` (Azure App Service),
+  plus `build_blazor_hybrid_windows` and `build_blazor_hybrid_android`.
+
+Configure it in Azure DevOps rather than GitHub:
+
+1. **Pipelines → New pipeline** → point it at `.azure-devops/workflows/ci.yml` (and again for `cd.yml`).
+2. **Project settings → Service connections** → create an Azure Resource Manager connection and put its name in
+   `AZURE_SUBSCRIPTION` at the top of `cd.yml`, along with `APP_SERVICE_NAME`, `ServerAddress` and
+   `WindowsUpdate.FilesUrl`.
+3. **Pipelines → Edit → Variables** (or a variable group) → define `APP_VERSION`, `APP_ID` and `APP_TITLE` there,
+   **not** in `cd.yml`. A variable declared in the YAML `variables:` block takes priority over the UI and cannot
+   be set at queue time, which would freeze the version at whatever the template shipped.
+4. **Pipelines → Library → Secure files** → upload `Boilerplate.keystore` for the Android job, and add
+   `ANDROID_RELEASE_KEYSTORE_PASSWORD` / `ANDROID_RELEASE_SIGNING_PASSWORD` as secret pipeline variables.
+
+Two differences from the GitHub pipeline are deliberate and worth knowing: the Azure pipeline has **no iOS/macOS
+job** (it would require a macOS agent pool), and it uses a single `main`-triggered CD rather than the
+Production/Test pair described below. The rest of this document describes the GitHub Actions pipeline; the build
+steps are the same, only the YAML dialect and the place you store secrets differ.
+
+<!--#endif-->
+<!--#if (pipeline == "GitHub")-->
 The project includes a complete CI/CD pipeline setup using GitHub Actions with **4 workflow files**:
+<!--#endif-->
 
 ### 1. Continuous Integration (CI) - `ci.yml`
 
@@ -487,9 +517,13 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 **Characteristics**:
 - Has full SDK installations (.NET, Node.js, Android SDK, Xcode)
 - Performs compilation, transpilation, bundling
-- Runs tests and quality checks
 - Uploads artifacts to GitHub (or Azure DevOps)
 - **No production access** - isolated from production systems
+
+> **The build phase does not run tests.** `cd-template.yml` goes straight from `dotnet workload install` to
+> `dotnet publish`; `ci.yml` is the only workflow that runs the test suite, and it triggers on **pull requests**,
+> not on the push that starts a deploy. If you want deploys to be test-gated, protect `main` and `test` with a
+> required status check on `ci.yml`.
 
 ### Phase 2: Deploy
 **Purpose**: Take pre-built artifacts and deploy them  
@@ -568,11 +602,24 @@ Variables:
   SERVER_ADDRESS = https://api.myapp.com
   APP_VERSION = 1.0.0
   APP_TITLE = My App
+  APP_ID = com.myapp                       (bundle id / Velopack package id)
+  APP_SERVICE_NAME = my-app-service        (Azure App Service name)
+  WINDOWS_UPDATE_FILES_URL = https://api.myapp.com/windows
+  OPENAI_ENDPOINT = <optional, only if you use Bit.ResxTranslator>
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <production publish profile>
   PUBLIC_VAPIDKEY = <production VAPID key>
+  OPENAI_APIKEY = <optional - when unset, the Bit.ResxTranslator step is skipped>
 ```
+
+The mobile/desktop jobs additionally need `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`,
+`ANDROID_RELEASE_KEYSTORE_PASSWORD`, `ANDROID_RELEASE_SIGNING_PASSWORD` and, for iOS, the
+`APPSTORE_*` code-signing secrets plus the `IOS_CODE_SIGN_PROVISION` variable.
+<!--#if (api == "Standalone")-->
+Because this project uses `--api Standalone`, the api is deployed separately and also needs
+`API_APP_SERVICE_NAME` (variable) and `API_AZURE_PUBLISH_PROFILE` (secret).
+<!--#endif-->
 
 **Test Environment**:
 ```
@@ -661,4 +708,10 @@ Enabling/Disabling LLVM during `dotnet publish` command has the most impact. `do
 Enabling/Disabling AOT during `dotnet publish` command has the most impact. `dotnet new` parameters or x86/x64 don't have much affect on this.
 ---
 - **iOS/macOS** => 120MB to 130MB
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
 ---

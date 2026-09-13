@@ -37,8 +37,13 @@
     animation-direction: reverse;
 }
 
+// The shimmer loops forever, so it keeps a literal duration and opts out of reduced motion here
+// rather than through the --bit-mot-duration* tokens (a near-zero looping duration renders as flicker).
+// .bit-fam is the shared opt-out class rendered by BitComponentBase.ForceAnimation. It is honored on
+// an ancestor as well as on the element itself, so that opting a whole subtree in behaves the same
+// here as it does for the token-driven animations, which inherit the class's custom properties.
 @media (prefers-reduced-motion: reduce) {
-    .bit-tsh:not(.bit-tsh-fam) {
+    .bit-tsh:not(.bit-fam):not(.bit-fam *) {
         animation: none;
         background-image: linear-gradient(var(--bit-tsh-base-clr), var(--bit-tsh-base-clr));
     }

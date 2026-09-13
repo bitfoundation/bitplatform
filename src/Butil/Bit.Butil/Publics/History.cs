@@ -18,6 +18,7 @@ namespace Bit.Butil;
 // [JSInvokable] callbacks, never the JSON generics, and those generics keep their own RUC/RDC attributes
 // so a trimming/AOT consumer is still warned at the real call site. Scoped to this type (not assembly-wide).
 [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
+[ButilService(typeof(History))]
 public class History(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeHistoryPopState);
@@ -66,7 +67,8 @@ public class History(IJSRuntime js) : IAsyncDisposable
     public async Task<ScrollRestoration> GetScrollRestoration()
     {
         var value = await js.InvokeFast<string>("BitButil.history.scrollRestoration");
-        return value == "auto" ? ScrollRestoration.Auto : ScrollRestoration.Manual;
+        // "auto" is the spec default, so it is also what an unreadable value (prerender) falls back to.
+        return value == "manual" ? ScrollRestoration.Manual : ScrollRestoration.Auto;
     }
 
     /// <summary>
@@ -76,7 +78,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration">https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration</see>
     /// </summary>
     public async Task SetScrollRestoration(ScrollRestoration value)
-        => await js.InvokeVoid("BitButil.history.setScrollRestoration", value.ToString().ToLowerInvariant());
+        => await js.InvokeVoid("BitButil.history.setScrollRestoration", value is ScrollRestoration.Manual ? "manual" : "auto");
 
     /// <summary>
     /// Returns an any value representing the state at the top of the history stack.
@@ -218,6 +220,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
         await RemoveFromJs(ids);
     }
 
+    /// <summary>Removes every popstate handler registered through this instance.</summary>
     public async ValueTask RemoveAllPopStates()
     {
         if (_handlers.Count == 0) return;
@@ -234,6 +237,7 @@ public class History(IJSRuntime js) : IAsyncDisposable
         await js.InvokeVoid("BitButil.history.removePopState", ids);
     }
 
+    /// <summary>Removes every popstate handler this instance registered and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -241,6 +245,10 @@ public class History(IJSRuntime js) : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;

@@ -1,0 +1,47 @@
+﻿@* The pages either side of this one, at the foot of it.
+
+   The docs are written to be read in order - each page assumes the shape taught by the one before
+   it - so the end of a page should say what the next one is rather than sending the reader back
+   to the panel to work it out. Both entries come from NavItem, which is also what orders the
+   panel, so the two can never disagree about what "next" means. *@
+
+@if (_previous is not null || _next is not null)
+{
+    <nav class="doc-pager" aria-label="Page navigation">
+        @if (_previous is not null)
+        {
+            <a class="previous" href="@_previous.Url" rel="prev">
+                <span class="pager-dir">
+                    <Icon Path="@Icons.ArrowLeft" />
+                    Previous
+                </span>
+                <span class="pager-title">@_previous.Title</span>
+            </a>
+        }
+
+        @if (_next is not null)
+        {
+            @* The class, not the source order, puts this in the second column: a page with no
+               previous entry still has to leave the first column empty rather than sliding its
+               "next" into it, or the two ends of the sequence would point the same way. *@
+            <a class="next" href="@_next.Url" rel="next">
+                <span class="pager-dir">
+                    Next
+                    <Icon Path="@Icons.ArrowRight" />
+                </span>
+                <span class="pager-title">@_next.Title</span>
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    /// <summary>The route being shown, relative to the app base and without its leading slash.</summary>
+    [Parameter] public string Href { get; set; } = "";
+
+    private NavItem? _previous;
+    private NavItem? _next;
+
+    protected override void OnParametersSet()
+        => (_previous, _next) = NavItem.Neighbours(Href);
+}

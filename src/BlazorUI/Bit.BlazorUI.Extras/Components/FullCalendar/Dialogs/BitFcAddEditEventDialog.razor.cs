@@ -49,6 +49,21 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private int? _lastStartMinute;
     private string? _lastResource;
 
+    protected override void OnInitialized() => State.OnStateChanged += HandleStateChanged;
+
+    /// <summary>
+    /// The calendar can be switched to read-only while this dialog is open - every entry point only
+    /// checks read-only when it opens the dialog, so an already-open form would otherwise stay live.
+    /// Close it instead of leaving a Save button that <see cref="Submit"/> refuses.
+    /// </summary>
+    private void HandleStateChanged()
+    {
+        if (State.ReadOnly is false)
+            return;
+
+        _ = InvokeAsync(OnClose.InvokeAsync);
+    }
+
     protected override void OnParametersSet()
     {
         // Re-run initialization whenever the parameters that drive the form change, so a reused
@@ -159,6 +174,11 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private async Task Submit()
     {
+        // Last line of defense for every host of this dialog (add entry points and the details
+        // dialog's edit overlay): read-only may have been switched on after the dialog opened, so
+        // refuse the save rather than mutating state the calendar no longer allows to change.
+        if (State.ReadOnly) return;
+
         // Guard against re-entrancy: a second click or Enter press while the first save is still
         // in flight would otherwise add/update the event twice before the dialog closes.
         if (_isSubmitting) return;
@@ -244,6 +264,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        State.OnStateChanged -= HandleStateChanged;
         await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

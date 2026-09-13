@@ -143,7 +143,7 @@
     <value>اگر شما درخواست توکن بازنشانی رمزعبور را نداده اید، می توانید این ایمیل را نادیده بگیرید.</value>
   </data>
   <data name="ResetPasswordTokenMessage" xml:space="preserve">
-    <value>می توانید کد زیر را کپی کرده و در صفحه بازنشانی رعبور وارد کنید.</value>
+    <value>می توانید کد زیر را کپی کرده و در صفحه بازنشانی رمز عبور وارد کنید.</value>
   </data>
   <data name="ResetPasswordLinkMessage" xml:space="preserve">
     <value>یا می توانید روی لینک زیر کلیک کنید تا رمز عبور خود را بازنشانی کنید.</value>

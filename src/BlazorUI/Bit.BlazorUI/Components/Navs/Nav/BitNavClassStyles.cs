@@ -13,6 +13,16 @@ public class BitNavClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the group header button of the BitNav in the Grouped render type.
+    /// </summary>
+    public string? Header { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the text of the group header of the BitNav in the Grouped render type.
+    /// </summary>
+    public string? HeaderText { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the item of the BitNav.
     /// </summary>
     public string? Item { get; set; }
@@ -46,6 +56,11 @@ public class BitNavClassStyles
     /// Custom CSS classes/styles for the toggle button of the BitNav.
     /// </summary>
     public string? ToggleButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the chevron icon inside the toggle button of the BitNav.
+    /// </summary>
+    public string? ToggleIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the separator of the BitNav.

@@ -153,6 +153,82 @@ public class InertiaDriverTests
         Assert.IsTrue(done);
     }
 
+    // ── ModifyTarget (snap-to-grid) ───────────────────────────────────────────
+
+    private static double RunToRest(BmotionTransitionConfig config, double from = 0)
+    {
+        double lastValue = from;
+        var driver = new BmotionInertiaDriver(from, config, v => lastValue = v);
+        bool done = false;
+        double ts = 0;
+        while (!done && ts < 20_000)
+        {
+            ts += 16.67;
+            done = driver.Tick(ts);
+        }
+        Assert.IsTrue(done, "Inertia should settle");
+        return lastValue;
+    }
+
+    [TestMethod]
+    public void ModifyTarget_SnapsProjectedTargetToGrid()
+    {
+        // Unmodified the coast would rest at 0.8 * 530 = 424; snapping to a 100px grid lands on 400.
+        var config = new BmotionTransitionConfig
+        {
+            InertiaVelocity = 530,
+            Power = 0.8,
+            TimeConstant = 700,
+            InertiaRestDelta = 0.5,
+            ModifyTarget = Bm.SnapTo(100),
+        };
+
+        Assert.AreEqual(400.0, RunToRest(config), 1e-5);
+    }
+
+    [TestMethod]
+    public void ModifyTarget_RunsBeforeBoundsClamping()
+    {
+        // The snap would overshoot to 500, but the Max bound still wins - a snapped target must
+        // never escape the drag constraints.
+        var config = new BmotionTransitionConfig
+        {
+            InertiaVelocity = 600,
+            Power = 0.8,
+            TimeConstant = 700,
+            InertiaRestDelta = 0.5,
+            InertiaMax = 300.0,
+            ModifyTarget = _ => 500.0,
+        };
+
+        Assert.AreEqual(300.0, RunToRest(config), 1e-5);
+    }
+
+    [TestMethod]
+    public void ModifyTarget_NonFiniteResult_IsIgnored()
+    {
+        // A consumer's snap function returning NaN would otherwise poison the decay math and make
+        // the rest test unsatisfiable (the driver would tick forever).
+        var config = new BmotionTransitionConfig
+        {
+            InertiaVelocity = 500,
+            Power = 0.8,
+            TimeConstant = 700,
+            InertiaRestDelta = 0.5,
+            ModifyTarget = _ => double.NaN,
+        };
+
+        Assert.AreEqual(400.0, RunToRest(config), 1e-5);
+    }
+
+    [TestMethod]
+    public void Clone_CarriesModifyTarget()
+    {
+        var config = new BmotionTransitionConfig { ModifyTarget = Bm.SnapTo(50) };
+
+        Assert.AreSame(config.ModifyTarget, config.Clone().ModifyTarget);
+    }
+
     // ── Zero velocity ─────────────────────────────────────────────────────────
 
     [TestMethod]

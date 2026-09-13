@@ -1,0 +1,129 @@
+@if (_open)
+{
+    <div class="scrim" @onclick="Close"></div>
+}
+
+<nav class="sidebar @(_open ? "open" : "")">
+    <a class="sidebar-brand" href="" @onclick="Close">
+        <span class="logo">B</span>
+        <span>
+            <span class="title">Bit.Butil</span><br />
+            <span class="subtitle">JS interop, the .NET way</span>
+        </span>
+    </a>
+
+    <div class="sidebar-search">
+        <input placeholder="🔍 Filter APIs..." @bind="_filter" @bind:event="oninput" />
+    </div>
+
+    <div class="sidebar-nav">
+        @foreach (var group in Groups)
+        {
+            var items = group.Items.Where(Match).ToList();
+            if (items.Count == 0) continue;
+
+            <div class="group-label">@group.Label</div>
+            @foreach (var item in items)
+            {
+                <NavLink href="@item.Href" Match="NavLinkMatch.All" @onclick="Close">
+                    <span class="ico">@item.Icon</span>
+                    <span>@item.Name</span>
+                </NavLink>
+            }
+        }
+    </div>
+</nav>
+
+@code {
+    private bool _open;
+    private string _filter = "";
+
+    public void Toggle() { _open = !_open; StateHasChanged(); }
+    public void Close() { _open = false; StateHasChanged(); }
+
+    private bool Match(NavItem item) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        item.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+
+    private record NavItem(string Name, string Href, string Icon);
+    private record NavGroup(string Label, NavItem[] Items);
+
+    private static readonly NavGroup[] Groups =
+    [
+        new("Storage & State",
+        [
+            new("Clipboard", "clipboard", "📋"),
+            new("Cookie", "cookie", "🍪"),
+            new("Storage", "storage", "💾"),
+            new("OPFS & Buckets", "opfs", "🗄️"),
+        ]),
+        new("Browser & Device",
+        [
+            new("Navigator", "navigator", "🧭"),
+            new("UserAgent", "userAgent", "🪪"),
+            new("Permissions", "permissions", "✅"),
+            new("MediaDevices", "mediaDevices", "🎥"),
+            new("Geolocation", "geolocation", "📡"),
+            new("Device Sensors", "device", "🔋"),
+            new("Hardware Buses", "hardware", "🔌"),
+            new("Screen", "screen", "🖥️"),
+            new("ScreenOrientation", "screenOrientation", "🔄"),
+            new("VisualViewport", "visualViewport", "🔍"),
+        ]),
+        new("DOM",
+        [
+            new("Document", "document", "📄"),
+            new("Canvas", "canvas", "🖼️"),
+            new("Css", "css", "🎨"),
+            new("Dom", "dom", "🌳"),
+            new("Element", "element", "🧱"),
+            new("Window", "window", "🪟"),
+            new("Observers", "observers", "👁️"),
+            new("Selection", "selection", "🖍️"),
+        ]),
+        new("Navigation",
+        [
+            new("History", "history", "🕘"),
+            new("Location", "location", "📍"),
+        ]),
+        new("PWA & AI",
+        [
+            new("PWA", "pwa", "📲"),
+            new("Built-in AI", "ai", "✨"),
+        ]),
+        new("Utilities",
+        [
+            new("Advanced Input", "input", "🖊️"),
+            new("Platform", "platform", "🧩"),
+            new("AbortController", "abort", "🛑"),
+            new("Console", "console", "🖨️"),
+            new("Crypto", "crypto", "🔐"),
+            new("Fetch", "fetch", "🌐"),
+            new("WebSocket", "websocket", "🔌"),
+            new("WebRTC", "webrtc", "🛰️"),
+            new("Workers", "workers", "🧵"),
+            new("Messaging", "messaging", "✉️"),
+            new("Streams", "streams", "🌊"),
+            new("Scheduler", "scheduler", "⏱️"),
+            new("Files", "files", "📁"),
+            new("Drag & Drop", "drag-drop", "🫳"),
+            new("Speech", "speech", "🗣️"),
+            new("Text & URL", "text", "🔤"),
+            new("Audio Graph", "audio-graph", "🎚️"),
+            new("Media Pipeline", "media-pipeline", "🎞️"),
+            new("Second Screen", "second-screen", "📺"),
+            new("Keyboard", "keyboard", "⌨️"),
+            new("Notification", "notification", "🔔"),
+            new("WebAuthn", "webauthn", "🔑"),
+            new("Service Worker", "service-worker", "⚙️"),
+            new("Identity", "identity", "🪪"),
+            new("Commerce", "commerce", "💳"),
+        ]),
+        new("Testing",
+        [
+            new("E2E", "e2e", "🧪"),
+            new("E2E Observers", "e2e-observers", "👁️"),
+            new("Benchmarks", "benchmark", "⏱️"),
+        ]),
+    ];
+}

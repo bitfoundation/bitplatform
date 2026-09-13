@@ -1,13 +1,19 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Nav;
 
 public class Section
 {
     public string Text { get; set; } = string.Empty;
     public string? ImageName { get; set; }
+    public BitIconInfo? Icon { get; set; }
     public string? Url { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool IsExpanded { get; set; }
+    public bool IsDivider { get; set; }
     public List<Section> Links { get; set; } = [];
     public string? Comment { get; set; }
+    public BitNavMatch? UrlMatch { get; set; }
+    public IEnumerable<string>? OtherUrls { get; set; }
+    public string? Style { get; set; }
+    public string? Class { get; set; }
     public RenderFragment<Section>? Template { get; set; }
 }

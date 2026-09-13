@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API">Geolocation API</see>
 /// (<c>navigator.geolocation</c>).
 /// </summary>
+[ButilService(typeof(Geolocation))]
 public class Geolocation(IJSRuntime js) : IAsyncDisposable
 {
     internal const string PositionMethodName = nameof(InvokePosition);
@@ -131,6 +132,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         }
     }
 
+    /// <summary>Clears every position watch started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try { await ClearAllWatches(); }

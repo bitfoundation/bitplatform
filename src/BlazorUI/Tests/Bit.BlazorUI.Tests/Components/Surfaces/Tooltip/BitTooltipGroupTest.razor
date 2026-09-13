@@ -1,0 +1,24 @@
+﻿@* The group cascades itself to the tooltips inside it, so a test of it needs a piece of markup that
+   actually nests them - a cascading value cannot be handed to a component rendered on its own. *@
+<BitTooltipGroup ShowDelay="@ShowDelay" HideDelay="@HideDelay" SkipDelay="@SkipDelay" AllowMultiple="@AllowMultiple">
+    <BitTooltip Id="first" Text="First">
+        <button class="first-anchor">First</button>
+    </BitTooltip>
+    <BitTooltip Id="second" Text="Second">
+        <button class="second-anchor">Second</button>
+    </BitTooltip>
+    @if (RenderThird)
+    {
+        <BitTooltip Id="third" Text="Third" ShowDelay="0" HideDelay="0">
+            <button class="third-anchor">Third</button>
+        </BitTooltip>
+    }
+</BitTooltipGroup>
+
+@code {
+    [Parameter] public int? ShowDelay { get; set; }
+    [Parameter] public int? HideDelay { get; set; }
+    [Parameter] public int SkipDelay { get; set; } = 300;
+    [Parameter] public bool AllowMultiple { get; set; }
+    [Parameter] public bool RenderThird { get; set; } = true;
+}

@@ -1,0 +1,45 @@
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// Written literally as the wrapper of each group of splitters in the Style & Class example, so the scope
+// attribute lands on it and no ::deep is needed. A splitter is a block that fills the height it is given,
+// so the group is a column with air between the rows rather than a wrapping row of cards.
+.example-content {
+    gap: 1rem;
+    display: flex;
+    flex-flow: column;
+}
+
+// Handed to the component as Class/Classes, so these render on markup of the component's own and need
+// ::deep to reach past the scope; the anchor is the plain wrapper div above, which does carry it.
+::deep {
+    // The whole demo sits on the secondary surface, and a splitter paints no ground of its own - so every
+    // one of these paints the primary surface underneath the panels. Without it the two panels and the page
+    // behind them are the same colour and there is nothing to see a split in.
+    .custom-splitter {
+        // The root is where a splitter is given its height: it fills whatever box it is put in, and a class
+        // is as good a place to say how big that box is as the Style parameter.
+        height: 150px;
+        border-radius: 0.5rem;
+        border: 2px solid mediumpurple;
+        box-shadow: mediumpurple 0 0 0.5rem;
+        background: $bit-color-background-primary;
+    }
+
+    .custom-first-panel {
+        background: color-mix(in srgb, mediumpurple 15%, #{$bit-color-background-primary});
+    }
+
+    .custom-second-panel {
+        background: $bit-color-background-primary;
+    }
+
+    .custom-gutter {
+        background: mediumpurple;
+    }
+
+    // The grip drawn inside the gutter, which has just been painted over: it needs a colour of its own or
+    // it disappears into the line it marks.
+    .custom-gutter-indicator {
+        background: white;
+    }
+}

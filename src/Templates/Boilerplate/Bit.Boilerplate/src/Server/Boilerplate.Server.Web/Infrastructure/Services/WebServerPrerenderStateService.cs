@@ -65,6 +65,8 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
         {
             persistentComponentState!.PersistAsJson(item.Key, item.Value);
         }
+
+        values.Clear();
     }
 
     public async ValueTask DisposeAsync()

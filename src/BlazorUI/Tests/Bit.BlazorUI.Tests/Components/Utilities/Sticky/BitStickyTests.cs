@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Sticky;
@@ -245,7 +247,7 @@ public class BitStickyTests : BunitTestContext
             parameters.AddChildContent(childContent);
         });
 
-        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</label>");
+        component.MarkupMatches(@$"<div class=""bit-stk bit-stk-top"" id:ignore>{childContent}</div>");
     }
 
     [TestMethod]
@@ -253,7 +255,10 @@ public class BitStickyTests : BunitTestContext
     {
         var component = RenderComponent<BitStickyHtmlAttributesTest>();
 
-        component.MarkupMatches(@"<div data-val-test=""bit"" class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</div>");
+        // The two attributes the component only writes while the parameter carries a value have to
+        // leave the splatted ones of the same name alone: writing them as null would take them away
+        // rather than skip them.
+        component.MarkupMatches(@"<div data-val-test=""bit"" aria-label=""splatted label"" dir=""rtl"" class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</div>");
     }
 
     [TestMethod,
@@ -430,14 +435,40 @@ public class BitStickyTests : BunitTestContext
             parameters.Add(p => p.Right, right);
         });
 
-        if (right.HasValue())
+        component.MarkupMatches(@$"<div style=""top: {top};bottom: {bottom};left: {left};right: {right};"" class=""bit-stk"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow("20", "20px"),
+       DataRow("1.5", "1.5px"),
+       DataRow("0", "0px")
+    ]
+    public void BitStickyShouldReadBareNumberOffsetsAsPixels(string offset, string expected)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
         {
-            component.MarkupMatches(@$"<div style=""top: {top};bottom: {bottom};left: {left};right: {right};"" class=""bit-stk"" id:ignore></div>");
-        }
-        else
+            parameters.Add(p => p.Top, offset);
+        });
+
+        component.MarkupMatches(@$"<div style=""top: {expected};"" class=""bit-stk"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow("calc(1rem + 2px)"),
+       DataRow("10%"),
+       DataRow("Infinity"),
+       DataRow("NaN")
+    ]
+    public void BitStickyShouldLeaveOffsetsThatAreNoPixelCountAsWritten(string offset)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
         {
-            component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
-        }
+            parameters.Add(p => p.Top, offset);
+        });
+
+        // The infinities and the not-a-number double.TryParse also accepts by name are numbers no
+        // length can be written of, so they go to the stylesheet as the words they were given as.
+        component.MarkupMatches(@$"<div style=""top: {offset};"" class=""bit-stk"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -483,5 +514,454 @@ public class BitStickyTests : BunitTestContext
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-srt"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectPositionAlongsideOffsets()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Position, BitStickyPosition.Top);
+            parameters.Add(p => p.Top, "10px");
+        });
+
+        component.MarkupMatches(@"<div style=""top: 10px;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow(3),
+       DataRow(0),
+       DataRow(-1),
+       DataRow(null)
+    ]
+    public void BitStickyShouldRespectZIndex(int? zIndex)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ZIndex, zIndex);
+        });
+
+        if (zIndex.HasValue)
+        {
+            component.MarkupMatches(@$"<div style=""z-index: {zIndex};"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+        }
+        else
+        {
+            component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+        }
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectZIndexChangingAfterRender()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ZIndex, 5);
+        });
+
+        component.MarkupMatches(@"<div style=""z-index: 5;"" class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod,
+       DataRow("header"),
+       DataRow("footer"),
+       DataRow("nav"),
+       DataRow("aside"),
+       DataRow("section")
+    ]
+    public void BitStickyShouldRespectElement(string element)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("I'm a sticky");
+        });
+
+        component.MarkupMatches(@$"<{element} class=""bit-stk bit-stk-top"" id:ignore>I'm a sticky</{element}>");
+    }
+
+    [TestMethod,
+       DataRow(null),
+       DataRow(""),
+       DataRow("   "),
+       DataRow("1header"),
+       DataRow("my element"),
+       DataRow("div>span"),
+       DataRow("<div")
+    ]
+    public void BitStickyShouldFallBackToDivForAnythingThatIsNoTagName(string element)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldTrimTheElementAndKeepEveryParameterOnIt()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, "  header  ");
+            parameters.Add(p => p.Position, BitStickyPosition.Bottom);
+            parameters.Add(p => p.ZIndex, 2);
+            parameters.Add(p => p.AriaLabel, "pinned bar");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        component.MarkupMatches(@"<header aria-label=""pinned bar"" dir=""rtl"" style=""z-index: 2;"" class=""bit-stk bit-stk-btm bit-rtl"" id:ignore></header>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectElementChangingAfterRender()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, "header");
+        });
+
+        component.MarkupMatches(@"<header class=""bit-stk bit-stk-top"" id:ignore></header>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "footer");
+        });
+
+        component.MarkupMatches(@"<footer class=""bit-stk bit-stk-top"" id:ignore></footer>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldKeepTheStuckStateAcrossAnElementChange()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Element, "header");
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        component.MarkupMatches(@"<header class=""bit-stk bit-stk-top bit-stk-stc bit-stk-stc-top my-stuck"" id:ignore></header>");
+
+        // A change of tag replaces the rendered element rather than patching it, so the detection has
+        // to be attached to the new one; the state it had derived so far is what it carries over.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Element, "footer");
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<footer class=""bit-stk bit-stk-top bit-stk-stc bit-stk-stc-top my-stuck"" id:ignore></footer>");
+    }
+
+    [TestMethod]
+    public void BitStickyShouldNotApplyStuckClassAndStyleWhileNotStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+        Assert.AreEqual(BitStickyEdges.None, component.Instance.StuckEdges);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldApplyStuckClassAndStyleWhileStuck()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div style=""color: red;"" class=""bit-stk bit-stk-top bit-stk-stc bit-stk-stc-top my-stuck"" id:ignore></div>");
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldAppendStuckStyleAfterStyle()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.Style, "color: blue");
+            parameters.Add(p => p.StuckStyle, "color: red");
+        });
+
+        Assert.AreEqual("color: blue", component.Find("div").GetAttribute("style"));
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        // The stuck style has to land after the resting one, since the later declaration of the same
+        // property is the one an inline style resolves to.
+        Assert.AreEqual("color: blue;color: red", component.Find("div").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldRespectOnStuckChanged()
+    {
+        var stuckStates = new List<bool>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        // A repeated report of the same state must not raise the callback again.
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
+
+        CollectionAssert.AreEqual(new List<bool> { true, false }, stuckStates);
+        Assert.IsFalse(component.Instance.IsStuck);
+    }
+
+    [TestMethod,
+       DataRow(BitStickyEdges.Top, "bit-stk-stc-top"),
+       DataRow(BitStickyEdges.Bottom, "bit-stk-stc-btm"),
+       DataRow(BitStickyEdges.Left, "bit-stk-stc-lft"),
+       DataRow(BitStickyEdges.Right, "bit-stk-stc-rgt")
+    ]
+    public async Task BitStickyShouldCarryAClassPerStuckEdge(BitStickyEdges edge, string cssClass)
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)edge));
+
+        Assert.AreEqual(edge, component.Instance.StuckEdges);
+
+        var classList = component.Find("div").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-stk-stc"));
+        Assert.IsTrue(classList.Contains(cssClass));
+        Assert.IsTrue(classList.Contains("my-stuck"));
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldCarryBothClassesWhilePinnedIntoACorner()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)(BitStickyEdges.Top | BitStickyEdges.Left)));
+
+        Assert.AreEqual(BitStickyEdges.Top | BitStickyEdges.Left, component.Instance.StuckEdges);
+
+        var classList = component.Find("div").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-stk-stc-top"));
+        Assert.IsTrue(classList.Contains("bit-stk-stc-lft"));
+        Assert.IsFalse(classList.Contains("bit-stk-stc-btm"));
+        Assert.IsFalse(classList.Contains("bit-stk-stc-rgt"));
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldRespectOnStuckEdgesChanged()
+    {
+        var edges = new List<BitStickyEdges>();
+        var stuckStates = new List<bool>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+            parameters.Add(p => p.OnStuckEdgesChanged, (BitStickyEdges e) => edges.Add(e));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Bottom));
+
+        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom }, edges);
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+
+        // The move from one edge of a pair to the other never stops the element from being stuck, so
+        // it is reported here and nowhere else.
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top }, edges);
+        CollectionAssert.AreEqual(new List<bool> { true }, stuckStates);
+
+        // A repeated report of the same edges raises neither of them.
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        Assert.AreEqual(2, edges.Count);
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.None));
+
+        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Bottom, BitStickyEdges.Top, BitStickyEdges.None }, edges);
+        CollectionAssert.AreEqual(new List<bool> { true, false }, stuckStates);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldAttachTheDetectionForOnStuckEdgesChangedAlone()
+    {
+        var edges = new List<BitStickyEdges>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckEdgesChanged, (BitStickyEdges e) => edges.Add(e));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        Assert.IsTrue(component.Instance.IsStuck);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.OnStuckEdgesChanged, (BitStickyEdges e) => edges.Add(e));
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        // Detaching the detection reports the state it leaves behind, the same way a flip would.
+        Assert.IsFalse(component.Instance.IsStuck);
+        CollectionAssert.AreEqual(new List<BitStickyEdges> { BitStickyEdges.Top, BitStickyEdges.None }, edges);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldIgnoreStuckReportsWhileDisabled()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        Assert.IsFalse(component.Instance.IsStuck);
+        Assert.AreEqual(BitStickyEdges.None, component.Instance.StuckEdges);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldResetStuckStateWhenDisabled()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-stk-stc bit-stk-stc-top my-stuck"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+        Assert.AreEqual(BitStickyEdges.None, component.Instance.StuckEdges);
+
+        component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldReportUnstuckWhenDetectionIsDetached()
+    {
+        var stuckStates = new List<bool>();
+
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnStuckChange((int)BitStickyEdges.Top));
+
+        CollectionAssert.AreEqual(new[] { true }, stuckStates);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(component.Instance.IsStuck);
+
+        CollectionAssert.AreEqual(new[] { true, false }, stuckStates);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldNotFailRefreshingWithoutAnAttachedDetection()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        // Nothing observes the state, so no script is attached and there is nothing to read again.
+        await component.Instance.RefreshAsync();
+
+        Assert.IsFalse(component.Instance.IsStuck);
+    }
+
+    [TestMethod]
+    public void BitStickyShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitStickyCascadingParamsTest>();
+
+        var stickies = component.FindAll(".bit-stk");
+
+        // The first sticky takes everything from the cascading parameters.
+        Assert.AreEqual("HEADER", stickies[0].TagName);
+        Assert.IsTrue(stickies[0].ClassList.Contains("cascaded"));
+        Assert.IsTrue(stickies[0].ClassList.Contains("bit-stk-btm"));
+        StringAssert.Contains(stickies[0].GetAttribute("style"), "top: 1rem");
+        StringAssert.Contains(stickies[0].GetAttribute("style"), "z-index: 4");
+
+        // The second one sets its own element, position and z-index, which must not be overwritten.
+        Assert.AreEqual("FOOTER", stickies[1].TagName);
+        Assert.IsTrue(stickies[1].ClassList.Contains("bit-stk-srt"));
+        Assert.IsFalse(stickies[1].ClassList.Contains("bit-stk-btm"));
+        StringAssert.Contains(stickies[1].GetAttribute("style"), "z-index: 9");
+
+        // What it did not set is still filled in from them.
+        Assert.IsTrue(stickies[1].ClassList.Contains("cascaded"));
+        StringAssert.Contains(stickies[1].GetAttribute("style"), "top: 1rem");
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldRespectStuckClassFromCascadingParams()
+    {
+        var component = RenderComponent<BitStickyCascadingParamsTest>();
+
+        var sticky = component.FindComponents<BitSticky>()[0];
+
+        await component.InvokeAsync(() => sticky.Instance._OnStuckChange((int)BitStickyEdges.Bottom));
+
+        var classList = component.FindAll(".bit-stk")[0].ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-stk-stc"));
+        Assert.IsTrue(classList.Contains("bit-stk-stc-btm"));
+        Assert.IsTrue(classList.Contains("cascaded-stuck"));
     }
 }

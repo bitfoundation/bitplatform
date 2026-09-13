@@ -7,16 +7,37 @@ namespace Bit.Butil;
 /// <summary>
 /// This service is used to detect the user agent information such as the Operating System, browser or web-view, versions and properties.
 /// </summary>
+[ButilService(typeof(UserAgent))]
 public class UserAgent(IJSRuntime js)
 {
     /// <summary>
-    /// Extracts the user agent properties from the browser or web-view.
+    /// Extracts the user agent properties from the browser or web-view, or from a string you pass
+    /// in - a line out of a server log, say.
     /// </summary>
+    /// <remarks>
+    /// Anything the string does not state comes back <c>null</c> rather than guessed, so a missing
+    /// version is visible as missing. One property is not read from the string at all: Brave ships
+    /// Chrome's string deliberately and is identified through <c>navigator.brave</c>, which
+    /// describes the browser this code is running in - so it is only ever applied to that browser's
+    /// own string, never to one you passed in.
+    /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserAgentProperties))]
     public async ValueTask<UserAgentProperties> Extract(string? userAgentString = null)
     {
-        return await js.Invoke<UserAgentProperties>("BitButil.userAgent.extract", userAgentString);
+        return await js.Invoke<UserAgentProperties>("BitButil.userAgentParser.extract", userAgentString);
     }
+
+    /// <summary>True when the runtime exposes <c>navigator.userAgentData</c> (UA Client Hints).</summary>
+    /// <remarks>
+    /// The uniform spelling used by every other Butil class; <see cref="IsClientHintsSupported"/>
+    /// is the same probe under the name that says which of the two mechanisms it is about.
+    /// <see cref="Extract"/> works without UA-CH, falling back to parsing the legacy string.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.userAgent.isSupported");
 
     /// <summary>
     /// True when the runtime exposes <c>navigator.userAgentData</c> (modern UA Client Hints).

@@ -8,9 +8,20 @@ public partial class AppInfoCard
 {
     [Parameter, EditorRequired] public string AppName { get; set; } = default!;
     [Parameter, EditorRequired] public string AppVersion { get; set; } = default!;
-    [Parameter, EditorRequired] public string Platform { get; set; } = default!;
+    /// <summary>
+    /// The device's operating system; hidden when not provided. The web head cannot answer this while it is being
+    /// rendered on the server, so it fills it in after the first render rather than showing the server's OS.
+    /// </summary>
+    [Parameter] public string? Platform { get; set; }
+
     [Parameter, EditorRequired] public string Environment { get; set; } = default!;
-    [Parameter, EditorRequired] public string ProcessId { get; set; } = default!;
+
+    /// <summary>
+    /// Optional process id; hidden when not provided. The native heads run in the process the user launched, so it
+    /// identifies their app - on the web the component may be rendered server-side, where it would be the web server's
+    /// worker instead, which is neither the visitor's nor useful to them.
+    /// </summary>
+    [Parameter] public string? ProcessId { get; set; }
 
     /// <summary>Optional native web view (MAUI/Windows); hidden when not provided (e.g. on the web).</summary>
     [Parameter] public string? WebView { get; set; }

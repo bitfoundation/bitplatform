@@ -1,1 +1,10 @@
-﻿<BitImage data-val-test="bit" Src="images/bit-logo-blue.png" />
+﻿@* Covers the two splats of the component: an attribute written on the component lands on the frame,
+   and one put in ImageAttributes lands on the img - where the attributes the parameters build are
+   merged with it rather than written over it. *@
+
+<BitImage data-val-test="bit" Src="images/bit-logo-blue.png" />
+
+<BitImage Src="images/bit-logo-blue.png"
+          Alt="merged"
+          ImageAttributes="@(new() { { "usemap", "#map" }, { "srcset", "splatted.png 2x" }, { "style", "margin:1rem" } })"
+          Styles="@(new() { Image = "padding:1rem" })" />

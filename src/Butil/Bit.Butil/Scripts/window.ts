@@ -1,19 +1,31 @@
-var BitButil = BitButil || {};
+var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _refs = {};
-    const _mediaQueryHandlers: { [id: string]: { mql: MediaQueryList, handler: (e: MediaQueryListEvent) => void } } = {};
     // beforeunload handlers keyed by a per-registration id. We use addEventListener (not the
     // single window.onbeforeunload slot) so multiple subscribers - and the host app's own
     // handler - coexist instead of clobbering one another, and each can be removed individually.
     const _beforeUnloadHandlers: { [id: string]: (e: BeforeUnloadEvent) => any } = {};
 
+    // The window itself: its geometry, its dialogs and its unload guard. Popups are windowRefs,
+    // the selection windowSelection and the media queries windowMediaQuery - each of those keeps a
+    // registry of its own, and none of them is wanted by an app that just reads innerWidth.
     butil.window = {
         addBeforeUnload,
         removeBeforeUnload,
         innerHeight() { return window.innerHeight },
         innerWidth() { return window.innerWidth },
         isSecureContext() { return window.isSecureContext },
+        devicePixelRatio() { return window.devicePixelRatio },
+        crossOriginIsolated() { return !!(window as any).crossOriginIsolated },
+        frameCount() { return window.length },
+        // Comparing against window.top is the standard iframe test; a cross-origin parent still
+        // permits the identity check even though its properties are blocked. The catch covers the
+        // engines that throw on the access itself.
+        isInIframe() { try { return window.self !== window.top } catch { return true } },
+        moveTo(x: number, y: number) { window.moveTo(x, y) },
+        moveBy(x: number, y: number) { window.moveBy(x, y) },
+        resizeTo(width: number, height: number) { window.resizeTo(width, height) },
+        resizeBy(width: number, height: number) { window.resizeBy(width, height) },
         locationbar() { return window.locationbar },
         getName() { return window.name },
         setName(value: string) { window.name = value },
@@ -28,43 +40,14 @@ var BitButil = BitButil || {};
         alert(message?: string) { window.alert(message) },
         blur() { window.blur() },
         btoa(data: string) { return window.btoa(data) },
-        close,
         confirm(message?: string) { return window.confirm(message) },
         find,
         focus() { window.focus() },
-        getSelection,
-        getSelectionText() { return window.getSelection()?.toString() ?? '' },
-        clearSelection() { window.getSelection()?.removeAllRanges(); },
-        selectElement(element: HTMLElement) {
-            if (!element) return;
-            // Inputs/textareas have their own select(), and trying to wrap them in a Range fails.
-            if (typeof (element as any).select === 'function' && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
-                (element as HTMLInputElement).select();
-                return;
-            }
-            const sel = window.getSelection();
-            if (!sel) return;
-            sel.removeAllRanges();
-            const range = document.createRange();
-            try { range.selectNodeContents(element); sel.addRange(range); }
-            catch { /* element may not be in the DOM */ }
-        },
-        async copySelection() {
-            const text = window.getSelection()?.toString() ?? '';
-            if (!text) return false;
-            try { await navigator.clipboard.writeText(text); return true; }
-            catch { return false; }
-        },
-        matchMedia,
-        subscribeMatchMedia,
-        unsubscribeMatchMedia,
-        open,
         print() { window.print() },
         prompt(message?: string, defaultValue?: string) { return window.prompt(message, defaultValue) },
         scroll,
         scrollBy,
-        stop() { window.stop() },
-        dispose
+        stop() { window.stop() }
     };
 
     function addBeforeUnload(id: string, message?: string) {
@@ -93,15 +76,6 @@ var BitButil = BitButil || {};
         });
     }
 
-    function close(id: string | undefined) {
-        if (!id) { window.close(); return; }
-
-        const ref = _refs[id];
-        if (!ref) return;
-        delete _refs[id];
-        ref.close();
-    }
-
     function find(text?: string,
         caseSensitive?: boolean,
         backward?: boolean,
@@ -109,72 +83,6 @@ var BitButil = BitButil || {};
         wholeWord?: boolean,
         searchInFrame?: boolean) {
         return (window as any).find(text, caseSensitive, backward, wrapAround, wholeWord, searchInFrame);
-    }
-
-    function getSelection() {
-        const sel = window.getSelection();
-        if (!sel) return null;
-        return {
-            text: sel.toString(),
-            isCollapsed: sel.isCollapsed,
-            rangeCount: sel.rangeCount,
-            type: (sel as any).type ?? null,
-            anchorOffset: sel.anchorOffset,
-            focusOffset: sel.focusOffset
-        };
-    }
-
-    function matchMedia(query: string) {
-        const media = window.matchMedia(query);
-        return {
-            matches: media.matches,
-            media: media.media
-        };
-    }
-
-    function subscribeMatchMedia(dotNetRef: any, listenerId: string, query: string) {
-        const mql = window.matchMedia(query);
-        const handler = (e: MediaQueryListEvent) => {
-            butil.utils.dispatch(dotNetRef, 'InvokeMediaQueryChange', listenerId, { matches: e.matches, media: e.media });
-        };
-
-        // addEventListener is supported on MediaQueryList in all evergreen browsers; older
-        // Safari only exposes the legacy addListener variant.
-        if (typeof mql.addEventListener === 'function') {
-            mql.addEventListener('change', handler);
-        } else {
-            (mql as any).addListener(handler);
-        }
-        _mediaQueryHandlers[listenerId] = { mql, handler };
-    }
-
-    function unsubscribeMatchMedia(ids: string[]) {
-        ids.forEach(id => {
-            const entry = _mediaQueryHandlers[id];
-            if (!entry) return;
-            delete _mediaQueryHandlers[id];
-            if (typeof entry.mql.removeEventListener === 'function') {
-                entry.mql.removeEventListener('change', entry.handler);
-            } else {
-                (entry.mql as any).removeListener(entry.handler);
-            }
-        });
-    }
-
-    function open(id: string, url?: string, target?: string, windowFeatures?: string) {
-        const ref = window.open(url, target, windowFeatures);
-        if (!ref) return undefined;
-        // Prune refs for popups the user closed manually. close(id) only runs on explicit
-        // closes, so without this sweep those entries would linger in _refs until dispose().
-        pruneClosedRefs();
-        _refs[id] = ref;
-        return id;
-    }
-
-    function pruneClosedRefs() {
-        for (const key of Object.keys(_refs)) {
-            if (_refs[key].closed) delete _refs[key];
-        }
     }
 
     function scroll(options?: ScrollToOptions, x?: number, y?: number) {
@@ -191,18 +99,5 @@ var BitButil = BitButil || {};
         } else {
             window.scrollBy(x, y);
         }
-    }
-
-    function dispose(ids?: string[]) {
-        // matchMedia handlers are unsubscribed individually by the C# side (it tracks the ids and
-        // calls unsubscribeMatchMedia before dispose), so we deliberately don't touch
-        // _mediaQueryHandlers here - wiping the shared map would clobber any other live instance.
-        //
-        // _refs is shared across every Butil Window instance (i.e. across all Blazor Server
-        // circuits and WASM apps in the module). Wiping it wholesale would orphan popups opened
-        // by *other* live instances, silently turning their close(id) into a no-op. So we only
-        // drop the ids this instance opened, which the C# side tracks and passes in here.
-        if (!ids) return;
-        ids.forEach(id => { delete _refs[id]; });
     }
 }(BitButil));

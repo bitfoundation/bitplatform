@@ -81,7 +81,7 @@
            @bind-IsOpen="isDeleteDialogOpen"
            OkText="@Localizer[nameof(AppStrings.Yes)]"
            CancelText="@Localizer[nameof(AppStrings.No)]"
-           Title="@Localizer[nameof(AppStrings.DeleteProduct)]"
-           Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), deletingCategory?.Name ?? "")" />
+           Title="@Localizer[nameof(AppStrings.DeleteCategory)]"
+           Message="@Localizer[nameof(AppStrings.AreYouSureWannaDeleteCategory), deletingCategory?.Name ?? ""]" />
 
 <AddOrEditCategoryModal @ref="modal" OnSave="WrapHandled(RefreshData)" />

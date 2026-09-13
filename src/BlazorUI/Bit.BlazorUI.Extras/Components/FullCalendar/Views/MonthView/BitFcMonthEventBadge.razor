@@ -32,7 +32,7 @@
      role="button"
      tabindex="0"
      aria-label="@badgeAriaLabel"
-     draggable="true"
+     draggable="@(State.ReadOnly ? "false" : "true")"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="() => OnSelected.InvokeAsync(Event)"

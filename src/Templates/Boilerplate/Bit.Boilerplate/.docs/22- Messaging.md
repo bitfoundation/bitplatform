@@ -15,13 +15,16 @@ At the heart of the Boilerplate messaging architecture is **AppMessages** - a ce
 - From JavaScript to C# code
 - From web service workers to the C# code
 
-**Location**: [`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs)
-
 **Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
+
+> **SignalR only.** `SharedAppMessages`, the SignalR channel (Channel 2) and everything below that depends on a
+> `HubConnection` exist only when the project was generated with `--signalR true`. Without it, `ClientAppMessages`
+> has no base class and Channels 1, 3, 4 and 5 are the whole picture.
 
 ### Message Structure
 
-**SharedAppMessages** (Server ↔ Client):
+**SharedAppMessages** (Server ↔ Client, `signalR` only) -
+[`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs):
 
 ```csharp
 public partial class SharedAppMessages
@@ -49,11 +52,9 @@ public partial class SharedAppMessages
 **Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
 
 ```csharp
-public partial class ClientAppMessages : SharedAppMessages
+public partial class ClientAppMessages // : SharedAppMessages, when signalR is enabled
 {    
-    // Theme and culture
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
     
     // Diagnostics
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
@@ -62,7 +63,7 @@ public partial class ClientAppMessages : SharedAppMessages
 }
 ```
 
-**Note**: `ClientAppMessages` inherits from `SharedAppMessages`, so client-side code has access to both shared and client-only messages.
+**Note**: with SignalR enabled, `ClientAppMessages` inherits from `SharedAppMessages`, so client-side code has access to both shared and client-only messages.
 
 ---
 
@@ -92,24 +93,30 @@ PubSubService.Publish(ClientAppMessages.THEME_CHANGED, newTheme);
 **Subscribing to messages**:
 
 ```csharp
-// In component code
+// In component code. AppComponentBase exposes OnInitAsync / DisposeAsync(bool) - use those, not OnInitialized.
 private Action? unsubscribe;
 
-protected override void OnInitialized()
+protected override async Task OnInitAsync()
 {
+    await base.OnInitAsync();
+
     unsubscribe = PubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
     {
-        currentTheme = (string)payload;
+        currentTheme = (string?)payload;
         await InvokeAsync(StateHasChanged);
     });
 }
 
-protected override void Dispose(bool disposing)
+protected override async ValueTask DisposeAsync(bool disposing)
 {
+    await base.DisposeAsync(disposing);
     unsubscribe?.Invoke();
-    base.Dispose(disposing);
 }
 ```
+
+The handler holds only a **weak** reference to its target, so a component that is collected stops receiving
+messages whether or not it unsubscribed. Call `unsubscribe` anyway: it is what removes the entry immediately, and
+the weak reference is a safety net rather than the contract.
 
 **Persistent Messages**:
 
@@ -174,8 +181,9 @@ unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, 
 **Publishing from JavaScript**:
 
 ```javascript
-// From any JavaScript code
-App.publishMessage('CUSTOM_EVENT', { data: 'some data' });
+// From any JavaScript code. The payload parameter is a string - serialize anything else yourself, because the
+// interop call fails (and its promise rejects, silently) when it cannot be deserialized into string?.
+App.publishMessage('CUSTOM_EVENT', JSON.stringify({ data: 'some data' }));
 
 // Show diagnostic modal
 App.showDiagnostic(); // Publishes SHOW_DIAGNOSTIC_MODAL message
@@ -200,19 +208,22 @@ The `window.postMessage` API allows communication between different JavaScript c
 **Location**: [`src/Client/Boilerplate.Client.Core/Scripts/events.ts`](/src/Client/Boilerplate.Client.Core/Scripts/events.ts)
 
 **When to use**:
-- Communication from iframes
-- Integration with third-party scripts
-- Cross-origin messaging
+- Communication from a same-origin iframe, popup or opener
+- Integration with third-party scripts loaded into the app's own page
+
+**Same-origin only**: window messages from another origin are dropped. Do not remove that check to make a
+cross-origin integration work - it is what stops an arbitrary page that holds a handle to this window from driving
+`PubSubService`. Use a same-origin proxy page instead.
 
 **Publishing via window.postMessage**:
 
 ```javascript
-// From any JavaScript context (including iframes)
+// From a same-origin JavaScript context. The payload must be a string; see Channel 3.
 window.postMessage({ 
     key: 'PUBLISH_MESSAGE', 
     message: 'CUSTOM_EVENT', 
-    payload: { data: 'value' } 
-}, '*');
+    payload: 'value'
+}, window.location.origin);
 ```
 
 **How it works**:
@@ -222,6 +233,12 @@ window.postMessage({
 window.addEventListener('message', handleMessage);
 
 function handleMessage(e: MessageEvent) {
+    // Window messages must be same-origin. Service-worker messages (Channel 5) reach this same handler with an
+    // empty origin and are exempt, because a service worker is same-origin by registration.
+    const isFromWindow = e.currentTarget === window;
+    const isCrossOrigin = e.origin !== window.location.origin;
+    if (isFromWindow && (isCrossOrigin || !e.origin)) return;
+
     if (e.data?.key === 'PUBLISH_MESSAGE') {
         // Bridge to C# PubSubService via AppJsBridge
         App.publishMessage(e.data?.message, e.data?.payload);
@@ -260,16 +277,9 @@ self.addEventListener('notificationclick', (event) => {
 **How it works**:
 
 ```typescript
-// events.ts - Listens for service worker messages
+// events.ts - the same handler as Channel 4, also registered for service worker messages
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', handleMessage);
-}
-
-function handleMessage(e: MessageEvent) {
-    if (e.data?.key === 'PUBLISH_MESSAGE') {
-        // Bridge to C# PubSubService
-        App.publishMessage(e.data?.message, e.data?.payload);
-    }
 }
 ```
 
@@ -341,6 +351,11 @@ The server can send messages to different targets:
 2. **`Clients.Group("AuthenticatedClients")`**: All authenticated users (all their devices)
 3. **`Clients.User(userId)`**: All devices of a specific user (web, mobile, desktop)
 4. **`Clients.Client(connectionId)`**: A specific connection (one browser tab or app)
+5. **`Clients.Clients(connectionIds)`**: Several specific connections - for example every
+   `UserSession.SignalRConnectionId` of one user
+
+Note that `UserSession.SignalRConnectionId` holds the tab or app that connected **most recently** on that session,
+not all of them - read its comments before treating it as "notify this session".
 
 ---
 
@@ -458,7 +473,8 @@ await pushNotificationService.RequestPush(
 When the user clicks this notification:
 - **Web**: The app opens and navigates to `/products/123`
 - **Mobile (Android/iOS)**: The native app opens and navigates to `/products/123`
-- **Desktop (Windows/macOS)**: The browser opens and navigates to `/products/123`
+- **Desktop (macOS)**: The Mac Catalyst app opens and navigates in-app to `/products/123`, the same as the mobile heads
+- **Desktop (Windows)**: push notifications are not implemented - both `WindowsPushNotificationService` heads throw `NotImplementedException`, and `IsAvailable` returns false, so nothing is ever subscribed
 
 This is **extremely useful for**:
 - **Marketing campaigns**: "Flash sale on electronics - 50% off!" → Opens sale page
@@ -468,9 +484,9 @@ This is **extremely useful for**:
 
 ### Push Notification Subscription
 
-**Client-Side Interface**: [`src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs)
+**Client-Side Interface**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IPushNotificationService.cs)
 
-**Base Implementation**: [`src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs)
+**Base Implementation**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/PushNotificationServiceBase.cs)
 
 ```csharp
 public async Task Subscribe(CancellationToken cancellationToken)
@@ -499,7 +515,7 @@ Each platform has its own implementation:
 
 ### Server-Side Push Notification Service
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs)
+**Location**: [`src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs)
 
 ---
 
@@ -507,7 +523,7 @@ Each platform has its own implementation:
 
 The project uses **Bit.Butil.Notification** to access the browser's native Notification API.
 
-**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Extensions/NotificationExtensions.cs)
+**Extension Helper**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/NotificationExtensions.cs)
 
 ```csharp
 public static async Task<bool> IsNotificationAvailable(this Notification notification)
@@ -582,8 +598,8 @@ When testing push notifications, it's critical to understand that there are **fo
 
 ---
 
-### AI Wiki: Answered Questions
-* [Describe the workflow of bit Boilerplate's AI chat feature and provide a high-level overview.
-](https://deepwiki.com/search/describe-the-workflow-of-bit-b_822b9510-8e1d-456f-99bf-fb1778374a9a)
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

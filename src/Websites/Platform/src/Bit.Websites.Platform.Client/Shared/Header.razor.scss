@@ -14,9 +14,18 @@
     padding-top: var(--bit-status-bar-height);
 }
 
-.main-header--full-page {
-    .header-main-container {
-        /*max-width: rem2(1200px);*/
+.skip-link {
+    position: absolute;
+    z-index: 200;
+    left: rem2(8px);
+    top: rem2(-100px);
+    border-radius: rem2(4px);
+    padding: rem2(8px) rem2(16px);
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+
+    &:focus {
+        top: rem2(8px);
     }
 }
 
@@ -69,19 +78,43 @@
     height: 100%;
     cursor: pointer;
     line-height: 1.5;
+    position: relative;
     font-size: rem2(18px);
     text-decoration: none;
     box-sizing: border-box;
     padding: rem2(10px) rem2(16px);
     color: $bit-color-foreground-secondary;
+    transition: color 150ms $MotionEase 0ms;
+
+    // Animated underline: grows from the center on hover, stays put on the active route.
+    &::after {
+        content: '';
+        left: rem2(16px);
+        right: rem2(16px);
+        bottom: rem2(4px);
+        height: rem2(2px);
+        position: absolute;
+        transform: scaleX(0);
+        border-radius: rem2(1px);
+        background-color: $bit-color-primary;
+        transition: transform 200ms $MotionEase 0ms;
+    }
 
     &:hover {
         color: $bit-color-foreground-secondary-hover;
+
+        &::after {
+            transform: scaleX(1);
+        }
     }
 }
 
 .header-link--active {
     color: $bit-color-primary;
+
+    &::after {
+        transform: scaleX(1);
+    }
 
     &:hover {
         color: $bit-color-primary;
@@ -105,18 +138,30 @@
     height: rem2(40px);
     border-radius: 50%;
     margin-left: rem2(5px);
+    transition: transform 200ms $MotionEase 0ms;
 }
 
+.github-container {
+    &:hover .github-btn {
+        transform: scale(1.1);
+    }
+
+    &:active .github-btn {
+        transform: scale(0.95);
+    }
+}
+
+// Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
 .toggle-theme-btn {
     padding: 0;
     border: none;
-    display: none;
     cursor: pointer;
     height: rem2(35px);
     border-radius: 50%;
     min-width: rem2(35px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary;
+    transition: transform 200ms $MotionEase 0ms;
 
     .icon-container {
         height: 100%;
@@ -128,25 +173,32 @@
         img {
             width: 19px;
             height: 19px;
+            transition: transform 300ms $MotionEase 0ms;
         }
+    }
+
+    &:hover {
+        transform: scale(1.1);
+
+        img {
+            transform: rotate(30deg);
+        }
+    }
+
+    &:active {
+        transform: scale(0.95);
     }
 }
 
-.bit-platform-dark-theme {
-    .dark-theme {
-        display: unset;
-    }
-
+// The dark-theme/light-theme visibility of the two toggle buttons comes from the global
+// utilities in app.scss.
+:root[bit-theme="dark"] {
     .github-btn {
         background-image: url('images/github-icon-dark.svg');
     }
 }
 
-.bit-platform-light-theme {
-    .light-theme {
-        display: unset;
-    }
-
+:root[bit-theme="light"] {
     .github-btn {
         background-image: url('images/github-icon-light.svg');
     }
@@ -173,6 +225,7 @@
     z-index: 100;
     display: flex;
     position: fixed;
+    overflow-y: auto;
     padding: rem2(20px);
     box-sizing: border-box;
     align-items: flex-start;
@@ -181,6 +234,30 @@
     background-color: $bit-color-background-primary;
     top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     height: calc(100vh - #{rem2(calc($HeaderHeight + $HeaderSecondRowHeight))});
+    animation: header-fade-slide-in 250ms $MotionEase 0ms;
+
+    // Staggered entry for the nav entries; `backwards` keeps each one invisible until its delay hits.
+    >.header-nav-item,
+    >.header-nav-link {
+        animation: header-fade-slide-in 300ms $MotionEase backwards;
+
+        @for $i from 1 through 7 {
+            &:nth-child(#{$i + 1}) {
+                animation-delay: #{$i * 40}ms;
+            }
+        }
+    }
+}
+
+@keyframes header-fade-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(rem2(-10px));
+    }
+}
+
+.header-nav-item {
+    width: 100%;
 }
 
 .header-nav-link {
@@ -195,6 +272,34 @@
 
 .header-nav-link--active {
     color: $bit-color-primary;
+}
+
+.header-nav-products-trigger {
+    border: none;
+    gap: rem2(6px);
+    cursor: pointer;
+    text-align: left;
+    background: none;
+    font-family: inherit;
+    align-items: center;
+    display: inline-flex;
+
+    .ps-chevron.open {
+        transform: rotate(180deg);
+    }
+}
+
+.header-nav-products {
+    width: 100%;
+    display: flex;
+    padding: rem2(8px);
+    box-sizing: border-box;
+    border-radius: rem2(4px);
+    flex-flow: column nowrap;
+    margin-bottom: rem2(16px);
+    border: 1px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+    animation: header-fade-slide-in 200ms $MotionEase 0ms;
 }
 
 ::deep {
@@ -216,23 +321,26 @@
 }
 
 .header-menu-popup {
-    display: none;
+    opacity: 0;
+    display: flex;
     z-index: 1302;
     top: rem2(44px);
     cursor: default;
     position: absolute;
+    visibility: hidden;
+    pointer-events: none;
     flex-flow: row nowrap;
     border-radius: rem2(4px);
     padding: rem2(8px) rem2(16px);
+    transform: translateY(rem2(-8px));
     border: 1px solid $bit-color-border-secondary;
     background-color: $bit-color-background-secondary;
+    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
 
-    @include sm {
-        padding: 0;
-        overflow: auto;
-        max-height: 25rem;
-        flex-flow: column nowrap;
-    }
+    // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
+    transition: opacity 180ms $MotionEase 0ms,
+        transform 180ms $MotionEase 0ms,
+        visibility 0s linear 180ms;
 
     ::-webkit-scrollbar {
         width: 7px;
@@ -244,79 +352,112 @@
         background-color: rgba(0, 0, 0, .5);
         box-shadow: 0 0 1px rgba(255, 255, 255, .5);
     }
+}
 
-    .col {
-        padding: rem2(8px) 0;
-    }
+.col {
+    padding: rem2(8px) 0;
+}
 
-    .col-header {
-        font-weight: 700;
-        font-size: rem2(16px);
-        color: $bit-color-primary;
-        padding: rem2(8px) rem2(16px) rem2(20px);
-    }
+.menu-item {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    flex-flow: row nowrap;
+    border-radius: rem2(4px);
+    justify-content: flex-start;
+    padding: rem2(8px) rem2(16px);
+    transition: background-color 150ms $MotionEase 0ms,
+        transform 150ms $MotionEase 0ms;
 
+    &:hover {
+        transform: translateX(rem2(3px));
+        background-color: $bit-color-background-secondary-hover;
 
-    .menu-item {
-        display: flex;
-        cursor: pointer;
-        align-items: center;
-        flex-flow: row nowrap;
-        border-radius: rem2(4px);
-        justify-content: flex-start;
-        padding: rem2(8px) rem2(16px);
-        transition: background-color 150ms cubic-bezier(.4,0,.2,1) 0ms;
-
-        &:hover {
-            background-color: $bit-color-background-primary-hover;
-        }
-
-        &.active {
-            .item-title {
-                color: $bit-color-primary;
-            }
+        .item-title {
+            font-weight: 800;
         }
     }
 
-    .item-title {
-        font-weight: 600;
-        white-space: nowrap;
-        font-size: rem2(16px);
-        color: $bit-color-foreground-primary;
+    &.active {
+        .item-title {
+            color: $bit-color-primary;
+        }
     }
+}
 
+.item-title {
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: rem2(16px);
+    color: $bit-color-foreground-primary;
+}
+
+.item-desc {
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: rem2(14px);
+    color: $bit-color-foreground-secondary;
+}
+
+.menu-item--disabled {
+    cursor: default;
+
+    .item-title,
     .item-desc {
-        font-weight: 600;
-        white-space: nowrap;
-        font-size: rem2(14px);
-        color: $bit-color-foreground-secondary;
+        color: $bit-color-foreground-disabled;
     }
 
-    .menu-item--disabled {
-        cursor: default;
+    &:hover {
+        transform: none;
+        background-color: transparent;
 
-        .item-title,
-        .item-desc {
-            color: $bit-color-foreground-disabled;
-        }
-
-        &:hover {
-            background-color: transparent;
-
-            .menu-item-icon {
-                border-color: $B11Color;
-            }
+        .item-title {
+            font-weight: 600;
         }
     }
+}
+
+.header-ps-trigger {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font: inherit;
+    gap: rem2(6px);
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    line-height: inherit;
+    align-items: center;
+    display: inline-flex;
+}
+
+.ps-chevron {
+    flex-shrink: 0;
+    transition: transform 200ms $MotionEase 0ms;
 }
 
 .header-ps-btn {
     position: relative;
     cursor: pointer;
 
-    &:hover {
+    // force-closed suppresses the hover/focus opening after a menu item is clicked, a second tap on
+    // a touch device, or an Escape press, so the popup does not linger under a still-parked cursor
+    // or a sticky :hover; the flag lifts on the next mouseenter.
+    &:not(.force-closed):hover,
+    &:not(.force-closed):focus-within,
+    &.open {
         .header-menu-popup {
-            display: flex;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+            transition: opacity 180ms $MotionEase 0ms,
+                transform 180ms $MotionEase 0ms,
+                visibility 0s linear 0s;
+        }
+
+        .ps-chevron {
+            transform: rotate(180deg);
         }
     }
 }

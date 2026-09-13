@@ -1,0 +1,21 @@
+﻿@* View transitions (o.ViewTransitions = true wraps each navigation's re-render in
+   document.startViewTransition). Each tile carries a unique view-transition-name and the detail
+   hero re-declares the SAME name, so the browser morphs one into the other - the whole
+   shared-element wiring is that pair of CSS names, with no animation code. *@
+
+<h1>View transitions</h1>
+
+<div class="gallery">
+    @foreach (var item in GalleryCatalog.Items)
+    {
+        <BrouterLink Href="@($"/gallery/{item.Id}")" class="tile"
+                     style="@($"background: {item.Gradient}; view-transition-name: item-{item.Id};")">
+            @item.Emoji
+        </BrouterLink>
+    }
+</div>
+
+<p class="muted">
+    Click a tile: it morphs into the detail hero while everything else cross-fades. Browsers
+    without the View Transitions API navigate identically, just without the animation.
+</p>

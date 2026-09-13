@@ -8,7 +8,22 @@ public partial class ProductsCountPerCategoryWidget
     [AutoInject] IDashboardController dashboardController = default!;
 
     private bool isLoading;
-    private BitChartConfig config = default!;
+    private bool hasLoadedOnce;
+    private readonly BitChartConfig config = new()
+    {
+        Type = BitChartType.Bar,
+        Options = new BitChartOptions
+        {
+            Plugins = new BitChartPluginOptions
+            {
+                Legend = new BitChartLegendOptions { Display = false }
+            },
+            Scales =
+            {
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, BeginAtZero = true }
+            }
+        }
+    };
     //#if (signalR == true)
     private Action? unsubscribe;
     //#endif
@@ -32,38 +47,29 @@ public partial class ProductsCountPerCategoryWidget
 
         try
         {
-            // A fresh config is built on each load so re-fetches replace the previous data instead of appending to it.
-            config = new BitChartConfig
-            {
-                Type = BitChartType.Bar,
-                Options = new BitChartOptions
-                {
-                    Plugins = new BitChartPluginOptions
-                    {
-                        Legend = new BitChartLegendOptions { Display = false }
-                    },
-                    Scales =
-                    {
-                        ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, BeginAtZero = true }
-                    }
-                }
-            };
-
             var data = await dashboardController.GetProductsCountPerCategoryStats(CurrentCancellationToken);
 
-            config.Data.Labels.AddRange(data.Select(d => d.CategoryName ?? string.Empty));
-            config.Data.Datasets.Add(new BitChartDataset
+            config.Data = new()
             {
-                Data = [.. data.Select(d => (double?)d.ProductCount)],
-                BackgroundColors = [.. data.Select(d => d.CategoryColor ?? string.Empty)]
-            });
+                Labels = [.. data.Select(d => d.CategoryName ?? string.Empty)],
+                Datasets = [
+                    new()
+                    {
+                        Data= [.. data.Select(d => (double?)d.ProductCount)],
+                        BackgroundColors = data.All(d => string.IsNullOrWhiteSpace(d.CategoryColor) is false)
+                                        ? [.. data.Select(d => d.CategoryColor!)]
+                                        : null
+                    }]
+            };
         }
         finally
         {
             isLoading = false;
+            hasLoadedOnce = true;
             StateHasChanged();
         }
     }
+
 
     //#if (signalR == true)
     protected override async ValueTask DisposeAsync(bool disposing)

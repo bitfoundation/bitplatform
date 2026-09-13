@@ -1,9 +1,23 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.BasicList;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.BasicList;
 
 public partial class BitBasicListDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AutoLoad",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Loads the next page as soon as the end of the loaded items scrolls into view, turning the LoadMore button into an infinite scrolling list. Only effective while LoadMore is enabled.",
+        },
+        new()
+        {
+            Name = "AutoLoadThreshold",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How many pixels before the end of the loaded items the next page starts loading in AutoLoad mode.",
+        },
         new()
         {
             Name = "Classes",
@@ -43,6 +57,13 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "FooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content rendered below the items of the list, inside its scrolling region.",
+        },
+        new()
+        {
             Name = "FullHeight",
             Type = "bool",
             DefaultValue = "false",
@@ -64,9 +85,23 @@ public partial class BitBasicListDemo
         },
         new()
         {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The content rendered above the items of the list, inside its scrolling region.",
+        },
+        new()
+        {
+            Name = "Horizontal",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the items of the list out in a row and scrolls it sideways instead of down. Ignored while Virtualize is enabled, since virtualization is vertical only.",
+        },
+        new()
+        {
             Name = "Items",
-            Type = "ICollection<TItem>",
-            DefaultValue = "new Array.Empty<TItem>()",
+            Type = "ICollection<TItem>?",
+            DefaultValue = "null",
             Description = "The list of items to render.",
         },
         new()
@@ -74,14 +109,35 @@ public partial class BitBasicListDemo
             Name = "ItemSize",
             Type = "float",
             DefaultValue = "50",
-            Description = "Size of each item in pixels. Defaults to 50px.",
+            Description = "Size of each item in pixels, used by the Virtualize mode to calculate the scroll range and the number of rows to render.",
         },
         new()
         {
             Name = "ItemsProvider",
             Type = "BitBasicListItemsProvider<TItem>?",
             DefaultValue = "null",
-            Description = "The function providing items to the list.",
+            Description = "The function providing items to the list. It always takes priority over Items, and is called for a region at a time in Virtualize mode, for a page at a time in LoadMore mode, and once for the whole set otherwise.",
+        },
+        new()
+        {
+            Name = "ItemsProviderDelay",
+            Type = "int",
+            DefaultValue = "100",
+            Description = "The number of milliseconds the list waits before calling the ItemsProvider in Virtualize mode, which debounces the requests a scroll issues. A value of 0 turns the debouncing off. Never applies to the pages of the LoadMore mode.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the loading content of the list in place of its items. The list also raises this state on its own while it is fetching items.",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The template rendered while the list is loading its items.",
         },
         new()
         {
@@ -95,21 +151,33 @@ public partial class BitBasicListDemo
             Name = "LoadMoreSize",
             Type = "int",
             DefaultValue = "20",
-            Description = "The number of items to be loaded and rendered after the LoadMore button is clicked. Defaults to 20.",
+            Description = "The number of items to be loaded and rendered after the LoadMore button is clicked.",
         },
         new()
         {
             Name = "LoadMoreTemplate",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "The template of the LoadMore button.",
+            Description = "The template of the LoadMore button. Its context is whether a page is being loaded at that moment.",
         },
         new()
         {
             Name = "LoadMoreText",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "The custom text of the default LoadMore button. Defaults to \"LoadMore\".",
+            DefaultValue = "Load more",
+            Description = "The custom text of the default LoadMore button.",
+        },
+        new()
+        {
+            Name = "OnLoadingChange",
+            Type = "EventCallback<bool>",
+            Description = "The callback that is invoked when the list starts and stops loading its items.",
+        },
+        new()
+        {
+            Name = "OnLoadMore",
+            Type = "EventCallback<int>",
+            Description = "The callback that is invoked after each page of the LoadMore mode has been appended, with the number of items the list holds at that point.",
         },
         new()
         {
@@ -121,16 +189,16 @@ public partial class BitBasicListDemo
         new()
         {
             Name = "Role",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "list",
-            Description = "The role attribute of the html element of the list.",
+            Description = "The role attribute of the html element of the list. Set it to null to leave the role off altogether.",
         },
         new()
         {
             Name = "RowTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
-            Description = "The template to render each row.",
+            Description = "The template to render each row. Without it each item is rendered as its own text.",
         },
         new()
         {
@@ -157,6 +225,46 @@ public partial class BitBasicListDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "LoadMoreAsync",
+            Type = "Task",
+            Description = "Loads the next page of the LoadMore mode, the same way clicking the LoadMore button does.",
+        },
+        new()
+        {
+            Name = "RefreshDataAsync",
+            Type = "Task",
+            Description = "Reloads the items of the list: a LoadMore list starts over from its first page, a virtualized provider list re-requests the region it shows, a plain provider list fetches the whole set again, and a plain list picks up the current contents of its Items collection.",
+        },
+        new()
+        {
+            Name = "ScrollToEndAsync",
+            Type = "Task",
+            Description = "Scrolls the list to its end. Pass true to animate the scrolling.",
+        },
+        new()
+        {
+            Name = "ScrollToIndexAsync",
+            Type = "Task",
+            Description = "Scrolls the list so that the item at the given index sits at its start edge. Pass true as the second argument to animate the scrolling.",
+        },
+        new()
+        {
+            Name = "ScrollToOffsetAsync",
+            Type = "Task",
+            Description = "Scrolls the list to an absolute offset in pixels on its scrolling axis. Pass true as the second argument to animate the scrolling.",
+        },
+        new()
+        {
+            Name = "ScrollToStartAsync",
+            Type = "Task",
+            Description = "Scrolls the list to its start. Pass true to animate the scrolling.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -172,6 +280,27 @@ public partial class BitBasicListDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the root element of the list.",
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header container of the list.",
+                },
+                new()
+                {
+                    Name = "Footer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer container of the list.",
+                },
+                new()
+                {
+                    Name = "LoadingContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the loading container of the list.",
                 },
                 new()
                 {
@@ -217,6 +346,23 @@ public partial class BitBasicListDemo
         Job = $"برنامه نویس {i + 1}"
     })];
 
+    private readonly List<Person> emptyPeople = [];
+
+    private readonly List<string> fruits = ["Apple", "Apricot", "Banana", "Cherry", "Fig", "Grape", "Lemon", "Mango", "Orange", "Peach"];
+
+    private readonly List<Person> mutablePeople = [.. Enumerable.Range(0, 100).Select(i => new Person
+    {
+        Id = i + 1,
+        FirstName = $"Person {i + 1}",
+        LastName = $"Person Family {i + 1}",
+        Job = $"Programmer {i + 1}"
+    })];
+
+    private bool isLoading;
+    private int loadedCount;
+    private bool scrollToEndPending;
+    private BitBasicList<Person>? listRef;
+
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
@@ -224,6 +370,7 @@ public partial class BitBasicListDemo
     private BitBasicListItemsProvider<CategoryOrProductDto> categoriesAndProductsProvider = default!;
 
     private BitBasicListItemsProvider<Person> loadMoreProvider = default!;
+    private BitBasicListItemsProvider<Person> autoLoadProvider = default!;
     private BitBasicListItemsProvider<Person> loadMoreVirtualizeProvider = default!;
 
     protected override void OnInitialized()
@@ -246,7 +393,7 @@ public partial class BitBasicListDemo
             }
             catch
             {
-                return BitBasicListItemsProviderResult.From<ProductDto>([], 0);
+                return BitBasicListItemsProviderResult.Empty<ProductDto>();
             }
         };
 
@@ -268,7 +415,7 @@ public partial class BitBasicListDemo
             }
             catch
             {
-                return BitBasicListItemsProviderResult.From<CategoryOrProductDto>([], 0);
+                return BitBasicListItemsProviderResult.Empty<CategoryOrProductDto>();
             }
         };
 
@@ -279,6 +426,13 @@ public partial class BitBasicListDemo
             return BitBasicListItemsProviderResult.From([.. fewPeople.Skip(req.StartIndex).Take(req.Count)], fewPeople.Count);
         };
 
+        autoLoadProvider = async req =>
+        {
+            await Task.Delay(700);
+
+            return BitBasicListItemsProviderResult.From([.. lotsOfPeople.Skip(req.StartIndex).Take(req.Count)], lotsOfPeople.Count);
+        };
+
         loadMoreVirtualizeProvider = async req =>
         {
             await Task.Delay(500);
@@ -287,5 +441,41 @@ public partial class BitBasicListDemo
         };
 
         base.OnInitialized();
+    }
+
+
+
+    private async Task AddPerson()
+    {
+        var id = mutablePeople.Count + 1;
+
+        mutablePeople.Add(new Person
+        {
+            Id = id,
+            FirstName = $"Person {id}",
+            LastName = $"Person Family {id}",
+            Job = $"Programmer {id}"
+        });
+
+        // The collection instance itself did not change, so the list is told to pick up its new contents.
+        if (listRef is not null)
+        {
+            await listRef.RefreshDataAsync();
+
+            // The new row is only scrollable to once it has been rendered, so the scrolling waits for that render.
+            scrollToEndPending = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (scrollToEndPending && listRef is not null)
+        {
+            scrollToEndPending = false;
+
+            await listRef.ScrollToEndAsync(true);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

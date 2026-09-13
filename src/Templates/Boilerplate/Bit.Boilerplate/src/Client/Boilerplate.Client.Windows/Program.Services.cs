@@ -1,7 +1,11 @@
 //+:cnd:noEmit
+// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/MauiProgram.Services.cs
+
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -21,10 +25,12 @@ public static partial class Program
             services.AddClientCoreProjectServices(configuration);
 
             services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
+            services.AddScoped<IExternalNavigationService, WindowsExternalNavigationService>();
             services.AddScoped<ClientExceptionHandlerBase, WindowsExceptionHandler>();
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
             services.AddScoped<IAppUpdateService, WindowsAppUpdateService>();
+            services.AddScoped<IPermissionService, WindowsPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 
             services.AddScoped<HttpClient>(sp =>
@@ -45,10 +51,7 @@ public static partial class Program
 
             ClientWindowsSettings settings = new();
             configuration.Bind(settings);
-            services.AddSingleton(sp =>
-            {
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWindowsSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             //#if (notification == true)
             services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
@@ -96,7 +99,7 @@ public static partial class Program
                 });
 
             var useOtlpExporter = string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]) is false
-                || string.IsNullOrEmpty(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
+                || string.IsNullOrWhiteSpace(configuration["OTEL_EXPORTER_OTLP_LOGS_ENDPOINT"]) is false;
 
             if (useOtlpExporter)
             {
@@ -104,7 +107,7 @@ public static partial class Program
             }
 
             //#if (appInsights == true)
-            if (string.IsNullOrEmpty(settings.ApplicationInsights?.ConnectionString) is false)
+            if (string.IsNullOrWhiteSpace(settings.ApplicationInsights?.ConnectionString) is false)
             {
                 openTelemetry.UseAzureMonitorExporter(options =>
                 {

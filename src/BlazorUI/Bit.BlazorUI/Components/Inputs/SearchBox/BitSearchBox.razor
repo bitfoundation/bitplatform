@@ -6,113 +6,166 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
-        @if (HideIcon is false)
-        {
-            var icon = BitIconInfo.From(Icon, IconName ?? "Search");
-            <div aria-hidden="true"
-                 style="@Styles?.IconWrapper" 
-                 class="bit-srb-iwp @Classes?.IconWrapper">
-                <i aria-hidden="true" 
-                   style="@Styles?.Icon" 
-                   class="@icon?.GetCssClasses() @Classes?.Icon" />
-            </div>
-        }
 
-        @if (PrefixTemplate is not null)
-        {
-            @PrefixTemplate
-        }
-        else if (Prefix.HasValue())
-        {
-            <div style="@Styles?.PrefixContainer" 
-                 class="bit-srb-pre @Classes?.PrefixContainer">
-                <span style="@Styles?.Prefix" 
-                      class="@Classes?.Prefix">
-                    @Prefix
-                </span>
-            </div>
-        }
+    @if (HasLabel)
+    {
+        <label id="@_labelId"
+               for="@_inputId"
+               style="@Styles?.Label"
+               class="bit-srb-lbl @Classes?.Label">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                @Label
+            }
+        </label>
+    }
 
-        <input @ref="InputElement" @attributes="InputHtmlAttributes"
-               @onkeydown="@HandleOnKeyDown"
-               @onfocusin="HandleInputFocusIn"
-               @onfocusout="HandleInputFocusOut"
-               @oninput="@HandleOnStringValueInputAsync"
-               @onchange="@HandleOnStringValueChangeAsync"
-               type="text"
-               name="@Name"
-               id="@_inputId"
-               role="searchbox"
-               readonly="@ReadOnly"
-               value="@CurrentValue"
-               style="@Styles?.Input"
-               autofocus="@AutoFocus"
-               inputmode="@_inputMode"
-               aria-label="@AriaLabel"
-               placeholder="@Placeholder"
-               autocomplete="@AutoComplete"
-               disabled="@(IsEnabled is false)"
-               class="bit-srb-inp @Classes?.Input" />
+    <div style="@Styles?.Wrapper" class="bit-srb-wrp @Classes?.Wrapper">
+        <div class="bit-srb-cnt @Classes?.InputContainer" style="@Styles?.InputContainer">
+            @if (HideIcon is false)
+            {
+                var icon = BitIconInfo.From(Icon, IconName ?? "Search");
+                @* The icon sits inside the field and advertises a text cursor, so clicking it has to
+                   put the caret in the input the same way clicking the empty space of the field does. *@
+                <div aria-hidden="true"
+                     @onclick="HandleOnIconClick"
+                     style="@Styles?.IconWrapper"
+                     class="bit-srb-iwp @Classes?.IconWrapper">
+                    <i aria-hidden="true"
+                       style="@Styles?.Icon"
+                       class="@icon?.GetCssClasses() @Classes?.Icon" />
+                </div>
+            }
 
-        @if (SuffixTemplate is not null)
-        {
-            @SuffixTemplate
-        }
-        else if (Suffix.HasValue())
-        {
-            <div style="@Styles?.SuffixContainer" class="bit-srb-suf @Classes?.SuffixContainer">
-                <span style="@Styles?.Suffix" class="@Classes?.Suffix">
-                    @Suffix
-                </span>
-            </div>
-        }
+            @if (PrefixTemplate is not null)
+            {
+                @PrefixTemplate
+            }
+            else if (Prefix.HasValue())
+            {
+                <div style="@Styles?.PrefixContainer"
+                     class="bit-srb-pre @Classes?.PrefixContainer">
+                    <span style="@Styles?.Prefix"
+                          class="@Classes?.Prefix">
+                        @Prefix
+                    </span>
+                </div>
+            }
 
-        @if (HideClearButton is false && CurrentValue.HasValue())
+            <input @ref="InputElement" @attributes="InputHtmlAttributes"
+                   @onclick="@HandleOnClick"
+                   @onkeyup="@HandleOnKeyUp"
+                   @onfocus="@HandleOnFocus"
+                   @onkeydown="@HandleOnKeyDown"
+                   @onfocusin="@HandleInputFocusIn"
+                   @onfocusout="@HandleInputFocusOut"
+                   @oninput="@HandleOnStringValueInputAsync"
+                   @onchange="@HandleOnStringValueChangeAsync"
+                   type="text"
+                   name="@Name"
+                   id="@_inputId"
+                   tabindex="@TabIndex"
+                   readonly="@ReadOnly"
+                   required="@Required"
+                   value="@CurrentValue"
+                   style="@Styles?.Input"
+                   autofocus="@AutoFocus"
+                   inputmode="@_inputMode"
+                   aria-label="@AriaLabel"
+                   placeholder="@Placeholder"
+                   enterkeyhint="@_enterKeyHint"
+                   disabled="@(IsEnabled is false)"
+                   class="bit-srb-inp @Classes?.Input"
+                   spellcheck="@(SpellCheck is null ? null : (SpellCheck.Value ? "true" : "false"))"
+                   maxlength="@(MaxLength >= 0 ? MaxLength : null)"
+                   aria-labelledby="@(HasLabel ? _labelId : null)"
+                   role="@(_hasSuggestSource ? "combobox" : "searchbox")"
+                   aria-haspopup="@(_hasSuggestSource ? "listbox" : null)"
+                   aria-controls="@(_hasSuggestSource ? _scrollContainerId : null)"
+                   aria-autocomplete="@(_hasSuggestSource ? "list" : null)"
+                   aria-expanded="@(_hasSuggestSource ? (_isOpen ? "true" : "false") : null)"
+                   aria-activedescendant="@(_isOpen && _selectedIndex > -1 ? GetItemId(_selectedIndex) : null)"
+                   autocomplete="@(AutoComplete ?? (_hasSuggestSource ? "off" : null))" />
+
+            @if (SuffixTemplate is not null)
+            {
+                @SuffixTemplate
+            }
+            else if (Suffix.HasValue())
+            {
+                <div style="@Styles?.SuffixContainer" class="bit-srb-suf @Classes?.SuffixContainer">
+                    <span style="@Styles?.Suffix" class="@Classes?.Suffix">
+                        @Suffix
+                    </span>
+                </div>
+            }
+
+            @if (HideClearButton is false && ReadOnly is false && HasValue)
+            {
+                @* Normally kept out of the tab order because escape already clears the field, which is
+                   the faster way to do it from the keyboard. NoClearOnEscape takes that away, so the
+                   button becomes the only way left and has to be reachable. *@
+                <button @onclick="HandleOnClearButtonClick"
+                        type="button"
+                        tabindex="@(NoClearOnEscape ? null : "-1")"
+                        title="@ClearButtonAriaLabel"
+                        style="@Styles?.ClearButton"
+                        aria-label="@ClearButtonAriaLabel"
+                        disabled="@(IsEnabled is false)"
+                        class="bit-srb-cbt @Classes?.ClearButton">
+                    @if (ClearButtonTemplate is not null)
+                    {
+                        @ClearButtonTemplate
+                    }
+                    else
+                    {
+                        var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+                        <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    }
+                </button>
+            }
+        </div>
+
+        @if (ShowSearchButton)
         {
-            <button @onclick="HandleOnClearButtonClick"
+            <button @onclick="HandleOnSearchButtonClick"
                     type="button"
-                    aria-hidden="true"
-                    aria-label="Clear text"
-                    style="@Styles?.ClearButton"
-                    disabled="@(CurrentValue.HasNoValue())"
-                    class="bit-srb-cbt @Classes?.ClearButton">
-                @if (ClearButtonTemplate is not null)
+                    title="@SearchButtonAriaLabel"
+                    style="@Styles?.SearchButton"
+                    aria-label="@SearchButtonAriaLabel"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-srb-sbn @Classes?.SearchButton">
+                @if (SearchButtonTemplate is not null)
                 {
-                    @ClearButtonTemplate
+                    @SearchButtonTemplate
                 }
                 else
                 {
-                    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
-                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    var searchButtonIcon = BitIconInfo.From(SearchButtonIcon, SearchButtonIconName ?? "ChromeBackMirrored");
+                    <i style="@Styles?.SearchButtonIcon" class="@searchButtonIcon?.GetCssClasses() @Classes?.SearchButtonIcon" aria-hidden="true" />
                 }
             </button>
         }
     </div>
 
-    @if (ShowSearchButton)
+    @* The only channel a screen reader has for the outcome of a search: how many suggestions were
+       found, that there were none, or that the term is still too short to search at all. It lives
+       outside of the callout on purpose, since the content of a display:none callout is never announced. *@
+    @if (_hasSuggestSource)
     {
-        <button @onclick="HandleOnSearchButtonClick"
-                type="button"
-                aria-hidden="true"
-                aria-label="Search text"
-                style="@Styles?.SearchButton"
-                class="bit-srb-sbn @Classes?.SearchButton">
-            @if (SearchButtonTemplate is not null)
-            {
-                @SearchButtonTemplate
-            }
-            else
-            {
-                var searchButtonIcon = BitIconInfo.From(SearchButtonIcon, SearchButtonIconName ?? "ChromeBackMirrored");
-                <i style="@Styles?.SearchButtonIcon" class="@searchButtonIcon?.GetCssClasses() @Classes?.SearchButtonIcon" aria-hidden="true" />
-            }
-        </button>
+        <div role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             class="bit-srb-lvr">@_announcement</div>
     }
 
 </div>
 
-@if ((SuggestItems?.Any() ?? false) || SuggestItemsProvider is not null)
+@if (_hasSuggestSource)
 {
     if (Modeless is false)
     {
@@ -122,28 +175,97 @@
              style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
     }
 
+    @* The callout is a sibling of the root element rather than a child of it, so it inherits neither
+       the direction nor the animation opt-out of the component and has to be given both by hand. *@
     <div id="@_calloutId"
-         tabindex="0"
-         role="listbox"
          style="@Styles?.Callout"
-         class="bit-srb-cal @Classes?.Callout">
+         dir="@Dir?.ToString().ToLower()"
+         class="bit-srb-cal@(DisableAnimation ? " bit-srb-nan" : null) @Classes?.Callout">
+
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div style="@Styles?.CalloutHeader"
+                 class="bit-srb-chd @Classes?.CalloutHeader">
+                @CalloutHeaderTemplate
+            </div>
+        }
+
+        @{
+            @* Why nothing is being suggested yet, which is otherwise indistinguishable from a search
+               that ran and found nothing. *@
+            var minCharsHint = GetMinSuggestTriggerCharsText();
+        }
+
+        @* These three are purely visual: the live region of the component is what actually reports
+           the loading, the empty and the too-short states to the assistive technologies, so giving
+           them a role of their own here would only make a screen reader say the very same thing twice. *@
+        @if (minCharsHint is not null)
+        {
+            <div aria-hidden="true"
+                 style="@Styles?.Hint"
+                 class="bit-srb-hnt @Classes?.Hint">
+                @minCharsHint
+            </div>
+        }
+        else if (_isLoading)
+        {
+            <div aria-hidden="true"
+                 style="@Styles?.Loading"
+                 class="bit-srb-lod @Classes?.Loading">
+                @if (LoadingTemplate is not null)
+                {
+                    @LoadingTemplate
+                }
+                else
+                {
+                    <div class="bit-srb-spn" aria-hidden="true" />
+                    @if (LoadingText.HasValue())
+                    {
+                        <span>@LoadingText</span>
+                    }
+                }
+            </div>
+        }
+        else if (_searchTriggered && _viewSuggestedItems.Count == 0)
+        {
+            @if (NoResultsTemplate is not null)
+            {
+                <div aria-hidden="true"
+                     style="@Styles?.NoResults"
+                     class="bit-srb-nrs @Classes?.NoResults">
+                    @NoResultsTemplate
+                </div>
+            }
+            else if (NoResultsText.HasValue())
+            {
+                <div aria-hidden="true"
+                     style="@Styles?.NoResults"
+                     class="bit-srb-nrs @Classes?.NoResults">
+                    @NoResultsText
+                </div>
+            }
+        }
 
         <div id="@_scrollContainerId"
+             role="listbox"
+             aria-label="@SuggestItemsAriaLabel"
+             aria-busy="@(_isLoading ? "true" : null)"
              style="@Styles?.ScrollContainer"
              class="bit-srb-scn @Classes?.ScrollContainer">
-            @foreach (var text in _viewSuggestedItems)
+            @foreach (var (text, index) in _viewSuggestedItems.Select((t, i) => (t, i)))
             {
-                var isSelected = GetIsSelected(text);
-                <div style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                var isSelected = index == _selectedIndex;
+                <div role="presentation" style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
                     <button @onclick="() => HandleOnSuggestedItemClick(text)"
-                            tabindex="0"
+                            @onmousedown:preventDefault="true"
+                            id="@GetItemId(index)"
+                            tabindex="-1"
                             type="button"
                             role="option"
                             title="@text"
-                            aria-label="@text"
-                            aria-setsize="@GetTotalItems()"
                             style="@Styles?.SuggestItemButton"
-                            aria-posinset="@GetItemPosInSet(text)"
+                            aria-posinset="@(index + 1)"
+                            aria-setsize="@_viewSuggestedItems.Count"
                             aria-selected="@(isSelected ? "true" : "false")"
                             class="bit-srb-itm@(isSelected ? " bit-srb-sel" : "") @Classes?.SuggestItemButton">
                         @if (SuggestItemTemplate is not null)
@@ -154,13 +276,39 @@
                         {
                             <span style="@Styles?.SuggestItemText"
                                   class="@Classes?.SuggestItemText">
-                                @text
+                                @if (HighlightSuggestItems)
+                                {
+                                    @foreach (var segment in GetHighlightSegments(text))
+                                    {
+                                        if (segment.IsMatch)
+                                        {
+                                            <mark style="@Styles?.SuggestItemHighlight"
+                                                  class="bit-srb-hlt @Classes?.SuggestItemHighlight">@segment.Text</mark>
+                                        }
+                                        else
+                                        {
+                                            @segment.Text
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    @text
+                                }
                             </span>
                         }
                     </button>
                 </div>
             }
         </div>
+
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div style="@Styles?.CalloutFooter"
+                 class="bit-srb-cft @Classes?.CalloutFooter">
+                @CalloutFooterTemplate
+            </div>
+        }
 
     </div>
 }

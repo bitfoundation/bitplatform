@@ -1,0 +1,92 @@
+<PageTitle>Performance · Brouter docs</PageTitle>
+
+<div class="bb-intro">
+    <h1>Performance &amp; scalability</h1>
+    <p class="bb-subtitle">
+        What routes cost, how matching scales, and how to keep prerendered apps from fetching
+        twice. Numbers come from the repository's runnable benchmark project.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every route is a live component</h3>
+    <p class="bb-card-desc">
+        Brouter is declarative: each <code>&lt;Broute&gt;</code> (and each discovered
+        <code>&#64;page</code> route, emitted as a synthetic one) is a component instance mounted
+        for the router's lifetime. That is what powers nested layouts, per-route guards/loaders
+        and hierarchical matching - and it differs from the built-in Router, which keeps routes as
+        a plain data table. Two costs to keep separate:
+    </p>
+    <ul class="bb-detail-list">
+        <li><strong>Match cost (per navigation)</strong> - handled: a first-segment index means matching considers only routes whose first template segment can match the URL's first segment, not all routes.</li>
+        <li><strong>Instantiation cost (steady state)</strong> - unmatched routes render nothing, so this is a memory / instance-count cost, not a per-render one.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Indicative numbers</h3>
+    <p class="bb-card-desc">
+        Measured by <code>Tests/Bit.Brouter.Benchmarks</code> (.NET 10, Release) against a
+        RouteTable-style baseline that instantiates only the matched component:
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Route count</th><th>Extra memory</th><th>Extra startup</th></tr></thead>
+        <tbody>
+            <tr><td>Tens of routes (typical)</td><td>negligible</td><td>negligible</td></tr>
+            <tr><td>~500 routes</td><td>~2.5 MB</td><td>~4 ms</td></tr>
+            <tr><td>~1000 routes</td><td>~5.6 MB</td><td>~8 ms</td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        Each live route retains on the order of 3-6&nbsp;KB of managed heap, growing linearly.
+        Material for a very large all-<code>&#64;page</code> app; negligible otherwise. Run
+        <code>dotnet run -c Release</code> in the benchmark project for numbers on your own
+        hardware and route counts.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Hundreds of pages?</h3>
+    <ul class="bb-detail-list">
+        <li>Benchmark at your real route count before treating any router as a drop-in at that scale.</li>
+        <li>Split routes across lazily-loaded assemblies and register them via <code>OnNavigateAsync</code> / <code>AdditionalAssemblies</code> as they load - routes for pages the user hasn't reached aren't mounted up front (see <BrouterLink Href="/docs/page-discovery">&#64;page discovery</BrouterLink>).</li>
+        <li>Keep-alive retention is opt-in and LRU-bounded; <code>brouter.ClearKeepAlive()</code> releases retained pages on demand (see <BrouterLink Href="/docs/lifecycle">lifecycle &amp; keep-alive</BrouterLink>).</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Prerender state bridging</h3>
+    <p class="bb-card-desc">
+        Under prerendering, a route <code>Loader</code> runs on the server to produce the HTML,
+        then the app becomes interactive and would run it again - a double fetch. Enable
+        <code>PersistLoaderState</code> to capture loader results during prerender (via
+        <code>PersistentComponentState</code>) and restore them on the interactive pass.
+        Restoration degrades gracefully: anything that can't be rehydrated simply loads again.
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBrouterServices(o =&gt;
+{
+    o.PersistLoaderState = <span class="k">true</span>;
+
+    <span class="c">// For full trimming/AOT safety, supply a source-generated JSON context:</span>
+    o.LoaderStateTypeInfoResolver = AppJsonContext.Default;
+});
+
+[<span class="k">JsonSerializable</span>(<span class="k">typeof</span>(User))]
+[<span class="k">JsonSerializable</span>(<span class="k">typeof</span>(Post))]
+<span class="k">partial class</span> AppJsonContext : JsonSerializerContext { }</pre>
+    <p class="bb-card-desc">
+        Without a resolver, persistence uses reflection-based <code>System.Text.Json</code> -
+        enable it when your loader data types are JSON-serializable and preserved under trimming.
+        Loader results containing live tasks (deferred data) are skipped and simply re-run.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Not-found under static SSR</h3>
+    <p class="bb-card-desc">
+        On .NET 10, when Brouter matches nothing during static SSR it calls
+        <code>NavigationManager.NotFound()</code>, so the response carries a real HTTP 404 (and
+        drives <code>UseStatusCodePagesWithReExecute</code> when configured) instead of a 200 with
+        fallback HTML - good for crawlers, CDNs and correctness alike.
+    </p>
+</div>

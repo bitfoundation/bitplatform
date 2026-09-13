@@ -1,0 +1,7 @@
+@* Routed page content whose creation InitialMountTests observe via InitialMountState. *@
+
+<div data-testid="im-content">content</div>
+
+@code {
+    protected override void OnInitialized() => InitialMountState.ContentInstances++;
+}

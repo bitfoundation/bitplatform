@@ -40,7 +40,8 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 **Meta tags and viewport settings:**
 ```html
 <meta charset="utf-8" />
-<meta name="theme-color">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 ```
 
@@ -118,7 +119,12 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 ### Configuration Location
 
+<!--#if (api == "Standalone")-->
+**File**: [`/src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json)
+<!--#endif-->
+<!--#if (api == "Integrated")-->
 **File**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+<!--#endif-->
 
 ```json
 "WebAppRender": {
@@ -391,5 +397,11 @@ self.addEventListener('notificationclick', function (event) {
 2. Service worker receives push event (even if app closed)
 3. Shows notification with title, message, and icon
 4. When user clicks notification, app opens to specified `pageUrl` (If applicable)
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

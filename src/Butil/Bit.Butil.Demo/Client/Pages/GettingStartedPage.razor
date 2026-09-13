@@ -1,0 +1,207 @@
+﻿@page "/getting-started"
+@inject Bit.Butil.Window window
+@inject Bit.Butil.LocalStorage localStorage
+
+<PageTitle>Getting started - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Getting started"
+            Lead="Bit.Butil ships as a single NuGet package plus one script tag. Three steps and every browser API on this site is available as an injectable C# service." />
+
+<DemoSection Title="1. Install the package"
+             Description="Bit.Butil targets .NET 8, 9 and 10, works in Blazor WebAssembly, Blazor Server and Blazor Hybrid (MAUI, WPF, WinForms), and is annotated for trimming."
+             Code=@("dotnet add package Bit.Butil")
+             Language="shell" />
+
+<DemoSection Title="2. Add the script"
+             Description="Add the Butil bridge script to your host page, before the Blazor script - the app boots as soon as that second script runs, so window.BitButil has to exist by then. Which host page it is depends on how you host: index.html for standalone WebAssembly and for Hybrid, Components/App.razor for a Blazor Web App, _Host.cshtml for a classic Blazor Server app. Lazy scripts, below, replace this step entirely."
+             Files=@([
+new("wwwroot/index.html", "html", """
+<!-- Standalone WebAssembly, and Blazor Hybrid (MAUI, WPF, WinForms). The app boots as soon as the
+     Blazor script runs, so window.BitButil has to exist by then - order matters. -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+"""),
+new("Components/App.razor", "razor", """
+@* A Blazor Web App. Same rule, same order - only the host page and the Blazor script differ. *@
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.web.js"></script>
+"""),
+new("Pages/_Host.cshtml", "html", """
+<!-- A classic Blazor Server app. -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.server.js"></script>
+"""),
+]) />
+
+<DemoSection Title="3. Register the services"
+             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places. Registration is trimming-aware - it discovers the services by reflection, so a published, trimmed app only registers the Butil classes your code actually injects and the rest are removed from your bundle."
+             Files=@([
+new("Client/Program.cs", """
+using Bit.Butil;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddBitButilServices();
+
+await builder.Build().RunAsync();
+"""),
+new("Server/Program.cs", """
+using Bit.Butil;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+                .AddInteractiveWebAssemblyComponents();
+
+// The same call on the host as well, when the app prerenders. Every component is instantiated once
+// on the server for the prerender pass and again in the browser, so anything a page injects has to
+// resolve in both containers - a page that only registers it on the client throws on the first
+// render rather than on the first call.
+builder.Services.AddBitButilServices();
+
+var app = builder.Build();
+app.MapRazorComponents<App>()
+   .AddInteractiveWebAssemblyRenderMode();
+
+app.Run();
+"""),
+new("MauiProgram.cs", """
+using Bit.Butil;
+
+public static class MauiProgram
+{
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder.UseMauiApp<App>();
+
+        builder.Services.AddMauiBlazorWebView();
+
+        // Blazor Hybrid: the same registration, and the same script tag in wwwroot/index.html.
+        builder.Services.AddBitButilServices();
+
+        return builder.Build();
+    }
+}
+"""),
+]) />
+
+<DemoSection Title="Use any API"
+             Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included. The one habit worth forming from the start: touch the browser from OnAfterRenderAsync or an event handler, never from OnInitialized, so the code also works under prerendering."
+             Code=@("""
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.Keyboard keyboard
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await clipboard.WriteText("Hello from C#!");
+
+        await keyboard.Add(ButilKeyCodes.F10, args => { /* ... */ }, ButilModifiers.Ctrl);
+    }
+}
+""")
+             Language="razor" />
+
+<DemoSection Title="Check that it worked"
+             Description="A round trip through the bridge and back. If this reads and writes without throwing, the script is loaded, the services are registered and the runtime is live - which rules out every setup problem at once. The buttons below run exactly this code on this page."
+             Code=@("""
+await localStorage.SetItem("butil-check", DateTime.Now.ToString("HH:mm:ss"));
+
+var value = await localStorage.GetItem("butil-check");
+var secure = await window.IsSecureContext();
+""")>
+    <div class="controls">
+        <button @onclick="RunCheck">Run the check</button>
+    </div>
+    <DemoConsole @ref="checkOutput" Title="setup check output" />
+</DemoSection>
+
+<DemoSection Title="Optional: tree-shake the JavaScript"
+             Api="BitButilTrimScripts"
+             Description="The bundle behind step 2 covers every API on this site, and a published app can shed the parts it never calls: a publish rebuilds bit-butil.js from only the modules your code can still reach, so an app injecting Clipboard, LocalStorage and Window ships around 6 KB of JavaScript instead of 321 KB. One property turns it on, and in a Blazor WebAssembly project it is already on. It is publish-only, so a build - dotnet run and dotnet watch included - always keeps the full bundle."
+             Code=@("""
+<!-- In a Blazor WebAssembly project there is nothing to add. Anywhere else: -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+""")
+             Language="xml" />
+
+<Callout Type="info" Title="The full story is one page away">
+    <a href="javascript-trimming">JavaScript trimming</a> is the whole feature: the signals it works from and
+    which one suits which hosting model, the modules you name yourself for an API nothing static leads to,
+    where these properties go, the same switches from C# - and a live check that reads back which modules the
+    app you are looking at actually downloaded.
+</Callout>
+
+<DemoSection Title="Optional: lazy scripts"
+             Api="BitButil.UseLazyScripts"
+             Description="The other way to ship only the JavaScript you use, and the one that works in every hosting model, trimmed or not: no script tag at all. The first call into an API imports that API's own module - _content/Bit.Butil/modules/clipboard.js for Clipboard - so the browser downloads the JavaScript for the APIs the app actually calls and nothing else. Set the property in every project that uses Butil, a Blazor Web App's server and client both, and drop the script tag from step 2. The cost is one extra request the first time each API is used."
+             Code=@("""
+<!-- No <script> tag needed anywhere -->
+<PropertyGroup>
+  <BitButilLazyScripts>true</BitButilLazyScripts>
+</PropertyGroup>
+""")
+             Language="xml" />
+
+<DemoSection Title="Optional: fast invoke"
+             Api="BitButil.UseFastInvoke"
+             Description="On Blazor WebAssembly, APIs backed by synchronous JavaScript (LocalStorage, SessionStorage, Cookie, Console, Location, History) can skip the async interop machinery entirely. Call it once at startup; asynchronous browser APIs are unaffected, so it cannot break them, and on Blazor Server it is a no-op."
+             Code=@("""
+BitButil.UseFastInvoke();
+
+// switch back at any time:
+BitButil.UseNormalInvoke();
+""") />
+
+<Callout Type="warning" Title="Browser support varies by API">
+    Butil exposes the browser's own capabilities, so each feature is only as available as the underlying
+    web API. Every page links to its MDN reference, and the <a href="browser-support">browser-support page</a>
+    lists which APIs need HTTPS, a permission prompt or a specific engine - and will feature-detect all of
+    them live in whatever browser you are reading this in.
+</Callout>
+
+<Callout Type="info" Title="Where to next?">
+    <a href="render-modes">Render modes</a> covers how Butil behaves under WebAssembly, Server, Hybrid and
+    prerendering - worth ten minutes before you write much, and
+    <a href="javascript-trimming">JavaScript trimming</a> is worth another ten before you publish.
+    Otherwise, start with the most used APIs:
+    <a href="storage">LocalStorage</a>, <a href="clipboard">Clipboard</a>, <a href="keyboard">Keyboard</a>,
+    <a href="crypto">Crypto</a> and <a href="web-authn">WebAuthn</a>.
+</Callout>
+
+@code {
+    private DemoConsole checkOutput = default!;
+
+    private async Task RunCheck()
+    {
+        try
+        {
+            var stamp = DateTime.Now.ToString("HH:mm:ss");
+
+            await localStorage.SetItem("butil-check", stamp);
+            var value = await localStorage.GetItem("butil-check");
+
+            if (value == stamp)
+            {
+                await checkOutput.Success("Round trip →", $"wrote and read back \"{value}\" - the bridge is live.");
+            }
+            else
+            {
+                await checkOutput.Warn("Round trip →", $"expected \"{stamp}\" but read \"{value}\".");
+            }
+
+            await checkOutput.Info("Window.IsSecureContext() →", await window.IsSecureContext());
+        }
+        catch (Exception ex)
+        {
+            await checkOutput.Error("Check failed →", $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+}

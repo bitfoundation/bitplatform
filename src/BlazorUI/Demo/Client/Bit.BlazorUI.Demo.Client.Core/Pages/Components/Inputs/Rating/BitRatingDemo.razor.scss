@@ -1,9 +1,15 @@
-﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 .example-box {
     display: flex;
     width: fit-content;
     flex-direction: column;
+}
+
+.color-row {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
 }
 
 ::deep {
@@ -23,8 +29,38 @@
         color: mediumseagreen;
     }
 
-    .custom-unselected:hover {
-        color: lightseagreen;
+    // The numbered scale of the ItemTemplate example: a plain badge that fills once its item does.
+    .number-item {
+        width: 1.75rem;
+        height: 1.75rem;
+        line-height: 1;
+        font-size: 0.875rem;
+        align-items: center;
+        display: inline-flex;
+        border-radius: 0.25rem;
+        justify-content: center;
+        color: $bit-color-foreground-tertiary;
+        border: 1px solid $bit-color-border-primary;
+    }
+
+    .number-item-on {
+        color: $bit-color-primary-text;
+        border-color: $bit-color-primary;
+        background-color: $bit-color-primary;
+    }
+
+    // The mood faces of the ItemTemplate example, greyed out until their item is the selected one.
+    .emoji-item {
+        opacity: 0.4;
+        line-height: 1;
+        font-size: 1.75rem;
+        display: inline-block;
+        filter: grayscale(1);
+    }
+
+    .emoji-item-on {
+        opacity: 1;
+        filter: none;
     }
 
     .validation-message {

@@ -1,0 +1,12 @@
+﻿@* Covers what a grid hands down to its items: the cascade they read their grid from, the layout
+   properties that live on the container alone, and a nested grid shadowing the outer one. *@
+
+<BitGrid Columns="12" Spacing="1rem">
+    <BitGridItem>Plain</BitGridItem>
+    <BitGridItem ColumnSpan="2">Span 2</BitGridItem>
+    <BitGridItem ColumnSpan="10">
+        <BitGrid Columns="3">
+            <BitGridItem>Nested</BitGridItem>
+        </BitGrid>
+    </BitGridItem>
+</BitGrid>

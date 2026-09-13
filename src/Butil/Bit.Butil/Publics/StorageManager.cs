@@ -7,6 +7,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps <see href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager">navigator.storage</see>.
 /// </summary>
+[ButilService(typeof(StorageManager))]
 public class StorageManager(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.storage</c>.</summary>
@@ -20,7 +21,10 @@ public class StorageManager(IJSRuntime js)
     /// <summary>
     /// Reports an estimate of the storage quota and current usage for the origin.
     /// </summary>
+    // Nested DTOs aren't reached transitively - preserving StorageEstimate keeps the UsageDetails
+    // property but not StorageUsageDetail's own members, which would deserialize to empty entries.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageEstimate))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(StorageUsageDetail))]
     public ValueTask<StorageEstimate> Estimate() => js.Invoke<StorageEstimate>("BitButil.storageManager.estimate");
 
     /// <summary>True when the origin's storage is persistent (won't be evicted under pressure).</summary>

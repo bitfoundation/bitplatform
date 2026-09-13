@@ -1,5 +1,7 @@
 @import "functions.scss";
 
+@import "semantic-tokens.scss";
+@import "family-tokens.scss";
 @import "bit-css.scss";
 @import "components.scss";
 @import "fabric.mdl2.bit.blazoui.scss";
@@ -24,6 +26,23 @@ button {
     * {
         touch-action: none;
     }
+}
+
+// Opts a subtree out of the reduced-motion collapse in motion.fluent.scss (BitComponentBase.ForceAnimation).
+// The durations are inherited custom properties, so re-pointing them at the -full tokens here restores the
+// unreduced values for this element and everything under it, without touching the document root. The
+// literal fallbacks keep this working for a consumer theme that defines --bit-mot-duration* by hand and
+// therefore has no -full tokens to fall back on.
+.bit-fam {
+    --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
+
+    // The looping tokens slow down rather than collapse under reduced motion, but they are restored
+    // here the same way, so a spinner inside a ForceAnimation subtree turns at full speed again.
+    --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full, 1.3s);
+    --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
+    --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
 }
 
 .bit-input-hidden {
@@ -78,8 +97,8 @@ button {
 @keyframes bit-fade-in {
     0% {
         opacity: 0;
-        animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
-        -webkit-animation-timing-function: cubic-bezier(0.1,0.25,0.75,0.9);
+        animation-timing-function: $mot-easing;
+        -webkit-animation-timing-function: $mot-easing;
     }
 
     100% {

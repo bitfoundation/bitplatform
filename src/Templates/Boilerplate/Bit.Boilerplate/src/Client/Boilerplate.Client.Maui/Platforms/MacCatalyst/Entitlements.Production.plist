@@ -8,8 +8,14 @@
         <true />
         <key>com.apple.security.network.client</key>
         <true />
+        <key>com.apple.security.network.server</key>
+        <true />
         <key>com.apple.security.cs.allow-jit</key>
         <true/>
+        <key>com.apple.developer.associated-domains</key>
+        <array>
+            <string>applinks:use-your-web-app-url-here.com</string>
+        </array>
         <!--#if (notification == true)-->
         <key>aps-environment</key>
         <string>production</string>

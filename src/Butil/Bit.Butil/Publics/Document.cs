@@ -6,6 +6,12 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The DOM document object: its title, cookies, character set, visibility, fullscreen and design mode.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document">https://developer.mozilla.org/en-US/docs/Web/API/Document</see>
+/// </summary>
+[ButilService(typeof(Document))]
 public class Document(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "document";
@@ -17,6 +23,18 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     // on disposal - no static state, no cross-circuit leak.
     private readonly DomEventsInterop _events = new();
 
+    /// <summary>
+    /// Adds a listener for one document-level event. <typeparamref name="T"/> is the event-args
+    /// type the event maps to - <see cref="ButilMouseEventArgs"/>, <see cref="ButilKeyboardEventArgs"/>
+    /// and friends - and the payload is projected to that shape on the JavaScript side.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">EventTarget.addEventListener()</see>
+    /// </summary>
+    /// <param name="domEvent">The event name, e.g. a <see cref="ButilEvents"/> constant.</param>
+    /// <param name="listener">Called when the event fires. Removing it later matches on this delegate's identity.</param>
+    /// <param name="useCapture">Listen during the capture phase rather than the bubble phase.</param>
+    /// <param name="preventDefault">Suppress the browser's own action for the event.</param>
+    /// <param name="stopPropagation">Stop the event travelling any further.</param>
     public async Task AddEventListener<T>(
         string domEvent,
         Action<T> listener,
@@ -67,8 +85,15 @@ public class Document(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool, bool, bool)"/>,
-    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// adding <c>passive</c>, <c>once</c> and
+    /// <see cref="ButilEventListenerOptions.MinInterval">rate limiting</see> on top of <c>capture</c>.
     /// </summary>
+    /// <remarks>
+    /// The overload to reach for on a high-frequency document event - <c>mousemove</c>,
+    /// <c>pointermove</c>, <c>scroll</c>, <c>selectionchange</c> - where
+    /// <see cref="ButilEventListenerOptions.MinInterval"/> caps how often the handler is called
+    /// without changing what the page does.
+    /// </remarks>
     public async Task<ButilSubscription> SubscribeEvent<T>(
         string domEvent,
         Action<T> listener,
@@ -78,7 +103,8 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     {
         var useCapture = options.Capture;
         var id = await _events.AddEventListener(js, ElementName, domEvent, listener,
-            useCapture, preventDefault, stopPropagation, options.Passive, options.Once);
+            useCapture, preventDefault, stopPropagation, options.Passive, options.Once,
+            options.MinInterval?.TotalMilliseconds ?? 0);
         var key = (id, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 
@@ -158,7 +184,7 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode">https://developer.mozilla.org/en-US/docs/Web/API/Document/designMode</see>
     /// </summary>
     public async Task SetDesignMode(DesignMode mode)
-        => await js.InvokeVoid("BitButil.document.setDesignMode", mode.ToString());
+        => await js.InvokeVoid("BitButil.document.setDesignMode", mode is DesignMode.On ? "on" : "off");
 
     /// <summary>
     /// Gets directionality (rtl/ltr) of the document.
@@ -173,19 +199,26 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     public async Task<DocumentDir> GetDir()
     {
         var mode = await js.Invoke<string>("BitButil.document.getDir");
+        // An unset dir reads as "", which renders left to right - so it maps to Ltr rather than Auto.
         return mode switch
         {
             "rtl" => DocumentDir.Rtl,
+            "auto" => DocumentDir.Auto,
             _ => DocumentDir.Ltr
         };
     }
     /// <summary>
-    /// Sets directionality (rtl/ltr) of the document.
+    /// Sets directionality (rtl/ltr/auto) of the document.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/dir">https://developer.mozilla.org/en-US/docs/Web/API/Document/dir</see>
     /// </summary>
     public async Task SetDir(DocumentDir dir)
-        => await js.InvokeVoid("BitButil.document.setDir", dir.ToString());
+        => await js.InvokeVoid("BitButil.document.setDir", dir switch
+        {
+            DocumentDir.Rtl => "rtl",
+            DocumentDir.Auto => "auto",
+            _ => "ltr",
+        });
 
     /// <summary>
     /// Returns the URI of the page that linked to this page.
@@ -194,6 +227,34 @@ public class Document(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async Task<string> GetReferrer()
         => await js.Invoke<string>("BitButil.document.referrer");
+
+    /// <summary>
+    /// How far the document has got through loading: <c>"loading"</c>, <c>"interactive"</c> (DOM
+    /// parsed) or <c>"complete"</c> (subresources done).
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState">https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState</see>
+    /// </summary>
+    /// <remarks>
+    /// In Blazor this is nearly always <c>"complete"</c> by the time a component can call it - the
+    /// framework has to have booted first. It's mainly useful for code that also runs outside the
+    /// component lifecycle, or for waiting on late subresources.
+    /// </remarks>
+    public async Task<string> GetReadyState()
+        => await js.Invoke<string>("BitButil.document.readyState");
+
+    /// <summary>
+    /// When the document was last modified, as the browser's locale-formatted string. Falls back to
+    /// the current time when the server sent no <c>Last-Modified</c> header.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified">https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified</see>
+    /// </summary>
+    /// <remarks>
+    /// The format follows the browser's locale, so parse it with care - there is no ISO-8601 form of
+    /// this property. Because a missing header yields "now" rather than null, it can't distinguish
+    /// "just modified" from "unknown".
+    /// </remarks>
+    public async Task<string> GetLastModified()
+        => await js.Invoke<string>("BitButil.document.lastModified");
 
     /// <summary>
     /// Gets the title of the current document.
@@ -398,12 +459,17 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         return SubscribeEvent(ButilEvents.DomContentLoaded, bridge);
     }
 
+    /// <summary>Removes every listener this instance registered on the document and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;

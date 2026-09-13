@@ -4,6 +4,9 @@
     "projects": [
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
+//#if (IsInsideProjectTemplate == true)
+      "src\\Internal\\Boilerplate.Tests.E2E\\Boilerplate.Tests.E2E.csproj",
+//#endif
 //#if (aspire == true)
       "src\\Server\\Boilerplate.Server.AppHost\\Boilerplate.Server.AppHost.csproj",
 //#endif

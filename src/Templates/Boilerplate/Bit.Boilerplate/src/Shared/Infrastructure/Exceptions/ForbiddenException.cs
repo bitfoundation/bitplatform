@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Boilerplate.Shared.Infrastructure.Exceptions;
 
 public partial class ForbiddenException : RestException

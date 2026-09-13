@@ -7,9 +7,5 @@
 <AppPageData Title="@Localizer[nameof(AppStrings.NotFoundPageTitle)]" />
 
 <section>
-    <BitStack HorizontalAlign="BitAlignment.Center">
-        <BitImage Src="_content/Boilerplate.Client.Core/images/404.svg" Width="100%" Style="max-width:600px" />
-        <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.NotFoundText)]</BitText>
-        <BitButton Href="@PageUrls.Home">@Localizer[nameof(AppStrings.BackToHome)]</BitButton>
-    </BitStack>
+    <NotFoundContent />
 </section>

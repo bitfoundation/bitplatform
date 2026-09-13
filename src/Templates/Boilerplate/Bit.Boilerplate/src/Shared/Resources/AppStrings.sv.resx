@@ -174,8 +174,159 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>För många förfrågningar</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>Kan inte ansluta till servern.</value>
+  </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Inga poster att visa.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Läser in…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Åtgärder</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Lägg till</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Rensa filter</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>Exportera CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Exportera Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Kolumner</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Redigera</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Markera alla</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Markera rad</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Markera rad: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtrera…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filtrera efter {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Alla</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Filteroperator för {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Innehåller</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Innehåller inte</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Börjar med</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Slutar med</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Sant</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Falskt</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Gruppera efter {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Ta bort gruppering efter {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Expandera grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Dölj grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} av {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / sida</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Rader per sida</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Första sidan</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Föregående sida</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Nästa sida</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Sista sidan</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Slut på resultaten -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Visa/dölj detaljer</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Visa/dölj underordnade</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Dra för att ändra ordning, eller fokusera och använd piltangenterna för att flytta raden</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Ändra ordning på raden. Tryck på uppåt- eller nedåtpil för att flytta raden.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Ogiltigt värde för {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Sorterat efter {0}, stigande</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Sorterat efter {0}, fallande</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Sortering efter {0} borttagen</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filter tillämpat på {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filter på {0} rensat</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Raden har tagits bort</value>
   </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
@@ -260,12 +411,34 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Stäng</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Logga in med en lösenordsnyckel</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Öppna Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Öppna Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Genom att registrera dig godkänner du våra</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systemprompts</value>
   </data>
   <data name="SystemPromptsSubTitle" xml:space="preserve">
     <value>Visa systemprompts för chattboten här.</value>
+  </data>
+  <data name="PromptKindSupport" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="PromptKindAnalyzeProductImage" xml:space="preserve">
+    <value>Analysera produktbild</value>
   </data>
   <data name="PushNotificationJob" xml:space="preserve">
     <value>Push-meddelandejobb</value>
@@ -792,9 +965,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Verifieringskod:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ange verifieringskod.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verifiera</value>
   </data>
@@ -976,6 +1146,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DeleteTodoItem" xml:space="preserve">
     <value>Ta bort uppgift</value>
   </data>
+  <data name="SortAscending" xml:space="preserve">
+    <value>Sortera stigande</value>
+  </data>
+  <data name="SortDescending" xml:space="preserve">
+    <value>Sortera fallande</value>
+  </data>
   <!--#endif -->
   <!--#if (module == "Admin" || module == "Sales") -->
   <data name="CategoryCouldNotBeFound" xml:space="preserve">
@@ -991,18 +1167,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Alternativtext</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Sida</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>av</value>
+  </data>
+    <data name="TryAgain" xml:space="preserve">
+    <value>Försök igen</value>
   </data>
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Adminpanel</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} objekt</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Produktantal de senaste 30 dagarna</value>
@@ -1040,9 +1213,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Kategorier med produktantal</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Sök på namn</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Diagram över produktantal per kategori</value>
   </data>
@@ -1073,9 +1243,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DeleteProduct" xml:space="preserve">
     <value>Ta bort produkt</value>
   </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Standard färgväljare</value>
-  </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Redigera produkt {0}</value>
   </data>
@@ -1093,6 +1260,18 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Här är dina analysdata</value>
+  </data>
+    <data name="DeleteCategory" xml:space="preserve">
+    <value>Ta bort kategori</value>
+  </data>
+    <data name="AreYouSureWannaDeleteCategory" xml:space="preserve">
+    <value>Är du säker på att du vill ta bort kategorin {0}?</value>
+  </data>
+    <data name="PresetColors" xml:space="preserve">
+    <value>Förinställda färger</value>
+  </data>
+    <data name="ProductCouldNotBeLoaded" xml:space="preserve">
+    <value>Produkten kunde inte laddas.</value>
   </data>
   <!--#endif -->
   <!--#if (captcha == "reCaptcha") -->
@@ -1115,6 +1294,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="PurchaseSuccessful" xml:space="preserve">
     <value>Köpet lyckades!</value>
+  </data>
+    <data name="NoProductsToShow" xml:space="preserve">
+    <value>Inga produkter att visa just nu.</value>
+  </data>
+    <data name="SearchProducts" xml:space="preserve">
+    <value>Sök produkter</value>
+  </data>
+    <data name="ProductsCouldNotBeLoaded" xml:space="preserve">
+    <value>Produkterna kunde inte laddas.</value>
   </data>
   <!--#endif -->
   <data name="Passwordless" xml:space="preserve">
@@ -1148,6 +1336,57 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chattpanel</value>
   </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Diktera ditt meddelande</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Sluta diktera</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Diktering</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Åtkomsten till mikrofonen är blockerad. Tillåt den i dina inställningar för att kunna diktera.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dikteringen stoppades: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Läs upp</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Sluta läsa upp</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Skriver ner det du sa</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Tid kvar innan dikteringen stoppas</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Rösten kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Diktering och uppläsning körs båda på servern. Logga in en gång så kan du diktera dina meddelanden och lyssna på svaren.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Bifoga en bild</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>Bilden är större än 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Endast bilder kan bifogas.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>Bilden kunde inte bifogas.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Bilder kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Logga in för att skicka en bild tillsammans med ditt meddelande.</value>
+  </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hej{0}! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>
   </data>
@@ -1157,21 +1396,23 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>Hur installerar jag PWA-versionen av appen?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>Jag har lite feedback jag vill dela med mig av!</value>
-  </data>
+  <value>Jag har lite feedback jag vill dela med mig av!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Skriv ett meddelande...</value>
+  </data>
+    <data name="AiChatPanelMaximize" xml:space="preserve">
+    <value>Maximera</value>
+  </data>
+  <data name="AiChatPanelRestore" xml:space="preserve">
+    <value>Återställ</value>
   </data>
   <!--#endif -->
   <!--#if (ads == true) -->
@@ -1190,6 +1431,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Konto-uppgradering misslyckades.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Inga annonser är tillgängliga just nu. Försök igen senare.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problem med att titta på annons?</value>
   </data>
@@ -1197,9 +1441,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Jag har problem med att titta på annonser i appen.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Vänligen vänta</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Hantering</value>
   </data>
@@ -1252,17 +1493,29 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Skicka notis</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Aktivera notiser</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Notiser är aktiverade för den här sessionen.</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Inaktivera notiser</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Notiser är tystade för den här sessionen.</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Testnotis 1</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notiser</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Testnotis 2</value>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Slå på notiser</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Stäng av notiser</value>
+  </data>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Aviseringar är på</value>
+  </data>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Vi skickade den här så att du kan se att aviseringar når den här enheten. Tryck på den för att läsa vår integritetspolicy.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Din liveanslutning till servern är aktiv. Det här meddelandet kom via den, och kommande ändringar visas på samma sätt, i samma stund som de sker.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1331,6 +1584,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UserCantRemoveSuperAdminErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort denna SuperAdmin-användare</value>
   </data>
+  <data name="UserCantRevokeSuperAdminSessionsErrorMessage" xml:space="preserve">
+    <value>Du kan inte återkalla sessionerna för den här SuperAdmin-användaren</value>
+  </data>
   <data name="UserCantRemoveItsCurrentSessionsErrorMessage" xml:space="preserve">
     <value>Du kan inte ta bort din nuvarande session</value>
   </data>
@@ -1355,6 +1611,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="RoleNotificationPageUrlLabel" xml:space="preserve">
     <value>Sido-URL</value>
   </data>
+  <data name="InvalidPageUrl" xml:space="preserve">
+    <value>Sid-URL:en måste vara en relativ URL inom appen, till exempel /products.</value>
+  </data>
   <data name="YouAreNotAuthorized" xml:space="preserve">
     <value>Du är inte behörig</value>
   </data>
@@ -1370,10 +1629,87 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="ImageTooSmall" xml:space="preserve">
     <value>Bilden är för liten. Minsta tillåtna dimensioner är {0}x{1}, men nuvarande dimensioner är {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>Den uppladdade filen är inte en bild som stöds.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>Den medföljande bilden innehåller inte någon bil.</value>
   </data>
-    <!--#if (multitenant == true) -->
+      <data name="AddUserToGroupTitle" xml:space="preserve">
+    <value>Lägg till {0} i den här användargruppen</value>
+  </data>
+  <data name="RemoveUserFromGroupTitle" xml:space="preserve">
+    <value>Ta bort {0} från den här användargruppen</value>
+  </data>
+  <data name="GrantFeatureTitle" xml:space="preserve">
+    <value>Bevilja {0}</value>
+  </data>
+  <data name="RevokeFeatureTitle" xml:space="preserve">
+    <value>Återkalla {0}</value>
+  </data>
+  <data name="GrantAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Bevilja alla {0}-funktioner</value>
+  </data>
+  <data name="RevokeAllGroupFeaturesTitle" xml:space="preserve">
+    <value>Återkalla alla {0}-funktioner</value>
+  </data>
+  <data name="RefreshSelectedUserGroupTitle" xml:space="preserve">
+    <value>Uppdatera den valda användargruppen</value>
+  </data>
+  <data name="RefreshSelectedUserTitle" xml:space="preserve">
+    <value>Uppdatera den valda användaren</value>
+  </data>
+  <data name="NoMatchingUserSessionMessage" xml:space="preserve">
+    <value>Ingen session matchar din sökning.</value>
+  </data>
+  <data name="TfaVerificationCodeRequiredMessage" xml:space="preserve">
+    <value>Ange den 6-siffriga koden från din autentiseringsapp.</value>
+  </data>
+  <data name="TfaOpenInAuthenticatorAppTitle" xml:space="preserve">
+    <value>Öppna det här kontot i din autentiseringsapp</value>
+  </data>
+  <data name="TfaQrCodeAlt" xml:space="preserve">
+    <value>QR-kod för att konfigurera din autentiseringsapp</value>
+  </data>
+  <data name="SessionNoLongerValidMessage" xml:space="preserve">
+    <value>Den här sessionen är inte längre giltig. Logga in igen.</value>
+  </data>
+  <data name="RevokeSessionTitle" xml:space="preserve">
+    <value>Återkalla den här sessionen</value>
+  </data>
+  <data name="ImageMaxSizeErrorMessage" xml:space="preserve">
+    <value>Bilden får vara högst {0}.</value>
+  </data>
+  <data name="OnlyImageFilesAllowedErrorMessage" xml:space="preserve">
+    <value>Endast bildfiler kan användas</value>
+  </data>
+  <data name="SamePhoneNumberErrorMessage" xml:space="preserve">
+    <value>Det är redan ditt telefonnummer. Ange ett annat.</value>
+  </data>
+  <data name="SameEmailErrorMessage" xml:space="preserve">
+    <value>Det är redan din e-postadress. Ange en annan.</value>
+  </data>
+  <data name="MoreTabsTitle" xml:space="preserve">
+    <value>Fler flikar</value>
+  </data>
+  <data name="OpenNavigationMenuTitle" xml:space="preserve">
+    <value>Öppna navigeringsmenyn</value>
+  </data>
+  <data name="AccountMenuTitle" xml:space="preserve">
+    <value>Kontomeny</value>
+  </data>
+  <data name="SwitchToDarkThemeTitle" xml:space="preserve">
+    <value>Byt till mörkt tema</value>
+  </data>
+  <data name="SwitchToLightThemeTitle" xml:space="preserve">
+    <value>Byt till ljust tema</value>
+  </data>
+  <!--#if (signalR == true) -->
+  <data name="SignalRConnectionId" xml:space="preserve">
+    <value>SignalRConnectionId</value>
+  </data>
+  <!--#endif -->
+  <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
     <value>Tenant</value>
   </data>
@@ -1404,9 +1740,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>Är du säker på att du vill lämna tenanten {0}?</value>
   </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Du har lämnat tenanten.</value>
-  </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Byt tenant</value>
   </data>
@@ -1424,6 +1757,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="DuplicateTenantName" xml:space="preserve">
     <value>Tenantnamnet '{0}' är redan upptaget.</value>
+  </data>
+    <data name="ReservedTenantName" xml:space="preserve">
+    <value>Tenantnamnet '{0}' är reserverat och kan inte användas.</value>
   </data>
     <data name="TenantCouldNotBeFound" xml:space="preserve">
     <value>Tenanten kunde inte hittas.</value>
@@ -1449,6 +1785,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="DuplicateTenantDomain" xml:space="preserve">
     <value>Domänen '{0}' är redan upptagen.</value>
   </data>
+    <data name="ReservedTenantDomain" xml:space="preserve">
+    <value>Domänen '{0}' är reserverad och kan inte användas.</value>
+  </data>
     <data name="SelectTenantMessage" xml:space="preserve">
     <value>Du har inte valt någon tenant ännu. Byt till en av dina tenants eller skapa en ny för att komma igång.</value>
   </data>
@@ -1470,5 +1809,227 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="Inactive" xml:space="preserve">
     <value>Inaktiv</value>
   </data>
-    <!--#endif-->
+      <data name="DeclineInvitation" xml:space="preserve">
+    <value>Avböj inbjudan</value>
+  </data>
+  <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
+    <value>Avböja inbjudan till {0}? Detta kan inte ångras - du behöver en ny inbjudan för att gå med.</value>
+  </data>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Tidszon</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Välj tidszon</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Sök tidszon</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Ingen tidszon matchar din sökning.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Pushnotiser är blockerade för den här appen. Tillåt notiser i webbläsarens eller operativsystemets inställningar och försök igen.</value>
+  </data>
+  <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Integritet</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Ladda ner en kopia av dina uppgifter</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Dina integritetsval</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Att logga in dig, komma ihåg ditt språk och rapportera fel finns inte i den här listan: appen fungerar inte utan de två första, och felrapporter innehåller ingen identifierare för din enhet.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Användningsanalys</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Låter oss känna igen din enhet mellan besök så att vi kan se vilka sidor som används och hur lång tid de tar. Att stänga av detta stoppar inte felrapporter.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Annonsering</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Laddar annonsskriptet, som sätter egna identifierare. Ingenting laddas förrän du slår på detta.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Din integritet</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Vi vill lagra viss information på din enhet som appen inte behöver för att fungera. Att logga in dig, komma ihåg ditt språk och rapportera fel sker ändå.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Acceptera</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Avvisa</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Integritetsinställningar</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Kontoinställningar</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Ladda ner dina uppgifter</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Få en kopia av allt den här appen sparar om dig: ditt konto, enheterna du är inloggad på, din profilbild och innehållet du skapat. Du får en zip-fil med data.json och dina filer.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Varje del av filen anger också varför den sparas, hur länge, vem mer som tar emot den och om radering av ditt konto tar bort den.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Ladda ner mina uppgifter</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Om du i stället vill få dina uppgifter raderade, radera ditt konto från</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exportera data</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Besvarar en begäran om uppgifter som inte kom in via appen.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Att titta på en annons laddar Googles annonsskript, som sätter egna identifierare på din enhet. Ingenting laddas förrän du samtycker.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Godkänn och fortsätt</value>
+  </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Auktorisera applikation</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Kontrollerar den här begäran...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Den här begäran kan inte auktoriseras</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>Ingenting har delats. Du kan stänga den här sidan och försöka igen från applikationen.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Gå till startsidan</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>Du kan gå tillbaka till applikationen</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>Resultatet lämnades över till {0}. Om den inte kom fram av sig själv, växla till den.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>Auktorisera {0}?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Den ber om att få agera å dina vägnar. Fortsätt bara om du själv startade detta från en applikation du litar på.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Applikation</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Kan komma åt</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Skickar tillbaka dig till</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Den kommer att kunna:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Ditt konto kan inte bevilja allt som den här applikationen bad om, så följande utelämnas: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Den här applikationen beskrev sig själv; ingen hos {0} har gått i god för den.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Auktorisera</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>Applikationen som gör den här begäran kunde inte identifieras.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>Adressen som den här applikationen vill skickas tillbaka till är inte någon av dem den har registrerat.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Den här auktoriseringsbegäran är inte giltig.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Läsa diagnostikinformation om den här driftsättningen - konfiguration, databasschema, bakgrundsjobb. Den kan inte ändra något.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Läsa diagnostikinformation om den här driftsättningen.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Auktoriserad applikation</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Applikationer</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Auktoriserade applikationer</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Externa applikationer som dina användare har auktoriserat via OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Ingen applikation har auktoriserats än.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Applikationer dyker upp här så fort någon auktoriserar en; ingenting behöver registreras i förväg.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>aktiva behörigheter</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Skickar tillbaka användare till:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Återkalla åtkomst</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} har för närvarande {1} behörighet(er). Att återkalla loggar ut den för alla som auktoriserat den; de kan auktorisera den igen.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} behörighet(er) återkallade.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Förkonfigurerad</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Självbeskriven</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>Den här applikationen kunde inte identifieras, så det finns ingenstans att återvända till.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Den här auktoriseringsbegäran är inte giltig ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Ditt konto har inte de behörigheter som den här applikationen ber om.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Den här applikationen kräver tvåfaktorsautentisering. Slå på den i dina kontoinställningar, logga in igen och börja sedan om från applikationen.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Arbetsyta</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>Du är inte medlem i arbetsytan som den här applikationen frågar efter.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Använda appens assistent å dina vägnar - ställa frågor till den och söka i det den kan söka i. Den kan inte agera på din enhet.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Använda appens assistent å dina vägnar.</value>
+  </data>
+  <!--#endif -->
 </root>

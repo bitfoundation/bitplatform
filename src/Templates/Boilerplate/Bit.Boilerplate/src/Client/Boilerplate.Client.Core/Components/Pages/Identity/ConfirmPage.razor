@@ -11,7 +11,7 @@
         <BitStack HorizontalAlign="BitAlignment.Center" Class="max-width">
             <BitText Typography="BitTypography.H4" Gutter>@Localizer[nameof(AppStrings.ConfirmTitle)]</BitText>
 
-            <BitPivot Alignment="BitAlignment.Center" Class="confirm-pivot">
+            <BitPivot Alignment="BitAlignment.Center">
                 @if (showEmailConfirmation)
                 {
                     <BitPivotItem HeaderText="@Localizer[nameof(AppStrings.ConfirmEmailHeaderText)]"
@@ -29,16 +29,18 @@
 
                                     <BitStack FillContent>
                                         <BitTextField @bind-Value="emailModel.Email"
-                                                      AutoFocus TabIndex="1"
+                                                      TabIndex="1"
                                                       Type="BitInputType.Email"
                                                       Label="@Localizer[nameof(AppStrings.Email)]"
-                                                      IsEnabled="string.IsNullOrEmpty(EmailQueryString)"
+                                                      IsEnabled="string.IsNullOrWhiteSpace(EmailQueryString)"
                                                       Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                                         <ValidationMessage For="@(() => emailModel.Email)" />
 
                                         <BitOtpInput @bind-Value="emailModel.Token"
                                                      TabIndex="2"
                                                      Length="6"
+                                                     NormalizeDigits
+                                                     InputMode="BitInputMode.Tel"
                                                      Size="BitSize.Large"
                                                      Type="BitInputType.Number"
                                                      OnFill="WrapHandled(ConfirmEmail)"
@@ -99,15 +101,17 @@
 
                                     <BitStack FillContent>
                                         <BitPhoneInput @bind-Value="phoneModel.PhoneNumber"
-                                                       AutoFocus TabIndex="1" FullWidth
+                                                      TabIndex="1" FullWidth
                                                       DefaultCountry="@BitCountries.Current"
                                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
-                                                      IsEnabled="string.IsNullOrEmpty(PhoneNumberQueryString)"
+                                                      IsEnabled="string.IsNullOrWhiteSpace(PhoneNumberQueryString)"
                                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                         <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
                                         <BitOtpInput @bind-Value="phoneModel.Token"
                                                      Length="6"
+                                                     NormalizeDigits
+                                                     InputMode="BitInputMode.Tel"
                                                      Size="BitSize.Large"
                                                      Type="BitInputType.Number"
                                                      OnFill="WrapHandled(ConfirmPhone)"

@@ -1,0 +1,76 @@
+@* One MCP call, shown the way a network tab would show it: what went over the wire and what came
+   back, side by side, with the status, the method and the round-trip time above them.
+
+   The point of the page this appears on is that the protocol is not magic - it is a JSON-RPC POST
+   with a JSON body - so the request pane is never summarised or prettified into something the
+   reader could not have typed themselves. *@
+
+@if (Call is null)
+{
+    <p class="mcp-idle">@Placeholder</p>
+}
+else
+{
+    <div class="mcp-exchange">
+        <div class="mcp-meta">
+            <span class="mcp-chip @(Call.Ok ? "ok" : "bad")">@(Call.Status == 0 ? "no response" : $"HTTP {Call.Status}")</span>
+            <span class="mcp-chip">@Call.Method</span>
+            <span class="mcp-chip">@Call.Elapsed ms</span>
+            <code class="mcp-endpoint">@Call.Verb @Call.Endpoint</code>
+        </div>
+
+        <div class="mcp-panes">
+            <div class="mcp-pane">
+                <span class="field-label">Request</span>
+                <CodeBlock Code="@Call.Request" Language="@Call.RequestLanguage" />
+            </div>
+            <div class="mcp-pane">
+                <span class="field-label">Response</span>
+                <CodeBlock Code="@Call.Response" Language="json" />
+            </div>
+        </div>
+
+        @if (string.IsNullOrWhiteSpace(Call.Result) is false)
+        {
+            <div class="mcp-pane mcp-result">
+                @* The payload an MCP client actually hands to the model: the same bytes as in the
+                   response pane, with the JSON string escaping undone so it can be read. *@
+                <span class="field-label">@Call.ResultLabel</span>
+                <CodeBlock Code="@Call.Result" Language="markdown" />
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public Roundtrip? Call { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Nothing sent yet.";
+
+    /// <summary>One request/response pair, already formatted for reading.</summary>
+    /// <param name="Method">The JSON-RPC method, or the tool name for a plain HTTP call.</param>
+    /// <param name="Verb">The HTTP verb the call used.</param>
+    /// <param name="Endpoint">The URL it went to.</param>
+    /// <param name="Request">The request body, or the query string for a GET.</param>
+    /// <param name="Response">The response body, pretty-printed and clipped.</param>
+    /// <param name="Result">The useful text inside the response, unescaped - null when there is none.</param>
+    /// <param name="ResultLabel">Where in the response <paramref name="Result"/> came from.</param>
+    /// <param name="Status">The HTTP status, or 0 when the request never got one.</param>
+    /// <param name="Elapsed">Round-trip time in milliseconds.</param>
+    /// <param name="Ok">Whether the call succeeded, protocol errors included.</param>
+    public record Roundtrip(
+        string Method,
+        string Verb,
+        string Endpoint,
+        string Request,
+        string Response,
+        string? Result,
+        string ResultLabel,
+        int Status,
+        long Elapsed,
+        bool Ok)
+    {
+        /// <summary>A GET carries no body, so its "request" pane holds the URL rather than JSON.</summary>
+        public string RequestLanguage => Verb == "GET" ? "http" : "json";
+    }
+}

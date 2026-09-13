@@ -2,13 +2,13 @@
 
 <Header />
 
-<div class="main @(isDocsRoute ? null : "main--full-page")">
-    @if (isDocsRoute)
+<div class="main @(navMenuService.IsDocsRoute ? null : "main--full-page")">
+    @if (navMenuService.IsDocsRoute)
     {
         <NavMenu NavItems="navItems" />
     }
 
-    <div class="site-content @(isDocsRoute ? "docs-content" : "")">
+    <div class="site-content @(navMenuService.IsDocsRoute ? "docs-content" : "")" id="main-content">
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>

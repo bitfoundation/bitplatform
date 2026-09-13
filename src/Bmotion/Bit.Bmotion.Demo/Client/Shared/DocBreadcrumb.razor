@@ -1,0 +1,22 @@
+﻿@* Where in the docs the current page sits.
+
+   It earns its line only because the index is grouped: what it adds is the name of the group,
+   which is the one thing the page's own title cannot tell the reader. The group is not itself a
+   destination - there is no page listing one - so it is printed rather than linked, and only the
+   first crumb is somewhere to go. *@
+
+@if (Current is not null)
+{
+    <nav class="doc-breadcrumb" aria-label="Breadcrumb">
+        <a href="/basic">Docs</a>
+        <Icon Path="@Icons.ChevronRight" />
+        <span>@Current.Category</span>
+        <Icon Path="@Icons.ChevronRight" />
+        <span class="current" aria-current="page">@Current.Title</span>
+    </nav>
+}
+
+@code {
+    /// <summary>The page being shown, or null on a route that is not a demo page.</summary>
+    [Parameter] public NavItem? Current { get; set; }
+}

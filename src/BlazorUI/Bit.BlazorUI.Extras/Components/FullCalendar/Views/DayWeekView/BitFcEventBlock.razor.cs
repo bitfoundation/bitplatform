@@ -62,6 +62,16 @@ public partial class BitFcEventBlock
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // A read-only block renders no resize handles, so there is nothing to bind the JS listeners
+        // to. The handles are removed from the DOM (taking their listeners with them), so the flag
+        // is cleared as well - otherwise the fresh handles rendered when read-only is turned back
+        // off would be skipped here and never receive listeners.
+        if (State.ReadOnly)
+        {
+            _resizeInitialized = false;
+            return;
+        }
+
         if (_resizeInitialized)
             return;
 
@@ -86,6 +96,11 @@ public partial class BitFcEventBlock
         if (direction is not ("top" or "bottom"))
             return;
 
+        // The handles are not rendered while read-only, but a listener bound before the switch can
+        // still deliver a start; refuse it so the block never enters resize mode in read-only.
+        if (State.ReadOnly)
+            return;
+
         _isResizing = true;
         _resizeDirection = direction;
         _resizeBaseEvent = Event;
@@ -101,6 +116,23 @@ public partial class BitFcEventBlock
     {
         if (!_isResizing || _resizeBaseEvent == null)
             return Task.CompletedTask;
+
+        // Read-only can be switched on mid-gesture: the handle leaves the DOM, but the document-level
+        // pointer listeners keep running. Cancel the whole gesture (not just the preview) so the block
+        // snaps back to the stored times and stays there - keeping the resize alive would let it pick
+        // up again, and commit on release, if read-only were switched back off before the pointer up.
+        if (State.ReadOnly)
+        {
+            _previewStart = null;
+            _previewEnd = null;
+            _isResizing = false;
+            _resizeBaseEvent = null;
+            _resizeDirection = null;
+            // The pointer is still down: swallow the click its release produces so cancelling a resize
+            // doesn't select the event.
+            _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
+            return InvokeAsync(StateHasChanged);
+        }
 
         // Finger back at (or very near) the grab point → show the original span again and cancel
         // any in-progress preview so the user can "undo" without releasing early.
@@ -175,7 +207,9 @@ public partial class BitFcEventBlock
     {
         try
         {
-            if (_resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+            // Never commit in read-only: the switch can land between the last move and the release,
+            // which would otherwise persist a resize the calendar no longer allows.
+            if (State.ReadOnly is false && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
             {
                 var s = _previewStart.Value;
                 var e = _previewEnd.Value;

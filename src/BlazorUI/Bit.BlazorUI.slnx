@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Configurations>
     <Platform Name="Any CPU" />
     <Platform Name="iPhone" />
@@ -31,6 +31,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
+    <Project Path="Tests/Bit.BlazorUI.Tests.Mcp/Bit.BlazorUI.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Tests/Performance/">
     <File Path="Tests/Performance/README.md" />

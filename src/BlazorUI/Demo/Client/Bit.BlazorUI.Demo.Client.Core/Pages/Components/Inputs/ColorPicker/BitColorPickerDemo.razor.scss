@@ -1,12 +1,35 @@
-﻿@import "../../../../Styles/abstracts/_functions.scss";
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+.example-box {
+    gap: 0.25rem;
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
+}
+
+.buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
 
 ::deep {
     .custom-class {
-        width: rem2(100px);
-        height: rem2(250px);
+        width: 100px;
+        height: 250px;
     }
-}
 
-.example-content {
-    padding: 0 1rem;
+    .custom-field {
+        color: blueviolet;
+        border-color: blueviolet;
+    }
+
+    .custom-preset {
+        border-radius: 50%;
+    }
+
+    .custom-preset-selected {
+        --bit-clp-prt-sel-clr: blueviolet;
+    }
 }

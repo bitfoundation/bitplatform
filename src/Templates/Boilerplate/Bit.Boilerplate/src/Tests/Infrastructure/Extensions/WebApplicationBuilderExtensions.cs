@@ -1,11 +1,8 @@
 //+:cnd:noEmit
-using Boilerplate.Tests.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Hangfire;
 using Hangfire.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Builder;
 

@@ -39,14 +39,6 @@
             "url": "/templates"
         },
         {
-            "name": "bit Butil",
-            "url": "/butil"
-        },
-        {
-            "name": "bit Bswup",
-            "url": "/bswup"
-        },
-        {
             "name": "bit Besql",
             "url": "/besql"
         }

@@ -2,26 +2,38 @@
 
 @if (Href.HasValue())
 {
-    <a @onclick="OnClick"
+    <a @ref="Element"
+       @onclick="OnClick"
+       @onfocusin="OnFocusIn"
+       @onkeydown="OnKeyDown"
+       rel="@Rel"
        href="@Href"
-       tabindex="-1"
+       title="@Title"
        class="@Class"
        style="@Style"
-       title="@Title"
        target="@Target"
-       disabled="@Disabled">
+       tabindex="@TabIndex"
+       aria-label="@AriaLabel"
+       aria-current="@AriaCurrent"
+       aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
     </a>
 }
 else
 {
-    <button @onclick="OnClick"
+    <button @ref="Element"
+            @onclick="OnClick"
+            @onfocusin="OnFocusIn"
+            @onkeydown="OnKeyDown"
             type="button"
-            tabindex="-1"
             title="@Title"
             class="@Class"
             style="@Style"
-            disabled="@Disabled">
+            disabled="@Disabled"
+            tabindex="@TabIndex"
+            aria-label="@AriaLabel"
+            aria-current="@AriaCurrent"
+            aria-disabled="@(Disabled ? "true" : null)">
         @ChildContent
     </button>
 }

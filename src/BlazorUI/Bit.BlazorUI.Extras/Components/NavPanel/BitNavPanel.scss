@@ -50,7 +50,7 @@
         z-index: $zindex-callout;
         bottom: $bit-env-inset-bottom;
         top: $bit-env-inset-top !important;
-        transition: transform 150ms ease-out, opacity 100ms ease-in;
+        transition: transform 150ms $mot-easing, opacity 100ms $mot-easing;
 
         &.bit-rtl {
             right: 0;

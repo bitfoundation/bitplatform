@@ -7,5 +7,32 @@
             "sourceMap": false
         },
         "minify": { "enabled": false }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.material.css",
+        "inputFile": "Styles/Material/bit.blazorui.material.scss",
+        "options": {
+            "relativeUrls": false,
+            "sourceMap": false
+        },
+        "minify": { "enabled": false }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.fluent2.css",
+        "inputFile": "Styles/Fluent2/bit.blazorui.fluent2.scss",
+        "options": {
+            "relativeUrls": false,
+            "sourceMap": false
+        },
+        "minify": { "enabled": false }
+    },
+    {
+        "outputFile": "wwwroot/styles/bit.blazorui.cupertino.css",
+        "inputFile": "Styles/Cupertino/bit.blazorui.cupertino.scss",
+        "options": {
+            "relativeUrls": false,
+            "sourceMap": false
+        },
+        "minify": { "enabled": false }
     }
 ]

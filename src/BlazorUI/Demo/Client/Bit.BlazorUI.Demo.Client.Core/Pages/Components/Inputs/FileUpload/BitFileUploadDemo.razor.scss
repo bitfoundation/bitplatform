@@ -1,14 +1,69 @@
-﻿.browse-file {
+﻿.api-buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.upload-grid {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.dimensions-item {
+    gap: 1rem;
+    display: flex;
+    padding: 0.25rem 0;
+    justify-content: space-between;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border: 2px dashed mediumseagreen;
+    }
+
+    .custom-label {
+        color: white;
+        border-color: mediumseagreen;
+        background-color: mediumseagreen;
+    }
+
+    .custom-dragging {
+        background-color: honeydew;
+    }
+
+    .custom-item {
+        border-color: mediumseagreen;
+    }
+
+    .custom-remove {
+        color: white;
+        background-color: mediumseagreen;
+    }
+
+    .custom-drop-zone .browse-file {
+        border-style: dashed;
+        border-color: #0072CE;
+        background-color: #eaf4fd;
+    }
+}
+
+.browse-file {
     gap: 50px;
     width: 420px;
     height: 200px;
     padding: 24px;
     display: flex;
     cursor: pointer;
+    color: inherit;
+    font: inherit;
     border-radius: 2px;
     align-items: center;
     flex-direction: column;
     justify-content: center;
+    background-color: transparent;
     border: 1px solid #D2D2D7;
 }
 
@@ -94,6 +149,14 @@
     gap: 8px;
     display: flex;
     justify-content: space-between;
+
+    button {
+        border: 0;
+        padding: 0;
+        display: flex;
+        cursor: pointer;
+        background-color: transparent;
+    }
 
     i {
         display: block;

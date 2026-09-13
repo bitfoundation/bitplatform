@@ -1,0 +1,331 @@
+@page "/device-orientation"
+@implements IAsyncDisposable
+@inject Bit.Butil.DeviceOrientation deviceOrientation
+
+<PageTitle>DeviceOrientation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="DeviceOrientation"
+            Lead="How the device is tilted and how it is being moved - the accelerometer, gyroscope and compass behind a phone's level, shake gesture and heading indicator, read straight from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Device_orientation_events"
+            InjectAs="DeviceOrientation deviceOrientation" />
+
+<Callout Type="info" Title="A phone or tablet, please">
+    These events only fire on hardware with the matching sensors. A desktop browser reports the
+    events as supported and then never sends one, so <code>IsOrientationSupported</code> tells you
+    the API exists, not that readings are coming. Open this page on a phone to see it work.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and permission"
+                 Api="IsOrientationSupported / IsMotionSupported / NeedsPermission / RequestPermission"
+                 Description="iOS gates both streams behind an explicit grant that must be asked for from a click handler and is not remembered across page loads. Everywhere else there is no gate, and RequestPermission returns Granted immediately - so it is always safe to call, and NeedsPermission tells you whether a button is worth showing."
+                 Code=@("""
+@inject Bit.Butil.DeviceOrientation deviceOrientation
+
+var hasOrientation = await deviceOrientation.IsOrientationSupported();
+var hasMotion = await deviceOrientation.IsMotionSupported();
+var gated = await deviceOrientation.NeedsPermission();   // true on iOS
+
+// must run inside a click handler:
+var permission = await deviceOrientation.RequestPermission();
+if (permission == DeviceSensorPermission.Granted)
+{
+    // safe to subscribe
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+            <button class="secondary" @onclick="RequestPermission">RequestPermission</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Permission</span>
+            <span>@_permission</span>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Tilt"
+                 Api="SubscribeOrientation"
+                 Description="Alpha is rotation about the vertical axis, beta the front-to-back tilt (0 flat, 90 upright) and gamma the left-to-right tilt. With absolute: true it prefers the deviceorientationabsolute event, whose alpha is a real compass heading rather than being relative to wherever the device happened to be pointing when the listener attached - the Absolute flag on each reading tells you which one you actually got."
+                 Code=@("""
+private ButilSubscription? _tilt;
+
+_tilt = await deviceOrientation.SubscribeOrientation(
+    reading => InvokeAsync(() =>
+    {
+        _reading = reading;   // Alpha / Beta / Gamma in degrees, Absolute flag
+        StateHasChanged();
+    }),
+    absolute: true,
+    minIntervalMs: 100);   // these events fire tens of times a second
+
+// later:
+await _tilt.DisposeAsync();
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_absolute" /> Prefer absolute (compass) readings</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartOrientation">SubscribeOrientation</button>
+            <button class="danger" @onclick="StopOrientation">Unsubscribe</button>
+        </div>
+        @if (_reading is not null)
+        {
+            <div class="field">
+                <span class="field-label">Alpha (z)</span>
+                <span>@_reading.Alpha.ToString("0.0")° @(_reading.Absolute ? "(compass heading)" : "(relative)")</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Beta (x)</span>
+                <span>@_reading.Beta.ToString("0.0")°</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Gamma (y)</span>
+                <span>@_reading.Gamma.ToString("0.0")°</span>
+            </div>
+            @* A plain CSS transform is the clearest way to show that a reading is live. *@
+            <div style="margin-top:1rem;display:flex;justify-content:center">
+                <div style="width:120px;height:120px;border-radius:14px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;transition:transform 0.1s linear;transform:rotateX(@(_reading.Beta.ToString("0.0"))deg) rotateY(@(_reading.Gamma.ToString("0.0"))deg) rotateZ(@((-_reading.Alpha).ToString("0.0"))deg)">
+                    ↑
+                </div>
+            </div>
+        }
+        <DemoConsole @ref="orientationOutput" Title="orientation output" />
+    </DemoSection>
+
+    <DemoSection Title="Motion"
+                 Api="SubscribeMotion"
+                 Description="Acceleration in m/s², with and without gravity, plus the rotation rate in degrees per second. A device lying flat reports about 9.8 on AccelerationIncludingGravityZ and roughly nothing on the gravity-free members - the difference between the two is what a shake detector keys off. Interval is the sensor's own refresh rate, not the rate readings reach your handler."
+                 Code=@("""
+_motion = await deviceOrientation.SubscribeMotion(
+    reading => InvokeAsync(() =>
+    {
+        // a crude shake detector:
+        var magnitude = Math.Sqrt(
+            reading.AccelerationX * reading.AccelerationX +
+            reading.AccelerationY * reading.AccelerationY +
+            reading.AccelerationZ * reading.AccelerationZ);
+
+        if (magnitude > 15) OnShake();
+        StateHasChanged();
+    }),
+    minIntervalMs: 100);
+""")>
+        <div class="controls">
+            <button @onclick="StartMotion">SubscribeMotion</button>
+            <button class="danger" @onclick="StopMotion">Unsubscribe</button>
+        </div>
+        @if (_motionReading is not null)
+        {
+            <div class="field">
+                <span class="field-label">Acceleration</span>
+                <span>
+                    x @_motionReading.AccelerationX.ToString("0.00"),
+                    y @_motionReading.AccelerationY.ToString("0.00"),
+                    z @_motionReading.AccelerationZ.ToString("0.00") m/s²
+                </span>
+            </div>
+            <div class="field">
+                <span class="field-label">Including gravity</span>
+                <span>
+                    x @_motionReading.AccelerationIncludingGravityX.ToString("0.00"),
+                    y @_motionReading.AccelerationIncludingGravityY.ToString("0.00"),
+                    z @_motionReading.AccelerationIncludingGravityZ.ToString("0.00") m/s²
+                </span>
+            </div>
+            <div class="field">
+                <span class="field-label">Rotation rate</span>
+                <span>
+                    α @_motionReading.RotationAlpha.ToString("0.0"),
+                    β @_motionReading.RotationBeta.ToString("0.0"),
+                    γ @_motionReading.RotationGamma.ToString("0.0") °/s
+                </span>
+            </div>
+            <div class="field">
+                <span class="field-label">Shakes detected</span>
+                <span>@_shakes</span>
+            </div>
+        }
+        <DemoConsole @ref="motionOutput" Title="motion output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Throttle, or drown">
+    Both streams fire tens of times a second. Every subscription is throttled in JavaScript before
+    anything crosses into .NET - <code>minIntervalMs</code> defaults to 100, which is plenty for a
+    UI. Passing 0 forwards every event and will keep a Blazor render loop permanently busy.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsOrientationSupported"
+               Signature="ValueTask<bool> IsOrientationSupported()"
+               Description="True when the runtime exposes DeviceOrientationEvent. The class existing does not mean the hardware does." />
+    <ApiMember Name="IsMotionSupported"
+               Signature="ValueTask<bool> IsMotionSupported()"
+               Description="True when the runtime exposes DeviceMotionEvent. Same caveat as above." />
+    <ApiMember Name="NeedsPermission"
+               Signature="ValueTask<bool> NeedsPermission()"
+               Description="True on engines that gate these events behind an explicit grant - in practice Safari on iOS." />
+    <ApiMember Name="RequestPermission"
+               Signature="ValueTask<DeviceSensorPermission> RequestPermission()"
+               Description="Asks for access. Granted immediately where there is no gate. Must be called from a user gesture; a call outside one is reported as Denied rather than throwing." />
+    <ApiMember Name="SubscribeOrientation"
+               Signature="ValueTask<ButilSubscription> SubscribeOrientation(Action<DeviceOrientationReading> handler, bool absolute = false, int minIntervalMs = 100)"
+               Description="Subscribes to tilt readings. absolute prefers the compass-relative event where it exists." />
+    <ApiMember Name="SubscribeMotion"
+               Signature="ValueTask<ButilSubscription> SubscribeMotion(Action<DeviceMotionReading> handler, int minIntervalMs = 100)"
+               Description="Subscribes to acceleration and rotation-rate readings." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any listener whose subscription was never disposed." />
+    <ApiMember Name="DeviceOrientationReading"
+               Signature="Alpha, Beta, Gamma, Absolute"
+               Description="Tilt in degrees. Absolute tells you whether Alpha is a compass heading." />
+    <ApiMember Name="DeviceMotionReading"
+               Signature="Acceleration{X,Y,Z}, AccelerationIncludingGravity{X,Y,Z}, Rotation{Alpha,Beta,Gamma}, Interval"
+               Description="Acceleration in m/s² and rotation rate in °/s. Missing values arrive as 0." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole orientationOutput = default!;
+    private DemoConsole motionOutput = default!;
+
+    private DeviceOrientationReading? _reading;
+    private DeviceMotionReading? _motionReading;
+    private ButilSubscription? _tilt;
+    private ButilSubscription? _motion;
+    private string _permission = "Not requested.";
+    private bool _absolute = true;
+    private int _shakes;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var orientation = await deviceOrientation.IsOrientationSupported();
+            var motion = await deviceOrientation.IsMotionSupported();
+            var gated = await deviceOrientation.NeedsPermission();
+
+            await supportOutput.Success($"Orientation → {orientation}, motion → {motion}, needs permission → {gated}.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestPermission()
+    {
+        try
+        {
+            var result = await deviceOrientation.RequestPermission();
+            _permission = result.ToString();
+
+            if (result == DeviceSensorPermission.Granted)
+            {
+                await supportOutput.Success("RequestPermission → granted.");
+            }
+            else
+            {
+                await supportOutput.Warn("RequestPermission →", result);
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("RequestPermission failed →", ex.Message);
+        }
+    }
+
+    private async Task StartOrientation()
+    {
+        await StopOrientation();
+
+        try
+        {
+            _tilt = await deviceOrientation.SubscribeOrientation(reading => InvokeAsync(() =>
+            {
+                _reading = reading;
+                StateHasChanged();
+            }), _absolute);
+
+            await orientationOutput.Success("SubscribeOrientation → listening. Tilt the device.");
+        }
+        catch (Exception ex)
+        {
+            await orientationOutput.Error("SubscribeOrientation failed →", ex.Message);
+        }
+    }
+
+    private async Task StopOrientation()
+    {
+        if (_tilt is null) return;
+
+        await _tilt.DisposeAsync();
+        _tilt = null;
+        _reading = null;
+        await orientationOutput.Log("Unsubscribed.");
+    }
+
+    private async Task StartMotion()
+    {
+        await StopMotion();
+
+        try
+        {
+            _shakes = 0;
+            _motion = await deviceOrientation.SubscribeMotion(reading => InvokeAsync(() =>
+            {
+                _motionReading = reading;
+
+                var magnitude = Math.Sqrt(
+                    reading.AccelerationX * reading.AccelerationX +
+                    reading.AccelerationY * reading.AccelerationY +
+                    reading.AccelerationZ * reading.AccelerationZ);
+
+                if (magnitude > 15) _shakes++;
+
+                StateHasChanged();
+            }));
+
+            await motionOutput.Success("SubscribeMotion → listening. Move the device.");
+        }
+        catch (Exception ex)
+        {
+            await motionOutput.Error("SubscribeMotion failed →", ex.Message);
+        }
+    }
+
+    private async Task StopMotion()
+    {
+        if (_motion is null) return;
+
+        await _motion.DisposeAsync();
+        _motion = null;
+        _motionReading = null;
+        await motionOutput.Log("Unsubscribed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_tilt is not null)
+            {
+                await _tilt.DisposeAsync();
+                _tilt = null;
+            }
+
+            if (_motion is not null)
+            {
+                await _motion.DisposeAsync();
+                _motion = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

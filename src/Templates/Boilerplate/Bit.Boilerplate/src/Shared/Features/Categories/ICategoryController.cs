@@ -1,10 +1,7 @@
-//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Categories;
 
 [Route("api/v1/[controller]/[action]/")]
-//#if(module == "Admin")
 [AuthorizedApi]
-//#endif
 public interface ICategoryController : IAppController
 {
     [HttpGet("{id}")]
@@ -16,7 +13,6 @@ public interface ICategoryController : IAppController
     [HttpGet]
     Task<List<CategoryDto>> Get(CancellationToken cancellationToken) => default!;
 
-    //#if(module == "Admin")
     [HttpPost]
     Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken);
 
@@ -25,5 +21,4 @@ public interface ICategoryController : IAppController
 
     [HttpDelete("{id}/{version}")]
     Task Delete(Guid id, long version, CancellationToken cancellationToken);
-    //#endif
 }

@@ -31,6 +31,28 @@
         height: $bit-env-height-available;
     }
 
+    // The panel is as wide as its content and no wider than 85% of the screen, so maximizing means widening the
+    // body and lifting that cap - there is no size to set on the panel itself.
+    .panel-cnt.maximized {
+        width: 100%;
+        max-width: 100%;
+
+        .body {
+            width: 100%;
+        }
+    }
+
+    // Carries an inline svg rather than an icon glyph, so it takes the padding and the square shape the icon-only
+    // button beside it gets from the component, and drops the margin the text container would keep for a label.
+    .maximize-button {
+        padding: 10px;
+
+        .bit-btn-tcn {
+            margin: 0;
+            display: flex;
+        }
+    }
+
     .open-panel-button {
         padding: 0;
         inset-inline-end: 1rem;

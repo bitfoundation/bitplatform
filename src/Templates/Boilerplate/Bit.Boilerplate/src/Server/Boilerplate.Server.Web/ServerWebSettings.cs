@@ -19,8 +19,8 @@ public partial class ServerWebSettings : ClientWebSettings
     /// <summary>
     /// In a production environment, <see cref="ClientCoreSettings.ServerAddress"/> is usually set to  
     /// a URL like <c>https://api.myproject.com</c>, often secured behind a CDN or firewall.  
-    /// However, during pre-rendering or in Blazor Server/Auto mode, using a local address  
-    /// such as <c>http://localhost:8080</c> is much more efficient.  
+    /// However, during pre-rendering or in Blazor Server/Auto mode, using a local address
+    /// such as <c>http://localhost:8080</c> is much more efficient.
     /// This optional setting allows overriding HttpClient's BaseAddress specifically for the server project.
     /// </summary>
     public string? ServerSideHttpClientBaseAddress { get; set; }
@@ -28,9 +28,6 @@ public partial class ServerWebSettings : ClientWebSettings
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var validationResults = base.Validate(validationContext).ToList();
-
-        if (WebAppRender is null)
-            throw new InvalidOperationException("WebAppRender is required. Please set WebAppRender in appsettings.json");
 
         Validator.TryValidateObject(WebAppRender, new ValidationContext(WebAppRender), validationResults, true);
 
@@ -44,15 +41,15 @@ public partial class WebAppRenderOptions
 
     public BlazorWebAppMode BlazorMode { get; set; }
 
-    public IComponentRenderMode? RenderMode
+    private BlazorWebAppMode EffectiveBlazorMode
     {
         get
         {
             var mode = BlazorMode;
 
-            // When opening an .slnx/.slnf solutions in Visual Studio instead of .sln,  
-            // you can switch between to `DebugBlazorServer` configuration to have optimized build times during development.  
-            // If `DebugBlazorServer` is selected, `BlazorMode` will be set to `BlazorServer`  
+            // When opening an .slnx/.slnf solutions in Visual Studio instead of .sln,
+            // you can switch between to `DebugBlazorServer` configuration to have optimized build times during development.
+            // If `DebugBlazorServer` is selected, `BlazorMode` will be set to `BlazorServer`
             // regardless of its value in appsettings.json
             //-:cnd:noEmit
 #if DebugBlazorServer
@@ -60,16 +57,27 @@ public partial class WebAppRenderOptions
 #endif
             //+:cnd:noEmit
 
-            return mode switch
-            {
-                BlazorWebAppMode.BlazorAuto => new InteractiveAutoRenderMode(PrerenderEnabled),
-                BlazorWebAppMode.BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(PrerenderEnabled),
-                BlazorWebAppMode.BlazorServer => new InteractiveServerRenderMode(PrerenderEnabled),
-                BlazorWebAppMode.BlazorSsr => null,
-                _ => throw new NotImplementedException(),
-            };
+            return mode;
         }
     }
+
+    public IComponentRenderMode? RenderMode => GetRenderMode(PrerenderEnabled);
+
+    /// <summary>
+    /// What <c>?no-prerender</c> renders with: the configured mode, only without pre-rendering. It deliberately does
+    /// NOT force WebAssembly - the flag says "skip pre-rendering", not "change how this app runs", and the shipped
+    /// service worker requests the app shell with that flag on every published deployment.
+    /// </summary>
+    public IComponentRenderMode? NoPrerenderRenderMode => GetRenderMode(prerenderEnabled: false);
+
+    private IComponentRenderMode? GetRenderMode(bool prerenderEnabled) => EffectiveBlazorMode switch
+    {
+        BlazorWebAppMode.BlazorAuto => new InteractiveAutoRenderMode(prerenderEnabled),
+        BlazorWebAppMode.BlazorWebAssembly => new InteractiveWebAssemblyRenderMode(prerenderEnabled),
+        BlazorWebAppMode.BlazorServer => new InteractiveServerRenderMode(prerenderEnabled),
+        BlazorWebAppMode.BlazorSsr => null,
+        _ => throw new NotImplementedException(),
+    };
 }
 
 /// <summary>
