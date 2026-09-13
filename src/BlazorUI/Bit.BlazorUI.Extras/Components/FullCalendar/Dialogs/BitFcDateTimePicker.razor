@@ -37,6 +37,8 @@
                 }
             </div>
 
+            @if (ShowTime)
+            {
             <div class="bit-bfc-dtp-time">
                 @if (Use24HourFormat)
                 {
@@ -75,6 +77,7 @@
                     </select>
                 }
             </div>
+            }
         </div>
     }
 </div>

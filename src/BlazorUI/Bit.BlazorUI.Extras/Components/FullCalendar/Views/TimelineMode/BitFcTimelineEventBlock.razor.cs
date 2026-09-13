@@ -246,24 +246,33 @@ public partial class BitFcTimelineEventBlock
                         Attendees = [.. b.Attendees]
                     };
 
-                    State.UpdateEvent(updated);
-
-                    try
+                    if (b.IsOccurrence)
                     {
-                        await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
-                        {
-                            Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                            OldEvent = oldSnapshot,
-                            Kind = BitFullCalendarChangeKind.Edit,
-                            Source = BitFullCalendarChangeSource.Resize
-                        });
+                        // Resizing an occurrence resizes only that occurrence: its series skips the date
+                        // and the resized copy becomes an event of its own.
+                        await Notifier.CommitAsync(State.BuildEditChanges(b, updated, BitFullCalendarRecurrenceEditScope.ThisEvent, BitFullCalendarChangeSource.Resize));
                     }
-                    catch
+                    else
                     {
-                        // Notification failed: restore the pre-resize event so local state stays in
-                        // sync with what consumers believe, instead of leaving the committed resize.
-                        State.UpdateEvent(oldSnapshot);
-                        throw;
+                        State.UpdateEvent(updated);
+
+                        try
+                        {
+                            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                            {
+                                Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
+                                OldEvent = oldSnapshot,
+                                Kind = BitFullCalendarChangeKind.Edit,
+                                Source = BitFullCalendarChangeSource.Resize
+                            });
+                        }
+                        catch
+                        {
+                            // Notification failed: restore the pre-resize event so local state stays in
+                            // sync with what consumers believe, instead of leaving the committed resize.
+                            State.UpdateEvent(oldSnapshot);
+                            throw;
+                        }
                     }
                 }
             }

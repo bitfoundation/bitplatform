@@ -1538,6 +1538,101 @@
     font-weight: $tg-fw-medium;
 }
 
+/* ===== Recurrence ===== */
+.bit-bfc-recurrence-icon {
+    width: rem2(12px);
+    height: rem2(12px);
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.bit-bfc-field-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: spacing(0.75);
+}
+
+.bit-bfc-field .bit-bfc-field-row input[type="number"] {
+    width: rem2(88px);
+}
+
+.bit-bfc-field .bit-bfc-field-row select,
+.bit-bfc-field-row .bit-bfc-dtp {
+    flex: 1;
+    width: auto;
+    min-width: rem2(140px);
+}
+
+.bit-bfc-field-unit {
+    font-size: rem2(13px);
+    color: var(--bit-bfc-text-secondary);
+}
+
+.bit-bfc-field-hint {
+    margin-top: spacing(0.75);
+}
+
+.bit-bfc-weekday-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(0.5);
+}
+
+.bit-bfc-weekday-toggle {
+    min-width: rem2(44px);
+    padding: spacing(0.5) spacing(0.75);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-radius: $shp-radius-full;
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: $tg-fs-xs;
+    font-weight: $tg-fw-medium;
+    cursor: pointer;
+    transition: background $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+}
+
+.bit-bfc-weekday-toggle:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-weekday-toggle[aria-pressed="true"] {
+    background: var(--bit-bfc-primary);
+    border-color: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing(0.5);
+    padding: spacing(0.375) spacing(0.75) spacing(0.375) spacing(1.25);
+    background: var(--bit-bfc-bg-hover);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-radius: $shp-radius-full;
+    font-size: $tg-fs-xs;
+    font-weight: $tg-fw-medium;
+    color: var(--bit-bfc-text);
+}
+
+.bit-bfc-scope-choice {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(1);
+    width: 100%;
+}
+
+.bit-bfc-scope-choice-title {
+    font-size: rem2(13px);
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-bfc-scope-choice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(1);
+}
+
 /* ===== Settings Dropdown ===== */
 .bit-bfc-dropdown {
     position: relative;

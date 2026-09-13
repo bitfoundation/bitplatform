@@ -16,8 +16,30 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [Parameter] public int? StartHour { get; set; }
     [Parameter] public int? StartMinute { get; set; }
     [Parameter] public string? Resource { get; set; }
+
+    /// <summary>
+    /// When <see cref="ExistingEvent"/> is an occurrence, which part of its series the save applies to.
+    /// Defaults to <see cref="BitFullCalendarRecurrenceEditScope.ThisEvent"/>, which hides the repeat fields:
+    /// an occurrence edited on its own stops repeating.
+    /// </summary>
+    [Parameter] public BitFullCalendarRecurrenceEditScope? RecurrenceScope { get; set; }
+
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSaved { get; set; }
+
+    private enum MonthPatternKind
+    {
+        DayOfMonth,
+        Weekday,
+        LastWeekday
+    }
+
+    private enum RecurrenceEndKind
+    {
+        Never,
+        OnDate,
+        AfterCount
+    }
 
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.
@@ -25,10 +47,17 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
     private readonly string _descriptionInputId = $"bfc-desc-{Guid.NewGuid():N}";
+    private readonly string _repeatSelectId = $"bfc-repeat-{Guid.NewGuid():N}";
+    private readonly string _intervalInputId = $"bfc-interval-{Guid.NewGuid():N}";
+    private readonly string _daysLabelId = $"bfc-days-{Guid.NewGuid():N}";
+    private readonly string _patternSelectId = $"bfc-pattern-{Guid.NewGuid():N}";
+    private readonly string _endsSelectId = $"bfc-ends-{Guid.NewGuid():N}";
 
     private ElementReference _dialogRef;
 
     private bool _isEditing;
+    private bool _isOccurrence;
+    private BitFullCalendarRecurrenceEditScope _scope;
     private bool _isSubmitting;
     private string _title = "";
     private string _description = "";
@@ -41,6 +70,18 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private string _newId = "";
     private Dictionary<string, string> _errors = new();
 
+    private BitFullCalendarRecurrenceFrequency? _frequency;
+    private int _interval = 1;
+    private List<DayOfWeek> _daysOfWeek = [];
+    private MonthPatternKind _monthPattern;
+    private RecurrenceEndKind _end;
+    private DateTime _until;
+    private int _count = 10;
+    private List<DateTime> _exceptionDates = [];
+    private List<DateTime> _additionalDates = [];
+    private DateTime _newExceptionDate;
+    private DateTime _newAdditionalDate;
+
     private bool _initialized;
     private BitFullCalendarEvent? _lastExistingEvent;
     private DateTime? _lastStartDate;
@@ -48,6 +89,76 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     private int? _lastStartHour;
     private int? _lastStartMinute;
     private string? _lastResource;
+    private BitFullCalendarRecurrenceEditScope? _lastRecurrenceScope;
+
+    /// <summary>An occurrence edited on its own leaves its series, so it has no rule of its own to edit.</summary>
+    private bool ShowRecurrence => _isOccurrence is false || _scope != BitFullCalendarRecurrenceEditScope.ThisEvent;
+
+    private string FrequencyValue
+    {
+        get => _frequency?.ToString() ?? "";
+        set
+        {
+            _frequency = Enum.TryParse<BitFullCalendarRecurrenceFrequency>(value, out var frequency) ? frequency : null;
+            if (_frequency == BitFullCalendarRecurrenceFrequency.Weekly && _daysOfWeek.Count == 0)
+            {
+                _daysOfWeek.Add(_startDate.DayOfWeek);
+            }
+        }
+    }
+
+    private int Interval
+    {
+        get => _interval;
+        set => _interval = Math.Max(1, value);
+    }
+
+    private int Count
+    {
+        get => _count;
+        set => _count = Math.Max(1, value);
+    }
+
+    private IEnumerable<DayOfWeek> OrderedWeekdays
+    {
+        get
+        {
+            var first = (int)State.Culture.DateTimeFormat.FirstDayOfWeek;
+            return Enumerable.Range(0, 7).Select(i => (DayOfWeek)((first + i) % 7));
+        }
+    }
+
+    private int StartDayOfMonth => State.Culture.Calendar.GetDayOfMonth(_startDate);
+
+    /// <summary>The week of the month the start falls in, or <c>null</c> for a fifth weekday, which only "last" describes.</summary>
+    private BitFullCalendarRecurrenceWeekOfMonth? StartWeekOfMonth
+        => (StartDayOfMonth - 1) / 7 is var week && week < 4 ? (BitFullCalendarRecurrenceWeekOfMonth)week : null;
+
+    private bool StartIsInLastWeek
+    {
+        get
+        {
+            var calendar = State.Culture.Calendar;
+            var monthStart = _startDate.Date.AddDays(1 - StartDayOfMonth);
+            var daysInMonth = (calendar.AddMonths(monthStart, 1) - monthStart).Days;
+            return StartDayOfMonth + 7 > daysInMonth;
+        }
+    }
+
+    /// <summary>
+    /// The monthly pattern, derived from the start date: a pattern the start no longer fits (a moved start
+    /// that is no longer in the last week, or is now a fifth weekday) falls back to one it does.
+    /// </summary>
+    private MonthPatternKind MonthPattern
+    {
+        get => _monthPattern switch
+        {
+            MonthPatternKind.Weekday when StartWeekOfMonth is null => StartIsInLastWeek ? MonthPatternKind.LastWeekday : MonthPatternKind.DayOfMonth,
+            MonthPatternKind.LastWeekday when StartIsInLastWeek is false => StartWeekOfMonth is null ? MonthPatternKind.DayOfMonth : MonthPatternKind.Weekday,
+            _ => _monthPattern
+        };
+        set => _monthPattern = value;
+    }
 
     protected override void OnInitialized() => State.OnStateChanged += HandleStateChanged;
 
@@ -81,7 +192,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             || selectedDateChanged
             || _lastStartHour != StartHour
             || _lastStartMinute != StartMinute
-            || _lastResource != Resource;
+            || _lastResource != Resource
+            || _lastRecurrenceScope != RecurrenceScope;
 
         if (!parametersChanged)
             return;
@@ -93,6 +205,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _lastStartHour = StartHour;
         _lastStartMinute = StartMinute;
         _lastResource = Resource;
+        _lastRecurrenceScope = RecurrenceScope;
 
         // Clear transient editing state so a reused dialog instance doesn't carry over stale
         // validation errors or half-typed attendee draft inputs from a previous open.
@@ -102,6 +215,8 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         _newId = "";
 
         _isEditing = ExistingEvent != null;
+        _isOccurrence = ExistingEvent?.IsOccurrence is true;
+        _scope = RecurrenceScope ?? BitFullCalendarRecurrenceEditScope.ThisEvent;
         var defaultColor = ColorScheme.Options.Count > 0
             ? ColorScheme.Options[0].Id
             : BitFullCalendarColorScheme.FallbackColorId;
@@ -125,6 +240,110 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _startDate = baseDate.Date.AddHours(StartHour ?? DateTime.Now.Hour).AddMinutes(StartMinute ?? 0);
             _endDate = _startDate.AddMinutes(30);
         }
+
+        // An occurrence carries the rule of its series.
+        LoadRecurrence(ExistingEvent?.Recurrence);
+    }
+
+    private void LoadRecurrence(BitFullCalendarRecurrence? rule)
+    {
+        _frequency = rule?.Frequency;
+        _interval = rule?.Interval ?? 1;
+        _daysOfWeek = rule?.DaysOfWeek.Where(d => Enum.IsDefined(d)).Distinct().ToList() ?? [];
+        if (_daysOfWeek.Count == 0)
+        {
+            _daysOfWeek.Add(_startDate.DayOfWeek);
+        }
+
+        _monthPattern = rule?.WeekOfMonth switch
+        {
+            null => MonthPatternKind.DayOfMonth,
+            BitFullCalendarRecurrenceWeekOfMonth.Last => MonthPatternKind.LastWeekday,
+            _ => MonthPatternKind.Weekday
+        };
+
+        _end = rule?.Until is not null
+            ? RecurrenceEndKind.OnDate
+            : rule?.Count is not null ? RecurrenceEndKind.AfterCount : RecurrenceEndKind.Never;
+        _until = rule?.Until?.Date ?? State.Culture.Calendar.AddMonths(_startDate.Date, 1);
+        _count = rule?.Count ?? 10;
+
+        _exceptionDates = rule is null ? [] : [.. rule.ExceptionDates.Select(d => d.Date).Distinct().Order()];
+        _additionalDates = rule is null ? [] : [.. rule.AdditionalDates.Select(d => d.Date).Distinct().Order()];
+        _newExceptionDate = _startDate.Date;
+        _newAdditionalDate = _startDate.Date;
+    }
+
+    private BitFullCalendarRecurrence? BuildRecurrence()
+    {
+        if (_frequency is not { } frequency)
+            return null;
+
+        var rule = new BitFullCalendarRecurrence
+        {
+            Frequency = frequency,
+            Interval = _interval,
+            ExceptionDates = [.. _exceptionDates],
+            AdditionalDates = [.. _additionalDates]
+        };
+
+        if (frequency == BitFullCalendarRecurrenceFrequency.Weekly)
+        {
+            rule.DaysOfWeek = [.. OrderedWeekdays.Where(_daysOfWeek.Contains)];
+        }
+        else if (frequency is BitFullCalendarRecurrenceFrequency.Monthly or BitFullCalendarRecurrenceFrequency.Yearly)
+        {
+            switch (MonthPattern)
+            {
+                case MonthPatternKind.Weekday:
+                    rule.WeekOfMonth = StartWeekOfMonth;
+                    rule.DaysOfWeek = [_startDate.DayOfWeek];
+                    break;
+                case MonthPatternKind.LastWeekday:
+                    rule.WeekOfMonth = BitFullCalendarRecurrenceWeekOfMonth.Last;
+                    rule.DaysOfWeek = [_startDate.DayOfWeek];
+                    break;
+            }
+        }
+
+        if (_end == RecurrenceEndKind.OnDate)
+        {
+            rule.Until = _until.Date;
+        }
+        else if (_end == RecurrenceEndKind.AfterCount)
+        {
+            rule.Count = _count;
+        }
+
+        return rule;
+    }
+
+    private string DescribeMonthPattern(BitFullCalendarRecurrenceFrequency frequency, BitFullCalendarRecurrenceWeekOfMonth? week)
+    {
+        var text = BitFullCalendarHelpers.DescribeRecurrenceMonthPattern(frequency, week, [_startDate.DayOfWeek], _startDate, Texts, State.Culture);
+        return BitFullCalendarHelpers.Capitalize(text, State.Culture);
+    }
+
+    private void ToggleDay(DayOfWeek day)
+    {
+        if (_daysOfWeek.Remove(day) is false)
+        {
+            _daysOfWeek.Add(day);
+        }
+    }
+
+    private void AddExceptionDate() => AddDate(_exceptionDates, _newExceptionDate);
+
+    private void AddAdditionalDate() => AddDate(_additionalDates, _newAdditionalDate);
+
+    private static void AddDate(List<DateTime> dates, DateTime value)
+    {
+        var date = value.Date;
+        if (dates.Contains(date))
+            return;
+
+        dates.Add(date);
+        dates.Sort();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -190,61 +409,41 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
             _errors["description"] = Texts.ValidationDescriptionRequired;
         if (_endDate <= _startDate)
             _errors["endDate"] = Texts.ValidationEndAfterStart;
+        if (ShowRecurrence && _frequency == BitFullCalendarRecurrenceFrequency.Weekly && _daysOfWeek.Count == 0)
+            _errors["days"] = Texts.ValidationRecurrenceDaysRequired;
+        if (ShowRecurrence && _frequency is not null && _end == RecurrenceEndKind.OnDate && _until.Date < _startDate.Date)
+            _errors["until"] = Texts.ValidationRecurrenceUntilAfterStart;
 
         if (_errors.Count > 0) return;
 
         _isSubmitting = true;
         try
         {
-            var oldSnapshot = _isEditing && ExistingEvent is not null
-                ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
-                : null;
+            var recurrence = ShowRecurrence ? BuildRecurrence() : null;
 
-            var ev = new BitFullCalendarEvent
+            if (_isOccurrence)
             {
-                Id = _isEditing ? ExistingEvent!.Id : Guid.NewGuid().ToString("N"),
-                Title = _title,
-                Description = _description,
-                StartDate = _startDate,
-                EndDate = _endDate,
-                Color = _color,
-                Resource = _isEditing ? ExistingEvent!.Resource : Resource,
-                Data = _isEditing ? ExistingEvent!.Data : null,
-                Attendees = [.. _attendees]
-            };
-
-            if (_isEditing)
-                State.UpdateEvent(ev);
-            else
-                State.AddEvent(ev);
-
-            try
-            {
-                await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                var updated = new BitFullCalendarEvent
                 {
-                    Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
-                    OldEvent = oldSnapshot,
-                    Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
-                    Source = BitFullCalendarChangeSource.Dialog
-                });
+                    Id = ExistingEvent!.Id,
+                    Title = _title,
+                    Description = _description,
+                    StartDate = _startDate,
+                    EndDate = _endDate,
+                    Color = _color,
+                    Resource = ExistingEvent.Resource,
+                    Data = ExistingEvent.Data,
+                    Attendees = [.. _attendees],
+                    Recurrence = recurrence
+                };
+
+                // The series decides what an occurrence edit becomes - an event of its own, a new series,
+                // or an edit of the whole series - and CommitAsync rolls it all back if a notification throws.
+                await Notifier.CommitAsync(State.BuildEditChanges(ExistingEvent, updated, _scope, BitFullCalendarChangeSource.Dialog));
             }
-            catch
+            else
             {
-                // Compensate so the dialog is safe to retry: a throwing notifier must not leave the
-                // event committed to State, otherwise a second submit would add a duplicate (Add) or
-                // the edit would be applied without its consumers ever being notified. Restore the
-                // pre-submit snapshot on edit, or remove the just-added event on add. Only notifier
-                // failures roll back - the event is committed once notification succeeds.
-                if (_isEditing)
-                {
-                    if (oldSnapshot is not null)
-                        State.UpdateEvent(oldSnapshot);
-                }
-                else
-                {
-                    State.RemoveEvent(ev.Id);
-                }
-                throw;
+                await SaveEventAsync(recurrence);
             }
 
             // Notification succeeded and the event is committed; post-notify callbacks run outside
@@ -259,6 +458,61 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private async Task SaveEventAsync(BitFullCalendarRecurrence? recurrence)
+    {
+        var oldSnapshot = _isEditing && ExistingEvent is not null
+            ? BitFullCalendarChangeNotifier.CloneEvent(ExistingEvent)
+            : null;
+
+        var ev = new BitFullCalendarEvent
+        {
+            Id = _isEditing ? ExistingEvent!.Id : Guid.NewGuid().ToString("N"),
+            Title = _title,
+            Description = _description,
+            StartDate = _startDate,
+            EndDate = _endDate,
+            Color = _color,
+            Resource = _isEditing ? ExistingEvent!.Resource : Resource,
+            Data = _isEditing ? ExistingEvent!.Data : null,
+            Attendees = [.. _attendees],
+            Recurrence = recurrence
+        };
+
+        if (_isEditing)
+            State.UpdateEvent(ev);
+        else
+            State.AddEvent(ev);
+
+        try
+        {
+            await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+            {
+                Event = BitFullCalendarChangeNotifier.CloneEvent(ev),
+                OldEvent = oldSnapshot,
+                Kind = _isEditing ? BitFullCalendarChangeKind.Edit : BitFullCalendarChangeKind.Add,
+                Source = BitFullCalendarChangeSource.Dialog
+            });
+        }
+        catch
+        {
+            // Compensate so the dialog is safe to retry: a throwing notifier must not leave the
+            // event committed to State, otherwise a second submit would add a duplicate (Add) or
+            // the edit would be applied without its consumers ever being notified. Restore the
+            // pre-submit snapshot on edit, or remove the just-added event on add. Only notifier
+            // failures roll back - the event is committed once notification succeeds.
+            if (_isEditing)
+            {
+                if (oldSnapshot is not null)
+                    State.UpdateEvent(oldSnapshot);
+            }
+            else
+            {
+                State.RemoveEvent(ev.Id);
+            }
+            throw;
         }
     }
 

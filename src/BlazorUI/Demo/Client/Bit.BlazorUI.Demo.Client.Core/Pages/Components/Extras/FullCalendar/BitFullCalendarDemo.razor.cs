@@ -319,6 +319,45 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Resize", Description = "From resizing an event block.", Value = "2" },
             ]
         },
+        new()
+        {
+            Id = "recurrence-frequency-enum",
+            Name = "BitFullCalendarRecurrenceFrequency",
+            Description = "The unit a recurrence rule repeats in.",
+            Items =
+            [
+                new() { Name = "Daily", Description = "Repeats every Interval days.", Value = "0" },
+                new() { Name = "Weekly", Description = "Repeats on the DaysOfWeek of every Interval weeks.", Value = "1" },
+                new() { Name = "Monthly", Description = "Repeats every Interval months, on the start's day of the month or on the weekday picked with WeekOfMonth.", Value = "2" },
+                new() { Name = "Yearly", Description = "Repeats every Interval years in the start's month, on its day of the month or on the weekday picked with WeekOfMonth.", Value = "3" },
+            ]
+        },
+        new()
+        {
+            Id = "recurrence-week-of-month-enum",
+            Name = "BitFullCalendarRecurrenceWeekOfMonth",
+            Description = "The week of the month a monthly or yearly rule picks its weekday in.",
+            Items =
+            [
+                new() { Name = "First", Description = "The first such weekday of the month.", Value = "0" },
+                new() { Name = "Second", Description = "The second such weekday of the month.", Value = "1" },
+                new() { Name = "Third", Description = "The third such weekday of the month.", Value = "2" },
+                new() { Name = "Fourth", Description = "The fourth such weekday of the month.", Value = "3" },
+                new() { Name = "Last", Description = "The last such weekday of the month, whether it is the fourth or the fifth.", Value = "4" },
+            ]
+        },
+        new()
+        {
+            Id = "recurrence-edit-scope-enum",
+            Name = "BitFullCalendarRecurrenceEditScope",
+            Description = "Which part of a recurring series an edit or a delete made on one of its occurrences applies to.",
+            Items =
+            [
+                new() { Name = "ThisEvent", Description = "Only that occurrence: the series skips its date, and an edited occurrence becomes an event of its own.", Value = "0" },
+                new() { Name = "ThisAndFollowing", Description = "That occurrence and every later one: the series ends the day before it, and an edited occurrence starts a new series.", Value = "1" },
+                new() { Name = "AllEvents", Description = "Every occurrence: the series itself is edited or deleted.", Value = "2" },
+            ]
+        },
     ];
 
 
@@ -343,7 +382,31 @@ public partial class BitFullCalendarDemo
                 new() { Name = "IsSingleDay", Type = "bool", DefaultValue = "", Description = "Read-only. True when the event starts and ends on the same date." },
                 new() { Name = "IsMultiDay", Type = "bool", DefaultValue = "", Description = "Read-only. True when the event spans more than one date." },
                 new() { Name = "Duration", Type = "TimeSpan", DefaultValue = "", Description = "Read-only. The difference between EndDate and StartDate." },
+                new() { Name = "Recurrence", Type = "BitFullCalendarRecurrence?", DefaultValue = "null", Description = "Makes the event a recurring series: the calendar renders the occurrences the rule produces instead of the event itself, the first one at StartDate, each lasting Duration. On an occurrence, the rule of its series.", LinkType = LinkType.Link, Href = "#recurrence-class" },
+                new() { Name = "RecurringEventId", Type = "string?", DefaultValue = "null", Description = "Set on the occurrences the calendar generates - the events its views, templates, and OnEventClick receive - to the Id of their series." },
+                new() { Name = "OccurrenceDate", Type = "DateTime?", DefaultValue = "null", Description = "Set on an occurrence to the start it has in its series, which is what identifies it there (see ExceptionDates)." },
+                new() { Name = "IsRecurring", Type = "bool", DefaultValue = "", Description = "Read-only. True for the event defining a recurring series: it has a Recurrence and is not an occurrence." },
+                new() { Name = "IsOccurrence", Type = "bool", DefaultValue = "", Description = "Read-only. True for an occurrence generated from a recurring series." },
                 new() { Name = "Data", Type = "object?", DefaultValue = "null", Description = "Optional consumer-defined payload available to templates and click handlers." },
+            ]
+        },
+        new()
+        {
+            Id = "recurrence-class",
+            Title = "BitFullCalendarRecurrence",
+            Description = "Describes how an event repeats. The event's StartDate is always the first occurrence, and every occurrence keeps the event's time of day and duration. Monthly and yearly rules follow the calendar's culture, so with fa-IR they repeat on the same day of the Persian month.",
+            Parameters =
+            [
+                new() { Name = "Frequency", Type = "BitFullCalendarRecurrenceFrequency", DefaultValue = "BitFullCalendarRecurrenceFrequency.Daily", Description = "The unit the rule repeats in.", LinkType = LinkType.Link, Href = "#recurrence-frequency-enum" },
+                new() { Name = "Interval", Type = "int", DefaultValue = "1", Description = "How many units lie between two repetitions - 2 with a weekly frequency repeats every other week, 15 with a daily one every 15 days. Values below 1 are stored as 1." },
+                new() { Name = "DaysOfWeek", Type = "List<DayOfWeek>", DefaultValue = "[]", Description = "Weekly: every listed day of each repeated week. Monthly and yearly with a WeekOfMonth: the weekdays picked inside the month. Empty means the weekday the series starts on." },
+                new() { Name = "WeekOfMonth", Type = "BitFullCalendarRecurrenceWeekOfMonth?", DefaultValue = "null", Description = "Monthly and yearly only: lands on that week's DaysOfWeek of the month, like the third Tuesday. null lands on the start's day of the month and skips months too short to have it.", LinkType = LinkType.Link, Href = "#recurrence-week-of-month-enum" },
+                new() { Name = "Count", Type = "int?", DefaultValue = "null", Description = "The number of occurrences, the first one included. Skipped dates still count and extra dates never do. null for no limit." },
+                new() { Name = "Until", Type = "DateTime?", DefaultValue = "null", Description = "The last date an occurrence may start on, inclusive; its time of day is ignored. null for no end date." },
+                new() { Name = "ExceptionDates", Type = "List<DateTime>", DefaultValue = "[]", Description = "Dates skipped without disturbing the rest of the pattern, compared by date only." },
+                new() { Name = "AdditionalDates", Type = "List<DateTime>", DefaultValue = "[]", Description = "Extra dates that get an occurrence at the series' time of day, compared by date only. Not limited by Count or Until; a date that is also an exception date is skipped." },
+                new() { Name = "Clone()", Type = "BitFullCalendarRecurrence", DefaultValue = "", Description = "Creates a copy of the rule whose lists are independent of this one." },
+                new() { Name = "GetOccurrences(DateTime seriesStart, DateTime rangeStart, DateTime rangeEnd, CultureInfo? culture)", Type = "List<DateTime>", DefaultValue = "", Description = "The starts, in chronological order, of the occurrences of a series starting at seriesStart that begin inside the inclusive range." },
             ]
         },
         new()
@@ -510,8 +573,60 @@ public partial class BitFullCalendarDemo
                 new() { Name = "NoResourceLabel", Type = "string", DefaultValue = "\"Unassigned\"", Description = "Label for events not assigned to a resource." },
                 new() { Name = "NoResourceOption", Type = "string", DefaultValue = "\"(none)\"", Description = "Option text for clearing the resource assignment." },
                 new() { Name = "NoResourcesMessage", Type = "string", DefaultValue = "\"No resources to display.\"", Description = "Message shown when there are no resources in the timeline view." },
+                new() { Name = "RepeatLabel", Type = "string", DefaultValue = "\"Repeat\"", Description = "Label for the repeat field in the add/edit dialog and the recurrence row in the event details." },
+                new() { Name = "RecurrenceNone", Type = "string", DefaultValue = "\"Does not repeat\"", Description = "Option text for an event that does not repeat." },
+                new() { Name = "RecurrenceDaily", Type = "string", DefaultValue = "\"Daily\"", Description = "Option text and summary for a daily rule." },
+                new() { Name = "RecurrenceWeekly", Type = "string", DefaultValue = "\"Weekly\"", Description = "Option text and summary for a weekly rule." },
+                new() { Name = "RecurrenceMonthly", Type = "string", DefaultValue = "\"Monthly\"", Description = "Option text and summary for a monthly rule." },
+                new() { Name = "RecurrenceYearly", Type = "string", DefaultValue = "\"Yearly\"", Description = "Option text and summary for a yearly rule." },
+                new() { Name = "RecurrenceIntervalLabel", Type = "string", DefaultValue = "\"Repeat every\"", Description = "Label for the repeat interval field." },
+                new() { Name = "RecurrenceDayUnit", Type = "string", DefaultValue = "\"day(s)\"", Description = "Unit shown after the interval of a daily rule." },
+                new() { Name = "RecurrenceWeekUnit", Type = "string", DefaultValue = "\"week(s)\"", Description = "Unit shown after the interval of a weekly rule." },
+                new() { Name = "RecurrenceMonthUnit", Type = "string", DefaultValue = "\"month(s)\"", Description = "Unit shown after the interval of a monthly rule." },
+                new() { Name = "RecurrenceYearUnit", Type = "string", DefaultValue = "\"year(s)\"", Description = "Unit shown after the interval of a yearly rule." },
+                new() { Name = "RecurrenceDaysOfWeekLabel", Type = "string", DefaultValue = "\"Repeat on\"", Description = "Label for the weekday toggles of a weekly rule." },
+                new() { Name = "RecurrencePatternLabel", Type = "string", DefaultValue = "\"Repeat on\"", Description = "Label for the day-of-month pattern of a monthly or yearly rule." },
+                new() { Name = "RecurrenceFirst", Type = "string", DefaultValue = "\"first\"", Description = "Ordinal for the first week of the month." },
+                new() { Name = "RecurrenceSecond", Type = "string", DefaultValue = "\"second\"", Description = "Ordinal for the second week of the month." },
+                new() { Name = "RecurrenceThird", Type = "string", DefaultValue = "\"third\"", Description = "Ordinal for the third week of the month." },
+                new() { Name = "RecurrenceFourth", Type = "string", DefaultValue = "\"fourth\"", Description = "Ordinal for the fourth week of the month." },
+                new() { Name = "RecurrenceLast", Type = "string", DefaultValue = "\"last\"", Description = "Ordinal for the last week of the month." },
+                new() { Name = "RecurrenceEndsLabel", Type = "string", DefaultValue = "\"Ends\"", Description = "Label for the field choosing how the rule ends." },
+                new() { Name = "RecurrenceEndsNever", Type = "string", DefaultValue = "\"Never\"", Description = "Option text for a rule without an end." },
+                new() { Name = "RecurrenceEndsOnDate", Type = "string", DefaultValue = "\"On a date\"", Description = "Option text for a rule ending on a date." },
+                new() { Name = "RecurrenceEndsAfterCount", Type = "string", DefaultValue = "\"After a number of occurrences\"", Description = "Option text for a rule ending after a number of occurrences." },
+                new() { Name = "RecurrenceUntilAriaLabel", Type = "string", DefaultValue = "\"Last date\"", Description = "Aria label for the picker of the rule's last date." },
+                new() { Name = "RecurrenceCountAriaLabel", Type = "string", DefaultValue = "\"Number of occurrences\"", Description = "Aria label for the occurrence count field." },
+                new() { Name = "RecurrenceSkippedDatesLabel", Type = "string", DefaultValue = "\"Skipped dates\"", Description = "Label for the rule's exception dates." },
+                new() { Name = "RecurrenceExtraDatesLabel", Type = "string", DefaultValue = "\"Extra dates\"", Description = "Label for the rule's additional dates." },
+                new() { Name = "RecurrenceSkipDateButton", Type = "string", DefaultValue = "\"Skip\"", Description = "Label for the button adding an exception date." },
+                new() { Name = "RecurrenceAddDateButton", Type = "string", DefaultValue = "\"Add\"", Description = "Label for the button adding an additional date." },
+                new() { Name = "RecurrenceSkipDateAriaLabel", Type = "string", DefaultValue = "\"Date to skip\"", Description = "Aria label for the picker of a new exception date." },
+                new() { Name = "RecurrenceExtraDateAriaLabel", Type = "string", DefaultValue = "\"Date to add\"", Description = "Aria label for the picker of a new additional date." },
+                new() { Name = "RemoveDateAriaLabel", Type = "string", DefaultValue = "\"Remove date\"", Description = "Aria label for the remove button on a skipped or extra date chip." },
+                new() { Name = "RecurringEventAriaLabel", Type = "string", DefaultValue = "\"Recurring event\"", Description = "Accessible name of the glyph marking an occurrence on event cards, badges, and agenda rows." },
+                new() { Name = "RecurrenceScopeEditTitle", Type = "string", DefaultValue = "\"Edit recurring event\"", Description = "Prompt asking which occurrences an edit applies to." },
+                new() { Name = "RecurrenceScopeDeleteTitle", Type = "string", DefaultValue = "\"Delete recurring event\"", Description = "Prompt asking which occurrences a delete applies to." },
+                new() { Name = "RecurrenceScopeThisEvent", Type = "string", DefaultValue = "\"This event\"", Description = "Choice applying an edit or delete to the occurrence alone." },
+                new() { Name = "RecurrenceScopeThisAndFollowing", Type = "string", DefaultValue = "\"This and following events\"", Description = "Choice applying an edit or delete to the occurrence and every later one." },
+                new() { Name = "RecurrenceScopeAllEvents", Type = "string", DefaultValue = "\"All events\"", Description = "Choice applying an edit or delete to the whole series." },
+                new() { Name = "RecurrenceSummarySeparator", Type = "string", DefaultValue = "\", \"", Description = "Separator joining the parts of a recurrence summary and its list of weekdays." },
+                new() { Name = "RecurrenceEveryFormat", Type = "string", DefaultValue = "\"every {0} {1}\"", Description = "Summary part for an interval above 1; {0} is the interval, {1} the unit." },
+                new() { Name = "RecurrenceOnDaysFormat", Type = "string", DefaultValue = "\"on {0}\"", Description = "Summary part for the weekdays of a weekly rule; {0} is the list of days." },
+                new() { Name = "RecurrenceOnDayOfMonthFormat", Type = "string", DefaultValue = "\"on day {0}\"", Description = "Pattern of a monthly rule on a day of the month; {0} is the day." },
+                new() { Name = "RecurrenceOnWeekdayOfMonthFormat", Type = "string", DefaultValue = "\"on the {0} {1}\"", Description = "Pattern of a monthly rule on a weekday; {0} is the ordinal, {1} the weekday." },
+                new() { Name = "RecurrenceOnDateOfYearFormat", Type = "string", DefaultValue = "\"on {0}\"", Description = "Pattern of a yearly rule on a date; {0} is the month and day." },
+                new() { Name = "RecurrenceOnWeekdayOfYearFormat", Type = "string", DefaultValue = "\"on the {0} {1} of {2}\"", Description = "Pattern of a yearly rule on a weekday; {0} is the ordinal, {1} the weekday, {2} the month." },
+                new() { Name = "RecurrenceUntilFormat", Type = "string", DefaultValue = "\"until {0}\"", Description = "Summary part for a rule's last date; {0} is the date." },
+                new() { Name = "RecurrenceCountFormat", Type = "string", DefaultValue = "\"{0} times\"", Description = "Summary part for a rule's occurrence count; {0} is the count." },
+                new() { Name = "ValidationRecurrenceDaysRequired", Type = "string", DefaultValue = "\"Select at least one day\"", Description = "Validation message when a weekly rule has no weekday selected." },
+                new() { Name = "ValidationRecurrenceUntilAfterStart", Type = "string", DefaultValue = "\"The last date cannot be before the start date\"", Description = "Validation message when the rule's last date is before the event's start." },
                 new() { Name = "GetViewLabel(BitFullCalendarView)", Type = "string", DefaultValue = "", Description = "Method that returns the localized label for the given view." },
                 new() { Name = "GetModeLabel(BitFullCalendarMode)", Type = "string", DefaultValue = "", Description = "Method that returns the localized label for the given mode." },
+                new() { Name = "GetRecurrenceFrequencyLabel(BitFullCalendarRecurrenceFrequency)", Type = "string", DefaultValue = "", Description = "Method that returns the localized label for the given frequency." },
+                new() { Name = "GetRecurrenceUnitLabel(BitFullCalendarRecurrenceFrequency)", Type = "string", DefaultValue = "", Description = "Method that returns the localized interval unit for the given frequency." },
+                new() { Name = "GetWeekOfMonthLabel(BitFullCalendarRecurrenceWeekOfMonth)", Type = "string", DefaultValue = "", Description = "Method that returns the localized ordinal for the given week of the month." },
+                new() { Name = "GetRecurrenceScopeLabel(BitFullCalendarRecurrenceEditScope)", Type = "string", DefaultValue = "", Description = "Method that returns the localized label for the given edit scope." },
             ]
         },
     ];
@@ -660,7 +775,57 @@ public partial class BitFullCalendarDemo
         ResourceColumnHeader = "منبع",
         NoResourceLabel = "تخصیص‌نیافته",
         NoResourceOption = "(هیچ‌کدام)",
-        NoResourcesMessage = "منبعی برای نمایش وجود ندارد."
+        NoResourcesMessage = "منبعی برای نمایش وجود ندارد.",
+
+        // Recurrence
+        RepeatLabel = "تکرار",
+        RecurrenceNone = "بدون تکرار",
+        RecurrenceDaily = "روزانه",
+        RecurrenceWeekly = "هفتگی",
+        RecurrenceMonthly = "ماهانه",
+        RecurrenceYearly = "سالانه",
+        RecurrenceIntervalLabel = "تکرار هر",
+        RecurrenceDayUnit = "روز",
+        RecurrenceWeekUnit = "هفته",
+        RecurrenceMonthUnit = "ماه",
+        RecurrenceYearUnit = "سال",
+        RecurrenceDaysOfWeekLabel = "تکرار در روزهای",
+        RecurrencePatternLabel = "تکرار در",
+        RecurrenceFirst = "اولین",
+        RecurrenceSecond = "دومین",
+        RecurrenceThird = "سومین",
+        RecurrenceFourth = "چهارمین",
+        RecurrenceLast = "آخرین",
+        RecurrenceEndsLabel = "پایان",
+        RecurrenceEndsNever = "هرگز",
+        RecurrenceEndsOnDate = "در یک تاریخ",
+        RecurrenceEndsAfterCount = "پس از چند بار تکرار",
+        RecurrenceUntilAriaLabel = "آخرین تاریخ",
+        RecurrenceCountAriaLabel = "تعداد تکرارها",
+        RecurrenceSkippedDatesLabel = "تاریخ‌های نادیده‌گرفته",
+        RecurrenceExtraDatesLabel = "تاریخ‌های اضافه",
+        RecurrenceSkipDateButton = "نادیده‌گرفتن",
+        RecurrenceAddDateButton = "افزودن",
+        RecurrenceSkipDateAriaLabel = "تاریخ نادیده‌گرفته",
+        RecurrenceExtraDateAriaLabel = "تاریخ اضافه",
+        RemoveDateAriaLabel = "حذف تاریخ",
+        RecurringEventAriaLabel = "رویداد تکرارشونده",
+        RecurrenceScopeEditTitle = "ویرایش رویداد تکرارشونده",
+        RecurrenceScopeDeleteTitle = "حذف رویداد تکرارشونده",
+        RecurrenceScopeThisEvent = "همین رویداد",
+        RecurrenceScopeThisAndFollowing = "این رویداد و رویدادهای بعدی",
+        RecurrenceScopeAllEvents = "همه رویدادها",
+        RecurrenceSummarySeparator = "، ",
+        RecurrenceEveryFormat = "هر {0} {1}",
+        RecurrenceOnDaysFormat = "در {0}",
+        RecurrenceOnDayOfMonthFormat = "در روز {0}",
+        RecurrenceOnWeekdayOfMonthFormat = "در {0} {1}",
+        RecurrenceOnDateOfYearFormat = "در {0}",
+        RecurrenceOnWeekdayOfYearFormat = "در {0} {1} {2}",
+        RecurrenceUntilFormat = "تا {0}",
+        RecurrenceCountFormat = "{0} بار",
+        ValidationRecurrenceDaysRequired = "حداقل یک روز را انتخاب کنید",
+        ValidationRecurrenceUntilAfterStart = "آخرین تاریخ نمی‌تواند قبل از تاریخ شروع باشد"
     };
 
     private readonly List<BitFullCalendarResource> resources =
@@ -761,6 +926,123 @@ public partial class BitFullCalendarDemo
     }
 
 
+
+    private readonly List<BitFullCalendarEvent> recurringEvents = CreateRecurringEvents();
+    private readonly List<string> recurringChanges = [];
+
+    private Task HandleRecurringChange(BitFullCalendarChangeEventArgs args)
+    {
+        // Editing, deleting, dragging, or resizing an occurrence arrives as ordinary Add/Edit/Delete changes -
+        // for example an Edit of the series that skips a date, then an Add of the occurrence split from it.
+        recurringChanges.Insert(0, $"{args.Kind} ({args.Source}): {args.Event.Title}");
+        if (recurringChanges.Count > 3)
+            recurringChanges.RemoveAt(3);
+
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                recurringEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = recurringEvents.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    recurringEvents[index] = args.Event;
+                else
+                    recurringEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                recurringEvents.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private static List<BitFullCalendarEvent> CreateRecurringEvents()
+    {
+        var today = DateTime.Today;
+        var monday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        var firstOfMonth = today.AddDays(1 - today.Day);
+        var thirdTuesday = firstOfMonth.AddDays(((int)DayOfWeek.Tuesday - (int)firstOfMonth.DayOfWeek + 7) % 7 + 14);
+
+        return
+        [
+            new()
+            {
+                Id = "standup",
+                Title = "Team Standup",
+                Description = "Every weekday, except tomorrow.",
+                StartDate = monday.AddHours(9),
+                EndDate = monday.AddHours(9).AddMinutes(30),
+                Color = "blue",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+                    ExceptionDates = [today.AddDays(1)]
+                }
+            },
+            new()
+            {
+                Id = "gym",
+                Title = "Gym",
+                Description = "Monday, Wednesday, and Friday - plus this Saturday.",
+                StartDate = monday.AddHours(18),
+                EndDate = monday.AddHours(19),
+                Color = "green",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+                    AdditionalDates = [monday.AddDays(5)]
+                }
+            },
+            new()
+            {
+                Id = "sprint-review",
+                Title = "Sprint Review",
+                Description = "Every 2 weeks on Friday, 6 times.",
+                StartDate = monday.AddDays(4).AddHours(15),
+                EndDate = monday.AddDays(4).AddHours(16),
+                Color = "purple",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    Interval = 2,
+                    Count = 6
+                }
+            },
+            new()
+            {
+                Id = "all-hands",
+                Title = "All-Hands",
+                Description = "The third Tuesday of every month.",
+                StartDate = thirdTuesday.AddHours(11),
+                EndDate = thirdTuesday.AddHours(12),
+                Color = "orange",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+                    WeekOfMonth = BitFullCalendarRecurrenceWeekOfMonth.Third,
+                    DaysOfWeek = [DayOfWeek.Tuesday]
+                }
+            },
+            new()
+            {
+                Id = "backup",
+                Title = "Server Backup",
+                Description = "Every 15 days.",
+                StartDate = today.AddDays(-20).AddHours(21),
+                EndDate = today.AddDays(-20).AddHours(22),
+                Color = "red",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Daily,
+                    Interval = 15
+                }
+            },
+        ];
+    }
 
     private const string eventsCode = @"
     private readonly List<BitFullCalendarEvent> events = CreateEvents();
@@ -988,7 +1270,57 @@ public partial class BitFullCalendarDemo
         ResourceColumnHeader = ""منبع"",
         NoResourceLabel = ""تخصیص‌نیافته"",
         NoResourceOption = ""(هیچ‌کدام)"",
-        NoResourcesMessage = ""منبعی برای نمایش وجود ندارد.""
+        NoResourcesMessage = ""منبعی برای نمایش وجود ندارد."",
+
+        // Recurrence
+        RepeatLabel = ""تکرار"",
+        RecurrenceNone = ""بدون تکرار"",
+        RecurrenceDaily = ""روزانه"",
+        RecurrenceWeekly = ""هفتگی"",
+        RecurrenceMonthly = ""ماهانه"",
+        RecurrenceYearly = ""سالانه"",
+        RecurrenceIntervalLabel = ""تکرار هر"",
+        RecurrenceDayUnit = ""روز"",
+        RecurrenceWeekUnit = ""هفته"",
+        RecurrenceMonthUnit = ""ماه"",
+        RecurrenceYearUnit = ""سال"",
+        RecurrenceDaysOfWeekLabel = ""تکرار در روزهای"",
+        RecurrencePatternLabel = ""تکرار در"",
+        RecurrenceFirst = ""اولین"",
+        RecurrenceSecond = ""دومین"",
+        RecurrenceThird = ""سومین"",
+        RecurrenceFourth = ""چهارمین"",
+        RecurrenceLast = ""آخرین"",
+        RecurrenceEndsLabel = ""پایان"",
+        RecurrenceEndsNever = ""هرگز"",
+        RecurrenceEndsOnDate = ""در یک تاریخ"",
+        RecurrenceEndsAfterCount = ""پس از چند بار تکرار"",
+        RecurrenceUntilAriaLabel = ""آخرین تاریخ"",
+        RecurrenceCountAriaLabel = ""تعداد تکرارها"",
+        RecurrenceSkippedDatesLabel = ""تاریخ‌های نادیده‌گرفته"",
+        RecurrenceExtraDatesLabel = ""تاریخ‌های اضافه"",
+        RecurrenceSkipDateButton = ""نادیده‌گرفتن"",
+        RecurrenceAddDateButton = ""افزودن"",
+        RecurrenceSkipDateAriaLabel = ""تاریخ نادیده‌گرفته"",
+        RecurrenceExtraDateAriaLabel = ""تاریخ اضافه"",
+        RemoveDateAriaLabel = ""حذف تاریخ"",
+        RecurringEventAriaLabel = ""رویداد تکرارشونده"",
+        RecurrenceScopeEditTitle = ""ویرایش رویداد تکرارشونده"",
+        RecurrenceScopeDeleteTitle = ""حذف رویداد تکرارشونده"",
+        RecurrenceScopeThisEvent = ""همین رویداد"",
+        RecurrenceScopeThisAndFollowing = ""این رویداد و رویدادهای بعدی"",
+        RecurrenceScopeAllEvents = ""همه رویدادها"",
+        RecurrenceSummarySeparator = ""، "",
+        RecurrenceEveryFormat = ""هر {0} {1}"",
+        RecurrenceOnDaysFormat = ""در {0}"",
+        RecurrenceOnDayOfMonthFormat = ""در روز {0}"",
+        RecurrenceOnWeekdayOfMonthFormat = ""در {0} {1}"",
+        RecurrenceOnDateOfYearFormat = ""در {0}"",
+        RecurrenceOnWeekdayOfYearFormat = ""در {0} {1} {2}"",
+        RecurrenceUntilFormat = ""تا {0}"",
+        RecurrenceCountFormat = ""{0} بار"",
+        ValidationRecurrenceDaysRequired = ""حداقل یک روز را انتخاب کنید"",
+        ValidationRecurrenceUntilAfterStart = ""آخرین تاریخ نمی‌تواند قبل از تاریخ شروع باشد""
     };
 " + eventsCode + @"
 }";
@@ -1140,5 +1472,129 @@ public partial class BitFullCalendarDemo
         layoutSettings = new() { EventLayout = layout };
     }
 " + eventsCode + @"
+}";
+
+    private readonly string example12RazorCode = @"<BitFullCalendar Events=""events"" OnChange=""HandleChange"" />
+<br />
+<BitText>Last changes: <b>@(changes.Count > 0 ? string.Join("" | "", changes) : ""-"")</b></BitText>
+
+@code {
+    private readonly List<string> changes = [];
+
+    private Task HandleChange(BitFullCalendarChangeEventArgs args)
+    {
+        // Editing, deleting, dragging, or resizing an occurrence arrives as ordinary Add/Edit/Delete changes -
+        // for example an Edit of the series that skips a date, then an Add of the occurrence split from it.
+        changes.Insert(0, $""{args.Kind} ({args.Source}): {args.Event.Title}"");
+        if (changes.Count > 3)
+            changes.RemoveAt(3);
+
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = events.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    events[index] = args.Event;
+                else
+                    events.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                events.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private readonly List<BitFullCalendarEvent> events = CreateEvents();
+
+    private static List<BitFullCalendarEvent> CreateEvents()
+    {
+        var today = DateTime.Today;
+        var monday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        var firstOfMonth = today.AddDays(1 - today.Day);
+        var thirdTuesday = firstOfMonth.AddDays(((int)DayOfWeek.Tuesday - (int)firstOfMonth.DayOfWeek + 7) % 7 + 14);
+
+        return
+        [
+            new()
+            {
+                Id = ""standup"",
+                Title = ""Team Standup"",
+                Description = ""Every weekday, except tomorrow."",
+                StartDate = monday.AddHours(9),
+                EndDate = monday.AddHours(9).AddMinutes(30),
+                Color = ""blue"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday],
+                    ExceptionDates = [today.AddDays(1)]
+                }
+            },
+            new()
+            {
+                Id = ""gym"",
+                Title = ""Gym"",
+                Description = ""Monday, Wednesday, and Friday - plus this Saturday."",
+                StartDate = monday.AddHours(18),
+                EndDate = monday.AddHours(19),
+                Color = ""green"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+                    AdditionalDates = [monday.AddDays(5)]
+                }
+            },
+            new()
+            {
+                Id = ""sprint-review"",
+                Title = ""Sprint Review"",
+                Description = ""Every 2 weeks on Friday, 6 times."",
+                StartDate = monday.AddDays(4).AddHours(15),
+                EndDate = monday.AddDays(4).AddHours(16),
+                Color = ""purple"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+                    Interval = 2,
+                    Count = 6
+                }
+            },
+            new()
+            {
+                Id = ""all-hands"",
+                Title = ""All-Hands"",
+                Description = ""The third Tuesday of every month."",
+                StartDate = thirdTuesday.AddHours(11),
+                EndDate = thirdTuesday.AddHours(12),
+                Color = ""orange"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+                    WeekOfMonth = BitFullCalendarRecurrenceWeekOfMonth.Third,
+                    DaysOfWeek = [DayOfWeek.Tuesday]
+                }
+            },
+            new()
+            {
+                Id = ""backup"",
+                Title = ""Server Backup"",
+                Description = ""Every 15 days."",
+                StartDate = today.AddDays(-20).AddHours(21),
+                EndDate = today.AddDays(-20).AddHours(22),
+                Color = ""red"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Daily,
+                    Interval = 15
+                }
+            },
+        ];
+    }
 }";
 }

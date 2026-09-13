@@ -26,6 +26,39 @@ public sealed class BitFullCalendarChangeNotifier
     public Task NotifyAsync(BitFullCalendarChangeEventArgs args) => _dispatch(args);
 
     /// <summary>
+    /// Applies changes built by <see cref="BitFullCalendarState.BuildEditChanges"/> or
+    /// <see cref="BitFullCalendarState.BuildDeleteChanges"/> to the state, then raises <c>OnChange</c> for
+    /// each of them in order. A notification that throws rolls every change back, so the calendar never
+    /// shows a change its consumer was not told about; nothing is applied while the calendar is read-only.
+    /// </summary>
+    public async Task CommitAsync(IReadOnlyList<BitFullCalendarChangeEventArgs> changes)
+    {
+        if (changes.Count == 0 || _state.ReadOnly)
+            return;
+
+        foreach (var change in changes)
+        {
+            _state.ApplyChange(change);
+        }
+
+        try
+        {
+            foreach (var change in changes)
+            {
+                await NotifyAsync(change);
+            }
+        }
+        catch
+        {
+            for (var i = changes.Count - 1; i >= 0; i--)
+            {
+                _state.RevertChange(changes[i]);
+            }
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Applies drop logic through <see cref="BitFullCalendarState.HandleDrop"/> and emits
     /// an Edit change when the event date-time has actually changed.
     /// </summary>
@@ -44,6 +77,15 @@ public sealed class BitFullCalendarChangeNotifier
         var dragged = _state.DraggedEvent;
         if (dragged is null)
             return Task.CompletedTask;
+
+        // Moving an occurrence moves only that occurrence: its series skips the date and the moved copy
+        // becomes an event of its own, which takes two changes to report rather than one.
+        if (dragged.IsOccurrence)
+        {
+            var changes = _state.BuildDropChanges(targetDate, hour, minute, resourceId, applyResource);
+            _state.EndDrag();
+            return CommitAsync(changes);
+        }
 
         var oldSnapshot = CloneEvent(dragged);
         var eventId = dragged.Id;
@@ -69,10 +111,11 @@ public sealed class BitFullCalendarChangeNotifier
     }
 
     /// <summary>
-    /// Creates a snapshot of a calendar event payload suitable for change args. Value-type fields
-    /// and the <see cref="BitFullCalendarEvent.Attendees"/> collection are copied into fresh
-    /// instances, but the consumer-defined <see cref="BitFullCalendarEvent.Data"/> payload is
-    /// shared by reference (it is an opaque <c>object?</c> that cannot be generically cloned).
+    /// Creates a snapshot of a calendar event payload suitable for change args. Value-type fields, the
+    /// <see cref="BitFullCalendarEvent.Attendees"/> collection, and the
+    /// <see cref="BitFullCalendarEvent.Recurrence"/> rule are copied into fresh instances, but the
+    /// consumer-defined <see cref="BitFullCalendarEvent.Data"/> payload is shared by reference (it is an
+    /// opaque <c>object?</c> that cannot be generically cloned).
     /// </summary>
     public static BitFullCalendarEvent CloneEvent(BitFullCalendarEvent source) =>
         new()
@@ -92,7 +135,9 @@ public sealed class BitFullCalendarChangeNotifier
                     LastName = a.LastName,
                     Id = a.Id
                 })
-                .ToList()
+                .ToList(),
+            Recurrence = source.Recurrence?.Clone(),
+            RecurringEventId = source.RecurringEventId,
+            OccurrenceDate = source.OccurrenceDate
         };
 }
-

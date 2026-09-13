@@ -229,15 +229,24 @@ public partial class BitFcEventBlock
                         Attendees = [.. b.Attendees]
                     };
 
-                    State.UpdateEvent(updated);
-
-                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    if (b.IsOccurrence)
                     {
-                        Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
-                        OldEvent = BitFullCalendarChangeNotifier.CloneEvent(b),
-                        Kind = BitFullCalendarChangeKind.Edit,
-                        Source = BitFullCalendarChangeSource.Resize
-                    });
+                        // Resizing an occurrence resizes only that occurrence: its series skips the date
+                        // and the resized copy becomes an event of its own.
+                        await Notifier.CommitAsync(State.BuildEditChanges(b, updated, BitFullCalendarRecurrenceEditScope.ThisEvent, BitFullCalendarChangeSource.Resize));
+                    }
+                    else
+                    {
+                        State.UpdateEvent(updated);
+
+                        await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                        {
+                            Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
+                            OldEvent = BitFullCalendarChangeNotifier.CloneEvent(b),
+                            Kind = BitFullCalendarChangeKind.Edit,
+                            Source = BitFullCalendarChangeSource.Resize
+                        });
+                    }
                 }
             }
         }

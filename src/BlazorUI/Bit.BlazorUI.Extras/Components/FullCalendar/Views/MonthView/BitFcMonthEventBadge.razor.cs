@@ -4,6 +4,7 @@ public partial class BitFcMonthEventBadge
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
     [Parameter] public DateTime CellDate { get; set; }
     [Parameter] public string Position { get; set; } = "none";

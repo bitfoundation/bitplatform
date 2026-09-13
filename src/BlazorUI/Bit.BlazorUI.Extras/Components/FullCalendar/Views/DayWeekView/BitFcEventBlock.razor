@@ -59,6 +59,10 @@
                 <BitFcEventBullet Color="Event.Color" />
             }
             <span class="bit-bfc-event-block-title">@Event.Title</span>
+            @if (Event.IsOccurrence)
+            {
+                <BitFcRecurrenceIcon AriaLabel="@Texts.RecurringEventAriaLabel" />
+            }
         </div>
 
         @if (durationMin > 25)

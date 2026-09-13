@@ -23,6 +23,9 @@ public class BitFullCalendarState
     ];
 
     private List<BitFullCalendarEvent> _allEvents = [];
+    // _allEvents with every recurring event replaced by its occurrences around the visible range; the
+    // filters narrow this down to _filteredEvents.
+    private List<BitFullCalendarEvent> _expandedEvents = [];
     private List<BitFullCalendarEvent> _filteredEvents = [];
     private List<BitFullCalendarResource> _resources = [];
     private List<BitFullCalendarView> _views = [.. _allViews];
@@ -488,7 +491,7 @@ public class BitFullCalendarState
     /// <summary>Distinct attendees on events visible in the current view/date range.</summary>
     public IReadOnlyList<(string Key, string DisplayName)> GetAttendeesInCurrentView(string unnamedAttendeeText = "(Unnamed)")
     {
-        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_allEvents.ToList(), View, SelectedDate, Culture);
+        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_expandedEvents, View, SelectedDate, Culture);
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var ev in viewEvents)
         {
@@ -516,15 +519,17 @@ public class BitFullCalendarState
     {
         _selectedColors.Clear();
         SelectedAttendeeKey = null;
-        _filteredEvents = [.. _allEvents];
+        _filteredEvents = [.. _expandedEvents];
         NotifyStateChanged();
     }
 
     private void ApplyFilters()
     {
+        _expandedEvents = ExpandRecurringEvents();
+
         PruneInvalidAttendeeFilter();
 
-        var result = _allEvents.AsEnumerable();
+        var result = _expandedEvents.AsEnumerable();
 
         if (_selectedColors.Count > 0)
             result = result.Where(e => _selectedColors.Any(c => string.Equals(c, e.Color, StringComparison.OrdinalIgnoreCase)));
@@ -541,7 +546,7 @@ public class BitFullCalendarState
             return;
 
         var validKeys = BitFullCalendarHelpers
-            .GetEventsForView(_allEvents.ToList(), View, SelectedDate, Culture)
+            .GetEventsForView(_expandedEvents, View, SelectedDate, Culture)
             .SelectMany(e => e.Attendees)
             .Select(BitFullCalendarHelpers.AttendeeFilterKey)
             .Where(k => k.Length > 0)
@@ -549,6 +554,54 @@ public class BitFullCalendarState
 
         if (!validKeys.Contains(SelectedAttendeeKey))
             SelectedAttendeeKey = null;
+    }
+
+    /// <summary>
+    /// The events as the views see them: every recurring event is replaced by its occurrences around the
+    /// visible range - with a week of slack either side for the month grid's leading and trailing days - and
+    /// around today, which the day view's "happening now" panel reads whatever day is shown.
+    /// </summary>
+    private List<BitFullCalendarEvent> ExpandRecurringEvents()
+    {
+        if (_allEvents.Exists(e => e.IsRecurring) is false)
+            return _allEvents;
+
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(View, SelectedDate, Culture);
+        var today = DateTime.Today;
+        (DateTime Start, DateTime End)[] ranges =
+        [
+            (AddDaysClamped(start, -7), AddDaysClamped(end, 8)),
+            (AddDaysClamped(today, -1), AddDaysClamped(today, 2))
+        ];
+
+        var result = new List<BitFullCalendarEvent>(_allEvents.Count);
+        foreach (var ev in _allEvents)
+        {
+            if (ev.IsRecurring is false)
+            {
+                result.Add(ev);
+                continue;
+            }
+
+            var starts = new SortedSet<DateTime>();
+            foreach (var (rangeStart, rangeEnd) in ranges)
+            {
+                starts.UnionWith(BitFullCalendarHelpers.GetOccurrenceStarts(ev, rangeStart, rangeEnd, Culture));
+            }
+
+            foreach (var occurrenceStart in starts)
+            {
+                result.Add(BitFullCalendarHelpers.CreateOccurrence(ev, occurrenceStart));
+            }
+        }
+
+        return result;
+    }
+
+    private static DateTime AddDaysClamped(DateTime date, int days)
+    {
+        var ticks = Math.Clamp(date.Ticks + days * TimeSpan.TicksPerDay, DateTime.MinValue.Ticks, DateTime.MaxValue.Ticks);
+        return new DateTime(ticks, date.Kind);
     }
 
     // Drag-and-drop helpers
@@ -586,6 +639,23 @@ public class BitFullCalendarState
     {
         if (DraggedEvent == null) return;
 
+        foreach (var change in BuildDropChanges(targetDate, hour, minute, resourceId, applyResource))
+        {
+            ApplyChange(change);
+        }
+
+        EndDrag();
+    }
+
+    /// <summary>
+    /// The changes <see cref="HandleDrop(DateTime, int?, int?, string?, bool)"/> makes, without applying
+    /// them - empty when nothing is dragged or the drop changes nothing. A dragged occurrence is moved on
+    /// its own (<see cref="BitFullCalendarRecurrenceEditScope.ThisEvent"/>).
+    /// </summary>
+    public List<BitFullCalendarChangeEventArgs> BuildDropChanges(DateTime targetDate, int? hour, int? minute, string? resourceId, bool applyResource)
+    {
+        if (DraggedEvent == null) return [];
+
         var originalStart = DraggedEvent.StartDate;
         var originalResource = DraggedEvent.Resource;
         var duration = DraggedEvent.Duration;
@@ -601,10 +671,7 @@ public class BitFullCalendarState
         var resourceChanged = applyResource && !string.Equals(originalResource ?? "", newResource ?? "", StringComparison.Ordinal);
 
         if (newStart == originalStart && !resourceChanged)
-        {
-            EndDrag();
-            return;
-        }
+            return [];
 
         var updated = new BitFullCalendarEvent
         {
@@ -619,8 +686,216 @@ public class BitFullCalendarState
             Attendees = [.. DraggedEvent.Attendees]
         };
 
-        UpdateEvent(updated);
-        EndDrag();
+        return BuildEditChanges(DraggedEvent, updated, BitFullCalendarRecurrenceEditScope.ThisEvent, BitFullCalendarChangeSource.Drag);
+    }
+
+    /// <summary>
+    /// The recurring event <paramref name="ev"/> was generated from, or <c>null</c> when it is not an
+    /// occurrence or its series is no longer among the events.
+    /// </summary>
+    public BitFullCalendarEvent? GetRecurringEvent(BitFullCalendarEvent ev)
+        => ev.RecurringEventId is { } id ? _allEvents.Find(e => e.Id == id && e.IsRecurring) : null;
+
+    /// <summary>
+    /// The changes that turn <paramref name="original"/> into <paramref name="updated"/>, ready for
+    /// <see cref="ApplyChange"/> and <c>OnChange</c> (<see cref="BitFullCalendarChangeNotifier.CommitAsync"/>
+    /// does both). An event outside a series gives a single Edit. An occurrence is resolved against its
+    /// series according to <paramref name="scope"/>:
+    /// <list type="bullet">
+    /// <item><see cref="BitFullCalendarRecurrenceEditScope.ThisEvent"/> - an Edit of the series skipping the
+    /// occurrence's date, then an Add of the edited occurrence as an event of its own.</item>
+    /// <item><see cref="BitFullCalendarRecurrenceEditScope.ThisAndFollowing"/> - an Edit of the series ending
+    /// the day before the occurrence, then an Add of a new series starting at the edited occurrence with
+    /// <paramref name="updated"/>'s rule. On the first occurrence it is the same as AllEvents.</item>
+    /// <item><see cref="BitFullCalendarRecurrenceEditScope.AllEvents"/> - an Edit of the series taking
+    /// <paramref name="updated"/>'s details and rule, moved by as much as the occurrence was moved.</item>
+    /// </list>
+    /// Empty when the occurrence's series is no longer among the events.
+    /// </summary>
+    public List<BitFullCalendarChangeEventArgs> BuildEditChanges(BitFullCalendarEvent original,
+                                                                BitFullCalendarEvent updated,
+                                                                BitFullCalendarRecurrenceEditScope scope,
+                                                                BitFullCalendarChangeSource source)
+    {
+        if (original.IsOccurrence is false)
+            return [CreateChange(BitFullCalendarChangeKind.Edit, CloneEvent(updated), CloneEvent(original), source)];
+
+        if (GetRecurringEvent(original) is not { } series)
+            return [];
+
+        var occurrenceStart = original.OccurrenceDate ?? original.StartDate;
+        if (scope == BitFullCalendarRecurrenceEditScope.ThisAndFollowing && occurrenceStart <= series.StartDate)
+            scope = BitFullCalendarRecurrenceEditScope.AllEvents;
+
+        switch (scope)
+        {
+            case BitFullCalendarRecurrenceEditScope.ThisEvent:
+            {
+                var edited = CloneEvent(series);
+                SkipOccurrence(edited.Recurrence!, occurrenceStart);
+
+                var detached = CopyAsNewEvent(updated);
+                detached.Recurrence = null;
+
+                return
+                [
+                    CreateChange(BitFullCalendarChangeKind.Edit, edited, CloneEvent(series), source),
+                    CreateChange(BitFullCalendarChangeKind.Add, detached, null, source)
+                ];
+            }
+
+            case BitFullCalendarRecurrenceEditScope.ThisAndFollowing:
+            {
+                var edited = CloneEvent(series);
+                EndSeriesBefore(edited.Recurrence!, occurrenceStart);
+
+                var following = CopyAsNewEvent(updated);
+                if (following.Recurrence is { } rule)
+                {
+                    // A count left as it was still describes the whole original series, so the new series
+                    // only gets what the part before the occurrence has not used up.
+                    if (rule.Count is { } count && count == series.Recurrence!.Count)
+                    {
+                        rule.Count = count - series.Recurrence.CountRuleOccurrencesBefore(series.StartDate, occurrenceStart, Culture);
+                    }
+
+                    var firstDate = following.StartDate.Date;
+                    rule.ExceptionDates.RemoveAll(d => d.Date < firstDate);
+                    rule.AdditionalDates.RemoveAll(d => d.Date < firstDate);
+                }
+
+                return
+                [
+                    CreateChange(BitFullCalendarChangeKind.Edit, edited, CloneEvent(series), source),
+                    CreateChange(BitFullCalendarChangeKind.Add, following, null, source)
+                ];
+            }
+
+            default:
+            {
+                var edited = CloneEvent(updated);
+                edited.Id = series.Id;
+                edited.RecurringEventId = null;
+                edited.OccurrenceDate = null;
+                edited.StartDate = series.StartDate + (updated.StartDate - original.StartDate);
+                edited.EndDate = edited.StartDate + updated.Duration;
+
+                return [CreateChange(BitFullCalendarChangeKind.Edit, edited, CloneEvent(series), source)];
+            }
+        }
+    }
+
+    /// <summary>
+    /// The changes deleting <paramref name="original"/> makes, ready for <see cref="ApplyChange"/> and
+    /// <c>OnChange</c>. An event outside a series gives a single Delete. An occurrence is resolved against its
+    /// series according to <paramref name="scope"/>: <see cref="BitFullCalendarRecurrenceEditScope.ThisEvent"/>
+    /// gives an Edit of the series skipping the occurrence's date,
+    /// <see cref="BitFullCalendarRecurrenceEditScope.ThisAndFollowing"/> an Edit of the series ending the day
+    /// before it (a Delete of the series on its first occurrence), and
+    /// <see cref="BitFullCalendarRecurrenceEditScope.AllEvents"/> a Delete of the series. Empty when the
+    /// occurrence's series is no longer among the events.
+    /// </summary>
+    public List<BitFullCalendarChangeEventArgs> BuildDeleteChanges(BitFullCalendarEvent original,
+                                                                  BitFullCalendarRecurrenceEditScope scope,
+                                                                  BitFullCalendarChangeSource source)
+    {
+        if (original.IsOccurrence is false)
+        {
+            var snapshot = CloneEvent(original);
+            return [CreateChange(BitFullCalendarChangeKind.Delete, snapshot, snapshot, source)];
+        }
+
+        if (GetRecurringEvent(original) is not { } series)
+            return [];
+
+        var occurrenceStart = original.OccurrenceDate ?? original.StartDate;
+        if (scope == BitFullCalendarRecurrenceEditScope.AllEvents
+            || (scope == BitFullCalendarRecurrenceEditScope.ThisAndFollowing && occurrenceStart <= series.StartDate))
+        {
+            var snapshot = CloneEvent(series);
+            return [CreateChange(BitFullCalendarChangeKind.Delete, snapshot, snapshot, source)];
+        }
+
+        var edited = CloneEvent(series);
+        if (scope == BitFullCalendarRecurrenceEditScope.ThisEvent)
+            SkipOccurrence(edited.Recurrence!, occurrenceStart);
+        else
+            EndSeriesBefore(edited.Recurrence!, occurrenceStart);
+
+        return [CreateChange(BitFullCalendarChangeKind.Edit, edited, CloneEvent(series), source)];
+    }
+
+    /// <summary>Applies a change built by <see cref="BuildEditChanges"/> or <see cref="BuildDeleteChanges"/> to the events.</summary>
+    public void ApplyChange(BitFullCalendarChangeEventArgs change)
+    {
+        switch (change.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                AddEvent(CloneEvent(change.Event));
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                UpdateEvent(CloneEvent(change.Event));
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                RemoveEvent(change.Event.Id);
+                break;
+        }
+    }
+
+    /// <summary>Undoes <see cref="ApplyChange"/>.</summary>
+    public void RevertChange(BitFullCalendarChangeEventArgs change)
+    {
+        switch (change.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                RemoveEvent(change.Event.Id);
+                break;
+            case BitFullCalendarChangeKind.Edit when change.OldEvent is not null:
+                UpdateEvent(CloneEvent(change.OldEvent));
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                AddEvent(CloneEvent(change.OldEvent ?? change.Event));
+                break;
+        }
+    }
+
+    private static BitFullCalendarChangeEventArgs CreateChange(BitFullCalendarChangeKind kind,
+                                                               BitFullCalendarEvent ev,
+                                                               BitFullCalendarEvent? oldEvent,
+                                                               BitFullCalendarChangeSource source)
+        => new() { Event = ev, OldEvent = oldEvent, Kind = kind, Source = source };
+
+    private static BitFullCalendarEvent CloneEvent(BitFullCalendarEvent source) => BitFullCalendarChangeNotifier.CloneEvent(source);
+
+    private static BitFullCalendarEvent CopyAsNewEvent(BitFullCalendarEvent source)
+    {
+        var copy = CloneEvent(source);
+        copy.Id = Guid.NewGuid().ToString("N");
+        copy.RecurringEventId = null;
+        copy.OccurrenceDate = null;
+        return copy;
+    }
+
+    private static void SkipOccurrence(BitFullCalendarRecurrence rule, DateTime occurrenceStart)
+    {
+        var date = occurrenceStart.Date;
+        rule.AdditionalDates.RemoveAll(d => d.Date == date);
+        if (rule.ExceptionDates.Exists(d => d.Date == date) is false)
+        {
+            rule.ExceptionDates.Add(date);
+        }
+    }
+
+    private static void EndSeriesBefore(BitFullCalendarRecurrence rule, DateTime occurrenceStart)
+    {
+        var lastDate = occurrenceStart.Date.AddDays(-1);
+        if (rule.Until is not { } until || until.Date > lastDate)
+        {
+            rule.Until = lastDate;
+        }
+
+        rule.ExceptionDates.RemoveAll(d => d.Date > lastDate);
+        rule.AdditionalDates.RemoveAll(d => d.Date > lastDate);
     }
 
     private void NormalizeEventIds() => NormalizeEventIds(_allEvents);

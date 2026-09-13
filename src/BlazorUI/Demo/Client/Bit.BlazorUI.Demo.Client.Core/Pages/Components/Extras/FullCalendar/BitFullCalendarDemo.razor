@@ -206,6 +206,28 @@
             <br />
             <BitFullCalendar Events="readOnlyEvents" ReadOnly="isReadOnly" />
         </DemoExample>
+
+        <DemoExample Title="Recurring events" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                Give an event a <code>Recurrence</code> rule to repeat it: every N days, on chosen weekdays of every
+                N weeks, or on a day or an nth weekday (the third Tuesday, the last Friday) of every N months or
+                years - forever, until a date, or for a number of occurrences. <code>ExceptionDates</code> skip single
+                dates and <code>AdditionalDates</code> add extra ones without disturbing the pattern, and the
+                "Repeat" section of the add/edit dialog edits all of it.
+            </div>
+            <br />
+            <div>
+                Editing or deleting an occurrence first asks which part of the series it applies to - this event,
+                this and following events, or all events - while dragging or resizing one moves only that
+                occurrence. Every choice reaches <code>OnChange</code> as ordinary Add, Edit, and Delete changes
+                of the series and of the events split from it, so the handler below is the same one the OnChange
+                example uses.
+            </div>
+            <br />
+            <BitFullCalendar Events="recurringEvents" OnChange="HandleRecurringChange" />
+            <br />
+            <BitText>Last changes: <b>@(recurringChanges.Count > 0 ? string.Join(" | ", recurringChanges) : "-")</b></BitText>
+        </DemoExample>
     </Examples>
 </DemoPage>
 

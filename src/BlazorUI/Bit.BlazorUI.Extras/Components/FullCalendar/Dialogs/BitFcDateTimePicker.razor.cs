@@ -9,6 +9,8 @@ public partial class BitFcDateTimePicker : IDisposable
     [Parameter] public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
     /// <summary>When true the time selects/display use 24-hour values; otherwise a 12-hour hour list plus an AM/PM select.</summary>
     [Parameter] public bool Use24HourFormat { get; set; } = true;
+    /// <summary>When false the picker only picks a date: the time selects are left out and the value keeps its time of day.</summary>
+    [Parameter] public bool ShowTime { get; set; } = true;
     [Parameter] public string PreviousMonthAriaLabel { get; set; } = "Previous month";
     [Parameter] public string NextMonthAriaLabel { get; set; } = "Next month";
     [Parameter] public string HourAriaLabel { get; set; } = "Hour";
@@ -221,6 +223,9 @@ public partial class BitFcDateTimePicker : IDisposable
     private string GetDisplayText()
     {
         var datePart = Value.ToString("d", Culture);
+        if (ShowTime is false)
+            return datePart;
+
         // Honor the configured time format: 24-hour ("HH:mm") or 12-hour with the culture's AM/PM
         // designator ("h:mm tt"), matching the rest of the calendar's time rendering.
         var timePart = Value.ToString(Use24HourFormat ? "HH:mm" : "h:mm tt", Culture);

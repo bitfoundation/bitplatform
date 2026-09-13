@@ -24,7 +24,9 @@
     var displayEnd = endIsExclusiveMidnight ? Event.EndDate.AddTicks(-1) : Event.EndDate;
     var startLabel = $"{Event.StartDate.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}";
     var endLabel = $"{displayEnd.ToString("d", State.Culture)} {BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)}";
-    var badgeAriaLabel = $"{Event.Title}, {startLabel} - {endLabel}";
+    var badgeAriaLabel = Event.IsOccurrence
+        ? $"{Event.Title}, {Texts.RecurringEventAriaLabel}, {startLabel} - {endLabel}"
+        : $"{Event.Title}, {startLabel} - {endLabel}";
 }
 
 <div class="bit-bfc-event-badge @colorClass @positionClass"
@@ -54,6 +56,11 @@
             @if (showTitle)
             {
                 <span class="bit-bfc-event-badge-title">@Event.Title</span>
+                @if (Event.IsOccurrence)
+                {
+                    @* Decorative: the badge's own aria-label already announces the event as recurring. *@
+                    <BitFcRecurrenceIcon />
+                }
             }
         </div>
 

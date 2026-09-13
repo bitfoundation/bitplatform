@@ -14,11 +14,20 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
     [Parameter] public EventCallback OnClose { get; set; }
 
+    private enum ScopeAction
+    {
+        Edit,
+        Delete
+    }
+
     private bool _showEdit;
     private bool _isDeleting;
     private bool _deleteCommitted;
+    private ScopeAction? _pendingScopeAction;
+    private BitFullCalendarRecurrenceEditScope? _editScope;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
+    private readonly string _scopeTitleId = $"bfc-details-scope-{Guid.NewGuid():N}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -33,7 +42,32 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         if (State.ReadOnly)
             return;
 
+        if (Event.IsOccurrence)
+        {
+            _pendingScopeAction = ScopeAction.Edit;
+            return;
+        }
+
+        _editScope = null;
         _showEdit = true;
+    }
+
+    private void CancelScopeChoice() => _pendingScopeAction = null;
+
+    private async Task ChooseScope(BitFullCalendarRecurrenceEditScope scope)
+    {
+        if (State.ReadOnly)
+            return;
+
+        if (_pendingScopeAction == ScopeAction.Edit)
+        {
+            _pendingScopeAction = null;
+            _editScope = scope;
+            _showEdit = true;
+            return;
+        }
+
+        await DeleteOccurrence(scope);
     }
 
     private void OnEditClose()
@@ -53,6 +87,12 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     {
         if (State.ReadOnly)
             return;
+
+        if (Event.IsOccurrence)
+        {
+            _pendingScopeAction = ScopeAction.Delete;
+            return;
+        }
 
         // Guard against double invocation (rapid clicks / Enter while the async work is in flight):
         // keep the flag set through the notifier and OnClose so the delete only runs once.
@@ -98,6 +138,30 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             // The event has already been removed from state, so a throwing notifier/close must not
             // leave the dialog wedged with _isDeleting stuck true - reset it so the user can retry
             // (e.g. close) instead of the delete button staying permanently inert.
+            _isDeleting = false;
+        }
+    }
+
+    private async Task DeleteOccurrence(BitFullCalendarRecurrenceEditScope scope)
+    {
+        // Same once-only guarantees as Delete: CommitAsync rolls the state back when a notification
+        // throws, and a committed delete is never sent twice.
+        if (_isDeleting)
+            return;
+        _isDeleting = true;
+
+        try
+        {
+            if (!_deleteCommitted)
+            {
+                await Notifier.CommitAsync(State.BuildDeleteChanges(Event, scope, BitFullCalendarChangeSource.Dialog));
+                _deleteCommitted = true;
+            }
+
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
             _isDeleting = false;
         }
     }

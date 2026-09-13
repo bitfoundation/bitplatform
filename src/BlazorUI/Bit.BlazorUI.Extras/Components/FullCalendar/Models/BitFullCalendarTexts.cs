@@ -100,6 +100,95 @@ public class BitFullCalendarTexts
     public string NoResourceOption { get; set; } = "(none)";
     public string NoResourcesMessage { get; set; } = "No resources to display.";
 
+    public string RepeatLabel { get; set; } = "Repeat";
+    public string RecurrenceNone { get; set; } = "Does not repeat";
+    public string RecurrenceDaily { get; set; } = "Daily";
+    public string RecurrenceWeekly { get; set; } = "Weekly";
+    public string RecurrenceMonthly { get; set; } = "Monthly";
+    public string RecurrenceYearly { get; set; } = "Yearly";
+    public string RecurrenceIntervalLabel { get; set; } = "Repeat every";
+    public string RecurrenceDayUnit { get; set; } = "day(s)";
+    public string RecurrenceWeekUnit { get; set; } = "week(s)";
+    public string RecurrenceMonthUnit { get; set; } = "month(s)";
+    public string RecurrenceYearUnit { get; set; } = "year(s)";
+    public string RecurrenceDaysOfWeekLabel { get; set; } = "Repeat on";
+    public string RecurrencePatternLabel { get; set; } = "Repeat on";
+    public string RecurrenceFirst { get; set; } = "first";
+    public string RecurrenceSecond { get; set; } = "second";
+    public string RecurrenceThird { get; set; } = "third";
+    public string RecurrenceFourth { get; set; } = "fourth";
+    public string RecurrenceLast { get; set; } = "last";
+    public string RecurrenceEndsLabel { get; set; } = "Ends";
+    public string RecurrenceEndsNever { get; set; } = "Never";
+    public string RecurrenceEndsOnDate { get; set; } = "On a date";
+    public string RecurrenceEndsAfterCount { get; set; } = "After a number of occurrences";
+    public string RecurrenceUntilAriaLabel { get; set; } = "Last date";
+    public string RecurrenceCountAriaLabel { get; set; } = "Number of occurrences";
+    public string RecurrenceSkippedDatesLabel { get; set; } = "Skipped dates";
+    public string RecurrenceExtraDatesLabel { get; set; } = "Extra dates";
+    public string RecurrenceSkipDateButton { get; set; } = "Skip";
+    public string RecurrenceAddDateButton { get; set; } = "Add";
+    public string RecurrenceSkipDateAriaLabel { get; set; } = "Date to skip";
+    public string RecurrenceExtraDateAriaLabel { get; set; } = "Date to add";
+    public string RemoveDateAriaLabel { get; set; } = "Remove date";
+    public string RecurringEventAriaLabel { get; set; } = "Recurring event";
+    public string RecurrenceScopeEditTitle { get; set; } = "Edit recurring event";
+    public string RecurrenceScopeDeleteTitle { get; set; } = "Delete recurring event";
+    public string RecurrenceScopeThisEvent { get; set; } = "This event";
+    public string RecurrenceScopeThisAndFollowing { get; set; } = "This and following events";
+    public string RecurrenceScopeAllEvents { get; set; } = "All events";
+
+    // Summary templates, joined with RecurrenceSummarySeparator and capitalized - for example
+    // "Every 2 weeks, on Mon, Fri, until Oct 30, 2026".
+    public string RecurrenceSummarySeparator { get; set; } = ", ";
+    public string RecurrenceEveryFormat { get; set; } = "every {0} {1}";
+    public string RecurrenceOnDaysFormat { get; set; } = "on {0}";
+    public string RecurrenceOnDayOfMonthFormat { get; set; } = "on day {0}";
+    public string RecurrenceOnWeekdayOfMonthFormat { get; set; } = "on the {0} {1}";
+    public string RecurrenceOnDateOfYearFormat { get; set; } = "on {0}";
+    public string RecurrenceOnWeekdayOfYearFormat { get; set; } = "on the {0} {1} of {2}";
+    public string RecurrenceUntilFormat { get; set; } = "until {0}";
+    public string RecurrenceCountFormat { get; set; } = "{0} times";
+
+    public string ValidationRecurrenceDaysRequired { get; set; } = "Select at least one day";
+    public string ValidationRecurrenceUntilAfterStart { get; set; } = "The last date cannot be before the start date";
+
+    public string GetRecurrenceFrequencyLabel(BitFullCalendarRecurrenceFrequency frequency) => frequency switch
+    {
+        BitFullCalendarRecurrenceFrequency.Daily => RecurrenceDaily,
+        BitFullCalendarRecurrenceFrequency.Weekly => RecurrenceWeekly,
+        BitFullCalendarRecurrenceFrequency.Monthly => RecurrenceMonthly,
+        BitFullCalendarRecurrenceFrequency.Yearly => RecurrenceYearly,
+        _ => frequency.ToString()
+    };
+
+    public string GetRecurrenceUnitLabel(BitFullCalendarRecurrenceFrequency frequency) => frequency switch
+    {
+        BitFullCalendarRecurrenceFrequency.Daily => RecurrenceDayUnit,
+        BitFullCalendarRecurrenceFrequency.Weekly => RecurrenceWeekUnit,
+        BitFullCalendarRecurrenceFrequency.Monthly => RecurrenceMonthUnit,
+        BitFullCalendarRecurrenceFrequency.Yearly => RecurrenceYearUnit,
+        _ => frequency.ToString()
+    };
+
+    public string GetWeekOfMonthLabel(BitFullCalendarRecurrenceWeekOfMonth week) => week switch
+    {
+        BitFullCalendarRecurrenceWeekOfMonth.First => RecurrenceFirst,
+        BitFullCalendarRecurrenceWeekOfMonth.Second => RecurrenceSecond,
+        BitFullCalendarRecurrenceWeekOfMonth.Third => RecurrenceThird,
+        BitFullCalendarRecurrenceWeekOfMonth.Fourth => RecurrenceFourth,
+        BitFullCalendarRecurrenceWeekOfMonth.Last => RecurrenceLast,
+        _ => week.ToString()
+    };
+
+    public string GetRecurrenceScopeLabel(BitFullCalendarRecurrenceEditScope scope) => scope switch
+    {
+        BitFullCalendarRecurrenceEditScope.ThisEvent => RecurrenceScopeThisEvent,
+        BitFullCalendarRecurrenceEditScope.ThisAndFollowing => RecurrenceScopeThisAndFollowing,
+        BitFullCalendarRecurrenceEditScope.AllEvents => RecurrenceScopeAllEvents,
+        _ => scope.ToString()
+    };
+
     public string GetViewLabel(BitFullCalendarView view) => view switch
     {
         BitFullCalendarView.Day => ViewDay,

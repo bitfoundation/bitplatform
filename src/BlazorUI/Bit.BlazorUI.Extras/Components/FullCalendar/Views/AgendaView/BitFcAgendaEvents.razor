@@ -65,7 +65,13 @@
                             @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                         </span>
                         <span class="bit-bfc-agenda-info" style="display:block;">
-                            <span class="bit-bfc-agenda-title" style="display:block;">@ev.Title</span>
+                            <span class="bit-bfc-agenda-title" style="display:block;">
+                                @ev.Title
+                                @if (ev.IsOccurrence)
+                                {
+                                    <BitFcRecurrenceIcon AriaLabel="@Texts.RecurringEventAriaLabel" />
+                                }
+                            </span>
                             <span class="bit-bfc-agenda-desc" style="display:block;">@ev.Description</span>
                         </span>
                         <span class="bit-bfc-agenda-time">

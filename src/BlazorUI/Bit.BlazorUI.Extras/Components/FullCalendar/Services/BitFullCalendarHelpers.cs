@@ -803,6 +803,148 @@ public static class BitFullCalendarHelpers
         };
     }
 
+    // -- Recurrence ------------------------------
+
+    /// <summary>
+    /// The starts of the occurrences of a recurring event (see <see cref="BitFullCalendarEvent.IsRecurring"/>)
+    /// that overlap <c>[rangeStart, rangeEnd]</c> - one starting before the range counts while it lasts into it.
+    /// Empty for any other event.
+    /// </summary>
+    public static List<DateTime> GetOccurrenceStarts(BitFullCalendarEvent ev, DateTime rangeStart, DateTime rangeEnd, CultureInfo? culture = null)
+    {
+        if (ev.IsRecurring is false)
+            return [];
+
+        var duration = ev.Duration > TimeSpan.Zero ? ev.Duration : TimeSpan.Zero;
+        var from = rangeStart.Ticks - DateTime.MinValue.Ticks > duration.Ticks ? rangeStart - duration : DateTime.MinValue;
+        return ev.Recurrence!.GetOccurrences(ev.StartDate, from, rangeEnd, culture);
+    }
+
+    /// <summary>
+    /// Replaces every recurring event with its occurrences overlapping <c>[rangeStart, rangeEnd]</c> (see
+    /// <see cref="CreateOccurrence"/>); events that do not repeat are kept as they are.
+    /// </summary>
+    public static List<BitFullCalendarEvent> ExpandRecurringEvents(IEnumerable<BitFullCalendarEvent> events, DateTime rangeStart, DateTime rangeEnd, CultureInfo? culture = null)
+    {
+        var result = new List<BitFullCalendarEvent>();
+        foreach (var ev in events)
+        {
+            if (ev.IsRecurring is false)
+            {
+                result.Add(ev);
+                continue;
+            }
+
+            foreach (var start in GetOccurrenceStarts(ev, rangeStart, rangeEnd, culture))
+            {
+                result.Add(CreateOccurrence(ev, start));
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// The occurrence of a recurring <paramref name="series"/> starting at <paramref name="start"/>, as the
+    /// views render it: a copy of the series moved to that start, with an <see cref="BitFullCalendarEvent.Id"/>
+    /// derived from the series' id and the start, <see cref="BitFullCalendarEvent.RecurringEventId"/> naming the
+    /// series, <see cref="BitFullCalendarEvent.OccurrenceDate"/> set to the start, and the series' rule.
+    /// </summary>
+    public static BitFullCalendarEvent CreateOccurrence(BitFullCalendarEvent series, DateTime start)
+    {
+        var endTicks = Math.Clamp(start.Ticks + series.Duration.Ticks, DateTime.MinValue.Ticks, DateTime.MaxValue.Ticks);
+
+        return new BitFullCalendarEvent
+        {
+            Id = $"{series.Id}_{start.ToString("yyyyMMdd'T'HHmmss", CultureInfo.InvariantCulture)}",
+            Title = series.Title,
+            Description = series.Description,
+            StartDate = start,
+            EndDate = new DateTime(endTicks, start.Kind),
+            Color = series.Color,
+            Resource = series.Resource,
+            Data = series.Data,
+            Attendees = [.. series.Attendees],
+            Recurrence = series.Recurrence,
+            RecurringEventId = series.Id,
+            OccurrenceDate = start
+        };
+    }
+
+    /// <summary>
+    /// A one-line, localized summary of <paramref name="recurrence"/> for a series starting at
+    /// <paramref name="seriesStart"/>, built from the recurrence templates of <paramref name="texts"/> -
+    /// for example "Every 2 weeks, on Mon, Fri, until Oct 30, 2026".
+    /// </summary>
+    public static string DescribeRecurrence(BitFullCalendarRecurrence recurrence, DateTime seriesStart, BitFullCalendarTexts texts, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+
+        var parts = new List<string>(4)
+        {
+            recurrence.Interval == 1
+                ? texts.GetRecurrenceFrequencyLabel(recurrence.Frequency)
+                : string.Format(culture, texts.RecurrenceEveryFormat, recurrence.Interval.ToString(culture), texts.GetRecurrenceUnitLabel(recurrence.Frequency))
+        };
+
+        if (recurrence.Frequency == BitFullCalendarRecurrenceFrequency.Weekly)
+        {
+            var days = OrderWeekdays(recurrence.DaysOfWeek, seriesStart, culture).Select(culture.DateTimeFormat.GetAbbreviatedDayName);
+            parts.Add(string.Format(culture, texts.RecurrenceOnDaysFormat, string.Join(texts.RecurrenceSummarySeparator, days)));
+        }
+        else if (recurrence.Frequency is BitFullCalendarRecurrenceFrequency.Monthly or BitFullCalendarRecurrenceFrequency.Yearly)
+        {
+            parts.Add(DescribeRecurrenceMonthPattern(recurrence.Frequency, recurrence.WeekOfMonth, recurrence.DaysOfWeek, seriesStart, texts, culture));
+        }
+
+        if (recurrence.Until is { } until)
+            parts.Add(string.Format(culture, texts.RecurrenceUntilFormat, FormatCultureDate(until, culture)));
+
+        if (recurrence.Count is { } count)
+            parts.Add(string.Format(culture, texts.RecurrenceCountFormat, count.ToString(culture)));
+
+        return Capitalize(string.Join(texts.RecurrenceSummarySeparator, parts), culture);
+    }
+
+    /// <summary>
+    /// The day a monthly or yearly rule lands on, uncapitalized - "on day 15", "on the third Tuesday",
+    /// "on March 15", or "on the last Friday of March" - for a series starting at <paramref name="seriesStart"/>.
+    /// </summary>
+    public static string DescribeRecurrenceMonthPattern(BitFullCalendarRecurrenceFrequency frequency,
+                                                        BitFullCalendarRecurrenceWeekOfMonth? weekOfMonth,
+                                                        IEnumerable<DayOfWeek> daysOfWeek,
+                                                        DateTime seriesStart,
+                                                        BitFullCalendarTexts texts,
+                                                        CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.CurrentUICulture;
+        var calendar = culture.Calendar;
+        var yearly = frequency == BitFullCalendarRecurrenceFrequency.Yearly;
+
+        if (weekOfMonth is not { } week)
+        {
+            return yearly
+                ? string.Format(culture, texts.RecurrenceOnDateOfYearFormat, seriesStart.ToString("M", culture))
+                : string.Format(culture, texts.RecurrenceOnDayOfMonthFormat, calendar.GetDayOfMonth(seriesStart).ToString(culture));
+        }
+
+        var days = string.Join(texts.RecurrenceSummarySeparator, OrderWeekdays(daysOfWeek, seriesStart, culture).Select(culture.DateTimeFormat.GetDayName));
+        return yearly
+            ? string.Format(culture, texts.RecurrenceOnWeekdayOfYearFormat, texts.GetWeekOfMonthLabel(week), days, culture.DateTimeFormat.GetMonthName(calendar.GetMonth(seriesStart)))
+            : string.Format(culture, texts.RecurrenceOnWeekdayOfMonthFormat, texts.GetWeekOfMonthLabel(week), days);
+    }
+
+    /// <summary>The weekdays a rule lands on - the start's when none are listed - in the culture's week order.</summary>
+    private static List<DayOfWeek> OrderWeekdays(IEnumerable<DayOfWeek> daysOfWeek, DateTime seriesStart, CultureInfo culture)
+    {
+        var first = (int)culture.DateTimeFormat.FirstDayOfWeek;
+        var days = daysOfWeek.Where(d => Enum.IsDefined(d)).Distinct().ToList();
+        if (days.Count == 0)
+            days.Add(seriesStart.DayOfWeek);
+
+        return [.. days.OrderBy(d => ((int)d - first + 7) % 7)];
+    }
+
     public static string Capitalize(string str, CultureInfo? culture = null)
     {
         if (string.IsNullOrEmpty(str)) return "";

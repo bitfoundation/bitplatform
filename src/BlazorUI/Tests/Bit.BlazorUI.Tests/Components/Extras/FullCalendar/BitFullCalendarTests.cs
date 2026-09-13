@@ -549,4 +549,109 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     #endregion
+
+    #region Recurrence
+
+    /// <summary>A series with a single occurrence, today, so it renders exactly once in every view.</summary>
+    private static List<BitFullCalendarEvent> RecurringEvents() =>
+    [
+        new()
+        {
+            Id = "series",
+            Title = "Standup",
+            Description = "Daily sync",
+            StartDate = DateTime.Today.AddHours(9),
+            EndDate = DateTime.Today.AddHours(10),
+            Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 1 }
+        }
+    ];
+
+    private IRenderedComponent<BitFullCalendar> RenderRecurringCalendar(List<BitFullCalendarChangeEventArgs> changes)
+    {
+        return RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, RecurringEvents());
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldMarkTheOccurrencesOfARecurringEvent()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, RecurringEvents());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-event-block .bit-bfc-recurrence-icon").Count);
+        Assert.IsTrue(component.Instance.State.Events.Single().IsOccurrence);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldAskForTheScopeBeforeDeletingAnOccurrence()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderRecurringCalendar(changes);
+
+        component.Find(".bit-bfc-event-badge").Click();
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-recurrence-summary").Count);
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+
+        // Nothing is deleted until the part of the series is picked.
+        Assert.AreEqual(0, changes.Count);
+        var choices = component.FindAll(".bit-bfc-scope-choice-btn");
+        Assert.AreEqual(3, choices.Count);
+
+        choices[0].Click();
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
+        CollectionAssert.AreEqual(new[] { DateTime.Today }, changes[0].Event.Recurrence!.ExceptionDates);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-event-badge").Count);
+    }
+
+    [TestMethod]
+    [DataRow(0, 0)]
+    [DataRow(2, 1)]
+    public void BitFullCalendarShouldOnlyOfferTheRepeatFieldsWhenAnEditReachesBeyondTheOccurrence(int choice, int repeatFields)
+    {
+        var component = RenderRecurringCalendar([]);
+
+        component.Find(".bit-bfc-event-badge").Click();
+        // Details footer while editable: Edit, Delete, Close.
+        component.FindAll(".bit-bfc-dialog-footer button")[0].Click();
+        component.FindAll(".bit-bfc-scope-choice-btn")[choice].Click();
+
+        // An occurrence edited on its own leaves the series, so it has no rule to edit.
+        Assert.AreEqual(2, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.AreEqual(repeatFields, component.FindAll(".bit-bfc-repeat-select").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldCreateARecurringEventFromTheAddDialog()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        component.Find(".bit-bfc-month-cell").Click();
+        component.Find("input[placeholder='Event title']").Change("Gym");
+        component.Find(".bit-bfc-dialog textarea").Change("Leg day");
+        component.Find(".bit-bfc-repeat-select").Change("Weekly");
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        Assert.AreEqual(1, changes.Count);
+        var ev = changes[0].Event;
+        Assert.AreEqual(BitFullCalendarChangeKind.Add, changes[0].Kind);
+        Assert.IsNotNull(ev.Recurrence);
+        Assert.AreEqual(BitFullCalendarRecurrenceFrequency.Weekly, ev.Recurrence.Frequency);
+        CollectionAssert.AreEqual(new[] { ev.StartDate.DayOfWeek }, ev.Recurrence.DaysOfWeek);
+    }
+
+    #endregion
 }

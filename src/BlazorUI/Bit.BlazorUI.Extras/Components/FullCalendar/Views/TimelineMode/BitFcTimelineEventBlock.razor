@@ -71,6 +71,10 @@
                 <BitFcEventBullet Color="Event.Color" />
             }
             <span class="bit-bfc-timeline-event-title">@Event.Title</span>
+            @if (Event.IsOccurrence)
+            {
+                <BitFcRecurrenceIcon AriaLabel="@Texts.RecurringEventAriaLabel" />
+            }
         </div>
         <div class="bit-bfc-timeline-event-time">
             @BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)
