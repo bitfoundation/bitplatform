@@ -63,6 +63,7 @@ internal static class ScriptBundling
             return (checks.Passed, checks.Failed);
         }
 
+        CheckSplitModuleClosures(checks, butilRoot);
         CheckShippedArtifacts(checks, butilRoot, workspace, butilAssemblyPath);
         CheckAssembledBundlesRun(checks, butilRoot, workspace, butilAssemblyPath);
         CheckPackageLayout(checks, butilRoot);
@@ -239,6 +240,84 @@ internal static class ScriptBundling
         checks.That(included.SequenceEqual(["x", "y"], StringComparer.Ordinal),
             "a manifest with a dependency cycle resolves rather than looping forever",
             $"resolved to [{string.Join(", ", included)}]");
+    }
+
+    /// <summary>
+    /// What one split module actually drags in, taken from the manifest Bit.Butil ships rather than from a
+    /// hand-built one.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="CheckDependencyResolution"/> proves the resolver behaves; this proves the graph it walks
+    /// is the shape the library claims. Both halves of a split are asserted, because only the pair says
+    /// anything: what a module must bring (a shared registry it cannot work without) and what it must
+    /// <em>not</em> (the sibling it was split away from). A dependency added in passing - one
+    /// <c>butil.otherModule.helper()</c> in a TypeScript file - silently puts a whole module back into the
+    /// download of every app that uses this one, and nothing else in this harness would notice.
+    /// </remarks>
+    private static void CheckSplitModuleClosures(Checks checks, string butilRoot)
+    {
+        var manifestPath = Path.Combine(butilRoot, "obj", "butil-js", "chunks", "manifest.txt");
+        if (File.Exists(manifestPath) is false)
+        {
+            checks.That(false, "the shipped manifest was not read", $"{manifestPath} is missing - build Bit.Butil first");
+            return;
+        }
+
+        var manifest = ButilScriptBundler.ReadManifest(manifestPath);
+
+        // module -> what its closure must contain, what it must not, and why the "not" matters.
+        (string Module, string[] Required, string[] Forbidden, string Because)[] cases =
+        [
+            ("streams", ["fetchRequest", "abortSignals"], ["fetch", "abortController"],
+                "a stream builds its request through the shared fetchRequest module, not through the whole fetch module"),
+            ("fetch", ["fetchRequest", "abortSignals"], ["streams", "abortController"],
+                "fetch and streams share the request mapping rather than either owning it"),
+            ("scheduler", ["abortSignals"], ["abortController"],
+                "scheduling with a signal needs the signal registry, not the AbortController surface"),
+            ("shadowDom", ["domHandles"], ["dom"],
+                "a shadow root is registered in the node registry, which is why the registry is its own module"),
+            ("windowMessaging", ["windowRefs"], ["window", "windowSelection", "windowMediaQuery"],
+                "posting to a popup needs the popup registry, not the window API"),
+            ("webAudioAnalyser", ["webAudioNodes", "webAudio"], ["webAudioParams", "webAudioMedia", "webAudioWorklet"],
+                "reading an analyser needs the node registry and the context, and none of the rest of the graph"),
+            ("cryptoKeys", ["cryptoKeyMaterial"], ["crypto", "cryptoSign", "cryptoCipher", "cryptoDerive"],
+                "key management shares only the import helpers with derivation"),
+            ("cryptoDerive", ["cryptoKeyMaterial"], ["crypto", "cryptoKeys", "cryptoSign", "cryptoCipher"],
+                "the other half of that same sharing"),
+            ("indexedDbStore", ["indexedDb"], ["indexedDbIndex", "indexedDbCursor", "indexedDbTransaction", "indexedDbInfo"],
+                "a store read needs the connection, not the index, cursor and transaction layers"),
+            ("performanceVitals", ["performance"], [],
+                "the Web Vitals accumulator is layered on the timeline module"),
+            ("performance", [], ["performanceVitals"],
+                "and the timeline does not carry the accumulator back"),
+            ("userAgent", [], ["userAgentParser"],
+                "Client Hints must not drag the user-agent string parser, which is the biggest module Butil ships"),
+            ("elementState", [], ["element", "elementAria", "elementDom", "elementEvents", "events"],
+                "the reflected properties stand alone - the element families share nothing but the prelude"),
+            ("cssTypedOm", [], ["css", "cssStyleSheet", "cssHighlight", "cssWorklet"],
+                "so does the Typed OM"),
+        ];
+
+        foreach (var (module, required, forbidden, because) in cases)
+        {
+            var included = ButilScriptBundler.Resolve(manifest, [module], out var unknown);
+
+            if (unknown.Count > 0 || manifest.Dependencies.ContainsKey(module) is false)
+            {
+                checks.That(false, $"'{module}' is a module the split families claim exists", $"the manifest has no such module");
+                continue;
+            }
+
+            var absent = required.Where(name => included.Contains(name, StringComparer.Ordinal) is false).ToArray();
+            checks.That(absent.Length == 0,
+                $"resolving '{module}' brings [{string.Join(", ", required)}] with it",
+                $"it left out [{string.Join(", ", absent)}] - resolved to [{string.Join(", ", included)}]");
+
+            var dragged = forbidden.Where(name => included.Contains(name, StringComparer.Ordinal)).ToArray();
+            checks.That(dragged.Length == 0,
+                $"resolving '{module}' leaves [{string.Join(", ", forbidden)}] behind - {because}",
+                $"it dragged in [{string.Join(", ", dragged)}]");
+        }
     }
 
     /// <summary>
@@ -664,7 +743,7 @@ internal static class ScriptBundling
     /// <remarks>
     /// The duplication is forced - a target runs at most once per project build, so a single target hooked
     /// into both stages runs at the first and is skipped at the second - and it is the kind that rots: a fix
-    /// made to one body and not the other leaves a publish shipping 72 module files an app never requests,
+    /// made to one body and not the other leaves a publish shipping all 171 module files an app never requests,
     /// or a bundle a lazy-scripts app never loads, and neither shows up in a build. So the two bodies are
     /// compared here, and each is checked to be hooked into the stage it exists for.
     /// </remarks>

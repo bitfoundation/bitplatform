@@ -1,5 +1,4 @@
 using System.Text.Json.Nodes;
-using ModelContextProtocol.Protocol;
 
 namespace ModelContextProtocol.Client;
 
@@ -52,14 +51,6 @@ public static class McpHangfireExtensions
                 ["argumentContains"] = argumentContains,
                 ["take"] = MaxTake
             }, cancellationToken));
-        }
-
-        private async Task<string> CallText(string tool, Dictionary<string, object?> arguments, CancellationToken cancellationToken)
-        {
-            var result = await mcp.CallToolAsync(tool, arguments, cancellationToken: cancellationToken);
-            var text = result.Content.OfType<TextContentBlock>().FirstOrDefault()?.Text ?? "";
-            Assert.AreNotEqual(true, result.IsError, $"Tool '{tool}' returned an error. Result: '{text}'.");
-            return text;
         }
     }
 }

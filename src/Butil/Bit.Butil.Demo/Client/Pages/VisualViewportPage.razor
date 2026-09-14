@@ -76,12 +76,18 @@ await subscription.DisposeAsync();
 
     <DemoSection Title="Scroll event"
                  Api="SubscribeScroll"
-                 Description="Fires when the visual viewport is scrolled. Note that this is the visual viewport, not the document - on desktop it mostly fires while pinch-zoomed."
+                 Description="Fires when the visual viewport is scrolled. Note that this is the visual viewport, not the document - on desktop it mostly fires while pinch-zoomed. It fires once a frame for as long as a pinch-zoom pan lasts and carries no payload, so one event is a round trip saying 'look again' plus one for every property the handler then reads: pass minInterval to cap that, or use SubscribeScrollEnd below when only the resting position matters."
                  Code=@("""
 var subscription = await visualViewport.SubscribeScroll(() =>
 {
     // the visual viewport was scrolled
 });
+
+// or, capped at one call every 100 ms - the last one always
+// arriving with the settled viewport:
+var gated = await visualViewport.SubscribeScroll(
+    () => { /* ... */ },
+    minInterval: TimeSpan.FromMilliseconds(100));
 
 // later, when no longer needed:
 await subscription.DisposeAsync();
@@ -124,12 +130,12 @@ await visualViewport.RemoveAllEventHandlers();
     <ApiMember Name="GetWidth" Signature="Task<double> GetWidth()" Description="Returns the width of the visual viewport, in CSS pixels." />
     <ApiMember Name="GetHeight" Signature="Task<double> GetHeight()" Description="Returns the height of the visual viewport, in CSS pixels." />
     <ApiMember Name="GetScale" Signature="Task<double> GetScale()" Description="Returns the pinch-zoom scaling factor applied to the visual viewport." />
-    <ApiMember Name="AddResize" Signature="ValueTask<Guid> AddResize(Action handler)" Description="Registers a handler for the resize event and returns its listener id." />
-    <ApiMember Name="SubscribeResize" Signature="ValueTask<ButilSubscription> SubscribeResize(Action handler)" Description="Subscribe variant of AddResize returning a disposable subscription handle." />
+    <ApiMember Name="AddResize" Signature="ValueTask<Guid> AddResize(Action handler, TimeSpan? minInterval = null)" Description="Registers a handler for the resize event and returns its listener id. minInterval rate-limits the handler in JavaScript, before the round trip." />
+    <ApiMember Name="SubscribeResize" Signature="ValueTask<ButilSubscription> SubscribeResize(Action handler, TimeSpan? minInterval = null)" Description="Subscribe variant of AddResize returning a disposable subscription handle." />
     <ApiMember Name="RemoveResize" Signature="ValueTask<Guid[]> RemoveResize(Action handler)" Description="Removes resize listeners matched by delegate identity; pass the exact handler instance that was registered." />
     <ApiMember Name="RemoveResize" Signature="ValueTask RemoveResize(Guid id)" Description="Removes a single resize listener by its id." />
-    <ApiMember Name="AddScroll" Signature="ValueTask<Guid> AddScroll(Action handler)" Description="Registers a handler for the scroll event and returns its listener id." />
-    <ApiMember Name="SubscribeScroll" Signature="ValueTask<ButilSubscription> SubscribeScroll(Action handler)" Description="Subscribe variant of AddScroll returning a disposable subscription handle." />
+    <ApiMember Name="AddScroll" Signature="ValueTask<Guid> AddScroll(Action handler, TimeSpan? minInterval = null)" Description="Registers a handler for the scroll event and returns its listener id. minInterval rate-limits the handler in JavaScript, before the round trip." />
+    <ApiMember Name="SubscribeScroll" Signature="ValueTask<ButilSubscription> SubscribeScroll(Action handler, TimeSpan? minInterval = null)" Description="Subscribe variant of AddScroll returning a disposable subscription handle." />
     <ApiMember Name="RemoveScroll" Signature="ValueTask<Guid[]> RemoveScroll(Action handler)" Description="Removes scroll listeners matched by delegate identity; pass the exact handler instance that was registered." />
     <ApiMember Name="RemoveScroll" Signature="ValueTask RemoveScroll(Guid id)" Description="Removes a single scroll listener by its id." />
     <ApiMember Name="RemoveAllEventHandlers" Signature="ValueTask RemoveAllEventHandlers()" Description="Removes every resize and scroll listener registered on this instance." />

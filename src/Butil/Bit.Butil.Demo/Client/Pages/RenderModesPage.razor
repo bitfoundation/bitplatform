@@ -63,29 +63,49 @@
     <DemoSection Title="Prerendering is handled for you"
                  Description="During static SSR and prerendering there is no JS runtime, and a raw IJSRuntime call throws. Butil recognises all three not-ready runtimes - the SSR sentinel, a Blazor Server circuit that has not initialised, and a Hybrid WebView that has not attached - and returns a safe default rather than throwing: void calls become no-ops, strings come back empty, arrays come back empty, and everything else comes back as default(T). Your prerender pass renders instead of blowing up."
                  Code=@("""
-// Safe during prerender - it returns "" on the server pass and the real value in the browser,
-// so the component renders in both, but you cannot tell the two apart from the result alone.
-var theme = await localStorage.GetItem("theme");
-""") />
+@inject Bit.Butil.LocalStorage localStorage
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Safe during prerender - it returns "" on the server pass and the real value in the
+        // browser, so the component renders in both, but you cannot tell the two apart from the
+        // result alone.
+        var theme = await localStorage.GetItem("theme");
+    }
+}
+""")
+                 Language="razor" />
 
     <DemoSection Title="...but a default is not an answer"
                  Description="Because prerender returns an empty value rather than an error, code that branches on the result silently takes the 'empty' branch on the server. Anything whose answer actually matters belongs in OnAfterRenderAsync, guarded by firstRender - that pass only ever runs in the browser. On .NET 9 and later RendererInfo.IsInteractive lets you say the same thing in the markup, which is what the header of this site uses to show its 'loading' hint while WebAssembly boots."
                  Code=@("""
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender is false) return;
+@inject Bit.Butil.LocalStorage localStorage
+@inject Bit.Butil.UserAgent userAgent
 
-    // The browser is definitely here now.
-    _theme = await localStorage.GetItem("theme") ?? "light";
-    _isMobile = await userAgent.IsMobile();
+<p>@_theme, mobile: @_isMobile</p>
 
-    StateHasChanged();   // the first render already happened - ask for another
+@code {
+    private string _theme = "light";
+    private bool _isMobile;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The browser is definitely here now.
+        _theme = await localStorage.GetItem("theme") ?? "light";
+        _isMobile = await userAgent.IsMobile();
+
+        StateHasChanged();   // the first render already happened - ask for another
+    }
 }
-""") />
+""")
+                 Language="razor" />
 
     <DemoSection Title="Fast invoke"
                  Api="BitButil.UseFastInvoke / BitButil.UseNormalInvoke"
-                 Description="On WebAssembly the runtime can call JavaScript synchronously, skipping the task machinery and JSON round trip that the async path pays for. Fast invoke turns that path on for the APIs whose JavaScript is genuinely synchronous - LocalStorage, SessionStorage, Cookie, Console and Location. Anything wrapping a Promise-returning API keeps running asynchronously no matter what this is set to, so turning it on cannot break those calls. It is a process-wide static switch meant to be set once at startup, and on Blazor Server it does nothing at all: there is no in-process runtime to use, so the calls fall back to the async path. One trimming note belongs here rather than on the trimming page: the public FastInvoke* extension methods on IJSRuntime carry [RequiresUnreferencedCode] because they serialise arbitrary payloads, so calling one of them directly from a trimmed app warns at your call site - the Butil classes themselves do not, since they only pass trim-safe primitives down that path."
+                 Description="On WebAssembly the runtime can call JavaScript synchronously, skipping the task machinery and JSON round trip that the async path pays for. Fast invoke turns that path on for the APIs whose JavaScript is genuinely synchronous - LocalStorage, SessionStorage, Cookie, Console, Location and History. Anything wrapping a Promise-returning API keeps running asynchronously no matter what this is set to, so turning it on cannot break those calls. It is a process-wide static switch meant to be set once at startup, and on Blazor Server it does nothing at all: there is no in-process runtime to use, so the calls fall back to the async path. One trimming note belongs here rather than on the trimming page: the public FastInvoke* extension methods on IJSRuntime carry [RequiresUnreferencedCode] because they serialise arbitrary payloads, so calling one of them directly from a trimmed app warns at your call site - the Butil classes themselves do not, since they only pass trim-safe primitives down that path."
                  Code=@("""
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

@@ -62,7 +62,7 @@
         <thead><tr><th>The user...</th><th>Covered by</th></tr></thead>
         <tbody>
             <tr><td>navigates to another page in the app</td><td><code>OnDeactivatingAsync</code> (custom dialog) or a route <code>LeaveGuard</code> (silent veto)</td></tr>
-            <tr><td>navigates to the same page with different parameters</td><td><code>OnRenavigatingAsync</code> - a <code>LeaveGuard</code> never fires here</td></tr>
+            <tr><td>navigates to the same page with different parameters</td><td><code>OnRenavigatingAsync</code> - a <code>LeaveGuard</code> never fires here (unless the route opted into <code>RemountOnParameterChange</code>, which disposes the content: then <code>OnDeactivatingAsync</code> and the <code>LeaveGuard</code> vote instead)</td></tr>
             <tr><td>closes the tab, reloads, or follows an external link</td><td><code>SetConfirmExternalNavigationAsync(true)</code> - the browser's own dialog</td></tr>
         </tbody>
     </table>

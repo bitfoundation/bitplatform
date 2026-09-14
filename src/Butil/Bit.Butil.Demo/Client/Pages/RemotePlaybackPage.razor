@@ -39,6 +39,7 @@ var subscription = await remotePlayback.WatchAvailability(mediaElement, availabl
 // later - or when the component is disposed
 await subscription!.DisposeAsync();
 """)>
+        <audio @ref="availabilityElement" src="@ToneDataUrl" loop controls style="width:100%;max-width:420px"></audio>
         <div class="controls">
             <button @onclick="Watch" disabled="@(availabilitySubscription is not null)">WatchAvailability</button>
             <button class="danger" @onclick="Unwatch" disabled="@(availabilitySubscription is null)">Dispose subscription</button>
@@ -65,6 +66,7 @@ var prompted = await remotePlayback.Prompt(mediaElement);
 
 var state = await remotePlayback.GetState(mediaElement);
 """)>
+        <audio @ref="stateElement" src="@ToneDataUrl" loop controls style="width:100%;max-width:420px"></audio>
         <div class="controls">
             <button @onclick="Cast">Prompt</button>
             <button class="secondary" @onclick="ReadState">GetState</button>
@@ -81,6 +83,7 @@ var state = await remotePlayback.GetState(mediaElement);
 await remotePlayback.SetDisabled(mediaElement, true);   // no cast button on this element
 await remotePlayback.SetDisabled(mediaElement, false);
 """)>
+        <audio @ref="disabledElement" src="@ToneDataUrl" loop controls style="width:100%;max-width:420px"></audio>
         <div class="controls">
             <button @onclick="() => SetDisabled(true)">SetDisabled(true)</button>
             <button class="secondary" @onclick="() => SetDisabled(false)">SetDisabled(false)</button>
@@ -117,7 +120,12 @@ await remotePlayback.SetDisabled(mediaElement, false);
     private DemoConsole stateOutput = default!;
     private DemoConsole disableOutput = default!;
 
+    // Every call here takes a media element, and the cast affordance it adds or removes is drawn on
+    // that element - so each section carries the element its own buttons act on.
     private ElementReference mediaElement;
+    private ElementReference availabilityElement;
+    private ElementReference stateElement;
+    private ElementReference disabledElement;
     private ButilSubscription? availabilitySubscription;
     private ButilSubscription? stateSubscription;
     private bool? available;
@@ -138,7 +146,7 @@ await remotePlayback.SetDisabled(mediaElement, false);
     {
         try
         {
-            availabilitySubscription = await remotePlayback.WatchAvailability(mediaElement, async isAvailable =>
+            availabilitySubscription = await remotePlayback.WatchAvailability(availabilityElement, async isAvailable =>
             {
                 available = isAvailable;
                 await availabilityOutput.Log("availability →", isAvailable);
@@ -178,7 +186,7 @@ await remotePlayback.SetDisabled(mediaElement, false);
     {
         try
         {
-            await stateOutput.Log("Prompt →", await remotePlayback.Prompt(mediaElement));
+            await stateOutput.Log("Prompt →", await remotePlayback.Prompt(stateElement));
         }
         catch (Exception ex)
         {
@@ -190,7 +198,7 @@ await remotePlayback.SetDisabled(mediaElement, false);
     {
         try
         {
-            await stateOutput.Log("GetState →", await remotePlayback.GetState(mediaElement));
+            await stateOutput.Log("GetState →", await remotePlayback.GetState(stateElement));
         }
         catch (Exception ex)
         {
@@ -202,7 +210,7 @@ await remotePlayback.SetDisabled(mediaElement, false);
     {
         try
         {
-            stateSubscription = await remotePlayback.SubscribeStateChange(mediaElement, async state =>
+            stateSubscription = await remotePlayback.SubscribeStateChange(stateElement, async state =>
             {
                 await stateOutput.Info("state →", state);
                 await InvokeAsync(StateHasChanged);
@@ -274,7 +282,7 @@ await remotePlayback.SetDisabled(mediaElement, false);
     {
         try
         {
-            await disableOutput.Log($"SetDisabled({disabled}) →", await remotePlayback.SetDisabled(mediaElement, disabled));
+            await disableOutput.Log($"SetDisabled({disabled}) →", await remotePlayback.SetDisabled(disabledElement, disabled));
         }
         catch (Exception ex)
         {

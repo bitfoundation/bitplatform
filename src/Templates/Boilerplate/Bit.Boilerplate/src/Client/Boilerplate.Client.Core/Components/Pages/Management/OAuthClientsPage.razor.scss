@@ -1,0 +1,26 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+}
+
+::deep {
+    .clients-list {
+        max-width: 60rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+        max-width: 32rem;
+        align-self: center;
+    }
+
+    // A client id is long either way - a metadata document url or an opaque token - so it gets its own row.
+    .client-id {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        direction: ltr;
+        font-family: monospace;
+    }
+}

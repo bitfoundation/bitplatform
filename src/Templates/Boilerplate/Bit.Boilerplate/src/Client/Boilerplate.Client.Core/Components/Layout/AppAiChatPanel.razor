@@ -26,7 +26,7 @@
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
-                @if (isLoading)
+                @if (isLoading || isRestoringHistory)
                 {
                     <BitRollingSquareLoading Size="BitSize.Small" />
                 }
@@ -37,6 +37,7 @@
                            IconName="@BitIconName.Delete"
                            OnClick="WrapHandled(ClearChat)"
                            Color="BitColor.SecondaryBackground"
+                           IsEnabled="@(isRestoringHistory is false)"
                            Title="@Localizer[nameof(AppStrings.Clear)]" />
 
                 <BitButton IconOnly
@@ -98,7 +99,18 @@
                                 <BitStack Horizontal
                                           FitHeight
                                           Gap="0.25rem"
+                                          VerticalAlign="BitAlignment.Center"
                                           Class="@($"message-actions{(isReadAloudLoading && ReferenceEquals(readAloudMessage, message) ? " busy" : null)}")">
+                                    @if (SentAtLabel(message) is { Length: > 0 } sentAt)
+                                    {
+                                        <BitText NoWrap
+                                                 Numeric
+                                                 Class="message-time"
+                                                 Typography="BitTypography.Caption2"
+                                                 Color="BitColor.SecondaryForeground">
+                                            @sentAt
+                                        </BitText>
+                                    }
                                     @if (string.IsNullOrWhiteSpace(message.Content) is false)
                                     {
                                         <BitButton IconOnly
@@ -107,9 +119,9 @@
                                                    Title="@Localizer[nameof(AppStrings.Copy)]"
                                                    OnClick="WrapHandled(() => CopyMessage(message))" />
 
-                                        @* Not on the greeting: that one is written here rather than by the model,
-                                           and read aloud only speaks what the model wrote. *@
-                                        @if (message.Role is AiChatMessageRole.Assistant && ReferenceEquals(message, greetingMessage) is false)
+                                        @* Only a signed answer can be read aloud, which rules out the greeting
+                                           written here and any answer that never finished arriving. *@
+                                        @if (message.Signature is not null)
                                         {
                                             var isReading = ReferenceEquals(readAloudMessage, message);
 
@@ -282,7 +294,7 @@
                                        OnClick="WrapHandled(SendMessage)"
                                        FloatPosition="BitPosition.BottomEnd"
                                        Title="@Localizer[nameof(AppStrings.Send)]"
-                                       IsEnabled=@(isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null)
+                                       IsEnabled=@(isRestoringHistory is false && (isSending || string.IsNullOrWhiteSpace(userInput) is false || pendingAttachment is not null))
                                        IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
                         </BitStack>
                     </LabelTemplate>

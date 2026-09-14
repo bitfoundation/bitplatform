@@ -14,6 +14,17 @@ public partial class ServerApiSettings : ServerSharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
+    /// <summary>
+    /// Where the web app is served from when the request does not say. <c>GetWebAppUrl()</c> reads the <c>origin</c>
+    /// query parameter or the <c>X-Origin</c> header, then this, and otherwise assumes this server's own address - only
+    /// right when the api is hosted alongside the web app. An OAuth client always arrives with neither, so a standalone
+    /// deployment has to be told once. Null when they share a host.
+    /// </summary>
+    public string? WebAppUrl { get; set; }
+
+    /// <summary>Usable as is: most clients identify themselves with a metadata document, which needs no configuration.</summary>
+    public OAuthOptions OAuth { get; set; } = new();
+
     //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
     public AIOptions? AI { get; set; }
     //#endif
@@ -156,9 +167,6 @@ public partial class AppIdentityOptions : IdentityOptions
     public TimeSpan UnconfirmedUsersRetention { get; set; }
 
     [Required]
-    public string Issuer { get; set; } = default!;
-
-    [Required]
     public string Audience { get; set; } = default!;
 
     /// <summary>
@@ -225,6 +233,43 @@ public partial class EmailOptions
 {
     [Required]
     public string DefaultFromEmail { get; set; } = default!;
+}
+
+/// <summary>
+/// This app as an OAuth 2.1 authorization server, for <c>/dev-mcp</c> and other external apps. Not used by this
+/// project's own clients, which sign in through <c>IdentityController</c> as they always have.
+/// </summary>
+public partial class OAuthOptions
+{
+    /// <summary>
+    /// How long a code stays exchangeable. It travels one redirect into a client already waiting for it, so this
+    /// allows for a slow redirect chain, not for a user.
+    /// </summary>
+    public TimeSpan AuthorizationCodeLifetime { get; set; } = TimeSpan.FromMinutes(2);
+
+    /// <summary>
+    /// Separate from <c>Identity:RefreshTokenExpiration</c>: a credential held by somebody else's software need not
+    /// last as long as this app's own sessions.
+    /// </summary>
+    public TimeSpan RefreshTokenExpiration { get; set; } = TimeSpan.FromDays(7);
+
+    /// <summary>Clients declared by an operator rather than self-describing. Most deployments need none.</summary>
+    public OAuthClientOptions[] Clients { get; set; } = [];
+}
+
+public partial class OAuthClientOptions
+{
+    [Required]
+    public string ClientId { get; set; } = default!;
+
+    public string? ClientName { get; set; }
+
+    /// <summary>
+    /// Compared to <c>redirect_uri</c> as an exact string, so list every form a client uses - <c>127.0.0.1</c> and
+    /// <c>localhost</c> are two entries, not one.
+    /// </summary>
+    [Required]
+    public string[] RedirectUris { get; set; } = default!;
 }
 
 //#if (cloudflare == true)

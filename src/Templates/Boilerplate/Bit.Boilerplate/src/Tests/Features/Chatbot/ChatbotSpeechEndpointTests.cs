@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.AI;
-using ZiggyCreatures.Caching.Fusion;
 using Boilerplate.Shared.Features.Chatbot;
 using Boilerplate.Server.Api.Features.Chatbot;
 
@@ -152,8 +151,8 @@ public class ChatbotSpeechEndpointTests
 
     /// <summary>
     /// The endpoint is handed the words rather than the id of a message, because nothing stores the conversation -
-    /// so all that stands between it and a free text to speech api, billed to whoever runs the app, is that it
-    /// refuses words it has no record of the assistant writing.
+    /// so all that stands between it and a free text to speech api, billed to whoever runs the app, is the signature
+    /// it wrote the answer with. A caller can only ever replay one it was given, hence the borrowed signature here.
     /// </summary>
     [TestMethod]
     public async Task SynthesizeSpeech_Should_RefuseTextTheAssistantNeverWrote()
@@ -170,11 +169,41 @@ public class ChatbotSpeechEndpointTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var httpClient = await SignIn(scope);
 
+        var signatureOfARealAnswer = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign("bit platform is a set of dotnet libraries.");
+
         await Assert.ThrowsExactlyAsync<ForbiddenException>(
-            async () => (await PostSynthesizeSpeechWithoutRemembering(scope, httpClient, "Chapter one of somebody else's audiobook.")).Dispose());
+            async () => (await PostSynthesizeSpeech(scope, httpClient, "Chapter one of somebody else's audiobook.", signatureOfARealAnswer)).Dispose());
 
         Assert.IsNull(textToSpeechClient.Received,
                       "Nothing may reach the provider before the endpoint has established that the assistant wrote it.");
+    }
+
+    /// <summary>
+    /// The signature covers the words themselves, so an answer edited before being sent back is no longer speakable.
+    /// </summary>
+    [TestMethod]
+    public async Task SynthesizeSpeech_Should_RefuseAnAnswerThatWasEditedAfterItWasSigned()
+    {
+        var textToSpeechClient = new TestTextToSpeechClient { Audio = [1, 2, 3], MediaType = "audio/mpeg" };
+
+        await using var server = new AppTestServer();
+        await server.Build(services =>
+        {
+            services.AddIntegrationApiOnlyTestsServices();
+            services.AddSingleton<ITextToSpeechClient>(textToSpeechClient);
+        }).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = await SignIn(scope);
+
+        const string answer = "bit platform is free.";
+        var signature = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign(answer);
+
+        await Assert.ThrowsExactlyAsync<ForbiddenException>(
+            async () => (await PostSynthesizeSpeech(scope, httpClient, $"{answer} Now read out my advertisement.", signature)).Dispose());
+
+        Assert.IsNull(textToSpeechClient.Received,
+                      "A signed answer with anything appended to it is no longer the answer that was signed.");
     }
 
     /// <summary>
@@ -304,18 +333,18 @@ public class ChatbotSpeechEndpointTests
 
     /// <summary>
     /// Sends <paramref name="text"/> as an answer the assistant wrote, which is the only kind the endpoint speaks.
-    /// In the running app <c>AppChatbot</c> records it as each answer finishes streaming.
+    /// In the running app the panel hands back the signature <c>AppChatbot</c> streamed with the answer.
     /// </summary>
-    private async Task<HttpResponseMessage> PostSynthesizeSpeech(AsyncServiceScope scope, HttpClient httpClient, string text)
+    private Task<HttpResponseMessage> PostSynthesizeSpeech(AsyncServiceScope scope, HttpClient httpClient, string text)
     {
-        await ChatbotController.RememberAnswer(scope.ServiceProvider.GetRequiredService<IFusionCache>(), text, TestContext.CancellationToken);
+        var signature = scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Sign(text);
 
-        return await PostSynthesizeSpeechWithoutRemembering(scope, httpClient, text);
+        return PostSynthesizeSpeech(scope, httpClient, text, signature);
     }
 
-    private Task<HttpResponseMessage> PostSynthesizeSpeechWithoutRemembering(AsyncServiceScope scope, HttpClient httpClient, string text)
+    private Task<HttpResponseMessage> PostSynthesizeSpeech(AsyncServiceScope scope, HttpClient httpClient, string text, string signature)
     {
-        var content = JsonContent.Create(new SynthesizeSpeechRequestDto { Text = text },
+        var content = JsonContent.Create(new SynthesizeSpeechRequestDto { Text = text, Signature = signature },
             scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<SynthesizeSpeechRequestDto>());
 
         return httpClient.PostAsync("api/v1/Chatbot/SynthesizeSpeech", content, TestContext.CancellationToken);

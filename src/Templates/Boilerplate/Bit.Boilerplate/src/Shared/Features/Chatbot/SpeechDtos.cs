@@ -19,4 +19,10 @@ public class SynthesizeSpeechRequestDto
 {
     [Required(AllowEmptyStrings = false), StringLength(maximumLength: 128 * 1024 /*128K characters*/)]
     public string Text { get; set; } = default!;
+
+    /// <summary>
+    /// What the server signed <see cref="Text"/> with when it wrote it (<see cref="AiChatMessage.Signature"/>).
+    /// </summary>
+    [Required(AllowEmptyStrings = false), StringLength(maximumLength: 1024)]
+    public string Signature { get; set; } = default!;
 }

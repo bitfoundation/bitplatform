@@ -1,0 +1,11 @@
+@*+:cnd:noEmit*@
+@* App wide head tags - add a new one here. AppHeadCoordinator renders this into the head of every host.
+   A tag that belongs to one page goes through <AppPageData Head="..." /> instead. *@
+
+<ContentSecurityPolicy />
+
+@*#if (appInsights == true)*@
+<link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+@* IsWasmStandalone reads backwards: false is what RENDERS the snippet, with the real connection string. *@
+<BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="false" />
+@*#endif*@

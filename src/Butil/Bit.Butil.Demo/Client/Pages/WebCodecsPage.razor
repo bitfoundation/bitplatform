@@ -80,18 +80,30 @@ await encoder.Flush();   // an encoder holds frames back; this is what makes it 
                  Api="CreateVideoDecoder / Decode / VideoFrameHandle"
                  Description="The chunks produced above are decoded straight back, and each frame is drawn to a canvas and disposed. Disposal is not optional here: a frame holds real memory - often a GPU surface - and a decoder whose frames pile up undisposed stalls."
                  Code=@("""
-var decoder = await webCodecs.CreateVideoDecoder(
-    new VideoDecoderConfig { Codec = "vp8", Description = firstChunk.DecoderDescription },
-    onFrame: async frame =>
-    {
-        // onFrame is an Action, so this lambda is async void: a throw would be unobserved
-        try { await frame.DrawTo(canvasElement); }
-        finally { await frame.DisposeAsync(); }   // required - the decoder stalls without it
-    });
+@inject Bit.Butil.WebCodecs webCodecs
 
-foreach (var chunk in chunks) await decoder!.Decode(chunk);
-await decoder!.Flush();
-""")>
+<canvas @ref="canvasElement" width="640" height="480"></canvas>
+
+@code {
+    private ElementReference canvasElement;
+
+    private async Task Play(EncodedVideoChunk firstChunk, IEnumerable<EncodedVideoChunk> chunks)
+    {
+        var decoder = await webCodecs.CreateVideoDecoder(
+            new VideoDecoderConfig { Codec = "vp8", Description = firstChunk.DecoderDescription },
+            onFrame: async frame =>
+            {
+                // onFrame is an Action, so this lambda is async void: a throw would be unobserved
+                try { await frame.DrawTo(canvasElement); }
+                finally { await frame.DisposeAsync(); }   // required - the decoder stalls without it
+            });
+
+        foreach (var chunk in chunks) await decoder!.Decode(chunk);
+        await decoder!.Flush();
+    }
+}
+""")
+                 Language="razor">
         <canvas @ref="canvasElement" width="320" height="240" style="width:100%;max-width:320px;background:#111;border-radius:8px"></canvas>
         <div class="controls">
             <button @onclick="DecodeFrames" disabled="@(encodedChunks.Count == 0)">Decode what was encoded</button>
@@ -103,13 +115,30 @@ await decoder!.Flush();
                  Api="CaptureFrame"
                  Description="A frame can also be grabbed from a video, canvas or image element - which is how a camera stream reaches an encoder without a recorder in between. The timestamp is yours to choose: it is the app's timeline, and an encoder paces its output from it."
                  Code=@("""
-// a <video> playing a camera stream, a <canvas> you draw into, an <img> that has loaded
-await using var frame = await webCodecs.CaptureFrame(canvasElement, timestamp: frameIndex * 33_333);
+@inject Bit.Butil.WebCodecs webCodecs
 
-await encoder.Encode(frame!);
-""")>
+@* A <video> playing a camera stream, a <canvas> you draw into, an <img> that has loaded. *@
+<canvas @ref="canvasElement" width="640" height="480"></canvas>
+
+@code {
+    private ElementReference canvasElement;
+    private VideoEncoderHandle? encoder;   // from CreateVideoEncoder
+
+    // The timestamp is microseconds, and it is what orders the encoded chunks - 33,333 is one frame
+    // at 30fps.
+    private async Task Capture(int frameIndex)
+    {
+        await using var frame = await webCodecs.CaptureFrame(canvasElement, timestamp: frameIndex * 33_333);
+
+        await encoder!.Encode(frame!);
+    }
+}
+""")
+                 Language="razor">
+        <img @ref="captureSource" src="@SampleImage" alt="sample" width="320" height="240"
+             style="width:100%;max-width:320px;border-radius:8px" />
         <div class="controls">
-            <button @onclick="CaptureFromCanvas">CaptureFrame from the canvas</button>
+            <button @onclick="CaptureFromCanvas">CaptureFrame from the image</button>
         </div>
         <DemoConsole @ref="captureOutput" Title="capture output" />
     </DemoSection>
@@ -178,6 +207,22 @@ await encoder.Flush();
     private DemoConsole audioOutput = default!;
 
     private ElementReference canvasElement;
+
+    // This section captures from a source of its own, so the frame it reports is one the reader can
+    // see next to the numbers rather than whatever the decoding section last drew.
+    private ElementReference captureSource;
+
+    /// <summary>An inline, same-origin source with an intrinsic size - a data: URL does not taint the frame.</summary>
+    private const string SampleImage =
+        "data:image/svg+xml;utf8," +
+        "%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240'%3E" +
+        "%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E" +
+        "%3Cstop offset='0' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E" +
+        "%3C/linearGradient%3E%3C/defs%3E" +
+        "%3Crect width='320' height='240' fill='url(%23g)'/%3E" +
+        "%3Ccircle cx='96' cy='120' r='56' fill='white' fill-opacity='.85'/%3E" +
+        "%3Crect x='188' y='72' width='96' height='96' rx='12' fill='white' fill-opacity='.7'/%3E" +
+        "%3C/svg%3E";
 
     private string encodeCodec = "vp8";
     private double frameCount = 10;
@@ -365,10 +410,10 @@ await encoder.Flush();
     {
         try
         {
-            await using var frame = await webCodecs.CaptureFrame(canvasElement, timestamp: 0);
+            await using var frame = await webCodecs.CaptureFrame(captureSource, timestamp: 0);
             if (frame is null)
             {
-                await captureOutput.Warn("CaptureFrame → null (nothing to capture yet - decode something into the canvas first)");
+                await captureOutput.Warn("CaptureFrame → null (the image has not finished loading yet)");
                 return;
             }
 

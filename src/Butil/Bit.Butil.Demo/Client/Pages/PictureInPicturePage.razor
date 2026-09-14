@@ -29,8 +29,11 @@ var canFloat = await pip.IsAvailableFor(_video);   // <video @ref="_video" />
 """)>
         <div class="controls">
             <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="() => StartCamera(supportOutput, _supportVideo)">Use my camera</button>
             <button class="secondary" @onclick="CheckAvailable">IsAvailableFor</button>
         </div>
+        <video @ref="_supportVideo" autoplay playsinline muted loop
+               class="demo-video" style="min-height:120px"></video>
         <DemoConsole @ref="supportOutput" Title="support check output" />
     </DemoSection>
 
@@ -48,7 +51,7 @@ var floating = await pip.IsActive(_video);
 await pip.Exit();
 """)>
         <div class="controls">
-            <button @onclick="StartCamera">Use my camera</button>
+            <button @onclick="() => StartCamera(pipOutput, _video)">Use my camera</button>
             <button class="secondary" @onclick="EnterPip">Request</button>
             <button class="danger" @onclick="ExitPip">Exit</button>
         </div>
@@ -78,9 +81,13 @@ _watch = await pip.Subscribe(_video, change => InvokeAsync(() =>
 await _watch.DisposeAsync();
 """)>
         <div class="controls">
+            <button @onclick="() => StartCamera(watchOutput, _watchVideo)">Use my camera</button>
             <button @onclick="StartWatching">Subscribe</button>
+            <button class="secondary" @onclick="EnterWatchedPip">Request</button>
             <button class="danger" @onclick="StopWatching">Unsubscribe</button>
         </div>
+        <video @ref="_watchVideo" autoplay playsinline muted loop
+               class="demo-video" style="min-height:120px"></video>
         <div class="field">
             <span class="field-label">Floating</span>
             <span>@(_floating ? $"yes - window is {_windowSize}" : "no")</span>
@@ -128,6 +135,11 @@ await _watch.DisposeAsync();
     private DemoConsole watchOutput = default!;
 
     private ElementReference _video;
+
+    // One camera, one video element per section: every one of these calls takes an element, and the
+    // element it takes has to be the one in front of the reader.
+    private ElementReference _supportVideo;
+    private ElementReference _watchVideo;
     private MediaStreamHandle? _stream;
     private ButilSubscription? _watch;
     private string _status = "No video source yet.";
@@ -150,7 +162,7 @@ await _watch.DisposeAsync();
     {
         try
         {
-            var available = await pip.IsAvailableFor(_video);
+            var available = await pip.IsAvailableFor(_supportVideo);
             if (available)
             {
                 await supportOutput.Success("IsAvailableFor → true.");
@@ -166,31 +178,27 @@ await _watch.DisposeAsync();
         }
     }
 
-    private async Task StartCamera()
+    // One stream feeds whichever video elements ask for it, so each section can show what it is
+    // operating on without opening the camera again.
+    private async Task StartCamera(DemoConsole output, ElementReference video)
     {
         try
         {
-            if (_stream is not null)
-            {
-                await _stream.DisposeAsync();
-                _stream = null;
-            }
-
-            _stream = await mediaDevices.GetUserMedia(audio: false, video: true);
+            _stream ??= await mediaDevices.GetUserMedia(audio: false, video: true);
             if (_stream is null)
             {
                 _status = "Camera denied.";
-                await pipOutput.Warn("GetUserMedia returned null - permission denied or no camera.");
+                await output.Warn("GetUserMedia returned null - permission denied or no camera.");
                 return;
             }
 
-            await _stream.AttachTo(_video);
+            await _stream.AttachTo(video);
             _status = "Camera running - now try Request.";
-            await pipOutput.Success("Camera attached to the video element.");
+            await output.Success("Camera attached to this section's video element.");
         }
         catch (Exception ex)
         {
-            await pipOutput.Error("GetUserMedia failed →", ex.Message);
+            await output.Error("GetUserMedia failed →", ex.Message);
         }
     }
 
@@ -230,13 +238,26 @@ await _watch.DisposeAsync();
         }
     }
 
+    private async Task EnterWatchedPip()
+    {
+        try
+        {
+            var entered = await pip.Request(_watchVideo);
+            if (entered is false) await watchOutput.Warn("Request → false. Start this section's camera first, from a click.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("Request failed →", ex.Message);
+        }
+    }
+
     private async Task StartWatching()
     {
         await StopWatching();
 
         try
         {
-            _watch = await pip.Subscribe(_video, change => InvokeAsync(async () =>
+            _watch = await pip.Subscribe(_watchVideo, change => InvokeAsync(async () =>
             {
                 _floating = change.Active;
                 _windowSize = change.Active ? $"{change.Width}x{change.Height}" : "";
