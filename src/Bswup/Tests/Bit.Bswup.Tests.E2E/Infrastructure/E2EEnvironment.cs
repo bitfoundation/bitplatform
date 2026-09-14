@@ -45,8 +45,11 @@ public static class E2EEnvironment
     /// <summary>RendererInfo, which reports the renderer name, only exists from .NET 9 on.</summary>
     public static bool FrameworkReportsRendererName(string framework) => framework is not "net8.0";
 
-    /// <summary><c>@Assets</c>, which references blazor.web.js by its fingerprinted name, only exists from .NET 9 on.</summary>
-    public static bool FrameworkFingerprintsBlazorScript(string framework) => framework is not "net8.0";
+    /// <summary>
+    /// blazor.web.js is a fingerprinted static web asset only from .NET 10 on. <c>@Assets</c> exists since .NET 9, but
+    /// there the script is still served from an embedded resource, so <c>@Assets</c> hands back its plain name.
+    /// </summary>
+    public static bool FrameworkFingerprintsBlazorScript(string framework) => framework is not ("net8.0" or "net9.0");
 
     private static string? Read(string name)
     {

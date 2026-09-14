@@ -62,7 +62,7 @@ public class ProgressUiTests : BswupTest
     public async Task The_fingerprinted_Blazor_script_is_recognized()
     {
         if (E2EEnvironment.FrameworkFingerprintsBlazorScript(Framework) is false)
-            Assert.Inconclusive("@Assets arrived in .NET 9.");
+            Assert.Inconclusive("blazor.web.js is fingerprinted from .NET 10 on.");
 
         await Session.SetOptionsAsync(new { fingerprintedBlazorScript = true });
 

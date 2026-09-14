@@ -63,7 +63,8 @@ state of a test by that host name, and the suite drives it through `/_harness/` 
 | `AutoReload="false"` prompt, several tabs, update staged at load, `updateInterval` polling, failed update, two apps on one origin | - | - | yes | yes |
 | `forceRefresh()`, the cleanup worker, hard reload | - | - | yes | yes |
 | Progress UI: splash and assets list, `ShowOnUpdate`, `HideApp`, interactively rendered `BswupProgress`, no handler at all | - | - | yes | yes |
-| Fingerprinted `blazor.web.js` (`@Assets`), refused root scope on a sub-path | - | - | yes (net9.0+) | yes |
+| Refused root scope on a sub-path | - | - | yes | yes |
+| Fingerprinted `blazor.web.js` (`@Assets`) | - | - | yes (net10.0+) | yes |
 
 ## Running locally
 

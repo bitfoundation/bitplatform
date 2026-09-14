@@ -114,7 +114,7 @@ public sealed class HarnessSessionOptions
 
     public HarnessProgressOptions Progress { get; set; } = new();
 
-    /// <summary>References blazor.web.js through <c>@Assets</c>, i.e. by its fingerprinted name (.NET 9 and later).</summary>
+    /// <summary>References blazor.web.js through <c>@Assets</c>, i.e. by its fingerprinted name (.NET 10 and later; .NET 9 resolves it to the plain name).</summary>
     public bool FingerprintedBlazorScript { get; set; }
 }
 
