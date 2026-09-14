@@ -1252,9 +1252,12 @@ public class BitFullCalendarTests : BunitTestContext
         var firstColumn = component.FindAll(".bit-bfc-week-day-col")[0];
         firstColumn.QuerySelector(".bit-bfc-hour-slot")!.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
+        // Only the slots carry the roving tab stop; an event block in a column is a tab stop of its own
+        // (the shared event sits on today, so whichever column today is also holds one).
+        const string rovingSlot = ".bit-bfc-hour-slot[tabindex='0'], .bit-bfc-hour-row-half[tabindex='0']";
         var columns = component.FindAll(".bit-bfc-week-day-col");
-        Assert.AreEqual(0, columns[0].QuerySelectorAll("[tabindex='0']").Length);
-        Assert.AreEqual(1, columns[1].QuerySelectorAll("[tabindex='0']").Length);
+        Assert.AreEqual(0, columns[0].QuerySelectorAll(rovingSlot).Length);
+        Assert.AreEqual(1, columns[1].QuerySelectorAll(rovingSlot).Length);
     }
 
     [TestMethod]
