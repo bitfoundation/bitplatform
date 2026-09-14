@@ -1281,7 +1281,8 @@
         // the callback is requested: in a Server circuit the request and anything after it are separate
         // round trips, and the page is genuinely idle in the gap between them. Back-to-back short tasks
         // rather than one long one, so the request itself - and the timeout firing - still get a turn.
-        await js.InvokeVoidAsync("eval", """
+        // A verbatim string, not a raw one: the Razor tokenizer does not understand """ and loses the code block.
+        await js.InvokeVoidAsync("eval", @"
             (() => {
                 const end = performance.now() + 1500;
                 const channel = new MessageChannel();
@@ -1292,7 +1293,7 @@
                 };
                 channel.port2.postMessage(0);
             })()
-            """);
+            ");
 
         var fired = new TaskCompletionSource<IdleDeadline>(TaskCreationOptions.RunContinuationsAsynchronously);
         var subscription = await scheduler.RequestIdleCallback(deadline => fired.TrySetResult(deadline), TimeSpan.FromMilliseconds(200));
