@@ -179,13 +179,26 @@ function registerSideRailScrollSpy(id: string, dotnetObj: any, activeItemMethodN
         listener();
     };
 
+    // A scroll is not what swaps the sections, though: clicking a pivot tab replaces them while the
+    // page stays exactly where it was, so a check that only ran on scroll would leave the rail listing
+    // the previous tab until the reader next moved. Watching the document for removals closes that
+    // gap. The callback only asks whether a measured section has left - no layout is read - so the
+    // mutations a live chart makes every second cost next to nothing, and the rAF gate is shared.
+    const observer = new MutationObserver(() => {
+        if (sections.some(section => section.element.isConnected === false)) {
+            listener();
+        }
+    });
+
     sideRailScrollSpies[id] = () => {
         window.removeEventListener('scroll', listener, true);
         window.removeEventListener('resize', resizeListener);
+        observer.disconnect();
         if (frame !== 0) cancelAnimationFrame(frame);
     };
     window.addEventListener('scroll', listener, true);
     window.addEventListener('resize', resizeListener);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     measure();
     listener();
