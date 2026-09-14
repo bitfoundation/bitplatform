@@ -32,6 +32,14 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     public Func<object?, int?>? DestinationResolver { get; set; }
 
+    /// <summary>
+    /// Resolves an internal destination to its full view parameters, so a link that
+    /// points into the MIDDLE of a long page can be emitted with that position
+    /// instead of only the page number. Optional: without it links still resolve
+    /// through <see cref="DestinationResolver"/>, they just land at the page top.
+    /// </summary>
+    public Func<object?, BitPdfDestination?>? DestinationInfoResolver { get; set; }
+
     private BitPdfGraphicsState _state = new();
     private readonly Stack<BitPdfGraphicsState> _stack = new();
     private readonly Stack<int> _groupDepthStack = new();
@@ -245,7 +253,7 @@ public sealed class BitPdfHtmlRenderer
 
         var sb = new StringBuilder();
         sb.Append(string.Create(CultureInfo.InvariantCulture,
-            $"<div class=\"bit-pdv-html-page\" style=\"position:absolute;left:0;top:0;width:{viewW:0.##}px;height:{viewH:0.##}px;overflow:hidden;background:#fff;color:#000;transform:scale(var(--bit-pdv-scale,1));transform-origin:top left\">"));
+            $"<div class=\"bit-pdv-html-page\" style=\"position:absolute;left:0;top:0;width:{viewW:0.##}px;height:{viewH:0.##}px;overflow:hidden;background:#fff;color:#000;transform:scale(var(--bit-pdv-scale,1));transform-origin:top left;-webkit-user-select:none;user-select:none\">"));
         // A self-contained page inlines its own @font-face rules. With a shared
         // document store the viewer emits them in a persistent <style> instead, so
         // they survive page eviction (an evicted page's inline <style> would be
@@ -276,7 +284,12 @@ public sealed class BitPdfHtmlRenderer
         // the page's left edge.
         if (_selLayer.Length > 0)
         {
-            sb.Append("<div class=\"bit-pdv-text-layer\" style=\"position:absolute;inset:0;line-height:1;font-size:0;pointer-events:none\">");
+            // Selection is the text layer's alone. The painted layer below carries the
+            // same words again - as private-use codepoints when the font was remapped -
+            // so leaving it selectable makes every copy a doubled, half-unreadable one.
+            // Emitted inline rather than in the stylesheet so a fragment taken out of the
+            // viewer (RenderPageHtml) copies correctly too.
+            sb.Append("<div class=\"bit-pdv-text-layer\" style=\"position:absolute;inset:0;line-height:1;font-size:0;pointer-events:none;-webkit-user-select:var(--bit-pdv-select,text);user-select:var(--bit-pdv-select,text)\">");
             sb.Append(_selLayer);
             sb.Append("</div>");
         }
@@ -973,23 +986,27 @@ public sealed class BitPdfHtmlRenderer
         return IsOcgOff(raw);
     }
 
+    /// <summary>
+    /// The optional-content groups to treat as hidden, by
+    /// <see cref="BitPdfLayer.Id"/>. When set it REPLACES the document's default
+    /// configuration, which is what lets a viewer let its reader switch layers; when
+    /// null the default configuration decides.
+    /// </summary>
+    public IReadOnlySet<string>? HiddenLayers { get; set; }
+
     private bool IsOcgOff(object? raw)
     {
-        if (_ocgOff is null)
+        if (HiddenLayers is not null)
         {
-            _ocgOff = new HashSet<string>();
-            if ((_xref as BitPdfXRef)?.Root?.Get("OCProperties") is BitPdfDict ocp && ocp.Get("D") is BitPdfDict cfg
-                && cfg.Get("OFF") is List<object?> off)
-            {
-                foreach (var item in off)
-                {
-                    if (item is BitPdfRef r)
-                    {
-                        _ocgOff.Add(r.ToRefString());
-                    }
-                }
-            }
+            return raw is BitPdfRef overridden && HiddenLayers.Contains(overridden.ToRefString());
         }
+
+        // The same reading of the default configuration the layer list is built from -
+        // /BaseState, /ON, /OFF and the /AS /View rules - so a page rendered before
+        // that list exists hides exactly what it will report as hidden.
+        _ocgOff ??= (_xref as BitPdfXRef)?.Root is BitPdfDict root
+            ? BitPdfOptionalContent.DefaultHiddenIds(_xref, root)
+            : [];
         return raw is BitPdfRef rf && _ocgOff.Contains(rf.ToRefString());
     }
 
@@ -1127,8 +1144,28 @@ public sealed class BitPdfHtmlRenderer
                 continue;
             }
 
-            DrawAnnotationAppearance(annot);
-            DrawLinkOverlay(annot);
+            // Per annotation, not per page: a damaged appearance stream costs its own
+            // annotation and nothing else - neither the annotations after it nor the
+            // page content already emitted above it. (The content stream gets the same
+            // treatment in Render.)
+            try
+            {
+                DrawAnnotationAppearance(annot);
+                DrawLinkOverlay(annot);
+            }
+            catch (Exception ex)
+            {
+                _html.Append($"<!-- annotation error: {Escape(ex.Message)} -->");
+                // The failed appearance may have left graphics state behind; put the
+                // renderer back where the next annotation expects to find it.
+                CloseGroupsTo(0);
+                _stack.Clear();
+                _groupDepthStack.Clear();
+                _pathData.Clear();
+                _subpaths.Clear();
+                _currentSub = null;
+                _pendingClipEvenOdd = null;
+            }
         }
     }
 
@@ -1214,8 +1251,10 @@ public sealed class BitPdfHtmlRenderer
             uri = u.AsLatin1();
         }
 
-        // Resolve an internal GoTo/named destination to a target page number.
+        // Resolve an internal GoTo/named destination to a target page number, and -
+        // when a resolver for it is supplied - the position within that page.
         int? destPage = null;
+        double? destTop = null;
         if (uri is null && DestinationResolver is not null)
         {
             object? dest = annot.Get("Dest");
@@ -1225,7 +1264,15 @@ public sealed class BitPdfHtmlRenderer
             }
             if (dest is not null)
             {
-                destPage = DestinationResolver(dest);
+                if (DestinationInfoResolver?.Invoke(dest) is { } info)
+                {
+                    destPage = info.PageNumber;
+                    destTop = info.Top;
+                }
+                else
+                {
+                    destPage = DestinationResolver(dest);
+                }
             }
         }
 
@@ -1235,11 +1282,11 @@ public sealed class BitPdfHtmlRenderer
         var regions = QuadPointRegions(annot) ?? new List<double[]> { ToRect(rectArr) };
         foreach (double[] r in regions)
         {
-            EmitLinkHotspot(r, uri, destPage);
+            EmitLinkHotspot(r, uri, destPage, destTop);
         }
     }
 
-    private void EmitLinkHotspot(double[] r, string? uri, int? destPage)
+    private void EmitLinkHotspot(double[] r, string? uri, int? destPage, double? destTop = null)
     {
         BitPdfMatrix transform = BitPdfMatrix.Concat(_baseMatrix, new BitPdfMatrix(1, 0, 0, 1, r[0], r[1]));
         string style = string.Create(CultureInfo.InvariantCulture,
@@ -1253,8 +1300,13 @@ public sealed class BitPdfHtmlRenderer
         {
             // Internal link: the viewer delegates clicks on [data-bit-pdv-page] to
             // page navigation. Emitted as a div (no href) so nothing navigates away.
+            // A destination that names a vertical position carries it along, so the
+            // click lands where the link means to rather than at the page's top edge.
+            string top = destTop is double t
+                ? string.Create(CultureInfo.InvariantCulture, $" data-bit-pdv-top=\"{t:0.##}\"")
+                : string.Empty;
             _html.Append(string.Create(CultureInfo.InvariantCulture,
-                $"<div data-bit-pdv-page=\"{page}\" style=\"{style};cursor:pointer\"></div>"));
+                $"<div data-bit-pdv-page=\"{page}\"{top} style=\"{style};cursor:pointer\"></div>"));
         }
         // Otherwise (unknown/unsafe scheme, unresolved dest): drop the hotspot.
     }

@@ -7,9 +7,29 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.Invoke<BitPdfViewerViewport>("BitBlazorUI.PdfViewer.getViewport", container);
     }
 
+    public static ValueTask<string> BitPdfViewerGetSelectedText(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.Invoke<string>("BitBlazorUI.PdfViewer.getSelectedText", container);
+    }
+
+    public static ValueTask BitPdfViewerClearSelection(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.clearSelection", container);
+    }
+
     public static ValueTask BitPdfViewerScrollToPage(this IJSRuntime jsRuntime, ElementReference container, int pageNumber)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.scrollToPage", container, pageNumber);
+    }
+
+    public static ValueTask BitPdfViewerScrollToPageOffset(this IJSRuntime jsRuntime, ElementReference container, int pageNumber, double offset)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.scrollToPageOffset", container, pageNumber, offset);
+    }
+
+    public static ValueTask BitPdfViewerRestoreZoomAnchor(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.restoreZoomAnchor", container);
     }
 
     public static ValueTask BitPdfViewerRegisterScrollSpy(this IJSRuntime jsRuntime, ElementReference container, DotNetObjectReference<BitPdfViewer> dotnetObj)
@@ -32,6 +52,56 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.disposeThumbSpy", container);
     }
 
+    public static ValueTask BitPdfViewerRegisterKeyboard(this IJSRuntime jsRuntime, ElementReference root, DotNetObjectReference<BitPdfViewer> dotnetObj)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.registerKeyboard", root, dotnetObj);
+    }
+
+    public static ValueTask BitPdfViewerDisposeKeyboard(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.disposeKeyboard", root);
+    }
+
+    public static ValueTask BitPdfViewerRegisterDropZone(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.registerDropZone", root);
+    }
+
+    public static ValueTask BitPdfViewerDisposeDropZone(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.disposeDropZone", root);
+    }
+
+    public static ValueTask BitPdfViewerFocus(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focus", element);
+    }
+
+    public static ValueTask BitPdfViewerSetValue(this IJSRuntime jsRuntime, ElementReference element, string value)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.setValue", element, value);
+    }
+
+    public static ValueTask BitPdfViewerTrapFocus(this IJSRuntime jsRuntime, ElementReference dialog)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.trapFocus", dialog);
+    }
+
+    public static ValueTask BitPdfViewerReleaseFocus(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.releaseFocus");
+    }
+
+    public static ValueTask BitPdfViewerFocusThumb(this IJSRuntime jsRuntime, ElementReference container, int pageNumber)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focusThumb", container, pageNumber);
+    }
+
+    public static ValueTask BitPdfViewerFocusOutlineItem(this IJSRuntime jsRuntime, ElementReference root, int index)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focusOutlineItem", root, index);
+    }
+
     public static ValueTask BitPdfViewerScrollThumbIntoView(this IJSRuntime jsRuntime, ElementReference container, int pageNumber)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.scrollThumbIntoView", container, pageNumber);
@@ -52,9 +122,24 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.toggleFullscreen", element);
     }
 
-    public static ValueTask BitPdfViewerPrint(this IJSRuntime jsRuntime, ElementReference container)
+    public static ValueTask BitPdfViewerExitFullscreen(this IJSRuntime jsRuntime)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.print", container);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.exitFullscreen");
+    }
+
+    public static ValueTask BitPdfViewerRegisterFullscreenSpy(this IJSRuntime jsRuntime, ElementReference root, DotNetObjectReference<BitPdfViewer> dotnetObj)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.registerFullscreenSpy", root, dotnetObj);
+    }
+
+    public static ValueTask BitPdfViewerDisposeFullscreenSpy(this IJSRuntime jsRuntime, ElementReference root)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.disposeFullscreenSpy", root);
+    }
+
+    public static ValueTask BitPdfViewerPrint(this IJSRuntime jsRuntime, ElementReference container, int from, int to)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.print", container, from, to);
     }
 
     public static ValueTask BitPdfViewerPaintCanvasPages(this IJSRuntime jsRuntime, ElementReference container, BitPdfViewerCanvasPage[] pages, double scale)
@@ -67,14 +152,12 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.rezoomCanvases", container, scale);
     }
 
-    public static ValueTask<int> BitPdfViewerSearchAll(this IJSRuntime jsRuntime, ElementReference container, string query)
+    public static ValueTask BitPdfViewerHighlight(this IJSRuntime jsRuntime, ElementReference container, string query,
+        bool matchCase, bool wholeWord, bool matchDiacritics, bool highlightAll,
+        int currentPage, int currentOrdinal, bool scrollToCurrent)
     {
-        return jsRuntime.Invoke<int>("BitBlazorUI.PdfViewer.searchAll", container, query);
-    }
-
-    public static ValueTask BitPdfViewerGotoMatch(this IJSRuntime jsRuntime, ElementReference container, int index)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.gotoMatch", container, index);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.highlight", container, query, matchCase, wholeWord,
+            matchDiacritics, highlightAll, currentPage, currentOrdinal, scrollToCurrent);
     }
 
     public static ValueTask BitPdfViewerClearSearch(this IJSRuntime jsRuntime, ElementReference container)
