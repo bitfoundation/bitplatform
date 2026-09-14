@@ -1133,7 +1133,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys");
 
         CollectionAssert.AreEqual(new[] { "ArrowDown", "ArrowUp", "Home", "End" }, (string[])invocation.Arguments[1]!);
-        Assert.AreEqual(".bit-acd-hdr", invocation.Arguments[2]);
+        Assert.AreEqual(".bit-acl-itm > .bit-acd > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr", invocation.Arguments[2]);
         Assert.AreEqual(".bit-acl", invocation.Arguments[3]);
     }
 
@@ -1200,6 +1200,16 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.ExpandedKeys, (IEnumerable<string>)["a", "b"]));
 
         component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+    }
+
+    [TestMethod]
+    public void BitAccordionListOfOptionsShouldNotScrollToThePanelItIsBoundToOpenWith()
+    {
+        // The options register only during the first render, so the bound key arrives before its item does -
+        // it is still the state the list starts in, not a panel the reader has just opened.
+        RenderComponent<BitAccordionListScrollOnExpandTest>(parameters => parameters.Add(p => p.ExpandedKey, "first"));
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
     }
 
     [TestMethod]

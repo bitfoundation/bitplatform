@@ -897,7 +897,12 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     // The navigation keys are suppressed on a listener of the browser's own, and only for a key pressed on
     // one of this list's own item headers: the same keys pressed inside a panel belong to whatever the panel
-    // holds, and the ones pressed on the headers of a list nested in a panel belong to that list.
+    // holds, and the ones pressed on the headers of a list nested in a panel belong to that list. The header
+    // is matched through the whole chain of an item's own accordion, since a plain BitAccordion placed in a
+    // panel or in the Actions carries the same header class but none of the navigation that would stand in
+    // for the default action the listener takes away.
+    private const string ItemHeaderSelector = ".bit-acl-itm > .bit-acd > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr";
+
     private async Task UpdatePreventedKeys()
     {
         var wanted = Navigable && IsEnabled;
@@ -908,7 +913,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         {
             if (wanted)
             {
-                await _js.BitExtrasSetPreventKeys(RootElement, _navigationKeys, ".bit-acd-hdr", ".bit-acl");
+                await _js.BitExtrasSetPreventKeys(RootElement, _navigationKeys, ItemHeaderSelector, ".bit-acl");
             }
             else
             {
@@ -1180,9 +1185,14 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     }
 
     // The keys of the incoming set that are not expanded yet - the panels the change is about to open.
+    // Before the first render none is: the bound value is the state the list starts in, not a panel the
+    // reader has opened. A list of options has no item yet on its first parameter pass - they register
+    // during the render - so its bound keys would otherwise all read as just opened and scroll the page.
     private List<string> OpenedKeysOf(IEnumerable<string> keys)
     {
-        return ScrollIntoViewOnExpand is false ? [] : [.. keys.Where(k => k.HasValue() && _expandedKeys.Contains(k) is false)];
+        if (ScrollIntoViewOnExpand is false || _hasRendered is false) return [];
+
+        return [.. keys.Where(k => k.HasValue() && _expandedKeys.Contains(k) is false)];
     }
 
     private void QueueScrollIntoView(IEnumerable<string> keys)

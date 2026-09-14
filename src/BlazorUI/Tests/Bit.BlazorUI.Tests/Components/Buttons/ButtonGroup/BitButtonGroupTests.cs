@@ -567,4 +567,31 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("false", buttons[1].GetAttribute("aria-pressed"));
         Assert.AreEqual("true", buttons[2].GetAttribute("aria-pressed"));
     }
+
+    [TestMethod]
+    public void BitButtonGroupShouldNotMoveTheToggleToAnotherItemWhenKeylessItemsAreRebuilt()
+    {
+        // An item type without a key gives the toggled item nothing to be followed by, so a rebuilt list must
+        // not hand the toggle to whichever of the new items happens to lack a key first.
+        static List<KeylessButtonGroupItem> NewItems() => [new(), new()];
+
+        var comp = RenderComponent<BitButtonGroup<KeylessButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, NewItems());
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+        });
+
+        comp.FindAll("button")[1].Click();
+
+        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+
+        comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
+
+        Assert.AreEqual(0, comp.FindAll(".bit-btg-chk").Count);
+    }
+
+    public class KeylessButtonGroupItem
+    {
+        public string? Text { get; set; }
+    }
 }

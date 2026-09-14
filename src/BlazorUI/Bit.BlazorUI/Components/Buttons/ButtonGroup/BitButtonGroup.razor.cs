@@ -487,8 +487,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         if (_toggleItem is not null && _items.Contains(_toggleItem) is false)
         {
+            // An item without a key is one there is nothing to follow by: matched as it is, it would land on
+            // the first item that has no key either, which is not the one that was toggled.
             var key = GetItemKey(_toggleItem);
-            _toggleItem = _items.FirstOrDefault(i => GetItemKey(i) == key);
+            _toggleItem = key.HasValue() ? _items.FirstOrDefault(i => GetItemKey(i) == key) : null;
 
             if (_toggleItem is not null) SetIsToggled(_toggleItem, true);
         }
