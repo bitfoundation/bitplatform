@@ -41,11 +41,11 @@ public sealed class HybridHarnessHost : IAsyncDisposable
         // the second app's debugging port would never open.
         var userDataFolder = Path.Combine(Path.GetTempPath(), "bit-brouter-hybrid-" + Guid.NewGuid().ToString("N"));
 
-        var process = ChildProcess.Start(executable, ["--start-path", startPath], Path.GetDirectoryName(executable)!, new Dictionary<string, string>
-        {
-            ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}",
-            ["WEBVIEW2_USER_DATA_FOLDER"] = userDataFolder,
-        });
+        // Passed as arguments the host applies through the WebView2 API: an elevated host (CI runners run
+        // as admin) ignores --remote-debugging-port in WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS.
+        var process = ChildProcess.Start(executable,
+            ["--start-path", startPath, "--remote-debugging-port", port.ToString(), "--user-data-folder", userDataFolder],
+            Path.GetDirectoryName(executable)!);
 
         try
         {

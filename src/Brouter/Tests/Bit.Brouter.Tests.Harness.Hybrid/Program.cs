@@ -23,10 +23,14 @@ internal static class Program
             Fail("The WebView2 Runtime is not installed", ex);
             return 1;
         }
-        Console.Error.WriteLine($"WebView2 Runtime {runtimeVersion}");
+        Console.Error.WriteLine($"WebView2 Runtime {runtimeVersion}, elevated: {Environment.IsPrivilegedProcess}");
 
         ApplicationConfiguration.Initialize();
-        Application.Run(new HarnessForm(StartPathFrom(args)));
+        Application.Run(new HarnessForm(
+            // --start-path /items/9 opens the WebView at a deep path, the hybrid counterpart of a deep link.
+            startPath: ArgumentValue(args, "--start-path") ?? "/",
+            remoteDebuggingPort: ArgumentValue(args, "--remote-debugging-port"),
+            userDataFolder: ArgumentValue(args, "--user-data-folder")));
         return 0;
     }
 
@@ -37,10 +41,9 @@ internal static class Program
         Environment.Exit(1);
     }
 
-    // --start-path /items/9 opens the WebView at a deep path, the hybrid counterpart of a deep link.
-    private static string StartPathFrom(string[] args)
+    private static string? ArgumentValue(string[] args, string name)
     {
-        var index = Array.IndexOf(args, "--start-path");
-        return index >= 0 && index + 1 < args.Length ? args[index + 1] : "/";
+        var index = Array.IndexOf(args, name);
+        return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
     }
 }

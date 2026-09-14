@@ -97,8 +97,11 @@ CI runs all of the above in `.github/workflows/bit.ci.Brouter.e2e.yml`.
 ## Hybrid notes
 
 The hybrid suite starts `Bit.Brouter.Tests.Harness.Hybrid.exe` with
-`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=<port>` and a private
-`WEBVIEW2_USER_DATA_FOLDER`, then attaches with `ConnectOverCDPAsync`. A window opens while it runs.
+`--remote-debugging-port <port> --user-data-folder <private folder>`, which the host applies through
+`BlazorWebViewInitializing` (the WebView2 API), then attaches with `ConnectOverCDPAsync`. A window
+opens while it runs. The `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` environment variable is not an
+option: since WebView2 Runtime 150, an elevated process - such as a GitHub-hosted runner - ignores
+`--remote-debugging-port` given that way.
 Tests that would need a second window (modified clicks) or would close the WebView (`beforeunload`)
 report Inconclusive there.
 
