@@ -38,6 +38,13 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "Busy",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reports the header as busy - aria-busy for a screen reader, a busy cursor for a pointer - while something the page is doing on the accordion's behalf is still running. An accordion whose own OnToggling is being awaited reports itself as busy without being told to."
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitAccordionClassStyles?",
             DefaultValue = "null",
