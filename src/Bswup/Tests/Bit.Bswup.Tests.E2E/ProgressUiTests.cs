@@ -69,6 +69,7 @@ public class ProgressUiTests : BswupTest
         await InstallAsync();
 
         var src = await Page.Locator("script[autostart]").GetAttributeAsync("src");
+        Assert.IsNotNull(src, "The Blazor script has no src attribute.");
         Assert.AreNotEqual("_framework/blazor.web.js", src, "The page did not reference the fingerprinted script.");
     }
 

@@ -12,8 +12,21 @@ public static class HarnessHosts
 {
     private static readonly ConcurrentDictionary<string, Lazy<Task<WebHarnessHost>>> _hosts = new();
 
-    public static Task<WebHarnessHost> GetAsync(string mode) =>
-        _hosts.GetOrAdd(mode, m => new Lazy<Task<WebHarnessHost>>(() => WebHarnessHost.StartAsync(m))).Value;
+    public static async Task<WebHarnessHost> GetAsync(string mode)
+    {
+        var host = _hosts.GetOrAdd(mode, m => new Lazy<Task<WebHarnessHost>>(() => WebHarnessHost.StartAsync(m)));
+
+        try
+        {
+            return await host.Value;
+        }
+        catch
+        {
+            // A failed start is not cached: the next test that needs this mode starts the host again.
+            _hosts.TryRemove(new KeyValuePair<string, Lazy<Task<WebHarnessHost>>>(mode, host));
+            throw;
+        }
+    }
 
     public static async Task StopAllAsync()
     {
@@ -50,9 +63,37 @@ public sealed class WebHarnessHost : IAsyncDisposable
 
     public string RecentOutput => _process.RecentOutput;
 
+    private const int StartAttempts = 3;
+
     public static async Task<WebHarnessHost> StartAsync(string mode)
     {
-        var port = ChildProcess.FreePort();
+        for (var attempt = 1; ; attempt++)
+        {
+            // FreePort releases the port before the host binds it, so another process can take it in between:
+            // when the host then fails to bind, start it again on a fresh port.
+            var port = ChildProcess.FreePort();
+            var process = StartProcess(mode, port);
+
+            try
+            {
+                await process.WaitForHttpAsync($"http://127.0.0.1:{port}/_harness/options", TimeSpan.FromMinutes(2));
+                return new WebHarnessHost(mode, port, process);
+            }
+            catch (InvalidOperationException) when (attempt < StartAttempts && process.HasExited
+                                                    && process.RecentOutput.Contains("address already in use", StringComparison.OrdinalIgnoreCase))
+            {
+                await process.DisposeAsync();
+            }
+            catch
+            {
+                await process.DisposeAsync();
+                throw;
+            }
+        }
+    }
+
+    private static ChildProcess StartProcess(string mode, int port)
+    {
         string[] hostArguments = ["--urls", $"http://127.0.0.1:{port}", $"--BswupHarness:Mode={mode}", "--Logging:LogLevel:Default=Warning"];
 
         ChildProcess process;
@@ -74,17 +115,7 @@ public sealed class WebHarnessHost : IAsyncDisposable
                 new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Development" });
         }
 
-        try
-        {
-            await process.WaitForHttpAsync($"http://127.0.0.1:{port}/_harness/options", TimeSpan.FromMinutes(2));
-        }
-        catch
-        {
-            await process.DisposeAsync();
-            throw;
-        }
-
-        return new WebHarnessHost(mode, port, process);
+        return process;
     }
 
     public ValueTask DisposeAsync() => _process.DisposeAsync();
