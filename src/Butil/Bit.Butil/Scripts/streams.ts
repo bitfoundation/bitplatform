@@ -23,6 +23,36 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function trackReadable(id: string, stream: ReadableStream) { _readables[id] = { stream }; }
     function trackWritable(id: string, stream: WritableStream) { _writables[id] = { stream }; }
 
+    // Blazor's JS interop before .NET 10 serializes an async result in one microtask and sends it in
+    // the next, and every serialization numbers its byte arrays from zero into a buffer the whole
+    // runtime shares, which .NET clears after reviving each result. Two reads settling in the same
+    // task - exactly what tee's branches do, since one pull feeds both - interleave there: the first
+    // result is revived with the second one's bytes, and the second finds its array gone, faulting the
+    // read and, on Blazor Server, terminating the circuit. Letting one result settle per task keeps
+    // each transfer whole. A done or failed result carries no bytes but still clears the buffer, so
+    // every result waits its turn; an uncontended read pays nothing.
+    let _handingOff = false;
+    async function handOff<T>(result: T): Promise<T> {
+        // Queued behind the timer that reopens the gate, so the result that took it has been sent by then.
+        while (_handingOff) await new Promise(resolve => setTimeout(resolve, 0));
+        _handingOff = true;
+        setTimeout(() => { _handingOff = false; }, 0);
+        return result;
+    }
+
+    async function pull(entry: ReadableEntry | undefined) {
+        if (!entry) return { done: true, data: null, error: 'unknown stream' };
+
+        try {
+            entry.reader = entry.reader ?? entry.stream.getReader();
+            const { value, done } = await entry.reader.read();
+            if (done) return { done: true, data: null, error: null };
+            return { done: false, data: value instanceof Uint8Array ? value : new Uint8Array(value), error: null };
+        } catch (e: any) {
+            return { done: true, data: null, error: e?.message ?? String(e) };
+        }
+    }
+
     butil.streams = {
         isSupported() { return typeof (window as any).ReadableStream === 'function'; },
         isTransformSupported() { return typeof (window as any).CompressionStream === 'function'; },
@@ -109,19 +139,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Pull one chunk. The reader is acquired on first use, which is also what locks the stream -
         // tee() and pipeThrough() are unavailable from then on, by the specification's rules rather
         // than ours.
-        async read(id: string) {
-            const entry = _readables[id];
-            if (!entry) return { done: true, data: null, error: 'unknown stream' };
-
-            try {
-                entry.reader = entry.reader ?? entry.stream.getReader();
-                const { value, done } = await entry.reader.read();
-                if (done) return { done: true, data: null, error: null };
-                return { done: false, data: value instanceof Uint8Array ? value : new Uint8Array(value), error: null };
-            } catch (e: any) {
-                return { done: true, data: null, error: e?.message ?? String(e) };
-            }
-        },
+        async read(id: string) { return handOff(await pull(_readables[id])); },
 
         // Two streams from one, each getting every chunk. The original is locked afterwards and is
         // no longer readable itself - which is the point: it has been split, not copied.
