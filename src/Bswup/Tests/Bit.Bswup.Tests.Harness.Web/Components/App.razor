@@ -1,0 +1,47 @@
+﻿@* The host document of the Blazor Web App harness, set up as the README describes: blazor.web.js with
+   autostart="false", bit-bswup.js after it, BswupProgress plus bit-bswup.progress.js. What a test changes
+   (script-tag options, BswupProgress parameters and placement) comes from its session. *@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* An empty icon: the default /favicon.ico request would 404 and trip the suites' console-error check. *@
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />
+    <title>Bswup harness (@Mode)</title>
+</head>
+
+<body data-mode="@Mode">
+    <div id="app">
+        <HarnessApp @rendermode="RenderMode"
+                    ProgressPlacement="@Progress.Placement"
+                    AutoReload="Progress.AutoReload"
+                    ShowAssets="Progress.ShowAssets"
+                    HideApp="Progress.HideApp"
+                    AutoHide="Progress.AutoHide"
+                    ShowOnUpdate="Progress.ShowOnUpdate" />
+    </div>
+
+    @if (Progress.Placement == "document")
+    {
+        <BswupProgress AutoReload="Progress.AutoReload"
+                       ShowAssets="Progress.ShowAssets"
+                       HideApp="Progress.HideApp"
+                       AutoHide="Progress.AutoHide"
+                       ShowOnUpdate="Progress.ShowOnUpdate"
+                       Handler="harnessBswupHandler" />
+    }
+
+    <script src="_content/Bit.Bswup.Tests.Harness/harness.js"></script>
+    <script src="@BlazorScript" autostart="false"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.js" @attributes="ScriptAttributes"></script>
+    @if (Progress.Placement != "none")
+    {
+        <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+    }
+</body>
+
+</html>

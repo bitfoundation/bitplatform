@@ -218,6 +218,7 @@ export function createServiceWorkerContext({ fetchHandler, cacheStorageError } =
         setTimeout: (fn, ms) => setTimeout(fn, Math.min(ms || 0, 5)), // keep retry backoff fast
         clearTimeout,
         URL, URLSearchParams,
+        btoa, atob, // a worker global; isIntegrityMismatch base64-encodes the digest it computes
         Headers, // used by the worker's Range slicing (applyRangeHeader)
         Request: FakeRequest,
         Response: FakeResponse,

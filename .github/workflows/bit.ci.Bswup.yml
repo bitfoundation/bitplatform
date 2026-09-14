@@ -63,6 +63,10 @@ jobs:
     - name: dotnet test (MCP server)
       run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
 
+    - name: dotnet test (hosting - served assets, host documents and BswupProgress over HTTP, net8.0/net9.0/net10.0)
+      # Real-browser coverage (install, offline, updates, recovery) and the published-output gate run in bit.ci.Bswup.e2e.yml.
+      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Hosting/Bit.Bswup.Tests.Hosting.csproj --no-build
+
     # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
     # the build step itself (e.g. the minifier re-introducing downleveled syntax).
     - name: JS tests (service worker, page script, progress UI)
