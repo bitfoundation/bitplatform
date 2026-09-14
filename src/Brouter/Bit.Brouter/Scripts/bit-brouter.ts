@@ -182,9 +182,22 @@ function ensureViewTransitionDefaults(useDefaults: boolean, respectReducedMotion
 // history traversals (never on pushState link navigations), and it fires BEFORE the navigation
 // pipeline's beginViewTransition interop arrives - so a module-scope listener can correct the
 // direction reliably for both the browser buttons and programmatic history.go/back/forward.
+//
+// A popstate can reach this listener AFTER the navigation it belongs to has already consumed the
+// flag. Blazor registers its own popstate listener long before this module is imported, and on
+// WebAssembly that listener runs the whole .NET commit - beginViewTransition included -
+// synchronously inside the same event dispatch; only then does this listener run for that event.
+// Setting the flag there would leak "pop" into the next, unrelated navigation. So the time of the
+// last consumption is recorded, and an event created before it is recognized as already accounted
+// for. (Listener order can't be relied on instead: a capture-phase listener on window does not run
+// ahead of earlier-registered ones.)
 let historyTraversalPending = false;
+let historyTraversalConsumedAt = -Infinity;
 if (typeof window !== 'undefined') {
-    window.addEventListener('popstate', () => { historyTraversalPending = true; });
+    window.addEventListener('popstate', e => {
+        if (e.timeStamp <= historyTraversalConsumedAt) return;
+        historyTraversalPending = true;
+    });
 }
 
 // Resolves true once a transition is started AND its old-state capture is complete (the C# side
@@ -206,6 +219,7 @@ export function beginViewTransition(navKind?: string, useDefaults?: boolean, res
     // push in interactive mode (see historyTraversalPending above), but the browser can.
     const kind = historyTraversalPending ? 'pop' : (navKind || 'push');
     historyTraversalPending = false;
+    historyTraversalConsumedAt = performance.now();
     document.documentElement.setAttribute('data-brouter-nav', kind);
 
     // A still-open previous transition (its navigation was superseded mid-flight) must be released
@@ -323,6 +337,8 @@ type ScrollStorageKind = 'session' | 'local' | null;
 const scrollPositions = new Map<string, ScrollPosition>();
 let pendingIsPop = false;
 let popped = false;
+// performance.now() of the last time saveScrollPosition consumed `popped` (see the popstate listener).
+let poppedConsumedAt = -Infinity;
 let scrollRestorationInited = false;
 // null -> in-memory only; 'session'/'local' -> mirrored to sessionStorage/localStorage so positions
 // survive a full reload. Fixed for the module's lifetime (BrouterOptions are per-scope constants).
@@ -395,9 +411,15 @@ function ensureScrollRestoration(storageKind: string | null) {
     if ('scrollRestoration' in history) {
         try { history.scrollRestoration = 'manual'; } catch { /* some hosts forbid setting it */ }
     }
-    // Fires synchronously on a Back/Forward, ahead of Blazor's async LocationChanged handling, so the
-    // flag is already set when the ensuing saveScrollPosition call reads it.
-    window.addEventListener('popstate', () => { popped = true; });
+    // Fires on a Back/Forward, normally ahead of Blazor's LocationChanged handling, so the flag is
+    // already set when the ensuing saveScrollPosition call reads it. An event created before the last
+    // consumption is ignored for the same reason as in the traversal listener above: on WebAssembly the
+    // navigation can already have been committed (and the flag consumed) by Blazor's earlier-registered
+    // listener, and re-setting it would make the next ordinary navigation restore a position like a Back.
+    window.addEventListener('popstate', e => {
+        if (e.timeStamp <= poppedConsumedAt) return;
+        popped = true;
+    });
 
     // Seed the in-memory map from persisted storage so a reload can still restore positions.
     hydrateScrollPositions();
@@ -422,6 +444,7 @@ export function saveScrollPosition(key: string | null, storageKind: string | nul
     ensureScrollRestoration(storageKind);
     pendingIsPop = popped;
     popped = false;
+    poppedConsumedAt = performance.now();
     if (key) {
         // Bound the cache. Map preserves insertion order, so deleting the first key evicts the oldest
         // entry. Delete-then-set also re-inserts an updated key at the newest position, so recently

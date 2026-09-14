@@ -1,0 +1,9 @@
+﻿<h1 id="page-preload-target">preload target</h1>
+
+<p>served by loader run <span id="target-run">@Info?.Run</span></p>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+
+    private HarnessData? Info => Data?.GetOrDefault<HarnessData>();
+}

@@ -62,11 +62,25 @@
          conflicting-target-path error) for builds where the glob already captured it. -->
     <Target Name="IncludeBrouterJavaScriptAsStaticWebAsset"
             BeforeTargets="ResolveProjectStaticWebAssets"
-            DependsOnTargets="BuildBrouterJavaScript">
+            DependsOnTargets="BuildBrouterJavaScriptOnce">
         <ItemGroup>
             <Content Remove="wwwroot\bit-brouter.js" />
             <Content Include="wwwroot\bit-brouter.js" />
         </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBrouterJavaScript through the MSBuild task with TargetFramework removed, so every
+         per-TFM build asks for the same project configuration. MSBuild keeps one result per project and
+         global properties: the first request runs tsc/esbuild, concurrent ones wait for that result, and
+         later ones reuse it. Calling BuildBrouterJavaScript directly from each inner build is not enough
+         even with the cross-targeting target below: a ProjectReference builds this project's inner
+         builds directly (one per referencing target framework, in parallel) without ever running the
+         outer build, so each of them ran tsc against the same wwwroot/bit-brouter.js and the build
+         failed intermittently with "EBUSY: resource busy or locked". -->
+    <Target Name="BuildBrouterJavaScriptOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBrouterJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
     </Target>
 
     <!-- In a multi-targeted build, produce the output exactly once in the outer (cross-targeting)

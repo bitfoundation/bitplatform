@@ -1741,8 +1741,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     private void NavManagerOnNotFound(object? sender, NotFoundEventArgs args)
     {
-        if (_raisingFrameworkNotFound) return;
-
         // Signal "handled" synchronously (the framework reads args after the event returns). Only
         // claim it when this Brouter actually has a fallback to show; otherwise leave the args
         // untouched so the framework's own not-found handling (status codes / re-execution) runs.
@@ -1758,6 +1756,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         {
             return;
         }
+
+        // Brouter's own "no route matched" propagation still has to claim the rendering above: during
+        // static rendering an unclaimed NotFound makes the framework discard the response body, which
+        // left a 404 with no fallback content and - for prerendered interactive modes - no script to
+        // boot. What it must not do is react a second time: the pipeline is already rendering the
+        // fallback.
+        if (_raisingFrameworkNotFound) return;
 
         _ = HandleAppNotFoundAsync();
     }
