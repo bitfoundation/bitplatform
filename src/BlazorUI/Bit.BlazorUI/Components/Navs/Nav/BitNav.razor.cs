@@ -529,7 +529,12 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         for (var idx = 0; idx < items.Count; idx++)
         {
             var item = items[idx];
-            var identity = GetKey(item) ?? (parentIdentity is null ? idx.ToString() : $"{parentIdentity}-{idx}");
+            // An explicit key and a position live in namespaces of their own, the key length-prefixed, so no key
+            // (a "0", or a "parent/0") can be read as the position of another item.
+            var key = GetKey(item);
+            var identity = key is not null
+                ? $"k{key.Length}:{key}"
+                : (parentIdentity is null ? $"i{idx}" : $"{parentIdentity}/{idx}");
 
             _itemIdentities[item] = identity;
 

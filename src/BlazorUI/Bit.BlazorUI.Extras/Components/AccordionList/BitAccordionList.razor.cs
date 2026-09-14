@@ -547,7 +547,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
         // behind every option that was already there wherever in the markup it sits.
         if (_hasRendered) _optionOrderIsStale = true;
 
-        if (ShouldExpandOnRegister(option.Key!, option.IsExpanded))
+        // An option opening itself on registration is held to MaxExpanded like a set of defaults is: the ones
+        // registering after the cap is reached stay closed rather than pushing the list beyond it.
+        if (ShouldExpandOnRegister(option.Key!, option.IsExpanded) && (_MaxExpanded is not int max || _expandedKeys.Count < max))
         {
             AddExpandedKey(option.Key!);
             _internalExpandedKeys = GetOrderedExpandedKeys();

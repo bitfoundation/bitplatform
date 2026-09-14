@@ -889,6 +889,55 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccordionListMaxExpandedShouldCapTheOptionsThatExpandThemselves()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxExpanded, 1);
+            parameters.AddChildContent<BitAccordionListOption>(p =>
+            {
+                p.Add(o => o.Key, "a");
+                p.Add(o => o.Title, "Option A");
+                p.Add(o => o.IsExpanded, true);
+            });
+            parameters.AddChildContent<BitAccordionListOption>(p =>
+            {
+                p.Add(o => o.Key, "b");
+                p.Add(o => o.Title, "Option B");
+                p.Add(o => o.IsExpanded, true);
+            });
+        });
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
+        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListMaxExpandedShouldCapTheDefaultExpandedKeysOfOptions()
+    {
+        var component = RenderComponent<BitAccordionList<BitAccordionListOption>>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxExpanded, 1);
+            parameters.Add(p => p.DefaultExpandedKeys, ["a", "b"]);
+            parameters.AddChildContent<BitAccordionListOption>(p =>
+            {
+                p.Add(o => o.Key, "a");
+                p.Add(o => o.Title, "Option A");
+            });
+            parameters.AddChildContent<BitAccordionListOption>(p =>
+            {
+                p.Add(o => o.Key, "b");
+                p.Add(o => o.Title, "Option B");
+            });
+        });
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
+        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+    }
+
+    [TestMethod]
     public async Task BitAccordionListMaxExpandedShouldCapExpandAll()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
