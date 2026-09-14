@@ -59,9 +59,9 @@ public partial class WebAiChatbotTests : AiChatbotTestsBase
     }
 
     /// <summary>
-    /// A turn reaches the panel as one json document carrying the answer, its suggestions and the signature (See
-    /// <c>AssistantTurn</c>). Only the answer is the user's to read, so none of the document's own words may reach the
-    /// screen - which is what a panel rendering the stream instead of reading it would put there.
+    /// A turn reaches the panel as one json document carrying the answer and the signature (See <c>AssistantTurn</c>).
+    /// Only the answer is the user's to read, so none of the document's own words may reach the screen - which is what a
+    /// panel rendering the stream instead of reading it would put there.
     /// </summary>
     [TestMethod]
     public async Task Assistant_Should_NotRenderTheStreamsOwnDocumentIntoAnAnswer()
@@ -70,7 +70,7 @@ public partial class WebAiChatbotTests : AiChatbotTestsBase
 
         var answer = await panel.Ask(PwaQuestion);
 
-        foreach (var ofTheDocument in new[] { "followUpSuggestions", "sentAt", "signature" })
+        foreach (var ofTheDocument in new[] { "sentAt", "signature" })
         {
             Assert.DoesNotContain(ofTheDocument, answer, StringComparison.OrdinalIgnoreCase,
                 $"""

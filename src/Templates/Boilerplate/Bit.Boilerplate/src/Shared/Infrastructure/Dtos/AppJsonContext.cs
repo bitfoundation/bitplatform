@@ -54,6 +54,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(TimeSpan))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(Guid[]))]
+[JsonSerializable(typeof(IAsyncEnumerable<string>))] // DiagnosticController.PerformDiagnostic
 [JsonSerializable(typeof(GitHubStats))]
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]
@@ -79,6 +80,11 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(List<ProductDto>))]
 [JsonSerializable(typeof(PagedResponse<ProductDto>))]
 //#endif
+//#if (module == "Sales")
+//#if (database == "PostgreSQL" || database == "SqlServer")
+[JsonSerializable(typeof(List<ProductRecommendationDto>))]
+//#endif
+//#endif
 //#if (module == "Admin")
 [JsonSerializable(typeof(List<ProductsCountPerCategoryResponseDto>))]
 [JsonSerializable(typeof(OverallAnalyticsStatsDataResponseDto))]
@@ -95,12 +101,15 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(DiagnosticLogDto[]))]
 [JsonSerializable(typeof(StartChatRequest))]
 [JsonSerializable(typeof(AiChatMessage))]
+[JsonSerializable(typeof(AiChatCard))]
 [JsonSerializable(typeof(AssistantReply))]
 [JsonSerializable(typeof(AssistantTurn))]
 [JsonSerializable(typeof(List<SystemPromptDto>))]
 [JsonSerializable(typeof(BackgroundJobProgressDto))]
 [JsonSerializable(typeof(SynthesizeSpeechRequestDto))]
 [JsonSerializable(typeof(TranscribeSpeechResponseDto))]
+[JsonSerializable(typeof(StartVoiceCallRequestDto))]
+[JsonSerializable(typeof(StartVoiceCallResponseDto))]
 //#endif
 public partial class AppJsonContext : JsonSerializerContext
 {

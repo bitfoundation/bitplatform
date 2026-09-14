@@ -152,6 +152,28 @@ public static class IPlaywrightExtensions
             return await RunAdb($"shell {command}", allowNonZeroExit: true);
         }
 
+        /// <summary>
+        /// Android's back button as the app gets it. While the soft keyboard is open a press only closes the keyboard -
+        /// and a focused input, such as TfaPanel's code, opens it - so it is closed first and the next press is the one
+        /// that reaches the app.
+        /// </summary>
+        public async Task PressAndroidBack()
+        {
+            await EnsureAndroidDeviceOnline();
+
+            if (await IsSoftKeyboardShown())
+            {
+                await RunAdb("shell input keyevent KEYCODE_BACK");
+
+                var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(10);
+
+                while (await IsSoftKeyboardShown() && DateTimeOffset.UtcNow < deadline)
+                    await Task.Delay(TimeSpan.FromMilliseconds(250));
+            }
+
+            await RunAdb("shell input keyevent KEYCODE_BACK");
+        }
+
         /// <summary>The pid of the running <paramref name="applicationId"/>; empty when it is not running.</summary>
         public async Task<string> GetAndroidAppProcessId(string applicationId)
         {
@@ -351,6 +373,11 @@ public static class IPlaywrightExtensions
 
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
+    }
+
+    private static async Task<bool> IsSoftKeyboardShown()
+    {
+        return (await RunAdb("shell dumpsys input_method", allowNonZeroExit: true)).Contains("mInputShown=true", StringComparison.Ordinal);
     }
 
     private static async Task<bool> IsAnyAndroidDeviceOnline()

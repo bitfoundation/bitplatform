@@ -17,6 +17,40 @@
             font-size: 1.5rem;
             pointer-events: none;
         }
+
+        // A call goes on while the panel is closed.
+        &.in-call {
+            animation: open-panel-in-call 1.6s ease-out infinite;
+        }
+
+        // A card waits for the user's answer.
+        &.needs-answer::after {
+            top: 0;
+            content: "";
+            width: 0.75rem;
+            height: 0.75rem;
+            position: absolute;
+            border-radius: 50%;
+            inset-inline-end: 0;
+            background: $bit-color-warning;
+            box-shadow: 0 0 0 2px $bit-color-background-primary;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &.in-call {
+                animation: none;
+            }
+        }
+    }
+
+    @keyframes open-panel-in-call {
+        from {
+            box-shadow: 0 0 0 0 $bit-color-error;
+        }
+
+        to {
+            box-shadow: 0 0 0 0.75rem transparent;
+        }
     }
 
     .panel-cnt {
@@ -131,34 +165,60 @@
     }
 
     .dictate-button {
-        z-index: 1; // Above the ring below, which covers the same box.
         inset-inline-end: 3rem;
     }
 
-    // Rings the microphone button, on its own box - Radius and Thickness multiply out to the button's 2rem - so the
-    // fill reads as that button running out of time rather than as a separate indicator.
-    .dictate-progress {
-        z-index: 0;
-        bottom: 0.5rem;
-        position: absolute;
-        pointer-events: none;
-        inset-inline-end: 3rem;
-
-        // A standalone progress ring is floored at 50px, which is wider than the button and taller than the field
-        // it sits in. Nothing here is standalone, so the floor goes and the svg keeps the size it was given.
-        svg {
-            min-width: unset;
-            min-height: unset;
-        }
-    }
-
-    // Floats inside the field just before the microphone button, centred on the same line as it. The field's own end
-    // padding is widened while it is there so no text ends up underneath.
-    .dictate-wave {
+    // Floats inside the field just before the microphone or call button, with the time left written on it. The
+    // field's own end padding is widened while it is there so no text ends up underneath.
+    .speech-timer {
+        width: 4rem;
         bottom: 0.75rem;
         position: absolute;
         pointer-events: none;
         inset-inline-end: 5.25rem;
+
+        // The stack aligns to flex-start, and a bar of absolutely positioned parts has no width of its own.
+        .speech-timer-progress {
+            width: 100%;
+        }
+
+        // Faded so the time on top stays readable in every phase color.
+        .speech-timer-bar {
+            opacity: 0.45;
+        }
+
+        .speech-timer-text {
+            inset: 0;
+            display: grid;
+            position: absolute;
+            place-items: center;
+            color: $bit-color-foreground-primary;
+        }
+
+        &.ending {
+            animation: speech-timer-ending 1.2s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &.ending {
+                animation: none;
+            }
+        }
+    }
+
+    @keyframes speech-timer-ending {
+        50% {
+            opacity: 0.55;
+        }
+    }
+
+    // Beside the microphone button, or in its place while that is hidden.
+    .voice-call-button {
+        inset-inline-end: 5.5rem;
+
+        &.no-dictation {
+            inset-inline-end: 3rem;
+        }
     }
 
     // The file upload wraps the message box, so it is the composer rather than a control of its own size.

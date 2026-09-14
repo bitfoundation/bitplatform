@@ -437,7 +437,7 @@ bit-resx
     "servers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp"
+            "url": "https://bitplatform.dev/mcp?v=10.6"
         }
     }
 }

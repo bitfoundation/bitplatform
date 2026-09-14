@@ -1,0 +1,112 @@
+@inherits AiChatCardBase
+
+@* A plain root element, so the scoped ::deep styles apply. *@
+<div class="products">
+    @if (products.Count is 0)
+    {
+        @* Unreadable products: what the card showed instead. *@
+        <BitMarkdownViewer Markdown="@Message.RawMarkdown"
+                           StripBidiControlCharacters
+                           Pipeline="BitMarkdownPipelines.Advanced"
+                           ImageRendering="BitMarkdownViewerImageRendering.All" />
+    }
+    else
+    {
+        <BitStack Horizontal FitHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+            <BitIcon IconName="@BitIconName.Car" Class="products-icon" />
+            <BitText Typography="BitTypography.Subtitle2" Weight="BitFontWeight.Semibold">@title</BitText>
+        </BitStack>
+
+        @* Numbered, so the user can say "the second one", in a voice call too. The best match gets the big picture. *@
+        @for (var i = 0; i < products.Count; i++)
+        {
+            var recommendation = products[i];
+            var product = recommendation.Product;
+            var name = $"{i + 1}. {product.Name}";
+            var image = product.GetPrimaryMediumImageUrl(AbsoluteServerAddress) ?? ProductImage.PlaceholderSrc;
+
+            if (i is 0)
+            {
+                <BitCard @key="product.Id"
+                         FullWidth
+                         CoverRatio="16 / 9"
+                         Class="product"
+                         Href="@product.PageUrl"
+                         Title="@name"
+                         Subtitle="@product.CategoryName"
+                         Classes="@(new() { Title = "product-name", Cover = "product-cover" })">
+                    <FloatingActions>
+                        <BitTag Size="BitSize.Small" Color="BitColor.Primary" Text="@Localizer["Best match"]" />
+                    </FloatingActions>
+                    <Cover>
+                        <BitImage FadeIn
+                                  MaximizeFrame
+                                  ImageFit="BitImageFit.Contain"
+                                  Alt="@product.PrimaryImageAltText"
+                                  FallbackSrc="@ProductImage.PlaceholderSrc"
+                                  Src="@image" />
+                    </Cover>
+                    <ChildContent>
+                        @if (recommendation.Highlights.Count > 0)
+                        {
+                            <BitStack Horizontal Wrap FitHeight Gap="0.25rem">
+                                @foreach (var highlight in recommendation.Highlights)
+                                {
+                                    <BitTag Text="@highlight"
+                                            Size="BitSize.Small"
+                                            Color="BitColor.Success"
+                                            Variant="BitVariant.Outline"
+                                            IconName="@BitIconName.Accept" />
+                                }
+                            </BitStack>
+                        }
+                    </ChildContent>
+                    <Footer>
+                        <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center">
+                            <BitText Numeric Color="BitColor.Primary" Typography="BitTypography.H6">@product.FormattedPrice</BitText>
+                            <BitSpacer />
+                            <BitButton Size="BitSize.Small"
+                                       Variant="BitVariant.Text"
+                                       IconName="@BitIconName.Chat"
+                                       OnClick="WrapHandled(() => Ask(product))">@Localizer["Ask"]</BitButton>
+                        </BitStack>
+                    </Footer>
+                </BitCard>
+
+                if (products.Count > 1)
+                {
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer["Also a good fit"]</BitText>
+                }
+
+                continue;
+            }
+
+            <BitCard @key="product.Id"
+                     FullWidth
+                     Horizontal
+                     CoverWidth="5.5rem"
+                     Size="BitSize.Small"
+                     Class="product"
+                     Href="@product.PageUrl"
+                     Title="@name"
+                     Subtitle="@($"{product.FormattedPrice} · {product.CategoryName}")"
+                     Classes="@(new() { Title = "product-name", Cover = "product-cover" })">
+                <Cover>
+                    <BitImage MaximizeFrame
+                              ImageFit="BitImageFit.Contain"
+                              Alt="@product.PrimaryImageAltText"
+                              FallbackSrc="@ProductImage.PlaceholderSrc"
+                              Src="@image" />
+                </Cover>
+                <Actions>
+                    <BitButton IconOnly
+                               Size="BitSize.Small"
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.Chat"
+                               Title="@Localizer["Ask"]"
+                               OnClick="WrapHandled(() => Ask(product))" />
+                </Actions>
+            </BitCard>
+        }
+    }
+</div>

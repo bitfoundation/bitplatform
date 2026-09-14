@@ -59,7 +59,8 @@ public abstract class AiChatbotTestsBase : AppTestBase
     /// <summary>
     /// <c>GetProductRecommendations</c> searches the deployment's own products, so what comes back has to be cars in
     /// that database at the prices it holds - one written out of the model's own knowledge of Mercedes-Benz would
-    /// read just as well and be worth nothing. Sales only, as the module with products.
+    /// read just as well and be worth nothing. The cars are shown as cards (See <c>ShowProducts</c>), which the answer
+    /// only talks about. Sales only, as the module with products.
     /// </summary>
     [TestMethod]
     public virtual async Task Assistant_Should_RecommendProductsThatAreInTheDatabase()
@@ -80,32 +81,35 @@ public abstract class AiChatbotTestsBase : AppTestBase
 
         var answer = await panel.Ask(ProductQuestion);
 
-        var recommended = benzCars.Where(car => answer.Contains(car.Name, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var shown = await panel.ReadProductCards();
+
+        var recommended = benzCars.Where(car => shown.Contains(car.Name, StringComparer.OrdinalIgnoreCase)).ToArray();
 
         Assert.IsGreaterThan(0, recommended.Length,
             $"""
-            The answer names none of the {benzCars.Length} {BenzCategory} cars in the deployment's database, so whatever it
-            recommended did not come from there.
+            The product cards show none of the {benzCars.Length} {BenzCategory} cars in the deployment's database, so
+            whatever was recommended did not come from there.
 
+            Shown: {string.Join(", ", shown)}
             Answered: {answer}
             """);
 
         Assert.Contains(car => car.Price <= ProductQuestionBudget, recommended,
-            $"Every {BenzCategory} car the answer names is above the {ProductQuestionBudget:N0} budget the question set: " +
+            $"Every {BenzCategory} car on the cards is above the {ProductQuestionBudget:N0} budget the question set: " +
             $"{string.Join(", ", recommended.Select(car => $"{car.Name} at {car.Price:N0}"))}");
 
-        // The check above proves a real car was named; this one proves no invented car was named beside it, at the
-        // deployment's prices rather than the model's.
+        // The cards come from the database by id, so they can't invent a car; the answer around them still can.
         await AiAnswerJudge.AssertAnswer(ProductQuestion,
             $"""
-            The assistant recommends cars for this request rather than declining it, and every car it names - with the
-            price it gives for that car - appears in this catalogue:
+            The assistant recommends cars for this request rather than declining it. The cars are shown to the user as
+            cards, listed after the answer below, and the answer talks about them. Every car the answer or the cards name
+            - with any price given for it - appears in this catalogue:
             {string.Join(Environment.NewLine, benzCars.Select(car => $"- {car.Name}, {car.Price:N0}"))}
-            A car named in the answer that is not in the catalogue, or one given a price the catalogue does not hold
-            for it, fails. So does one recommended above the {ProductQuestionBudget:N0} budget the question set -
-            naming a car to rule it out as too expensive is fine, recommending it is not. Cars in the catalogue that
-            the answer leaves out are fine, and so is any advice around them.
+            A car that is not in the catalogue, or one given a price the catalogue does not hold for it, fails. So does
+            one recommended above the {ProductQuestionBudget:N0} budget the question set - naming a car to rule it out as
+            too expensive is fine, recommending it is not. Cars in the catalogue that are left out are fine, and so is
+            any advice around them.
             """,
-            answer, TestContext.CancellationToken);
+            $"{answer}{Environment.NewLine}{Environment.NewLine}Cards shown: {string.Join("; ", shown)}", TestContext.CancellationToken);
     }
 }

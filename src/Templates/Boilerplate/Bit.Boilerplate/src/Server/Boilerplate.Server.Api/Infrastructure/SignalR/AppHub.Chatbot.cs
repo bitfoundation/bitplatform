@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Chatbot;
 
@@ -7,9 +6,6 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 
 public partial class AppHub
 {
-    // For open telemetry metrics.
-    private static readonly UpDownCounter<long> ongoingConversationsCount = Meter.Current.CreateUpDownCounter<long>("appHub.ongoing_conversations_count", "Number of ongoing conversations in the chatbot hub.");
-
     /// <summary>
     /// This method is accepting stream of user messages and returning stream of string charecters of AI chatbot responses.
     /// The basic implementation idea is brought from here: https://learn.microsoft.com/en-us/aspnet/core/signalr/streaming?view=aspnetcore-10.0
@@ -88,7 +84,7 @@ public partial class AppHub
 
         try
         {
-            ongoingConversationsCount.Add(1);
+            Features.Chatbot.ChatbotMetrics.ActiveConversations.Add(1);
 
             await foreach (var str in chatbotService.GetStreamingChannel().ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
             {
@@ -97,7 +93,7 @@ public partial class AppHub
         }
         finally
         {
-            ongoingConversationsCount.Add(-1);
+            Features.Chatbot.ChatbotMetrics.ActiveConversations.Add(-1);
         }
     }
 

@@ -185,6 +185,7 @@ public partial class DevMcpDiagnosticTools
             //#if (signalR == true)
             SpeechToText = new { Model = ai?.OpenAI?.SpeechToTextModel, EndpointConfigured = ai?.OpenAI?.SpeechToTextEndpoint is not null, KeyConfigured = string.IsNullOrWhiteSpace(ai?.OpenAI?.SpeechToTextApiKey) is false },
             TextToSpeech = new { Model = ai?.OpenAI?.TextToSpeechModel, EndpointConfigured = ai?.OpenAI?.TextToSpeechEndpoint is not null, KeyConfigured = string.IsNullOrWhiteSpace(ai?.OpenAI?.TextToSpeechApiKey) is false, Voice = ai?.OpenAI?.TextToSpeechVoice },
+            Realtime = new { Model = ai?.OpenAI?.RealtimeModel, EndpointConfigured = ai?.OpenAI?.RealtimeEndpoint is not null, KeyConfigured = string.IsNullOrWhiteSpace(ai?.OpenAI?.RealtimeApiKey) is false, Voice = ai?.OpenAI?.RealtimeVoice, TranscriptionModel = ai?.OpenAI?.RealtimeTranscriptionModel, MaxCallDuration = ai?.OpenAI?.RealtimeMaxCallDuration },
             //#endif
             //#if (database == "PostgreSQL" || database == "SqlServer")
             EmbeddingGenerationEnabledOnDbContext = AppDbContext.IsEmbeddingEnabled

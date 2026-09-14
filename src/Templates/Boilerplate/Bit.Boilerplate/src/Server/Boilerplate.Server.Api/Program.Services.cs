@@ -648,6 +648,13 @@ public static partial class Program
             .UseLogging()
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
         }
+
+        // Voice calls (See ChatbotController.StartVoiceCall).
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.RealtimeApiKey) is false)
+        {
+            services.AddSingleton<Features.Chatbot.VoiceCall.OpenAIRealtimeCallClient>();
+            services.AddSingleton<Features.Chatbot.VoiceCall.VoiceCallRunner>();
+        }
 #pragma warning restore MEAI001
         //#endif
         //#endif
@@ -712,35 +719,8 @@ public static partial class Program
     //#if (signalR == true)
     private static void AddAppAIAgents(this WebApplicationBuilder builder)
     {
-        static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)
-        {
-            var cache = sp.GetRequiredService<IFusionCache>();
-            var dbContext = sp.GetRequiredService<AppDbContext>();
-            //#if (multitenant == true)
-            var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
-            var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            //#if (multitenant != true)
-            var cacheKey = $"SystemPrompt_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            var result = cache.GetOrSet(
-                cacheKey, _ =>
-                {
-                    var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
-                    return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
-                },
-                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
-            return result;
-        }
-
         //#if (module == "Sales" || module == "Admin")
-        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
+        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
         //#endif
@@ -749,7 +729,7 @@ public static partial class Program
         {
             var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
 
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
+            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
         }, lifetime: ServiceLifetime.Scoped);

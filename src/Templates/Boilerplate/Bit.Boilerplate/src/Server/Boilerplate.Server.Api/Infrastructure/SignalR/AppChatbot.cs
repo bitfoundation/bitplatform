@@ -17,7 +17,7 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing
 /// a sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only
 /// and signalRConnectionId is always the connection StartChat was given.
-/// 
+///
 /// Microsoft.Agents.AI:
 /// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
 /// For example, it would be better to have separate Agents: one for product search, one for support, and one for app guidance.
@@ -41,7 +41,14 @@ public partial class AppChatbot
 
     private string? variablesDefault;
     private string? signalRConnectionId;
+
+    /// <summary>A voice call's cards stay unsigned, like its answers (See SignCard).</summary>
+    private bool isVoiceCall;
+
     private List<ChatMessage> chatMessages = [];
+
+    /// <summary>Guards <see cref="chatMessages"/>: a tool of a turn being cancelled can still be adding a card to it (See RememberCard).</summary>
+    private readonly Lock historyLock = new();
 
     /// <summary>
     /// This is a heart of streaming AI responses back to the client.
@@ -58,13 +65,7 @@ public partial class AppChatbot
     {
         chatMessages = [];
 
-        var history = request.ChatMessagesHistory
-            .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
-            .Where(WrittenByThisAssistantOrByTheUser)
-            .TakeLast(MaxMessagesInHistory)
-            .ToArray();
-
-        foreach (var message in history)
+        foreach (var message in BelievableHistory(request.ChatMessagesHistory))
         {
             chatMessages.Add(await ToChatMessage(message, cancellationToken));
         }
@@ -81,20 +82,50 @@ public partial class AppChatbot
         // For example, the user's culture won't change unless they restart the app.
         variablesDefault = @$"
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
-{{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
-{{{{UserTimeZoneId}}}}: ""{request.TimeZoneId ?? "Unknown"}""
+{{{{DeviceInfo}}}}: ""{SystemPromptProvider.SanitizeVariable(request.DeviceInfo) ?? "Generic Device"}""
+{{{{UserTimeZoneId}}}}: ""{SystemPromptProvider.KnownTimeZoneId(request.TimeZoneId) ?? "Unknown"}""
 ";
 
         this.signalRConnectionId = signalRConnectionId;
     }
 
-    /// <summary>
-    /// A resent assistant turn is believed only when it carries the signature this app wrote it with - anything else,
-    /// the panel's own local greeting included, is the caller putting words in the assistant's mouth.
-    /// </summary>
-    private bool WrittenByThisAssistantOrByTheUser(AiChatMessage message)
+    /// <summary>For voice calls, which don't go through <see cref="StartChat"/> (See VoiceCallRunner).</summary>
+    public void UseSignalRConnection(string? signalRConnectionId)
     {
-        return message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature);
+        this.signalRConnectionId = signalRConnectionId;
+        isVoiceCall = true;
+    }
+
+    /// <summary>
+    /// What of a resent history the model is shown: finished, non-empty messages, newest <see cref="MaxMessagesInHistory"/>
+    /// only, each as said by whoever provably said it (See <see cref="AsProvablySaid"/>). Voice calls take the same
+    /// (See VoiceCallRunner).
+    /// </summary>
+    public AiChatMessage[] BelievableHistory(IEnumerable<AiChatMessage> history)
+    {
+        return [.. history.Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+                          .TakeLast(MaxMessagesInHistory)
+                          .Select(AsProvablySaid)];
+    }
+
+    /// <summary>
+    /// A resent assistant turn is the assistant's only with the signature this app wrote it with. Anything else - a
+    /// spoken answer from a voice call, or words the caller made up - is replayed as the user's: no more than the user
+    /// could type anyway, and never the assistant's own rules, prices or promises.
+    /// </summary>
+    private AiChatMessage AsProvablySaid(AiChatMessage message)
+    {
+        if (message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature))
+            return message;
+
+        return new()
+        {
+            Role = AiChatMessageRole.User,
+            Content = message.Content,
+            SentAt = message.SentAt,
+            AttachmentId = message.AttachmentId,
+            Successful = message.Successful
+        };
     }
 
     /// <summary>
@@ -124,9 +155,18 @@ public partial class AppChatbot
 
             // ChatRole.User rather than the role on the payload: whatever it claims, everything arriving on this
             // stream is the user speaking.
-            chatMessages.Add(await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken));
+            var userMessage = await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken);
 
-            TrimChatHistory();
+            ChatMessage[] conversation;
+
+            lock (historyLock)
+            {
+                chatMessages.Add(userMessage);
+
+                TrimChatHistory();
+
+                conversation = [.. chatMessages];
+            }
 
             var chatOptions = CreateChatOptions();
 
@@ -139,15 +179,19 @@ public partial class AppChatbot
 ### Variables:
 {variablesDefault}
 {{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
-{{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}"",
-{{{{WebAppUrl}}}}: ""{(httpContextAccessor.HttpContext!.Request.GetWebAppUrl())}"",
+{{{{WebAppUrl}}}}: ""{Features.Chatbot.SystemPromptProvider.EscapeVariable(httpContextAccessor.HttpContext!.Request.GetWebAppUrl().ToString())}"",
 ";
 
             await foreach (var response in supportAgent.RunStreamingAsync([
                 new (ChatRole.System, variablesPrompt),
-                .. chatMessages,
+                .. conversation,
                 ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
+                foreach (var usage in response.Contents.OfType<UsageContent>())
+                {
+                    Features.Chatbot.ChatbotMetrics.RecordChatUsage(usage.Details, supportAgent.Name, appSettings.AI?.OpenAI?.ChatModel);
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                 {
                     await CloseTurn(reply, opened, successful: false);
@@ -174,7 +218,10 @@ public partial class AppChatbot
 
             if (AnswerOf(reply) is { Length: > 0 } answer)
             {
-                chatMessages.Add(new(ChatRole.Assistant, answer));
+                lock (historyLock)
+                {
+                    chatMessages.Add(new(ChatRole.Assistant, answer));
+                }
             }
 
             await CloseTurn(reply, opened, successful: true);
@@ -228,8 +275,8 @@ public partial class AppChatbot
         => reply.IsDocument ? reply.Append(null)?.Answer : reply.Json;
 
     /// <summary>
-    /// A message of the resent history, as the role it claims. Only messages that got past
-    /// <see cref="WrittenByThisAssistantOrByTheUser"/> reach here, so an assistant turn is one this app signed.
+    /// A message of the resent history, as the role it claims. Only messages that went through
+    /// <see cref="AsProvablySaid"/> reach here, so an assistant turn is one this app signed.
     /// </summary>
     private Task<ChatMessage> ToChatMessage(AiChatMessage message, CancellationToken cancellationToken)
         => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
@@ -342,7 +389,8 @@ public partial class AppChatbot
         var aiFunctions = new List<AIFunction>
         {
             AIFunctionFactory.Create(GetCurrentDateTime),
-            AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
+            AIFunctionFactory.Create(RequestHumanFollowUp),
+            AIFunctionFactory.Create(ShowFollowUpSuggestions),
             AIFunctionFactory.Create(GetAppPages),
             AIFunctionFactory.Create(NavigateToPage),
             AIFunctionFactory.Create(ShowSignInModal),
@@ -352,7 +400,8 @@ public partial class AppChatbot
             AIFunctionFactory.Create(ClearAppFiles),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
-            AIFunctionFactory.Create(GetProductRecommendations)
+            AIFunctionFactory.Create(GetProductRecommendations),
+            AIFunctionFactory.Create(ShowProducts)
             //#endif
             //#endif
         };
@@ -361,9 +410,9 @@ public partial class AppChatbot
     }
 
     /// <summary>
-    /// Makes the model write one json document (See <see cref="AssistantReply"/>) instead of prose, so the answer and
-    /// its follow-up suggestions arrive together rather than in two round trips. A provider that doesn't enforce the
-    /// schema streams whatever it likes, and both ends read that as the answer itself - minus the suggestions.
+    /// Makes the model write one json document (See <see cref="AssistantReply"/>) instead of prose, which the turn's own
+    /// document carries (See <see cref="AssistantTurn"/>). A provider that doesn't enforce the schema streams whatever it
+    /// likes, and both ends read that as the answer itself.
     /// </summary>
     private static readonly ChatResponseFormat AnswerFormat = ChatResponseFormat.ForJsonSchema(
         AIJsonUtilities.CreateJsonSchema(typeof(AssistantReply), serializerOptions: AppJsonContext.Default.Options, inferenceOptions: new()
@@ -372,7 +421,7 @@ public partial class AppChatbot
             TransformOptions = new() { DisallowAdditionalProperties = true, RequireAllProperties = true }
         }),
         schemaName: "assistant_answer",
-        schemaDescription: "The assistant's reply to the user, and what the user might want to ask next.");
+        schemaDescription: "The assistant's reply to the user.");
 
     /// <summary>
     /// Create chat options with AI tools

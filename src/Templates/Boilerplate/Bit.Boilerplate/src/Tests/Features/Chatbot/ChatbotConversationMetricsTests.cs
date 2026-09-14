@@ -7,7 +7,7 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// <c>appHub.ongoing_conversations_count</c> is an up-down counter: <c>AppHub.StartChat</c> adds one once a chat is
+/// <c>chatbot.active_conversations</c> is an up-down counter: <c>AppHub.StartChat</c> adds one once a chat is
 /// open and takes it back in the <c>finally</c> of the stream. A path that ends a chat without reaching that
 /// <c>finally</c> would leave the dashboard counting conversations that are long gone, and nothing else would notice.
 /// <para>
@@ -18,7 +18,7 @@ namespace Boilerplate.Tests.Features.Chatbot;
 [TestClass, TestCategory("IntegrationTest"), DoNotParallelize]
 public partial class ChatbotConversationMetricsTests
 {
-    private const string instrumentName = "appHub.ongoing_conversations_count";
+    private const string instrumentName = "chatbot.active_conversations";
 
     public TestContext TestContext { get; set; } = default!;
 

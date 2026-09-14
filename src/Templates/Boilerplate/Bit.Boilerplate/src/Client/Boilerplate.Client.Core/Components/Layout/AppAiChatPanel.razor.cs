@@ -2,12 +2,13 @@
 using System.Threading.Channels;
 using Boilerplate.Shared.Features.Chatbot;
 using Microsoft.AspNetCore.Components.Web;
+using Boilerplate.Client.Core.Components.Layout.AppAiChatPanelCards;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
 // Speech in, speech out and the image a message can carry live in AppAiChatPanel.razor.Dictation.cs,
 // AppAiChatPanel.razor.ReadAloud.cs and AppAiChatPanel.razor.Attachment.cs. What is left here is the conversation itself.
-public partial class AppAiChatPanel
+public partial class AppAiChatPanel : IAiChatCardHost
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
 
@@ -59,14 +60,88 @@ public partial class AppAiChatPanel
 
     /// <summary>
     /// The line the panel opens on - the one assistant message the assistant did not write, so it carries no
-    /// signature: read aloud is not offered on it and the server drops it from a resent history.
+    /// signature: read aloud is not offered on it, and it is never resent (See <see cref="ResentHistory"/>).
     /// </summary>
     private AiChatMessage? greetingMessage;
-    private List<AiChatMessage> chatMessages = [];
+
+    /// <summary>
+    /// The newest messages, as many as the server keeps. Without the greeting: the server would replay an unsigned
+    /// answer as the user's words. A card goes as its RawMarkdown and signature.
+    /// </summary>
+    private List<AiChatMessage> ResentHistory()
+        => [.. chatMessages.Select(item => item is AiChatCard card
+                                               ? new AiChatMessage { Role = AiChatMessageRole.Assistant, Content = card.RawMarkdown, Signature = card.Signature }
+                                               : item as AiChatMessage)
+                           .OfType<AiChatMessage>()
+                           .Where(message => ReferenceEquals(message, greetingMessage) is false)
+                           .TakeLast(StartChatRequest.MaxChatMessagesHistory)];
+
+    /// <summary>The conversation as rendered, stored and resent: messages and cards.</summary>
+    private List<AiChatItem> chatMessages = [];
+
+    /// <summary>The server's card and suggestion handlers.</summary>
+    private IDisposable? showCardSubscription;
+    private IDisposable? awaitCardSubscription;
+    private IDisposable? showSuggestionsSubscription;
     private List<string> followUpSuggestions = [];
+
+    /// <summary>Cards the server waits on for the user's answer.</summary>
+    private readonly Dictionary<AiChatCard, TaskCompletionSource<string>> awaitedCards = [];
 
     /// <summary>More than this pushes the message box off the screen on a phone.</summary>
     private const int MaxFollowUpSuggestions = 3;
+
+    /// <summary>Dictation and a voice call never run together, so each hides the other's button.</summary>
+    private bool ShowDictateButton => isDictationSupported && isInVoiceCall is false && isVoiceCallConnecting is false;
+
+    private bool ShowVoiceCallButton => isVoiceCallSupported && isListening is false && isTranscribing is false;
+
+    /// <summary>Room at the end of the message box for the buttons floating over it, and the speech timer while it shows.</summary>
+    private string MessageBoxEndPadding
+        => $"{(2.5 + (ShowDictateButton ? 2.5 : 0) + (ShowVoiceCallButton ? 2.5 : 0) + (isListening || isInVoiceCall ? 4.5 : 0)).ToString(CultureInfo.InvariantCulture)}rem";
+
+    /// <summary>How much of its max duration the dictation take or voice call has used; never both at once.</summary>
+    private double speechPercent;
+    private TimeSpan speechTimeLeft;
+
+    /// <summary>Primary, then warning for the last 30% and error for the last 10%.</summary>
+    private BitColor SpeechTimerColor => speechPercent >= 90 ? BitColor.Error : speechPercent >= 70 ? BitColor.Warning : BitColor.Primary;
+
+    /// <summary>Counts <paramref name="maxDuration"/> down on the speech timer; true once it runs out, false if cancelled first.</summary>
+    private async Task<bool> CountDownSpeech(TimeSpan maxDuration, CancellationToken cancellationToken)
+    {
+        var startedAt = TimeProvider.GetUtcNow();
+        speechTimeLeft = maxDuration;
+        speechPercent = 0;
+
+        try
+        {
+            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(500), TimeProvider);
+
+            do
+            {
+                var elapsed = TimeProvider.GetUtcNow() - startedAt;
+
+                if (elapsed >= maxDuration) return true;
+
+                await InvokeAsync(() =>
+                {
+                    // Already reset by whoever cancelled.
+                    if (cancellationToken.IsCancellationRequested) return;
+
+                    speechTimeLeft = maxDuration - elapsed;
+                    speechPercent = elapsed / maxDuration * 100;
+                    StateHasChanged();
+                });
+            }
+            while (await timer.WaitForNextTickAsync(cancellationToken));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+
+        return false;
+    }
 
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
@@ -115,6 +190,8 @@ public partial class AppAiChatPanel
         });
         //#endif
 
+        NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+
         return base.OnInitAsync();
     }
 
@@ -127,8 +204,12 @@ public partial class AppAiChatPanel
         // Both are asked about because they are separate globals that go missing separately: only
         // navigator.mediaDevices needs a secure context, so over plain http MediaRecorder is there and it is not.
         isDictationSupported = await mediaRecorder.IsSupported() && await mediaDevices.IsSupported();
+        isVoiceCallSupported = await webRtc.IsSupported() && await mediaDevices.IsSupported();
         StateHasChanged();
         hubConnection.Reconnected += HubConnection_Reconnected;
+        showCardSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_CARD, (AiChatCard card) => ShowCard(card));
+        awaitCardSubscription = hubConnection.On(SharedAppMessages.AWAIT_AI_CHAT_CARD, (AiChatCard card) => AwaitCard(card));
+        showSuggestionsSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS, (string[] suggestions) => ShowSuggestions(suggestions));
 
         await RestoreHistory();
 
@@ -153,6 +234,136 @@ public partial class AppAiChatPanel
 
         return Task.CompletedTask;
     }
+
+    /// <summary>A page opened from the chat would be hidden behind a panel that covers the screen, so that panel closes.</summary>
+    private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (isOpen is false || (isSmallScreen is false && isMaximized is false)) return;
+
+        _ = InvokeAsync(() =>
+        {
+            isOpen = false;
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>Appends a card the server sent, and stores it; false tells the server it named no card this panel has.</summary>
+    private async Task<bool> ShowCard(AiChatCard card)
+    {
+        if (ResolveCardComponent(card.ComponentType) is null)
+        {
+            logger.LogWarning("The server asked for an unknown AI chat card {ComponentType}.", card.ComponentType);
+            return false;
+        }
+
+        await InvokeAsync(async () =>
+        {
+            AddCard(card);
+            await RememberMessage(card);
+        });
+
+        return true;
+    }
+
+    /// <summary>Shows a card and answers with the user's decision on it (See <see cref="AiChatCardDecision"/>).</summary>
+    private async Task<string> AwaitCard(AiChatCard card)
+    {
+        if (ResolveCardComponent(card.ComponentType) is null)
+        {
+            logger.LogWarning("The server asked for an unknown AI chat card {ComponentType}.", card.ComponentType);
+            return AiChatCardDecision.NoAnswer;
+        }
+
+        TaskCompletionSource<string> decision = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await InvokeAsync(() =>
+        {
+            awaitedCards[card] = decision;
+            AddCard(card);
+        });
+
+        return await decision.Task;
+    }
+
+    /// <summary>Goes above an answer that hasn't started streaming, so that answer arrives under its card.</summary>
+    private void AddCard(AiChatCard card)
+    {
+        var pendingAnswer = unansweredMessages.Count > 0 && string.IsNullOrEmpty(lastAssistantMessage?.Content)
+            ? chatMessages.IndexOf(lastAssistantMessage!)
+            : -1;
+
+        if (pendingAnswer >= 0)
+        {
+            chatMessages.Insert(pendingAnswer, card);
+        }
+        else
+        {
+            chatMessages.Add(card);
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>Answers a card the server waits on, once, and stores it with that answer.</summary>
+    private async Task ResolveCard(AiChatCard card, string decision)
+    {
+        if (awaitedCards.Remove(card, out var waiting) is false) return;
+
+        card.Data["Decision"] = decision;
+
+        waiting.TrySetResult(decision);
+
+        StateHasChanged();
+
+        await RememberMessage(card);
+    }
+
+    /// <summary>Ends the waits the server gave up on: after a new message, a clear or a hang-up.</summary>
+    private async Task ExpireAwaitedCards()
+    {
+        foreach (var card in awaitedCards.Keys.ToArray())
+        {
+            await ResolveCard(card, AiChatCardDecision.NoAnswer);
+        }
+    }
+
+    /// <summary>The server's <see cref="SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS"/> handler.</summary>
+    private Task ShowSuggestions(string[] suggestions) => InvokeAsync(() =>
+    {
+        followUpSuggestions = [.. suggestions.Where(suggestion => string.IsNullOrWhiteSpace(suggestion) is false)
+                                             .Select(suggestion => suggestion.Trim())
+                                             .Take(MaxFollowUpSuggestions)];
+        StateHasChanged();
+    });
+
+    bool IAiChatCardHost.IsInVoiceCall => isInVoiceCall;
+
+    bool IAiChatCardHost.IsAwaited(AiChatCard card) => awaitedCards.ContainsKey(card);
+
+    Task IAiChatCardHost.SendPrompt(string prompt) => SendPromptMessage(prompt);
+
+    Task IAiChatCardHost.Resolve(AiChatCard card, string decision) => ResolveCard(card, decision);
+
+    Task IAiChatCardHost.Save(AiChatCard card) => RememberMessage(card);
+
+    /// <summary>
+    /// The component a card names, or null. Only this assembly's <see cref="AiChatCardBase"/>s qualify, so a payload
+    /// cannot render just any component.
+    /// </summary>
+    private static Type? ResolveCardComponent(string? componentType)
+    {
+        if (string.IsNullOrWhiteSpace(componentType)) return null;
+
+        var type = typeof(AppAiChatPanel).Assembly.GetType(componentType, throwOnError: false);
+
+        return type is { IsAbstract: false } && type.IsAssignableTo(typeof(AiChatCardBase)) ? type : null;
+    }
+
+    private Dictionary<string, object> CardParameters(AiChatCard card) => new()
+    {
+        [nameof(AiChatCardBase.Message)] = card,
+        [nameof(AiChatCardBase.Host)] = this
+    };
 
     private async Task SendPromptMessage(string prompt)
     {
@@ -188,6 +399,12 @@ public partial class AppAiChatPanel
 
             if (string.IsNullOrWhiteSpace(userInput) && pendingAttachment is null) return;
 
+            if (isInVoiceCall)
+            {
+                await SendVoiceCallMessage();
+                return;
+            }
+
             // The image goes up first: the message carries the path it was stored under, and there is none until the
             // upload answers with one. A failure sends nothing and leaves both in place, so send again is a retry.
             if (await UploadPendingAttachment() is false) return;
@@ -198,6 +415,9 @@ public partial class AppAiChatPanel
             }
 
             isLoading = true;
+
+            // Sending cancels the turn that waits on a card (See AppHub.StartChat).
+            await ExpireAwaitedCards();
 
             followUpSuggestions = [];
 
@@ -290,6 +510,8 @@ public partial class AppAiChatPanel
         // The answer read aloud was following is one of the messages being thrown away.
         await StopReadAloud();
 
+        await ExpireAwaitedCards();
+
         SetDefaultValues();
 
         await ForgetHistory(); // Clear means gone, not gone from the screen.
@@ -303,6 +525,7 @@ public partial class AppAiChatPanel
         followUpSuggestions = [];
         turnReader = null;
         unansweredMessages.Clear();
+        voiceCallMessages.Clear();
         lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
         greetingMessage = new()
         {
@@ -313,13 +536,12 @@ public partial class AppAiChatPanel
         chatMessages = [greetingMessage];
     }
 
+    /// <summary>Stops only dictation and read aloud: a voice call and a streaming answer go on with the panel closed.</summary>
     private async Task HandleOnDismissPanel()
     {
         await StopDictation();
 
         await StopReadAloud();
-
-        StopChannel();
     }
 
 
@@ -383,7 +605,7 @@ public partial class AppAiChatPanel
                                                                                  CultureId = CultureInfo.CurrentCulture.LCID,
                                                                                  TimeZoneId = timeZoneId,
                                                                                  DeviceInfo = TelemetryContext.Platform,
-                                                                                 ChatMessagesHistory = chatMessages
+                                                                                 ChatMessagesHistory = ResentHistory()
                                                                              },
                                                                              ownChannel.Reader.ReadAllAsync(ownCancellationToken),
                                                                              cancellationToken: ownCancellationToken))
@@ -463,14 +685,8 @@ public partial class AppAiChatPanel
         // Written once the turn is over rather than as it streams: an answer only settles when its document closes.
         await RememberMessage(answer);
 
-        // Part of the turn's own document, so only the newest answer's are offered.
         if (unansweredMessages.Count is 0)
         {
-            followUpSuggestions = [.. (turn.Reply?.FollowUpSuggestions ?? [])
-                .Where(suggestion => string.IsNullOrWhiteSpace(suggestion) is false)
-                .Select(suggestion => suggestion.Trim())
-                .Take(MaxFollowUpSuggestions)];
-
             isLoading = false;
         }
 
@@ -520,7 +736,21 @@ public partial class AppAiChatPanel
         unsubAdHaveTrouble();
         //#endif
 
+        NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
         hubConnection.Reconnected -= HubConnection_Reconnected;
+        showCardSubscription?.Dispose();
+        awaitCardSubscription?.Dispose();
+        showSuggestionsSubscription?.Dispose();
+
+        // Nobody is left to answer them.
+        foreach (var waiting in awaitedCards.Values)
+        {
+            waiting.TrySetResult(AiChatCardDecision.NoAnswer);
+        }
+
+        awaitedCards.Clear();
+
+        await EndVoiceCall();
 
         await StopDictation();
 

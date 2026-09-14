@@ -40,6 +40,9 @@ public partial class AppAiChatPanel
     /// </summary>
     private string? historyOwner;
 
+    /// <summary>Where each card is stored, so one that changes is rewritten in place (See IAiChatCardHost.Save).</summary>
+    private readonly Dictionary<AiChatCard, long> storedCardKeys = [];
+
     /// <summary>
     /// Who is at the device now; signed out counts as an owner. Read from the authentication state rather than the
     /// cascading CurrentUser, which is null until MainLayout has fetched the profile over http - taking that at face
@@ -92,9 +95,17 @@ public partial class AppAiChatPanel
                                                          take: MaxStoredMessages);
 
             // The reverse cursor hands back the newest first; the greeting the panel just wrote stays above them.
-            chatMessages.AddRange(stored.Reverse()
-                                        .Select(record => JsonSerializer.Deserialize(record.Value, JsonSerializerOptions.GetTypeInfo<AiChatMessage>()))
-                                        .OfType<AiChatMessage>());
+            foreach (var record in stored.Reverse())
+            {
+                if (ReadStoredItem(record.Value!) is not { } item) continue;
+
+                if (item is AiChatCard card && record.Key.TryGetInt64(out var key))
+                {
+                    storedCardKeys[card] = key;
+                }
+
+                chatMessages.Add(item);
+            }
         });
 
         isRestoringHistory = false;
@@ -128,19 +139,44 @@ public partial class AppAiChatPanel
         await ClearChat(); // Forgets the stored one too, under the current owner's name.
     });
 
-    /// <summary>Appends one settled message. Nothing on screen waits for it.</summary>
-    private Task RememberMessage(AiChatMessage message) => TryHistory("add to", async () =>
+    /// <summary>Appends one settled message or card, or rewrites a card stored before. Nothing on screen waits for it.</summary>
+    private Task RememberMessage(AiChatItem item) => TryHistory("add to", async () =>
     {
         if (historyDb is null) return;
 
-        var key = await historyDb.Put(MessagesStore, JsonSerializer.Serialize(message, JsonSerializerOptions.GetTypeInfo<AiChatMessage>()));
+        var card = item as AiChatCard;
+
+        var json = card is not null
+            ? JsonSerializer.Serialize(card, JsonSerializerOptions.GetTypeInfo<AiChatCard>())
+            : JsonSerializer.Serialize((AiChatMessage)item, JsonSerializerOptions.GetTypeInfo<AiChatMessage>());
+
+        if (card is not null && storedCardKeys.TryGetValue(card, out var storedKey))
+        {
+            await historyDb.Put(MessagesStore, json, storedKey);
+            return;
+        }
+
+        var key = await historyDb.Put(MessagesStore, json);
+
+        if (key.TryGetInt64(out var newest) is false) return;
+
+        if (card is not null)
+        {
+            storedCardKeys[card] = newest;
+        }
 
         // Keys only count up, so anything this far below the newest is past what a restore would read.
-        if (key.TryGetInt64(out var newest) && newest > MaxStoredMessages)
+        if (newest > MaxStoredMessages)
         {
             await historyDb.Delete(MessagesStore, IndexedDbKeyRange.UpperBound(newest - MaxStoredMessages));
         }
     });
+
+    /// <summary>A stored card is told from a message by the component it names.</summary>
+    private AiChatItem? ReadStoredItem(string json)
+        => JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<AiChatCard>()) is { ComponentType: not null } card
+            ? card
+            : JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<AiChatMessage>());
 
     /// <summary>Throws the stored conversation away, leaving it owned by whoever is at the device now.</summary>
     private Task ForgetHistory() => TryHistory("forget", async () =>
@@ -148,6 +184,8 @@ public partial class AppAiChatPanel
         if (historyDb is null) return;
 
         historyOwner = await CurrentHistoryOwner();
+
+        storedCardKeys.Clear();
 
         // One batch, so the records can never outlive the name they were stored under.
         await historyDb.Transact([IndexedDbOperation.Clear(MessagesStore),

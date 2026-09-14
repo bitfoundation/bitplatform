@@ -111,8 +111,8 @@ public partial class WebAiChatbotDictationTests : AppTestBase
 
         await panel.DictateButton.ClickAsync();
 
-        // The wave beside the button is the panel saying the microphone is open; without it the recording never began.
-        await Expect(page.Locator(".dictate-wave")).ToBeVisibleAsync();
+        // The timer beside the button is the panel saying the microphone is open; without it the recording never began.
+        await Expect(page.Locator(".speech-timer")).ToBeVisibleAsync();
 
         await page.WaitForTimeoutAsync((float)SpeakingTime.TotalMilliseconds);
 

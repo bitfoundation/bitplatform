@@ -57,8 +57,8 @@ public class AiChatMessageWireContractTests
     }
 
     /// <summary>
-    /// <c>Signature</c> crosses the same wire with the stakes reversed: the server drops every assistant turn it cannot
-    /// verify, so a signature serialized away costs the model its answers on every reconnect.
+    /// <c>Signature</c> crosses the same wire with the stakes reversed: the server replays every assistant turn it cannot
+    /// verify as the user's, so a signature serialized away costs the model its own answers on every reconnect.
     /// </summary>
     [TestMethod]
     public void ASignedAnswer_Should_ReachTheServerWithItsSignature()
@@ -83,7 +83,7 @@ public class AiChatMessageWireContractTests
             var received = JsonSerializer.Deserialize<StartChatRequest>(json, HubPayloadOptions)!;
 
             Assert.AreEqual(signature, received.ChatMessagesHistory[1].Signature,
-                $"{name} does not put AiChatMessage.Signature on the wire, so the server cannot tell its own answers from made up ones and drops every one of them. Payload: {json}");
+                $"{name} does not put AiChatMessage.Signature on the wire, so the server cannot tell its own answers from made up ones and replays every one of them as the user's. Payload: {json}");
         }
     }
 
@@ -108,5 +108,32 @@ public class AiChatMessageWireContractTests
 
         Assert.IsTrue(received.ChatMessagesHistory.All(message => message.Successful),
             "A turn that does not carry the flag must be treated as a completed one, otherwise a client that does not send it loses its whole conversation on reconnect.");
+    }
+
+    /// <summary>A card is stored on the device and resent as an answer, so both serializers must keep its markdown, signature and decision.</summary>
+    [TestMethod]
+    public void ACard_Should_CrossTheWireWithWhatItShowedItsSignatureAndItsAnswer()
+    {
+        var card = new AiChatCard
+        {
+            ComponentType = AiChatCardComponents.HumanApproval,
+            Data = { ["Action"] = "ClearAppFiles", ["Decision"] = AiChatCardDecision.Declined },
+            RawMarkdown = "Asked the user to approve clearing the app's files on this device.",
+            Signature = "CfDJ8-a-signature-the-server-wrote"
+        };
+
+        foreach (var (name, json) in new[]
+        {
+            ("Hub payload options", JsonSerializer.Serialize(card, HubPayloadOptions)),
+            (nameof(AppJsonContext), JsonSerializer.Serialize(card, AppJsonContext.Default.AiChatCard))
+        })
+        {
+            var received = JsonSerializer.Deserialize(json, AppJsonContext.Default.AiChatCard)!;
+
+            Assert.AreEqual(card.ComponentType, received.ComponentType, $"{name} lost which card it is. Payload: {json}");
+            Assert.AreEqual(card.RawMarkdown, received.RawMarkdown, $"{name} lost what the card showed, so it is resent as nothing. Payload: {json}");
+            Assert.AreEqual(card.Signature, received.Signature, $"{name} lost the signature, so the card is resent as the user's words. Payload: {json}");
+            Assert.AreEqual(AiChatCardDecision.Declined, received.Data["Decision"], $"{name} lost the user's answer. Payload: {json}");
+        }
     }
 }

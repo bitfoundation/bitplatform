@@ -1,0 +1,65 @@
+@inherits AiChatCardBase
+
+@{
+    var text = Text;
+}
+
+@* A plain root element, so the scoped ::deep styles apply. *@
+<div class="approval-card">
+    @if (IsWaiting)
+    {
+        <BitCard FullWidth Class="approval" role="group" aria-labelledby="@headingId">
+            <BitStack Gap="0.875rem">
+                <BitStack Horizontal Gap="0.75rem" VerticalAlign="BitAlignment.Start">
+                    <BitStack FitSize NoShrink Alignment="BitAlignment.Center" Class="approval-icon">
+                        <BitIcon IconName="@BitIconName.ShieldAlert" />
+                    </BitStack>
+
+                    <BitStack Gap="0.25rem" Grows Shrinkable>
+                        <BitText Id="@headingId" Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold">@text.Title</BitText>
+                        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@text.Description</BitText>
+                    </BitStack>
+                </BitStack>
+
+                @if (text.Consequences.Length > 0)
+                {
+                    <BitStack Element="ul" Gap="0.5rem" Class="approval-consequences" AriaLabel="@Localizer["What happens"]">
+                        @foreach (var consequence in text.Consequences)
+                        {
+                            <BitStack Element="li" Horizontal Gap="0.625rem" VerticalAlign="BitAlignment.Center">
+                                <BitIcon IconName="@consequence.IconName" Class="approval-consequence-icon" />
+                                <BitText Typography="BitTypography.Body2">@consequence.Text</BitText>
+                            </BitStack>
+                        }
+                    </BitStack>
+                }
+
+                <BitStack Horizontal Wrap Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                    <BitStack Horizontal FitWidth Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                        <span class="approval-waiting-dot"></span>
+                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@Localizer["Waiting for your answer"]</BitText>
+                    </BitStack>
+
+                    <BitSpacer />
+
+                    <BitButton Variant="BitVariant.Text" OnClick="WrapHandled(Decline)">@text.Decline</BitButton>
+                    <BitButton Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="WrapHandled(Approve)">@text.Approve</BitButton>
+                </BitStack>
+            </BitStack>
+        </BitCard>
+    }
+    else
+    {
+        <BitStack Horizontal FitHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center" Class="@($"approval-outcome {OutcomeClass}")" role="status">
+            @if (IsApproved)
+            {
+                <BitEllipsisLoading Size="BitSize.Small" />
+            }
+            else
+            {
+                <BitIcon IconName="@OutcomeIcon" />
+            }
+            <BitText Typography="BitTypography.Body2">@OutcomeText(text)</BitText>
+        </BitStack>
+    }
+</div>

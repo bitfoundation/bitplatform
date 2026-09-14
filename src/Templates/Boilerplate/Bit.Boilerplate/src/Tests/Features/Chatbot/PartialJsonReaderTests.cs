@@ -5,12 +5,13 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// <summary>
 /// <see cref="PartialJsonReader{T}"/> is what shows an answer while the model is still writing it, by reading the
 /// <c>answer</c> property out of every prefix of the document (See <c>AppAiChatPanel.RunChannel</c>). No parser
-/// accepts a prefix - an unclosed string, a trailing backslash, an open array - so those are what is asserted here.
+/// accepts a prefix - an unclosed string, a trailing backslash, an open array - so those are what is asserted here. The
+/// reply read has an array after its answer, which the reader still has to get through.
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public class PartialJsonReaderTests
 {
-    private static PartialJsonReader<AssistantReply> Reader() => new(AppJsonContext.Default.Options.GetTypeInfo<AssistantReply>());
+    private static PartialJsonReader<ReplyWithNotes> Reader() => new(PartialJsonReaderTestsJsonContext.Default.ReplyWithNotes);
 
     /// <summary>The whole point: every prefix reads as an answer, and what it says only ever grows.</summary>
     [TestMethod]
@@ -18,11 +19,11 @@ public class PartialJsonReaderTests
     {
         const string answer = "**Amsterdam** to Berlin is not something I help with.\nI can help with \"this app\" \\ its cars ☕.";
 
-        var document = JsonSerializer.Serialize(new AssistantReply
+        var document = JsonSerializer.Serialize(new ReplyWithNotes
         {
             Answer = answer,
-            FollowUpSuggestions = ["What cars do you sell?", "How do I install the app?", "Show me SUVs"]
-        }, AppJsonContext.Default.AssistantReply);
+            Notes = ["What cars do you sell?", "How do I install the app?", "Show me SUVs"]
+        }, PartialJsonReaderTestsJsonContext.Default.ReplyWithNotes);
 
         var reader = Reader();
         var longestSoFar = string.Empty;
@@ -45,9 +46,9 @@ public class PartialJsonReaderTests
 
         Assert.IsNotNull(completed);
         Assert.AreEqual(answer, completed.Answer);
-        Assert.IsNotNull(completed.FollowUpSuggestions);
-        Assert.HasCount(3, completed.FollowUpSuggestions);
-        Assert.AreEqual("Show me SUVs", completed.FollowUpSuggestions[^1]);
+        Assert.IsNotNull(completed.Notes);
+        Assert.HasCount(3, completed.Notes);
+        Assert.AreEqual("Show me SUVs", completed.Notes[^1]);
     }
 
     /// <summary>
@@ -60,9 +61,9 @@ public class PartialJsonReaderTests
     [DataRow("""{"answer":"Ready \u26""", "Ready ", DisplayName = "Half of a unicode escape")]
     [DataRow("""{"answer":"Ready ☕""", "Ready ☕", DisplayName = "A character that was not escaped")]
     [DataRow("""{"answer":"Quote \" inside""", "Quote \" inside", DisplayName = "An escaped quote inside the string")]
-    [DataRow("""{"answer":"Done","followUpSuggestions":["Fir""", "Done", DisplayName = "An open array after the answer")]
-    [DataRow("""{"answer":"Done","followUpSuggestions":["First",""", "Done", DisplayName = "A comma waiting on the next suggestion")]
-    [DataRow("""{"answer":"Done","fol""", "Done", DisplayName = "A property name being written")]
+    [DataRow("""{"answer":"Done","notes":["Fir""", "Done", DisplayName = "An open array after the answer")]
+    [DataRow("""{"answer":"Done","notes":["First",""", "Done", DisplayName = "A comma waiting on the next item")]
+    [DataRow("""{"answer":"Done","not""", "Done", DisplayName = "A property name being written")]
     public void APrefix_Should_ReadAsTheAnswerItAlreadyContains(string prefix, string expected)
     {
         var partial = Reader().Append(prefix);
@@ -92,7 +93,7 @@ public class PartialJsonReaderTests
 
         // '{"answer":"Hi","' finishes as neither a property name nor a value, and neither does what follows it until
         // the array opens.
-        foreach (var chunk in new[] { """{"answer":"Hi""", "\",\"", "followUpSuggestions\":[" })
+        foreach (var chunk in new[] { """{"answer":"Hi""", "\",\"", "notes\":[" })
         {
             var partial = reader.Append(chunk);
 
@@ -101,16 +102,16 @@ public class PartialJsonReaderTests
         }
     }
 
-    /// <summary>Each suggestion is readable the moment it is whole, not only when the array closes.</summary>
+    /// <summary>Each item is readable the moment it is whole, not only when the array closes.</summary>
     [TestMethod]
-    public void SuggestionsThatAreWhole_Should_BeReadBeforeTheRestArrive()
+    public void ItemsThatAreWhole_Should_BeReadBeforeTheRestArrive()
     {
-        var partial = Reader().Append("""{"answer":"Done","followUpSuggestions":["First","Second","Thi""");
+        var partial = Reader().Append("""{"answer":"Done","notes":["First","Second","Thi""");
 
-        Assert.IsNotNull(partial?.FollowUpSuggestions);
-        Assert.HasCount(3, partial.FollowUpSuggestions);
-        Assert.AreEqual("First", partial.FollowUpSuggestions[0]);
-        Assert.AreEqual("Thi", partial.FollowUpSuggestions[2]);
+        Assert.IsNotNull(partial?.Notes);
+        Assert.HasCount(3, partial.Notes);
+        Assert.AreEqual("First", partial.Notes[0]);
+        Assert.AreEqual("Thi", partial.Notes[2]);
     }
 
     /// <summary>
@@ -123,9 +124,9 @@ public class PartialJsonReaderTests
     [DataRow("""{"answer":"Hel""", DisplayName = "An unclosed string")]
     [DataRow("""{"answer":"Line one\""", DisplayName = "A backslash with nothing after it")]
     [DataRow("""{"answer":"Ready \u26""", DisplayName = "Half of a unicode escape")]
-    [DataRow("""{"answer":"Done","fol""", DisplayName = "A property name being written")]
-    [DataRow("""{"answer":"Done","followUpSuggestions":["Fir""", DisplayName = "An open array")]
-    [DataRow("""{"answer":"Done","followUpSuggestions":["First",""", DisplayName = "A comma waiting on the next suggestion")]
+    [DataRow("""{"answer":"Done","not""", DisplayName = "A property name being written")]
+    [DataRow("""{"answer":"Done","notes":["Fir""", DisplayName = "An open array")]
+    [DataRow("""{"answer":"Done","notes":["First",""", DisplayName = "A comma waiting on the next item")]
     public void ACutOffDocument_Should_BeFinishedByAppendingItsCompletion(string cutOff)
     {
         var reader = Reader();
@@ -163,7 +164,7 @@ public class PartialJsonReaderTests
     {
         var reader = Reader();
 
-        reader.Append("""{"answer":"Done","followUpSuggestions":["One"]}""");
+        reader.Append("""{"answer":"Done","notes":["One"]}""");
 
         Assert.IsTrue(reader.IsComplete);
         Assert.IsEmpty(reader.Completion());
@@ -173,21 +174,33 @@ public class PartialJsonReaderTests
     [TestMethod]
     public void WhereTheChunksAreSplit_Should_NotChangeWhatIsRead()
     {
-        const string document = """{"answer":"A \"quoted\" word, a ☕ and a\nnewline.","followUpSuggestions":["One","Two"]}""";
+        const string document = """{"answer":"A \"quoted\" word, a ☕ and a\nnewline.","notes":["One","Two"]}""";
 
         for (var size = 1; size <= document.Length; size++)
         {
             var reader = Reader();
-            AssistantReply? partial = null;
+            ReplyWithNotes? partial = null;
 
             for (var at = 0; at < document.Length; at += size)
             {
                 partial = reader.Append(document[at..Math.Min(at + size, document.Length)]);
             }
 
-            Assert.IsNotNull(partial?.FollowUpSuggestions, $"Chunks of {size} characters read differently.");
+            Assert.IsNotNull(partial?.Notes, $"Chunks of {size} characters read differently.");
             Assert.AreEqual("A \"quoted\" word, a ☕ and a\nnewline.", partial.Answer, $"Chunks of {size} characters read differently.");
-            Assert.HasCount(2, partial.FollowUpSuggestions, $"Chunks of {size} characters read differently.");
+            Assert.HasCount(2, partial.Notes, $"Chunks of {size} characters read differently.");
         }
     }
+
+    /// <summary>An answer with an array after it.</summary>
+    public class ReplyWithNotes
+    {
+        public string? Answer { get; set; }
+
+        public List<string>? Notes { get; set; }
+    }
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(PartialJsonReaderTests.ReplyWithNotes))]
+internal partial class PartialJsonReaderTestsJsonContext : JsonSerializerContext;

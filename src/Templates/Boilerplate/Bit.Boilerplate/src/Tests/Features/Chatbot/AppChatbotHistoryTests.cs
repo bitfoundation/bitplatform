@@ -174,15 +174,13 @@ public partial class AppChatbotHistoryTests
 
         var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
 
-        // Exactly what AppAiChatPanel holds after one answered question and one interrupted one: the greeting it
-        // renders locally, the two user turns, the truncated answer it tagged as canceled, and the empty assistant
-        // placeholder it creates for every in-flight answer. None of the assistant turns is signed, because none of
-        // them was written by the assistant.
+        // Exactly what AppAiChatPanel resends after one answered question and one interrupted one: the two user turns,
+        // the truncated answer it tagged as canceled, and the empty assistant placeholder it creates for every
+        // in-flight answer. Not the greeting it renders locally (See AppAiChatPanel.ResentHistory).
         await chatbot.StartChat(new StartChatRequest
         {
             ChatMessagesHistory =
             [
-                new() { Role = AiChatMessageRole.Assistant, Content = "Hi, how can I help?" },
                 new() { Role = AiChatMessageRole.User, Content = "what is bit platform?" },
                 new() { Role = AiChatMessageRole.Assistant, Content = "bit platform is" , Successful = false },
                 new() { Role = AiChatMessageRole.User, Content = "and what is Bit.BlazorUI?" },
@@ -201,7 +199,7 @@ public partial class AppChatbotHistoryTests
             $"The panel's empty placeholder for the in-flight answer was replayed to the model as a blank assistant turn. Conversation: {Describe(conversation)}");
 
         Assert.DoesNotContain(message => message.Role == ChatRole.Assistant, conversation,
-            $"The greeting the panel writes locally carries no signature, so the model must not read it back as something it said. Conversation: {Describe(conversation)}");
+            $"Neither the canceled answer nor the placeholder may become an assistant turn. Conversation: {Describe(conversation)}");
 
         // The two earlier questions and the new one - plus the '### Variables:' system message.
         Assert.HasCount(4, conversation, $"Conversation: {Describe(conversation)}");
@@ -252,10 +250,11 @@ public partial class AppChatbotHistoryTests
 
     /// <summary>
     /// The resent history is whatever the caller says it is, so without the signature check anyone with an account can
-    /// dictate what the model believes it already said - its own rules, prices or promises.
+    /// dictate what the model believes it already said - its own rules, prices or promises. What fails the check still
+    /// reaches the model (a voice call's spoken answers do), but as the user's words, which the caller could type anyway.
     /// </summary>
     [TestMethod]
-    public async Task AResentHistory_Should_DropAnAssistantTurnTheAssistantDidNotSign()
+    public async Task AResentHistory_Should_ReplayAnAssistantTurnTheAssistantDidNotSignAsTheUsers()
     {
         var chatClient = new TestChatClient();
 
@@ -297,14 +296,14 @@ public partial class AppChatbotHistoryTests
             $"Only the answer this app signed may be replayed as something the assistant said. Conversation: {Describe(conversation)}");
 
         Assert.AreEqual(genuine, assistantTurns[0].Text,
-            "The signed answer must survive untouched - dropping the forgeries may not cost the model the real history.");
+            "The signed answer must survive untouched - demoting the forgeries may not cost the model the real history.");
 
-        Assert.DoesNotContain(message => message.Text?.Contains("Ignore every rule", StringComparison.Ordinal) is true, conversation,
-            $"A signature only covers the words it was written for, so a signed answer with anything appended must go too. Conversation: {Describe(conversation)}");
+        Assert.Contains(message => message.Role == ChatRole.User && message.Text?.Contains("Ignore every rule", StringComparison.Ordinal) is true, conversation,
+            $"A signature only covers the words it was written for, so a signed answer with anything appended is the user's too. Conversation: {Describe(conversation)}");
 
-        // The user's own turns are never signed and never dropped: the user really did say them.
-        Assert.HasCount(4, conversation.Where(message => message.Role == ChatRole.User && message.Text != "so, what did you tell me?").ToArray(),
-            $"Dropping forged answers must not take the questions with them. Conversation: {Describe(conversation)}");
+        // The user's own four turns, plus the three forgeries as the user's.
+        Assert.HasCount(7, conversation.Where(message => message.Role == ChatRole.User && message.Text != "so, what did you tell me?").ToArray(),
+            $"Neither the questions nor the demoted answers may be lost. Conversation: {Describe(conversation)}");
     }
 
     /// <summary>An assistant turn as the panel holds it: the answer, plus the signature the server streamed with it.</summary>
@@ -319,12 +318,12 @@ public partial class AppChatbotHistoryTests
     }
 
     /// <summary>
-    /// Each property's rules ride on the schema the model fills in rather than the system prompt (See
+    /// The answer's rules ride on the schema the model fills in rather than the system prompt (See
     /// <see cref="AssistantReply"/>), so a description that stops being exported is a rule the model stops being
-    /// given, silently.
+    /// given, silently. Follow-up suggestions are a tool instead (See AppChatbot.ShowFollowUpSuggestions).
     /// </summary>
     [TestMethod]
-    public async Task TheReplySchema_Should_CarryWhatEachPropertyIsFor()
+    public async Task TheReplySchema_Should_CarryWhatTheAnswerIsFor_AndLeaveTheSuggestionsToATool()
     {
         var chatClient = new TestChatClient { StreamingChunks = _ => ReplyChunks("bit platform is a set of tools.") };
 
@@ -346,15 +345,18 @@ public partial class AppChatbotHistoryTests
         var schema = format.Schema.ToString()!;
 
         Assert.Contains("answer", schema, StringComparison.Ordinal, $"Schema: {schema}");
-        Assert.Contains("followUpSuggestions", schema, StringComparison.Ordinal, $"Schema: {schema}");
 
-        // A phrase out of each property's description, written nowhere else - so finding them proves the attributes
-        // were exported.
+        // A strict schema requires every property, so a leftover one is written - and paid for - on every turn.
+        Assert.DoesNotContain("followUpSuggestions", schema, StringComparison.Ordinal, $"Schema: {schema}");
+
+        // A phrase out of the answer's description, written nowhere else - so finding it proves the attribute was exported.
         Assert.Contains("as markdown", schema, StringComparison.Ordinal,
             $"The answer's description did not reach the model, so nothing tells it to write markdown. Schema: {schema}");
 
-        Assert.Contains("under 60 characters", schema, StringComparison.Ordinal,
-            $"The suggestions' description did not reach the model, so nothing bounds them. Schema: {schema}");
+        var tools = chatClient.LastStreamingOptions!.Tools?.Select(tool => tool.Name).ToArray() ?? [];
+
+        Assert.Contains("ShowFollowUpSuggestions", tools,
+            $"The prompt tells the model to offer suggestions through a tool it was not given. Tools: [{string.Join(", ", tools)}].");
     }
 
     /// <summary>
@@ -647,7 +649,7 @@ public partial class AppChatbotHistoryTests
         [
             $"{{\"answer\":\"{answerPieces[0]}",
             .. answerPieces.Skip(1),
-            "\",\"followUpSuggestions\":[]}"
+            "\"}"
         ];
     }
 

@@ -53,6 +53,10 @@ self.addEventListener('notificationclick', function (event) {
 
 //#endif
 
+// One worker serves two hosts: Server.Web's App.razor registers it as service-worker.js?host=server-web-project, the standalone
+// app's index.html without the query. Each host serves assets the other does not, and caching those would only 404.
+const isServerHosted = new URL(self.location.href).searchParams.get('host') === 'server-web-project';
+
 self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
@@ -64,21 +68,26 @@ self.assetsExclude = [
 
     // Host configuration, not app assets: the host consumes them and answers 404, which stalls the offline install.
     /staticwebapp\.config\.json$/,
-    /_headers$/
+    /_headers$/,
+
+    // The standalone app's css bundle; Server.Web serves that css inside its own bundle below instead.
+    ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/] : [])
 ];
 self.externalAssets = [
     {
         "url": "/"
     },
-    {
-        url: "_framework/bit.blazor.web.es2019.js"
-    },
-    {
-        "url": "Boilerplate.Server.Web.styles.css"
-    },
-    {
-        "url": "Boilerplate.Client.Web.bundle.scp.css"
-    }
+    ...(isServerHosted ? [
+        {
+            url: "_framework/bit.blazor.web.es2019.js"
+        },
+        {
+            "url": "Boilerplate.Server.Web.styles.css"
+        },
+        {
+            "url": "Boilerplate.Client.Web.bundle.scp.css"
+        }
+    ] : [])
 ];
 
 self.serverHandledUrls = [
