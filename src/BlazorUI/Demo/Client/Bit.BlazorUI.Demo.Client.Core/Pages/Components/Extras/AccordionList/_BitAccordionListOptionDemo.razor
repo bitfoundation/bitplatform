@@ -198,9 +198,7 @@
         <code>ActionsTemplate</code> renders content beside the header of every option, outside of the toggle
         button and of the heading it sits in, so it can hold interactive elements of its own - a menu, a delete
         button, a switch - without nesting a control inside another one. An option can also carry its own
-        <code>Actions</code>, which takes precedence over the template. The options are wrapped in
-        <code>Options</code> here, as a list that carries a named fragment of its own can no longer take them as
-        its plain child content.
+        <code>Actions</code>, which takes precedence over the template.
     </div>
     <br />
     <BitAccordionList TItem="BitAccordionListOption">
@@ -655,7 +653,7 @@
     <br />
     <BitCheckbox @bind-Value="showEmptyItems" Label="Show the options" />
     <br />
-    <BitAccordionList TItem="BitAccordionListOption">
+    <BitAccordionList TItem="BitAccordionListOption" Style="min-height: 24px;">
         <EmptyContent>
             <BitText Typography="BitTypography.Body2">There is nothing to show here yet.</BitText>
         </EmptyContent>
