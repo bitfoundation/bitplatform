@@ -39,7 +39,7 @@
         @* A plain element the scoped stylesheet can attach to: everything below is components, and a
            ::deep rule needs an anchor carrying this page's scope attribute. *@
         <div class="chart-doc">
-            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient" ForceAnimation>
+            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
                 <BitPivotItem HeaderText="Line" Key="line">
                     <_BitChartLineDemo />
                 </BitPivotItem>
