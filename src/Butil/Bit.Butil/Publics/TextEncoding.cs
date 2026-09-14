@@ -112,7 +112,7 @@ public class TextEncoding(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            await js.InvokeVoid("BitButil.textEncoding.disposeAll");
+            await js.InvokeTeardown("BitButil.textEncoding.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
 

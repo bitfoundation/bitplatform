@@ -64,6 +64,18 @@ internal static class ButilScriptLoader
     }
 
     /// <summary>
+    /// Whether the module behind <paramref name="identifier"/> has been asked for in this runtime - imported, or
+    /// being imported. False only when nothing in this runtime ever called into that module, so no JavaScript state
+    /// of it can exist on the page.
+    /// </summary>
+    internal static bool IsModuleRequested(IJSRuntime jsRuntime, string identifier)
+    {
+        if (TryGetModule(identifier, out var module) is false) return true;
+
+        return LoadedModules.TryGetValue(jsRuntime, out var state) && state.Modules.ContainsKey(module);
+    }
+
+    /// <summary>
     /// The module of an interop identifier: <c>BitButil.clipboard.readText</c> is served by <c>clipboard</c>.
     /// False for identifiers that are not Butil's (nothing to load for those).
     /// </summary>

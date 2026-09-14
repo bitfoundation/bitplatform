@@ -257,7 +257,7 @@ public class ViewTransition(IJSRuntime js) : IAsyncDisposable
             _updates.Clear();
             _handles.Clear();
             _pageHandlers.Clear();
-            await js.InvokeVoid("BitButil.viewTransition.disposeAll");
+            await js.InvokeTeardown("BitButil.viewTransition.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

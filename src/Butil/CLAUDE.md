@@ -14,7 +14,7 @@ Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server
 | `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
 | `Bit.Butil.Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
 | `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |
-| `tests/` | `Tests.E2E` (Playwright), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
+| `tests/` | `Tests.E2E` (Playwright, against every host), `Tests.Hosting` (in-process HTTP against every render mode), `Tests.Harness.Web` (+ `.Client`) and `Tests.Harness.Hybrid` (the Blazor Web App and BlazorWebView hosts those two drive), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
 
 ## Coding style
 
@@ -64,6 +64,10 @@ generic type accompanying an existing non-generic one of the same name - those t
    `disposeAll` - belongs in a delegate armed by the call that created something (`Css.CreateStyleSheet`,
    `Window.Open`, `Window.SubscribeMatchMedia`), or every consumer of the service downloads that module.
    `tests/Bit.Butil.Tests.Manual` (`SplitModuleUse`) fails when either rule is broken.
+   A service's own `disposeAll`/`releaseAll` in `DisposeAsync` goes through `InvokeTeardown`, not `InvokeVoid`: a
+   scoped service is disposed with its scope whether or not it was used, and under lazy scripts an unconditional
+   teardown imports the module just to release nothing - every page reload in a BlazorWebView and every ended
+   circuit downloaded the module of every injected service. The hybrid run of `LazyScriptsTests` catches it.
 6. **Anything attaching a listener returns a `ButilSubscription`**; anything holding a browser resource open
    (streams, recorders, handles) is `IAsyncDisposable`. Document the gesture/HTTPS/permission preconditions.
    A listener for an event that fires **about once a frame** - a pointer move, a scroll, a resize, an
@@ -118,7 +122,8 @@ Cover a feature in whichever of these it belongs to - in more than one, where it
 
 | Project | Covers | Run |
 | --- | --- | --- |
-| `tests/Bit.Butil.Tests.E2E` | Real browser behaviour, through the deterministic harness pages `Samples.Core/Pages/E2EPage.razor` and `E2EObserversPage.razor`. Give every control a stable `id`, write results to the single status element, and avoid APIs that prompt, so the suite stays headless and flake-free. | `dotnet test tests/Bit.Butil.Tests.E2E` (see its README for the browser env vars) |
+| `tests/Bit.Butil.Tests.E2E` | Real browser behaviour, through the deterministic harness pages `Samples.Core/Pages/E2EPage.razor` and `E2EObserversPage.razor`, on every host: the standalone WebAssembly sample, each Blazor Web App render mode (`Tests.Harness.Web`) and BlazorWebView (`Tests.Harness.Hybrid`), picked with `BUTIL_E2E_HOST`. Give every control a stable `id`, write results to the single status element, avoid APIs that prompt, and write nothing that only works in one host (no `IJSInProcessRuntime`, no assumption the page is not prerendered), so the suite stays headless, flake-free and host-neutral. | `dotnet test tests/Bit.Butil.Tests.E2E` (see its README for the hosts and env vars) |
+| `tests/Bit.Butil.Tests.Hosting` | What only a server response shows, in every render mode on net8.0/9.0/10.0: the harness pages prerender, the scripts are served, every `Samples.Core` page renders statically without logging an error, and the prerender sweep - every public member of every `[ButilService]` called during a static render, which must neither throw (other than argument validation or a Butil-declared exception) nor hang. A new member is swept automatically; a failure there is a call site missing the prerender guard. | `dotnet test tests/Bit.Butil.Tests.Hosting` |
 | `tests/Bit.Butil.Tests.Mcp` | The MCP server against a real child-process deployment driven by a real MCP client: tool surface, behaviour, failures, search, resources, prompts, completions, the HTTP mirror, and cross-catalog consistency. | `dotnet test tests/Bit.Butil.Tests.Mcp` |
 | `tests/Bit.Butil.Tests.Manual` | Trimming, the interop contract, and script scanning/bundling/trimming/publishing. A console app because the subject is a *publish* output; it exits non-zero on failure. | See its README - run untrimmed then trimmed from that folder, sharing `interop-manifest.txt` |
 | `tests/Bit.Butil.Tests.Benchmarks` | Performance, held to budgets: per-module download weight off the build artifacts, and interop cost plus rate limiting in a real browser through `Samples.Core/Pages/BenchmarkPage.razor`. A console app for the same reason as the Manual harness - the subject is an artifact and a deployed app - and it exits non-zero when a measurement is outside its budget. | `dotnet run` from that folder (`--weight` / `--runtime` for one half) |

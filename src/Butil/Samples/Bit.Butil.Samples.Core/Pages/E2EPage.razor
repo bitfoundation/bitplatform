@@ -55,7 +55,9 @@
 
 <h1>Butil E2E</h1>
 
-<div data-testid="status" id="status">@_status</div>
+@* data-platform and data-renderer say where this page is running, so a suite driving one of the harness
+   hosts can prove it is exercising the render mode it asked for rather than whichever one answered. *@
+<div data-testid="status" id="status" data-platform="@Platform" data-renderer="@RendererName">@_status</div>
 
 <section>
     <h3>Storage</h3>
@@ -258,7 +260,8 @@
 
 <section>
     @* The echo endpoint's URL arrives as ?ws=...- the tests host it themselves, on a port chosen
-       at run time, because this sample is a standalone WebAssembly host with no server side. *@
+       at run time, because the standalone WebAssembly sample has no server side to host it and every
+       host this page runs in has to talk to the same endpoint. *@
     <h3>WebSocket</h3>
     <button id="ws-open" @onclick="WebSocketOpen">open + negotiate</button>
     <button id="ws-text" @onclick="WebSocketText">send text</button>
@@ -365,9 +368,26 @@
 @code {
     private const string TestCookieName = "butil_e2e";
     private const string TestCookieValue = "v=1; b=hello world & again";
-    private string _status = "ready";
+    // "ready" only after the first interactive render: a prerendered copy of this page is on screen before
+    // its event handlers are, and a click in between is silently lost.
+    private string _status = "starting";
 
     private void Set(string value) { _status = value; StateHasChanged(); }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) Set("ready");
+    }
+
+    /// <summary>"browser" inside the WebAssembly runtime, "dotnet" in a Server circuit or a BlazorWebView.</summary>
+    private static string Platform => OperatingSystem.IsBrowser() ? "browser" : "dotnet";
+
+#if NET9_0_OR_GREATER
+    private string RendererName => RendererInfo.Name;
+#else
+    // RendererInfo arrived in .NET 9; data-platform is what tells the runtimes apart on net8.0.
+    private string RendererName => "unknown";
+#endif
 
     private ElementReference _elementBox;
     private ElementReference _elementContent;
@@ -1244,22 +1264,39 @@
         if (subscription is null) { Set("sched:idle:null"); return; }
 
         var deadline = await AwaitCallback(fired);
-        // An idle page reports slack rather than a timeout.
-        Set(deadline is null ? "sched:idle:(timed out)" : $"sched:idle:{deadline.DidTimeout}/{deadline.TimeRemaining > 0}");
+        // An idle page reports slack rather than a timeout. The slack itself is only bounded, not required
+        // to be positive: it is read when the callback starts, and on a loaded machine an idle period can
+        // already be used up by then - a Server circuit, where the callback also waits on a round trip,
+        // makes that routine. What would be wrong is a reading outside what the browser ever reports.
+        Set(deadline is null ? "sched:idle:(timed out)" : $"sched:idle:{deadline.DidTimeout}/{deadline.TimeRemaining is >= 0 and <= 50}");
     }
 
     private async Task SchedulerIdleTimeout()
     {
         if (await scheduler.IsIdleCallbackSupported() is false) { Set("sched:idle-timeout:unsupported"); return; }
 
+        // Busy on purpose: the page never goes idle, so the callback can only run because its timeout
+        // expired - which is what DidTimeout reports. The browser's main thread is what has to be busy,
+        // so the work runs there (a loop in .NET only blocks it under WebAssembly), and it starts BEFORE
+        // the callback is requested: in a Server circuit the request and anything after it are separate
+        // round trips, and the page is genuinely idle in the gap between them. Back-to-back short tasks
+        // rather than one long one, so the request itself - and the timeout firing - still get a turn.
+        await js.InvokeVoidAsync("eval", """
+            (() => {
+                const end = performance.now() + 1500;
+                const channel = new MessageChannel();
+                channel.port1.onmessage = () => {
+                    const until = performance.now() + 40;
+                    while (performance.now() < until) { }
+                    if (performance.now() < end) channel.port2.postMessage(0); else channel.port1.close();
+                };
+                channel.port2.postMessage(0);
+            })()
+            """);
+
         var fired = new TaskCompletionSource<IdleDeadline>(TaskCreationOptions.RunContinuationsAsynchronously);
         var subscription = await scheduler.RequestIdleCallback(deadline => fired.TrySetResult(deadline), TimeSpan.FromMilliseconds(200));
         if (subscription is null) { Set("sched:idle-timeout:null"); return; }
-
-        // Blocking on purpose: the page never goes idle, so the callback can only run because its
-        // timeout expired - which is what DidTimeout reports.
-        var until = DateTime.UtcNow.AddMilliseconds(700);
-        while (DateTime.UtcNow < until) { }
 
         var deadline = await AwaitCallback(fired);
         Set(deadline is null ? "sched:idle-timeout:(timed out)" : $"sched:idle-timeout:{deadline.DidTimeout}");
