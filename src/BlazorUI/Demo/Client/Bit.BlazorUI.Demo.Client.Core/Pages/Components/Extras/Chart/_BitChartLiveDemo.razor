@@ -13,7 +13,7 @@
         <BitButton Variant="BitVariant.Outline" OnClick="Toggle">@(_timer is null ? "Start" : "Stop")</BitButton>
         <BitButton Variant="BitVariant.Outline" OnClick="AddReading">Add one reading</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_live" RespectReducedMotion="false" Type="BitChartType.Line" Data="_stream" Options="_streamOptions" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_live" Type="BitChartType.Line" Data="_stream" Options="_streamOptions" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Showing and hiding series from code" RazorCode="@visibilityRazorCode" CsharpCode="@visibilityCsharpCode" Id="live-visibility">
@@ -35,5 +35,5 @@
         }
         <BitButton Variant="BitVariant.Outline" OnClick="() => _visibility?.ResetVisibility()">Show all</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_visibility" RespectReducedMotion="false" Type="BitChartType.Bar" Data="_revenue" Options="_visibilityOptions" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_visibility" Type="BitChartType.Bar" Data="_revenue" Options="_visibilityOptions" /></div></div>
 </DemoExample>

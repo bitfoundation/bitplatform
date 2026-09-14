@@ -146,7 +146,7 @@
     white-space: nowrap;
     pointer-events: none;
     box-shadow: #{$box-shadow-popup};
-    transition: left .08s linear, top .08s linear;
+    transition: left #{$mot-duration-short} linear, top #{$mot-duration-short} linear;
 }
 
 .bit-cht-tt-ttl {
@@ -343,9 +343,13 @@
     stroke-dasharray: 3 2;
 }
 
-// Opt-in (RespectReducedMotion) reduced-motion overrides.
+// The entry animations take their duration from the chart's own options rather than from the
+// --bit-mot-duration* tokens, so they opt out of reduced motion here instead: the keyframes are taken
+// out and every element is left drawn in its final state. .bit-fam is the shared opt-out class
+// rendered by ForceAnimation, honored on an ancestor as well as on the chart itself, so opting a whole
+// subtree back in behaves the same here as it does for the token-driven animations.
 @media (prefers-reduced-motion: reduce) {
-    .bit-cht-rm {
+    .bit-cht:not(.bit-fam):not(.bit-fam *) {
         :is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-draw, .bit-cht-fade) {
             animation: none;
         }

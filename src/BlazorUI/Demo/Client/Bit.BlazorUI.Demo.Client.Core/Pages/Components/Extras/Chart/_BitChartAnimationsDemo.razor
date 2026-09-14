@@ -29,7 +29,7 @@
         </label>
         <BitButton Variant="BitVariant.Outline" OnClick="RandomizeBars">Randomize data</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="_barsData" Options="BarsOpts()" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="_barsData" Options="BarsOpts()" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Line draw-on" RazorCode="@lineDrawRazorCode" CsharpCode="@lineDrawCsharpCode" Id="animations-line-draw">
@@ -60,5 +60,5 @@
         </label>
         <BitButton Variant="BitVariant.Outline" OnClick="RandomizeLine">Randomize data</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="_lineData" Options="LineOpts()" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="_lineData" Options="LineOpts()" /></div></div>
 </DemoExample>

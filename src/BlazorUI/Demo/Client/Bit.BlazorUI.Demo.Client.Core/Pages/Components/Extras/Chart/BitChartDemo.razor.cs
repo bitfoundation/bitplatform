@@ -8,19 +8,26 @@ public partial class BitChartDemo
     [
         new()
         {
+            Name = "AriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Accessible label for the chart. When null it falls back to the chart title, then to a generated summary."
+        },
+        new()
+        {
+            Name = "Class",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS class applied to the root element of the chart."
+        },
+        new()
+        {
             Name = "Config",
             Type = "BitChartConfig?",
             DefaultValue = "null",
             Description = "Full configuration (type + data + options). Takes precedence over Type/Data/Options when set.",
             LinkType = LinkType.Link,
             Href = "#chart-config"
-        },
-        new()
-        {
-            Name = "Type",
-            Type = "BitChartType",
-            DefaultValue = "BitChartType.Line",
-            Description = "The chart type: Line, Bar, Radar, Pie, Doughnut, PolarArea, Bubble or Scatter."
         },
         new()
         {
@@ -33,50 +40,6 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "Options",
-            Type = "BitChartOptions?",
-            DefaultValue = "null",
-            Description = "The chart options: scales, plugins (title, legend, tooltip, data labels), interaction, animation, culture and zoom.",
-            LinkType = LinkType.Link,
-            Href = "#chart-options"
-        },
-        new()
-        {
-            Name = "Width",
-            Type = "string",
-            DefaultValue = "100%",
-            Description = "CSS width of the chart container."
-        },
-        new()
-        {
-            Name = "Height",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Optional CSS height of the chart container. When null the height follows the aspect ratio."
-        },
-        new()
-        {
-            Name = "Class",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS class applied to the root element of the chart."
-        },
-        new()
-        {
-            Name = "Style",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Custom CSS style applied to the root element of the chart."
-        },
-        new()
-        {
-            Name = "Id",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The id of the root element of the chart."
-        },
-        new()
-        {
             Name = "Dir",
             Type = "BitDir?",
             DefaultValue = "null",
@@ -84,24 +47,10 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "HtmlAttributes",
-            Type = "Dictionary<string, object>",
-            DefaultValue = "new()",
-            Description = "Additional HTML attributes applied to the root element."
-        },
-        new()
-        {
-            Name = "AriaLabel",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "Accessible label for the chart. When null it falls back to the chart title, then to a generated summary."
-        },
-        new()
-        {
-            Name = "NavigationHint",
-            Type = "string?",
-            DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
-            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby alongside the data table. Only rendered when there is data to navigate; set it to null to leave it out."
+            Name = "ForceAnimation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Plays the entry and update animations even when reduced motion is requested (prefers-reduced-motion: reduce). By default the chart honors that preference and draws itself straight in its final state."
         },
         new()
         {
@@ -112,10 +61,24 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "MaxTableRows",
-            Type = "int",
-            DefaultValue = "500",
-            Description = "Upper bound on the rows the screen-reader table renders, so a long series does not put tens of thousands of hidden nodes in the DOM. Past the limit the caption says how many rows were left out."
+            Name = "Height",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Optional CSS height of the chart container. When null the height follows the aspect ratio."
+        },
+        new()
+        {
+            Name = "HtmlAttributes",
+            Type = "Dictionary<string, object>",
+            DefaultValue = "new()",
+            Description = "Additional HTML attributes applied to the root element."
+        },
+        new()
+        {
+            Name = "Id",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the root element of the chart."
         },
         new()
         {
@@ -126,10 +89,17 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "NoDataText",
-            Type = "string",
-            DefaultValue = "No data to display",
-            Description = "Message shown in place of the plot when the configuration produces nothing to draw."
+            Name = "MaxTableRows",
+            Type = "int",
+            DefaultValue = "500",
+            Description = "Upper bound on the rows the screen-reader table renders, so a long series does not put tens of thousands of hidden nodes in the DOM. Past the limit the caption says how many rows were left out."
+        },
+        new()
+        {
+            Name = "NavigationHint",
+            Type = "string?",
+            DefaultValue = "\"Interactive chart. Use the left and right arrow keys...\"",
+            Description = "A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by aria-describedby alongside the data table. Only rendered when there is data to navigate; set it to null to leave it out."
         },
         new()
         {
@@ -140,17 +110,10 @@ public partial class BitChartDemo
         },
         new()
         {
-            Name = "RespectReducedMotion",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "When true, animations are disabled for users who requested reduced motion (prefers-reduced-motion: reduce). Set to false to always animate regardless of the OS setting."
-        },
-        new()
-        {
-            Name = "TooltipTemplate",
-            Type = "RenderFragment<BitChartTooltipContext>?",
-            DefaultValue = "null",
-            Description = "Optional custom tooltip template. When set it replaces the default tooltip body."
+            Name = "NoDataText",
+            Type = "string",
+            DefaultValue = "No data to display",
+            Description = "Message shown in place of the plot when the configuration produces nothing to draw."
         },
         new()
         {
@@ -175,6 +138,43 @@ public partial class BitChartDemo
             Name = "OnZoomChange",
             Type = "EventCallback",
             Description = "Callback raised after zoom or pan changes the visible axis ranges."
+        },
+        new()
+        {
+            Name = "Options",
+            Type = "BitChartOptions?",
+            DefaultValue = "null",
+            Description = "The chart options: scales, plugins (title, legend, tooltip, data labels), interaction, animation, culture and zoom.",
+            LinkType = LinkType.Link,
+            Href = "#chart-options"
+        },
+        new()
+        {
+            Name = "Style",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom CSS style applied to the root element of the chart."
+        },
+        new()
+        {
+            Name = "TooltipTemplate",
+            Type = "RenderFragment<BitChartTooltipContext>?",
+            DefaultValue = "null",
+            Description = "Optional custom tooltip template. When set it replaces the default tooltip body."
+        },
+        new()
+        {
+            Name = "Type",
+            Type = "BitChartType",
+            DefaultValue = "BitChartType.Line",
+            Description = "The chart type: Line, Bar, Radar, Pie, Doughnut, PolarArea, Bubble or Scatter."
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string",
+            DefaultValue = "100%",
+            Description = "CSS width of the chart container."
         },
     ];
 

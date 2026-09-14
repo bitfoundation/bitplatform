@@ -12,26 +12,34 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChart : ComponentBase, IAsyncDisposable
 {
+    /// <summary>Accessible label for the chart. When null a summary is generated.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Custom CSS class applied to the root element.</summary>
+    [Parameter] public string? Class { get; set; }
+
     /// <summary>Full configuration (type + data + options). Takes precedence when set.</summary>
     [Parameter] public BitChartConfig? Config { get; set; }
 
-    [Parameter] public BitChartType Type { get; set; } = BitChartType.Line;
+    /// <summary>The chart data: labels and datasets.</summary>
     [Parameter] public BitChartData? Data { get; set; }
-    [Parameter] public BitChartOptions? Options { get; set; }
-
-    /// <summary>CSS width of the chart container.</summary>
-    [Parameter] public string Width { get; set; } = "100%";
-    /// <summary>Optional CSS height. When null the height follows the aspect ratio.</summary>
-    [Parameter] public string? Height { get; set; }
-
-    [Parameter] public string? Class { get; set; }
-    [Parameter] public string? Style { get; set; }
-
-    /// <summary>Id of the root element.</summary>
-    [Parameter] public string? Id { get; set; }
 
     /// <summary>Text direction of the chrome around the plot (title, legend, tooltip, data table).</summary>
     [Parameter] public BitDir? Dir { get; set; }
+
+    /// <summary>
+    /// Plays the entry and update animations even when the user has asked for reduced motion. Like every
+    /// other animated component in the library, the chart honors <c>prefers-reduced-motion: reduce</c> by
+    /// default and draws itself straight in its final state; this renders the library-wide <c>bit-fam</c>
+    /// opt-out class, which an ancestor can carry as well to opt a whole subtree back in.
+    /// </summary>
+    [Parameter] public bool ForceAnimation { get; set; }
+
+    /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
+    [Parameter] public bool GenerateTable { get; set; } = true;
+
+    /// <summary>Optional CSS height. When null the height follows the aspect ratio.</summary>
+    [Parameter] public string? Height { get; set; }
 
     /// <summary>
     /// Additional HTML attributes applied to the root element, following the same convention as the rest
@@ -39,18 +47,8 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
 
-    /// <summary>Accessible label for the chart. When null a summary is generated.</summary>
-    [Parameter] public string? AriaLabel { get; set; }
-
-    /// <summary>Render a visually-hidden data table for screen readers (default true).</summary>
-    [Parameter] public bool GenerateTable { get; set; } = true;
-
-    /// <summary>
-    /// Upper bound on the rows the screen-reader table renders. A long series would otherwise put tens
-    /// of thousands of hidden nodes in the DOM for no one's benefit; past the limit the table shows the
-    /// first rows and its caption says how many were left out.
-    /// </summary>
-    [Parameter] public int MaxTableRows { get; set; } = 500;
+    /// <summary>Id of the root element.</summary>
+    [Parameter] public string? Id { get; set; }
 
     /// <summary>
     /// Upper bound on the columns the screen-reader table renders. A value series is one table row with
@@ -59,6 +57,13 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// left out. Ignored for point (scatter/bubble) data, whose table is three fixed columns.
     /// </summary>
     [Parameter] public int MaxTableColumns { get; set; } = 100;
+
+    /// <summary>
+    /// Upper bound on the rows the screen-reader table renders. A long series would otherwise put tens
+    /// of thousands of hidden nodes in the DOM for no one's benefit; past the limit the table shows the
+    /// first rows and its caption says how many were left out.
+    /// </summary>
+    [Parameter] public int MaxTableRows { get; set; } = 500;
 
     /// <summary>
     /// A visually hidden sentence telling a screen-reader user how to walk the data, pointed at by the
@@ -71,21 +76,11 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         + "the up and down arrow keys to move between series, Home and End for the first and last value, "
         + "Enter to select, and Escape to leave.";
 
-    /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
-    [Parameter] public string NoDataText { get; set; } = "No data to display";
-
     /// <summary>Custom content shown in place of the plot when there is nothing to draw.</summary>
     [Parameter] public RenderFragment? NoDataTemplate { get; set; }
 
-    /// <summary>
-    /// When true (the default), entry/update animations are disabled for users who have requested
-    /// reduced motion (the <c>prefers-reduced-motion: reduce</c> media query). Set to false to always
-    /// animate regardless of the OS setting.
-    /// </summary>
-    [Parameter] public bool RespectReducedMotion { get; set; } = true;
-
-    /// <summary>Optional custom tooltip template. When set it replaces the default tooltip body.</summary>
-    [Parameter] public RenderFragment<BitChartTooltipContext>? TooltipTemplate { get; set; }
+    /// <summary>Message shown in place of the plot when there is nothing to draw.</summary>
+    [Parameter] public string NoDataText { get; set; } = "No data to display";
 
     /// <summary>Raised when a data element is clicked: (datasetIndex, dataIndex).</summary>
     [Parameter] public EventCallback<(int DatasetIndex, int DataIndex)> OnElementClick { get; set; }
@@ -99,6 +94,21 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
 
     /// <summary>Raised after zoom or pan changes the visible axis ranges.</summary>
     [Parameter] public EventCallback OnZoomChange { get; set; }
+
+    /// <summary>The chart options: scales, plugins, interaction, animation, culture and zoom.</summary>
+    [Parameter] public BitChartOptions? Options { get; set; }
+
+    /// <summary>Custom CSS style applied to the root element.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Optional custom tooltip template. When set it replaces the default tooltip body.</summary>
+    [Parameter] public RenderFragment<BitChartTooltipContext>? TooltipTemplate { get; set; }
+
+    /// <summary>The chart type. Ignored when <see cref="Config"/> is set.</summary>
+    [Parameter] public BitChartType Type { get; set; } = BitChartType.Line;
+
+    /// <summary>CSS width of the chart container.</summary>
+    [Parameter] public string Width { get; set; } = "100%";
 
     private readonly BitChartRenderState _state = new();
     private BitChartConfig _config = new();
@@ -1098,7 +1108,9 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         get
         {
             string c = "bit-cht";
-            if (RespectReducedMotion) c += " bit-cht-rm";
+            // bit-fam is the library-wide reduced-motion opt-out: without it (here or on an ancestor)
+            // the chart's keyframes are taken out under prefers-reduced-motion.
+            if (ForceAnimation) c += " bit-fam";
             if (!string.IsNullOrEmpty(Class)) c += " " + Class;
             return c;
         }

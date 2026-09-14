@@ -76,15 +76,15 @@ public class BitChartTests : BunitTestContext
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void BitChartShouldOptIntoReducedMotionOnRequest(bool respect)
+    public void BitChartShouldRespectForceAnimation(bool forceAnimation)
     {
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.RespectReducedMotion, respect);
+            p.Add(c => c.ForceAnimation, forceAnimation);
         });
 
-        Assert.AreEqual(respect, component.Find(".bit-cht").ClassList.Contains("bit-cht-rm"));
+        Assert.AreEqual(forceAnimation, component.Find(".bit-cht").ClassList.Contains("bit-fam"));
     }
 
     [TestMethod]

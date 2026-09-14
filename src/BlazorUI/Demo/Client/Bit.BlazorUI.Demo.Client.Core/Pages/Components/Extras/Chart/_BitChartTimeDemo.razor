@@ -6,7 +6,7 @@
         <code>DateTime.ToOADate</code>) and picks the tick unit from the span - weekly ticks across these two
         months. Unevenly spaced samples land at their true position, which a category axis cannot do.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_time" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_time" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Forced month unit + custom format" RazorCode="@monthRazorCode" CsharpCode="@monthCsharpCode" Id="time-month">
@@ -14,5 +14,5 @@
         <code>TimeUnit</code> forces a unit when the automatic choice is too fine or too coarse, and
         <code>TimeFormat</code> takes over the label text entirely.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_month" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="@_month" /></div></div>
 </DemoExample>

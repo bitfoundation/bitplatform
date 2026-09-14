@@ -5,7 +5,7 @@
         The tooltip callbacks mirror Chart.js: <code>Title</code> builds the heading from the active items and
         <code>Footer</code> adds a summary line - here the total of the series at the hovered category.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_footer" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_footer" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Currency labels" RazorCode="@currencyRazorCode" CsharpCode="@currencyCsharpCode" Id="tooltips-currency">
@@ -13,7 +13,7 @@
         <code>Callbacks.Label</code> replaces the body row of a single item, which is where value formatting
         belongs. <code>LabelFormatter</code> is the shorthand for when all you need is the number.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="TwoSeries()" Options="_currency" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="TwoSeries()" Options="_currency" /></div></div>
 </DemoExample>
 
 <DemoExample Title="After-body note" RazorCode="@afterBodyRazorCode" CsharpCode="@afterBodyCsharpCode" Id="tooltips-after-body">
@@ -21,7 +21,7 @@
         <code>BeforeBody</code> and <code>AfterBody</code> add free lines around the values - a note, a
         delta, a data-quality warning. Text containing newlines becomes several lines.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="TwoSeries()" Options="_afterBody" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="TwoSeries()" Options="_afterBody" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Styled box" RazorCode="@styledRazorCode" CsharpCode="@styledCsharpCode" Id="tooltips-styled">
@@ -30,7 +30,7 @@
         itself inside the chart box and flips below the anchor when there is no room above it, so it is never
         clipped at an edge.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_styled" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_styled" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Point-style swatches" RazorCode="@pointStyleRazorCode" CsharpCode="@pointStyleCsharpCode" Id="tooltips-point-style">
@@ -38,7 +38,7 @@
         <code>UsePointStyle</code> swaps the color square for each dataset's own marker, which is what ties a
         tooltip row to its series when several share a color family.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Markers()" Options="_pointStyle" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Wrapping a longer note" RazorCode="@wrappedRazorCode" CsharpCode="@wrappedCsharpCode" Id="tooltips-wrapped">
@@ -47,5 +47,5 @@
         <code>MaxWidth</code> caps the box in pixels and lets the text wrap inside it, so a callback that returns
         prose - an explanation, a caveat, a definition - stays readable instead of running off the chart.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_wrapped" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="BitChartSampleData.Countries()" Options="_wrapped" /></div></div>
 </DemoExample>

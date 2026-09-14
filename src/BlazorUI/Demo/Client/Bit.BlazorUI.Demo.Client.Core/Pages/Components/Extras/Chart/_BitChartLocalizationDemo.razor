@@ -17,7 +17,7 @@
             </select>
         </label>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Revenue()" Options="CultureOptions()" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="Revenue()" Options="CultureOptions()" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Currency ticks" RazorCode="@currencyRazorCode" CsharpCode="@currencyCsharpCode" Id="localization-currency">
@@ -26,7 +26,7 @@
         so <code>"C0"</code> gives properly placed currency symbols. <code>Prefix</code> and <code>Suffix</code>
         are the simpler alternative when you just need to wrap the number.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="Revenue()" Options="_currency" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="Revenue()" Options="_currency" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Localized dates" RazorCode="@datesRazorCode" CsharpCode="@datesCsharpCode" Id="localization-dates">
@@ -46,7 +46,7 @@
             </select>
         </label>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="DateOptions()" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="BitChartSampleData.TimeSeries()" Options="DateOptions()" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Non-Latin labels" RazorCode="@wideRazorCode" CsharpCode="@wideCsharpCode" Id="localization-wide-labels">
@@ -56,7 +56,7 @@
         a full em where a Latin letter fills about half, so a Japanese or Korean axis reserves the space it actually
         needs instead of letting its labels collide.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="Japanese()" Options="_wide" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="Japanese()" Options="_wide" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Right-to-left" RazorCode="@rtlRazorCode" CsharpCode="@rtlCsharpCode" Id="localization-rtl">
@@ -65,5 +65,5 @@
         screen-reader table. The plot itself keeps its own coordinates - mirror it as well by setting
         <code>Reverse</code> on the index scale, as this sample does.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart Dir="BitDir.Rtl" RespectReducedMotion="false" Type="BitChartType.Bar" Data="Persian()" Options="_rtl" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="Persian()" Options="_rtl" /></div></div>
 </DemoExample>

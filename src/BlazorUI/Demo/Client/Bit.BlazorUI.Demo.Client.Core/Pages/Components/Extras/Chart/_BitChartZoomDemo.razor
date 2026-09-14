@@ -8,7 +8,7 @@
         keeps the peaks that define the shape rather than sampling blindly, so it stays smooth at any zoom. Only the
         pointer math is JavaScript; all drawing remains pure SVG.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="_data" Options="_options" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="_data" Options="_options" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Zoom both axes" RazorCode="@xyRazorCode" CsharpCode="@xyCsharpCode" Id="zoom-xy" PreventRenderForMcpClient>
@@ -18,17 +18,17 @@
         - on a horizontal-bar chart, the values. <code>LimitToData</code> keeps the view inside the series so
         it can never be dragged off into empty space, and <code>MinRangeFraction</code> stops it zooming in forever.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Drag-to-zoom box" RazorCode="@dragRazorCode" CsharpCode="@dragCsharpCode" Id="zoom-drag">
     <div class="example-desc">With <code>DragZoom</code> the drag gesture selects a rectangle to zoom into instead of panning. Double-click resets it; from code, <code>ResetZoom()</code> and <code>ZoomTo(axisId, min, max)</code> do the same, and <code>OnZoomChange</code> reports every change.</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_drag" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="Scatter()" Options="_drag" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Category-axis zoom" RazorCode="@catZoomRazorCode" CsharpCode="@catZoomCsharpCode" Id="zoom-category">
     <div class="example-desc">Category axes zoom too: the visible window is a range of indexes, so 40 categories can be explored a handful at a time without touching the data.</div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Bar" Data="ManyBars()" Options="_catZoom" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="ManyBars()" Options="_catZoom" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Overview and detail" RazorCode="@brushRazorCode" CsharpCode="@brushCsharpCode" Id="zoom-brush">
@@ -45,7 +45,7 @@
         <BitButton Variant="BitVariant.Outline" OnClick="() => ShowWindow(0.75, 1)">Last quarter</BitButton>
         <BitButton Variant="BitVariant.Outline" OnClick="() => _brush?.ResetZoom()">Whole series</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_brush" RespectReducedMotion="false" Type="BitChartType.Line" Data="_brushData" Options="_brushOptions" OnZoomChange="ReadWindow" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_brush" Type="BitChartType.Line" Data="_brushData" Options="_brushOptions" OnZoomChange="ReadWindow" /></div></div>
     <div class="brush-readout">Showing @_window</div>
-    <BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="_brushData" Options="_overview" Height="56px" />
+    <BitChart Type="BitChartType.Line" Data="_brushData" Options="_overview" Height="56px" />
 </DemoExample>

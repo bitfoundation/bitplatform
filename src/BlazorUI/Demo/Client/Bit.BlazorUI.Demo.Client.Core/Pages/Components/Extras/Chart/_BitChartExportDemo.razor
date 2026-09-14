@@ -13,7 +13,7 @@
         <BitButton Variant="BitVariant.Outline" OnClick="ExportPng">Download PNG</BitButton>
         <BitButton Variant="BitVariant.Outline" OnClick="ExportCsv">Download CSV</BitButton>
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_chart" RespectReducedMotion="false" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_options" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_chart" Type="BitChartType.Bar" Data="BitChartSampleData.Revenue()" Options="_options" /></div></div>
 </DemoExample>
 
 <DemoExample Title="The CSV without downloading it" RazorCode="@csvRazorCode" CsharpCode="@csvCsharpCode" Id="export-csv-text">
@@ -29,7 +29,7 @@
     {
         <pre class="csv-preview">@_csv</pre>
     }
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_csvChart" RespectReducedMotion="false" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_options" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_csvChart" Type="BitChartType.Line" Data="BitChartSampleData.MonthlySales()" Options="_options" /></div></div>
 </DemoExample>
 
 <DemoExample Title="The picture without downloading it" RazorCode="@imageRazorCode" CsharpCode="@imageCsharpCode" Id="export-image">
@@ -51,5 +51,5 @@
     {
         <pre class="csv-preview">@_markup</pre>
     }
-    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_imageChart" RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_imageOptions" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart @ref="_imageChart" Type="BitChartType.Doughnut" Data="BitChartSampleData.Traffic()" Options="_imageOptions" /></div></div>
 </DemoExample>

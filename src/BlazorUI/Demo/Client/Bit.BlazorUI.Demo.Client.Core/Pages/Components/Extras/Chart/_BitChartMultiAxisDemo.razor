@@ -5,7 +5,7 @@
         The classic combo: rainfall as bars on the left axis, temperature as a line on the right. Each axis scales
         to its own datasets, so neither measure flattens the other.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Data="BitChartSampleData.TempAndRainfall()" Options="_combo" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Data="BitChartSampleData.TempAndRainfall()" Options="_combo" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Dual line axes" RazorCode="@dualLineRazorCode" CsharpCode="@dualLineCsharpCode" Id="multiaxis-dual-line-axes" PreventRenderForMcpClient>
@@ -13,7 +13,7 @@
         Two lines whose ranges differ by orders of magnitude. On one axis the smaller series would be a flat line
         along the bottom.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Line" Data="DualLine()" Options="_dual" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Line" Data="DualLine()" Options="_dual" /></div></div>
 </DemoExample>
 
 <DemoExample Title="Two x-axes" RazorCode="@dualXRazorCode" CsharpCode="@dualXCsharpCode" Id="multiaxis-two-x-axes">
@@ -22,5 +22,5 @@
         <code>Position = BitChartPosition.Top</code> puts this one above it - and only the primary axis
         draws the chart-area grid.
     </div>
-    <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="DualX()" Options="_dualX" /></div></div>
+    <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="DualX()" Options="_dualX" /></div></div>
 </DemoExample>
