@@ -112,6 +112,9 @@ public abstract class AppLifecycleTests : BswupTest
         await InstallAsync();
         var original = await Session.ManifestAsync(AppPath);
         await WaitForPrecacheAsync(original);
+        // The update activates only once the old worker is idle: in the Auto render mode the page is still downloading
+        // the WebAssembly runtime through it at this point.
+        await WaitForNetworkQuietAsync();
 
         await Session.PublishVersionAsync(2);
         await Session.ClearRequestsAsync();

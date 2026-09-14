@@ -22,6 +22,8 @@ public abstract partial class BswupTest
     private readonly List<string> _consoleErrors = [];
     private readonly List<string> _allowedConsoleErrors = [];
 
+    private readonly Dictionary<IPage, NetworkActivity> _networkActivity = [];
+
     private IBrowserContext? _context;
     private IPage? _page;
     private HarnessSession? _session;
@@ -84,6 +86,13 @@ public abstract partial class BswupTest
         {
             lock (_consoleLock) _consoleErrors.Add($"uncaught: {error}");
         };
+
+        var activity = new NetworkActivity();
+        page.Request += (_, _) => activity.Started();
+        page.RequestFinished += (_, _) => activity.Ended();
+        page.RequestFailed += (_, _) => activity.Ended();
+        lock (_networkActivity) _networkActivity[page] = activity;
+
         return page;
     }
 
@@ -131,6 +140,28 @@ public abstract partial class BswupTest
         await Task.Delay(3000);
         await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.AreEqual(loads.ToString(), await page.Locator("html").GetAttributeAsync("data-harness-loads"), "The page reloaded again.");
+    }
+
+    /// <summary>
+    /// Waits until the page has had no request in flight for <paramref name="quietMs"/>. Chromium activates a worker
+    /// that called skipWaiting only once the active worker is idle (or after five minutes), so an update accepted while
+    /// the page is still fetching through the old worker can sit staged far longer than a test waits. The Auto render
+    /// mode is the case in point: it is interactive on its server circuit while it still downloads the whole
+    /// WebAssembly runtime in the background.
+    /// </summary>
+    protected async Task WaitForNetworkQuietAsync(IPage? page = null, int quietMs = 1000, int timeoutMs = 60_000)
+    {
+        NetworkActivity activity;
+        lock (_networkActivity) activity = _networkActivity[page ?? Page];
+
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (activity.InFlight > 0 || activity.MillisecondsSinceLastChange < quietMs)
+        {
+            if (DateTime.UtcNow > deadline)
+                Assert.Fail($"Timed out after {timeoutMs}ms waiting for the page's network to be quiet ({activity.InFlight} request(s) in flight).");
+
+            await Task.Delay(100);
+        }
     }
 
     /// <summary>Opens the app and waits for the first install to complete: the page controlled and the app started, in the same document.</summary>
@@ -222,6 +253,29 @@ public abstract partial class BswupTest
                 Assert.Fail($"Timed out after {timeoutMs}ms waiting for {what}. Last value: {Describe(last)}{(lastError is null ? "" : $" (last error: {lastError.Message})")}");
 
             await Task.Delay(250);
+        }
+    }
+
+    /// <summary>The requests of one page that have started and not yet finished or failed, and when that last changed.</summary>
+    private sealed class NetworkActivity
+    {
+        private int _inFlight;
+        private long _lastChange = Environment.TickCount64;
+
+        public int InFlight => _inFlight;
+
+        public long MillisecondsSinceLastChange => Environment.TickCount64 - Interlocked.Read(ref _lastChange);
+
+        public void Started()
+        {
+            Interlocked.Increment(ref _inFlight);
+            Interlocked.Exchange(ref _lastChange, Environment.TickCount64);
+        }
+
+        public void Ended()
+        {
+            Interlocked.Decrement(ref _inFlight);
+            Interlocked.Exchange(ref _lastChange, Environment.TickCount64);
         }
     }
 
