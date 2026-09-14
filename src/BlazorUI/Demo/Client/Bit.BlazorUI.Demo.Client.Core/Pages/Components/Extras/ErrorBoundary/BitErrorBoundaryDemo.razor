@@ -226,6 +226,7 @@
                               Title="This record could not be shown"
                               Message="Pick another one and the boundary clears itself.">
                 <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                <br />
             </BitErrorBoundary>
             <br />
             <div class="example-content">
@@ -233,6 +234,7 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => selectedRecord = 2">Record 2</BitButton>
                 <BitButton Variant="BitVariant.Outline" OnClick="() => selectedRecord = 3">Record 3</BitButton>
             </div>
+            <br />
             <div>Selected record: @selectedRecord</div>
         </DemoExample>
 
@@ -248,6 +250,7 @@
                               Title="Something went wrong"
                               Message="Navigate anywhere and this clears itself.">
                 <BitButton OnClick="ThrowException">Throw an exception</BitButton>
+                <br />
             </BitErrorBoundary>
             <br />
             <BitButton Variant="BitVariant.Outline" OnClick="NavigateInPlace">Navigate</BitButton>
