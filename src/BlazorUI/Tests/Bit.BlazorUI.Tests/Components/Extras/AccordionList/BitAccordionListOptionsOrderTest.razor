@@ -1,14 +1,18 @@
 @using Bit.BlazorUI
 
-<BitAccordionList TItem="BitAccordionListOption">
-    <BitAccordionListOption Title="First" />
+<BitAccordionList @ref="List" TItem="BitAccordionListOption" Multiple="Multiple">
+    <BitAccordionListOption Key="first" Title="First">Body of the first</BitAccordionListOption>
     @if (ShowMiddle)
     {
-        <BitAccordionListOption Title="Middle" />
+        <BitAccordionListOption Key="middle" Title="Middle">Body of the middle</BitAccordionListOption>
     }
-    <BitAccordionListOption Title="Last" />
+    <BitAccordionListOption Key="last" Title="Last">Body of the last</BitAccordionListOption>
 </BitAccordionList>
 
 @code {
     [Parameter] public bool ShowMiddle { get; set; }
+
+    [Parameter] public bool Multiple { get; set; }
+
+    public BitAccordionList<BitAccordionListOption>? List { get; set; }
 }

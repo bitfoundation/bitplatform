@@ -19,7 +19,7 @@ public partial class AppAiChatPanel
     private bool readAloudPaused;
     private bool isReadAloudLoading;
     private string? readAloudObjectUrl;
-    private AiChatMessageResponse? readAloudMessage;
+    private AiChatMessage? readAloudMessage;
     private ElementReference readAloudAudioRef;
 
 
@@ -28,7 +28,7 @@ public partial class AppAiChatPanel
     /// here the answer to every following prompt is read out as it completes, so a user who is listening instead of
     /// reading does not have to reach for the button again on each turn.
     /// </summary>
-    private async Task ToggleReadAloud(AiChatMessageResponse message)
+    private async Task ToggleReadAloud(AiChatMessage message)
     {
         if (ReferenceEquals(readAloudMessage, message))
         {
@@ -55,7 +55,7 @@ public partial class AppAiChatPanel
     }
 
     /// <summary>Points read aloud at <paramref name="message"/>, with none of it read yet.</summary>
-    private void FollowReadAloud(AiChatMessageResponse message)
+    private void FollowReadAloud(AiChatMessage message)
     {
         readAloudPaused = false;
         readAloudMessage = message;
@@ -85,13 +85,20 @@ public partial class AppAiChatPanel
         // mode was doing when it opened. Nothing is said while the user is being recorded.
         if (readAloudEnabled is false || readAloudPaused || isListening || readAloudMessage is null) return;
 
+        // The backend only speaks an answer it is handed back the signature of, so an unsigned one is not worth a trip.
+        if (readAloudMessage.Signature is not { } signature) return;
+
         isReadAloudLoading = true;
         StateHasChanged();
 
         try
         {
             using var response = await httpClient.PostAsJsonAsync("api/v1/Chatbot/SynthesizeSpeech",
-                                                                  new SynthesizeSpeechRequestDto { Text = readAloudMessage.Content ?? string.Empty },
+                                                                  new SynthesizeSpeechRequestDto
+                                                                  {
+                                                                      Text = readAloudMessage.Content ?? string.Empty,
+                                                                      Signature = signature
+                                                                  },
                                                                   JsonSerializerOptions.GetTypeInfo<SynthesizeSpeechRequestDto>(),
                                                                   CurrentCancellationToken);
 

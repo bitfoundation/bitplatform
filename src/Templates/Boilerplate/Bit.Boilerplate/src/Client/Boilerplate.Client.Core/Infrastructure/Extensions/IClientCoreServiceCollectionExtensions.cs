@@ -57,6 +57,9 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddSessioned<PubSubService>();
             services.AddSessioned<PromptService>();
             services.AddSessioned<SnackBarService>();
+            //#if (signalR == true || notification == true)
+            services.AddSessioned<NotificationPreferenceService>();
+            //#endif
             services.AddSessioned<ILocalHttpServer, NoOpLocalHttpServer>();
             services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
             services.AddSessioned<AuthenticationStateProvider>(sp =>

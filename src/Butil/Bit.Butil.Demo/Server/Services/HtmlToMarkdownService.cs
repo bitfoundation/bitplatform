@@ -230,6 +230,14 @@ public static partial class HtmlToMarkdownService
         var fence = new string('`', Math.Max(3, longest + 1));
 
         AppendBlockBreak(builder);
+
+        // A sample that spans several files renders as one pane per file with the inactive ones
+        // hidden, so all of them arrive here - as an unattributed pile of sources unless each one
+        // says which file it is. The tab strip that names them on screen lives in the code bar,
+        // which is dropped along with the rest of the pane's chrome.
+        var file = node.GetAttributeValue("data-file", string.Empty).Trim();
+        if (file.Length > 0) builder.Append("**").Append(file).Append("**\n\n");
+
         builder.Append(fence).Append(Language(node)).Append('\n').Append(code).Append('\n').Append(fence);
         AppendBlockBreak(builder);
     }

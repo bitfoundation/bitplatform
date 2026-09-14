@@ -2,7 +2,11 @@
 using System.Net;
 using System.Net.Mail;
 using ImageMagick;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
+using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -87,6 +91,8 @@ public static partial class Program
 
         ConfigureImageMagickResourceLimits();
 
+        services.AddOAuth();
+
         services.AddScoped<IdentityEmailService>();
         services.AddScoped<EmailServiceJobsRunner>();
         services.AddScoped<PhoneService>();
@@ -94,11 +100,13 @@ public static partial class Program
         services.AddScoped<UserErasureService>();
         services.AddScoped<UserSessionsRetentionJobRunner>();
         services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+        services.AddScoped<ServerDiagnosticService>();
 
         services.AddPersonalDataServices();
         //#if (signalR == true)
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
+        services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
         //#endif
         services.AddDevMcp()
         //#if (signalR == true)
@@ -269,11 +277,15 @@ public static partial class Program
 
         services
             .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
-            .AddJsonOptions(options => options.JsonSerializerOptions.ApplyDefaultOptions())
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ApplyDefaultOptions();
+                options.JsonSerializerOptions.Converters.Add(new SelectExpandWrapperJsonConverter());
+            })
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
-            .AddOData(options => options.EnableQueryFeatures())
+            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 100))
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -426,20 +438,41 @@ public static partial class Program
         {
             options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
 
+            // The spec says to ignore a header parameter named Authorization, so the bearer token is a security scheme
+            // instead. Clients and UIs (Scalar, generators) only offer a sign-in box for this.
+            const string bearerSchemeName = "Bearer";
+
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Components ??= new();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes[bearerSchemeName] = new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Get your JWT token by signing in through the Identity/SignIn endpoint."
+                };
+
+                return Task.CompletedTask;
+            });
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
-                var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
+                // MapControllers().RequireAuthorization() makes every action authorized, so [AllowAnonymous] is what
+                // marks the exceptions - the AuthorizeAttribute on an action only narrows an already required token.
+                var isAnonymousAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is IAllowAnonymous);
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
 
                 operation.Parameters ??= [];
-                operation.Parameters.Add(new OpenApiParameter()
+
+                if (isAnonymousAction is false)
                 {
-                    In = ParameterLocation.Header,
-                    Name = HeaderNames.Authorization,
-                    Example = "Bearer XXX.YYY...",
-                    Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
-                    Required = isAuthorizedAction
-                });
+                    operation.Security =
+                    [
+                        new OpenApiSecurityRequirement() { [new OpenApiSecuritySchemeReference(bearerSchemeName, context.Document)] = [] }
+                    ];
+                }
 
                 if (isODataEnabledAction)
                 {
@@ -757,6 +790,11 @@ public static partial class Program
             options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
         })
         .AddBearerToken(IdentityConstants.BearerScheme /*Checkout AppBearerTokenOptionsConfigurator*/ );
+
+        // Tokens issued to external apps over OAuth: same certificate and issuer, different audience. Only the
+        // endpoints that opt in accept this scheme.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, AppOAuthBearerOptionsConfigurator>());
+        authenticationBuilder.AddJwtBearer(AppAuthSchemes.OAUTH_BEARER);
 
         services.AddAuthorization();
 

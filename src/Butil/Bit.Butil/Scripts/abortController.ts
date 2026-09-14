@@ -10,9 +10,9 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         sources?: { source: AbortSignal; handler: () => void }[];
     }
 
-    // Every signal Butil hands to .NET lives here under the id .NET knows it by. Other modules
-    // (fetch) reach in through signalOf() rather than keeping registries of their own.
-    const _signals: { [id: string]: Entry } = {};
+    // Every signal Butil hands to .NET lives in the abortSignals registry under the id .NET knows
+    // it by. Other modules (fetch, scheduler) reach in there rather than through this module, so a
+    // request that composes a shared signal does not download the whole AbortController surface.
 
     // AbortSignal.reason is any value at all - a DOMException for abort()/timeout(), whatever was
     // passed otherwise. .NET only ever sees a string, so flatten it here in one place.
@@ -25,7 +25,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function track(id: string, signal: AbortSignal, controller?: AbortController) {
-        _signals[id] = { signal, controller, listeners: {} };
+        butil.abortSignals.put(id, { signal, controller, listeners: {} });
     }
 
     // A source signal can outlive the composite watching it by a long way - a timeout signal held
@@ -61,7 +61,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
         // Composite: aborts as soon as any source does, carrying that source's reason.
         any(id: string, sourceIds: string[]) {
-            const sources = (sourceIds ?? []).map(sourceId => _signals[sourceId]?.signal).filter(Boolean) as AbortSignal[];
+            const sources = (sourceIds ?? []).map(sourceId => butil.abortSignals.signalOf(sourceId)).filter(Boolean) as AbortSignal[];
             if (sources.length !== (sourceIds ?? []).length) return false; // an unknown id would silently weaken the composite
 
             const AS: any = (window as any).AbortSignal;
@@ -83,7 +83,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 return true;
             }
 
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             entry.sources = sources.map(source => ({
                 source,
                 handler: () => {
@@ -96,7 +96,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         abort(id: string, reason: string | null) {
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             if (!entry?.controller) return false;
             // abort() with no argument produces the standard "AbortError" DOMException, which is
             // what callers who pass no reason expect to see; abort('') would replace it with ''.
@@ -104,15 +104,15 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             return true;
         },
 
-        aborted(id: string) { return _signals[id]?.signal.aborted ?? false; },
+        aborted(id: string) { return butil.abortSignals.signalOf(id)?.aborted ?? false; },
 
         reason(id: string) {
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             return entry ? reasonOf(entry.signal) : '';
         },
 
         addListener(dotNetRef: any, id: string, listenerId: string) {
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             if (!entry) return false;
 
             const handler = () => butil.utils.dispatch(dotNetRef, 'InvokeAbort', listenerId, reasonOf(entry.signal));
@@ -130,7 +130,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         },
 
         removeListener(id: string, listenerId: string) {
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             const handler = entry?.listeners[listenerId];
             if (!handler) return;
             delete entry.listeners[listenerId];
@@ -140,20 +140,17 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Drops the registry entry. The signal itself is not aborted - releasing a handle is not the
         // same as cancelling what it guards, and a signal already handed to fetch keeps working.
         release(id: string) {
-            const entry = _signals[id];
+            const entry = butil.abortSignals.entryOf(id);
             if (!entry) return;
             for (const listenerId of Object.keys(entry.listeners)) {
                 entry.signal.removeEventListener('abort', entry.listeners[listenerId]);
             }
             detachSources(entry);
-            delete _signals[id];
+            butil.abortSignals.remove(id);
         },
 
         releaseAll() {
-            for (const id of Object.keys(_signals)) butil.abortController.release(id);
-        },
-
-        // For other modules: the live AbortSignal behind an id, or undefined.
-        signalOf(id: string) { return _signals[id]?.signal; }
+            for (const id of butil.abortSignals.ids()) butil.abortController.release(id);
+        }
     };
 }(BitButil));

@@ -15,16 +15,17 @@ public partial class UserSessionsRetentionJobRunner
     [AutoInject] private ILogger<UserSessionsRetentionJobRunner> logger = default!;
 
     /// <summary>
-    /// The period is <c>Identity:RefreshTokenExpiration</c> rather than a number of its own: that is the window
-    /// <c>AppJwtSecureDataFormat</c> honours, so a row this removes could not have produced a working token anyway.
+    /// The period is the refresh token's own lifetime, so a row this removes could not have produced a working token
+    /// anyway. An OAuth grant is a session too, and its token lives <c>OAuth:RefreshTokenExpiration</c> instead.
     /// </summary>
     public async Task EnforceRetention(CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow().ToUnixTimeSeconds();
         var maxAge = (long)serverApiSettings.Identity.RefreshTokenExpiration.TotalSeconds;
+        var oauthMaxAge = (long)serverApiSettings.OAuth.RefreshTokenExpiration.TotalSeconds;
 
         var deletedCount = await dbContext.UserSessions
-            .Where(us => (now - (us.RenewedOn ?? us.StartedOn)) > maxAge)
+            .Where(us => (now - (us.RenewedOn ?? us.StartedOn)) > (us.OAuthGrant == null ? maxAge : oauthMaxAge))
             .ExecuteDeleteAsync(cancellationToken);
 
         if (deletedCount > 0)

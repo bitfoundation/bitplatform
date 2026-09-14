@@ -38,7 +38,7 @@ namespace Boilerplate.Tests.Features.TemplateConfig;
 /// windows head takes <c>$(ApplicationVersion)</c> - an android versionCode - as the fourth component of its MSIX
 /// <c>&lt;Identity Version&gt;</c>, so the default ships as <c>1.0.0.10000</c> and any <c>Version</c> from
 /// <c>6.56.0</c> up exceeds the 65535 per-component cap in <c>AppxManifestTypes.xsd</c>; and
-/// <c>wwwroot/.well-known/assetlinks.json</c> and <c>apple-app-site-association</c> ship bitplatform's own store
+/// <c>wwwroot/.well-known/assetlinks.json</c> and <c>apple-app-site-association.json</c> ship bitplatform's own store
 /// package names, apple team id and release signing fingerprint rather than placeholders, so a generated app's
 /// <c>AutoVerify</c> app links do not verify until the developer replaces them by hand. Both are the maintainer's
 /// call. If either is revisited, the assertions were: a <c>$(TargetFramework.Contains('-windows'))</c> PropertyGroup

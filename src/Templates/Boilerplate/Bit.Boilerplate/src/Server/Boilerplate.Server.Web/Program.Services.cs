@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 //#if (api == "Integrated")
 using Boilerplate.Server.Api;
 //#else
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 //#endif
 using Boilerplate.Client.Web;
@@ -42,6 +43,13 @@ public static partial class Program
         {
             options.Authority = configuration.GetServerAddress();
             options.RequireHttpsMetadata = builder.Environment.IsDevelopment() is false;
+
+            // A token names the origin it was minted at, which need not be the address this server dials the api on -
+            // so the accepted issuers are the discovery document's (all JwtBearer takes on its own), the api addresses
+            // this server uses, and the deployment's TrustedOrigins.
+            var serverSharedSettings = configuration.Get<ServerSharedSettings>()!;
+            string?[] apiAddresses = [configuration.GetServerAddress(), configuration.Get<ServerWebSettings>()!.ServerSideHttpClientBaseAddress];
+
             options.TokenValidationParameters = new()
             {
                 ClockSkew = TimeSpan.Zero,
@@ -55,7 +63,15 @@ public static partial class Program
                 ValidAudience = configuration["Identity:Audience"],
 
                 ValidateIssuer = true,
-                ValidIssuer = configuration["Identity:Issuer"]
+                IssuerValidator = (issuer, _, parameters) =>
+                {
+                    var isTrusted = parameters.ValidIssuers?.Contains(issuer, StringComparer.Ordinal) is true
+                        || apiAddresses.Any(address => Uri.TryCreate(address, UriKind.Absolute, out var apiUri)
+                                                       && string.Equals(apiUri.GetLeftPart(UriPartial.Authority), issuer, StringComparison.OrdinalIgnoreCase))
+                        || serverSharedSettings.IsTrustedIssuer(issuer, currentRequest: null);
+
+                    return isTrusted ? issuer : throw new SecurityTokenInvalidIssuerException($"'{issuer}' is not an origin the api issues tokens for.");
+                }
             };
 
             options.Events = new()
@@ -70,22 +86,10 @@ public static partial class Program
                     var principal = context.Principal!;
                     var identity = (ClaimsIdentity)principal.Identity!;
 
-                    if (principal.IsInRole(AppRoles.GlobalAdmin))
+                    foreach (var feat in AppFeatures.GetRoleImpliedFeatures(principal.IsInRole))
                     {
-                        foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
-                        {
-                            identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
-                        }
+                        identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
                     }
-                    //#if (multitenant == true)
-                    else if (principal.IsInRole(AppRoles.TenantAdmin))
-                    {
-                        foreach (var feat in AppFeatures.GetTenantAdminFeatures())
-                        {
-                            identity.AddClaim(new Claim(AppClaimTypes.FEATURES, feat.Value));
-                        }
-                    }
-                    //#endif
                 }
             };
         });

@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using Fido2NetLib;
 using Boilerplate.Shared.Features.Statistics;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 
 namespace Boilerplate.Server.Api.Infrastructure.Services;
 
@@ -21,6 +22,7 @@ namespace Boilerplate.Server.Api.Infrastructure.Services;
 [JsonSerializable(typeof(CloudflarePurgeResponse))]
 //#endif
 [JsonSerializable(typeof(AuthenticatorResponse))]
+[JsonSerializable(typeof(ClientIdMetadataDocument))]
 public partial class ServerJsonContext : JsonSerializerContext
 {
 }

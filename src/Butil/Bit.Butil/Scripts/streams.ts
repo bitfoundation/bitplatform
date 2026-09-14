@@ -31,7 +31,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         async fromResponse(id: string, url: string, req: any) {
             if (typeof (window as any).ReadableStream !== 'function') return null;
 
-            // The request is built by the fetch module rather than here, so there is one mapping of
+            // The request is built by the fetchRequest module rather than here, so there is one mapping of
             // FetchRequest onto RequestInit - including how a shared AbortSignal composes with the
             // request's own controller, which is what cancel() reaches. Building it inside the try
             // along with the call is deliberate: an invalid header name or an unusable body throws
@@ -41,7 +41,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             let cleanup = () => { /* nothing was built yet */ };
             let response: Response;
             try {
-                const built = butil.fetch.requestInit(req ?? {}, controller);
+                const built = butil.fetchRequest.buildInit(req ?? {}, controller);
                 cleanup = built.cleanup;
                 response = await fetch(url, built.init);
             }

@@ -44,7 +44,9 @@ public class BitPanelTests : BunitTestContext
     }
 
     // A closed panel keeps its content in the page so that closing it has something to slide out, so the
-    // content has to be taken out of the tab order and out of the accessibility tree some other way.
+    // content has to be taken out of the tab order and out of the accessibility tree some other way. The
+    // root is what carries it, so the whole of the panel is covered - the focus a press on the overlay
+    // leaves on the root included, which would otherwise stay there for as long as the panel is closed.
     [TestMethod,
         DataRow(false),
         DataRow(true)
@@ -56,9 +58,9 @@ public class BitPanelTests : BunitTestContext
             parameters.Add(p => p.IsOpen, isOpen);
         });
 
-        var container = com.Find(".bit-pnl-cnt");
+        var root = com.Find(".bit-pnl");
 
-        Assert.AreEqual(isOpen is false, container.HasAttribute("inert"));
+        Assert.AreEqual(isOpen is false, root.HasAttribute("inert"));
     }
 
     [TestMethod,
@@ -725,6 +727,44 @@ public class BitPanelTests : BunitTestContext
 
         var released = Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"][^1];
         Assert.AreEqual(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"][^1].Arguments[0], released.Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitPanelOverlayShouldLeaveThePressItsDefaultAndKeepTheFocusOnTheRoot()
+    {
+        var com = RenderComponent<BitPanel>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The press on the overlay keeps its default action, which is what blurs the input the user was
+        // typing into - and an input only commits what was typed once it loses the focus, before the click
+        // the press turns into reaches any dismissal handler.
+        Assert.IsFalse(com.Find(".bit-pnl-ovl").HasAttribute("blazor:onmousedown:preventdefault"));
+
+        // The focus that press moves lands on the root rather than on the body: the browser moves it to the
+        // nearest element that can hold it, and the root is made focusable for exactly that. The focus trap
+        // then passes it on into the container, where the dialog role is: the trap stays on the container,
+        // and the root is named to it as the anchor the press lands on.
+        Assert.AreEqual("-1", com.Find(".bit-pnl").GetAttribute("tabindex"));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1];
+        Assert.AreEqual(com.Find(".bit-pnl-cnt").Id, setup.Arguments[0]);
+        Assert.AreEqual(com.Find(".bit-pnl").Id, setup.Arguments[1]);
+    }
+
+    // The tabindex the panel writes is the one it needs to be able to hold the focus itself, which is a
+    // default rather than a decision about where the panel sits in the tab sequence: a consumer who names
+    // one keeps it, the way they keep every other attribute they pass.
+    [TestMethod]
+    public void BitPanelShouldLetATabIndexOfTheConsumerWin()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-pnl").GetAttribute("tabindex"));
     }
 
     [TestMethod]

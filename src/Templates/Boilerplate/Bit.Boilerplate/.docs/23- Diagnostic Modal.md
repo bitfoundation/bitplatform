@@ -85,20 +85,37 @@ The modal provides several powerful diagnostic and maintenance actions:
 - **Use Case**: Testing error boundaries, exception handlers, and logging infrastructure
 
 #### 🔬 **Call Diagnostics API**
-- Sends a request to [`DiagnosticController.PerformDiagnostic`](/src/Server/Boilerplate.Server.Api/Features/Diagnostic/DiagnosticController.cs)
+- Sends a request to [`DiagnosticController.PerformDiagnostic`](/src/Server/Boilerplate.Server.Api/Features/Diagnostic/DiagnosticController.cs), which builds its report with [`ServerDiagnosticService`](/src/Server/Boilerplate.Server.Api/Features/Diagnostic/ServerDiagnosticService.cs)
 - Returns comprehensive server-side diagnostics including:
-  - Client IP address
-  - HTTP trace identifier
-  - Authentication status
+  - Which path the report came in on (`Via:`), the client IP address and port, whether the call arrived through the CDN, the protocol and endpoint, and the HTTP trace identifier
+  - Authentication status, the caller's `UserSessionId` when signed in, and (when `multitenant` is on) the current `TenantId`
   - Current culture and UI culture
-  - All HTTP request headers
-  - Server environment name, and (when `multitenant` is on) the current `TenantId`
-  - Base URLs
+  - All HTTP request headers - as they arrived, except `Authorization`, reduced to its scheme (`Bearer (redacted)`), and `Cookie`, reduced to its cookie names
+  - Server environment name, base URLs and the server's UTC clock
 - The modal then appends runtime information of its own (AOT detection, GC configuration, etc.) - that part is produced by the component, not by the API
 - **Also Tests**:
   - Push notification functionality (if subscribed)
   - SignalR connection (if connected)
 - Displays results in a BitMessageBox
+
+#### 🧭 **The same report over three paths**
+
+`ServerDiagnosticService` is the single body behind three doors, so the same question can be asked over each and the answers compared - behind a proxy they are separate paths to the origin, and a forwarding rule can be right for one and wrong for another:
+
+| Path | Caller | Access |
+| --- | --- | --- |
+| `DiagnosticController.PerformDiagnostic` | the `/diagnostic` page and this modal | anonymous |
+| `AppHub.GetDiagnosticReport` | the same page, over the websocket it already holds | anonymous (`signalR`) |
+| `GetDiagnosticReport` on `/dev-mcp` | a developer's AI agent | global admin + 2FA |
+
+The two are meant to read almost identically, so the page shows one at a time: the **Ask over SignalR** button re-asks over the socket and replaces what is on screen, and the `Via:` line at the top of each says which path answered. [`ClientIpForwardingTests`](/src/Internal/Boilerplate.Tests.E2E/Features/Diagnostics/ClientIpForwardingTests.cs) checks the resolved client IP on every path against the machine's real public address.
+
+> **Credentials are not in the output.** `Authorization` is reported as its scheme alone and `Cookie` as its cookie names, so a wrong or missing credential is still diagnosable while no token or session value reaches an issue tracker or an AI agent's transcript. Every other header is reported as it arrived.
+
+#### ⏱️ **Open Hangfire Dashboard**
+- Shown only to a user holding `AppFeatures.System.Jobs_Manage` - the same claim [`HangfireDashboardAuthorizationFilter`](/src/Server/Boilerplate.Server.Api/Infrastructure/RequestPipeline/HangfireDashboardAuthorizationFilter.cs) checks - and only on web, since a hybrid app opens the url in the system browser, which shares no cookie jar with its web view
+- Refreshes the access token, then calls `IUserController.UpdateSession`, which writes the `access_token` cookie on the API's origin with its expiry taken from the token's own `exp` claim
+- Opens `/hangfire` on the API address in a new tab. The dashboard is a plain browser navigation, so that cookie is the only credential it can carry
 
 #### 🛠️ **Open Dev Tools**
 - Opens an **in-app browser DevTools** interface

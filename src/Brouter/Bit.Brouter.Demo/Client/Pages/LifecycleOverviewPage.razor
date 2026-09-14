@@ -1,4 +1,4 @@
-<PageTitle>Lifecycle &amp; keep-alive · Brouter docs</PageTitle>
+﻿<PageTitle>Lifecycle &amp; keep-alive · Brouter docs</PageTitle>
 
 @* Topic page: route lifecycle callbacks and keep-alive retention. Live links point at
    /lifecycle/{id}, /sticky, /fleeting and /notes/{id} declared in AppRouter.razor. *@
@@ -39,6 +39,21 @@
         any depth - take the cascaded <code>BrouterRouteContext</code> and call
         <code>Register(this)</code> / <code>Unregister(this)</code> yourself.
     </p>
+    <p class="bb-card-desc">
+        <strong>Rebuilding is opt-in.</strong> By default a parameter-only navigation re-binds the
+        live instance - the same reuse the built-in <code>Router</code> gives a page - and
+        <code>OnRenavigated</code> carries the change. Set
+        <code>BrouterOptions.RemountOnParameterChange = true</code> to dispose the content and mount
+        a fresh instance instead, so a page that reads a value once - in <code>OnInitialized</code>,
+        or through an uncontrolled <code>Default*</code> parameter on a UI component - sees the new
+        one; the change is then reported as a <code>Disposing</code> deactivation followed by a first
+        activation, never as a renavigation. Individual routes override either default with
+        <code>Broute.RemountOnParameterChange</code>. Rebuilding only ever applies to routes that
+        aren't keep-alive: a <code>KeepAlive</code> route ignores the setting and keeps its content
+        across its own parameter change - no disposal, no fresh activation, the change arrives as a
+        renavigation as usual.
+    </p>
+    <pre class="bb-code">services.<span class="k">AddBitBrouterServices</span>(o =&gt; o.RemountOnParameterChange = <span class="k">true</span>);</pre>
     <div class="bb-try">
         <BrouterLink Href="/lifecycle/1" class="btn btn-outline">/lifecycle/1 - live event log (IBrouterRoute)</BrouterLink>
     </div>

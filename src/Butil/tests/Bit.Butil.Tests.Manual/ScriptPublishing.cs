@@ -100,6 +100,25 @@ internal static class ScriptPublishing
             ["BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie|battery"],
             Bundle: [.. Scanned, "cookie", "battery"]),
 
+        // One module out of a split family, kept by name through a real publish. The finer control the
+        // split is for: an app reaching Butil's JavaScript from its own scripts can keep the key-management
+        // module without the four other crypto modules coming with it - and cryptoKeyMaterial does come,
+        // because the manifest says cryptoKeys cannot run without it.
+        new("a csproj list naming one module of a split family publishes that module and its dependencies alone",
+            ["BitButilScriptScan=None", "FixtureScriptModules=cryptoKeys"],
+            Bundle: ["butil", "utils", "cryptoKeyMaterial", "cryptoKeys"]),
+
+        // And the whole family when the class is named instead, since that is what a consumer keeping
+        // "Crypto" means by it.
+        new("a csproj list naming the class of a split family publishes the whole family",
+            ["BitButilScriptScan=None", "FixtureScriptModules=Crypto"],
+            Bundle: ["butil", "utils", "crypto", "cryptoCipher", "cryptoDerive", "cryptoKeyMaterial", "cryptoKeys", "cryptoSign"]),
+
+        // The lazy shape of the same thing: one file per module, split family included.
+        new("lazy scripts publish one file per module of a kept split family",
+            ["BitButilLazyScripts=true", "BitButilScriptScan=None", "FixtureScriptModules=userAgentParser"],
+            Modules: ["butil", "userAgentParser"]),
+
         // The other shape of the same JavaScript: no bundle at all, one file per module the app can reach.
         new("lazy scripts publish only the module files the scan can reach, and no bundle",
             ["BitButilLazyScripts=true", "BitButilScriptScan=TypeReferences"],
@@ -115,13 +134,26 @@ internal static class ScriptPublishing
         // must leave the JavaScript alone: their reference closure is not the app's, so trimming against it
         // would hand the head a bundle short of the modules only the head names.
         //
-        // The gate reads both halves of what the SDK says about a project, so both are forced here: Root is
-        // the .NET 10 Web SDK's StaticWebAssetProjectMode (the .NET 8 and 9 Web SDKs leave a head at
-        // 'Default', which is why the marker below is read as well), and UsingMicrosoftNETSdkWeb is what
-        // says a Web SDK was loaded at all. A class library sets neither, and this fixture - a Web SDK app -
-        // stands in for one by unsetting both.
+        // What the gate reads is the SDK a project loaded: UsingMicrosoftNETSdkWeb and the two WebAssembly
+        // markers, which are set identically on 8, 9 and 10. A class library sets none of them, and this
+        // fixture - a Web SDK app - stands in for one by unsetting the one it has. StaticWebAssetProjectMode
+        // is set to the 'Default' a library carries as well, so the shape being stood in for is the whole
+        // shape, even though the gate no longer reads that half.
         new("a project that does not publish the app's static web assets does not trim",
             ["StaticWebAssetProjectMode=Default", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
+            FullBundle: true),
+
+        // Root is not the signal, and this is the shape that says so: a MAUI/Blazor Hybrid head IS the root
+        // of its asset graph - the WebView package makes it one so that it can package its wwwroot - and it
+        // reaches the publish asset stage from ConvertStaticWebAssetsToMauiAssets, before ResolveReferences
+        // rather than after. Trimming there reads references that are not resolved yet, and the dependency
+        // that would resolve them closes a cycle in that head's target graph (MSB4006), which is a failed
+        // build rather than a wrong bundle. Reading StaticWebAssetProjectMode as "this is the app's head" is
+        // therefore the tempting mistake, and this is what catches it: the previous scenario would still pass
+        // if Root were let back into the gate, and this one - Root forced on with the Web SDK marker off -
+        // would not.
+        new("the asset root of a hybrid head does not trim",
+            ["StaticWebAssetProjectMode=Root", "UsingMicrosoftNETSdkWeb=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
             FullBundle: true),
 
         // MSBuild accepts a misspelled item without a word, so the build is the only thing that can say so.
@@ -288,7 +320,13 @@ internal static class ScriptPublishing
     /// it rather than on any occurrence of the module's name keeps a module that merely <em>mentions</em>
     /// another from being read as that other one being present.
     /// </summary>
-    private static string Guard(string module) => $"window.BitButil.{(module == "butil" ? "version" : module)}";
+    /// <remarks>
+    /// Closing paren included, because a module name can be a prefix of another's: the guard reads
+    /// <c>window.BitButil.cryptoKeys)</c>, and without the paren a bundle holding only that chunk would
+    /// answer yes to <c>crypto</c> as well - reporting a module the app cannot reach, or hiding one it
+    /// needs behind a sibling that happens to be there.
+    /// </remarks>
+    private static string Guard(string module) => $"window.BitButil.{(module == "butil" ? "version" : module)})";
 
     /// <summary>
     /// Runs <c>dotnet</c> with the arguments given. False when it could not be started or did not finish, and
