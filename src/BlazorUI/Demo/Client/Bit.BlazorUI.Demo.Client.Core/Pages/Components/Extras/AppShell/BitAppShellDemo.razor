@@ -89,8 +89,10 @@
                 <div>
                     The four bars are sized from the safe areas of the device and painted in the theme's
                     background color, so the notch and the home indicator of a phone sit over the shell's own
-                    color instead of over the content. They are 0 on a desktop browser, so the example gives
-                    them a height and a color of their own through <b>Styles</b> to make them visible.
+                    color instead of over the content. They are 0 on a desktop browser, so the example stands
+                    in for a phone through <b>Styles</b>: its root is handed the safe areas a device would
+                    report - the <b>--bit-env-inset-*</b> variables the bars are sized from - and each bar is
+                    given a color of its own to make it visible.
                 </div>
                 <br />
                 <div>

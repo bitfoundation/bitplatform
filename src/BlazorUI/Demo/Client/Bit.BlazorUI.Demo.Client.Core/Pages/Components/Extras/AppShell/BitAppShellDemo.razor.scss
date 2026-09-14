@@ -1,9 +1,15 @@
 ﻿// The app shell fills whatever room it is given, and it belongs in MainLayout where that room is the
 // window. A demo page is already inside one, so every example here puts its shell in a box of a fixed
 // height instead - which is the only way to show a full-screen container on a page that is not one.
+//
+// The inset bars sit on a z-index above anything an application can render, which is right for the shell
+// of the whole window but lets a shell in a box paint them over the chrome of this page - its sticky header
+// and toolbars. The box is made a stacking context of its own, so that z-index only ranks the bars among
+// the rest of the shell.
 .shell-box {
     height: 18rem;
     overflow: hidden;
+    isolation: isolate;
     border-radius: 0.375rem;
     border: 1px solid var(--bit-clr-brd-sec);
 
@@ -15,6 +21,7 @@
 .page {
     width: 100%;
     display: flex;
+    height: fit-content;
 
     // So a page shorter than the shell still fills it, which is what a sticky header and a sticky
     // composer both need to have something to stick to.

@@ -43,14 +43,17 @@ public partial class BitAppShellDemo
 
     private string userName = "Saleh Yusefnejad";
 
-    // The four bars are 0 tall on a desktop browser, so the example gives them a size and a color of their
-    // own - which is also the shortest demonstration of what Styles reaches.
+    // The four bars are 0 tall on a desktop browser, so the example stands in for the device: the root is
+    // handed the safe areas a phone would report, which the shell sizes its bars AND its middle from - and
+    // which the No*Inset flags still take back to zero. Sizing the bars themselves inline would do neither,
+    // since an inline height wins over the inset variables the flags change. The bars get a color each.
     private readonly BitAppShellClassStyles insetStyles = new()
     {
-        Top = "height:1.5rem;background:#0d7bbd",
-        Bottom = "height:1.5rem;background:#0d7bbd",
-        Left = "width:1rem;background:#7a3fb5",
-        Right = "width:1rem;background:#7a3fb5",
+        Root = "--bit-env-inset-top:1.5rem;--bit-env-inset-bottom:1.5rem;--bit-env-inset-inline-start:1rem;--bit-env-inset-inline-end:1rem",
+        Top = "background:#0d7bbd",
+        Bottom = "background:#0d7bbd",
+        Left = "background:#7a3fb5",
+        Right = "background:#7a3fb5",
     };
 
     private readonly BitAppShellClassStyles shellStyles = new()
