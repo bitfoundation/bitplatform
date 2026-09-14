@@ -1,6 +1,10 @@
 namespace Bit.BlazorUI;
 
-/// <summary>BitChartDecimation (downsampling) options for large line datasets.</summary>
+/// <summary>
+/// Downsampling options for large line datasets. Decimation applies to unstacked lines and areas:
+/// stacked ones are accumulated index by index across their datasets, so thinning them separately
+/// would leave the layers no longer adding up.
+/// </summary>
 public sealed class BitChartDecimationOptions
 {
     public bool Enabled { get; set; }

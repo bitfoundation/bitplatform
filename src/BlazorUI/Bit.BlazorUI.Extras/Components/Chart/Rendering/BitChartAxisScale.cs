@@ -21,6 +21,14 @@ public sealed class BitChartAxisScale
     /// <summary>Computed label rotation in degrees (auto-fit for category axes).</summary>
     public double LabelRotation { get; set; }
 
+    /// <summary>Culture used to format tick labels. Defaults to the invariant culture.</summary>
+    public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
+
+    /// <summary>The pixel range currently mapped onto, as last passed to <see cref="SetPixelRange"/>.</summary>
+    public double PixelStart => _pixelStart;
+    /// <inheritdoc cref="PixelStart"/>
+    public double PixelEnd => _pixelEnd;
+
     private double _pixelStart;
     private double _pixelEnd;
     private readonly List<string>? _categories;
@@ -96,6 +104,26 @@ public sealed class BitChartAxisScale
         BuildTicks();
     }
 
+    /// <summary>
+    /// The most ticks that fit along the axis without their labels colliding. Value axes read labels
+    /// perpendicular to the axis, so the limit follows the line height; along a horizontal axis it
+    /// follows a conservative label width instead.
+    /// </summary>
+    private int FitTickLimit(int requested)
+    {
+        if (!Options.AutoSkipTicks) return requested;
+        // A single-category axis - or an explicit tick count of one - asks for fewer than the two the
+        // fit is floored at, and there is nothing to thin out there anyway.
+        if (requested < 2) return requested;
+        double length = Math.Abs(_pixelEnd - _pixelStart);
+        if (length <= 0) return requested;
+        double perTick = Horizontal
+            ? Math.Max(24, Options.Ticks.Font.Size * 3.2)   // room for a short numeric label
+            : Options.Ticks.Font.LineHeightPx * 1.6;        // room for one line of text
+        int fits = (int)Math.Floor(length / perTick) + 1;
+        return Math.Clamp(fits, 2, requested);
+    }
+
     public double PixelFor(double value)
     {
         double t = NormalizedPosition(value);
@@ -164,8 +192,8 @@ public sealed class BitChartAxisScale
 
     private void BuildTimeTicks()
     {
-        int maxTicks = Options.Ticks.Count ?? Options.Ticks.MaxTicksLimit ?? 11;
-        foreach (var (value, label) in BitChartTimeAxis.Ticks(Min, Max, Options.TimeUnit, Options.TimeFormat, maxTicks))
+        int maxTicks = FitTickLimit(Options.Ticks.Count ?? Options.Ticks.MaxTicksLimit ?? 11);
+        foreach (var (value, label) in BitChartTimeAxis.Ticks(Min, Max, Options.TimeUnit, Options.TimeFormat, maxTicks, Culture))
             Ticks.Add(new BitChartAxisTick(value, label, PixelFor(value)));
     }
 
@@ -177,7 +205,7 @@ public sealed class BitChartAxisScale
         int end = Math.Min(n - 1, (int)Math.Floor(Max + 1e-9));
         if (end < start) return;
         int visible = end - start + 1;
-        int maxLabels = Options.Ticks.MaxTicksLimit ?? visible;
+        int maxLabels = FitTickLimit(Options.Ticks.MaxTicksLimit ?? visible);
         int skip = Options.Ticks.AutoSkip && visible > maxLabels ? (int)Math.Ceiling((double)visible / maxLabels) : 1;
         for (int i = start; i <= end; i++)
         {
@@ -189,7 +217,7 @@ public sealed class BitChartAxisScale
 
     private void BuildLinearTicks()
     {
-        int maxTicks = Options.Ticks.Count ?? Options.Ticks.MaxTicksLimit ?? 11;
+        int maxTicks = FitTickLimit(Options.Ticks.Count ?? Options.Ticks.MaxTicksLimit ?? 11);
         maxTicks = Math.Max(2, maxTicks);
 
         double range = Max - Min;
@@ -213,12 +241,19 @@ public sealed class BitChartAxisScale
             Max = niceMax;
         }
 
+        // A step far smaller than the range (an explicit StepSize of 1 over millions, say) would
+        // otherwise generate ticks until the browser gives up, so the emitted count is bounded.
+        int limit = Math.Max(maxTicks * 4, 64);
+        if ((niceMax - niceMin) / rawStep > limit)
+            rawStep = (niceMax - niceMin) / limit;
+
         int decimals = DecimalsFor(rawStep);
         for (double v = niceMin; v <= niceMax + rawStep * 0.5; v += rawStep)
         {
             double val = Math.Round(v, 8);
             if (val < Min - 1e-9 || val > Max + 1e-9) continue;
             Ticks.Add(new BitChartAxisTick(val, FormatValue(val, decimals), PixelFor(val)));
+            if (Ticks.Count > limit) break;
         }
     }
 
@@ -253,7 +288,8 @@ public sealed class BitChartAxisScale
         if (Options.Ticks.Callback is { } cb)
             return cb(value, Ticks.Count);
         if (Options.Ticks.Precision is { } p) decimals = p;
-        string s = value.ToString("N" + Math.Max(0, decimals), CultureInfo.InvariantCulture);
+        string format = Options.Ticks.Format ?? "N" + Math.Max(0, decimals);
+        string s = value.ToString(format, Culture);
         return $"{Options.Ticks.Prefix}{s}{Options.Ticks.Suffix}";
     }
 
