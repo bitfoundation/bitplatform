@@ -169,15 +169,148 @@ public class BitFullCalendarTexts
     public string RepeatsUntilFormat { get; set; } = "until {0}";
 
     /// <summary>
-    /// A one-line summary of a repeat rule, as shown in the event details dialog: the frequency,
-    /// then the interval, the occurrence count, and the end date when the rule names them.
+    /// Appended when a weekly series names its weekdays ({0} = the abbreviated weekday names, joined
+    /// with <see cref="ListSeparator"/>).
     /// </summary>
-    public string GetRecurrenceSummary(BitFullCalendarRecurrence recurrence, System.Globalization.CultureInfo? culture = null)
+    public string RepeatsOnDaysFormat { get; set; } = "on {0}";
+
+    /// <summary>
+    /// Appended when a monthly or yearly series lands on a weekday of the month ({0} = the week of the
+    /// month, from <see cref="GetWeekOfMonthLabel"/>; {1} = the weekday names).
+    /// </summary>
+    public string RepeatsOnWeekOfMonthFormat { get; set; } = "on the {0} {1}";
+
+    /// <summary>Separator between the items of a list in a summary, such as weekday names.</summary>
+    public string ListSeparator { get; set; } = ", ";
+
+    /// <summary>Name of <see cref="BitFullCalendarWeekOfMonth.First"/>.</summary>
+    public string WeekOfMonthFirst { get; set; } = "first";
+
+    /// <summary>Name of <see cref="BitFullCalendarWeekOfMonth.Second"/>.</summary>
+    public string WeekOfMonthSecond { get; set; } = "second";
+
+    /// <summary>Name of <see cref="BitFullCalendarWeekOfMonth.Third"/>.</summary>
+    public string WeekOfMonthThird { get; set; } = "third";
+
+    /// <summary>Name of <see cref="BitFullCalendarWeekOfMonth.Fourth"/>.</summary>
+    public string WeekOfMonthFourth { get; set; } = "fourth";
+
+    /// <summary>Name of <see cref="BitFullCalendarWeekOfMonth.Last"/>.</summary>
+    public string WeekOfMonthLast { get; set; } = "last";
+
+    /// <summary>Label of the repeat picker in the add/edit dialog.</summary>
+    public string RepeatLabel { get; set; } = "Repeat";
+
+    /// <summary>The repeat picker's option for a one-off event.</summary>
+    public string DoesNotRepeatOption { get; set; } = "Does not repeat";
+
+    /// <summary>Label of the interval field in the add/edit dialog.</summary>
+    public string RepeatEveryLabel { get; set; } = "Repeat every";
+
+    /// <summary>Unit shown after the interval of a daily series.</summary>
+    public string RepeatDaysUnit { get; set; } = "day(s)";
+
+    /// <summary>Unit shown after the interval of a weekly series.</summary>
+    public string RepeatWeeksUnit { get; set; } = "week(s)";
+
+    /// <summary>Unit shown after the interval of a monthly series.</summary>
+    public string RepeatMonthsUnit { get; set; } = "month(s)";
+
+    /// <summary>Unit shown after the interval of a yearly series.</summary>
+    public string RepeatYearsUnit { get; set; } = "year(s)";
+
+    /// <summary>Label of the weekday and day-of-the-month choices in the add/edit dialog.</summary>
+    public string RepeatOnLabel { get; set; } = "Repeat on";
+
+    /// <summary>The option that keeps a monthly series on the start date's day number ({0} = that day).</summary>
+    public string RepeatOnDayOfMonthFormat { get; set; } = "Day {0}";
+
+    /// <summary>
+    /// The option that moves a monthly or yearly series onto a weekday of the month ({0} = the week of
+    /// the month, from <see cref="GetWeekOfMonthLabel"/>). The weekdays are picked beside it.
+    /// </summary>
+    public string RepeatOnWeekOfMonthFormat { get; set; } = "The {0}";
+
+    /// <summary>Label of the field that decides when a series ends.</summary>
+    public string EndsLabel { get; set; } = "Ends";
+
+    /// <summary>The option for an open-ended series.</summary>
+    public string EndsNeverOption { get; set; } = "Never";
+
+    /// <summary>The option for a series that ends on a date.</summary>
+    public string EndsOnDateOption { get; set; } = "On date";
+
+    /// <summary>The option for a series that ends after a number of occurrences.</summary>
+    public string EndsAfterOption { get; set; } = "After";
+
+    /// <summary>Shown after the occurrence count of a series that ends after a number of occurrences.</summary>
+    public string OccurrencesLabel { get; set; } = "occurrence(s)";
+
+    /// <summary>Label of the skipped and added dates of a series in the add/edit dialog.</summary>
+    public string RepeatExceptionsLabel { get; set; } = "Exceptions";
+
+    /// <summary>Button that adds the picked date to the dates a series skips.</summary>
+    public string SkipDateButton { get; set; } = "Skip date";
+
+    /// <summary>Button that adds the picked date to the dates a series also occurs on.</summary>
+    public string AddDateButton { get; set; } = "Add date";
+
+    /// <summary>Caption of the dates a series skips.</summary>
+    public string SkippedDatesLabel { get; set; } = "Skipped";
+
+    /// <summary>Caption of the dates a series also occurs on.</summary>
+    public string AddedDatesLabel { get; set; } = "Added";
+
+    /// <summary>Accessible name of the button that removes a date from the skipped or added dates.</summary>
+    public string RemoveDateAriaLabel { get; set; } = "Remove date";
+
+    /// <summary>Validation message when an interval or an occurrence count is below 1.</summary>
+    public string ValidationRepeatAtLeastOne { get; set; } = "Must be at least 1";
+
+    /// <summary>Validation message when a series is set to end before it starts.</summary>
+    public string ValidationUntilBeforeStart { get; set; } = "The series cannot end before it starts";
+
+    /// <summary>Title of the prompt that asks whether an edit applies to one occurrence or the series.</summary>
+    public string RecurringEditTitle { get; set; } = "Edit recurring event";
+
+    /// <summary>Title of the prompt that asks whether a delete applies to one occurrence or the series.</summary>
+    public string RecurringDeleteTitle { get; set; } = "Delete recurring event";
+
+    /// <summary>The choice that applies an edit or delete to the opened occurrence only.</summary>
+    public string ThisOccurrenceOption { get; set; } = "This event";
+
+    /// <summary>The choice that applies an edit or delete to the whole series.</summary>
+    public string AllOccurrencesOption { get; set; } = "All events in the series";
+
+    /// <summary>Label of the button that confirms a prompt.</summary>
+    public string OkButton { get; set; } = "OK";
+
+    /// <summary>The localized name of a week of the month, as used in repeat summaries and the dialog.</summary>
+    public string GetWeekOfMonthLabel(BitFullCalendarWeekOfMonth week) => week switch
+    {
+        BitFullCalendarWeekOfMonth.First => WeekOfMonthFirst,
+        BitFullCalendarWeekOfMonth.Second => WeekOfMonthSecond,
+        BitFullCalendarWeekOfMonth.Third => WeekOfMonthThird,
+        BitFullCalendarWeekOfMonth.Fourth => WeekOfMonthFourth,
+        BitFullCalendarWeekOfMonth.Last => WeekOfMonthLast,
+        _ => week.ToString()
+    };
+
+    /// <summary>
+    /// A one-line summary of a repeat rule, as shown in the event details dialog: the frequency, then
+    /// the interval, the weekdays or the weekday of the month, the occurrence count, and the end date
+    /// when the rule names them.
+    /// <para>
+    /// <paramref name="seriesStart"/> is the master's start: a monthly rule on a weekday of the month
+    /// that lists no weekday follows the start date's own, which only the start can name.
+    /// </para>
+    /// </summary>
+    public string GetRecurrenceSummary(BitFullCalendarRecurrence recurrence, System.Globalization.CultureInfo? culture = null, DateTime? seriesStart = null)
     {
         ArgumentNullException.ThrowIfNull(recurrence);
         culture ??= System.Globalization.CultureInfo.CurrentUICulture;
 
-        var parts = new List<string>(4)
+        var parts = new List<string>(5)
         {
             recurrence.Frequency switch
             {
@@ -191,6 +324,24 @@ public class BitFullCalendarTexts
 
         if (recurrence.Interval > 1)
             parts.Add(string.Format(culture, RepeatsIntervalFormat, recurrence.Interval));
+
+        var namesDays = recurrence.DaysOfWeek?.Any(Enum.IsDefined) is true;
+        // Weekdays read in the order the culture's week runs, not in DayOfWeek's Sunday-first order.
+        var firstDay = (int)culture.DateTimeFormat.FirstDayOfWeek;
+        IEnumerable<DayOfWeek> OrderedDays(DateTime start) => recurrence.ResolveWeekDays(start).OrderBy(d => ((int)d - firstDay + 7) % 7);
+
+        if (recurrence.ResolveWeekOfMonth() is { } week)
+        {
+            var days = namesDays || seriesStart is not null
+                ? string.Join(ListSeparator, OrderedDays(seriesStart ?? default).Select(culture.DateTimeFormat.GetDayName))
+                : string.Empty;
+            parts.Add(string.Format(culture, RepeatsOnWeekOfMonthFormat, GetWeekOfMonthLabel(week), days).Trim());
+        }
+        else if (recurrence.Frequency is BitFullCalendarRecurrenceFrequency.Weekly && namesDays)
+        {
+            var days = string.Join(ListSeparator, OrderedDays(default).Select(culture.DateTimeFormat.GetAbbreviatedDayName));
+            parts.Add(string.Format(culture, RepeatsOnDaysFormat, days));
+        }
 
         if (recurrence.Count is { } count && count > 0)
             parts.Add(string.Format(culture, RepeatsCountFormat, count));

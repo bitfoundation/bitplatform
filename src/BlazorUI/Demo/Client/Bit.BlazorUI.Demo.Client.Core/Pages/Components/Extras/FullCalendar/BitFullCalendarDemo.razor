@@ -389,13 +389,20 @@
         <DemoExample Title="Recurring events" RazorCode="@example18RazorCode" Id="example18">
             <div>
                 Give an event a <code>Recurrence</code> rule and the calendar repeats it: daily, weekly
-                (on the weekdays you list), monthly, or yearly, every <code>Interval</code> units, ending
-                after a <code>Count</code> of occurrences or on an <code>Until</code> date - or never.
-                <code>ExceptionDates</code> skips the ones that were cancelled. Only the visible range is
-                expanded, so an open-ended series costs nothing to keep, and each occurrence carries the
-                master's <code>SeriesId</code> and its own <code>OccurrenceDate</code>. Occurrences render
-                read-only: the series master is what you edit, through your own UI from
-                <code>OnEventClick</code> - open one and the details dialog names the rule it came from.
+                (on the non-consecutive weekdays you list in <code>DaysOfWeek</code>), monthly, or yearly,
+                every <code>Interval</code> units - every 15 days, every other week - ending after a
+                <code>Count</code> of occurrences or on an <code>Until</code> date, or never. A monthly or
+                yearly rule with a <code>WeekOfMonth</code> lands on a weekday of the month instead of a
+                day number: the third Tuesday, the last Friday. <code>ExceptionDates</code> skips the
+                occurrences that were cancelled and <code>AdditionalDates</code> adds ones outside the
+                pattern, without disturbing it. Only the visible range is expanded, so an open-ended series
+                costs nothing to keep, and each occurrence carries the master's <code>SeriesId</code> and
+                its own <code>OccurrenceDate</code>.
+                <br />
+                The user manages all of this from the dialogs too: the add/edit dialog has a Repeat section
+                for the rule and its skipped and added dates, and opening an occurrence asks whether Edit
+                or Delete means <em>this event</em> - which skips its date, and for an edit puts a one-off
+                event in its place - or <em>all events in the series</em>. Occurrences cannot be dragged.
             </div>
             <br />
             <BitFullCalendar Events="recurringEvents" DefaultView="BitFullCalendarView.Month" />

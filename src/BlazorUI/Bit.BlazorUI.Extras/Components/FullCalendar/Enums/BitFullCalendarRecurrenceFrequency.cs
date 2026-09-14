@@ -17,13 +17,16 @@ public enum BitFullCalendarRecurrenceFrequency
 
     /// <summary>
     /// Repeats every <c>Interval</c> months on the start date's day of the month. A month that is too
-    /// short for that day (the 31st of a 30-day month) is skipped rather than shifted.
+    /// short for that day (the 31st of a 30-day month) is skipped rather than shifted. With
+    /// <see cref="BitFullCalendarRecurrence.WeekOfMonth"/> set it repeats on a weekday of the month
+    /// instead ("the third Tuesday").
     /// </summary>
     Monthly,
 
     /// <summary>
     /// Repeats every <c>Interval</c> years on the start date's month and day. A 29 February series
-    /// only occurs in leap years.
+    /// only occurs in leap years. With <see cref="BitFullCalendarRecurrence.WeekOfMonth"/> set it
+    /// repeats on a weekday of the start date's month instead ("the fourth Thursday of November").
     /// </summary>
     Yearly
 }

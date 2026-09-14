@@ -16,6 +16,12 @@ public partial class BitFcDateTimePicker : IDisposable
     /// </summary>
     [Parameter] public DayOfWeek? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// When false the picker chooses a date only: the time selects are left out and the trigger shows
+    /// the date alone. A picked date keeps the time of day <see cref="Value"/> already had.
+    /// </summary>
+    [Parameter] public bool ShowTime { get; set; } = true;
+
     /// <summary>Earliest selectable date; earlier days render disabled. <c>null</c> leaves it open.</summary>
     [Parameter] public DateTime? MinDate { get; set; }
 
@@ -248,6 +254,9 @@ public partial class BitFcDateTimePicker : IDisposable
     private string GetDisplayText()
     {
         var datePart = Value.ToString("d", Culture);
+        if (ShowTime is false)
+            return datePart;
+
         // Honor the configured time format: 24-hour ("HH:mm") or 12-hour with the culture's AM/PM
         // designator ("h:mm tt"), matching the rest of the calendar's time rendering.
         var timePart = Value.ToString(Use24HourFormat ? "HH:mm" : "h:mm tt", Culture);

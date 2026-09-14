@@ -358,8 +358,22 @@ public partial class BitFullCalendarDemo
             [
                 new() { Name = "Daily", Description = "Repeats every Interval days.", Value = "0" },
                 new() { Name = "Weekly", Description = "Repeats every Interval weeks, on the weekdays listed in DaysOfWeek (the start date's own weekday when none are listed).", Value = "1" },
-                new() { Name = "Monthly", Description = "Repeats every Interval months on the start date's day of the month. A month too short for that day is skipped rather than shifted.", Value = "2" },
-                new() { Name = "Yearly", Description = "Repeats every Interval years on the start date's month and day. A 29 February series only occurs in leap years.", Value = "3" },
+                new() { Name = "Monthly", Description = "Repeats every Interval months on the start date's day of the month. A month too short for that day is skipped rather than shifted. With WeekOfMonth set it repeats on a weekday of the month instead (the third Tuesday).", Value = "2" },
+                new() { Name = "Yearly", Description = "Repeats every Interval years on the start date's month and day. A 29 February series only occurs in leap years. With WeekOfMonth set it repeats on a weekday of the start date's month instead (the fourth Thursday of November).", Value = "3" },
+            ]
+        },
+        new()
+        {
+            Id = "week-of-month-enum",
+            Name = "BitFullCalendarWeekOfMonth",
+            Description = "Which occurrence of a weekday within its month a monthly or yearly recurrence lands on - the \"third\" in \"the third Tuesday of every month\".",
+            Items =
+            [
+                new() { Name = "First", Description = "The first such weekday of the month (days 1 to 7).", Value = "0" },
+                new() { Name = "Second", Description = "The second such weekday of the month (days 8 to 14).", Value = "1" },
+                new() { Name = "Third", Description = "The third such weekday of the month (days 15 to 21).", Value = "2" },
+                new() { Name = "Fourth", Description = "The fourth such weekday of the month (days 22 to 28).", Value = "3" },
+                new() { Name = "Last", Description = "The last such weekday of the month, whether that is its fourth or its fifth.", Value = "4" },
             ]
         },
         new()
@@ -420,10 +434,12 @@ public partial class BitFullCalendarDemo
             [
                 new() { Name = "Frequency", Type = "BitFullCalendarRecurrenceFrequency", DefaultValue = "BitFullCalendarRecurrenceFrequency.Daily", Description = "How often the event repeats.", LinkType = LinkType.Link, Href = "#recurrence-frequency-enum" },
                 new() { Name = "Interval", Type = "int", DefaultValue = "1", Description = "Number of frequency units between two occurrences - 2 with a weekly frequency means every other week. Values below 1 are treated as 1." },
-                new() { Name = "DaysOfWeek", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "Weekdays a weekly series occurs on. When null or empty the series follows the start date's own weekday. Ignored by the other frequencies." },
-                new() { Name = "Count", Type = "int?", DefaultValue = "null", Description = "Total number of occurrences, counting the first. Null leaves the series open-ended unless Until closes it; when both are set, whichever ends the series first wins." },
-                new() { Name = "Until", Type = "DateTime?", DefaultValue = "null", Description = "Last date the series may occur on (inclusive). Null leaves the series open-ended unless Count closes it." },
-                new() { Name = "ExceptionDates", Type = "IReadOnlyList<DateTime>?", DefaultValue = "null", Description = "Dates the series skips - a cancelled occurrence, a holiday. Only the date part is compared, and a skipped date still counts against Count." },
+                new() { Name = "DaysOfWeek", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "Weekdays the series occurs on: every week for a weekly series, or on that week of the month for a monthly or yearly series with a WeekOfMonth. When null or empty the series follows the start date's own weekday. Ignored by the other frequencies." },
+                new() { Name = "WeekOfMonth", Type = "BitFullCalendarWeekOfMonth?", DefaultValue = "null", Description = "Places a monthly or yearly series on a weekday of the month instead of the start date's day number - Third with DaysOfWeek set to Tuesday is the third Tuesday. A yearly series stays in the start date's month. Ignored by the other frequencies.", LinkType = LinkType.Link, Href = "#week-of-month-enum" },
+                new() { Name = "Count", Type = "int?", DefaultValue = "null", Description = "Total number of occurrences the pattern produces, counting the first. Null leaves the series open-ended unless Until closes it; when both are set, whichever ends the series first wins." },
+                new() { Name = "Until", Type = "DateTime?", DefaultValue = "null", Description = "Last date the pattern may occur on (inclusive). Null leaves the series open-ended unless Count closes it." },
+                new() { Name = "ExceptionDates", Type = "IReadOnlyList<DateTime>?", DefaultValue = "null", Description = "Dates the series skips - a cancelled occurrence, a holiday. Only the date part is compared, a skipped date still counts against Count, and it also removes an AdditionalDates entry on the same date." },
+                new() { Name = "AdditionalDates", Type = "IReadOnlyList<DateTime>?", DefaultValue = "null", Description = "Dates the series also occurs on outside its pattern - a make-up session. Each repeats the master's time of day and length, neither counts against Count nor stops at Until, and a date the pattern already produces is not doubled." },
             ]
         },
         new()
@@ -626,7 +642,44 @@ public partial class BitFullCalendarDemo
                 new() { Name = "RepeatsIntervalFormat", Type = "string", DefaultValue = "\"every {0}\"", Description = "Appended to the frequency when the rule repeats every N units; {0} is the interval." },
                 new() { Name = "RepeatsCountFormat", Type = "string", DefaultValue = "\"{0} times\"", Description = "Appended when the series is closed by a number of occurrences; {0} is the count." },
                 new() { Name = "RepeatsUntilFormat", Type = "string", DefaultValue = "\"until {0}\"", Description = "Appended when the series is closed by a date; {0} is the formatted date." },
-                new() { Name = "GetRecurrenceSummary(BitFullCalendarRecurrence, CultureInfo?)", Type = "string", DefaultValue = "", Description = "Method that returns the one-line repeat summary shown in the event details dialog." },
+                new() { Name = "RepeatsOnDaysFormat", Type = "string", DefaultValue = "\"on {0}\"", Description = "Appended when a weekly series names its weekdays; {0} is the abbreviated weekday names joined with ListSeparator." },
+                new() { Name = "RepeatsOnWeekOfMonthFormat", Type = "string", DefaultValue = "\"on the {0} {1}\"", Description = "Appended when a monthly or yearly series lands on a weekday of the month; {0} is the week of the month, {1} the weekday names." },
+                new() { Name = "ListSeparator", Type = "string", DefaultValue = "\", \"", Description = "Separator between the items of a list in a summary, such as weekday names." },
+                new() { Name = "WeekOfMonthFirst", Type = "string", DefaultValue = "\"first\"", Description = "Name of BitFullCalendarWeekOfMonth.First." },
+                new() { Name = "WeekOfMonthSecond", Type = "string", DefaultValue = "\"second\"", Description = "Name of BitFullCalendarWeekOfMonth.Second." },
+                new() { Name = "WeekOfMonthThird", Type = "string", DefaultValue = "\"third\"", Description = "Name of BitFullCalendarWeekOfMonth.Third." },
+                new() { Name = "WeekOfMonthFourth", Type = "string", DefaultValue = "\"fourth\"", Description = "Name of BitFullCalendarWeekOfMonth.Fourth." },
+                new() { Name = "WeekOfMonthLast", Type = "string", DefaultValue = "\"last\"", Description = "Name of BitFullCalendarWeekOfMonth.Last." },
+                new() { Name = "RepeatLabel", Type = "string", DefaultValue = "\"Repeat\"", Description = "Label of the repeat picker in the add/edit dialog." },
+                new() { Name = "DoesNotRepeatOption", Type = "string", DefaultValue = "\"Does not repeat\"", Description = "The repeat picker's option for a one-off event." },
+                new() { Name = "RepeatEveryLabel", Type = "string", DefaultValue = "\"Repeat every\"", Description = "Label of the interval field in the add/edit dialog." },
+                new() { Name = "RepeatDaysUnit", Type = "string", DefaultValue = "\"day(s)\"", Description = "Unit shown after the interval of a daily series." },
+                new() { Name = "RepeatWeeksUnit", Type = "string", DefaultValue = "\"week(s)\"", Description = "Unit shown after the interval of a weekly series." },
+                new() { Name = "RepeatMonthsUnit", Type = "string", DefaultValue = "\"month(s)\"", Description = "Unit shown after the interval of a monthly series." },
+                new() { Name = "RepeatYearsUnit", Type = "string", DefaultValue = "\"year(s)\"", Description = "Unit shown after the interval of a yearly series." },
+                new() { Name = "RepeatOnLabel", Type = "string", DefaultValue = "\"Repeat on\"", Description = "Label of the weekday and day-of-the-month choices in the add/edit dialog." },
+                new() { Name = "RepeatOnDayOfMonthFormat", Type = "string", DefaultValue = "\"Day {0}\"", Description = "The option that keeps a monthly series on the start date's day number; {0} is that day." },
+                new() { Name = "RepeatOnWeekOfMonthFormat", Type = "string", DefaultValue = "\"The {0}\"", Description = "The option that moves a monthly or yearly series onto a weekday of the month; {0} is the week of the month. The weekdays are picked beside it." },
+                new() { Name = "EndsLabel", Type = "string", DefaultValue = "\"Ends\"", Description = "Label of the field that decides when a series ends." },
+                new() { Name = "EndsNeverOption", Type = "string", DefaultValue = "\"Never\"", Description = "The option for an open-ended series." },
+                new() { Name = "EndsOnDateOption", Type = "string", DefaultValue = "\"On date\"", Description = "The option for a series that ends on a date." },
+                new() { Name = "EndsAfterOption", Type = "string", DefaultValue = "\"After\"", Description = "The option for a series that ends after a number of occurrences." },
+                new() { Name = "OccurrencesLabel", Type = "string", DefaultValue = "\"occurrence(s)\"", Description = "Shown after the occurrence count of a series that ends after a number of occurrences." },
+                new() { Name = "RepeatExceptionsLabel", Type = "string", DefaultValue = "\"Exceptions\"", Description = "Label of the skipped and added dates of a series in the add/edit dialog." },
+                new() { Name = "SkipDateButton", Type = "string", DefaultValue = "\"Skip date\"", Description = "Button that adds the picked date to the dates a series skips." },
+                new() { Name = "AddDateButton", Type = "string", DefaultValue = "\"Add date\"", Description = "Button that adds the picked date to the dates a series also occurs on." },
+                new() { Name = "SkippedDatesLabel", Type = "string", DefaultValue = "\"Skipped\"", Description = "Caption of the dates a series skips." },
+                new() { Name = "AddedDatesLabel", Type = "string", DefaultValue = "\"Added\"", Description = "Caption of the dates a series also occurs on." },
+                new() { Name = "RemoveDateAriaLabel", Type = "string", DefaultValue = "\"Remove date\"", Description = "Accessible name of the button that removes a skipped or added date." },
+                new() { Name = "ValidationRepeatAtLeastOne", Type = "string", DefaultValue = "\"Must be at least 1\"", Description = "Validation message when an interval or an occurrence count is below 1." },
+                new() { Name = "ValidationUntilBeforeStart", Type = "string", DefaultValue = "\"The series cannot end before it starts\"", Description = "Validation message when a series is set to end before it starts." },
+                new() { Name = "RecurringEditTitle", Type = "string", DefaultValue = "\"Edit recurring event\"", Description = "Title of the prompt that asks whether an edit applies to one occurrence or the series." },
+                new() { Name = "RecurringDeleteTitle", Type = "string", DefaultValue = "\"Delete recurring event\"", Description = "Title of the prompt that asks whether a delete applies to one occurrence or the series." },
+                new() { Name = "ThisOccurrenceOption", Type = "string", DefaultValue = "\"This event\"", Description = "The choice that applies an edit or delete to the opened occurrence only." },
+                new() { Name = "AllOccurrencesOption", Type = "string", DefaultValue = "\"All events in the series\"", Description = "The choice that applies an edit or delete to the whole series." },
+                new() { Name = "OkButton", Type = "string", DefaultValue = "\"OK\"", Description = "Label of the button that confirms a prompt." },
+                new() { Name = "GetWeekOfMonthLabel(BitFullCalendarWeekOfMonth)", Type = "string", DefaultValue = "", Description = "Method that returns the localized name of a week of the month." },
+                new() { Name = "GetRecurrenceSummary(BitFullCalendarRecurrence, CultureInfo?, DateTime?)", Type = "string", DefaultValue = "", Description = "Method that returns the one-line repeat summary shown in the event details dialog. Pass the master's start so a rule that names no weekday can still be described." },
                 new() { Name = "ResourceLabel", Type = "string", DefaultValue = "\"Resource\"", Description = "Label for the resource field in the add/edit dialog." },
                 new() { Name = "ResourceColumnHeader", Type = "string", DefaultValue = "\"Resource\"", Description = "Header for the resource column in the timeline view." },
                 new() { Name = "NoResourceLabel", Type = "string", DefaultValue = "\"Unassigned\"", Description = "Label for events not assigned to a resource." },
@@ -1112,15 +1165,48 @@ public partial class BitFullCalendarDemo
             new()
             {
                 Id = (++id).ToString(),
-                Title = "Payroll",
-                Description = "Monthly, until the end of next quarter.",
+                Title = "Board Meeting",
+                Description = "The third Tuesday of every month for six months, plus one extra session.",
                 StartDate = today.AddHours(11),
                 EndDate = today.AddHours(12),
                 Color = "red",
                 Recurrence = new()
                 {
                     Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
-                    Until = today.AddMonths(6)
+                    WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+                    DaysOfWeek = [DayOfWeek.Tuesday],
+                    Until = today.AddMonths(6),
+                    // A make-up session outside the pattern.
+                    AdditionalDates = [today.AddDays(10)]
+                }
+            },
+            new()
+            {
+                Id = (++id).ToString(),
+                Title = "Backup Check",
+                Description = "Every 15 days.",
+                StartDate = today.AddHours(8),
+                EndDate = today.AddHours(8).AddMinutes(30),
+                Color = "green",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Daily,
+                    Interval = 15
+                }
+            },
+            new()
+            {
+                Id = (++id).ToString(),
+                Title = "Month-end Report",
+                Description = "The last Friday of every month.",
+                StartDate = today.AddHours(16),
+                EndDate = today.AddHours(17),
+                Color = "orange",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+                    WeekOfMonth = BitFullCalendarWeekOfMonth.Last,
+                    DaysOfWeek = [DayOfWeek.Friday]
                 }
             },
         ];
@@ -1764,15 +1850,48 @@ public partial class BitFullCalendarDemo
             new()
             {
                 Id = (++id).ToString(),
-                Title = ""Payroll"",
-                Description = ""Monthly, until the end of next quarter."",
+                Title = ""Board Meeting"",
+                Description = ""The third Tuesday of every month for six months, plus one extra session."",
                 StartDate = today.AddHours(11),
                 EndDate = today.AddHours(12),
                 Color = ""red"",
                 Recurrence = new()
                 {
                     Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
-                    Until = today.AddMonths(6)
+                    WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+                    DaysOfWeek = [DayOfWeek.Tuesday],
+                    Until = today.AddMonths(6),
+                    // A make-up session outside the pattern.
+                    AdditionalDates = [today.AddDays(10)]
+                }
+            },
+            new()
+            {
+                Id = (++id).ToString(),
+                Title = ""Backup Check"",
+                Description = ""Every 15 days."",
+                StartDate = today.AddHours(8),
+                EndDate = today.AddHours(8).AddMinutes(30),
+                Color = ""green"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Daily,
+                    Interval = 15
+                }
+            },
+            new()
+            {
+                Id = (++id).ToString(),
+                Title = ""Month-end Report"",
+                Description = ""The last Friday of every month."",
+                StartDate = today.AddHours(16),
+                EndDate = today.AddHours(17),
+                Color = ""orange"",
+                Recurrence = new()
+                {
+                    Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+                    WeekOfMonth = BitFullCalendarWeekOfMonth.Last,
+                    DaysOfWeek = [DayOfWeek.Friday]
                 }
             },
         ];

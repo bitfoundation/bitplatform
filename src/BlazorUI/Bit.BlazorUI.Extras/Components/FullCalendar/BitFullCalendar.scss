@@ -1619,6 +1619,84 @@
     box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
+/* Repeat rule */
+.bit-bfc-repeat-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: spacing(0.75);
+    font-size: $tg-fs-sm;
+}
+
+.bit-bfc-repeat-grow {
+    flex: 1;
+    min-width: rem2(140px);
+}
+
+.bit-bfc-field .bit-bfc-repeat-number {
+    width: rem2(80px);
+}
+
+.bit-bfc-field .bit-bfc-repeat-ends {
+    width: auto;
+}
+
+.bit-bfc-repeat-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(0.5);
+}
+
+.bit-bfc-repeat-day {
+    min-width: $siz-ctrl-sm;
+    height: $siz-ctrl-sm;
+    padding: 0 spacing(0.75);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-radius: $shp-radius-full;
+    background: var(--bit-bfc-bg);
+    color: var(--bit-bfc-text);
+    font-size: $tg-fs-xs;
+    font-weight: $tg-fw-medium;
+    cursor: pointer;
+    transition: background $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+}
+
+.bit-bfc-repeat-day:hover {
+    background: var(--bit-bfc-bg-hover);
+}
+
+.bit-bfc-repeat-day[aria-pressed="true"] {
+    background: var(--bit-bfc-primary);
+    border-color: var(--bit-bfc-primary);
+    color: var(--bit-bfc-primary-text);
+}
+
+.bit-bfc-repeat-dates {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: spacing(0.5);
+    margin-top: spacing(1);
+}
+
+.bit-bfc-repeat-dates-label {
+    font-size: $tg-fs-xs;
+    color: var(--bit-bfc-text-secondary);
+}
+
+.bit-bfc-date-chip-skipped {
+    text-decoration: line-through;
+}
+
+.bit-bfc-scope-dialog {
+    max-width: rem2(360px);
+}
+
+.bit-bfc-scope-option {
+    padding-block: spacing(0.75);
+    font-size: $tg-fs-sm;
+}
+
 /* ===== Event Details Dialog ===== */
 .bit-bfc-event-detail-row {
     display: flex;

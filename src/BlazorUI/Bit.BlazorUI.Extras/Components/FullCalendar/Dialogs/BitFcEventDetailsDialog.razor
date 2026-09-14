@@ -86,7 +86,7 @@
                 </div>
             </div>
             @* A recurring event says so: on the master, and on the occurrence the user actually
-               clicked - which is where it also explains why the edit and delete actions are gone. *@
+               clicked - which is where the edit and delete actions ask whether they mean the series. *@
             @if (RecurrenceSummary is { Length: > 0 } recurrence)
             {
                 <div class="bit-bfc-event-detail-row">
@@ -126,7 +126,13 @@
     </div>
 </div>
 
-@if (_showEdit)
+@if (_pendingScopeAction is not ScopeAction.None)
 {
-    <BitFcAddEditEventDialog ExistingEvent="Event" OnClose="OnEditClose" OnSaved="OnEditSaved" />
+    <BitFcRecurrenceScopeDialog Title="@(_pendingScopeAction is ScopeAction.Edit ? Texts.RecurringEditTitle : Texts.RecurringDeleteTitle)"
+                                OnConfirm="OnScopeConfirmed" OnCancel="OnScopeCancelled" />
+}
+
+@if (_showEdit && _editTarget is not null)
+{
+    <BitFcAddEditEventDialog ExistingEvent="_editTarget" OnClose="OnEditClose" OnSaved="OnEditSaved" />
 }

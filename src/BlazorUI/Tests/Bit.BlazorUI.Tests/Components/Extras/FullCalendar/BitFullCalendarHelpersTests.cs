@@ -636,6 +636,306 @@ public class BitFullCalendarHelpersTests
         Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(5)).Count);
     }
 
+    [TestMethod]
+    public void ExpandRecurrencesShouldRepeatMonthlyOnTheThirdTuesday()
+    {
+        // 2024-05-01 is a Wednesday, so the series' first occurrence is not its start date.
+        var start = new DateTime(2024, 5, 1, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+            DaysOfWeek = [DayOfWeek.Tuesday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 8, 31));
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DateTime(2024, 5, 21, 9, 0, 0),
+                new DateTime(2024, 6, 18, 9, 0, 0),
+                new DateTime(2024, 7, 16, 9, 0, 0),
+                new DateTime(2024, 8, 20, 9, 0, 0),
+            },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldRepeatMonthlyOnTheLastWeekday()
+    {
+        var start = new DateTime(2024, 1, 1, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Last,
+            DaysOfWeek = [DayOfWeek.Friday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 4, 30));
+
+        // March 2024 ends on a Sunday and has five Fridays; the last one is still picked.
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DateTime(2024, 1, 26, 9, 0, 0),
+                new DateTime(2024, 2, 23, 9, 0, 0),
+                new DateTime(2024, 3, 29, 9, 0, 0),
+                new DateTime(2024, 4, 26, 9, 0, 0),
+            },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldOrderSeveralWeekdaysOfTheSameWeekOfMonth()
+    {
+        // The first Wednesday of May 2024 comes before its first Monday.
+        var start = new DateTime(2024, 5, 1, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.First,
+            DaysOfWeek = [DayOfWeek.Monday, DayOfWeek.Wednesday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 31));
+
+        CollectionAssert.AreEqual(
+            new[] { new DateTime(2024, 5, 1, 9, 0, 0), new DateTime(2024, 5, 6, 9, 0, 0) },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldFollowTheStartWeekdayForAWeekOfMonthWithNoDays()
+    {
+        // 2024-05-14 is the second Tuesday of May.
+        var start = new DateTime(2024, 5, 14, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, WeekOfMonth = BitFullCalendarWeekOfMonth.Second });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 6, 30));
+
+        CollectionAssert.AreEqual(
+            new[] { new DateTime(2024, 5, 14, 9, 0, 0), new DateTime(2024, 6, 11, 9, 0, 0) },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldSkipAWeekOfMonthDateBeforeTheSeriesStart()
+    {
+        // The third Tuesday of May 2024 is the 21st, a day before the series starts.
+        var start = new DateTime(2024, 5, 22, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+            DaysOfWeek = [DayOfWeek.Tuesday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 6, 30));
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(new DateTime(2024, 6, 18, 9, 0, 0), result[0].StartDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldHonourTheIntervalAndCountOfAWeekOfMonthSeries()
+    {
+        // Every other month on the second Monday, three times.
+        var start = new DateTime(2024, 1, 1, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            Interval = 2,
+            Count = 3,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Second,
+            DaysOfWeek = [DayOfWeek.Monday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 12, 31));
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DateTime(2024, 1, 8, 9, 0, 0),
+                new DateTime(2024, 3, 11, 9, 0, 0),
+                new DateTime(2024, 5, 13, 9, 0, 0),
+            },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldRepeatYearlyOnAWeekdayOfTheStartMonth()
+    {
+        // The fourth Thursday of November.
+        var start = new DateTime(2024, 11, 1, 18, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Yearly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Fourth,
+            DaysOfWeek = [DayOfWeek.Thursday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 1, 1), new DateTime(2026, 12, 31));
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DateTime(2024, 11, 28, 18, 0, 0),
+                new DateTime(2025, 11, 27, 18, 0, 0),
+                new DateTime(2026, 11, 26, 18, 0, 0),
+            },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldReachAFarWindowForAWeekOfMonthSeries()
+    {
+        var start = new DateTime(2000, 1, 1, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+            DaysOfWeek = [DayOfWeek.Tuesday]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31));
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(new DateTime(2024, 5, 21, 9, 0, 0), result[0].StartDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldKeepTheDayNumberForAnUndefinedWeekOfMonth()
+    {
+        var start = new DateTime(2024, 1, 15, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, WeekOfMonth = (BitFullCalendarWeekOfMonth)42 });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 2, 29));
+
+        CollectionAssert.AreEqual(
+            new[] { new DateTime(2024, 1, 15, 9, 0, 0), new DateTime(2024, 2, 15, 9, 0, 0) },
+            result.Select(o => o.StartDate).ToArray());
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldIgnoreAWeekOfMonthOnADailySeries()
+    {
+        var start = new DateTime(2024, 5, 15, 9, 0, 0);
+        var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, WeekOfMonth = BitFullCalendarWeekOfMonth.First });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(2));
+
+        Assert.AreEqual(3, result.Count);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldAddTheAdditionalDatesOutsideThePattern()
+    {
+        var start = new DateTime(2024, 5, 15, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Daily,
+            Count = 2,
+            // Past the count, with a time of day that must not matter, plus one the pattern already has.
+            AdditionalDates = [new DateTime(2024, 5, 20, 17, 0, 0), start.Date]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 25));
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new DateTime(2024, 5, 15, 9, 0, 0),
+                new DateTime(2024, 5, 16, 9, 0, 0),
+                new DateTime(2024, 5, 20, 9, 0, 0),
+            },
+            result.Select(o => o.StartDate).ToArray());
+        Assert.AreEqual(result.Select(o => o.Id).Distinct().Count(), result.Count, "a date both produce is emitted once");
+        Assert.AreEqual(new DateTime(2024, 5, 20), result[^1].OccurrenceDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldLetAnExceptionDateRemoveAnAdditionalDate()
+    {
+        var start = new DateTime(2024, 5, 15, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+            Until = start.Date,
+            AdditionalDates = [new DateTime(2024, 5, 20)],
+            ExceptionDates = [new DateTime(2024, 5, 20)]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 31));
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(start, result[0].StartDate);
+    }
+
+    [TestMethod]
+    public void ExpandRecurrencesShouldOnlyAddTheAdditionalDatesInsideTheRange()
+    {
+        var start = new DateTime(2024, 5, 15, 9, 0, 0);
+        var series = Series(start, new()
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Yearly,
+            AdditionalDates = [new DateTime(2024, 6, 1), new DateTime(2024, 9, 1)]
+        });
+
+        var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 6, 1), new DateTime(2024, 6, 30));
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(new DateTime(2024, 6, 1, 9, 0, 0), result[0].StartDate);
+    }
+
+    [TestMethod]
+    public void GetRecurrenceSummaryShouldNameTheWeekdaysOfAWeeklySeries()
+    {
+        var texts = new BitFullCalendarTexts();
+        var rule = new BitFullCalendarRecurrence
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
+            Interval = 2,
+            Count = 6,
+            DaysOfWeek = [DayOfWeek.Friday, DayOfWeek.Monday, DayOfWeek.Wednesday]
+        };
+
+        Assert.AreEqual("Weekly · every 2 · on Mon, Wed, Fri · 6 times", texts.GetRecurrenceSummary(rule, EnUs));
+    }
+
+    [TestMethod]
+    public void GetRecurrenceSummaryShouldNameTheWeekdayOfTheMonth()
+    {
+        var texts = new BitFullCalendarTexts();
+        var rule = new BitFullCalendarRecurrence
+        {
+            Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
+            WeekOfMonth = BitFullCalendarWeekOfMonth.Third,
+            DaysOfWeek = [DayOfWeek.Tuesday]
+        };
+
+        Assert.AreEqual("Monthly · on the third Tuesday", texts.GetRecurrenceSummary(rule, EnUs));
+    }
+
+    [TestMethod]
+    public void GetRecurrenceSummaryShouldReadTheWeekdayOfTheMonthOffTheSeriesStart()
+    {
+        var texts = new BitFullCalendarTexts();
+        var rule = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, WeekOfMonth = BitFullCalendarWeekOfMonth.Last };
+
+        // 2024-05-31 is a Friday.
+        Assert.AreEqual("Monthly · on the last Friday", texts.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
+    }
+
+    [TestMethod]
+    public void GetRecurrenceSummaryShouldLeaveTheStartWeekdayOfAWeeklySeriesUnsaid()
+    {
+        var texts = new BitFullCalendarTexts();
+        var rule = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Weekly };
+
+        Assert.AreEqual("Weekly", texts.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
+    }
+
     #endregion
 
     #region Overlap and month-cell placement

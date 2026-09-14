@@ -78,7 +78,7 @@ public static class BitFullCalendarHelpers
     /// Only the visible range is expanded, so an open-ended series costs nothing to keep. Each
     /// occurrence carries the master's fields plus <see cref="BitFullCalendarEvent.SeriesId"/>,
     /// <see cref="BitFullCalendarEvent.OccurrenceDate"/>, and an id derived from the master's, and is
-    /// marked read-only: the master is what a consumer edits.
+    /// marked read-only so it cannot be dragged or resized: the master is what a change is applied to.
     /// </para>
     /// </summary>
     public static List<BitFullCalendarEvent> ExpandRecurrences(
@@ -121,15 +121,30 @@ public static class BitFullCalendarHelpers
             ? rule.ExceptionDates.Select(d => d.Date).ToHashSet()
             : null;
 
-        var emitted = 0;
+        // The pattern's dates and the extra ones merge into one ascending run, so a date both produce
+        // is emitted once. The walk is already bounded by the range, so the set stays small.
+        var dates = new SortedSet<DateTime>();
         foreach (var date in EnumerateOccurrenceDates(master.StartDate.Date, rule, reachBack, rangeEnd))
+        {
+            if (date >= reachBack)
+                dates.Add(date);
+        }
+
+        if (rule.AdditionalDates is { Count: > 0 })
+        {
+            foreach (var extra in rule.AdditionalDates)
+            {
+                if (extra.Date >= reachBack && extra.Date <= rangeEnd)
+                    dates.Add(extra.Date);
+            }
+        }
+
+        var emitted = 0;
+        foreach (var date in dates)
         {
             // A skipped date still consumes its place in the series, which is how a cancelled
             // occurrence behaves in every calendar client - Count is a position, not a total shown.
             if (exceptions?.Contains(date) is true)
-                continue;
-
-            if (date < reachBack)
                 continue;
 
             var start = date + timeOfDay;
@@ -223,6 +238,38 @@ public static class BitFullCalendarHelpers
             yield break;
         }
 
+        if (rule.ResolveWeekOfMonth() is { } weekOfMonth)
+        {
+            var weekDays = rule.ResolveWeekDays(seriesStart);
+            // A yearly series is a monthly one that steps twelve months at a time, so both walk the
+            // months from the one the series starts in and pick the weekdays out of each.
+            var monthStep = rule.Frequency is BitFullCalendarRecurrenceFrequency.Yearly ? 12L * interval : interval;
+            var monthAnchor = new DateTime(seriesStart.Year, seriesStart.Month, 1);
+            var firstMonth = skipAhead ? MonthStepsToReach(monthAnchor, windowStart, monthStep) : 0;
+
+            for (var step = firstMonth; emitted < remaining; step++)
+            {
+                if (TryAddMonths(monthAnchor, step * monthStep) is not { } month)
+                    yield break;
+                if (month > hardEnd || (until is not null && month > until))
+                    yield break;
+
+                foreach (var date in weekDays.Select(day => GetWeekdayOfMonth(month, day, weekOfMonth)).Order())
+                {
+                    if (date < seriesStart)
+                        continue;
+                    if (!Accept(date))
+                        yield break;
+
+                    yield return date;
+                    if (++emitted >= remaining)
+                        yield break;
+                }
+            }
+
+            yield break;
+        }
+
         var firstStep = skipAhead
             ? rule.Frequency switch
             {
@@ -284,13 +331,52 @@ public static class BitFullCalendarHelpers
     }
 
     /// <summary>Same as <see cref="StepsToReach"/>, counted in whole months.</summary>
-    private static int MonthStepsToReach(DateTime start, DateTime target, int intervalMonths)
+    private static int MonthStepsToReach(DateTime start, DateTime target, long intervalMonths)
     {
         if (target <= start || intervalMonths <= 0)
             return 0;
 
         var months = ((target.Year - start.Year) * 12) + target.Month - start.Month;
-        return Math.Max(0, months / intervalMonths);
+        return (int)Math.Max(0, months / intervalMonths);
+    }
+
+    /// <summary>
+    /// The date <paramref name="day"/> falls on in <paramref name="week"/> of the month starting at
+    /// <paramref name="monthStart"/>. The fourth such weekday is never later than the 28th, so every
+    /// week this can be asked for exists in every month.
+    /// </summary>
+    private static DateTime GetWeekdayOfMonth(DateTime monthStart, DayOfWeek day, BitFullCalendarWeekOfMonth week)
+    {
+        if (week is BitFullCalendarWeekOfMonth.Last)
+        {
+            // Measured back from the month's last day rather than forward past it, so December 9999
+            // never has to step into a month DateTime cannot represent.
+            var lastDay = monthStart.AddDays(DateTime.DaysInMonth(monthStart.Year, monthStart.Month) - 1);
+            return lastDay.AddDays(-(((int)lastDay.DayOfWeek - (int)day + 7) % 7));
+        }
+
+        var firstOffset = ((int)day - (int)monthStart.DayOfWeek + 7) % 7;
+        return monthStart.AddDays(firstOffset + (7 * (int)week));
+    }
+
+    /// <summary>
+    /// A copy of the series <paramref name="master"/> that skips the occurrence on
+    /// <paramref name="occurrenceDate"/>: its rule is copied too, so the master (and any change
+    /// snapshot still holding its rule) is left untouched.
+    /// </summary>
+    internal static BitFullCalendarEvent SkipOccurrence(BitFullCalendarEvent master, DateTime occurrenceDate)
+    {
+        var updated = BitFullCalendarChangeNotifier.CloneEvent(master);
+        if (master.Recurrence is null)
+            return updated;
+
+        var rule = master.Recurrence.Copy();
+        var date = occurrenceDate.Date;
+        if (rule.ExceptionDates?.Any(d => d.Date == date) is not true)
+            rule.ExceptionDates = [.. rule.ExceptionDates ?? [], date];
+
+        updated.Recurrence = rule;
+        return updated;
     }
 
     /// <summary>

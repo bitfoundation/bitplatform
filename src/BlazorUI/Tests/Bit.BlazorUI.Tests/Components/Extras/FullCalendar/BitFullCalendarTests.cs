@@ -1659,12 +1659,15 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.IsTrue(component.Instance.State.Events.All(e => e.IsOccurrence));
     }
 
-    [TestMethod]
-    public void BitFullCalendarShouldRenderARecurringOccurrenceReadOnly()
+    /// <summary>
+    /// Renders a month calendar on a fixed mid-month date over one daily series of three occurrences
+    /// starting that date at 09:00, so the occurrences always land in the rendered grid and the
+    /// second badge is the day after the start.
+    /// </summary>
+    private IRenderedComponent<BitFullCalendar> RenderSeries(List<BitFullCalendarChangeEventArgs>? changes = null, bool readOnlyMaster = false)
     {
-        // A fixed mid-month date, so the single occurrence always has a cell in the rendered grid.
         var start = new DateTime(2024, 6, 10);
-        var component = RenderComponent<BitFullCalendar>(parameters =>
+        return RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.DefaultDate, start);
             parameters.Add(p => p.Events,
@@ -1675,19 +1678,221 @@ public class BitFullCalendarTests : BunitTestContext
                     Title = "Standup",
                     StartDate = start.AddHours(9),
                     EndDate = start.AddHours(10),
-                    Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 1 }
+                    IsReadOnly = readOnlyMaster,
+                    Recurrence = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 3 }
                 }
             ]);
+
+            if (changes is not null)
+            {
+                parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+            }
         });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldKeepARecurringOccurrenceFromBeingDraggedButOfferItsActions()
+    {
+        var component = RenderSeries();
 
         var badge = component.Find(".bit-bfc-event-badge");
         Assert.AreEqual("false", badge.GetAttribute("draggable"));
 
         badge.Click();
 
-        // Reading the details keeps working; the mutating actions are gone.
-        Assert.IsNotNull(component.Find(".bit-bfc-dialog"));
+        // Edit and Delete ask which part of the series they mean, so they are offered next to Close.
+        Assert.AreEqual(3, component.FindAll(".bit-bfc-dialog-footer button").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldLockTheOccurrencesOfAReadOnlySeries()
+    {
+        var component = RenderSeries(readOnlyMaster: true);
+
+        component.Find(".bit-bfc-event-badge").Click();
+
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer button").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldSkipTheDateWhenOnlyThisOccurrenceIsDeleted()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+        // "This event" is the preselected choice.
+        component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
+
+        var master = component.Instance.State.AllEvents.Single();
+        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+        Assert.AreEqual(2, component.FindAll(".bit-bfc-event-badge").Count);
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
+        Assert.AreEqual("series", changes[0].Event.Id);
+        Assert.IsNull(changes[0].OldEvent!.Recurrence!.ExceptionDates, "the snapshot keeps the rule as it was");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldRemoveTheSeriesWhenAllOccurrencesAreDeleted()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[1].Change(true);
+        component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
+
+        Assert.AreEqual(0, component.Instance.State.AllEvents.Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-event-badge").Count);
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeKind.Delete, changes[0].Kind);
+        Assert.AreEqual("series", changes[0].Event.Id);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldLeaveEverythingAsItWasWhenTheScopePromptIsCancelled()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+        component.Find(".bit-bfc-scope-dialog .bit-bfc-dialog-footer .bit-bfc-btn:not(.bit-bfc-btn-primary)").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count, "the details dialog stays open");
+        Assert.AreEqual(0, changes.Count);
+        Assert.AreEqual(3, component.FindAll(".bit-bfc-event-badge").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldDetachAnOccurrenceEditedOnItsOwn()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
+        component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
+
+        // The one-off it becomes has no rule to edit.
+        Assert.AreEqual(0, component.FindAll("select[id^='bfc-repeat-']").Count);
+
+        component.Find("input[id^='bfc-title-']").Change("Moved standup");
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        var events = component.Instance.State.AllEvents;
+        Assert.AreEqual(2, events.Count);
+
+        var master = events.Single(e => e.Id == "series");
+        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 11) }, master.Recurrence!.ExceptionDates!.ToArray());
+
+        var detached = events.Single(e => e.Id != "series");
+        Assert.AreEqual("Moved standup", detached.Title);
+        Assert.AreEqual(new DateTime(2024, 6, 11, 9, 0, 0), detached.StartDate);
+        Assert.IsNull(detached.Recurrence);
+        Assert.IsNull(detached.SeriesId);
+        Assert.IsFalse(detached.IsReadOnly);
+
+        CollectionAssert.AreEqual(
+            new[] { BitFullCalendarChangeKind.Edit, BitFullCalendarChangeKind.Add },
+            changes.Select(c => c.Kind).ToArray());
+        Assert.AreEqual(3, component.FindAll(".bit-bfc-event-badge").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldEditTheRuleWhenAllOccurrencesAreEdited()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderSeries(changes);
+
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
+        component.FindAll(".bit-bfc-scope-dialog input[type=radio]")[1].Change(true);
+        component.Find(".bit-bfc-scope-dialog .bit-bfc-btn-primary").Click();
+
+        // The series master is what opens, rule and all.
+        Assert.AreEqual("Daily", component.Find("select[id^='bfc-repeat-']").GetAttribute("value"));
+
+        component.Find("input[id^='bfc-interval-']").Change("2");
+        // The exception picker opens on the series start, which the button then skips.
+        component.Find(".bit-bfc-repeat-skip-btn").Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        var master = component.Instance.State.AllEvents.Single();
+        Assert.AreEqual(new DateTime(2024, 6, 10, 9, 0, 0), master.StartDate);
+        Assert.AreEqual(BitFullCalendarRecurrenceFrequency.Daily, master.Recurrence!.Frequency);
+        Assert.AreEqual(2, master.Recurrence.Interval);
+        Assert.AreEqual(3, master.Recurrence.Count);
+        CollectionAssert.AreEqual(new[] { new DateTime(2024, 6, 10) }, master.Recurrence.ExceptionDates!.ToArray());
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeKind.Edit, changes[0].Kind);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAddDialogShouldCreateAMonthlySeriesOnAWeekdayOfTheMonth()
+    {
+        // 2024-06-10 is a Monday; the third Tuesday of June 2024 is the 18th.
+        var start = new DateTime(2024, 6, 10);
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.DefaultDate, start);
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+        var dayNames = component.Instance.State.Culture.DateTimeFormat;
+
+        component.Find(AddButtonSelector).Click();
+        component.Find("input[id^='bfc-title-']").Change("Board meeting");
+        component.Find("select[id^='bfc-repeat-']").Change("Monthly");
+        component.Find("select[id^='bfc-position-']").Change("Third");
+
+        // Picking a week of the month starts from the start date's own weekday.
+        var pressed = component.FindAll(".bit-bfc-repeat-day[aria-pressed='true']");
+        Assert.AreEqual(1, pressed.Count);
+        Assert.AreEqual(dayNames.GetDayName(DayOfWeek.Monday), pressed[0].GetAttribute("aria-label"));
+
+        component.FindAll(".bit-bfc-repeat-day").Single(b => b.GetAttribute("aria-label") == dayNames.GetDayName(DayOfWeek.Tuesday)).Click();
+        component.FindAll(".bit-bfc-repeat-day").Single(b => b.GetAttribute("aria-label") == dayNames.GetDayName(DayOfWeek.Monday)).Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        Assert.AreEqual(1, changes.Count);
+        var rule = changes[0].Event.Recurrence;
+        Assert.IsNotNull(rule);
+        Assert.AreEqual(BitFullCalendarRecurrenceFrequency.Monthly, rule.Frequency);
+        Assert.AreEqual(BitFullCalendarWeekOfMonth.Third, rule.WeekOfMonth);
+        CollectionAssert.AreEqual(new[] { DayOfWeek.Tuesday }, rule.DaysOfWeek!.ToArray());
+        Assert.IsNull(rule.Count);
+        Assert.IsNull(rule.Until);
+
+        Assert.IsTrue(component.Instance.State.Events.Any(e => e.IsOccurrence && e.StartDate.Date == new DateTime(2024, 6, 18)));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAddDialogShouldRefuseASeriesOfNoOccurrences()
+    {
+        var start = new DateTime(2024, 6, 10);
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.DefaultDate, start);
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        component.Find(AddButtonSelector).Click();
+        component.Find("input[id^='bfc-title-']").Change("Countdown");
+        component.Find("select[id^='bfc-repeat-']").Change("Weekly");
+        component.Find("select[id^='bfc-ends-']").Change("AfterCount");
+        component.Find(".bit-bfc-repeat-row input[type=number]:not([id])").Change("0");
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Click();
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.IsTrue(component.FindAll(".bit-bfc-field-error").Count > 0);
     }
 
     [TestMethod]
