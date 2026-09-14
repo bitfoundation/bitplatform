@@ -22,6 +22,10 @@ internal sealed class HarnessForm : Form
             Services = services.BuildServiceProvider(),
         };
         webView.RootComponents.Add<HarnessApp>("#app");
+        webView.WebView.CoreWebView2InitializationCompleted += (_, e) =>
+        {
+            if (e.IsSuccess is false) Program.Fail("WebView2 failed to initialize", e.InitializationException);
+        };
 
         Controls.Add(webView);
     }

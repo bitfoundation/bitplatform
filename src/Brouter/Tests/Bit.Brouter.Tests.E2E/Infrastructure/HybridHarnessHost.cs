@@ -60,7 +60,30 @@ public sealed class HybridHarnessHost : IAsyncDisposable
         catch
         {
             await process.DisposeAsync();
+            await DeleteUserDataFolderAsync(userDataFolder);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a WebView2 user data folder once the app has exited. The browser processes WebView2
+    /// spawned can hold files in it for a moment after the host goes, so a failed delete is retried
+    /// briefly; it is a temp folder, so giving up after that leaves nothing that matters. Never throws.
+    /// </summary>
+    private static async Task DeleteUserDataFolderAsync(string userDataFolder)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                if (Directory.Exists(userDataFolder)) Directory.Delete(userDataFolder, recursive: true);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == 10) return;
+                await Task.Delay(200);
+            }
         }
     }
 
@@ -90,11 +113,6 @@ public sealed class HybridHarnessHost : IAsyncDisposable
 
         await _process.DisposeAsync();
 
-        try
-        {
-            Directory.Delete(_userDataFolder, recursive: true);
-        }
-        catch (IOException) { /* WebView2 may still hold files for a moment; it is a temp folder */ }
-        catch (UnauthorizedAccessException) { }
+        await DeleteUserDataFolderAsync(_userDataFolder);
     }
 }

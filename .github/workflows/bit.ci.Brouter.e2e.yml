@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
     - 'src/Brouter/**'
+    - '.github/workflows/bit.ci.Brouter.e2e.yml'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -104,13 +105,28 @@ jobs:
       with:
         node-version: 24
 
+    # windows-latest ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    - name: Install the WebView2 Runtime
+      shell: pwsh
+      run: |
+        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        if (-not $version -or $version -eq '0.0.0.0') {
+          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
+          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
+          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        }
+        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
+        Write-Host "WebView2 Runtime $version"
+
     - name: Build the hybrid harness host
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.Harness.Hybrid/Bit.Brouter.Tests.Harness.Hybrid.csproj -c Release
 
     - name: Build the E2E suite
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
 
-    # No browser download: Playwright attaches to the WebView2 runtime that ships with Windows.
+    # No Playwright browser download: it attaches to the WebView2 Runtime installed above.
     - name: Run hybrid E2E tests
       env:
         BROUTER_E2E_CONFIGURATION: Release

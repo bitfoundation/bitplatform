@@ -101,3 +101,7 @@ The hybrid suite starts `Bit.Brouter.Tests.Harness.Hybrid.exe` with
 `WEBVIEW2_USER_DATA_FOLDER`, then attaches with `ConnectOverCDPAsync`. A window opens while it runs.
 Tests that would need a second window (modified clicks) or would close the WebView (`beforeunload`)
 report Inconclusive there.
+
+It needs the WebView2 Runtime (Windows 11 has it; Windows Server images, including GitHub's
+`windows-latest`, may only have the Edge browser - CI installs the runtime first). When the WebView
+cannot start, the host exits with the reason on stderr, and the failing test quotes it.

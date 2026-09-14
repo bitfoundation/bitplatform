@@ -187,16 +187,26 @@ function ensureViewTransitionDefaults(useDefaults: boolean, respectReducedMotion
 // flag. Blazor registers its own popstate listener long before this module is imported, and on
 // WebAssembly that listener runs the whole .NET commit - beginViewTransition included -
 // synchronously inside the same event dispatch; only then does this listener run for that event.
-// Setting the flag there would leak "pop" into the next, unrelated navigation. So the time of the
-// last consumption is recorded, and an event created before it is recognized as already accounted
-// for. (Listener order can't be relied on instead: a capture-phase listener on window does not run
-// ahead of earlier-registered ones.)
+// Setting the flag there would leak "pop" into the next, unrelated navigation, and that navigation
+// itself would keep the direction it was stamped with. So the time of the last consumption is
+// recorded, and an event created before it belongs to that consumption: it corrects the stamp to
+// "pop" if the consumption did not already see a traversal, and is used at most once. (Listener
+// order can't be relied on instead: a capture-phase listener on window does not run ahead of
+// earlier-registered ones.)
 let historyTraversalPending = false;
 let historyTraversalConsumedAt = -Infinity;
+// Whether the last consumption was stamped "pop" - up front, or since then by a late popstate.
+let historyTraversalConsumedAsPop = true;
 if (typeof window !== 'undefined') {
     window.addEventListener('popstate', e => {
-        if (e.timeStamp <= historyTraversalConsumedAt) return;
-        historyTraversalPending = true;
+        if (e.timeStamp > historyTraversalConsumedAt) {
+            historyTraversalPending = true;
+        } else if (!historyTraversalConsumedAsPop) {
+            // Still ahead of the transition's old-state capture (that waits for a rendering
+            // opportunity), so the pseudo-element animations resolve against the corrected direction.
+            historyTraversalConsumedAsPop = true;
+            document.documentElement.setAttribute('data-brouter-nav', 'pop');
+        }
     });
 }
 
@@ -220,6 +230,7 @@ export function beginViewTransition(navKind?: string, useDefaults?: boolean, res
     const kind = historyTraversalPending ? 'pop' : (navKind || 'push');
     historyTraversalPending = false;
     historyTraversalConsumedAt = performance.now();
+    historyTraversalConsumedAsPop = kind === 'pop';
     document.documentElement.setAttribute('data-brouter-nav', kind);
 
     // A still-open previous transition (its navigation was superseded mid-flight) must be released
@@ -339,6 +350,12 @@ let pendingIsPop = false;
 let popped = false;
 // performance.now() of the last time saveScrollPosition consumed `popped` (see the popstate listener).
 let poppedConsumedAt = -Infinity;
+// Whether that consumption is known to be a Back/Forward - from `popped`, or since then from a late popstate.
+let poppedConsumedAsPop = true;
+// Whether applyNavigationEffects has consumed pendingIsPop since the last saveScrollPosition, and the
+// destination it did not restore then (so a late popstate can still restore it).
+let effectsAppliedSinceSave = false;
+let unrestoredKey: string | null = null;
 let scrollRestorationInited = false;
 // null -> in-memory only; 'session'/'local' -> mirrored to sessionStorage/localStorage so positions
 // survive a full reload. Fixed for the module's lifetime (BrouterOptions are per-scope constants).
@@ -413,12 +430,24 @@ function ensureScrollRestoration(storageKind: string | null) {
     }
     // Fires on a Back/Forward, normally ahead of Blazor's LocationChanged handling, so the flag is
     // already set when the ensuing saveScrollPosition call reads it. An event created before the last
-    // consumption is ignored for the same reason as in the traversal listener above: on WebAssembly the
-    // navigation can already have been committed (and the flag consumed) by Blazor's earlier-registered
-    // listener, and re-setting it would make the next ordinary navigation restore a position like a Back.
+    // consumption belongs to that consumption, for the same reason as in the traversal listener above:
+    // on WebAssembly the navigation can already have been committed (and the flag consumed) by Blazor's
+    // earlier-registered listener. Re-setting the flag would make the next ordinary navigation restore a
+    // position like a Back, so the event is instead applied to its own navigation, at most once.
     window.addEventListener('popstate', e => {
-        if (e.timeStamp <= poppedConsumedAt) return;
-        popped = true;
+        if (e.timeStamp > poppedConsumedAt) {
+            popped = true;
+            return;
+        }
+        if (poppedConsumedAsPop) return;
+        poppedConsumedAsPop = true;
+        if (!effectsAppliedSinceSave) {
+            pendingIsPop = true;
+        } else if (unrestoredKey !== null) {
+            const p = scrollPositions.get(unrestoredKey);
+            unrestoredKey = null;
+            if (p) window.scrollTo(p.x, p.y);
+        }
     });
 
     // Seed the in-memory map from persisted storage so a reload can still restore positions.
@@ -443,8 +472,11 @@ function currentScroll(): ScrollPosition {
 export function saveScrollPosition(key: string | null, storageKind: string | null) {
     ensureScrollRestoration(storageKind);
     pendingIsPop = popped;
+    poppedConsumedAsPop = popped;
     popped = false;
     poppedConsumedAt = performance.now();
+    effectsAppliedSinceSave = false;
+    unrestoredKey = null;
     if (key) {
         // Bound the cache. Map preserves insertion order, so deleting the first key evicts the oldest
         // entry. Delete-then-set also re-inserts an updated key at the newest position, so recently
@@ -484,6 +516,8 @@ export function applyNavigationEffects(hash: string | null, focusSelector: strin
         ensureScrollRestoration(storageKind);
         isPop = pendingIsPop;
         pendingIsPop = false;
+        effectsAppliedSinceSave = true;
+        unrestoredKey = null;
     }
 
     // 1. Fragment scrolling: navigating to /docs#install should land on the #install element,
@@ -518,6 +552,10 @@ export function applyNavigationEffects(hash: string | null, focusSelector: strin
         }
         return;
     }
+
+    // A popstate for this navigation may still arrive (see the listener in ensureScrollRestoration);
+    // remember what it would have restored.
+    if (restoreKey && !isPop) unrestoredKey = restoreKey;
 
     // 3. Scroll to top (only when no fragment/restore claimed the scroll position above).
     if (scrollToTop) {

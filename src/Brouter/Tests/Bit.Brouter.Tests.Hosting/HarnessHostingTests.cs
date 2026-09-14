@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.RegularExpressions;
 using Bit.Brouter.Tests.Hosting.Infrastructure;
 using Modes = Bit.Brouter.Tests.Harness.Web.HarnessRenderModes;
 
@@ -183,10 +184,36 @@ public class HarnessHostingTests
         Assert.AreEqual("text/javascript", response.Content.Headers.ContentType?.MediaType,
             "The module URL was answered by something other than the static asset (the app's catch-all page?).");
 
-        var script = await response.Content.ReadAsStringAsync();
+        var exports = ExportedNames(await response.Content.ReadAsStringAsync());
         foreach (var export in new[] { "wireConditionalPreventDefault", "wirePreload", "beginViewTransition", "completeViewTransition", "setConfirmExternalNavigation", "saveScrollPosition", "applyNavigationEffects" })
         {
-            StringAssert.Contains(script, export, $"bit-brouter.js does not export {export}.");
+            Assert.IsTrue(exports.Contains(export), $"bit-brouter.js does not export {export}.");
         }
+    }
+
+    // The names a module's export declarations make public: `export function name(` as tsc emits them
+    // (Debug), and `export { local as name, name }` as esbuild's minified output lists them (Release).
+    // A name merely appearing somewhere in the script - in a comment, or as part of a longer
+    // identifier - does not count.
+    private static HashSet<string> ExportedNames(string script)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (Match declaration in Regex.Matches(script, @"\bexport\s+(?:async\s+)?(?:function\s*\*\s*|(?:function|class|const|let|var)\s+)([A-Za-z_$][\w$]*)"))
+        {
+            names.Add(declaration.Groups[1].Value);
+        }
+
+        foreach (Match list in Regex.Matches(script, @"\bexport\s*\{([^}]*)\}"))
+        {
+            foreach (var specifier in list.Groups[1].Value.Split(','))
+            {
+                // "local as exported" or just "name": the public name is the last token.
+                var tokens = specifier.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length > 0) names.Add(tokens[^1]);
+            }
+        }
+
+        return names;
     }
 }
