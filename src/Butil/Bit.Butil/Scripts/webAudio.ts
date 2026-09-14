@@ -3,18 +3,44 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     let _ctx: AudioContext | null = null;
     let _master: GainNode | null = null;
-    const _nodes: { [id: string]: { source: AudioScheduledSourceNode, gain: GainNode } } = {};
 
+    // One-shot playbacks started by playBuffer/playTone, keyed by the AudioPlaybackHandle's id.
+    const _playbacks: { [id: string]: { source: AudioScheduledSourceNode, gain: GainNode } } = {};
+    const _buffers: { [id: string]: AudioBuffer } = {};
+
+    // What a module built on top of this one has to run before the context goes away - the node
+    // registry emptying itself, say. Hooks rather than direct calls because the dependency only
+    // goes one way: webAudioNodes knows about webAudio, and this module must not know about it.
+    const _disposeHooks: (() => void)[] = [];
+
+    // The graph, the AudioParam scheduling, the analyser reads, the worklet and the media-stream
+    // nodes are each their own module (webAudioNodes, webAudioParams, webAudioAnalyser,
+    // webAudioWorklet, webAudioMedia). This one is the context itself plus the fire-and-forget
+    // playback that most apps want, so a page that only plays a tone downloads nothing else -
+    // notably not mediaDevices, which only the media-stream nodes need.
     butil.webAudio = {
         isSupported() { return 'AudioContext' in window || 'webkitAudioContext' in (window as any); },
         resume() { return ensureCtx()?.resume(); },
         suspend() { return _ctx?.suspend(); },
+        state() { return _ctx?.state ?? 'suspended'; },
+        currentTime() { return ensureCtx()?.currentTime ?? 0; },
+        sampleRate() { return ensureCtx()?.sampleRate ?? 0; },
         setMasterGain,
+        masterGain() { ensureCtx(); return _master?.gain.value ?? 1; },
         playBuffer,
         playTone,
         stop,
         setGain,
-        dispose
+        decodeAudioData,
+        releaseBuffer,
+        dispose,
+
+        // For the modules layered on this one.
+        context: ensureCtx,
+        currentContext() { return _ctx; },
+        master() { ensureCtx(); return _master; },
+        bufferOf(bufferId: string) { return _buffers[bufferId]; },
+        onDispose(hook: () => void) { _disposeHooks.push(hook); }
     };
 
     function ensureCtx(): AudioContext | null {
@@ -65,26 +91,50 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function attach(id: string, source: AudioScheduledSourceNode, gain: GainNode) {
-        _nodes[id] = { source, gain };
-        source.addEventListener('ended', () => { delete _nodes[id]; });
+        _playbacks[id] = { source, gain };
+        source.addEventListener('ended', () => { delete _playbacks[id]; });
     }
 
     function stop(id: string) {
-        const entry = _nodes[id];
+        const entry = _playbacks[id];
         if (!entry) return;
-        delete _nodes[id];
+        delete _playbacks[id];
         try { entry.source.stop(); } catch { /* already stopped */ }
         try { entry.source.disconnect(); } catch { /* already disconnected */ }
         try { entry.gain.disconnect(); } catch { /* already disconnected */ }
     }
 
     function setGain(id: string, value: number) {
-        const entry = _nodes[id];
+        const entry = _playbacks[id];
         if (entry) entry.gain.gain.value = value;
     }
 
+    // --- Buffers -------------------------------------------------------------------------------
+
+    async function decodeAudioData(bufferId: string, data: Uint8Array) {
+        const ctx = ensureCtx();
+        if (!ctx) return null;
+        try {
+            const buffer = await ctx.decodeAudioData(butil.utils.arrayToBuffer(data));
+            _buffers[bufferId] = buffer;
+            return {
+                duration: buffer.duration,
+                sampleRate: buffer.sampleRate,
+                numberOfChannels: buffer.numberOfChannels,
+                length: buffer.length
+            };
+        } catch {
+            // A container the engine cannot decode, or truncated bytes.
+            return null;
+        }
+    }
+
+    function releaseBuffer(bufferId: string) { delete _buffers[bufferId]; }
+
     async function dispose() {
-        for (const id of Object.keys(_nodes)) stop(id);
+        for (const id of Object.keys(_playbacks)) stop(id);
+        for (const hook of _disposeHooks) hook();
+        for (const id of Object.keys(_buffers)) delete _buffers[id];
         try { _master?.disconnect(); } catch { /* already disconnected */ }
         const ctx = _ctx;
         _ctx = null;

@@ -14,7 +14,9 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 
-        if (request.Headers.UserAgent.Any() is false)
+        // Only a device may describe itself: while prerendering this runs in the web server's process, and the
+        // diagnostic page reports back every header it was called with, on an anonymous page.
+        if (request.Headers.UserAgent.Any() is false && AppPlatform.IsBlazorHybridOrBrowser)
         {
             request.Headers.UserAgent.TryParseAdd(telemetryContext.Platform);
         }
@@ -27,8 +29,10 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
         var isInternalRequest = request.HasExternalApiAttribute() is false;
         if (isInternalRequest)
         {
-            request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
-            request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
+            if (request.Headers.Contains("X-App-Version") is false)
+                request.Headers.Add("X-App-Version", telemetryContext.AppVersion);
+            if (request.Headers.Contains("X-App-Platform") is false)
+                request.Headers.Add("X-App-Platform", AppPlatform.Type.ToString());
         }
         else
         {

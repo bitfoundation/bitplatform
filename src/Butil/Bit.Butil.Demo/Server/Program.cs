@@ -5,6 +5,7 @@ using Bit.Butil.Demo.Server.Components;
 using Bit.Butil.Demo.Server.Controllers;
 using Bit.Butil.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -100,6 +101,15 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddRequestTimeouts(options =>
     options.AddPolicy(StreamingPolicy, new RequestTimeoutPolicy { Timeout = TimeSpan.FromMinutes(5) }));
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+    options.ForwardedHostHeaderName = "X-Host";
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -116,6 +126,8 @@ else
 // empty 404. Re-execute it through the app to get the styled page the router shows for the same
 // miss during client-side navigation - keeping the status code at 404.
 app.UseStatusCodePagesWithReExecute("/not-found");
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
@@ -172,7 +184,7 @@ app.MapGet("/sitemap.xml", (HttpContext context) =>
 });
 
 // https://llmstxt.org - an H1, a blockquote summary, then H2-delimited lists of links. The point
-// is to hand an assistant the map of the site without making it scrape 97 pages of chrome to
+// is to hand an assistant the map of the site without making it scrape 143 pages of chrome to
 // rebuild one.
 app.MapGet("/llms.txt", (HttpContext context) =>
 {

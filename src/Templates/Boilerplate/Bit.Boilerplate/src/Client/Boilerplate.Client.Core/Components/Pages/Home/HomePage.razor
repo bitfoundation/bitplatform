@@ -5,7 +5,11 @@
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Home)]"
-             PageTitle="@Localizer[nameof(AppStrings.HomePageTitle)]" />
+             PageTitle="@Localizer[nameof(AppStrings.HomePageTitle)]">
+    <Head>
+        <script type="application/ld+json">@((MarkupString)BuildSiteJsonLd())</script>
+    </Head>
+</AppPageData>
 
 <section>
     <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">

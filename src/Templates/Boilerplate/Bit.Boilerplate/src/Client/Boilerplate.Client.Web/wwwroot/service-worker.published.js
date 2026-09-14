@@ -2,7 +2,7 @@
 // [mirror] push notification and notificationclick handlers - keep in sync with:
 // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 
-// bit version: 10.6.0-pre-04
+// bit version: 10.6.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -60,7 +60,11 @@ self.assetsExclude = [
     /bit\.blazorui\.fluent-light\.css$/,
 
     // country flags
-    /_content\/Bit\.BlazorUI\.Extras\/flags/
+    /_content\/Bit\.BlazorUI\.Extras\/flags/,
+
+    // Host configuration, not app assets: the host consumes them and answers 404, which stalls the offline install.
+    /staticwebapp\.config\.json$/,
+    /_headers$/
 ];
 self.externalAssets = [
     {
@@ -89,6 +93,7 @@ self.serverHandledUrls = [
     /\/swagger/,
     /\/scalar/,
     /\/signin-/,
+    /\/oauth\//,
     /\/.well-known/,
     /\/sitemap.xml/,
     //#if (module == "Sales")

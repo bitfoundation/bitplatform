@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Identity.Dtos;
 
 public partial class UpdateUserSessionRequestDto
@@ -16,4 +17,11 @@ public partial class UpdateUserSessionRequestDto
     /// The culture selected by the user in this session.
     /// </summary>
     public string? CultureName { get; set; }
+
+    //#if (signalR == true || notification == true)
+    /// <summary>
+    /// The device's own choice (See NotificationPreferenceService), so a new sign-in on it follows what it was set to.
+    /// </summary>
+    public UserSessionNotificationStatus NotificationStatus { get; set; }
+    //#endif
 }

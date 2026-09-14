@@ -26,6 +26,10 @@
     // deliberately leaving usable.
     pointer-events: none;
 
+    // The root is made programmatically focusable so that a press on the overlay has somewhere inside the
+    // Dialog to leave the focus.
+    @include focus-anchor;
+
     @keyframes bit-dlg-spinner-animation {
         0% {
             transform: rotate(0deg);
@@ -123,6 +127,9 @@
     z-index: 0;
     position: absolute;
     pointer-events: auto;
+    // A press on the overlay is left its default action (see the markup), and the default of a press that
+    // is dragged is a text selection - one that would start at the overlay and run through the surface.
+    user-select: none;
     background-color: $clr-bg-overlay;
     animation: bit-dlg-overlay-animation $mot-duration-short $mot-easing-decelerate;
 }
@@ -151,8 +158,8 @@
     animation: bit-dlg-container-animation $mot-duration $mot-easing-decelerate;
 
     // The surface is made programmatically focusable so the Escape key and the focus trap have somewhere
-    // to land, which is a job the focus ring has no business advertising.
-    outline: none;
+    // to land.
+    @include focus-anchor;
 }
 
 // The refusal replaces the entrance animation for as long as it runs, since both drive transform on the

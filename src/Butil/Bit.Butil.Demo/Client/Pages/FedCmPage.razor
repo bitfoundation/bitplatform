@@ -43,28 +43,67 @@ var canReportLogin = await fedCm.IsLoginStatusSupported();
     <DemoSection Title="Sign in"
                  Api="Get"
                  Description="Opens the browser's own account dialog for the given provider and resolves with the provider's token, or null when the user dismissed it or no account was found. The nonce belongs to your server: generate it there, and check it comes back in the token."
-                 Code=@("""
-var credential = await fedCm.Get(new FedCmOptions
-{
-    Providers =
-    [
-        new FedCmProvider
-        {
-            ConfigUrl = "https://idp.example/fedcm.json",
-            ClientId = "your-client-id",
-            Nonce = serverGeneratedNonce,
-            Fields = ["name", "email", "picture"]
-        }
-    ],
-    Context = "signin",
-    Mediation = CredentialMediation.Optional
-});
+                 Files=@([
+new("SignIn.razor", """
+@inject Bit.Butil.FedCm fedCm
+@inject HttpClient http
 
-if (credential is not null)
-{
-    // POST credential.Token to the backend and validate it there.
+<button @onclick="SignIn">Sign in</button>
+
+@code {
+    private async Task SignIn()
+    {
+        // The nonce belongs to the server: it is what proves the token came back from a sign-in
+        // this backend started, rather than being replayed from another one.
+        var nonce = await http.GetStringAsync("/api/auth/nonce");
+
+        var credential = await fedCm.Get(new FedCmOptions
+        {
+            Providers =
+            [
+                new FedCmProvider
+                {
+                    ConfigUrl = "https://idp.example/fedcm.json",
+                    ClientId = "your-client-id",
+                    Nonce = nonce,
+                    Fields = ["name", "email", "picture"]
+                }
+            ],
+            Context = "signin",
+            Mediation = CredentialMediation.Optional
+        });
+
+        // null when the user dismissed the dialog, or no account was found.
+        if (credential is null) return;
+
+        // Reading the token in the browser proves nothing - the backend validates the signature,
+        // the issuer, the audience and the nonce it generated.
+        await http.PostAsJsonAsync("/api/auth/fedcm", new { credential.Token });
+    }
 }
-""")>
+"""),
+new("[idp] /.well-known/web-identity", "json", """
+{
+  "//": "Served by the identity provider at the root of its eTLD+1, not by your app. Without it the",
+  "//2": "browser refuses to fetch the config below, and Get returns null with nothing to debug.",
+  "provider_urls": ["https://idp.example/fedcm.json"]
+}
+"""),
+new("[idp] fedcm.json", "json", """
+{
+  "//": "The config file ConfigUrl points at. Every URL here is same-origin with the config itself.",
+  "accounts_endpoint": "/fedcm/accounts",
+  "client_metadata_endpoint": "/fedcm/client-metadata",
+  "id_assertion_endpoint": "/fedcm/assertion",
+  "login_url": "/login",
+  "branding": {
+    "background_color": "#0f6cbd",
+    "color": "#ffffff",
+    "icons": [{ "url": "https://idp.example/icon.png", "size": 40 }]
+  }
+}
+"""),
+])>
         <div class="field">
             <span class="field-label">Provider config URL</span>
             <input @bind="_configUrl" style="min-width:24rem" />

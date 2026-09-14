@@ -41,21 +41,62 @@ var shared = await worker.IsSharedSupported();
     <DemoSection Title="Start one and talk to it"
                  Api="Create / PostMessage / ButilMessage"
                  Description="A script that 404s or throws while loading does not fail Create - the constructor returns before the script has been fetched, so those arrive through onError instead. Messages are JSON in both directions: what survives is what System.Text.Json can write and JSON.parse can read, not a structured clone of a .NET object."
-                 Code=@("""
-private WorkerHandle? _worker;
+                 Files=@([
+new("Worker.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.Worker worker
 
-_worker = await worker.Create("/workers/demo-worker.js",
-    onMessage: m => InvokeAsync(() =>
+<button @onclick="Start">Create</button>
+<button @onclick="Echo">Echo</button>
+<p>@_reply</p>
+
+@code {
+    private WorkerHandle? _worker;
+    private string? _reply;
+
+    private record Reply(string Op, string Payload, string Name);
+
+    private async Task Start()
     {
-        // m.Json is always valid JSON - even a plain string arrives quoted
-        var reply = m.Deserialize<Reply>();
-        StateHasChanged();
-    }),
-    options: new WorkerOptions { Name = "butil-demo" },
-    onError: e => InvokeAsync(StateHasChanged));
+        _worker = await worker.Create("/workers/demo-worker.js",
+            onMessage: m => InvokeAsync(() =>
+            {
+                // m.Json is always valid JSON - even a plain string arrives quoted
+                _reply = m.Deserialize<Reply>()?.Payload;
+                StateHasChanged();
+            }),
+            options: new WorkerOptions { Name = "butil-demo" },
+            onError: e => InvokeAsync(() =>
+            {
+                _reply = $"error: {e.Message}";
+                StateHasChanged();
+            }));
+    }
 
-await _worker!.PostMessage(new { op = "echo", payload = "hello" });
-""")>
+    private async Task Echo() => await _worker!.PostMessage(new { op = "echo", payload = "hello" });
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_worker is not null) await _worker.DisposeAsync();
+    }
+}
+"""),
+new("wwwroot/workers/demo-worker.js", """
+// A classic (non-module) script, which is what the wrapper's default options produce. Bit.Butil
+// does not run .NET in here: a worker runs the script you supply, and the conversation is messages.
+self.addEventListener('message', e => {
+    const data = e.data;
+    const op = data && data.op;
+
+    if (op === 'echo') {
+        self.postMessage({ op: 'echo', payload: data.payload, name: self.name || '' });
+        return;
+    }
+
+    self.postMessage({ op: 'unknown', received: data });
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="StartWorker">Create</button>
             <input @bind="_payload" placeholder="payload" aria-label="payload to echo" />
@@ -72,11 +113,38 @@ await _worker!.PostMessage(new { op = "echo", payload = "hello" });
     <DemoSection Title="The reason workers exist"
                  Api="PostMessage"
                  Description="The worker computes fib(n) with the naive recursion, which blocks its thread for seconds. Press the counter button while it runs: the page keeps counting. Run the same loop on the main thread and nothing would repaint until it finished."
-                 Code=@("""
-await _worker!.PostMessage(new { op = "fib", n = 38 });
+                 Files=@([
+new("Worker.razor", """
+@code {
+    private record FibReply(string Op, int N, long Value, int Milliseconds);
 
-// the reply carries the value and how long the worker's thread was blocked
-""")>
+    private async Task RunFib(int n)
+    {
+        // The reply carries the value and how long the worker's thread was blocked, and arrives on
+        // the onMessage callback given to Create - nothing here waits for it.
+        await _worker!.PostMessage(new { op = "fib", n });
+    }
+
+    // ... in the onMessage callback passed to worker.Create:
+    //     var reply = m.Deserialize<FibReply>();
+}
+"""),
+new("wwwroot/workers/demo-worker.js", """
+self.addEventListener('message', e => {
+    const data = e.data;
+
+    // The reason workers exist. This blocks its own thread for as long as it takes and the page
+    // stays responsive throughout - run the same loop on the main thread and the page freezes.
+    if (data && data.op === 'fib') {
+        const n = Math.min(Number(data.n) || 0, 45);
+        const started = performance.now();
+        const fib = k => (k < 2 ? k : fib(k - 1) + fib(k - 2));
+        const value = fib(n);
+        self.postMessage({ op: 'fib', n, value, milliseconds: Math.round(performance.now() - started) });
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="() => RunFib(38)">fib(38)</button>
             <button @onclick="() => RunFib(42)">fib(42)</button>
@@ -88,11 +156,30 @@ await _worker!.PostMessage(new { op = "fib", n = 38 });
     <DemoSection Title="Binary, without a copy"
                  Api="PostBytes"
                  Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large: a copy of a hundred megabytes costs a hundred megabytes and a transfer costs nothing. The demo worker increments each byte and transfers the buffer straight back."
-                 Code=@("""
-await _worker!.PostBytes([1, 2, 3, 4], transfer: true);
+                 Files=@([
+new("Worker.razor", """
+@code {
+    private async Task SendBytes() => await _worker!.PostBytes([1, 2, 3, 4], transfer: true);
 
-// the reply is binary too: m.IsBinary is true and m.Data holds [2, 3, 4, 5]
-""")>
+    // ... in the onMessage callback passed to worker.Create:
+    //     if (m.IsBinary) { /* m.Data holds [2, 3, 4, 5] */ }
+}
+"""),
+new("wwwroot/workers/demo-worker.js", """
+self.addEventListener('message', e => {
+    // Binary in, binary out. The bytes arrived as a transferred ArrayBuffer - no copy was made -
+    // and they go back the same way, which is why the page's array is untouched but the buffer
+    // this worker holds is detached after the reply.
+    if (e.data instanceof ArrayBuffer) {
+        const bytes = new Uint8Array(e.data);
+        for (let i = 0; i < bytes.length; i++) bytes[i] = (bytes[i] + 1) & 0xff;
+        // The buffer is both the message and the thing transferred: posting an object that merely
+        // lists the buffer as transferable would send JSON and detach the bytes on the way out.
+        self.postMessage(bytes.buffer, [bytes.buffer]);
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="SendBytes">PostBytes([1, 2, 3, 4])</button>
         </div>
@@ -102,13 +189,37 @@ await _worker!.PostBytes([1, 2, 3, 4], transfer: true);
     <DemoSection Title="Errors do not stop a worker"
                  Api="WorkerError"
                  Description="An uncaught throw inside the worker reaches onError and the worker carries on answering messages. If that is not what you want, terminate it yourself. A cross-origin script is reported as the bare string 'Script error.' with no location - the browser withholds the detail rather than leak it."
-                 Code=@("""
-onError: e => { /* e.Message, e.FileName, e.LineNumber, e.ColumnNumber */ }
+                 Files=@([
+new("Worker.razor", """
+@code {
+    private async Task Start() =>
+        _worker = await worker.Create("/workers/demo-worker.js",
+            onMessage: m => InvokeAsync(StateHasChanged),
+            onError: e => InvokeAsync(() =>
+            {
+                // e.Message, e.FileName, e.LineNumber, e.ColumnNumber
+                _error = $"{e.Message} ({e.FileName}:{e.LineNumber})";
+                StateHasChanged();
+            }));
 
-await _worker!.PostMessage(new { op = "throw" });
-// ... and then this still works:
-await _worker.PostMessage(new { op = "echo", payload = "still here" });
-""")>
+    private async Task MakeItThrow()
+    {
+        await _worker!.PostMessage(new { op = "throw" });
+        // ... and then this still works:
+        await _worker.PostMessage(new { op = "echo", payload = "still here" });
+    }
+}
+"""),
+new("wwwroot/workers/demo-worker.js", """
+self.addEventListener('message', e => {
+    if (e.data && e.data.op === 'throw') {
+        // Uncaught on purpose: it reaches the page's onError callback, and the worker keeps running
+        // afterwards - an error does not terminate a worker.
+        throw new Error('the worker was asked to throw');
+    }
+});
+"""),
+])>
         <div class="controls">
             <button class="danger" @onclick="MakeItThrow">Make it throw</button>
             <button class="secondary" @onclick="EchoWorker">Then echo again</button>
@@ -119,16 +230,39 @@ await _worker.PostMessage(new { op = "echo", payload = "still here" });
     <DemoSection Title="Handing the worker a private line"
                  Api="PostWithPorts / MessagePortHandle"
                  Description="A channel has two ends. Give one to the worker and keep the other, and the two of them talk directly - the code that brokered the introduction is not part of the conversation. Ports are transferred rather than copied: once sent, the handle on this side stops working, which is what makes the line private."
-                 Code=@("""
-var channel = await messageChannel.Create();
-await channel!.Port2.OnMessage(m => InvokeAsync(StateHasChanged));
-await channel.Port2.Start();
+                 Files=@([
+new("Worker.razor", """
+@inject Bit.Butil.MessageChannel messageChannel
 
-// Port1 goes to the worker - and stops working here
-await _worker!.PostWithPorts(new { op = "takePort" }, [channel.Port1]);
+@code {
+    private MessageChannelHandle? _channel;
 
-await channel.Port2.PostMessage(new { hello = "worker" });
-""")>
+    private async Task GiveWorkerAPort()
+    {
+        _channel = await messageChannel.Create();
+        await _channel!.Port2.OnMessage(m => InvokeAsync(StateHasChanged));
+        await _channel.Port2.Start();
+
+        // Port1 goes to the worker - and stops working here
+        await _worker!.PostWithPorts(new { op = "takePort" }, [_channel.Port1]);
+    }
+
+    private async Task SendOverPort() => await _channel!.Port2.PostMessage(new { hello = "worker" });
+}
+"""),
+new("wwwroot/workers/demo-worker.js", """
+self.addEventListener('message', e => {
+    // A port arrived with the message: from here on this worker has a private line to whoever holds
+    // the other end, and the page that brokered it is not part of that conversation.
+    if (e.data && e.data.op === 'takePort' && e.ports.length > 0) {
+        const port = e.ports[0];
+        port.addEventListener('message', m => port.postMessage({ op: 'fromWorker', echoOf: m.data }));
+        port.start();
+        self.postMessage({ op: 'tookPort' });
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="GiveWorkerAPort">Create a channel and hand one end over</button>
             <button class="secondary" @onclick="SendOverPort">Send over the port</button>
@@ -139,15 +273,71 @@ await channel.Port2.PostMessage(new { hello = "worker" });
     <DemoSection Title="One worker, every tab"
                  Api="CreateShared / SharedWorkerHandle"
                  Description="A shared worker is one instance for every page of the origin naming the same script and name - so the name is part of its identity here rather than being cosmetic. Everything goes through its Port, which delivers nothing until Start is called. No page can terminate it for the others: disposing drops this page's connection, and the worker ends when the last one goes. Open this page in a second tab to see the connection count."
-                 Code=@("""
-var shared = await worker.CreateShared("/workers/demo-shared-worker.js",
-    new WorkerOptions { Name = "butil-demo-shared" });
+                 Files=@([
+new("Worker.razor", """
+@code {
+    private SharedWorkerHandle? _shared;
 
-await shared!.Port.OnMessage(m => InvokeAsync(StateHasChanged));
-await shared.Port.Start();
+    private async Task Connect()
+    {
+        _shared = await worker.CreateShared("/workers/demo-shared-worker.js",
+            new WorkerOptions { Name = "butil-demo-shared" });
 
-await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other tabs" });
-""")>
+        await _shared!.Port.OnMessage(m => InvokeAsync(StateHasChanged));
+        await _shared.Port.Start();
+    }
+
+    private async Task Broadcast() =>
+        await _shared!.Port.PostMessage(new { op = "broadcast", payload = "hello, other tabs" });
+
+    private async Task Disconnect()
+    {
+        // The worker is never told a page went away, so this page says so before it goes.
+        await _shared!.Port.PostMessage(new { op = "disconnect" });
+        await _shared.DisposeAsync();
+        _shared = null;
+    }
+}
+"""),
+new("wwwroot/workers/demo-shared-worker.js", """
+// One instance serves every page of this origin naming this script and the same worker name; each
+// of them arrives here as a 'connect' event carrying its own port.
+const ports = [];
+
+self.addEventListener('connect', e => {
+    const port = e.ports[0];
+    ports.push(port);
+
+    port.addEventListener('message', m => {
+        const data = m.data;
+
+        // A shared worker is never told that a page went away, so a page that is leaving says so.
+        // Without this the list keeps ports nobody is holding and every count is too high.
+        if (data && data.op === 'disconnect') {
+            const index = ports.indexOf(port);
+            if (index >= 0) ports.splice(index, 1);
+            return;
+        }
+
+        if (data && data.op === 'count') {
+            port.postMessage({ op: 'count', connections: ports.length });
+            return;
+        }
+
+        if (data && data.op === 'broadcast') {
+            // What a shared worker is for: state and delivery across tabs, with no server involved.
+            for (const other of ports) other.postMessage({ op: 'broadcast', payload: data.payload });
+            return;
+        }
+
+        port.postMessage({ op: 'echo', payload: data, connections: ports.length });
+    });
+
+    port.start();
+    port.postMessage({ op: 'welcome', connections: ports.length });
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="ConnectShared">Connect</button>
             <button class="secondary" @onclick="CountShared">How many tabs?</button>
@@ -251,7 +441,9 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
         }
     }
 
-    private async Task StartWorker()
+    private Task StartWorker() => StartWorker(workerOutput);
+
+    private async Task StartWorker(DemoConsole output)
     {
         await TerminateWorker();
 
@@ -279,16 +471,16 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
             if (_worker is null)
             {
                 _workerState = "Could not start.";
-                await workerOutput.Warn("Create returned null - Worker is unavailable, or the script URL was refused.");
+                await output.Warn("Create returned null - Worker is unavailable, or the script URL was refused.");
                 return;
             }
 
             _workerState = "Running.";
-            await workerOutput.Success("Create → /workers/demo-worker.js");
+            await output.Success("Create → /workers/demo-worker.js");
         }
         catch (Exception ex)
         {
-            await workerOutput.Error("Create failed →", ex.Message);
+            await output.Error("Create failed →", ex.Message);
         }
     }
 
@@ -512,11 +704,14 @@ await shared.Port.PostMessage(new { op = "broadcast", payload = "hello, other ta
         _sharedState = "Disconnected - the worker lives on for any other tab.";
     }
 
+    // Starting the worker is one line of setup, not the demonstration - so a section that needs one
+    // starts it and reports that in its own console, rather than sending the reader back up the page.
     private async Task<bool> RequireWorker(DemoConsole console)
     {
         if (_worker is not null) return true;
-        await console.Warn("Create the worker first.");
-        return false;
+
+        await StartWorker(console);
+        return _worker is not null;
     }
 
     private async Task TerminateWorker()

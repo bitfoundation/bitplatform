@@ -20,7 +20,7 @@ public class ScrollIntoViewOptions
 
     /// <summary>
     /// Where the element lands along the inline axis. <c>null</c> is the same as
-    /// <see cref="ScrollLogicalPosition.Start"/>.
+    /// <see cref="ScrollLogicalPosition.Nearest"/>.
     /// </summary>
     public ScrollLogicalPosition? Inline { get; set; }
 
@@ -41,12 +41,13 @@ public class ScrollIntoViewOptions
             _ => "start",
         };
 
+        // The two axes default differently in the spec: block to "start", inline to "nearest".
         var inline = Inline switch
         {
+            ScrollLogicalPosition.Start => "start",
             ScrollLogicalPosition.Center => "center",
             ScrollLogicalPosition.End => "end",
-            ScrollLogicalPosition.Nearest => "nearest",
-            _ => "start",
+            _ => "nearest",
         };
 
         return new()

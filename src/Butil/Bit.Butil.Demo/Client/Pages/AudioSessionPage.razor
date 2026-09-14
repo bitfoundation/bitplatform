@@ -1,0 +1,196 @@
+@page "/audio-session"
+@implements IAsyncDisposable
+@inject Bit.Butil.AudioSession audioSession
+
+<PageTitle>AudioSession - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="AudioSession"
+            Lead="Declare what this page's audio is for, so the operating system ducks, mixes or interrupts it correctly - and find out when something else takes the audio away."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/AudioSession"
+            InjectAs="AudioSession audioSession" />
+
+<Callout Type="info" Title="Getting the type right is most of the value">
+    Without a declared type the browser guesses, and a guess that treats a UI click like a podcast
+    silences whatever the user was listening to. <code>Ambient</code> for effects,
+    <code>Playback</code> for content the user came for, <code>TransientSolo</code> for something
+    that must be heard alone.
+</Callout>
+
+<Callout Type="warning" Title="Early, and Chromium only">
+    Elsewhere <code>IsSupported</code> is false and every call is a no-op.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="True when the runtime exposes navigator.audioSession. During prerender/SSR the check returns false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.AudioSession audioSession
+
+var supported = await audioSession.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Declare the intent"
+                 Api="GetSessionType / SetSessionType"
+                 Description="Set it before playback starts - changing it mid-playback can make the OS re-evaluate the routing audibly. Playback interrupts other audio and survives the ringer switch; Ambient mixes with other audio and obeys it; Transient ducks other audio briefly; TransientSolo pauses it."
+                 Code=@("""
+// game sound effects: never silence the user's music
+await audioSession.SetSessionType(AudioSessionType.Ambient);
+
+// a video the user chose to watch
+await audioSession.SetSessionType(AudioSessionType.Playback);
+""")>
+        <div class="controls">
+            <label class="field">
+                <span class="field-label">Type</span>
+                <select @bind="_type">
+                    <option value="@AudioSessionType.Auto">Auto</option>
+                    <option value="@AudioSessionType.Playback">Playback</option>
+                    <option value="@AudioSessionType.Transient">Transient</option>
+                    <option value="@AudioSessionType.TransientSolo">TransientSolo</option>
+                    <option value="@AudioSessionType.Ambient">Ambient</option>
+                    <option value="@AudioSessionType.PlayAndRecord">PlayAndRecord</option>
+                </select>
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="SetType">SetSessionType</button>
+            <button @onclick="ReadType">GetSessionType</button>
+        </div>
+        <DemoConsole @ref="typeOutput" Title="session type output" />
+    </DemoSection>
+
+    <DemoSection Title="Notice interruptions"
+                 Api="GetState / OnStateChange"
+                 Description="The case worth handling is Interrupted going back to Active: a phone call or another app took the audio, playback stopped, and the browser will not resume it for you. Fires once immediately with the current state. Dispose the returned subscription."
+                 Code=@("""
+_sub = await audioSession.OnStateChange(state =>
+{
+    if (state == AudioSessionState.Interrupted) PauseUi();
+    if (state == AudioSessionState.Active && _wasInterrupted) Resume();
+    InvokeAsync(StateHasChanged);
+});
+""")>
+        <div class="controls">
+            <button @onclick="ReadState">GetState</button>
+            <button @onclick="Subscribe" disabled="@(_sub is not null)">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.audioSession." />
+    <ApiMember Name="GetSessionType"
+               Signature="ValueTask<AudioSessionType> GetSessionType()"
+               Description="The type currently declared, or Unknown without the API." />
+    <ApiMember Name="SetSessionType"
+               Signature="ValueTask<bool> SetSessionType(AudioSessionType type)"
+               Description="Declares what this page's audio is for. False when the runtime has no audio session." />
+    <ApiMember Name="GetState"
+               Signature="ValueTask<AudioSessionState> GetState()"
+               Description="Whether the session currently holds the audio focus." />
+    <ApiMember Name="OnStateChange"
+               Signature="Task<ButilSubscription> OnStateChange(Action<AudioSessionState> handler)"
+               Description="Watches the session's state, and fires once immediately with the current one." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener registered through this instance and releases its interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole typeOutput = default!;
+    private DemoConsole stateOutput = default!;
+
+    private ButilSubscription? _sub;
+    private AudioSessionType _type = AudioSessionType.Ambient;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await audioSession.IsSupported();
+            if (supported) await supportOutput.Success("IsSupported →", true);
+            else await supportOutput.Warn("IsSupported →", "false - every call below is a no-op here.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task SetType()
+    {
+        try
+        {
+            var set = await audioSession.SetSessionType(_type);
+            if (set) await typeOutput.Success("SetSessionType →", _type);
+            else await typeOutput.Warn("SetSessionType →", "false - no audio session here.");
+        }
+        catch (Exception ex)
+        {
+            await typeOutput.Error("SetSessionType failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadType()
+    {
+        try
+        {
+            await typeOutput.Success("GetSessionType →", await audioSession.GetSessionType());
+        }
+        catch (Exception ex)
+        {
+            await typeOutput.Error("GetSessionType failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            await stateOutput.Success("GetState →", await audioSession.GetState());
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            _sub = await audioSession.OnStateChange(async state =>
+                await InvokeAsync(() => stateOutput.Info("statechange →", state)));
+
+            await stateOutput.Success("Subscribed.");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+        _sub = null;
+        await stateOutput.Info("Unsubscribed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}

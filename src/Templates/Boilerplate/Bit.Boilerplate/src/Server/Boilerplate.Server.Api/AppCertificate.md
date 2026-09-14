@@ -179,8 +179,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = "Boilerplate",
 
-            ValidateIssuer = true,
-            ValidIssuer = "Boilerplate"
+            // No ValidIssuer: a token names the origin it was minted at (https://api.myproject.com, or wherever the
+            // api was reached), which is also what the discovery document publishes - so JwtBearer takes it from
+            // there. Pin ValidIssuers only when the api is reachable at more than one origin.
+            ValidateIssuer = true
         };
     });
 
