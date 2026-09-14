@@ -494,9 +494,9 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldPersistScroll()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
         Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.afterRenderScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.afterRenderScroll").SetVoidResult();
 
         var component = RenderComponent<BitAppShell>(parameters =>
         {
@@ -517,7 +517,7 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldNotCallLocationChangedScrollWhenNotYetRendered()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
         Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
 
         // We need to verify that locationChangedScroll is only called after the component has rendered
@@ -552,7 +552,7 @@ public class BitAppShellTests : BunitTestContext
     public void BitAppShellShouldNotSubscribeToLocationChangedWhenBothAutoGoToTopAndPersistScrollAreFalse()
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.Extras.goToTop");
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
         Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
 
         var component = RenderComponent<BitAppShell>(parameters =>
@@ -730,7 +730,7 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldCallInitScrollOnFirstRenderWithPersistScroll()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
 
         var component = RenderComponent<BitAppShell>(parameters =>
         {
@@ -743,8 +743,8 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldDisposeCorrectly()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.disposeScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.disposeScroll").SetVoidResult();
 
         var component = RenderComponent<BitAppShell>(parameters =>
         {
@@ -871,7 +871,7 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldNotPersistScrollWhenPersistScrollIsFalse()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
         Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
 
         var component = RenderComponent<BitAppShell>(parameters =>
@@ -889,7 +889,7 @@ public class BitAppShellTests : BunitTestContext
     [TestMethod]
     public void BitAppShellShouldPrioritizePersistScrollOverAutoGoToTop()
     {
-        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll");
+        Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.initScroll").SetVoidResult();
         Context.JSInterop.SetupVoid("BitBlazorUI.AppShell.locationChangedScroll");
         Context.JSInterop.SetupVoid("BitBlazorUI.Extras.goToTop");
 

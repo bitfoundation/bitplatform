@@ -35,7 +35,9 @@ public partial class BitFileUpload : BitComponentBase
     private List<BitFileInfo> _files = [];
     private List<BitFileInfo> _uploadQueue = [];
     private long _internalChunkSize = MIN_CHUNK_SIZE;
-    private IJSObjectReference _dropZoneRef = default!;
+    // Null until the drag/drop setup has answered, and left null when it could not run at all - the
+    // interop is skipped on a runtime that can not service it, and a swallowed error yields no reference.
+    private IJSObjectReference? _dropZoneRef;
     private DotNetObjectReference<BitFileUpload> _dotnetObj = default!;
 
 
@@ -1197,6 +1199,10 @@ public partial class BitFileUpload : BitComponentBase
 
     private async Task UpdateDropZone()
     {
+        // Nothing to update while the drag/drop setup has not produced a reference - the next setup reads
+        // the parameters as they stand then.
+        if (_dropZoneRef is null) return;
+
         var dragClass = GetDragClass();
         var dragStyle = Styles?.Dragging;
 

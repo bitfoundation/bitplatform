@@ -369,7 +369,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         if (_isOpen && _activeIndex >= 0 && _activeIndex != _lastScrolledIndex)
         {
             _lastScrolledIndex = _activeIndex;
-            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_activeIndex));
+            await _js.BitExtrasScrollElementIntoView(GetOptionId(_activeIndex));
         }
 
         await base.OnAfterRenderAsync(firstRender);

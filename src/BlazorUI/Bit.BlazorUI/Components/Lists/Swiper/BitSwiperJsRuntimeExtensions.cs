@@ -13,42 +13,42 @@ internal static class BitSwiperJsRuntimeExtensions
                                              DotNetObjectReference<BitSwiper> dotnetObj,
                                              BitSwiperOptions options)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.setup", id, root, container, dotnetObj, options);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.setup", id, root, container, dotnetObj, options);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwiperOptions))]
     internal static ValueTask BitSwiperUpdate(this IJSRuntime jsRuntime, string id, BitSwiperOptions options)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.update", id, options);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.update", id, options);
     }
 
     internal static ValueTask BitSwiperRefresh(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.refresh", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.refresh", id);
     }
 
     internal static ValueTask BitSwiperGo(this IJSRuntime jsRuntime, string id, bool forward, int count)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.go", id, forward, count);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.go", id, forward, count);
     }
 
     internal static ValueTask BitSwiperGoToItem(this IJSRuntime jsRuntime, string id, int index)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.goToItem", id, index);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.goToItem", id, index);
     }
 
     internal static ValueTask BitSwiperGoToPage(this IJSRuntime jsRuntime, string id, int page)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.goToPage", id, page);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.goToPage", id, page);
     }
 
     internal static ValueTask BitSwiperGoToEdge(this IJSRuntime jsRuntime, string id, bool end)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.goToEdge", id, end);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.goToEdge", id, end);
     }
 
     internal static ValueTask BitSwiperDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Swiper.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Swiper.dispose", id);
     }
 }
