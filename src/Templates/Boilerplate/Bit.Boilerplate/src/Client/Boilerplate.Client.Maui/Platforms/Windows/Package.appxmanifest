@@ -9,7 +9,7 @@
     <Identity
       Name="maui-package-name-placeholder"
       Publisher="CN=User Name"
-      Version="0.0.0.0" />
+      Version="1.0.0.0" />
 
     <Properties>
         <DisplayName>$placeholder$</DisplayName>

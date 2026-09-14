@@ -29,7 +29,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/after">https://developer.mozilla.org/en-US/docs/Web/API/Element/after</see>
     /// </summary>
     public static ValueTask After(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.after", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.after", element, nodes);
 
     /// <summary>
     /// Appends text nodes inside the element, after its last child.
@@ -37,7 +37,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/append">https://developer.mozilla.org/en-US/docs/Web/API/Element/append</see>
     /// </summary>
     public static ValueTask Append(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.append", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.append", element, nodes);
 
     /// <summary>
     /// Inserts text nodes immediately before the element, as siblings.
@@ -45,7 +45,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/before">https://developer.mozilla.org/en-US/docs/Web/API/Element/before</see>
     /// </summary>
     public static ValueTask Before(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.before", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.before", element, nodes);
 
     /// <summary>
     /// Prepends text nodes inside the element, before its first child.
@@ -53,7 +53,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend">https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend</see>
     /// </summary>
     public static ValueTask Prepend(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.prepend", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.prepend", element, nodes);
 
     /// <summary>
     /// Replaces every child of the element with the given text nodes. Passing nothing empties it.
@@ -61,7 +61,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceChildren">https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceChildren</see>
     /// </summary>
     public static ValueTask ReplaceChildren(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.replaceChildren", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.replaceChildren", element, nodes);
 
     /// <summary>
     /// Replaces the element itself with the given text nodes. The reference is dangling afterwards.
@@ -69,7 +69,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceWith">https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceWith</see>
     /// </summary>
     public static ValueTask ReplaceWith(this ElementReference element, params string[] nodes)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.replaceWith", element, nodes);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.replaceWith", element, nodes);
 
     /// <summary>
     /// Parses <paramref name="html"/> as markup and inserts the result at the given position,
@@ -83,7 +83,7 @@ public static class ElementReferenceDomExtensions
     /// <see cref="SetHtml"/>, which sanitizes.
     /// </remarks>
     public static ValueTask InsertAdjacentHtml(this ElementReference element, InsertPosition position, string html)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.insertAdjacentHTML", element, PositionName(position), html);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.insertAdjacentHTML", element, PositionName(position), html);
 
     /// <summary>
     /// Inserts <paramref name="text"/> as a text node at the given position. Markup in the string
@@ -92,7 +92,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText">https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText</see>
     /// </summary>
     public static ValueTask InsertAdjacentText(this ElementReference element, InsertPosition position, string text)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.insertAdjacentText", element, PositionName(position), text);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.insertAdjacentText", element, PositionName(position), text);
 
     /// <summary>
     /// Serializes the element's contents to HTML, optionally including the shadow roots that were
@@ -108,7 +108,7 @@ public static class ElementReferenceDomExtensions
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GetHtmlJsOptions))]
     public static ValueTask<string> GetHtml(this ElementReference element, GetHtmlOptions? options = null)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getHTML", element, options?.ToJsObject());
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementDom.getHTML", element, options?.ToJsObject());
 
     /// <summary>
     /// Replaces the element's contents with <paramref name="html"/>, running it through the
@@ -123,7 +123,7 @@ public static class ElementReferenceDomExtensions
     /// into the unsafe one. Feature-detect with a <c>try</c> and fall back to your own sanitizer.
     /// </remarks>
     public static ValueTask SetHtml(this ElementReference element, string html)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setHTML", element, html, null);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.setHTML", element, html, null);
 
     /// <summary>
     /// Replaces the element's contents with <paramref name="html"/> without sanitizing, parsing
@@ -136,7 +136,7 @@ public static class ElementReferenceDomExtensions
     /// Use <see cref="SetHtml"/> for anything else.
     /// </remarks>
     public static ValueTask SetHtmlUnsafe(this ElementReference element, string html)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setHTMLUnsafe", element, html);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.setHTMLUnsafe", element, html);
 
     /// <summary>
     /// Every border box the element occupies, in viewport coordinates - more than one for an inline
@@ -150,7 +150,7 @@ public static class ElementReferenceDomExtensions
     /// apart. Defer the read to <c>OnAfterRenderAsync</c> if you branch on it.
     /// </remarks>
     public static async ValueTask<Rect[]> GetClientRects(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<Rect[]>("BitButil.element.getClientRects", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<Rect[]>("BitButil.elementDom.getClientRects", element);
 
     /// <summary>
     /// Adds classes to the element, ignoring the ones it already has.
@@ -158,7 +158,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">https://developer.mozilla.org/en-US/docs/Web/API/Element/classList</see>
     /// </summary>
     public static ValueTask AddClass(this ElementReference element, params string[] tokens)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.classListAdd", element, tokens);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.classListAdd", element, tokens);
 
     /// <summary>
     /// Removes classes from the element, ignoring the ones it does not have.
@@ -166,7 +166,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">https://developer.mozilla.org/en-US/docs/Web/API/Element/classList</see>
     /// </summary>
     public static ValueTask RemoveClass(this ElementReference element, params string[] tokens)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.classListRemove", element, tokens);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.classListRemove", element, tokens);
 
     /// <summary>
     /// Adds the class when absent and removes it when present, or pins it to
@@ -175,7 +175,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">https://developer.mozilla.org/en-US/docs/Web/API/Element/classList</see>
     /// </summary>
     public static async ValueTask<bool> ToggleClass(this ElementReference element, string token, bool? force = null)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.classListToggle", element, token, force);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.classListToggle", element, token, force);
 
     /// <summary>
     /// Swaps <paramref name="oldToken"/> for <paramref name="newToken"/> in place, keeping its
@@ -185,7 +185,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">https://developer.mozilla.org/en-US/docs/Web/API/Element/classList</see>
     /// </summary>
     public static async ValueTask<bool> ReplaceClass(this ElementReference element, string oldToken, string newToken)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.classListReplace", element, oldToken, newToken);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.classListReplace", element, oldToken, newToken);
 
     /// <summary>
     /// Returns whether the element carries the class.
@@ -198,7 +198,7 @@ public static class ElementReferenceDomExtensions
     /// if you branch on it.
     /// </remarks>
     public static async ValueTask<bool> ContainsClass(this ElementReference element, string token)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.classListContains", element, token);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.classListContains", element, token);
 
     /// <summary>
     /// The element's classes, in document order - <c>className</c> split into its tokens.
@@ -206,7 +206,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">https://developer.mozilla.org/en-US/docs/Web/API/Element/classList</see>
     /// </summary>
     public static async ValueTask<string[]> GetClassList(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.element.getClassList", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.elementDom.getClassList", element);
 
     /// <summary>
     /// Reads one <c>data-*</c> attribute by its dataset key - <c>userId</c> for
@@ -215,7 +215,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset</see>
     /// </summary>
     public static ValueTask<string?> GetData(this ElementReference element, string key)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string?>("BitButil.element.getData", element, key);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string?>("BitButil.elementDom.getData", element, key);
 
     /// <summary>
     /// Writes one <c>data-*</c> attribute by its dataset key, creating it when absent.
@@ -223,7 +223,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset</see>
     /// </summary>
     public static ValueTask SetData(this ElementReference element, string key, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setData", element, key, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.setData", element, key, value);
 
     /// <summary>
     /// Removes one <c>data-*</c> attribute by its dataset key.
@@ -231,7 +231,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset</see>
     /// </summary>
     public static ValueTask RemoveData(this ElementReference element, string key)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.removeData", element, key);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.removeData", element, key);
 
     /// <summary>
     /// The dataset keys the element carries - <c>userId</c> for <c>data-user-id</c>, not the
@@ -240,7 +240,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset</see>
     /// </summary>
     public static async ValueTask<string[]> GetDataNames(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.element.getDataNames", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.elementDom.getDataNames", element);
 
     /// <summary>
     /// The element's whole inline style, as it would be written in a <c>style</c> attribute.
@@ -252,7 +252,7 @@ public static class ElementReferenceDomExtensions
     /// <c>getComputedStyle</c>, which belongs to the window rather than to the element.
     /// </remarks>
     public static ValueTask<string> GetStyleText(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getStyleText", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementDom.getStyleText", element);
 
     /// <summary>
     /// Replaces the element's whole inline style. Anything already there is dropped.
@@ -260,7 +260,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style</see>
     /// </summary>
     public static ValueTask SetStyleText(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setStyleText", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.setStyleText", element, value);
 
     /// <summary>
     /// Reads one inline style declaration by its CSS property name - <c>"background-color"</c>, and
@@ -269,7 +269,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue">https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue</see>
     /// </summary>
     public static ValueTask<string> GetStyleProperty(this ElementReference element, string name)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getStyleProperty", element, name);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementDom.getStyleProperty", element, name);
 
     /// <summary>
     /// Sets one inline style declaration by its CSS property name, leaving the rest alone.
@@ -278,7 +278,7 @@ public static class ElementReferenceDomExtensions
     /// </summary>
     /// <remarks>Pass <paramref name="important"/> to mark the declaration <c>!important</c>.</remarks>
     public static ValueTask SetStyleProperty(this ElementReference element, string name, string value, bool important = false)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setStyleProperty", element, name, value, important ? "important" : null);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.setStyleProperty", element, name, value, important ? "important" : null);
 
     /// <summary>
     /// Removes one inline style declaration and returns what it held.
@@ -286,7 +286,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/removeProperty">https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/removeProperty</see>
     /// </summary>
     public static ValueTask<string> RemoveStyleProperty(this ElementReference element, string name)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.removeStyleProperty", element, name);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementDom.removeStyleProperty", element, name);
 
     /// <summary>
     /// Shows the element as a popover, in the top layer above the rest of the page.
@@ -299,7 +299,7 @@ public static class ElementReferenceDomExtensions
     /// popover support, so a page can call it without feature-detecting first.
     /// </remarks>
     public static ValueTask ShowPopover(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.showPopover", element);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.showPopover", element);
 
     /// <summary>
     /// Hides the element if it is showing as a popover.
@@ -307,7 +307,7 @@ public static class ElementReferenceDomExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidePopover">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidePopover</see>
     /// </summary>
     public static ValueTask HidePopover(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.hidePopover", element);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementDom.hidePopover", element);
 
     /// <summary>
     /// Shows the popover when hidden and hides it when shown, or pins it to
@@ -320,7 +320,7 @@ public static class ElementReferenceDomExtensions
     /// that ended up hidden - as it also is during prerender/SSR (no JS runtime).
     /// </remarks>
     public static async ValueTask<bool> TogglePopover(this ElementReference element, bool? force = null)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.togglePopover", element, force);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.togglePopover", element, force);
 
     /// <summary>
     /// Returns whether any descendant of the element matches <paramref name="selectors"/>.
@@ -335,7 +335,7 @@ public static class ElementReferenceDomExtensions
     /// During prerender/SSR (no JS runtime) this returns <c>false</c> rather than throwing.
     /// </remarks>
     public static async ValueTask<bool> QuerySelectorMatches(this ElementReference element, string selectors)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.querySelectorMatches", element, selectors);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.querySelectorMatches", element, selectors);
 
     /// <summary>
     /// How many descendants of the element match <paramref name="selectors"/>.
@@ -348,7 +348,45 @@ public static class ElementReferenceDomExtensions
     /// <c>0</c> rather than throwing.
     /// </remarks>
     public static async ValueTask<int> QuerySelectorAllCount(this ElementReference element, string selectors)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<int>("BitButil.element.querySelectorAllCount", element, selectors);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<int>("BitButil.elementDom.querySelectorAllCount", element, selectors);
+
+    /// <summary>
+    /// True when the runtime implements <c>Element.moveBefore()</c>.
+    /// </summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public static async ValueTask<bool> IsMoveBeforeSupported(this ElementReference element)
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.isMoveBeforeSupported");
+
+    /// <summary>
+    /// Moves <paramref name="node"/> into this element, before <paramref name="reference"/>, <b>without
+    /// disconnecting it</b> from the document on the way.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Node/moveBefore">https://developer.mozilla.org/en-US/docs/Web/API/Node/moveBefore</see>
+    /// </summary>
+    /// <param name="element">The new parent.</param>
+    /// <param name="node">The node to move.</param>
+    /// <param name="reference">
+    /// The child to insert before. Pass null to append at the end.
+    /// </param>
+    /// <returns>
+    /// False when the runtime has no <c>moveBefore</c>, or the move was rejected - across documents,
+    /// or into the node's own subtree.
+    /// </returns>
+    /// <remarks>
+    /// The difference from an ordinary insert is what <i>doesn't</i> happen: an iframe keeps its
+    /// document instead of reloading, a playing video keeps playing, a running animation isn't
+    /// restarted, and focus stays where it was. Reparenting with <c>insertBefore</c> tears all of
+    /// that down, which is why moving a node has historically been something to avoid.
+    /// <br/>
+    /// Blazor owns the DOM it rendered and a diff can undo this on the next render - use it for
+    /// elements Blazor doesn't re-render.
+    /// </remarks>
+    public static async ValueTask<bool> MoveBefore(this ElementReference element, ElementReference node, ElementReference? reference = null)
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementDom.moveBefore", element, node, reference);
 
     private static string PositionName(InsertPosition position) => position switch
     {

@@ -1493,11 +1493,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>إرسال إشعار</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>تمكين الإشعارات</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>الإشعارات مفعّلة في هذه الجلسة.</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>تعطيل الإشعارات</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>الإشعارات مكتومة في هذه الجلسة.</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>تم تفعيل الإشعارات</value>
@@ -1820,15 +1829,6 @@
     <value>لا توجد منطقة زمنية تطابق بحثك.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>تشغيل الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>إيقاف الإشعارات الفورية</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>
@@ -1902,4 +1902,134 @@
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>أوافق وأتابع</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>منح إذن للتطبيق</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>جارٍ فحص هذا الطلب...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>لا يمكن منح الإذن لهذا الطلب</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>لم تتم مشاركة أي شيء. يمكنك إغلاق هذه الصفحة والمحاولة مرة أخرى من التطبيق.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>الانتقال إلى الصفحة الرئيسية</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>يمكنك العودة إلى التطبيق</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>تم تسليم النتيجة إلى {0}. إذا لم يظهر من تلقاء نفسه، فانتقل إليه.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>منح الإذن لـ {0}؟</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>إنه يطلب التصرف نيابةً عنك. تابع فقط إذا كنت قد بدأت هذا من تطبيق تثق به.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>التطبيق</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>يمكنه الوصول إلى</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>يعيدك إلى</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>سيكون بإمكانه:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>لا يستطيع حسابك منح كل ما طلبه هذا التطبيق، لذا سيتم استبعاد ما يلي: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>هذا التطبيق وصف نفسه بنفسه؛ ولم يضمنه أحد في {0}.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>منح الإذن</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>تعذر التعرف على التطبيق الذي قدّم هذا الطلب.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>العنوان الذي يريد هذا التطبيق أن يُعاد إليه ليس من العناوين التي سجّلها.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>طلب منح الإذن هذا غير صالح.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>قراءة معلومات تشخيصية عن هذا النشر - الإعدادات ومخطط قاعدة البيانات والمهام الخلفية. لا يمكنه تغيير أي شيء.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>قراءة معلومات تشخيصية عن هذا النشر.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>تطبيق مصرّح له</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>التطبيقات</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>التطبيقات المصرّح لها</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>التطبيقات الخارجية التي صرّح لها مستخدموك عبر OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>لم يتم التصريح لأي تطبيق بعد.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>تظهر التطبيقات هنا بمجرد أن يصرّح أحدهم لأحدها؛ لا حاجة لتسجيل أي شيء مسبقًا.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>تصاريح نشطة</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>يعيد المستخدمين إلى:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>إلغاء الوصول</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>يملك {0} حاليًا {1} تصريح. الإلغاء يسجّل خروجه لكل من صرّح له؛ ويمكنهم التصريح له من جديد.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>تم إلغاء {0} تصريح.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>مُهيّأ مسبقًا</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>معرّف لنفسه</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>تعذر التعرف على هذا التطبيق، لذا لا توجد جهة للعودة إليها.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>طلب منح الإذن هذا غير صالح ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>لا يملك حسابك الصلاحيات التي يطلبها هذا التطبيق.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>يتطلب هذا التطبيق المصادقة الثنائية. فعّلها في إعدادات حسابك، وسجّل الدخول مرة أخرى، ثم ابدأ من جديد من التطبيق.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>أنت لست عضوًا في مساحة العمل التي يطلبها هذا التطبيق.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>استخدام مساعد هذا التطبيق نيابةً عنك - طرح الأسئلة عليه والبحث فيما يمكنه البحث فيه. لا يمكنه التصرف على جهازك.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>استخدام مساعد هذا التطبيق نيابةً عنك.</value>
+  </data>
+  <!--#endif -->
 </root>

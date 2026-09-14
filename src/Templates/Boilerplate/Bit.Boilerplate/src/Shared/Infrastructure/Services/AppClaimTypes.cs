@@ -45,6 +45,12 @@ public class AppClaimTypes
     public const string FEATURES = "features";
 
     /// <summary>
+    /// The OAuth client a token was delegated to. Only the authorization server's tokens carry it, so its presence is
+    /// how server code knows it is acting for somebody else's app - a different question from which scopes were granted.
+    /// </summary>
+    public const string OAUTH_CLIENT_ID = "client_id";
+
+    /// <summary>
     /// The method used for user authentication.
     /// External (Social), Sms (Web-OTP), Email (Magic Link or 6 digit code), Push notification (6 digit code), WebAuthn (Face-Id, Fingerprint etc), Password.
     /// </summary>

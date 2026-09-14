@@ -61,3 +61,10 @@ jobs:
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
       run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj --no-build
+
+    - name: dotnet test (source generator)
+      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj --no-build
+
+    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
+      # Browser, hybrid and trimmed/AOT publish coverage runs in bit.ci.Brouter.e2e.yml.
+      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Hosting/Bit.Brouter.Tests.Hosting.csproj --no-build

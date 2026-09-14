@@ -1,4 +1,5 @@
 ﻿using Bit.Butil.Tests.E2E.Infrastructure;
+using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
@@ -62,6 +63,24 @@ public class WindowDocumentHistoryTests : ButilPageTest
         await ClickAndExpectAsync("doc-meta", "doc:meta:Visible/True/True");
     }
 
+    /// <summary>
+    /// Browsers match <c>dir</c> keywords case-insensitively, so the round trip alone would pass even with
+    /// <c>dir="Rtl"</c> in the DOM. The attribute is read back raw to pin the exact keyword handed over.
+    /// </summary>
+    [TestMethod]
+    public async Task Document_SetDir_Writes_The_Lowercase_Keyword()
+    {
+        await ClickAndExpectAsync("doc-dir", "doc:dir:Auto/Rtl/On");
+
+        var attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
+        Assert.AreEqual("rtl", attribute);
+
+        await ClickAndExpectAsync("doc-dir-ltr", "doc:dir-ltr:Ltr");
+
+        attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
+        Assert.AreEqual("ltr", attribute);
+    }
+
     [TestMethod]
     public async Task Window_Metrics_Report_Positive_Inner_Size()
     {
@@ -72,5 +91,27 @@ public class WindowDocumentHistoryTests : ButilPageTest
     public async Task Window_MatchMedia_Evaluates_A_Query()
     {
         await ClickAndExpectAsync("window-matchmedia", "window:media:True");
+    }
+
+    /// <summary>
+    /// The media-query change callback, which JavaScript dispatches through the interop reference the
+    /// Window service hands it. That reference is held by a small relay object rather than by the service
+    /// itself - what a trimmed app downloads depends on it - so this is where the arrangement is proven to
+    /// still deliver events in a real browser.
+    /// </summary>
+    [TestMethod]
+    public async Task Window_MatchMedia_Subscription_Reports_A_Change()
+    {
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Light });
+
+        // The click returns as soon as the handler yields; the first status is what says the subscription
+        // is live, and flipping the scheme before it would be a change nothing is listening for yet.
+        await ClickAndExpectAsync("window-matchmedia-watch", "window:media-watching");
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Dark });
+
+        await Assertions.Expect(Page.Locator("#status")).ToContainTextAsync("window:media-change:dark", new() { Timeout = 15_000 });
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Light });
     }
 }

@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 using Hangfire.EntityFrameworkCore;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 //#if (offlineDb == true)
@@ -56,6 +57,12 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#endif
 
     public DbSet<Attachment> Attachments { get; set; } = default!;
+
+    /// <summary>The only state the OAuth authorization flow keeps.</summary>
+    public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; } = default!;
+
+    /// <summary>The OAuth half of a <see cref="UserSession"/>, for the few sessions an external application holds.</summary>
+    public DbSet<OAuthGrant> OAuthGrants { get; set; } = default!;
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 

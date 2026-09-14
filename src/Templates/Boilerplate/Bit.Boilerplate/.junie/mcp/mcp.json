@@ -4,6 +4,10 @@
             "type": "http",
             "url": "https://bitplatform.dev/mcp"
         },
+        "dev-mcp": {
+            "type": "http",
+            "url": "https://use-your-api-server-url-here.com/dev-mcp"
+        },
         "aspire": {
             "command": "aspire",
             "args": [

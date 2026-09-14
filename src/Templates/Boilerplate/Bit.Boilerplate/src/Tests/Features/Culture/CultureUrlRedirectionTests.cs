@@ -171,6 +171,29 @@ public partial class CultureUrlRedirectionTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "A non-page endpoint must be served in place, culture cookie or not.");
     }
 
+    //#if (api == "Integrated")
+    /// <summary>
+    /// The case <c>/sitemap.xml</c> above cannot cover: the home page's route is <c>{culture:nonfile?}/</c>, so any
+    /// dotless single segment matches it and <c>IsBlazorPageContext</c> is true for a path no page serves. Hangfire's
+    /// dashboard is terminal middleware rather than an endpoint, so it can never win that match and has to run first.
+    /// </summary>
+    [TestMethod]
+    public async Task TheHangfireDashboard_Should_NotBeRedirected_WhenItsPathMatchesTheHomePagesCultureRoute()
+    {
+        await using var server = await StartServer();
+        using var httpClient = CreateRedirectInspectingHttpClient(server);
+
+        using var response = await httpClient.GetAsync("/hangfire", TestContext.CancellationToken);
+
+        // Anonymously the filter's 401 is what Handle40XStatusCodes turns into the not-authorized page, carrying the
+        // bare /hangfire back as its return url.
+        Assert.StartsWith($"{PageUrls.NotAuthorized}?return-url=%2Fhangfire", response.Headers.Location?.OriginalString ?? "",
+            $"/hangfire was answered with {(int)response.StatusCode} '{response.Headers.Location}'. A culture prefixed " +
+            "location means the culture redirect took the request first, and /{culture}/hangfire is a 404 - which leaves " +
+            "the dashboard reachable only by its deep links.");
+    }
+    //#endif
+
     /// <summary>
     /// The app shell request the service worker caches (<c>?no-prerender</c>, See bit-bswup) must be served as
     /// requested: a browser refuses a `redirected` response when a service worker answers a navigation with it, so

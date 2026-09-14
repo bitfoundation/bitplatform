@@ -128,10 +128,9 @@ public class AppInsightsReadinessTests
         var jsRuntime = new FakeAppInsightsJsRuntime();
         var timeProvider = new FakeTimeProvider();
 
-        // Only UpdateCfg reads it, and these tests are about readiness, so the refusing default is fine.
-        var consentService = new ConsentService(new PubSubService(new ServiceCollection().BuildServiceProvider()), new FakeStorageService());
-
-        return (new AppInsightsJsSdkService(jsRuntime, timeProvider, consentService), jsRuntime, timeProvider);
+        // Only UpdateCfg reads consent, and these tests are about readiness, so leaving the provider unset - which
+        // refuses - is fine.
+        return (new AppInsightsJsSdkService(jsRuntime, timeProvider), jsRuntime, timeProvider);
     }
 
     /// <summary>An <see cref="IStorageService"/> that keeps the values in a dictionary, which is all a consent decision needs.</summary>

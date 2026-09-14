@@ -69,18 +69,8 @@ public interface IAuthTokenProvider
             }
         }
 
-        if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.GlobalAdmin))
-        {
-            foreach (var feat in AppFeatures.GetGlobalAdminFeatures())
-                claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
-        }
-        //#if (multitenant == true)
-        else if (claims.Any(c => c.Type == RoleType && c.Value == AppRoles.TenantAdmin))
-        {
-            foreach (var feat in AppFeatures.GetTenantAdminFeatures())
-                claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
-        }
-        //#endif
+        foreach (var feat in AppFeatures.GetRoleImpliedFeatures(role => claims.Any(c => c.Type == RoleType && c.Value == role)))
+            claims.Add(new Claim(AppClaimTypes.FEATURES, feat.Value));
 
         return claims;
     }

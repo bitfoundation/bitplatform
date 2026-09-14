@@ -13,7 +13,8 @@ public partial class DevMcpHangfireTools
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private ILogger<DevMcpHangfireTools> logger = default!;
 
-    private Guid? CallerId => httpContextAccessor.HttpContext?.User is { } user && user.IsAuthenticated() ? user.GetUserId() : null;
+    /// <summary>Unguarded on purpose: nothing reaches a tool here without the endpoint's global-admin + 2FA authorization.</summary>
+    private Guid CallerId => httpContextAccessor.HttpContext!.User.GetUserId();
 
     [McpServerTool(Name = nameof(GetHangfireStats))]
     [Description("Returns Hangfire job counts by state via JobStorage.GetMonitoringApi, not by querying Hangfire tables. Correct whether this deployment stores jobs in the shared database (jobs schema) or in an isolated SQLite file (Hangfire.UseIsolatedStorage). Recurring-job count is included. This is read-only: it cannot enqueue, retry, delete or trigger jobs.")]

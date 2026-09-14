@@ -1493,11 +1493,20 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
-    <data name="EnableNotifications" xml:space="preserve">
-    <value>فعال‌سازی اعلان‌ها</value>
+    <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>اعلان‌ها برای این نشست فعال هستند.</value>
   </data>
-    <data name="DisableNotifications" xml:space="preserve">
-    <value>غیرفعال‌سازی اعلان‌ها</value>
+    <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>اعلان‌ها برای این نشست بی‌صدا شده‌اند.</value>
+  </data>
+    <data name="Notifications" xml:space="preserve">
+    <value>اعلان‌ها</value>
+  </data>
+    <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>روشن کردن اعلان‌ها</value>
+  </data>
+    <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>خاموش کردن اعلان‌ها</value>
   </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>اعلان‌ها فعال شد</value>
@@ -1820,15 +1829,6 @@
     <value>هیچ منطقه زمانی با جستجوی شما مطابقت ندارد.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>اعلان‌های پوش</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>روشن کردن اعلان‌های پوش</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>خاموش کردن اعلان‌های پوش</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>اعلان‌های پوش برای این برنامه مسدود شده‌اند. در تنظیمات مرورگر یا سیستم‌عامل، اعلان‌ها را مجاز کنید و دوباره تلاش کنید.</value>
   </data>
@@ -1902,4 +1902,134 @@
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>موافقم، ادامه بده</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>اجازه دادن به برنامه</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>در حال بررسی این درخواست...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>این درخواست قابل تأیید نیست</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>چیزی به اشتراک گذاشته نشد. می‌توانید این صفحه را ببندید و دوباره از خود برنامه شروع کنید.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>رفتن به صفحه اصلی</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>می‌توانید به برنامه برگردید</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>نتیجه به {0} تحویل داده شد. اگر خودش جلو نیامد، به آن سوییچ کنید.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>به {0} اجازه داده شود؟</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>این برنامه می‌خواهد از طرف شما عمل کند. فقط در صورتی ادامه دهید که خودتان این کار را از برنامه‌ای مورد اعتماد شروع کرده‌اید.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>برنامه</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>دسترسی به</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>شما را برمی‌گرداند به</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>این برنامه می‌تواند:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>حساب شما نمی‌تواند همه چیزهایی را که این برنامه خواسته بدهد، بنابراین این موارد کنار گذاشته می‌شوند: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>این برنامه خودش را معرفی کرده است؛ هیچ‌کس در {0} آن را تأیید نکرده است.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>اجازه دادن</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>برنامه‌ای که این درخواست را فرستاده شناسایی نشد.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>آدرسی که این برنامه می‌خواهد به آن برگردانده شود، جزو آدرس‌های ثبت‌شده‌اش نیست.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>این درخواست اجازه‌دهی معتبر نیست.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>خواندن اطلاعات تشخیصی این استقرار - پیکربندی، شمای دیتابیس، کارهای پس‌زمینه. نمی‌تواند چیزی را تغییر دهد.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>خواندن اطلاعات تشخیصی این استقرار.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>برنامه مجاز شده</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>برنامه‌ها</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>برنامه‌های مجاز شده</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>برنامه‌های بیرونی که کاربران شما با OAuth به آن‌ها اجازه داده‌اند.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>هنوز به هیچ برنامه‌ای اجازه داده نشده است.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>به محض اینکه کسی به برنامه‌ای اجازه بدهد اینجا ظاهر می‌شود؛ لازم نیست چیزی از قبل ثبت شود.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>اجازه فعال</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>کاربران را برمی‌گرداند به:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>لغو دسترسی</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} در حال حاضر {1} اجازه فعال دارد. با لغو، برای همه کسانی که به آن اجازه داده‌اند خارج می‌شود؛ می‌توانند دوباره اجازه بدهند.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} اجازه لغو شد.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>از پیش پیکربندی‌شده</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>خودمعرفی‌شده</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>این برنامه شناسایی نشد، بنابراین جایی برای برگرداندن نتیجه وجود ندارد.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>این درخواست اجازه‌دهی معتبر نیست ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>حساب شما دسترسی‌هایی را که این برنامه خواسته ندارد.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>این برنامه به ورود دو مرحله‌ای نیاز دارد. آن را در تنظیمات حسابتان روشن کنید، دوباره وارد شوید، و بعد از خود برنامه از نو شروع کنید.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>فضای کاری</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>شما عضو فضای کاری‌ای که این برنامه خواسته نیستید.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>استفاده از دستیار این برنامه از طرف شما - پرسیدن سؤال و جست‌وجو در چیزهایی که می‌تواند جست‌وجو کند. نمی‌تواند روی دستگاه شما کاری انجام دهد.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>استفاده از دستیار این برنامه از طرف شما.</value>
+  </data>
+  <!--#endif -->
 </root>

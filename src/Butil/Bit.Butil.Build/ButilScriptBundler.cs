@@ -207,6 +207,42 @@ public static class ButilScriptBundler
     }
 
     /// <summary>
+    /// The names in a consumer's list that name one module while a Bit.Butil class of the same name
+    /// needs more: <c>crypto</c> keeps the hashing module alone, and <c>Crypto</c> the class also calls
+    /// four others. Each result carries the class and the modules naming it would add.
+    /// </summary>
+    /// <remarks>
+    /// A module name meaning that one module is deliberate - it is the finer control a split family
+    /// offers - and a consumer who wrote <c>crypto</c> before the family was split is exactly who would
+    /// not know the name stopped covering it. The publish reports these so that consumer finds out in
+    /// the build output rather than in a browser.
+    /// </remarks>
+    /// <param name="names">What the consumer wrote.</param>
+    /// <param name="manifest">The module manifest.</param>
+    /// <param name="types">The type map; without it nothing can be said, and the result is empty.</param>
+    public static IReadOnlyList<(string Name, string ClassName, IReadOnlyList<string> Beyond)> NarrowerThanClass(
+        IEnumerable<string> names, ButilScriptManifest manifest, ButilTypeModules? types)
+    {
+        var hints = new List<(string, string, IReadOnlyList<string>)>();
+        if (types is null) return hints;
+
+        foreach (var raw in names)
+        {
+            var name = (raw ?? string.Empty).Trim();
+            if (manifest.Dependencies.ContainsKey(name) is false) continue;
+
+            var type = types.FullTypeNames.FirstOrDefault(candidate =>
+                string.Equals(candidate.Substring(candidate.LastIndexOf('.') + 1), name, StringComparison.OrdinalIgnoreCase));
+            if (type is null) continue;
+
+            var beyond = types.ForFullName(type).Where(module => module != name).OrderBy(module => module, StringComparer.Ordinal).ToArray();
+            if (beyond.Length > 0) hints.Add((name, type.Substring(type.LastIndexOf('.') + 1), beyond));
+        }
+
+        return hints;
+    }
+
+    /// <summary>
     /// Concatenates the chunks of the given modules, in the given order, into a bundle. Chunk files are
     /// <c>&lt;chunksDirectory&gt;/&lt;module&gt;.js</c>.
     /// </summary>

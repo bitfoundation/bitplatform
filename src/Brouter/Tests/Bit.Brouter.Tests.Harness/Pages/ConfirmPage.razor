@@ -1,0 +1,16 @@
+﻿@inject IBrouter Brouter
+
+<h1 id="page-confirm">confirm</h1>
+
+<button id="arm-confirm" @onclick="Arm">arm</button>
+<span id="confirm-state">@(_armed ? "armed" : "disarmed")</span>
+
+@code {
+    private bool _armed;
+
+    private async Task Arm()
+    {
+        await Brouter.SetConfirmExternalNavigationAsync(true);
+        _armed = true;
+    }
+}

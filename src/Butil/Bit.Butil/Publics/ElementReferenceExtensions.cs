@@ -740,10 +740,10 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask<Hidden> GetHidden(this ElementReference element)
     {
-        var value = await GetJSRuntime(element).Invoke<object>("BitButil.element.getHidden", element);
-        var v = value.ToString() switch
+        var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getHidden", element);
+        var v = value switch
         {
-            "True" => Hidden.True,
+            "true" => Hidden.True,
             "until-found" => Hidden.UntilFound,
             _ => Hidden.False
         };

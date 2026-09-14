@@ -121,16 +121,50 @@ if (response is not null)
     <DemoSection Title="Payment handler"
                  Api="PaymentHandler.IsSupported / GetUserHint / SetUserHint / EnableDelegations"
                  Description="The other side of the boundary: what an installed app registers so other sites can pay through it. The handling itself happens in the service worker's canmakepayment and paymentrequest events; what a page controls is the account hint shown next to your app, and which fields your handler collects itself. Needs an active service worker registration."
-                 Code=@("""
+                 Files=@([
+new("Wallet.razor", """
 @inject Bit.Butil.PaymentHandler paymentHandler
 
-await paymentHandler.SetUserHint("user@example.com");
+@code {
+    // What a page controls: the account shown next to this app in the payment sheet, and which
+    // fields the handler collects itself rather than letting the browser ask for them.
+    private async Task Configure()
+    {
+        await paymentHandler.SetUserHint("user@example.com");
 
-var hint = await paymentHandler.GetUserHint();
+        var hint = await paymentHandler.GetUserHint();
 
-var enabled = await paymentHandler.EnableDelegations(
-    new[] { "shippingAddress", "payerEmail" });
-""")>
+        var enabled = await paymentHandler.EnableDelegations(
+            new[] { "shippingAddress", "payerEmail" });
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The handling itself. Neither event can be answered from a page: the browser wakes the worker with
+// no tab necessarily open, which is why an installed handler needs an active registration.
+self.addEventListener('canmakepayment', event => {
+    // Answered before the sheet is drawn, to decide whether this app is offered at all.
+    event.respondWith(true);
+});
+
+self.addEventListener('paymentrequest', event => {
+    // Opening a window is how a handler shows its own UI; the response is whatever that window
+    // resolves with, and its shape is the payment method's business rather than the browser's.
+    event.respondWith(new Promise(resolve => {
+        event.openWindow('/wallet/confirm').then(client => {
+            self.addEventListener('message', message => resolve(message.data));
+        });
+    }));
+});
+"""),
+new("wwwroot/payment-manifest.json", """
+{
+  "//": "Served at the payment method's own URL, which is the payment method identifier itself.",
+  "default_applications": ["https://wallet.example/manifest.json"],
+  "supported_origins": ["https://wallet.example"]
+}
+"""),
+])>
         <div class="field">
             <span class="field-label">User hint</span>
             <input @bind="_userHint" style="min-width:18rem" />

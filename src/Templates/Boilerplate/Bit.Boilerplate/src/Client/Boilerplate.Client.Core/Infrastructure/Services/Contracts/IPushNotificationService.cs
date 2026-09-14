@@ -11,13 +11,10 @@ public interface IPushNotificationService
     Task<bool> IsAvailable(CancellationToken cancellationToken);
     Task RequestPermission(CancellationToken cancellationToken);
     Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
+    /// <summary>
+    /// A no-op unless the device has opted in (See NotificationPreferenceService), so the automatic subscribe on every
+    /// auth-state change never subscribes a device that has not.
+    /// </summary>
     Task Subscribe(CancellationToken cancellationToken);
     Task Unsubscribe(CancellationToken cancellationToken);
-    /// <summary>
-    /// The device-stored preference the user controls through AppMenu's push notifications toggle, honored whether
-    /// the user is signed in or not. <see cref="Subscribe"/> respects it, so the automatic re-subscribe on every
-    /// auth-state change cannot undo an opt-out.
-    /// </summary>
-    Task<bool> IsEnabled();
-    Task SetEnabled(bool enabled, CancellationToken cancellationToken);
 }

@@ -33,14 +33,43 @@ var supported = await serviceWorker.IsSupported();
     <DemoSection Title="Register a worker"
                  Api="Register"
                  Description="Registers a same-origin worker script and resolves with a snapshot of the created registration. Optional parameters control the scope, the update-via-cache strategy (imports, all or none) and whether the script is loaded as an ES module."
-                 Code=@("""
-var info = await serviceWorker.Register("/sw.js");
+                 Files=@([
+new("ServiceWorker.razor", """
+@inject Bit.Butil.ServiceWorker serviceWorker
 
-// info.IsRegistered   -> true
-// info.Scope          -> e.g. "https://example.com/"
-// info.ActiveState    -> "activated" once the worker is running
-// info.InstallingState / info.WaitingState / info.UpdateViaCache
-""")>
+<button @onclick="Register">Register /sw.js</button>
+
+@code {
+    private async Task Register()
+    {
+        var info = await serviceWorker.Register("/sw.js");
+
+        // info.IsRegistered   -> true
+        // info.Scope          -> e.g. "https://example.com/"
+        // info.ActiveState    -> "activated" once the worker is running
+        // info.InstallingState / info.WaitingState / info.UpdateViaCache
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The script the registration points at. It has to be same-origin, and its location decides the
+// widest scope it may claim: a worker at /sw.js can control the whole origin, one at /app/sw.js
+// only /app/.
+
+// Deliberately no self.skipWaiting() here. A first registration activates immediately anyway
+// (nothing is controlling the page yet), while a worker installed over a running one waits - which
+// is the only state ServiceWorker.SkipWaiting has anything to do in.
+self.addEventListener('install', () => {
+    console.log('[sw] installed; waiting if another version is still in control');
+});
+
+self.addEventListener('activate', event => {
+    // Takes over the pages that were already open when this worker activated. Without it the first
+    // visit after an install is the one where a worker's offline support quietly does not work.
+    event.waitUntil(self.clients.claim());
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="RegisterWorker">Register /sw.js</button>
         </div>
@@ -59,6 +88,7 @@ if (info.IsRegistered)
 }
 """)>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(inspectOutput)">Register /sw.js</button>
             <button @onclick="InspectRegistration">Get registration</button>
             <button class="secondary" @onclick="UpdateWorker">Check for updates</button>
         </div>
@@ -68,32 +98,236 @@ if (info.IsRegistered)
     <DemoSection Title="Messaging and controller changes"
                  Api="PostMessage / SubscribeMessage / SubscribeControllerChange"
                  Description="PostMessage sends a payload to the worker currently controlling this page and returns false when there is no controller yet. SubscribeMessage receives payloads the worker posts back as JsonElement values, and SubscribeControllerChange fires whenever the controlling worker changes - for example right after the demo worker activates and claims this page. Both return a ButilSubscription; dispose it to detach."
-                 Code=@("""
-var messageSub = await serviceWorker.SubscribeMessage(data =>
-{
-    // data is a JsonElement carrying whatever the worker posted
+                 Files=@([
+new("ServiceWorker.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+@code {
+    private string? _lastEcho;
+    private ButilSubscription? _messageSub;
+    private ButilSubscription? _controllerSub;
+
+    private async Task Subscribe()
+    {
+        _messageSub = await serviceWorker.SubscribeMessage(data =>
+        {
+            // data is a JsonElement carrying whatever the worker posted
+            _lastEcho = data.GetProperty("echo").GetString();
+            InvokeAsync(StateHasChanged);
+        });
+
+        _controllerSub = await serviceWorker.SubscribeControllerChange(() =>
+        {
+            // the page is now controlled by a (new) worker
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    // False when nothing controls this page yet - a first registration does not control the page
+    // that registered it until the worker claims it.
+    private async Task Post()
+    {
+        var delivered = await serviceWorker.PostMessage("hi worker");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_messageSub is not null) await _messageSub.DisposeAsync();
+        if (_controllerSub is not null) await _controllerSub.DisposeAsync();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The other half of the conversation. A page posts to the worker controlling it; the worker answers
+// every client it controls, because there is no single "the page" from in here.
+self.addEventListener('message', event => {
+    // Skip the internal protocol Bit.Butil's SkipWaiting / Claim / MatchAllClients speak.
+    if (event.data && event.data.__butil) return;
+
+    event.waitUntil(self.clients.matchAll({ type: 'window' })
+        .then(clients => clients.forEach(client => client.postMessage({ echo: event.data }))));
 });
 
-var controllerSub = await serviceWorker.SubscribeControllerChange(() =>
-{
-    // the page is now controlled by a (new) worker
+self.addEventListener('activate', event => {
+    // Claiming is what fires SubscribeControllerChange on a page that loaded uncontrolled.
+    event.waitUntil(self.clients.claim());
 });
-
-var delivered = await serviceWorker.PostMessage("hi worker");
-
-await messageSub.DisposeAsync();
-await controllerSub.DisposeAsync();
-""")>
+"""),
+])>
         <div class="field">
             <label class="field-label">Message to post</label>
             <input @bind="swMessage" />
         </div>
         <div class="controls">
+            <button @onclick="() => RegisterWorker(messagingOutput)">Register /sw.js</button>
             <button @onclick="Subscribe">Subscribe to events</button>
             <button class="secondary" @onclick="PostToWorker">Post message</button>
             <button class="secondary" @onclick="Unsubscribe">Unsubscribe</button>
         </div>
         <DemoConsole @ref="messagingOutput" Title="messaging output" />
+    </DemoSection>
+
+    <DemoSection Title="Navigation preload"
+                 Api="EnableNavigationPreload / DisableNavigationPreload / SetNavigationPreloadHeader / GetNavigationPreloadState"
+                 Description="A cold service worker adds its own start-up time to the first navigation. Navigation preload makes the browser issue the navigation request in parallel with booting the worker, so the two costs overlap. It only pays off if the worker uses the preloaded response - it arrives in its fetch handler as event.preloadResponse - and the setting belongs to the registration, so it survives restarts."
+                 Files=@([
+new("ServiceWorker.razor", """
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+@code {
+    private async Task TurnPreloadOn()
+    {
+        await serviceWorker.EnableNavigationPreload();
+
+        // tell the server this request is a preload, and what for
+        await serviceWorker.SetNavigationPreloadHeader("shell-v3");
+
+        NavigationPreloadState state = await serviceWorker.GetNavigationPreloadState();
+        // state.IsSupported / state.Enabled / state.HeaderValue
+    }
+
+    private async Task TurnPreloadOff() => await serviceWorker.DisableNavigationPreload();
+}
+"""),
+new("wwwroot/sw.js", """
+// Enabling preload costs a request; it only pays off if the worker actually uses the response. The
+// browser sends the navigation in parallel with booting this worker, and hands the result in as
+// event.preloadResponse - a promise that resolves to undefined when preload is off or unsupported.
+self.addEventListener('fetch', event => {
+    if (event.request.mode !== 'navigate') return;
+
+    event.respondWith((async () => {
+        const preloaded = await event.preloadResponse;
+        if (preloaded) return preloaded;
+
+        // Nothing was preloaded - fall back to the network the page would have had anyway.
+        return fetch(event.request);
+    })());
+});
+
+// The header the page set arrives on the preload request as Service-Worker-Navigation-Preload, so a
+// server can answer it with the shell rather than the full page.
+"""),
+])>
+        <div class="field">
+            <label class="field-label">Header value</label>
+            <input @bind="preloadHeader" />
+        </div>
+        <div class="controls">
+            <button @onclick="() => RegisterWorker(preloadOutput)">Register /sw.js</button>
+            <button @onclick="EnablePreload">Enable</button>
+            <button class="secondary" @onclick="SetPreloadHeader">Set header</button>
+            <button class="secondary" @onclick="ReadPreloadState">Get state</button>
+            <button class="danger" @onclick="DisablePreload">Disable</button>
+        </div>
+        <DemoConsole @ref="preloadOutput" Title="navigation preload output" />
+    </DemoSection>
+
+    <DemoSection Title="skipWaiting and clients.claim"
+                 Api="SkipWaiting / Claim"
+                 Description="Both of these can only be done by the worker to itself, so these post a message and the worker acts on it. SkipWaiting promotes a worker that has installed and is waiting for the old one's pages to go away - the 'reload to update' button, without the reload. Claim takes control of pages that loaded before the worker activated, which is why the first visit after an install is the one where offline support quietly does not work."
+                 Files=@([
+new("ServiceWorker.razor", """
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+@code {
+    // False when there was no worker waiting - a first registration activates on its own.
+    private async Task Promote()
+    {
+        var hadWaitingWorker = await serviceWorker.SkipWaiting();
+    }
+
+    // Claim answers over a MessageChannel, so it is false when no worker answered in time as well
+    // as when the call failed inside the worker.
+    private async Task Take()
+    {
+        var claimed = await serviceWorker.Claim();
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// Both facilities live on the worker's global scope and cannot be reached from a page at all, so
+// the page asks and the worker acts. This protocol is what the two calls expect - a worker without
+// it leaves SkipWaiting and Claim with nothing to talk to.
+self.addEventListener('message', event => {
+    if (event.data?.__butil === 'skipWaiting') self.skipWaiting();
+
+    if (event.data?.__butil === 'claim') {
+        // The reply goes back over the port the page sent along with the message. Answer even on
+        // failure: with no reply the page waits out its whole timeout and then reads the default.
+        event.waitUntil(self.clients.claim()
+            .then(() => event.ports[0]?.postMessage(true), () => event.ports[0]?.postMessage(false)));
+    }
+});
+"""),
+])>
+        <div class="controls">
+            <button @onclick="() => RegisterWorker(lifecycleOutput)">Register /sw.js</button>
+            <button @onclick="SkipWaiting">SkipWaiting</button>
+            <button class="secondary" @onclick="ClaimClients">Claim</button>
+        </div>
+        <DemoConsole @ref="lifecycleOutput" Title="lifecycle output" />
+    </DemoSection>
+
+    <DemoSection Title="The Clients API"
+                 Api="MatchAllClients"
+                 Description="Which tabs, iframes and workers the service worker controls. The Clients API exists only on the worker's global scope, so this is a question asked over a MessageChannel - and an empty result is ambiguous: the worker may have answered with no clients (this page is not in the list while it is uncontrolled and includeUncontrolled is false), or there was no active worker, or none answered."
+                 Files=@([
+new("ServiceWorker.razor", """
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+@code {
+    private async Task ListClients()
+    {
+        ServiceWorkerClientInfo[] clients = await serviceWorker.MatchAllClients(
+            includeUncontrolled: true, type: "window");
+
+        // An empty array is ambiguous: no clients, no active worker, or none answered in time.
+        foreach (var client in clients)
+        {
+            // client.Id, client.Url, client.Type, client.FrameType,
+            // client.Focused, client.VisibilityState
+        }
+    }
+}
+"""),
+new("wwwroot/sw.js", """
+// The Clients API exists only on the worker's global scope, so the question is asked over a
+// MessageChannel and answered here. A Client is not serializable, so only the fields the page reads
+// go back across.
+self.addEventListener('message', event => {
+    if (event.data?.__butil !== 'clients') return;
+
+    event.waitUntil(self.clients
+        .matchAll({ includeUncontrolled: event.data.includeUncontrolled, type: event.data.type })
+        .then(clients => event.ports[0]?.postMessage(clients.map(c => ({
+            id: c.id, url: c.url, type: c.type, frameType: c.frameType,
+            focused: c.focused, visibilityState: c.visibilityState
+        }))), () => event.ports[0]?.postMessage([])));
+});
+"""),
+])>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Client type</label>
+                <select @bind="clientType">
+                    <option value="window">window</option>
+                    <option value="worker">worker</option>
+                    <option value="sharedworker">sharedworker</option>
+                    <option value="all">all</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label">Include uncontrolled</label>
+                <input type="checkbox" @bind="includeUncontrolled" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => RegisterWorker(clientsOutput)">Register /sw.js</button>
+            <button @onclick="ListClients">MatchAllClients</button>
+        </div>
+        <DemoConsole @ref="clientsOutput" Title="clients output" />
     </DemoSection>
 
     <DemoSection Title="Unregister"
@@ -140,6 +374,33 @@ var removed = await serviceWorker.Unregister();
     <ApiMember Name="Ready"
                Signature="ValueTask<ServiceWorkerRegistrationInfo> Ready(int timeoutMs = 10000)"
                Description="Waits until a worker is active and returns its registration - the point at which PostMessage will actually reach it. Register returns while the worker is still installing. Times out rather than hanging when nothing is registered." />
+    <ApiMember Name="EnableNavigationPreload"
+               Signature="ValueTask<bool> EnableNavigationPreload(string? scope = null)"
+               Description="Makes the browser issue the navigation request in parallel with booting the worker. False when there is no active worker yet." />
+    <ApiMember Name="DisableNavigationPreload"
+               Signature="ValueTask<bool> DisableNavigationPreload(string? scope = null)"
+               Description="Turns navigation preload back off." />
+    <ApiMember Name="SetNavigationPreloadHeader"
+               Signature="ValueTask<bool> SetNavigationPreloadHeader(string value, string? scope = null)"
+               Description="Sets the Service-Worker-Navigation-Preload header value the browser sends on preload requests." />
+    <ApiMember Name="GetNavigationPreloadState"
+               Signature="ValueTask<NavigationPreloadState> GetNavigationPreloadState(string? scope = null)"
+               Description="Whether navigation preload is enabled, and with what header value." />
+    <ApiMember Name="SkipWaiting"
+               Signature="ValueTask<bool> SkipWaiting(string? scope = null)"
+               Description="Asks a waiting worker to call skipWaiting(). False when no worker is waiting. Needs the worker-side message handler." />
+    <ApiMember Name="Claim"
+               Signature="ValueTask<bool> Claim(string? scope = null, int timeoutMs = 5000)"
+               Description="Asks the active worker to call clients.claim(), taking control of pages that loaded before it activated. Needs the worker-side message handler." />
+    <ApiMember Name="MatchAllClients"
+               Signature="ValueTask<ServiceWorkerClientInfo[]> MatchAllClients(bool includeUncontrolled = false, string type = &quot;window&quot;, string? scope = null, int timeoutMs = 5000)"
+               Description="The clients the worker controls, asked over a MessageChannel. Empty also means the worker does not answer." />
+    <ApiMember Name="NavigationPreloadState"
+               Signature="class NavigationPreloadState { bool IsSupported; bool Enabled; string HeaderValue; }"
+               Description="Navigation preload's state. IsSupported tells 'not implemented' apart from 'implemented and off'." />
+    <ApiMember Name="ServiceWorkerClientInfo"
+               Signature="class ServiceWorkerClientInfo { string Id; string Url; string Type; string FrameType; bool Focused; string VisibilityState; }"
+               Description="One client of the worker - a page, a worker or a shared worker." />
 </ApiTable>
 
 
@@ -149,9 +410,128 @@ var removed = await serviceWorker.Unregister();
     private DemoConsole inspectOutput = default!;
     private DemoConsole messagingOutput = default!;
     private DemoConsole unregisterOutput = default!;
+    private DemoConsole preloadOutput = default!;
+    private DemoConsole lifecycleOutput = default!;
+    private DemoConsole clientsOutput = default!;
     private string swMessage = "Hello from the page!";
+    private string preloadHeader = "butil-demo";
+    private string clientType = "window";
+    private bool includeUncontrolled = true;
     private ButilSubscription? messageSub;
     private ButilSubscription? controllerSub;
+
+    private async Task EnablePreload()
+    {
+        try
+        {
+            var enabled = await serviceWorker.EnableNavigationPreload();
+            if (enabled) await preloadOutput.Success("EnableNavigationPreload() → enabled for this registration.");
+            else await preloadOutput.Warn("EnableNavigationPreload() → false - no active worker yet, or the browser has no navigation preload.");
+        }
+        catch (Exception ex)
+        {
+            await preloadOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DisablePreload()
+    {
+        try
+        {
+            var disabled = await serviceWorker.DisableNavigationPreload();
+            await (disabled
+                ? preloadOutput.Success("DisableNavigationPreload() → disabled.")
+                : preloadOutput.Warn("DisableNavigationPreload() → false."));
+        }
+        catch (Exception ex)
+        {
+            await preloadOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SetPreloadHeader()
+    {
+        try
+        {
+            var set = await serviceWorker.SetNavigationPreloadHeader(preloadHeader);
+            await (set
+                ? preloadOutput.Success($"SetNavigationPreloadHeader(\"{preloadHeader}\") → set.")
+                : preloadOutput.Warn("SetNavigationPreloadHeader → false - enable navigation preload first."));
+        }
+        catch (Exception ex)
+        {
+            await preloadOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ReadPreloadState()
+    {
+        try
+        {
+            var state = await serviceWorker.GetNavigationPreloadState();
+            if (state.IsSupported is false)
+            {
+                await preloadOutput.Warn("GetNavigationPreloadState() → this browser has no navigationPreload.");
+                return;
+            }
+
+            await preloadOutput.Info($"GetNavigationPreloadState() → enabled: {state.Enabled}, header: \"{state.HeaderValue}\"");
+        }
+        catch (Exception ex)
+        {
+            await preloadOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SkipWaiting()
+    {
+        try
+        {
+            var asked = await serviceWorker.SkipWaiting();
+            if (asked) await lifecycleOutput.Success("SkipWaiting() → asked the waiting worker to take over.");
+            else await lifecycleOutput.Warn("SkipWaiting() → false - no worker is waiting, which is the normal state.");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ClaimClients()
+    {
+        try
+        {
+            var claimed = await serviceWorker.Claim();
+            if (claimed) await lifecycleOutput.Success("Claim() → the worker now controls this page.");
+            else await lifecycleOutput.Warn("Claim() → false - no active worker, or it does not implement the message protocol.");
+        }
+        catch (Exception ex)
+        {
+            await lifecycleOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListClients()
+    {
+        try
+        {
+            var clients = await serviceWorker.MatchAllClients(includeUncontrolled, clientType);
+            if (clients.Length == 0)
+            {
+                await clientsOutput.Warn("MatchAllClients() → empty - no matching clients, no active worker, or it does not answer the clients message.");
+                return;
+            }
+
+            foreach (var client in clients)
+            {
+                await clientsOutput.Info($"{client.Type}/{client.FrameType} {client.Url} (focused: {client.Focused}, {client.VisibilityState})");
+            }
+        }
+        catch (Exception ex)
+        {
+            await clientsOutput.Error(ex.Message);
+        }
+    }
 
     private async Task CheckSupport()
     {
@@ -166,17 +546,21 @@ var removed = await serviceWorker.Unregister();
         }
     }
 
-    private async Task RegisterWorker()
+    private Task RegisterWorker() => RegisterWorker(registerOutput);
+
+    // Registering is one line of setup that half this page needs, so every section that needs it can
+    // do it and read the answer where it is standing.
+    private async Task RegisterWorker(DemoConsole output)
     {
         try
         {
             var info = await serviceWorker.Register("/sw.js");
-            await registerOutput.Success($"Registered. Scope: {info.Scope}");
-            await registerOutput.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
+            await output.Success($"Registered. Scope: {info.Scope}");
+            await output.Log($"Active: {info.ActiveState ?? "-"} | Installing: {info.InstallingState ?? "-"} | Waiting: {info.WaitingState ?? "-"} | UpdateViaCache: {info.UpdateViaCache ?? "-"}");
         }
         catch (Exception ex)
         {
-            await registerOutput.Error(ex.Message);
+            await output.Error(ex.Message);
         }
     }
 
@@ -187,7 +571,7 @@ var removed = await serviceWorker.Unregister();
             var info = await serviceWorker.GetRegistration();
             if (info.IsRegistered is false)
             {
-                await inspectOutput.Warn("No registration found for this page. Press Register first.");
+                await inspectOutput.Warn("No registration found for this page. Register it with the button in this section.");
                 return;
             }
 
@@ -244,7 +628,7 @@ var removed = await serviceWorker.Unregister();
             }
             else
             {
-                await messagingOutput.Warn("No controlling worker yet - register /sw.js first; it claims the page on activation.");
+                await messagingOutput.Warn("No controlling worker yet - register /sw.js with the button in this section; it claims the page on activation.");
             }
         }
         catch (Exception ex)

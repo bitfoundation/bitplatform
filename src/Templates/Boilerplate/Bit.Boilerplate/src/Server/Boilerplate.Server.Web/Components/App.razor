@@ -28,7 +28,11 @@
       bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
-    <ContentSecurityPolicy />
+    @* First in head on purpose: the CSP has to be in force before anything else in the document runs. *@
+    @*#if (appInsights == true)*@
+    @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
+    @*#endif*@
+    <AppHeadCoordinator @rendermode="null" InHead />
     <ResourcePreloader />
     <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
     
@@ -77,11 +81,6 @@
 
     <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
-    @*#if (appInsights == true)*@
-    <Link rel="preconnect" Href="https://js.monitor.azure.com" crossorigin />
-    <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
-    <BlazorApplicationInsights.ApplicationInsightsInit />
-    @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
 </head>
