@@ -2,7 +2,7 @@
 
 <DemoExample Title="Decimated line (zoom + pan)" RazorCode="@decimationRazorCode" CsharpCode="@decimationCsharpCode" Id="zoom-decimation">
     <div class="example-desc">
-        Scroll to zoom X, drag to pan, double-click to reset &mdash; and on a touch screen, drag with one finger and
+        Scroll to zoom X, drag to pan, double-click to reset - and on a touch screen, drag with one finger and
         pinch with two, which the chart claims from the browser's own gestures so they reach the plot.
         A @(_count.ToString("N0"))-point series is downsampled to @_samples points with the LTTB algorithm, which
         keeps the peaks that define the shape rather than sampling blindly, so it stays smooth at any zoom. Only the
@@ -15,7 +15,7 @@
     <div class="example-desc">
         <code>Mode = XY</code> zooms and pans both axes at once, which is what a scatter plot needs. The mode names a
         direction on screen rather than an axis id, so <code>X</code> always means the axis running across the plot
-        &mdash; on a horizontal-bar chart, the values. <code>LimitToData</code> keeps the view inside the series so
+        - on a horizontal-bar chart, the values. <code>LimitToData</code> keeps the view inside the series so
         it can never be dragged off into empty space, and <code>MinRangeFraction</code> stops it zooming in forever.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Scatter" Data="Scatter()" Options="_xy" /></div></div>

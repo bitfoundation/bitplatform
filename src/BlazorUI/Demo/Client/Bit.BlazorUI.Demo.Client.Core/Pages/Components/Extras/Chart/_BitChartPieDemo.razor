@@ -20,7 +20,7 @@
 <DemoExample Title="Half doughnut (gauge)" RazorCode="@gaugeRazorCode" CsharpCode="@gaugeCsharpCode" Id="pie-gauge">
     <div class="example-desc">
         Narrowing the sweep with <code>CircumferenceDegrees</code> and rotating the start with
-        <code>RotationDegrees</code> turns a doughnut into a gauge &mdash; 180° starting at the left here.
+        <code>RotationDegrees</code> turns a doughnut into a gauge - 180° starting at the left here.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="Gauge()" Options="_gauge" /></div></div>
 </DemoExample>
@@ -45,7 +45,7 @@
 <DemoExample Title="Spacing, offset and hover" RazorCode="@spacingRazorCode" CsharpCode="@spacingCsharpCode" Id="pie-spacing">
     <div class="example-desc">
         <code>SpacingArc</code> leaves a gap between neighbouring slices, <code>Offset</code> pushes every slice
-        out from the center, and <code>HoverOffset</code> pushes just the hovered one further &mdash; with
+        out from the center, and <code>HoverOffset</code> pushes just the hovered one further - with
         <code>HoverBackgroundColor</code> repainting it. All of it is precomputed, so hovering costs no re-layout.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart RespectReducedMotion="false" Type="BitChartType.Doughnut" Data="Exploded()" Options="_exploded" /></div></div>
@@ -53,7 +53,7 @@
 
 <DemoExample Title="Rounded arcs and ring weights" RazorCode="@roundedRingsRazorCode" CsharpCode="@roundedRingsCsharpCode" Id="pie-rounded-rings">
     <div class="example-desc">
-        <code>BorderRadius</code> rounds an arc's own corners &mdash; the same property that rounds a bar &mdash;
+        <code>BorderRadius</code> rounds an arc's own corners - the same property that rounds a bar -
         clamped to half the ring's thickness so a wedge can never fold in on itself. <code>Weight</code> shares the
         available radius out between the rings of a multi-dataset doughnut, so the series that matters can be given
         the thicker band instead of every ring getting an equal slice of the radius.

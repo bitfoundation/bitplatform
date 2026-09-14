@@ -52,7 +52,7 @@
 <DemoExample Title="Monotone smoothing" RazorCode="@monotoneRazorCode" CsharpCode="@monotoneCsharpCode" Id="line-monotone" PreventRenderForMcpClient>
     <div class="example-desc">
         A cardinal spline (plain <code>Tension</code>) can bulge past the values it connects, inventing a peak that
-        was never measured &mdash; visible in the grey line here. <code>CubicInterpolationMode.Monotone</code> smooths
+        was never measured - visible in the grey line here. <code>CubicInterpolationMode.Monotone</code> smooths
         the same points without ever overshooting them, which is the honest choice whenever the curve will be read
         for its extremes.
     </div>
@@ -61,7 +61,7 @@
 
 <DemoExample Title="Sparkline" RazorCode="@sparklineRazorCode" CsharpCode="@sparklineCsharpCode" Id="line-sparkline">
     <div class="example-desc">
-        <code>Sparkline</code> drops every piece of chrome &mdash; axes, grid, tick labels, legend, title &mdash;
+        <code>Sparkline</code> drops every piece of chrome - axes, grid, tick labels, legend, title -
         so the series alone fills the box, which is what makes a trend readable at the size of a KPI tile or a table
         cell. It is a presentation switch only: the data is untouched, so hovering, keyboard navigation and the
         screen-reader table still describe the whole series. Any chart type honours it, bars included.
