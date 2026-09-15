@@ -42,14 +42,9 @@
                     @if (Title.HasValue())
                     {
                         @* The id is what the modal around it points its aria-labelledby at, so the message box
-                           names the dialog it is the content of instead of leaving it nameless. *@
-                        <BitText Id="@_TitleId"
-                                 Typography="BitTypography.H5"
-                                 Color="BitColor.Tertiary"
-                                 Style="@(Styles?.Title)"
-                                 Class="@_TitleClass">
-                            @Title
-                        </BitText>
+                           names the dialog it is the content of instead of leaving it nameless. It is a heading,
+                           but not the theme's h5 heading type: its size follows the size of the message box. *@
+                        <h5 id="@_TitleId" style="@Styles?.Title" class="@_TitleClass">@Title</h5>
                     }
 
                     <BitSpacer Style="@(Styles?.Spacer)" Class="@(Classes?.Spacer)" />

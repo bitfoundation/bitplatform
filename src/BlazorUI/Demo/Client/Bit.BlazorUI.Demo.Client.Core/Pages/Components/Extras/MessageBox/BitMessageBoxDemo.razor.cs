@@ -256,7 +256,7 @@ public partial class BitMessageBoxDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the message box, which scales its inset, its body text and its leading icon together.",
+            Description = "The size of the message box, which scales its inset, its title, its body text and its leading icon together.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },

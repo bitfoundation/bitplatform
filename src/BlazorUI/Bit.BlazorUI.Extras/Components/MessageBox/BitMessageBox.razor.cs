@@ -242,7 +242,7 @@ public partial class BitMessageBox : BitComponentBase
     [Parameter] public bool ShowCloseButton { get; set; } = true;
 
     /// <summary>
-    /// The size of the message box, which scales its inset, its body text and its leading icon together.
+    /// The size of the message box, which scales its inset, its title, its body text and its leading icon together.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }

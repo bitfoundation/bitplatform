@@ -375,8 +375,9 @@
 
         <DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
             <div>
-                <b>Size</b> scales the inset of the message box, its body text and its leading glyph together, so a
-                small message box is not left carrying a medium-sized icon. The default is the medium one.
+                <b>Size</b> scales the inset of the message box, its title, its body text and its leading glyph
+                together, so a small message box is not left carrying a medium-sized title or icon. The default is
+                the medium one.
             </div>
             <br />
             <div class="example-grid">
@@ -404,14 +405,22 @@
                 <BitCard Style="padding:0">
                     <BitMessageBox Title="It's a title"
                                    Body="It's a body."
-                                   Styles="@(new() { Root = "background: linear-gradient(180deg, #222444, transparent) #000", OkButton = new() { Root = "border-radius:1rem" } })" />
+                                   Styles="@(new() { Root = "background: linear-gradient(180deg, #222444, transparent) #000",
+                                                     Title = "color: #fff",
+                                                     Body = "color: #fff",
+                                                     CloseButton = new() { Root = "color: #fff" },
+                                                     OkButton = new() { Root = "border-radius:1rem" } })" />
                 </BitCard>
                 <br />
                 <BitCard Style="padding:0">
                     <BitMessageBox Title="It's a title"
                                    Body="It's a body."
                                    Buttons="BitMessageBoxButtons.OkCancel"
-                                   Classes="@(new() { Root = "custom-msg", ActionButton = new() { Root = "custom-msg-btn" } })" />
+                                   Classes="@(new() { Root = "custom-msg",
+                                                      Title = "custom-msg-txt",
+                                                      Body = "custom-msg-txt",
+                                                      CloseButton = new() { Root = "custom-msg-txt" },
+                                                      ActionButton = new() { Root = "custom-msg-btn" } })" />
                 </BitCard>
             </div>
         </DemoExample>

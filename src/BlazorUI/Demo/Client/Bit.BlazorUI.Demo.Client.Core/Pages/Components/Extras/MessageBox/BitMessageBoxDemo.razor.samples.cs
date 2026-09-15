@@ -303,6 +303,10 @@ private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
     }
 
+    .custom-msg-txt {
+        color: #fff;
+    }
+
     .custom-msg-btn {
         color: #fff;
         font-weight: bold;
@@ -323,14 +327,22 @@ private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
 <BitCard Style=""padding:0"">
     <BitMessageBox Title=""It's a title""
                    Body=""It's a body.""
-                   Styles=""@(new() { Root = ""background: linear-gradient(180deg, #222444, transparent) #000"", OkButton = new() { Root = ""border-radius:1rem"" } })"" />
+                   Styles=""@(new() { Root = ""background: linear-gradient(180deg, #222444, transparent) #000"",
+                                     Title = ""color: #fff"",
+                                     Body = ""color: #fff"",
+                                     CloseButton = new() { Root = ""color: #fff"" },
+                                     OkButton = new() { Root = ""border-radius:1rem"" } })"" />
 </BitCard>
 
 <BitCard Style=""padding:0"">
     <BitMessageBox Title=""It's a title""
                    Body=""It's a body.""
                    Buttons=""BitMessageBoxButtons.OkCancel""
-                   Classes=""@(new() { Root = ""custom-msg"", ActionButton = new() { Root = ""custom-msg-btn"" } })"" />
+                   Classes=""@(new() { Root = ""custom-msg"",
+                                      Title = ""custom-msg-txt"",
+                                      Body = ""custom-msg-txt"",
+                                      CloseButton = new() { Root = ""custom-msg-txt"" },
+                                      ActionButton = new() { Root = ""custom-msg-btn"" } })"" />
 </BitCard>";
 
     private readonly string example16RazorCode = @"
