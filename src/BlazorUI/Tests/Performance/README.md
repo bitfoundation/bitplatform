@@ -103,15 +103,18 @@ dotnet test --filter "TestCategory=Stress"
 
 ### Run with Specific Browser
 
+The browser comes from the `BROWSER` environment variable (`chromium` by default); the Microsoft.Testing.Platform
+runner does not pass runsettings through, so there is no `.runsettings` to edit.
+
 ```bash
-dotnet test -- Playwright.BrowserName=firefox
-dotnet test -- Playwright.BrowserName=webkit
+BROWSER=firefox dotnet test
+BROWSER=webkit dotnet test
 ```
 
 ### Run in Headed Mode (for debugging)
 
 ```bash
-dotnet test -- Playwright.LaunchOptions.Headless=false
+HEADED=1 dotnet test
 ```
 
 ## Performance Thresholds
