@@ -21,6 +21,20 @@ public sealed class BitFullCalendarChangeNotifier
     }
 
     /// <summary>
+    /// Invoked when the calendar refuses a user-driven change (an overlap while overlaps are
+    /// disallowed, a target outside the allowed date window, a locked event). The component wires
+    /// this to the in-calendar notice so every refusal path reports itself the same way.
+    /// </summary>
+    public Action<BitFullCalendarChangeRefusal>? RefusalReporter { get; set; }
+
+    /// <summary>Reports a refusal through <see cref="RefusalReporter"/> when one was set.</summary>
+    public void ReportRefusal(BitFullCalendarChangeRefusal refusal)
+    {
+        if (refusal is not BitFullCalendarChangeRefusal.None)
+            RefusalReporter?.Invoke(refusal);
+    }
+
+    /// <summary>
     /// Dispatches a change payload to the component's <c>OnChange</c> callback.
     /// </summary>
     public Task NotifyAsync(BitFullCalendarChangeEventArgs args) => _dispatch(args);
@@ -48,7 +62,14 @@ public sealed class BitFullCalendarChangeNotifier
         var oldSnapshot = CloneEvent(dragged);
         var eventId = dragged.Id;
 
-        _state.HandleDrop(targetDate, hour, minute, resourceId, applyResource);
+        var refusal = _state.HandleDrop(targetDate, hour, minute, resourceId, applyResource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
+        {
+            // The drop was rejected (overlap, out of range, locked event): tell the user why instead
+            // of silently snapping the block back to where it started.
+            ReportRefusal(refusal);
+            return Task.CompletedTask;
+        }
 
         var after = _state.AllEvents.FirstOrDefault(e => e.Id == eventId);
         if (after is null)
@@ -85,6 +106,13 @@ public sealed class BitFullCalendarChangeNotifier
             Color = source.Color,
             Resource = source.Resource,
             Data = source.Data,
+            IsAllDay = source.IsAllDay,
+            IsReadOnly = source.IsReadOnly,
+            CssClass = source.CssClass,
+            // The repeat rule is a consumer-owned object like Data, so it travels by reference.
+            Recurrence = source.Recurrence,
+            SeriesId = source.SeriesId,
+            OccurrenceDate = source.OccurrenceDate,
             Attendees = source.Attendees
                 .Select(a => new BitFullCalendarAttendee
                 {
