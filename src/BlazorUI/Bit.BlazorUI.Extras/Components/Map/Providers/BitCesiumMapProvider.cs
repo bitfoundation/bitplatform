@@ -62,6 +62,10 @@ public sealed class BitCesiumMapProvider : BitMapProviderBase
     public override IReadOnlyList<string> Stylesheets => ["https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css"];
 
     /// <inheritdoc />
+    /// <remarks>This backend renders through WebGL.</remarks>
+    public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl;
+
+    /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
         // Trim once and reuse so leading/trailing whitespace in IonAccessToken

@@ -1,15 +1,15 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-time-column">
-    @for (int h = 0; h < 24; h++)
+    @foreach (var hour in State.VisibleHours)
     {
-        var hour = h;
         <div class="bit-bfc-time-slot-label">
-            @if (hour > 0)
+            @* The very first label would sit above the grid's top edge, so it is left out - the row
+               it belongs to starts the grid and needs no boundary marker. *@
+            @if (hour > State.VisibleStartHour)
             {
                 @BitFullCalendarHelpers.FormatHourLabel(hour, State.Use24HourFormat, State.Culture)
             }
         </div>
     }
 </div>
-

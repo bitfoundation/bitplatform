@@ -1,0 +1,19 @@
+@using Bit.BlazorUI
+
+@* The option the key names is added by the same change that names it, so the list is asked to scroll to a
+   panel whose item has not registered itself - let alone its element - yet. *@
+<BitAccordionList @ref="List" TItem="BitAccordionListOption" ScrollIntoViewOnExpand="true" ExpandedKey="@ExpandedKey">
+    <BitAccordionListOption Key="first" Title="First">Body of the first</BitAccordionListOption>
+    @if (ShowSecond)
+    {
+        <BitAccordionListOption Key="second" Title="Second">Body of the second</BitAccordionListOption>
+    }
+</BitAccordionList>
+
+@code {
+    [Parameter] public bool ShowSecond { get; set; }
+
+    [Parameter] public string? ExpandedKey { get; set; }
+
+    public BitAccordionList<BitAccordionListOption>? List { get; set; }
+}

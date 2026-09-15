@@ -1217,7 +1217,7 @@ public partial class BitModal : BitComponentBase
 
         try
         {
-            await _js.BitUtilsSetupFocusTrap(_containerId);
+            await _js.BitUtilsSetupFocusTrap(_containerId, _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

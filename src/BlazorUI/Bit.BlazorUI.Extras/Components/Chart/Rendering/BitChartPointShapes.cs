@@ -5,6 +5,15 @@ namespace Bit.BlazorUI;
 public static class BitChartPointShapes
 {
     public static BitChartSvgNode? Build(BitChartPointStyle style, double x, double y, double r,
+        string fill, string stroke, double strokeWidth, double rotation = 0)
+    {
+        var node = BuildCore(style, x, y, r, fill, stroke, strokeWidth);
+        if (node is not null && Math.Abs(rotation) > 1e-3)
+            node.Transform = $"rotate({BitChartSvg.N(rotation)} {BitChartSvg.N(x)} {BitChartSvg.N(y)})";
+        return node;
+    }
+
+    private static BitChartSvgNode? BuildCore(BitChartPointStyle style, double x, double y, double r,
         string fill, string stroke, double strokeWidth)
     {
         switch (style)

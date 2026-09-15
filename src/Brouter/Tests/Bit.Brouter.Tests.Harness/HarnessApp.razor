@@ -1,0 +1,48 @@
+﻿@* Root component of every harness host. Each element a test drives or reads carries an id, and the
+   status line reports how and where the tree is being rendered. *@
+
+@inject IBrouter Brouter
+@inject HarnessScope Scope
+@implements IDisposable
+
+<div class="harness">
+    <HarnessStatus />
+
+    <nav class="harness-nav">
+        <BrouterLink id="nav-home" Href="/" Match="BrouterLinkMatch.All">home</BrouterLink>
+        <BrouterLink id="nav-about" Href="/about">about</BrouterLink>
+        <BrouterLink id="nav-item" Href="/items/7">item 7</BrouterLink>
+        <BrouterLink id="nav-deep" Href="/deep/a/b/c/leaf">deep</BrouterLink>
+        <BrouterLink id="nav-data" Href="/data">data</BrouterLink>
+        <BrouterLink id="nav-guarded" Href="/guarded">guarded</BrouterLink>
+        <BrouterLink id="nav-redirect" Href="/old-about">redirect</BrouterLink>
+        <BrouterLink id="nav-nope" Href="/nope">unmatched</BrouterLink>
+        <BrouterLink id="nav-broken" Href="/broken">broken loader</BrouterLink>
+        <BrouterLink id="nav-missing" Href="/missing/0">missing entity</BrouterLink>
+        <BrouterLink id="nav-long" Href="/long">long</BrouterLink>
+        <BrouterLink id="nav-preload" Href="/preload">preload</BrouterLink>
+        <BrouterLink id="nav-leave" Href="/leave">leave guard</BrouterLink>
+        <BrouterLink id="nav-history" Href="/history/1">history</BrouterLink>
+        <BrouterLink id="nav-keepalive" Href="/keepalive">keep-alive</BrouterLink>
+        <BrouterLink id="nav-confirm" Href="/confirm">confirm</BrouterLink>
+    </nav>
+
+    <main>
+        <HarnessRouter />
+    </main>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Brouter.OnNavigating += RecordNavigating;
+    }
+
+    private ValueTask RecordNavigating(BrouterNavigationContext ctx)
+    {
+        Scope.RecordNavigation($"{ctx.NavigationType} {ctx.To.Path}");
+        return ValueTask.CompletedTask;
+    }
+
+    public void Dispose() => Brouter.OnNavigating -= RecordNavigating;
+}

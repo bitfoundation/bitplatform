@@ -41,26 +41,46 @@ var robustness = access?.Configuration.VideoCapabilities?[0].Robustness; // what
                  Api="CreateMediaKeys / CreateSession / GenerateRequest / Update / GetKeyStatuses"
                  Description="Clear Key is the key system every browser has, and it needs no server - which makes it the one DRM flow that can run end to end on a documentation page. The steps here are exactly the ones Widevine or PlayReady would take: create the keys, open a session, generate a request from initialization data, and feed a licence back."
                  Code=@("""
-var keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
-{
-    InitDataTypes = ["keyids"],
-    VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" }]
-});
+@inject HttpClient http
+@inject Bit.Butil.EncryptedMedia encryptedMedia
 
-var session = await keys!.CreateSession(
-    onMessage: async message =>
-    {
-        // POST message.Message to the licence server, unchanged, and feed the answer back.
-        var licence = await licenceServer.RequestAsync(message.Message);
-        await session!.Update(licence);
-    },
-    onKeyStatusesChange: statuses =>
-    {
-        foreach (var status in statuses) Console.WriteLine($"{status.KeyId}: {status.Status}");
-    });
+@code {
+    private MediaKeysHandle? keys;
+    private MediaKeySessionHandle? session;
 
-await session!.GenerateRequest("keyids", initData);
-""")>
+    private async Task Exchange(byte[] initData)
+    {
+        keys = await encryptedMedia.CreateMediaKeys("org.w3.clearkey", new MediaKeySystemConfiguration
+        {
+            InitDataTypes = ["keyids"],
+            VideoCapabilities = [new MediaKeySystemMediaCapability { ContentType = "video/mp4;codecs=\"avc1.42E01E\"" }]
+        });
+
+        session = await keys!.CreateSession(
+            onMessage: async message =>
+            {
+                // The message is opaque: post it to the licence server unchanged, and feed whatever
+                // comes back straight into Update. Nothing here inspects either one.
+                var licence = await RequestLicence(message.Message);
+                await session!.Update(licence);
+            },
+            onKeyStatusesChange: statuses =>
+            {
+                foreach (var status in statuses) Console.WriteLine($"{status.KeyId}: {status.Status}");
+            });
+
+        await session!.GenerateRequest("keyids", initData);
+    }
+
+    private async Task<byte[]> RequestLicence(byte[] challenge)
+    {
+        var response = await http.PostAsync("/api/licence", new ByteArrayContent(challenge));
+        return await response.Content.ReadAsByteArrayAsync();
+    }
+}
+""")
+                 Language="razor">
+        <video @ref="keysVideoElement" controls playsinline muted style="width:100%;max-width:420px;background:#000;border-radius:8px"></video>
         <div class="controls">
             <button @onclick="CreateClearKey" disabled="@(keys is not null)">CreateMediaKeys (clearkey)</button>
             <button class="secondary" @onclick="OpenSession" disabled="@(keys is null || session is not null)">CreateSession</button>
@@ -79,17 +99,35 @@ await session!.GenerateRequest("keyids", initData);
                  Api="SubscribeEncrypted"
                  Description="The encrypted event is how a page finds out that the media it is playing needs a key, and it carries the initialization data the licence request has to be built from. Subscribe before playback starts - an element that raises it with nobody listening simply stalls."
                  Code=@("""
+@implements IAsyncDisposable
+@inject Bit.Butil.EncryptedMedia encryptedMedia
+
 <video @ref="videoElement" controls></video>
 
-var subscription = await encryptedMedia.SubscribeEncrypted(videoElement, async initData =>
-{
-    // one per protection system in the stream; filter by InitDataType, and by key ids you already hold
-    await session!.GenerateRequest(initData);
-});
+@code {
+    private ElementReference videoElement;
+    private ButilSubscription? subscription;
+    private MediaKeySessionHandle? session;   // from the exchange above
 
-// later
-await subscription.DisposeAsync();
-""")>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        subscription = await encryptedMedia.SubscribeEncrypted(videoElement, async initData =>
+        {
+            // one per protection system in the stream; filter by InitDataType, and by key ids you
+            // already hold
+            await session!.GenerateRequest(initData);
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null) await subscription.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <video @ref="videoElement" controls playsinline muted style="width:100%;max-width:420px;background:#000;border-radius:8px"></video>
         <div class="controls">
             <button @onclick="Watch" disabled="@(encryptedSubscription is not null)">SubscribeEncrypted</button>
@@ -102,18 +140,39 @@ await subscription.DisposeAsync();
                  Api="SetServerCertificate / MediaKeySessionType / Load / Remove"
                  Description="A server certificate lets the decryption module encrypt its very first licence request, which removes a round trip and stops device information travelling in the clear. A persistent-licence session stores the licence on the device and can be reloaded later by its session id - which is all offline playback is."
                  Code=@("""
-await keys.SetServerCertificate(certificateBytes);
+@inject Bit.Butil.LocalStorage localStorage
 
-var offline = await keys.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
-await offline!.GenerateRequest(initData);
-var storedId = await offline.GetSessionId();   // persist this
+@code {
+    private MediaKeysHandle? keys;   // from CreateMediaKeys above
 
-// next time, with no network at all:
-var restored = await keys.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
-await restored!.Load(storedId);
+    private async Task GoOffline(byte[] certificateBytes, byte[] initData,
+                                Action<MediaKeyMessage> onMessage)
+    {
+        // Optional, and only some key systems want it: it lets the CDM encrypt its challenge to a
+        // licence server it can already identify.
+        await keys!.SetServerCertificate(certificateBytes);
 
-await restored.Remove();   // releases the licence and deletes the stored copy
-""")>
+        var offline = await keys.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
+        await offline!.GenerateRequest(initData);
+
+        // The id is the only way back to the stored licence - the session itself does not survive.
+        var storedId = await offline.GetSessionId();
+        await localStorage.SetItem("licence-session", storedId);
+    }
+
+    private async Task Restore(Action<MediaKeyMessage> onMessage)
+    {
+        var storedId = await localStorage.GetItem("licence-session");
+
+        // next time, with no network at all:
+        var restored = await keys!.CreateSession(onMessage, MediaKeySessionType.PersistentLicense);
+        await restored!.Load(storedId);
+
+        await restored.Remove();   // releases the licence and deletes the stored copy
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="TryServerCertificate" disabled="@(keys is null)">SetServerCertificate (dummy)</button>
             <button class="secondary" @onclick="TryPersistentSession" disabled="@(keys is null)">CreateSession(PersistentLicense)</button>
@@ -162,6 +221,10 @@ await restored.Remove();   // releases the licence and deletes the stored copy
     private DemoConsole advancedOutput = default!;
 
     private ElementReference videoElement;
+
+    // The keys are attached to this section's own element: AttachTo is the step being demonstrated
+    // here, and its target has to be on screen while the reader is working through it.
+    private ElementReference keysVideoElement;
 
     private MediaKeysHandle? keys;
     private MediaKeySessionHandle? session;
@@ -237,7 +300,7 @@ await restored.Remove();   // releases the licence and deletes the stored copy
             }
 
             await sessionOutput.Success($"CreateMediaKeys → {keys.Access.KeySystem}, keys {keys.Id}");
-            await sessionOutput.Log("AttachTo(videoElement) →", await keys.AttachTo(videoElement));
+            await sessionOutput.Log("AttachTo(videoElement) →", await keys.AttachTo(keysVideoElement));
         }
         catch (Exception ex)
         {

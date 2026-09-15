@@ -1332,7 +1332,122 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="Canceled" xml:space="preserve">
     <value>Annulé</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Aucune application de cet appareil ne peut ouvrir les liens {0}.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Appel vocal</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Démarrer un appel vocal</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Terminer l'appel vocal</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Revenir à l'appel vocal</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Temps restant de l'appel vocal</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>L'appel vocal est terminé.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>Le message n'a pas pu être envoyé à l'appel.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>L'assistant est occupé. Réessayez dans {0} secondes.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>L'assistant n'a pas pu répondre. Réessayez.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Laissez vos coordonnées et un conseiller vous recontactera.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Résumé de la conversation</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Connecté en tant que</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Votre demande a bien été envoyée. Un conseiller vous recontactera bientôt.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Ce qui va se passer</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>En attente de votre réponse</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>Effacer les fichiers de l'application sur cet appareil ?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Repartir de zéro corrige la plupart des problèmes causés par des données locales endommagées.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>Vous serez déconnecté</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Cette conversation sera supprimée</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>L'application va redémarrer</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>L'appel vocal prendra fin</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Effacer les fichiers</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Pas maintenant</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Effacement des fichiers de l'application</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>Vous avez conservé les fichiers de l'application.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>Rien n'a été effacé : la demande est restée sans réponse.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>Approuver ceci ?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Approuver</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Approuvé</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Refusé.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>La demande est restée sans réponse.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Meilleur choix</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>Également adaptés</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Demander</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Dis-m'en plus sur {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panneau de chat IA</value>
   </data>
@@ -1493,20 +1608,20 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Envoyer la notification</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Activer les notifications</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Désactiver les notifications</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Les notifications push sont activées pour cette session.</value>
+    <value>Les notifications sont activées pour cette session.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Les notifications push sont mises en sourdine pour cette session.</value>
+    <value>Les notifications sont mises en sourdine pour cette session.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Les notifications push ne sont pas configurées pour cette session.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Activer les notifications</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Désactiver les notifications</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Les notifications sont activées</value>
@@ -1829,15 +1944,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Aucun fuseau horaire ne correspond à votre recherche.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Notifications push</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Activer les notifications push</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Désactiver les notifications push</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
   </data>

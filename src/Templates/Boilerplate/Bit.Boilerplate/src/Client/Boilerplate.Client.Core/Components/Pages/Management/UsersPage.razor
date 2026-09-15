@@ -199,7 +199,7 @@
                                                 </BitStack>
                                             }
                                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
-                                                <BitPersona PrimaryText="@($"{session.Address} ({session.IP})")"
+                                                <BitPersona PrimaryText="@session.DisplayAddress"
                                                             SecondaryText="@session.GetLastSeenOn(TimeProvider.GetUtcNow(), Localizer, TimeZoneService)"
                                                             TertiaryText="@session.DeviceInfo"
                                                             Size="BitPersonaSize.Size72"
@@ -208,11 +208,18 @@
                                                             Styles="@(new() { Image = "width:50%;height:50%" })"
                                                             ImageInitials="@(session.Privileged ? "✓" : "✘")"
                                                             Presence="@session.GetPresence(TimeProvider.GetUtcNow())"
-                                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)" />
+                                                            CoinVariant="@(session.Privileged ? BitVariant.Fill : BitVariant.Outline)">
+                                                    <PrimaryTextTemplate>
+                                                        <div class="session-address">@session.DisplayAddress</div>
+                                                        @if (session.DisplayIP is not null)
+                                                        {
+                                                            <div class="session-ip" title="@session.DisplayIP">@session.DisplayIP</div>
+                                                        }
+                                                    </PrimaryTextTemplate>
+                                                </BitPersona>
                                                 <BitSpacer />
                                                 @*#if (signalR == true || notification == true)*@
-                                                @* Read-only: only the receiving device can answer the permission prompt. *@
-                                                <BitIcon Title="@GetNotificationStatusTitle(session)"
+                                                <BitIcon Title="@session.GetNotificationStatusTitle(Localizer)"
                                                          IconName="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitIconName.Ringer : BitIconName.RingerOff)"
                                                          Color="@(session.NotificationStatus is UserSessionNotificationStatus.Allowed ? BitColor.Success : BitColor.TertiaryForeground)" />
                                                 @*#endif*@

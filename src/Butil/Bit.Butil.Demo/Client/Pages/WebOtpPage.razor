@@ -46,14 +46,44 @@ var supported = await webOtp.IsSupported();
     <DemoSection Title="Wait for a code"
                  Api="Receive / Abort"
                  Description="Waits for a matching SMS and returns the code from it, or null when the wait was aborted, timed out, or the user dismissed the prompt. Cancelling the CancellationToken ends it the same way Abort does - which is what to hook a disposed component up to."
-                 Code=@("""
-var code = await webOtp.Receive(TimeSpan.FromSeconds(60), cancellationToken);
+                 Files=@([
+new("Verify.razor", """
+@implements IDisposable
+@inject Bit.Butil.WebOtp webOtp
 
-if (code is not null)
-{
-    _otp = code;   // fill the input and submit
+@* autocomplete="one-time-code" is what lets the platform's own keyboard suggestion work too, so the
+   input stays usable when the API is not there - which on every engine but Chromium is always. *@
+<input @bind="_otp" autocomplete="one-time-code" inputmode="numeric" />
+
+@code {
+    private string? _otp;
+    private readonly CancellationTokenSource _cts = new();
+
+    // Started as the code step appears, not on page load: the browser shows a prompt of its own
+    // while a wait is pending.
+    private async Task Wait()
+    {
+        var code = await webOtp.Receive(TimeSpan.FromSeconds(60), _cts.Token);
+
+        // null when the wait was aborted, timed out, or the user dismissed the prompt.
+        if (code is not null)
+        {
+            _otp = code;   // fill the input and submit
+            StateHasChanged();
+        }
+    }
+
+    // Cancelling the token ends the wait the same way Abort does, which is what to hook a disposed
+    // component up to.
+    public void Dispose() => _cts.Cancel();
 }
-""")>
+"""),
+new("the SMS your server sends", "text", """
+Your Butil code is 123456
+
+@example.com #123456
+"""),
+])>
         <div class="field">
             <span class="field-label">Timeout (seconds, 0 = wait indefinitely)</span>
             <input type="number" min="0" @bind="_timeoutSeconds" style="width:8rem" />

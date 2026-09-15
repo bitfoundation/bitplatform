@@ -94,8 +94,12 @@ imagePreviewUrl = dataUrl;
                  Code=@("""
 await fileReader.Clear(fileInput);
 """)>
+        <div class="field">
+            <span class="field-label">Pick a file or two, then clear them</span>
+            <input type="file" @ref="_clearInput" multiple />
+        </div>
         <div class="controls">
-            <button class="secondary" @onclick="ClearAll">Clear all inputs above</button>
+            <button class="secondary" @onclick="ClearAll">Clear</button>
         </div>
         <DemoConsole @ref="clearOutput" Title="clear output" />
     </DemoSection>
@@ -129,6 +133,7 @@ await fileReader.Clear(fileInput);
     private ElementReference _infoInput;
     private ElementReference _contentInput;
     private ElementReference _previewInput;
+    private ElementReference _clearInput;
 
     private string? _imagePreviewUrl;
 
@@ -241,11 +246,11 @@ await fileReader.Clear(fileInput);
     {
         try
         {
-            await fileReader.Clear(_infoInput);
-            await fileReader.Clear(_contentInput);
-            await fileReader.Clear(_previewInput);
-            _imagePreviewUrl = null;
-            await clearOutput.Log("All three inputs cleared.");
+            var before = await fileReader.GetFileInfos(_clearInput);
+            await fileReader.Clear(_clearInput);
+            var after = await fileReader.GetFileInfos(_clearInput);
+
+            await clearOutput.Log($"Clear → {before.Length} file(s) before, {after.Length} after.");
         }
         catch (Exception ex)
         {

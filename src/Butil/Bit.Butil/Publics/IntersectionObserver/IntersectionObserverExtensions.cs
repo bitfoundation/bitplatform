@@ -28,11 +28,14 @@ public static class IntersectionObserverExtensions
         var host = new IntersectionObserverInterop(handler);
         var listenerId = Guid.NewGuid();
 
+        // The interval rides beside the options rather than inside them: the options object is the
+        // browser's own init dictionary and goes over as-is, and the gate is Butil's.
         await js.InvokeVoid("BitButil.intersectionObserver.observe",
             host.DotNetRef,
             listenerId,
             element,
-            options);
+            options,
+            options?.MinInterval?.TotalMilliseconds ?? 0);
 
         return new ButilSubscription(listenerId, async () =>
         {

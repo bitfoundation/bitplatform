@@ -187,15 +187,6 @@ public partial class UsersPage
         await HandleOnSelectUser(selectedUserItem);
     }
 
-    //#if (signalR == true || notification == true)
-    private string GetNotificationStatusTitle(UserSessionDto session) => session.NotificationStatus switch
-    {
-        UserSessionNotificationStatus.Allowed => Localizer[nameof(AppStrings.SessionNotificationsAllowedTitle)],
-        UserSessionNotificationStatus.Muted => Localizer[nameof(AppStrings.SessionNotificationsMutedTitle)],
-        _ => Localizer[nameof(AppStrings.SessionNotificationsNotConfiguredTitle)]
-    };
-    //#endif
-
     private void SearchUsers()
     {
         var filteredUsers = allUsers;

@@ -42,12 +42,27 @@ var supported = await ink.IsSupported();
                  Api="StartTrail / InkTrailHandle"
                  Description="The trail is started on an element and clipped to it. The pointer listener lives in JavaScript, because the presenter has to be fed the browser's own PointerEvent - by the time .NET saw one it would be a copy, and an untrusted one at that. Draw in the box below with the trail on and off and compare how far the ink lags behind the cursor; the effect is most visible with fast strokes on a high-refresh display."
                  Code=@("""
-_trail = await ink.StartTrail(_canvas, color: "#0f6cbd", diameter: 4);
+@implements IAsyncDisposable
+@inject Bit.Butil.Ink ink
 
-// ... the user draws; you keep rendering your own strokes ...
+<canvas @ref="_canvas" width="600" height="300"></canvas>
 
-await _trail!.DisposeAsync();   // stops the trail
-""")>
+@code {
+    private ElementReference _canvas;
+    private InkTrailHandle? _trail;
+
+    // The trail is drawn by the compositor ahead of the app's own strokes, so it hides the latency
+    // between the pen and the canvas. The app still renders every stroke itself.
+    private async Task Start() =>
+        _trail = await ink.StartTrail(_canvas, color: "#0f6cbd", diameter: 4);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_trail is not null) await _trail.DisposeAsync();   // stops the trail
+    }
+}
+""")
+                 Language="razor">
         <svg class="demo-box dashed" style="max-width:100%;width:100%;height:220px;touch-action:none"
              @ref="_surface" @onpointerdown="StartStroke" @onpointermove="ExtendStroke"
              @onpointerup="EndStroke" @onpointerleave="EndStroke">
@@ -69,8 +84,15 @@ await _trail!.DisposeAsync();   // stops the trail
                  Api="InkTrailHandle.SetStyle"
                  Description="What a colour or brush-size picker calls: the trail changes from the next point onwards, without stopping and restarting it. Keep it in step with your own stroke style - the trail is the part of the line the user sees first."
                  Code=@("""
-await _trail!.SetStyle("#c50f1f", diameter: 8);
-""")>
+@code {
+    private InkTrailHandle? _trail;   // from StartTrail
+
+    // Takes effect on the next segment the compositor draws; strokes already on the canvas are the
+    // app's own and are unaffected.
+    private async Task SwitchPen() => await _trail!.SetStyle("#c50f1f", diameter: 8);
+}
+""")
+                 Language="razor">
         <div class="controls">
             <label>Colour
                 <input type="color" @bind="_color" @bind:after="ApplyStyle" />

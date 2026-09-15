@@ -57,6 +57,9 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddSessioned<PubSubService>();
             services.AddSessioned<PromptService>();
             services.AddSessioned<SnackBarService>();
+            //#if (signalR == true || notification == true)
+            services.AddSessioned<NotificationPreferenceService>();
+            //#endif
             services.AddSessioned<ILocalHttpServer, NoOpLocalHttpServer>();
             services.AddSessioned<ITelemetryContext, AppTelemetryContext>();
             services.AddSessioned<AuthenticationStateProvider>(sp =>
@@ -176,7 +179,11 @@ public static partial class IClientCoreServiceCollectionExtensions
                     .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                     .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
                     {
+                        //#if (redis == true)
+                        options.SkipNegotiation = true; // No negotiate request, so no sticky sessions behind the Redis backplane.
+                        //#else
                         options.SkipNegotiation = false; // Required for Azure SignalR.
+                        //#endif
                         options.Transports = HttpTransportType.WebSockets;
                         // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                         // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.

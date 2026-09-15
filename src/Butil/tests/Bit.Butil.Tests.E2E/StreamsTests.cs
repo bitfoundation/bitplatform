@@ -15,8 +15,11 @@ public class StreamsTests : ButilPageTest
     {
         // status / decoded bytes read / whether a Content-Length was present. The decoded count is
         // what can be asserted: Content-Length describes the transfer, so a dev server that
-        // compresses the response reports the encoded size instead of 1024.
-        await ClickAndExpectAsync("stream-read", "stream:read:200/1024/True");
+        // compresses the response reports the encoded size instead of 1024. A BlazorWebView answers its
+        // virtual host's requests without a Content-Length at all, so there the flag is False - which is
+        // exactly the case TotalBytes is nullable for.
+        var hasContentLength = Host is HarnessHostKinds.Hybrid ? "False" : "True";
+        await ClickAndExpectAsync("stream-read", $"stream:read:200/1024/{hasContentLength}");
     }
 
     [TestMethod]

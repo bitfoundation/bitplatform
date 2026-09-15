@@ -5,14 +5,15 @@
 
 <PageOutlet Url="components/accordionlist"
             Title="AccordionList"
-            Description="BitAccordionList is an advanced version of the BitAccordion that renders a list of expandable items and manages their expand/collapse state." />
+            Description="BitAccordionList renders a list of expandable BitAccordion items from a single collection and owns their expand/collapse state, in single- or multiple-expand mode, with bound keys, cancellable toggles and keyboard navigation." />
 
 <div>
     <DemoPage Name="AccordionList"
-              SecondaryNames="@(["ExpanderList, Expander, Accordion"])"
-              Description="BitAccordionList is an advanced version of the BitAccordion that renders a list of expandable items from a single collection and manages their expand/collapse state."
+              SecondaryNames="@(["ExpanderList", "Expander", "Accordion"])"
+              Description="BitAccordionList renders a list of expandable BitAccordion items from a single collection and owns their expand/collapse state - in single-expand mode by default, or in multiple-expand mode with an optional ceiling on how many panels stay open - with two-way bound keys, keyboard navigation between the headers, per-item icons, actions and templates, and cancellable toggles."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
+              SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
               GitHubExtrasUrl="AccordionList/BitAccordionList.razor"
               GitHubDemoUrl="Extras/AccordionList/BitAccordionListDemo.razor">
@@ -39,7 +40,17 @@
             </BitText>
         </NotesTemplate>
         <DescriptionTemplate>
-            BitAccordionList is a sugar component over the single-item <BitLink Href="/components/accordion">BitAccordion</BitLink> component. Instead of wiring multiple accordions manually, you provide a list of items and it handles rendering and expand/collapse state for you.
+            BitAccordionList is a sugar component over the single-item <BitLink Href="/components/accordion">BitAccordion</BitLink>:
+            instead of wiring several accordions together by hand, you hand it one collection and it renders an item for each
+            entry and owns the expand/collapse state of all of them - one panel at a time by default, or several at once with
+            <code>Multiple</code>. That state can be left to the component, seeded with <code>DefaultExpandedKey(s)</code>,
+            two-way bound through <code>ExpandedKey(s)</code>, or driven from code with <code>Expand</code>,
+            <code>Collapse</code>, <code>Toggle</code>, <code>ExpandAll</code> and <code>CollapseAll</code>, while
+            <code>MaxExpanded</code> caps how many panels stay open at once and <code>OnToggling</code> can refuse a change
+            before it happens. Everything a single accordion can do is set once for the whole list and overridden per item
+            where it matters - the icons, the size, the colors, the templates, the actions beside a header, how the panels
+            are rendered - and the headers answer the arrow, Home and End keys on top of Tab, as the WAI-ARIA accordion
+            pattern offers.
         </DescriptionTemplate>
         <Examples>
             <BitPivot Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
