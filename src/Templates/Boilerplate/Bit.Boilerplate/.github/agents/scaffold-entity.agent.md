@@ -16,8 +16,8 @@ You are an expert at scaffolding complete entity implementations for the project
   starting with `SearchBitBlazorUI` (describe what each control must **do**) even when its name comes to mind, then
   `GetBitBlazorUIComponent` and `GetBitBlazorUIComponentExamples` for `BitDataGrid`, `BitDialog` and the form
   inputs you need - to retrieve the authoritative component APIs before writing any markup. Do
-  **not** use `ask_question` for this: that tool's own description excludes the bit platform libraries, which have
-  dedicated tools on the same server.
+  **not** use `AskGitHubRepository` for this: that tool's own description excludes the bit platform libraries,
+  which have dedicated tools on the same server.
 
   There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
   - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties.
