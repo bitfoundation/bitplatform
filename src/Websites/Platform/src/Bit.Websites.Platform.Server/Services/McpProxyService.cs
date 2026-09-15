@@ -333,6 +333,10 @@ public partial class McpProxyService : IAsyncDisposable
                     // The data directory the index was built in, which no other client on this machine holds.
                     EnvironmentVariables = upstream.Name is codebaseMemoryUpstreamName
                         ? CodebaseMemoryIndexService.BuildEnvironment(appSettings.CurrentValue.CodebaseMemory)
+                        : null,
+                    // The server's git watcher follows its working directory, so pulls into the repository re-index it.
+                    WorkingDirectory = upstream.Name is codebaseMemoryUpstreamName
+                        ? appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath
                         : null
                 }, loggerFactory);
 

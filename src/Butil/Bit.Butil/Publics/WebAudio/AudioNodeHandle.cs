@@ -53,7 +53,7 @@ public class AudioNodeHandle : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(destination);
 
-        return Js.Invoke<bool>("BitButil.webAudio.connect", NodeId, destination.Id);
+        return Js.Invoke<bool>("BitButil.webAudioParams.connect", NodeId, destination.Id);
     }
 
     /// <summary>
@@ -61,14 +61,14 @@ public class AudioNodeHandle : IAsyncDisposable
     /// <see cref="WebAudio.SetMasterGain"/> still applies.
     /// </summary>
     /// <returns>False when the node is gone, or there is no audio context.</returns>
-    public ValueTask<bool> ConnectToDestination() => Js.Invoke<bool>("BitButil.webAudio.connectToDestination", NodeId);
+    public ValueTask<bool> ConnectToDestination() => Js.Invoke<bool>("BitButil.webAudioParams.connectToDestination", NodeId);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/disconnect">AudioNode.disconnect()</see>:
     /// detaches every connection this node's output makes.
     /// </summary>
     /// <returns>False when the node is gone.</returns>
-    public ValueTask<bool> Disconnect() => Js.Invoke<bool>("BitButil.webAudio.disconnect", NodeId);
+    public ValueTask<bool> Disconnect() => Js.Invoke<bool>("BitButil.webAudioParams.disconnect", NodeId);
 
     /// <summary>
     /// Sets an <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioParam">AudioParam</see>
@@ -87,7 +87,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// milliseconds for anything the user will hear.
     /// </remarks>
     public ValueTask<bool> SetParam(string name, double value, double afterSeconds = 0)
-        => Js.Invoke<bool>("BitButil.webAudio.setParam", NodeId, name, value, afterSeconds);
+        => Js.Invoke<bool>("BitButil.webAudioParams.setParam", NodeId, name, value, afterSeconds);
 
     /// <summary>
     /// Moves an <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioParam">AudioParam</see>
@@ -107,7 +107,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// so repeated calls behave the way a fader does rather than fighting each other.
     /// </remarks>
     public ValueTask<bool> RampParam(string name, double value, double overSeconds, bool exponential = false)
-        => Js.Invoke<bool>("BitButil.webAudio.rampParam", NodeId, name, value, overSeconds, exponential);
+        => Js.Invoke<bool>("BitButil.webAudioParams.rampParam", NodeId, name, value, overSeconds, exponential);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioParam/cancelScheduledValues">AudioParam.cancelScheduledValues()</see>:
@@ -116,7 +116,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// <param name="name">The parameter's name.</param>
     /// <returns>False when the node has no such parameter.</returns>
     public ValueTask<bool> CancelScheduledParam(string name)
-        => Js.Invoke<bool>("BitButil.webAudio.cancelScheduledParam", NodeId, name);
+        => Js.Invoke<bool>("BitButil.webAudioParams.cancelScheduledParam", NodeId, name);
 
     /// <summary>
     /// Sets a plain string property of the node - a filter's <c>"type"</c>, a panner's
@@ -126,7 +126,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// <param name="value">The value, in the specification's own vocabulary.</param>
     /// <returns>False when the node is gone or rejected the value.</returns>
     public ValueTask<bool> SetProperty(string name, string value)
-        => Js.Invoke<bool>("BitButil.webAudio.setProperty", NodeId, name, value);
+        => Js.Invoke<bool>("BitButil.webAudioParams.setProperty", NodeId, name, value);
 
     /// <summary>
     /// Sets a plain numeric property of the node - an analyser's <c>"fftSize"</c> or
@@ -136,7 +136,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// <param name="value">The value.</param>
     /// <returns>False when the node is gone or rejected the value.</returns>
     public ValueTask<bool> SetProperty(string name, double value)
-        => Js.Invoke<bool>("BitButil.webAudio.setProperty", NodeId, name, value);
+        => Js.Invoke<bool>("BitButil.webAudioParams.setProperty", NodeId, name, value);
 
     /// <summary>
     /// Sets a plain boolean property of the node - a buffer source's <c>"loop"</c>, a convolver's
@@ -146,7 +146,7 @@ public class AudioNodeHandle : IAsyncDisposable
     /// <param name="value">The value.</param>
     /// <returns>False when the node is gone or rejected the value.</returns>
     public ValueTask<bool> SetProperty(string name, bool value)
-        => Js.Invoke<bool>("BitButil.webAudio.setProperty", NodeId, name, value);
+        => Js.Invoke<bool>("BitButil.webAudioParams.setProperty", NodeId, name, value);
 
     /// <summary>
     /// Stops the node if it is a source, disconnects it, and drops it. Calling it again does nothing.
@@ -155,7 +155,7 @@ public class AudioNodeHandle : IAsyncDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        try { await Js.InvokeVoid("BitButil.webAudio.releaseNode", NodeId); }
+        try { await Js.InvokeVoid("BitButil.webAudioNodes.releaseNode", NodeId); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }

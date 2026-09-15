@@ -171,7 +171,7 @@ public class RemotePlayback(IJSRuntime js) : IAsyncDisposable
         {
             _availabilityHandlers.Clear();
             _stateHandlers.Clear();
-            await js.InvokeVoid("BitButil.remotePlayback.disposeAll");
+            await js.InvokeTeardown("BitButil.remotePlayback.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

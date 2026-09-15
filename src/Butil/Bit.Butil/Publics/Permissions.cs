@@ -109,7 +109,7 @@ public class Permissions(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.permissions.disposeAll");
+            await js.InvokeTeardown("BitButil.permissions.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

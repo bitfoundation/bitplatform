@@ -1,0 +1,50 @@
+.flag-row {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// One flag per row with its caption beside it, so the flags line up under one another however
+// differently sized they are.
+.flag-list {
+    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+
+    > div {
+        gap: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+}
+
+// Two hundred and thirty nine flags: a wrapping row rather than a grid of fixed columns, so the
+// rows fill whatever width the page has.
+.flag-grid {
+    gap: 0.25rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+// The classes below are passed to the component as parameters and land on markup the component itself
+// writes, so they need ::deep to escape this stylesheet's scope.
+::deep {
+    .custom-class {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.5rem;
+        outline: 2px dashed mediumorchid;
+        outline-offset: 2px;
+    }
+
+    .custom-root {
+        border-radius: 0.5rem;
+        background: linear-gradient(90deg, mediumorchid, dodgerblue);
+    }
+
+    .custom-fallback {
+        color: white;
+        font-weight: 600;
+    }
+}

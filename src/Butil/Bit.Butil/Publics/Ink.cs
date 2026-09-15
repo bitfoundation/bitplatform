@@ -64,7 +64,7 @@ public class Ink(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            await js.InvokeVoid("BitButil.ink.disposeAll");
+            await js.InvokeTeardown("BitButil.ink.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
 

@@ -66,7 +66,7 @@ public static class DocsCatalog
         [
             new("navigation", "Navigation & history",
                 "Programmatic navigation with awaited outcomes, history entry state, query updates, named routes and BrouterLink.",
-                "navigate NavigateAsync outcome back forward history state NavigateWithQuery named routes relative BrouterLink",
+                "navigate NavigateAsync outcome back forward history state NavigateWithQuery named routes relative BrouterLink IsMounted mounted TryNavigate Try safe",
                 typeof(NavigationPage)),
             new("guards", "Guards & navigation locks",
                 "Enter guards, preventive leave guards, component-level locks with custom dialogs, redirects and global hooks.",

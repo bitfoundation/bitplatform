@@ -1493,20 +1493,20 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Envoyer la notification</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Activer les notifications</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Désactiver les notifications</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Les notifications push sont activées pour cette session.</value>
+    <value>Les notifications sont activées pour cette session.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Les notifications push sont mises en sourdine pour cette session.</value>
+    <value>Les notifications sont mises en sourdine pour cette session.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Les notifications push ne sont pas configurées pour cette session.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Activer les notifications</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Désactiver les notifications</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Les notifications sont activées</value>
@@ -1829,15 +1829,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Aucun fuseau horaire ne correspond à votre recherche.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Notifications push</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Activer les notifications push</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Désactiver les notifications push</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Les notifications push sont bloquées pour cette application. Autorisez les notifications dans les paramètres de votre navigateur ou de votre système d&apos;exploitation, puis réessayez.</value>
   </data>

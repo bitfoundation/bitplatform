@@ -12,9 +12,11 @@ public partial class GlobalAdminTwoFactorCodeTests
 
     /// <summary>The next code comes along too, so one handed over with a second left on it is still usable.</summary>
     [TestMethod]
-    public void GlobalAdminAuthenticatorKey_Should_ProduceATwoFactorCode()
+    public async Task GlobalAdminAuthenticatorKey_Should_ProduceATwoFactorCode()
     {
-        var configuration = DeployedApiClientProvider.Services.GetRequiredService<IConfiguration>();
+        var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken);
+
+        var configuration = globalApiClient.Services.GetRequiredService<IConfiguration>();
 
         var email = configuration["GlobalAdminEmail"];
         var authenticatorKey = configuration["GlobalAdminAuthenticatorKey"];

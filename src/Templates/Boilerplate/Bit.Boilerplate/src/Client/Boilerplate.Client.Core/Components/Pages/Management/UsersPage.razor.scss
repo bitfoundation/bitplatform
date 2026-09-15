@@ -47,9 +47,30 @@ section {
     }
 
     .session-persona {
+        // Without this the persona refuses to shrink below its texts and pushes the card into a horizontal scroll.
+        min-width: 0;
+
         @include lt-sm {
             max-width: calc(100% - 60px);
         }
+    }
+
+    .session-address {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    // An IPv6 address is far longer than the place name above it and matters less, so it gets its own quiet line.
+    .session-ip {
+        direction: ltr;
+        overflow: hidden;
+        line-height: 1.25;
+        white-space: nowrap;
+        font-family: monospace;
+        text-overflow: ellipsis;
+        font-size: 0.75rem;
+        color: $bit-color-foreground-secondary;
     }
 
     .session-details {

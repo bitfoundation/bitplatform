@@ -1,0 +1,32 @@
+﻿@* A component sitting inside a BitErrorBoundary. It never holds a reference to the boundary: the
+   boundary cascades itself to its content, so a cascading parameter is all it takes to hand it an
+   exception the renderer would never have seen. *@
+
+<BitButton Variant="BitVariant.Outline" OnClick="Load">Capture through the cascade</BitButton>
+
+@code {
+    [CascadingParameter] private BitErrorBoundary? errorBoundary { get; set; }
+
+    private void Load()
+    {
+        // Nothing awaits this task, so nothing routes what it throws to the boundary above - which is
+        // exactly the case Capture exists for.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(500);
+
+            try
+            {
+                throw new InvalidOperationException("The data could not be loaded in the background.");
+            }
+            catch (Exception ex)
+            {
+                if (errorBoundary is not null)
+                {
+                    // Off the renderer's thread, so CaptureAsync rather than Capture.
+                    await errorBoundary.CaptureAsync(ex);
+                }
+            }
+        });
+    }
+}

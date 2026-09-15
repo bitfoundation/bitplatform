@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
+using Microsoft.AspNetCore.HttpOverrides;
 using Bit.Bswup.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -147,6 +148,15 @@ builder.Services.AddResponseCompression(opts =>
     .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
     .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+    options.ForwardedHostHeaderName = "X-Host";
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = 1;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -161,6 +171,8 @@ else
     app.UseHsts();
     app.UseResponseCompression();
 }
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 

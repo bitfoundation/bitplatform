@@ -1493,20 +1493,20 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Enviar notificación</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Habilitar notificaciones</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Deshabilitar notificaciones</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Las notificaciones push están habilitadas en esta sesión.</value>
+    <value>Las notificaciones están habilitadas en esta sesión.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Las notificaciones push están silenciadas en esta sesión.</value>
+    <value>Las notificaciones están silenciadas en esta sesión.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Las notificaciones push no están configuradas en esta sesión.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notificaciones</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Activar las notificaciones</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Desactivar las notificaciones</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Las notificaciones están activadas</value>
@@ -1829,15 +1829,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Ninguna zona horaria coincide con tu búsqueda.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Notificaciones push</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Activar las notificaciones push</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Desactivar las notificaciones push</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Las notificaciones push están bloqueadas para esta aplicación. Permite las notificaciones en la configuración de tu navegador o sistema operativo e inténtalo de nuevo.</value>
   </data>
