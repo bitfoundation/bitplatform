@@ -7,6 +7,48 @@ public partial class _BitChartLineDemo
         Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
     };
 
+    /// <summary>
+    /// A sparkline drops the chrome, and turning off MaintainAspectRatio lets it take the tile's own
+    /// height instead of a width-derived one.
+    /// </summary>
+    private readonly BitChartOptions _sparkline = new()
+    {
+        Sparkline = true,
+        MaintainAspectRatio = false,
+        Layout = new BitChartLayoutOptions { Padding = 2 }
+    };
+
+    private sealed record SparklineTile(string Caption, string Value, BitChartType Type, BitChartData Data);
+
+    private readonly List<SparklineTile> _tiles =
+    [
+        new("Sessions", "12,480", BitChartType.Line, Spark("#36a2eb", true, 30, 34, 31, 40, 44, 41, 52, 58, 55, 64)),
+        new("Signups", "934", BitChartType.Bar, Spark("#4bc0c0", false, 12, 18, 15, 22, 19, 26, 24, 31, 28, 35)),
+        new("Errors", "17", BitChartType.Line, Spark("#ff6384", true, 22, 19, 24, 16, 14, 18, 11, 9, 12, 7))
+    ];
+
+    private static BitChartData Spark(string color, bool line, params double?[] values) => new()
+    {
+        // A category axis spans the labels, so a sparkline still needs one per value - blank, since the
+        // tile shows no axis - or every point lands on the same x.
+        Labels = [.. values.Select(_ => "")],
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Data = [.. values],
+                BorderColor = color,
+                BackgroundColor = color,
+                PointRadius = 0,
+                BorderWidth = 2,
+                Tension = 0.35,
+                Fill = line ? BitChartFillMode.Origin : BitChartFillMode.None,
+                FillColor = line ? BitChartColorUtil.WithAlpha(color, 0.18) : null,
+                BorderRadius = 2
+            }
+        }
+    };
+
     private readonly BitChartOptions _logOptions = new()
     {
         Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Logarithmic } }
@@ -219,6 +261,55 @@ private BitChartData Monotone() => new()
         new BitChartDataset { Label = ""Monotone"", Data = new() { 10, 12, 60, 62, 30, 32, 70 },
             BorderColor = ""#36a2eb"", CubicInterpolationMode = BitChartCubicInterpolationMode.Monotone,
             PointRadius = 3, PointBackgroundColor = ""#36a2eb"" }
+    }
+};";
+
+    private readonly string sparklineRazorCode = @"@foreach (var tile in _tiles)
+{
+    <div class=""sparkline-tile"">
+        <div class=""sparkline-caption"">@tile.Caption</div>
+        <div class=""sparkline-value"">@tile.Value</div>
+        <BitChart Type=""tile.Type"" Data=""tile.Data"" Options=""_sparkline"" Height=""48px"" />
+    </div>
+}";
+    private readonly string sparklineCsharpCode = @"
+// Sparkline hides the axes, grid, legend and title; turning off MaintainAspectRatio lets the
+// chart take the tile's own height instead of one derived from its width.
+private readonly BitChartOptions _sparkline = new()
+{
+    Sparkline = true,
+    MaintainAspectRatio = false,
+    Layout = new BitChartLayoutOptions { Padding = 2 }
+};
+
+private sealed record SparklineTile(string Caption, string Value, BitChartType Type, BitChartData Data);
+
+private readonly List<SparklineTile> _tiles =
+[
+    new(""Sessions"", ""12,480"", BitChartType.Line, Spark(""#36a2eb"", true, 30, 34, 31, 40, 44, 41, 52, 58, 55, 64)),
+    new(""Signups"", ""934"", BitChartType.Bar, Spark(""#4bc0c0"", false, 12, 18, 15, 22, 19, 26, 24, 31, 28, 35)),
+    new(""Errors"", ""17"", BitChartType.Line, Spark(""#ff6384"", true, 22, 19, 24, 16, 14, 18, 11, 9, 12, 7))
+];
+
+private static BitChartData Spark(string color, bool line, params double?[] values) => new()
+{
+    // A category axis spans the labels, so a sparkline still needs one per value - blank, since the
+    // tile shows no axis - or every point lands on the same x.
+    Labels = [.. values.Select(_ => """")],
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Data = [.. values],
+            BorderColor = color,
+            BackgroundColor = color,
+            PointRadius = 0,
+            BorderWidth = 2,
+            Tension = 0.35,
+            Fill = line ? BitChartFillMode.Origin : BitChartFillMode.None,
+            FillColor = line ? BitChartColorUtil.WithAlpha(color, 0.18) : null,
+            BorderRadius = 2
+        }
     }
 };";
 }

@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Boilerplate.Client.Core.Components.Layout.Diagnostic;
@@ -39,7 +40,9 @@ public class DiagnosticModalVirtualizationTests
             // Inside the try so that a failure while filling the process-wide store still reaches the cleanup below.
             WriteLogs();
 
-            var cut = ctx.Render<AppDiagnosticModal>();
+            // Wrapped the way Routes.razor wraps the whole app: the modal holds an AuthorizeView, and that throws
+            // rather than rendering nothing when the cascading authentication state is absent.
+            var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters.AddChildContent<AppDiagnosticModal>());
 
             // The modal shows itself only when something asks it to - the header spacer, the keyboard shortcut, or
             // the error boundary.

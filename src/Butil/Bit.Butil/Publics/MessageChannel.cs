@@ -64,7 +64,9 @@ public class MessageChannel(IJSRuntime js) : IAsyncDisposable
     /// <remarks>
     /// Keep one port and give the other away. Neither delivers anything until it is started.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMessage))]
+    // What System.Text.Json reads, not All: All also keeps the RUC ButilMessage.Deserialize<T>, and preserving it
+    // from here raises IL2026 against this method in every trimmed app that calls it.
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(ButilMessage))]
     public async ValueTask<MessageChannelHandle?> Create()
     {
         var channelId = Guid.NewGuid();
@@ -115,7 +117,9 @@ public class MessageChannel(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.messageChannel.disposeAll");
+            // windowMessaging and worker adopt the ports they receive into this registry from inside their own
+            // module files.
+            await js.InvokeTeardown("BitButil.messageChannel.disposeAll", "windowMessaging", "worker");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

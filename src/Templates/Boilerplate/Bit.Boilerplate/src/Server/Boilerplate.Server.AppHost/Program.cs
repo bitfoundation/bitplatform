@@ -98,8 +98,6 @@ serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
 //#endif
 //#endif
 
-builder.ExposeWildcardEndpointsToLan();
-
 //#if (cloudflare == true)
 // cloudflared connects straight to the projects (no reverse proxy) - possible now that RemoveWildcardEndpoints drops http2.
 builder.AddCloudflareTunnels(serverWebProject
@@ -144,6 +142,8 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#if (IsInsideProjectTemplate == true)
     builder.UsePersistentContainers();
     //#endif
+
+    builder.RemoveWildcardEndpoints();
 }
 
 await builder

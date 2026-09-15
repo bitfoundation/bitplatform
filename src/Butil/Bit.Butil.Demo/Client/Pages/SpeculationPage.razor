@@ -53,18 +53,39 @@ var realLoadTime = loadEnd - activationStart;
                  Api="OnActivated"
                  Description="Fires once, on a page that was prerendered, at the moment the user actually navigates to it - and never on a page that wasn't. So it is a place to put work, not the only place: pair it with an IsPrerendering check that is false."
                  Code=@("""
-if (await speculation.IsPrerendering())
-{
-    _subscription = await speculation.OnActivated(activationStart =>
+@implements IAsyncDisposable
+@inject Bit.Butil.Speculation speculation
+@inject AnalyticsService analytics
+
+@code {
+    private ButilSubscription? _subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        analytics.PageView();      // now there is really someone here
-    });
+        if (firstRender is false) return;
+
+        // A prerendered page runs in a hidden tab that may never be shown, so anything that counts
+        // a visit has to wait for the activation that makes it real.
+        if (await speculation.IsPrerendering())
+        {
+            _subscription = await speculation.OnActivated(activationStart =>
+            {
+                analytics.PageView();      // now there is really someone here
+            });
+        }
+        else
+        {
+            analytics.PageView();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
 }
-else
-{
-    analytics.PageView();
-}
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ToggleWatch">@(_subscription is null ? "Listen for activation" : "Stop listening")</button>
         </div>
@@ -75,15 +96,34 @@ else
                  Api="Prefetch / Prerender / AddRules"
                  Description="Prefetch fetches the response and stops there - cheap, no side effects, safe to be generous with. Prerender loads and runs the whole page in a hidden tab, which is what makes the navigation instant and also what makes it expensive: bandwidth, CPU and battery for a page the user may never open. Keep it to a handful of destinations you are confident about, and remember those pages will see IsPrerendering true."
                  Code=@("""
-_prefetch = await speculation.Prefetch(["/url", "/selection"]);
-_prerender = await speculation.Prerender(["/getting-started"], SpeculationEagerness.Conservative);
+@implements IAsyncDisposable
+@inject Bit.Butil.Speculation speculation
 
-// anything the two convenience methods don't cover - a rule set of your own:
-var documentRules = @"{ ""prerender"": [ { ""where"": { ""selector_matches"": "".product-link"" } } ] }";
-await speculation.AddRules(documentRules);
+@code {
+    private ButilSubscription? _prefetch;
+    private ButilSubscription? _prerender;
 
-await _prefetch!.DisposeAsync();   // removes the rules, cancelling unused speculations
-""")>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _prefetch = await speculation.Prefetch(["/url", "/selection"]);
+        _prerender = await speculation.Prerender(["/getting-started"], SpeculationEagerness.Conservative);
+
+        // anything the two convenience methods don't cover - a rule set of your own:
+        var documentRules = @"{ ""prerender"": [ { ""where"": { ""selector_matches"": "".product-link"" } } ] }";
+        await speculation.AddRules(documentRules);
+    }
+
+    // Removes the rules, cancelling any speculation the user never went on to use.
+    public async ValueTask DisposeAsync()
+    {
+        if (_prefetch is not null) await _prefetch.DisposeAsync();
+        if (_prerender is not null) await _prerender.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <label>Eagerness
                 <select @bind="_eagerness">

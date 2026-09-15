@@ -1,7 +1,9 @@
 var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
-    const _observers: { [id: string]: IntersectionObserver } = {};
+    // The gate is kept next to the observer so unobserve can cancel a queued trailing send -
+    // see resizeObserver.ts for why disconnecting alone is not enough.
+    const _observers: { [id: string]: { observer: IntersectionObserver, gated: any } } = {};
 
     butil.intersectionObserver = {
         observe,
@@ -13,13 +15,20 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return { x: r.x, y: r.y, width: r.width, height: r.height };
     }
 
-    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any) {
+    function observe(dotNetRef: any, listenerId: string, element: HTMLElement, options: any, minInterval: number) {
         if (!element || !('IntersectionObserver' in window)) return;
 
         const init: IntersectionObserverInit = {
             rootMargin: options?.rootMargin ?? undefined,
             threshold: options?.thresholds && options.thresholds.length > 0 ? options.thresholds : 0
         };
+
+        // Rate-limited around the dispatch: a scroll through a long list crosses thresholds on
+        // nearly every frame, and each crossing is otherwise a round trip. Trailing, so the batch
+        // that settles the element is always delivered even when it lands inside a suppressed
+        // window - a viewport tracker that never hears "now visible" is worse than a slow one.
+        const send = (payload: any) => butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
+        const gated = butil.utils.throttle(minInterval, send, true);
 
         const observer = new IntersectionObserver(entries => {
             const payload = entries.map(e => ({
@@ -30,17 +39,18 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 intersectionRect: toRect(e.intersectionRect),
                 rootBounds: toRect(e.rootBounds)
             }));
-            butil.utils.dispatch(dotNetRef, 'InvokeIntersection', listenerId, payload);
+            gated(payload);
         }, init);
 
         observer.observe(element);
-        _observers[listenerId] = observer;
+        _observers[listenerId] = { observer, gated };
     }
 
     function unobserve(listenerId: string) {
-        const observer = _observers[listenerId];
-        if (!observer) return;
+        const entry = _observers[listenerId];
+        if (!entry) return;
         delete _observers[listenerId];
-        observer.disconnect();
+        entry.gated.cancel?.();
+        entry.observer.disconnect();
     }
 }(BitButil));

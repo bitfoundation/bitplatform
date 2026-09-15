@@ -37,7 +37,7 @@ Bit.Butil.GeolocationPosition|-|P|1||Coords,Timestamp
 Bit.Butil.Hid|J|-|1|InvokeHidConnected,InvokeHidDisconnected,InvokeHidInputReport|
 Bit.Butil.History|J|-|1|InvokeHistoryPopState|
 Bit.Butil.IdleDetector|J|-|1|InvokeIdleDetector|
-Bit.Butil.IndexedDbHandle|J|-|0|InvokeIndexedDbBlocked,InvokeIndexedDbClose,InvokeIndexedDbVersionChange|
+Bit.Butil.IndexedDbCallbacksInterop|J|-|1|InvokeIndexedDbBlocked,InvokeIndexedDbClose,InvokeIndexedDbVersionChange|
 Bit.Butil.InstallPrompt|J|-|1|InvokeAppInstalled,InvokeInstallAvailable|
 Bit.Butil.IntersectionObserverInterop|J|-|1|InvokeIntersection|
 Bit.Butil.InvokerCommands|J|-|1|InvokeCommand|
@@ -56,7 +56,7 @@ Bit.Butil.Navigation|J|-|1|InvokeNavigation|
 Bit.Butil.NetworkInformation|J|-|1|InvokeNetworkChange|
 Bit.Butil.Nfc|J|-|1|InvokeNdefError,InvokeNdefReading|
 Bit.Butil.Notification|J|-|1|InvokeNotificationClick,InvokeNotificationClose,InvokeNotificationError,InvokeNotificationShow|
-Bit.Butil.Performance|J|-|1|InvokePerformanceObserver|
+Bit.Butil.PerformanceObserverInterop|J|-|1|InvokePerformanceObserver|
 Bit.Butil.Permissions|J|-|1|InvokePermissionChange|
 Bit.Butil.PictureInPicture|J|-|1|InvokePictureInPictureChange|
 Bit.Butil.PointerTracker|J|-|1|InvokePointerFrame|
@@ -89,9 +89,9 @@ Bit.Butil.VisualViewport|J|-|1|InvokeVisualViewport|
 Bit.Butil.WebRtc|J|-|1|InvokeChannelClose,InvokeChannelMessage,InvokeChannelOpen,InvokeConnectionState,InvokeIceCandidate,InvokeRemoteChannel,InvokeTrack|
 Bit.Butil.WebSocket|J|-|1|InvokeWebSocketClose,InvokeWebSocketError,InvokeWebSocketMessage,InvokeWebSocketOpen|
 Bit.Butil.WebTransport|J|-|1|InvokeWebTransportClosed,InvokeWebTransportDatagram,InvokeWebTransportStreamData,InvokeWebTransportStreamEnd,InvokeWebTransportStreamOpened|
-Bit.Butil.Window|J|-|1|InvokeMediaQueryChange|
 Bit.Butil.WindowControlsOverlay|J|-|1|InvokeGeometryChange|
-Bit.Butil.WindowManagement|J|-|1|InvokeScreensChange|
+Bit.Butil.WindowManagementInterop|J|-|1|InvokeScreensChange|
+Bit.Butil.WindowMediaQueryInterop|J|-|1|InvokeMediaQueryChange|
 Bit.Butil.WindowMessaging|J|-|1|InvokeWindowMessage|
 Bit.Butil.Worker|J|-|1|InvokeWorkerError,InvokeWorkerMessage|
 Bit.Butil.XrSessionHandle|J|-|0|InvokeXrInput,InvokeXrPose,InvokeXrSessionEnd|

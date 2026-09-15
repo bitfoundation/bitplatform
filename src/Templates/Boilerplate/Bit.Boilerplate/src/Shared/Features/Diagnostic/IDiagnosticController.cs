@@ -4,5 +4,5 @@ namespace Boilerplate.Shared.Features.Diagnostic;
 public interface IDiagnosticController : IAppController
 {
     [HttpGet("{?signalRConnectionId,pushNotificationSubscriptionDeviceId}")]
-    Task<string> PerformDiagnostic(string? signalRConnectionId, string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken);
+    Task<string[]> PerformDiagnostic(string? signalRConnectionId, string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken);
 }

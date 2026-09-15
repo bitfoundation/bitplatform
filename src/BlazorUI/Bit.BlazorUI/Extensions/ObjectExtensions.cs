@@ -60,6 +60,13 @@ internal static class ObjectExtensions
     {
         if (obj is null) return;
 
-        GetPropertyInfo(obj.GetType(), propertyName)?.SetValue(obj, value);
+        var property = GetPropertyInfo(obj.GetType(), propertyName);
+
+        // A custom item type is free to expose a property the component only ever reads - a computed key,
+        // an expanded flag driven from elsewhere - so a property that cannot be written to is left alone
+        // rather than throwing from the middle of a render.
+        if (property?.CanWrite is not true) return;
+
+        property.SetValue(obj, value);
     }
 }

@@ -18,7 +18,11 @@ namespace Bit.Butil.Tests.E2E;
 [TestClass]
 public class LazyScriptsTests : ButilHarnessTestBase
 {
+    // The query string is what switches the standalone sample; the Web App and hybrid hosts switch per process,
+    // which LazyScripts asks the harness target for. Both are set so the fixture reads the same on every host.
     protected override string HarnessRoute => "/e2e?lazy=1";
+
+    protected override bool LazyScripts => true;
 
     [TestMethod]
     public async Task Page_Starts_Without_The_Bundle()

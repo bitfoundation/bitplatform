@@ -131,6 +131,14 @@
     <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
     <Project Path="Brouter/Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj" />
     <Project Path="Brouter/Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Hosting/Bit.Brouter.Tests.Hosting.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/Tests/Harness/">
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Harness/Bit.Brouter.Tests.Harness.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Harness.Web/Bit.Brouter.Tests.Harness.Web.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Harness.Web.Client/Bit.Brouter.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Harness.Hybrid/Bit.Brouter.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Folder Name="/Butil/">
     <File Path="Butil/README.md" />
@@ -150,8 +158,14 @@
   </Folder>
   <Folder Name="/Butil/Tests/">
     <Project Path="Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
     <Project Path="Butil/tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
     <Project Path="Butil/tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Tests/Harness/">
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />

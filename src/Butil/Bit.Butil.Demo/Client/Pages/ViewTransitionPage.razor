@@ -88,13 +88,26 @@ private async Task Toggle()
                  Api="Start / view-transition-name"
                  Description="Give each item a stable view-transition-name and the browser animates every one of them from its old position to its new one - the effect that normally needs a FLIP implementation. Nothing here computes a position; the whole animation is the browser's."
                  Code=@("""
-// each row carries its own name, stable across the reorder:
-// <div style="view-transition-name:row-@item.Id">...</div>
+@inject Bit.Butil.ViewTransition viewTransition
 
-await viewTransition.Start(
-    updateState: () => _items = [.. _items.OrderBy(_ => Random.Shared.Next())],
-    render: NextRender);
-""")>
+@* Each row carries its own name, stable across the reorder - that is what lets the browser match
+   the before and after and animate the row from one position to the other. Two elements with the
+   same name at the same time abort the transition. *@
+@foreach (var item in _items)
+{
+    <div style="view-transition-name:row-@item.Id">@item.Title</div>
+}
+
+@code {
+    private List<Item> _items = [];
+
+    private async Task Shuffle() =>
+        await viewTransition.Start(
+            updateState: () => _items = [.. _items.OrderBy(_ => Random.Shared.Next())],
+            render: NextRender);
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="ShuffleItems">Shuffle</button>
             <button class="secondary" @onclick="SortItems">Sort</button>
