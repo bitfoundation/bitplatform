@@ -64,6 +64,30 @@ internal static class ButilScriptLoader
     }
 
     /// <summary>
+    /// Whether the module behind <paramref name="identifier"/>, or any of <paramref name="dependentModules"/>, has
+    /// been asked for in this runtime - imported, or being imported. False only when nothing in this runtime ever
+    /// called into any of them, so no JavaScript state of that module can exist on the page.
+    /// </summary>
+    /// <remarks>
+    /// Only the module a call names is recorded, never the dependencies its file inlines: <c>dom.js</c> carries
+    /// <c>domHandles</c> and fills its registry, yet only <c>dom</c> is in the map. So a module can hold state
+    /// without ever having been requested itself, and the caller has to name the modules through which it can.
+    /// </remarks>
+    internal static bool IsModuleRequested(IJSRuntime jsRuntime, string identifier, string[] dependentModules)
+    {
+        if (TryGetModule(identifier, out var module) is false) return true;
+        if (LoadedModules.TryGetValue(jsRuntime, out var state) is false) return false;
+        if (state.Modules.ContainsKey(module)) return true;
+
+        foreach (var dependent in dependentModules)
+        {
+            if (state.Modules.ContainsKey(dependent)) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// The module of an interop identifier: <c>BitButil.clipboard.readText</c> is served by <c>clipboard</c>.
     /// False for identifiers that are not Butil's (nothing to load for those).
     /// </summary>

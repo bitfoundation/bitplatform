@@ -283,7 +283,7 @@ public class Presentation(IJSRuntime js) : IAsyncDisposable
             _stateHandlers.Clear();
             _availabilityHandlers.Clear();
             _onReceiverConnection = null;
-            await js.InvokeVoid("BitButil.presentation.disposeAll");
+            await js.InvokeTeardown("BitButil.presentation.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

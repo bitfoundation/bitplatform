@@ -158,8 +158,14 @@
   </Folder>
   <Folder Name="/Butil/Tests/">
     <Project Path="Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
     <Project Path="Butil/tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
     <Project Path="Butil/tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Tests/Harness/">
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />

@@ -84,7 +84,7 @@
          conflicting-target-path error) for builds where the glob already captured it. -->
     <Target Name="IncludeButilJavaScriptAsStaticWebAsset"
             BeforeTargets="ResolveProjectStaticWebAssets"
-            DependsOnTargets="BuildButilJavaScript">
+            DependsOnTargets="BuildButilJavaScriptOnce">
         <ItemGroup>
             <Content Remove="wwwroot\bit-butil.js;wwwroot\modules\*.js" />
             <Content Include="wwwroot\bit-butil.js;wwwroot\modules\*.js" />
@@ -101,6 +101,26 @@
             BeforeTargets="DispatchToInnerBuilds"
             Condition="'$(IsCrossTargetingBuild)' == 'true'"
             DependsOnTargets="BuildButilJavaScript" />
+
+    <!-- The outer build above only exists when this project is built directly. A multi-targeted project that
+         references it (the test harness hosts, Samples.Core) asks for each target framework on its own, with
+         TargetFramework as a global property, so no outer build runs and the inner builds would each start
+         tsc/build.mjs at the same moment against the same obj/butil-js folder - failing with EPERM/ENOTEMPTY.
+         So an inner build hands the work to this project evaluated without TargetFramework: MSBuild builds a
+         given project and set of global properties once per build session, and every inner build asking for
+         that same instance waits for the one run instead of starting its own. -->
+    <PropertyGroup>
+        <_ButilIsInnerBuild>false</_ButilIsInnerBuild>
+        <_ButilIsInnerBuild Condition="'$(TargetFramework)' != '' and '$(TargetFrameworks)' != ''">true</_ButilIsInnerBuild>
+        <_BuildButilJavaScriptOnceDependsOn Condition="'$(_ButilIsInnerBuild)' != 'true'">BuildButilJavaScript</_BuildButilJavaScriptOnceDependsOn>
+    </PropertyGroup>
+
+    <Target Name="BuildButilJavaScriptOnce" DependsOnTargets="$(_BuildButilJavaScriptOnceDependsOn)">
+        <MSBuild Condition="'$(_ButilIsInnerBuild)' == 'true'"
+                 Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildButilJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier" />
+    </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />

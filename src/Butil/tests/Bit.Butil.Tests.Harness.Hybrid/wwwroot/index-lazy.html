@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Butil hybrid harness (lazy scripts)</title>
+    <base href="/" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Butil.Samples.Core/app.css" />
+</head>
+
+<!-- No bit-butil.js: in lazy mode every BitButil.* namespace on the page got there through the library's own
+     per-module import(). -->
+<body data-mode="hybrid" data-scripts="lazy">
+    <div id="app">Loading...</div>
+    <script src="_framework/blazor.webview.js"></script>
+</body>
+
+</html>

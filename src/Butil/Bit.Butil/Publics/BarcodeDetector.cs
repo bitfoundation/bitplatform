@@ -148,7 +148,7 @@ public class BarcodeDetector(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.barcodeDetector.disposeAll");
+            await js.InvokeTeardown("BitButil.barcodeDetector.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
