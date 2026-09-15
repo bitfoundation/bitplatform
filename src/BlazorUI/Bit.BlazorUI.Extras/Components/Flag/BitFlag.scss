@@ -233,12 +233,19 @@
 // like one.
 .bit-flg-clk {
     cursor: pointer;
+    // The flag is the stacking context of the hit box below. Without one, the box's negative index
+    // would send it to the negative layer of whatever ancestor does form a context, under every plain
+    // block in between - the flag's own parent first - and a press on the overhang would land on that
+    // parent instead, leaving the box to work only where the parent happened to form a context itself.
+    isolation: isolate;
     transition: opacity $mot-duration-short $mot-easing;
 
     // A flag is drawn at the icon sizes of the theme, which puts every one of them under the 24x24 CSS
     // pixels WCAG 2.2 asks of a target - and the flag is now a target. This grows the area that answers
     // the pointer without growing the flag: a pseudo-element is part of its host for hit testing, so a
     // press anywhere in this box is a press on the flag, while the layout keeps the size it was given.
+    // Painted with the flag, the overhang sits above the plain content beside it, so a neighbour placed
+    // closer than the box reaches gives up that sliver to the flag; a later positioned one keeps it.
     &::after {
         content: "";
         top: 50%;
@@ -247,10 +254,8 @@
         width: max(100%, 1.5rem);
         height: max(100%, 1.5rem);
         transform: translate(-50%, -50%);
-        // The box overhangs the flag's own, and a positioned element paints - and so hit-tests - above
-        // the plain content beside it, which would let the overhang take the presses meant for a
-        // tightly spaced neighbour. A negative index puts it back under that content while leaving it
-        // part of its host for hit testing, so it only grows the target where nothing else is.
+        // Inside the flag's own context the negative index only keeps the box under the picture, so
+        // the image stays the thing a right click or a long press finds.
         z-index: -1;
     }
 
