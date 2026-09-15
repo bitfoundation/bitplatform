@@ -7,6 +7,11 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.applyRootClasses", cssClasses, cssVariables);
     }
 
+    internal static ValueTask BitExtrasCopyToClipboard(this IJSRuntime jsRuntime, string text)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.copyToClipboard", text);
+    }
+
     internal static ValueTask BitExtrasGoToTop(this IJSRuntime jsRuntime, ElementReference element, BitScrollBehavior? behavior = null)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.goToTop", element, behavior?.ToString().ToLowerInvariant());
