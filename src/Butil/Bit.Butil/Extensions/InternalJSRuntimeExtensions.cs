@@ -50,6 +50,33 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Invokes a service's teardown function (a module's <c>disposeAll</c> / <c>releaseAll</c>) from its
+    /// <c>DisposeAsync</c> - unless, with lazy scripts, nothing in this runtime ever loaded that module.
+    /// </summary>
+    /// <param name="jsRuntime">The runtime the service belongs to.</param>
+    /// <param name="identifier">The teardown function, <c>BitButil.&lt;module&gt;.disposeAll</c> or similar.</param>
+    /// <param name="dependentModules">
+    /// Every module that fills the teardown module's registry by calling into it (<c>dom</c> and <c>shadowDom</c>
+    /// for <c>domHandles</c>). A lazy-loaded module file inlines its dependencies, so the loader only ever records
+    /// the module that was asked for: without these, state registered through a dependent would look as if it
+    /// could not exist, and would never be released.
+    /// </param>
+    /// <remarks>
+    /// A scoped service is disposed with its scope whether or not it was used, so a teardown call made
+    /// unconditionally imports the module in lazy mode just to release state that cannot exist: every page reload
+    /// in a BlazorWebView, and every circuit that ends, downloaded the modules of every injected service it never
+    /// touched. When neither the module nor any of its <paramref name="dependentModules"/> was requested, nothing
+    /// registered anything in it, so there is nothing to tear down. In bundle mode every module is already on the
+    /// page, and the call goes through as before.
+    /// </remarks>
+    internal static ValueTask InvokeTeardown(this IJSRuntime jsRuntime, string identifier, params string[] dependentModules)
+    {
+        if (BitButil.LazyScriptsEnabled && ButilScriptLoader.IsModuleRequested(jsRuntime, identifier, dependentModules) is false) return default;
+
+        return jsRuntime.InvokeVoid(identifier);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for VOID calls. Honors <see cref="BitButil.FastInvokeEnabled"/> and,
     /// when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.

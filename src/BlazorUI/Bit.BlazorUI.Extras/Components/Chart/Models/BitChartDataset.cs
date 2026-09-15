@@ -19,6 +19,22 @@ public sealed class BitChartDataset
     /// <summary>Point data for scatter/bubble charts. When set, takes precedence over <see cref="Data"/>.</summary>
     public List<BitChartDataPoint>? Points { get; set; }
 
+    /// <summary>
+    /// Per-index uncertainty, drawn as a whisker through the value: a bar's tip, a line or scatter
+    /// point, each with a cap at both ends. A null entry leaves that point without one. The interval is
+    /// also named in the tooltip. Cartesian charts only.
+    /// </summary>
+    public List<BitChartErrorBar?>? ErrorData { get; set; }
+
+    /// <summary>Color of the error-bar whisker. When null it follows the primary foreground token.</summary>
+    public string? ErrorBarColor { get; set; }
+
+    /// <summary>Thickness of the error-bar whisker and its caps.</summary>
+    public double ErrorBarWidth { get; set; } = 1.5;
+
+    /// <summary>Full width of the caps at the ends of an error bar. Zero draws a bare whisker.</summary>
+    public double ErrorBarCapWidth { get; set; } = 8;
+
     /// <summary>Optional per-dataset type override for mixed charts.</summary>
     public BitChartType? Type { get; set; }
 
@@ -29,11 +45,22 @@ public sealed class BitChartDataset
     public BitChartFillPattern? BackgroundPattern { get; set; }
     public string? BorderColor { get; set; }
     public List<string>? BorderColors { get; set; }
-    public double BorderWidth { get; set; } = 1;
 
+    /// <summary>
+    /// Border/line thickness. When null a per-type default applies: <see cref="BitChartElementOptions.LineBorderWidth"/>
+    /// for lines and radar, <see cref="BitChartElementOptions.ArcBorderWidth"/> for arcs, and for bars
+    /// <see cref="BitChartElementOptions.BarBorderWidth"/> unless a border color was supplied (then 1).
+    /// </summary>
+    public double? BorderWidth { get; set; }
+
+    /// <summary>Fill color used while the element is hovered (bars and arcs).</summary>
     public string? HoverBackgroundColor { get; set; }
+    /// <summary>Border color used while the element is hovered (bars and arcs).</summary>
     public string? HoverBorderColor { get; set; }
+    /// <summary>Border width used while the element is hovered (bars and arcs).</summary>
     public double? HoverBorderWidth { get; set; }
+    /// <summary>Extra pixels a hovered arc is pushed out from the center (pie/doughnut/polar area).</summary>
+    public double HoverOffset { get; set; } = 6;
 
     // ---- BitChartScriptable options (evaluated per element; take precedence over the constants above) ----
     /// <summary>BitChartScriptable background color: <c>ctx => color</c>.</summary>
@@ -58,12 +85,14 @@ public sealed class BitChartDataset
     public BitChartGradientBase? FillGradient { get; set; }
     /// <summary>Target dataset index when <see cref="Fill"/> is <see cref="BitChartFillMode.Dataset"/>.</summary>
     public int? FillTargetIndex { get; set; }
-    /// <summary>Bezier curve tension (0 = straight lines).</summary>
-    public double Tension { get; set; }
+    /// <summary>Bezier curve tension (0 = straight lines). Falls back to <see cref="BitChartElementOptions.LineTension"/> when unset.</summary>
+    public double? Tension { get; set; }
     /// <summary>Cubic interpolation mode. <see cref="BitChartCubicInterpolationMode.Monotone"/> avoids overshoot.</summary>
     public BitChartCubicInterpolationMode CubicInterpolationMode { get; set; } = BitChartCubicInterpolationMode.Default;
     public BitChartSteppedLine Stepped { get; set; } = BitChartSteppedLine.False;
     public List<double>? BorderDash { get; set; }
+    /// <summary>Offset (px) of the first dash in <see cref="BorderDash"/>.</summary>
+    public double BorderDashOffset { get; set; }
     public string BorderJoinStyle { get; set; } = "round";
     public string BorderCapStyle { get; set; } = "round";
     public bool ShowLine { get; set; } = true;
@@ -74,13 +103,17 @@ public sealed class BitChartDataset
     public double? FillValue { get; set; }
 
     // ---- Point element options ----
-    public double PointRadius { get; set; } = 3;
+    /// <summary>Marker radius. Zero hides the marker but keeps the point hoverable; null falls back to
+    /// <see cref="BitChartElementOptions.PointRadius"/>.</summary>
+    public double? PointRadius { get; set; }
     public double PointHoverRadius { get; set; } = 4;
     public double PointBorderWidth { get; set; } = 1;
     public string? PointBackgroundColor { get; set; }
     public string? PointBorderColor { get; set; }
     public BitChartPointStyle PointStyle { get; set; } = BitChartPointStyle.Circle;
-    /// <summary>Pixel radius around a point that still counts as a hit for hover/tooltip.</summary>
+    /// <summary>Rotation of the point marker in degrees.</summary>
+    public double PointRotation { get; set; }
+    /// <summary>Extra pixel radius around a point that still counts as a hit for hover/tooltip.</summary>
     public double HitRadius { get; set; } = 1;
     /// <summary>Point fill color when hovered (falls back to <see cref="PointBackgroundColor"/>).</summary>
     public string? PointHoverBackgroundColor { get; set; }
@@ -94,17 +127,39 @@ public sealed class BitChartDataset
     public double? MaxBarThickness { get; set; }
     public double BarPercentage { get; set; } = 0.9;
     public double CategoryPercentage { get; set; } = 0.8;
+    /// <summary>
+    /// Corner radius in pixels. On a bar it rounds the corners away from the baseline (see
+    /// <see cref="BorderSkipped"/>); on a pie, doughnut or polar-area arc it rounds the arc's own
+    /// corners, mirroring Chart.js's shared <c>borderRadius</c>.
+    /// </summary>
     public double BorderRadius { get; set; }
     /// <summary>Optional per-corner bar radius. When set, overrides <see cref="BorderRadius"/>.</summary>
     public BitChartBorderRadiusCorners? BorderRadiusCorners { get; set; }
     /// <summary>Pixels to grow each bar by to avoid anti-aliasing gaps between stacked bars.</summary>
     public double? InflateAmount { get; set; }
+    /// <summary>Minimum bar length in pixels, so very small values stay visible.</summary>
+    public double? MinBarLength { get; set; }
+    /// <summary>The value bars start from. Defaults to zero clamped into the axis range.</summary>
+    public double? Base { get; set; }
+    /// <summary>When false the dataset is not grouped with the other bar datasets and keeps the full band.</summary>
+    public bool Grouped { get; set; } = true;
+    /// <summary>When true, null values leave no gap: the remaining bars in the group expand to fill the band.</summary>
+    public bool SkipNull { get; set; }
     /// <summary>Which bar edge omits its border. Default skips the baseline edge.</summary>
     public BitChartBorderSkipped BorderSkipped { get; set; } = BitChartBorderSkipped.Start;
 
     // ---- Arc (pie/doughnut/polar) element options ----
+    /// <summary>Pixels every arc of this dataset is pushed out from the center.</summary>
     public double Offset { get; set; }
+    /// <summary>Angular gap (in pixels along the outer edge) left between neighbouring arcs.</summary>
     public double SpacingArc { get; set; }
+
+    /// <summary>
+    /// Relative thickness of this dataset's ring in a multi-dataset pie or doughnut. The available
+    /// radius is shared out in proportion to the weights, so a dataset with weight 2 gets a band twice
+    /// as thick as one left at the default of 1. Mirrors Chart.js's arc dataset <c>weight</c>.
+    /// </summary>
+    public double Weight { get; set; } = 1;
 
     // ---- Axis assignment / stacking / ordering ----
     public string XAxisID { get; set; } = "x";

@@ -137,7 +137,7 @@ public class WindowMessaging(IJSRuntime js, MessageChannel messageChannel) : IAs
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.windowMessaging.disposeAll");
+            await js.InvokeTeardown("BitButil.windowMessaging.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

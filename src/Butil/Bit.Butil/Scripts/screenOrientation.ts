@@ -20,7 +20,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function addChange(dotNetRef: DotNet.DotNetObject, listenerId: string) {
         const handler: EventListener = e => {
             const orientation = e.target as ScreenOrientation;
-            butil.utils.dispatch(dotNetRef, 'InvokeScreenOrientationChange', listenerId, { angle: orientation.angle, type: orientation.type });
+            butil.utils.dispatch(dotNetRef, 'InvokeScreenOrientationChange', listenerId, orientation.angle, orientation.type);
         };
 
         _handlers[listenerId] = handler;

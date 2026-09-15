@@ -15,10 +15,64 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool _showEdit;
+    private BitFullCalendarEvent? _editTarget;
+    private ScopeAction _pendingScopeAction;
     private bool _isDeleting;
     private bool _deleteCommitted;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
+
+    /// <summary>The action waiting for the user to say whether it means one occurrence or the series.</summary>
+    private enum ScopeAction { None, Edit, Delete }
+
+    /// <summary>
+    /// The master a generated occurrence was expanded from, or <c>null</c> when the event is not an
+    /// occurrence (or its series has since been removed).
+    /// </summary>
+    private BitFullCalendarEvent? SeriesMaster => Event.SeriesId is { Length: > 0 } seriesId
+        ? State.AllEvents.FirstOrDefault(e => string.Equals(e.Id, seriesId, StringComparison.Ordinal))
+        : null;
+
+    /// <summary>
+    /// True while the edit and delete actions are offered: the calendar has to be editable AND the
+    /// event itself must not be locked with <see cref="BitFullCalendarEvent.IsReadOnly"/>. An
+    /// occurrence is always read-only (so it cannot be dragged), so for one the lock that counts is
+    /// its series master's.
+    /// </summary>
+    private bool CanEdit => State.ReadOnly is false
+        && (Event.IsOccurrence ? SeriesMaster is { IsReadOnly: false } : Event.IsReadOnly is false);
+
+    /// <summary>
+    /// One-line description of the repeat rule behind this event, or <c>null</c> for a one-off.
+    /// <para>
+    /// A generated occurrence carries no rule of its own - it is a projection of its master - so the
+    /// rule is looked up through <see cref="BitFullCalendarEvent.SeriesId"/> when the clicked event
+    /// is one. Without it an occurrence would give no sign that it belongs to a series.
+    /// </para>
+    /// </summary>
+    private string? RecurrenceSummary
+    {
+        get
+        {
+            var master = Event.Recurrence is null ? SeriesMaster : Event;
+            return master?.Recurrence is { } rule ? Texts.GetRecurrenceSummary(rule, State.Culture, master.StartDate) : null;
+        }
+    }
+
+    /// <summary>Display name of the assigned resource, or the "unassigned" label when there is none.</summary>
+    private string ResourceTitle
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Event.Resource))
+                return Texts.NoResourceLabel;
+
+            var match = State.Resources.FirstOrDefault(r => string.Equals(r.Id, Event.Resource, StringComparison.Ordinal));
+            // An id with no matching resource is still worth showing verbatim - it is what the event
+            // actually carries, and hiding it would make a stale assignment invisible.
+            return match is null || string.IsNullOrWhiteSpace(match.Title) ? Event.Resource! : match.Title;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -28,11 +82,28 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
+    private async Task OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        // Escape is the standard way out of a modal. While the edit overlay or the scope prompt is
+        // open it owns the key, and a delete in flight is left alone so the dialog can't close
+        // mid-commit.
+        if (e.Key is "Escape" or "Esc" && _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false)
+            await OnClose.InvokeAsync();
+    }
+
     private void Edit()
     {
-        if (State.ReadOnly)
+        if (CanEdit is false)
             return;
 
+        // An occurrence first asks whether the edit means it alone or the whole series.
+        if (Event.IsOccurrence)
+        {
+            _pendingScopeAction = ScopeAction.Edit;
+            return;
+        }
+
+        _editTarget = Event;
         _showEdit = true;
     }
 
@@ -49,11 +120,52 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         await OnClose.InvokeAsync();
     }
 
-    private async Task Delete()
+    private Task Delete()
     {
-        if (State.ReadOnly)
+        if (CanEdit is false)
+            return Task.CompletedTask;
+
+        if (Event.IsOccurrence)
+        {
+            _pendingScopeAction = ScopeAction.Delete;
+            return Task.CompletedTask;
+        }
+
+        return DeleteEventAsync(Event);
+    }
+
+    private void OnScopeCancelled() => _pendingScopeAction = ScopeAction.None;
+
+    /// <summary>
+    /// Carries out the action the scope prompt was opened for. "This event" edits the occurrence
+    /// itself (the add/edit dialog detaches it from the series) or skips its date; "all events" edits
+    /// or removes the series master.
+    /// </summary>
+    private async Task OnScopeConfirmed(bool allOccurrences)
+    {
+        var action = _pendingScopeAction;
+        _pendingScopeAction = ScopeAction.None;
+
+        // Read-only may have been switched on, or the series removed, while the prompt was open.
+        if (CanEdit is false || SeriesMaster is not { } master)
             return;
 
+        if (action is ScopeAction.Edit)
+        {
+            _editTarget = allOccurrences ? master : Event;
+            _showEdit = true;
+        }
+        else if (action is ScopeAction.Delete)
+        {
+            if (allOccurrences)
+                await DeleteEventAsync(master);
+            else
+                await SkipOccurrenceAsync(master);
+        }
+    }
+
+    private async Task DeleteEventAsync(BitFullCalendarEvent target)
+    {
         // Guard against double invocation (rapid clicks / Enter while the async work is in flight):
         // keep the flag set through the notifier and OnClose so the delete only runs once.
         if (_isDeleting)
@@ -68,8 +180,8 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             // add/edit save compensation), and the flag stays unset so a retry re-runs both steps.
             if (!_deleteCommitted)
             {
-                var snapshot = BitFullCalendarChangeNotifier.CloneEvent(Event);
-                State.RemoveEvent(Event.Id);
+                var snapshot = BitFullCalendarChangeNotifier.CloneEvent(target);
+                State.RemoveEvent(target.Id);
                 try
                 {
                     await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
@@ -98,6 +210,49 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             // The event has already been removed from state, so a throwing notifier/close must not
             // leave the dialog wedged with _isDeleting stuck true - reset it so the user can retry
             // (e.g. close) instead of the delete button staying permanently inert.
+            _isDeleting = false;
+        }
+    }
+
+    /// <summary>
+    /// Deletes this occurrence alone: the series skips its date, reported as an Edit of the master,
+    /// and every other occurrence stays where it was.
+    /// </summary>
+    private async Task SkipOccurrenceAsync(BitFullCalendarEvent master)
+    {
+        if (_isDeleting || Event.OccurrenceDate is not { } occurrenceDate)
+            return;
+        _isDeleting = true;
+
+        try
+        {
+            if (!_deleteCommitted)
+            {
+                var snapshot = BitFullCalendarChangeNotifier.CloneEvent(master);
+                var updated = BitFullCalendarHelpers.SkipOccurrence(master, occurrenceDate);
+                State.UpdateEvent(updated);
+                try
+                {
+                    await Notifier.NotifyAsync(new BitFullCalendarChangeEventArgs
+                    {
+                        Event = BitFullCalendarChangeNotifier.CloneEvent(updated),
+                        OldEvent = snapshot,
+                        Kind = BitFullCalendarChangeKind.Edit,
+                        Source = BitFullCalendarChangeSource.Dialog
+                    });
+                }
+                catch
+                {
+                    State.UpdateEvent(master);
+                    throw;
+                }
+                _deleteCommitted = true;
+            }
+
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
             _isDeleting = false;
         }
     }

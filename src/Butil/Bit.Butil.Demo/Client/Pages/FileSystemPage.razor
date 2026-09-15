@@ -162,9 +162,14 @@ if (state == FileSystemPermission.Prompt)
 await fileSystem.Release(handle);
 """)>
         <div class="controls">
+            <button @onclick="PickForPermission">Pick a file</button>
             <button @onclick="() => CheckPermission(false)">QueryPermission (read)</button>
             <button @onclick="() => CheckPermission(true)">QueryPermission (write)</button>
             <button class="secondary" @onclick="AskPermission">RequestPermission (write)</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Handle</span>
+            <span>@(CurrentHandle?.Name ?? "none picked yet")</span>
         </div>
         <DemoConsole @ref="permissionOutput" Title="permission output" />
     </DemoSection>
@@ -232,6 +237,7 @@ await fileSystem.Release(handle);
     private DemoConsole permissionOutput = default!;
 
     private FileSystemHandleInfo? _file;
+    private FileSystemHandleInfo? _permissionHandle;
     private FileSystemHandleInfo? _saveTarget;
     private FileSystemHandleInfo? _folder;
     private FileSystemFileInfo? _fileInfo;
@@ -458,15 +464,35 @@ await fileSystem.Release(handle);
         }
     }
 
-    // Whichever handle the page currently has, so the permission demo works no matter which of the
-    // pickers was used.
-    private FileSystemHandleInfo? CurrentHandle => _saveTarget ?? _folder ?? _file;
+    // This section's own pick first, then whichever handle the page currently has - so the demo
+    // stands on its own without making the reader scroll back to one of the pickers above.
+    private FileSystemHandleInfo? CurrentHandle => _permissionHandle ?? _saveTarget ?? _folder ?? _file;
+
+    private async Task PickForPermission()
+    {
+        try
+        {
+            var picked = await fileSystem.ShowOpenFilePicker();
+            if (picked is null or { Length: 0 })
+            {
+                await permissionOutput.Warn("Nothing picked - the dialog was cancelled, or the API is unavailable.");
+                return;
+            }
+
+            _permissionHandle = picked[0];
+            await permissionOutput.Success("Picked →", _permissionHandle.Name);
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("ShowOpenFilePicker failed →", ex.Message);
+        }
+    }
 
     private async Task CheckPermission(bool write)
     {
         if (CurrentHandle is null)
         {
-            await permissionOutput.Warn("Pick a file or folder first.");
+            await permissionOutput.Warn("Pick a file first, with the button in this section.");
             return;
         }
 
@@ -485,7 +511,7 @@ await fileSystem.Release(handle);
     {
         if (CurrentHandle is null)
         {
-            await permissionOutput.Warn("Pick a file or folder first.");
+            await permissionOutput.Warn("Pick a file first, with the button in this section.");
             return;
         }
 

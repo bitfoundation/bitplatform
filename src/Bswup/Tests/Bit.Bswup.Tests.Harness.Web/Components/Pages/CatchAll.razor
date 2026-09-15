@@ -1,0 +1,8 @@
+﻿@* Gives the endpoint router a page for every URL. App.razor never renders it: the harness root routes
+   the real URL, so this only exists to make MapRazorComponents answer the request. *@
+@page "/"
+@page "/{*path}"
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

@@ -40,7 +40,8 @@ internal sealed class DomEventsInterop : IDisposable
         bool preventDefault = false,
         bool stopPropagation = false,
         bool passive = false,
-        bool once = false)
+        bool once = false,
+        double minInterval = 0)
     {
         var argType = typeof(T);
         var eventType = DomEventArgs.TypeOf(domEvent);
@@ -57,7 +58,7 @@ internal sealed class DomEventsInterop : IDisposable
         var id = Guid.NewGuid();
         _listeners.TryAdd(id, new Entry { Action = listener, ArgType = argType, Element = elementName, Event = domEvent, UseCapture = useCapture });
 
-        await js.AddEventListener(elementName, domEvent, methodName, DotNetRef, id, members, options, preventDefault, stopPropagation);
+        await js.AddEventListener(elementName, domEvent, methodName, DotNetRef, id, members, options, preventDefault, stopPropagation, minInterval);
 
         return id;
     }

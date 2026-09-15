@@ -322,6 +322,17 @@ public partial class BitOverlay : BitComponentBase
         // opening, where it would refuse the first dismissal for no reason the user could see.
         _pressedOnContent = false;
 
+        if (isOpen)
+        {
+            await CaptureFocusOrigin();
+        }
+        else
+        {
+            await RestoreFocusOrigin();
+        }
+
+        if (Overtaken()) return;
+
         var offsetBefore = _offsetTop;
 
         _offsetTop = 0;
@@ -363,6 +374,32 @@ public partial class BitOverlay : BitComponentBase
     }
 
 
+
+    // The layer takes the focus a press on it moves off an input (see the markup), and a layer that is
+    // then hidden would leave that focus to drop to the body - the top of the page, as far as the next Tab
+    // is concerned. So the element the focus was on as the Overlay opened is remembered, and handed the
+    // focus back as it closes, for as long as the focus is still the Overlay's to hand back.
+    private async Task CaptureFocusOrigin()
+    {
+        if (IsDisposed || IsRendered is false) return;
+
+        try
+        {
+            await _js.BitUtilsCaptureFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task RestoreFocusOrigin()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsRestoreFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
 
     // What the overflow toggle acts on, in the order the consumer's intent is expressed: the element it
     // named, then the selector it named, then the scroller of the application shell the Overlay is inside
@@ -580,6 +617,12 @@ public partial class BitOverlay : BitComponentBase
         await ToggleScroll(false);
 
         await StopForwardScroll();
+
+        try
+        {
+            await _js.BitUtilsDisposeFocusOrigin(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
 
         await base.DisposeAsync(disposing);
     }

@@ -20,7 +20,6 @@ public partial class AppHub : Hub
 
     [AutoInject] private ILoggerFactory loggerFactory = default!;
     [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
-    [AutoInject] private McpProxyService mcpProxyService = default!;
 
 
     public async IAsyncEnumerable<string> Chatbot(
@@ -52,12 +51,8 @@ public partial class AppHub : Hub
             Name = "bitplatform",
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Brouter, Butil, Bswup, ...) plus the general ask_question tool
+        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
         var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
-
-        // The source index is deliberately not on that endpoint - its tool names are the ones a developer's
-        // own codebase-memory server already provides - so this page's chatbot takes it in process instead.
-        var codebaseMemoryTools = await mcpProxyService.ListInternalFunctions(cancellationToken);
 
 
         async Task ReadIncomingMessages()
@@ -94,7 +89,6 @@ public partial class AppHub : Hub
                     ChatOptions chatOptions = new()
                     {
                         Tools = [..bitplatformMcpTools,
-                                ..codebaseMemoryTools,
                                 AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
                                 {
                                     if (messageSpecificCancellationToken.IsCancellationRequested)
@@ -135,7 +129,8 @@ public partial class AppHub : Hub
                         - Never answer from memory. First work out which product the question is about, then call the tools that belong to that product - their names carry the product's name - and answer from what they return.
                         - Start with the broadest tool that fits (overview, list or search), then drill into the ones covering APIs, options, guides and examples. Reach for the tools that inspect, analyze or review whenever the user shares their own code or configuration.
                         - When a question spans several products, consult the tools of each of them before answering.
-                        - When no tool is dedicated to the topic, or a product's own tools come back empty, fall back to the ask_question tool, which answers from the `bitfoundation/bitplatform` repository. For now, do not return links returned by that tool.
+                        - When no tool is dedicated to the topic, or a product's own tools come back empty, fall back to the FindBitPlatformSymbols, SearchBitPlatformCode and GetBitPlatformSymbolSource tools, which read the source code of the `bitfoundation/bitplatform` repository.
+                        - Use the AskGitHubRepository tool only for the third-party libraries its description names. For now, do not return links returned by that tool.
                         - Use the Microsoft documentation tools only for .NET/Blazor/ASP.NET Core/MAUI behavior that bitplatform builds upon, never as a replacement for the bit tools.
                         - If the tools do not cover the question, say so honestly instead of guessing.
 

@@ -34,6 +34,11 @@ namespace Bit.Butil;
 [ButilService(typeof(Css))]
 public class Css(IJSRuntime js) : IAsyncDisposable
 {
+    // Set the first time a stylesheet is created - see CreateStyleSheet for why it is a delegate and
+    // not a call in DisposeAsync. Null means this instance made no stylesheet, so there is nothing to
+    // remove and no reason to reach into JavaScript (or to load the module) at teardown.
+    private Func<ValueTask>? _styleSheetTeardown;
+
     /// <summary>True when the runtime exposes <c>getComputedStyle</c>, which is everywhere.</summary>
     /// <remarks>
     /// During prerender/SSR (no JS runtime) this returns <c>default</c> (<c>false</c>) rather than
@@ -52,10 +57,10 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// either way - where they are missing it appends a <c>&lt;style&gt;</c> element instead, which
     /// behaves the same from here.
     /// </summary>
-    public ValueTask<bool> IsConstructableStyleSheetAvailable() => js.Invoke<bool>("BitButil.css.isConstructableStyleSheetAvailable");
+    public ValueTask<bool> IsConstructableStyleSheetAvailable() => js.Invoke<bool>("BitButil.cssStyleSheet.isConstructableStyleSheetAvailable");
 
     /// <summary>True when the runtime has the CSS Custom Highlight API.</summary>
-    public ValueTask<bool> IsHighlightAvailable() => js.Invoke<bool>("BitButil.css.isHighlightAvailable");
+    public ValueTask<bool> IsHighlightAvailable() => js.Invoke<bool>("BitButil.cssHighlight.isHighlightAvailable");
 
     /// <summary>True when the runtime implements the CSS Typed OM's unit factories (<c>CSS.px</c> and friends).</summary>
     /// <remarks>
@@ -66,13 +71,13 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// throwing, so the result can't be distinguished from a genuine value. If you branch on it,
     /// defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public ValueTask<bool> IsTypedOmAvailable() => js.Invoke<bool>("BitButil.css.isTypedOmAvailable");
+    public ValueTask<bool> IsTypedOmAvailable() => js.Invoke<bool>("BitButil.cssTypedOm.isTypedOmAvailable");
 
     /// <summary>True when the runtime implements the Houdini paint worklet - Chromium only.</summary>
-    public ValueTask<bool> SupportsPaintWorklet() => js.Invoke<bool>("BitButil.css.supportsPaintWorklet");
+    public ValueTask<bool> SupportsPaintWorklet() => js.Invoke<bool>("BitButil.cssWorklet.supportsPaintWorklet");
 
     /// <summary>True when the runtime implements the Houdini layout worklet - behind a flag even in Chromium.</summary>
-    public ValueTask<bool> SupportsLayoutWorklet() => js.Invoke<bool>("BitButil.css.supportsLayoutWorklet");
+    public ValueTask<bool> SupportsLayoutWorklet() => js.Invoke<bool>("BitButil.cssWorklet.supportsLayoutWorklet");
 
     /// <summary>
     /// The resolved value of each named property.
@@ -233,7 +238,7 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// properties it declared an interest in, and draws. That is what makes it fast, and what makes
     /// it unable to reach anything in the page.
     /// </remarks>
-    public ValueTask<bool> AddPaintWorklet(string url) => js.Invoke<bool>("BitButil.css.addPaintWorklet", url);
+    public ValueTask<bool> AddPaintWorklet(string url) => js.Invoke<bool>("BitButil.cssWorklet.addPaintWorklet", url);
 
     /// <summary>
     /// Loads a layout worklet - a script that implements a custom <c>display: layout(…)</c>.
@@ -245,7 +250,7 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// The least-shipped part of Houdini - behind a flag even in Chromium. Treat a true here as a
     /// pleasant surprise rather than a platform you can build on.
     /// </remarks>
-    public ValueTask<bool> AddLayoutWorklet(string url) => js.Invoke<bool>("BitButil.css.addLayoutWorklet", url);
+    public ValueTask<bool> AddLayoutWorklet(string url) => js.Invoke<bool>("BitButil.cssWorklet.addLayoutWorklet", url);
 
     /// <summary>
     /// Creates a stylesheet of your own, already in the document.
@@ -259,7 +264,19 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     public async ValueTask<StyleSheetHandle?> CreateStyleSheet()
     {
         var id = Guid.NewGuid();
-        var created = await js.Invoke<bool>("BitButil.css.createSheet", id);
+
+        // Teardown is armed here rather than written into DisposeAsync, and the difference is what an
+        // app that never creates a stylesheet downloads. An interop identifier is a string literal in a
+        // method body, and the set of those the trimmer keeps is the set of JavaScript modules a published
+        // app still ships - so naming cssStyleSheet in a Dispose that always runs would put that module in
+        // every Css consumer's bundle. In this lambda it goes away with CreateStyleSheet itself.
+        //
+        // Armed before the await, not after: a Css disposed while createSheet is in flight has to find the
+        // delegate in place, or the sheet JavaScript has already adopted outlives the scope that made it.
+        _styleSheetTeardown ??= () => js.InvokeVoid("BitButil.cssStyleSheet.disposeAll");
+
+        var created = await js.Invoke<bool>("BitButil.cssStyleSheet.createSheet", id);
+
         return created ? new StyleSheetHandle(js, id) : null;
     }
 
@@ -284,14 +301,14 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(search);
-        return js.Invoke<int>("BitButil.css.highlightText", name, element, search, caseSensitive);
+        return js.Invoke<int>("BitButil.cssHighlight.highlightText", name, element, search, caseSensitive);
     }
 
     /// <summary>Removes a highlight by name. Removing one that is not there is not an error.</summary>
     public ValueTask ClearHighlight(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return js.InvokeVoid("BitButil.css.clearHighlight", name);
+        return js.InvokeVoid("BitButil.cssHighlight.clearHighlight", name);
     }
 
     /// <summary>
@@ -300,8 +317,14 @@ public class Css(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeVoid("BitButil.css.disposeAll"); }
-        catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        var teardown = _styleSheetTeardown;
+        _styleSheetTeardown = null;
+
+        if (teardown is not null)
+        {
+            try { await teardown(); }
+            catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
+        }
 
         GC.SuppressFinalize(this);
     }

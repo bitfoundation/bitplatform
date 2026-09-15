@@ -108,7 +108,7 @@ await screenOrientation.RemoveAllChanges();
     <ApiMember Name="RemoveChange" Signature="ValueTask<Guid[]> RemoveChange(Action<OrientationState> handler)" Description="Removes listeners matched by delegate identity; pass the exact handler instance that was registered." />
     <ApiMember Name="RemoveChange" Signature="ValueTask RemoveChange(Guid id)" Description="Removes a single change listener by its id." />
     <ApiMember Name="RemoveAllChanges" Signature="ValueTask RemoveAllChanges()" Description="Removes every change listener registered on this instance." />
-    <ApiMember Name="InvokeScreenOrientationChange" Signature="void InvokeScreenOrientationChange(Guid id, OrientationState state)" Description="JS interop bridge invoked by the browser on the change event; not intended for application code." />
+    <ApiMember Name="InvokeScreenOrientationChange" Signature="void InvokeScreenOrientationChange(Guid id, ushort angle, string type)" Description="JS interop bridge invoked by the browser on the change event; not intended for application code." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
 </ApiTable>
 

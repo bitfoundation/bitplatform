@@ -27,13 +27,14 @@ public partial class AboutPage
         appName = "Boilerplate";
         appVersion = telemetryContext.AppVersion!;
 
-        // Read from the user agent rather than from ITelemetryContext.Platform, and never during prerendering. This
-        // page runs in the web server's process whenever the render mode is server-side - during prerendering in every
-        // mode, and for the whole circuit under Blazor Server - where Platform is the HOST's RuntimeInformation
-        // .OSDescription until AppClientCoordinator overwrites it after the first render. Showing that to an anonymous
-        // visitor discloses the server's kernel build on a page whose subject is the visitor's own device.
-        // Environment.ProcessId has the same problem and no client-side answer at all, so it is simply not shown here.
-        if (InPrerenderSession is false)
+        // From the user agent rather than ITelemetryContext.Platform, and only once there is a device to ask: while
+        // prerendering, the only os this anonymous page could name is the host's. Environment.ProcessId has the same
+        // problem and no client-side answer, so it isn't shown at all.
+        if (InPrerenderSession)
+        {
+            platform = "Generic Server";
+        }
+        else
         {
             var userAgentData = await userAgent.Extract();
             oem = userAgentData.Manufacturer ?? "?";
