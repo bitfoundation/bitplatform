@@ -50,6 +50,21 @@ public static class BitChartColorUtil
 
     private static int Clamp(int v) => Math.Max(0, Math.Min(255, v));
 
+    /// <summary>Expands one hex digit into a byte (the #rgb short form).</summary>
+    private static bool Nibble(char c, out int value)
+    {
+        if (!int.TryParse(stackalloc char[] { c }, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
+        {
+            value = 0;
+            return false;
+        }
+        value = value * 17;
+        return true;
+    }
+
+    private static bool Byte(ReadOnlySpan<char> pair, out int value)
+        => int.TryParse(pair, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
+
     public static bool TryParse(string color, out int r, out int g, out int b, out double a)
     {
         r = g = b = 0; a = 1;
@@ -58,21 +73,27 @@ public static class BitChartColorUtil
 
         if (color.StartsWith('#'))
         {
-            var hex = color[1..];
-            if (hex.Length == 3)
+            // Parsed rather than converted: a stray character in a color string is a typo, not a reason
+            // for the whole chart to throw out of its render.
+            var hex = color.AsSpan(1);
+            if (hex.Length == 3 || hex.Length == 4)
             {
-                r = Convert.ToInt32($"{hex[0]}{hex[0]}", 16);
-                g = Convert.ToInt32($"{hex[1]}{hex[1]}", 16);
-                b = Convert.ToInt32($"{hex[2]}{hex[2]}", 16);
+                if (!Nibble(hex[0], out r) || !Nibble(hex[1], out g) || !Nibble(hex[2], out b)) return false;
+                if (hex.Length == 4)
+                {
+                    if (!Nibble(hex[3], out var na)) return false;
+                    a = na / 255.0;
+                }
                 return true;
             }
             if (hex.Length == 6 || hex.Length == 8)
             {
-                r = Convert.ToInt32(hex.Substring(0, 2), 16);
-                g = Convert.ToInt32(hex.Substring(2, 2), 16);
-                b = Convert.ToInt32(hex.Substring(4, 2), 16);
+                if (!Byte(hex[..2], out r) || !Byte(hex.Slice(2, 2), out g) || !Byte(hex.Slice(4, 2), out b)) return false;
                 if (hex.Length == 8)
-                    a = Convert.ToInt32(hex.Substring(6, 2), 16) / 255.0;
+                {
+                    if (!Byte(hex.Slice(6, 2), out var ba)) return false;
+                    a = ba / 255.0;
+                }
                 return true;
             }
             return false;

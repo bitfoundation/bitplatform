@@ -38,7 +38,7 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
 
     public async Task<JsonNode?> Export(Guid userId, CancellationToken cancellationToken)
     {
-        // Materialised before mapping: StartedOn and RenewedOn are unix seconds, which no provider translates.
+        // Materialised before mapping: unix seconds and AppVersionCode need decoding.
         var sessions = await dbContext.UserSessions
             .AsNoTracking()
             .Where(userSession => userSession.UserId == userId)
@@ -53,7 +53,7 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
                 userSession.DeviceInfo,
                 userSession.PlatformType,
                 userSession.CultureName,
-                userSession.AppVersion,
+                userSession.AppVersionCode,
                 userSession.Privileged,
                 OAuthClientId = userSession.OAuthGrant!.ClientId,
                 OAuthClientName = userSession.OAuthGrant!.ClientName,
@@ -76,7 +76,7 @@ public partial class UserSessionsPersonalDataSource : IPersonalDataSource
             session.DeviceInfo,
             Platform = session.PlatformType,
             session.CultureName,
-            session.AppVersion,
+            AppVersion = AppVersionCodes.Decode(session.AppVersionCode),
             session.Privileged,
             // Set only when an external application holds this session; otherwise it reads as one of the user's devices.
             AuthorizedApplication = session.OAuthClientId,

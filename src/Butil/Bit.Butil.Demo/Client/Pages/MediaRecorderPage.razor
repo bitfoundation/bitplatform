@@ -109,23 +109,37 @@ await recorder.RevokeObjectUrl(_playbackUrl);
                  Api="Start(onData, timesliceMs) / RequestData"
                  Description="Pass a timeslice and an onData callback and the browser hands you each encoded slice as it is produced, so a long recording can be uploaded while it runs instead of being held whole in memory. RequestData flushes what has been captured so far without ending the take."
                  Code=@("""
-_recording = await recorder.Start(
-    _stream!,
-    onData: chunk => InvokeAsync(() =>
-    {
-        _bytesSoFar += chunk.Length;   // upload it, append it to a file, ...
-        StateHasChanged();
-    }),
-    timesliceMs: 1000);   // one slice per second
+@inject Bit.Butil.MediaRecorder recorder
 
-// flush early, without stopping:
-await _recording!.RequestData();
-""")>
+@code {
+    private long _bytesSoFar;
+    private MediaStreamHandle? _stream;        // from mediaDevices.GetUserMedia
+    private MediaRecordingHandle? _recording;
+
+    private async Task Start()
+    {
+        _recording = await recorder.Start(
+            _stream!,
+            onData: chunk => InvokeAsync(() =>
+            {
+                _bytesSoFar += chunk.Length;   // upload it, append it to a file, ...
+                StateHasChanged();
+            }),
+            timesliceMs: 1000);   // one slice per second
+    }
+
+    // flush early, without stopping:
+    private async Task Flush() => await _recording!.RequestData();
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartChunked">Start chunked recording</button>
             <button class="secondary" @onclick="FlushChunk">RequestData</button>
-            <button class="danger" @onclick="StopRecording">Stop</button>
+            <button class="danger" @onclick="StopChunked">Stop</button>
         </div>
+        <video @ref="_chunkPreview" autoplay playsinline muted
+               class="demo-video" style="min-height:120px"></video>
         <div class="field">
             <span class="field-label">Slices received</span>
             <span>@_chunkCount slice(s), @FormatSize(_chunkBytes) total</span>
@@ -200,6 +214,10 @@ await _recording!.RequestData();
     private DemoConsole chunkOutput = default!;
     private ElementReference _livePreview;
 
+    // The chunked section previews the same stream on an element of its own: the recorder is only
+    // interesting next to a picture of what it is recording.
+    private ElementReference _chunkPreview;
+
     private MediaStreamHandle? _stream;
     private MediaRecordingHandle? _recording;
     private string[] _supportedTypes = [];
@@ -246,24 +264,27 @@ await _recording!.RequestData();
 
     // Both demos record the same stream, so opening it is shared. Returns false when the user
     // refused the camera/microphone, in which case there is nothing to record.
-    private async Task<bool> EnsureStream(DemoConsole output)
+    private async Task<bool> EnsureStream(DemoConsole output, ElementReference preview)
     {
-        if (_stream is not null) return true;
-
-        if (!_recordVideo && !_recordAudio)
-        {
-            await output.Warn("Enable at least audio or video first.");
-            return false;
-        }
-
-        _stream = await mediaDevices.GetUserMedia(_recordAudio, _recordVideo);
         if (_stream is null)
         {
-            await output.Warn("GetUserMedia returned null - permission denied or no matching device.");
-            return false;
+            if (!_recordVideo && !_recordAudio)
+            {
+                await output.Warn("Enable at least audio or video first.");
+                return false;
+            }
+
+            _stream = await mediaDevices.GetUserMedia(_recordAudio, _recordVideo);
+            if (_stream is null)
+            {
+                await output.Warn("GetUserMedia returned null - permission denied or no matching device.");
+                return false;
+            }
         }
 
-        await _stream.AttachTo(_livePreview);
+        // One stream can feed several video elements, so the section that asked for it gets the
+        // preview rather than whichever section happened to open the camera first.
+        await _stream.AttachTo(preview);
         return true;
     }
 
@@ -274,7 +295,7 @@ await _recording!.RequestData();
             await DiscardRecording();
             await ReleasePlayback();
 
-            if (!await EnsureStream(recordOutput)) return;
+            if (!await EnsureStream(recordOutput, _livePreview)) return;
 
             var best = (await recorder.GetSupportedTypes(_recordVideo ? MediaRecorder.CommonVideoTypes : MediaRecorder.CommonAudioTypes))
                 .FirstOrDefault();
@@ -366,7 +387,7 @@ await _recording!.RequestData();
         {
             await DiscardRecording();
 
-            if (!await EnsureStream(chunkOutput)) return;
+            if (!await EnsureStream(chunkOutput, _chunkPreview)) return;
 
             _chunkCount = 0;
             _chunkBytes = 0;
@@ -393,6 +414,36 @@ await _recording!.RequestData();
         catch (Exception ex)
         {
             await chunkOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task StopChunked()
+    {
+        if (_recording is null)
+        {
+            await chunkOutput.Warn("Nothing is recording.");
+            return;
+        }
+
+        try
+        {
+            var media = await _recording.StopAndCreateObjectUrl();
+            _recording = null;
+            _paused = false;
+            _state = "Stopped.";
+
+            if (media is null)
+            {
+                await chunkOutput.Warn("Stop returned null - the recording was already finished.");
+                return;
+            }
+
+            await chunkOutput.Success($"Stopped → {_chunkCount} slice(s), {FormatSize(media.Size)} of {media.MimeType}.");
+            await recorder.RevokeObjectUrl(media.ObjectUrl);
+        }
+        catch (Exception ex)
+        {
+            await chunkOutput.Error("Stop failed →", ex.Message);
         }
     }
 

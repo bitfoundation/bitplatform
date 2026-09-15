@@ -84,9 +84,13 @@ public partial class UserSession
     public string? CultureName { get; set; }
 
     /// <summary>
-    /// The version of the application used for this session.
+    /// The version of the application used for this session, as a sortable number - see <see cref="AppVersionCodes"/>.
     /// </summary>
-    public string? AppVersion { get; set; }
+    public long? AppVersionCode { get; set; }
+
+    /// <summary><see cref="AppVersionCode"/> for display.</summary>
+    [NotMapped]
+    public string? AppVersion => AppVersionCodes.Decode(AppVersionCode);
 
     /// <summary>
     /// Set when an external application authorized over OAuth holds this session rather than one of the user's own

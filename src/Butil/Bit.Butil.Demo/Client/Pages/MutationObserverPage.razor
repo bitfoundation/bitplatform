@@ -38,7 +38,7 @@
              Language="razor">
     <div @ref="containerRef" data-state="idle"
          class="demo-box dashed" style="max-width:22rem;">
-        <div>Observed container - change count: @changeCount</div>
+        <div>Observed container</div>
         @foreach (var item in items)
         {
             <div class="demo-marker compact">@item</div>
@@ -57,19 +57,37 @@
              Api="MutationObserverOptions.Attributes / AttributeOldValue / AttributeFilter"
              Description="Set Attributes to true to receive a record for every attribute change on the target. AttributeOldValue includes the previous value in each record, and AttributeFilter narrows the watch to specific attribute names so unrelated changes stay silent."
              Code=@("""
-await container.ObserveMutations(js, records =>
-{
-    foreach (var record in records)
+@inject IJSRuntime js
+
+<div @ref="container" data-state="idle">...</div>
+
+@code {
+    private ElementReference container;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine($"{record.AttributeName}: {record.OldValue} -> changed");
+        if (firstRender is false) return;
+
+        await container.ObserveMutations(js, records =>
+        {
+            foreach (var record in records)
+            {
+                Console.WriteLine($"{record.AttributeName}: {record.OldValue} -> changed");
+            }
+        }, new MutationObserverOptions
+        {
+            Attributes = true,
+            AttributeOldValue = true,
+            AttributeFilter = ["data-state"],
+        });
     }
-}, new MutationObserverOptions
-{
-    Attributes = true,
-    AttributeOldValue = true,
-    AttributeFilter = ["data-state"],
-});
-""")>
+}
+""")
+             Language="razor">
+    <div @ref="attributeContainerRef" data-state="idle" data-other="idle"
+         class="demo-box dashed" style="max-width:22rem;">
+        Observed container - its <code>data-state</code> and <code>data-other</code> are what change.
+    </div>
     <div class="controls">
         <button @onclick="StartAttributes" disabled="@(attributeSub is not null)">Observe data-state only</button>
         <button class="secondary" @onclick="MutateWatchedAttribute">Change data-state</button>
@@ -83,19 +101,36 @@ await container.ObserveMutations(js, records =>
              Api="MutationObserverOptions.CharacterData / CharacterDataOldValue"
              Description="CharacterData watches edits to text nodes; pair it with Subtree so text anywhere inside the container is covered, and CharacterDataOldValue to receive the previous text. Incrementing the counter below makes Blazor update a text node inside the observed container."
              Code=@("""
-await container.ObserveMutations(js, records =>
-{
-    foreach (var record in records)
+@inject IJSRuntime js
+
+<div @ref="container">...</div>
+
+@code {
+    private ElementReference container;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine($"text changed, was: {record.OldValue}");
+        if (firstRender is false) return;
+
+        await container.ObserveMutations(js, records =>
+        {
+            foreach (var record in records)
+            {
+                Console.WriteLine($"text changed, was: {record.OldValue}");
+            }
+        }, new MutationObserverOptions
+        {
+            CharacterData = true,
+            CharacterDataOldValue = true,
+            Subtree = true,
+        });
     }
-}, new MutationObserverOptions
-{
-    CharacterData = true,
-    CharacterDataOldValue = true,
-    Subtree = true,
-});
-""")>
+}
+""")
+             Language="razor">
+    <div @ref="textContainerRef" class="demo-box dashed" style="max-width:22rem;">
+        <div>Observed container - change count: @textChangeCount</div>
+    </div>
     <div class="controls">
         <button @onclick="StartCharacterData" disabled="@(characterDataSub is not null)">Observe text</button>
         <button class="secondary" @onclick="IncrementCounter">Increment change count</button>
@@ -104,25 +139,93 @@ await container.ObserveMutations(js, records =>
     <DemoConsole @ref="textOutput" Title="text changes output" />
 </DemoSection>
 
+<DemoSection Title="Rate limiting"
+             Api="MutationObserverOptions.MinInterval"
+             Description="A subtree observer over a region Blazor re-renders sees a batch of records per render, so without a gate one render becomes one interop round trip. MinInterval caps how often the handler is called, leading-edge with a trailing send so the batch describing the settled tree still arrives. Note what it drops: whole batches, not individual records. A handler that has to see every mutation - a change log, an undo stack - must leave it unset. Burst-add ten items below and count the callbacks against the ten renders that produced them."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="container">...</div>
+
+@code {
+    private ElementReference container;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await container.ObserveMutations(js, records =>
+        {
+            // called at most once every 250 ms, however many
+            // renders happened in between
+        }, new MutationObserverOptions
+        {
+            ChildList = true,
+            Subtree = true,
+            MinInterval = TimeSpan.FromMilliseconds(250),
+        });
+    }
+}
+""")
+             Language="razor">
+    <div @ref="gatedContainerRef" class="demo-box dashed" style="max-width:22rem;">
+        <div>Observed container - @gatedItems.Count item(s)</div>
+        @foreach (var item in gatedItems)
+        {
+            <div class="demo-marker compact">@item</div>
+        }
+    </div>
+    <div class="controls">
+        <button @onclick="StartGated" disabled="@(gatedSub is not null)">Observe with a 250 ms gate</button>
+        <button class="secondary" @onclick="BurstAdd">Add ten items in a burst</button>
+        <button class="danger" @onclick="() => StopGated(gatedOutput)" disabled="@(gatedSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="gatedOutput" Title="rate limiting output" />
+</DemoSection>
+
 <DemoSection Title="Reading records"
              Api="MutationRecord"
              Description="DOM nodes cannot cross the interop boundary, so each MutationRecord is a flattened summary: the mutation type, the target's tag name and id, the attribute name and old value where applicable, and how many nodes were added or removed."
              Code=@("""
-await container.ObserveMutations(js, records =>
-{
-    foreach (var record in records)
+@inject IJSRuntime js
+
+<div @ref="container">...</div>
+
+@code {
+    private ElementReference container;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var type = record.Type;          // "childList" | "attributes" | "characterData"
-        var tag = record.TargetTagName;  // e.g. "DIV"
-        var id = record.TargetId;        // element id, when present
-        var attr = record.AttributeName; // attributes mutations only
-        var old = record.OldValue;       // when *OldValue options are enabled
-        var added = record.AddedCount;   // childList mutations only
-        var removed = record.RemovedCount;
+        if (firstRender is false) return;
+
+        await container.ObserveMutations(js, records =>
+        {
+            foreach (var record in records)
+            {
+                var type = record.Type;          // "childList" | "attributes" | "characterData"
+                var tag = record.TargetTagName;  // e.g. "DIV"
+                var id = record.TargetId;        // element id, when present
+                var attr = record.AttributeName; // attributes mutations only
+                var old = record.OldValue;       // when *OldValue options are enabled
+                var added = record.AddedCount;   // childList mutations only
+                var removed = record.RemovedCount;
+            }
+        });
     }
-});
-""")>
+}
+""")
+             Language="razor">
+    <div @ref="recordsContainerRef" class="demo-box dashed" style="max-width:22rem;">
+        <div>Observed container - @recordItems.Count item(s)</div>
+        @foreach (var item in recordItems)
+        {
+            <div class="demo-marker compact">@item</div>
+        }
+    </div>
     <div class="controls">
+        <button @onclick="StartRecords" disabled="@(recordsSub is not null)">Start observing</button>
+        <button class="secondary" @onclick="AddRecordItem">Add item</button>
+        <button class="danger" @onclick="StopRecords" disabled="@(recordsSub is null)">Stop</button>
         <button class="secondary" @onclick="LogLatestRecord" disabled="@(latestRecord is null)">Log latest record as JSON</button>
     </div>
     <DemoConsole @ref="recordsOutput" Title="records output" />
@@ -175,6 +278,7 @@ public async ValueTask DisposeAsync()
     <ApiMember Name="MutationRecord.OldValue" Signature="string? OldValue { get; set; }" Description="Previous value when the matching *OldValue option was enabled." />
     <ApiMember Name="MutationRecord.AddedCount" Signature="int AddedCount { get; set; }" Description="Number of nodes added (childList mutations only)." />
     <ApiMember Name="MutationRecord.RemovedCount" Signature="int RemovedCount { get; set; }" Description="Number of nodes removed (childList mutations only)." />
+    <ApiMember Name="MutationObserverOptions.MinInterval" Signature="TimeSpan? MinInterval { get; set; }" Description="The shortest time between two calls into the handler. null or zero (the default) forwards every batch. Drops whole batches, so leave it unset when every record matters." />
     <ApiMember Name="ButilSubscription.Id" Signature="Guid Id { get; }" Description="The internal listener id of the subscription." />
     <ApiMember Name="ButilSubscription.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects the observer and releases the interop reference. Idempotent." />
 </ApiTable>
@@ -183,20 +287,35 @@ public async ValueTask DisposeAsync()
     private DemoConsole childListOutput = default!;
     private DemoConsole attributesOutput = default!;
     private DemoConsole textOutput = default!;
+    private DemoConsole gatedOutput = default!;
     private DemoConsole recordsOutput = default!;
     private DemoConsole stoppingOutput = default!;
 
+    // One observed container per section. An observer is only legible next to the DOM it is watching,
+    // and a mutation applied to a container five sections up is a demonstration of nothing.
     private ElementReference containerRef;
+    private ElementReference attributeContainerRef;
+    private ElementReference textContainerRef;
+    private ElementReference gatedContainerRef;
+    private ElementReference recordsContainerRef;
 
     private ButilSubscription? childListSub;
     private ButilSubscription? attributeSub;
     private ButilSubscription? characterDataSub;
+    private ButilSubscription? gatedSub;
+    private ButilSubscription? recordsSub;
 
     private MutationRecord? latestRecord;
 
     private readonly List<string> items = [];
     private int itemCounter;
-    private int changeCount;
+
+    private readonly List<string> gatedItems = [];
+    private int gatedItemCounter;
+
+    private readonly List<string> recordItems = [];
+    private int recordItemCounter;
+    private int textChangeCount;
 
     private async Task StartChildList()
     {
@@ -254,7 +373,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            attributeSub = await containerRef.ObserveMutations(js, records =>
+            attributeSub = await attributeContainerRef.ObserveMutations(js, records =>
             {
                 foreach (var record in records)
                 {
@@ -282,7 +401,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            await containerRef.SetAttribute("data-state", Guid.NewGuid().ToString("N")[..8]);
+            await attributeContainerRef.SetAttribute("data-state", Guid.NewGuid().ToString("N")[..8]);
         }
         catch (Exception ex)
         {
@@ -294,7 +413,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            await containerRef.SetAttribute("data-other", Guid.NewGuid().ToString("N")[..8]);
+            await attributeContainerRef.SetAttribute("data-other", Guid.NewGuid().ToString("N")[..8]);
             await attributesOutput.Info("data-other changed - the filtered observer stays silent");
         }
         catch (Exception ex)
@@ -323,7 +442,7 @@ public async ValueTask DisposeAsync()
     {
         try
         {
-            characterDataSub = await containerRef.ObserveMutations(js, records =>
+            characterDataSub = await textContainerRef.ObserveMutations(js, records =>
             {
                 foreach (var record in records)
                 {
@@ -349,7 +468,62 @@ public async ValueTask DisposeAsync()
 
     private void IncrementCounter()
     {
-        changeCount++;
+        textChangeCount++;
+    }
+
+    private async Task StartGated()
+    {
+        try
+        {
+            gatedSub = await gatedContainerRef.ObserveMutations(js, records =>
+            {
+                if (records.Length == 0) return;
+
+                latestRecord = records[^1];
+                _ = gatedOutput.Info($"gated → {records.Length} record(s) at {DateTime.Now:HH:mm:ss.fff}");
+                _ = InvokeAsync(StateHasChanged);
+            }, new MutationObserverOptions
+            {
+                ChildList = true,
+                Subtree = true,
+                MinInterval = TimeSpan.FromMilliseconds(250),
+            });
+
+            await gatedOutput.Log("Observing childList + subtree, rate-limited to one call every 250 ms");
+        }
+        catch (Exception ex)
+        {
+            await gatedOutput.Error(ex.Message);
+        }
+    }
+
+    // Ten separate renders, each producing its own batch of records. Ungated that is ten round
+    // trips; gated it is one or two.
+    private async Task BurstAdd()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            gatedItemCounter++;
+            gatedItems.Add($"Item {gatedItemCounter}");
+            StateHasChanged();
+            await Task.Delay(20);
+        }
+    }
+
+    private async Task StopGated(DemoConsole output)
+    {
+        try
+        {
+            if (gatedSub is null) return;
+
+            await gatedSub.DisposeAsync();
+            gatedSub = null;
+            await output.Warn("Rate-limited observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
     }
 
     private async Task StopCharacterData(DemoConsole output)
@@ -366,6 +540,39 @@ public async ValueTask DisposeAsync()
         {
             await output.Error(ex.Message);
         }
+    }
+
+    private async Task StartRecords()
+    {
+        try
+        {
+            recordsSub = await recordsContainerRef.ObserveMutations(js, records =>
+            {
+                latestRecord = records[^1];
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            await recordsOutput.Log("Observing - add an item, then read the record back.");
+        }
+        catch (Exception ex)
+        {
+            await recordsOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopRecords()
+    {
+        if (recordsSub is null) return;
+
+        await recordsSub.DisposeAsync();
+        recordsSub = null;
+        await recordsOutput.Warn("Records observer disposed");
+    }
+
+    private void AddRecordItem()
+    {
+        recordItemCounter++;
+        recordItems.Add($"Item {recordItemCounter}");
     }
 
     private async Task LogLatestRecord()
@@ -387,6 +594,14 @@ public async ValueTask DisposeAsync()
         await StopChildList(stoppingOutput);
         await StopAttributes(stoppingOutput);
         await StopCharacterData(stoppingOutput);
+        await StopGated(stoppingOutput);
+
+        if (recordsSub is not null)
+        {
+            await recordsSub.DisposeAsync();
+            recordsSub = null;
+            await stoppingOutput.Warn("Records observer disposed");
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -394,5 +609,7 @@ public async ValueTask DisposeAsync()
         if (childListSub is not null) await childListSub.DisposeAsync();
         if (attributeSub is not null) await attributeSub.DisposeAsync();
         if (characterDataSub is not null) await characterDataSub.DisposeAsync();
+        if (gatedSub is not null) await gatedSub.DisposeAsync();
+        if (recordsSub is not null) await recordsSub.DisposeAsync();
     }
 }

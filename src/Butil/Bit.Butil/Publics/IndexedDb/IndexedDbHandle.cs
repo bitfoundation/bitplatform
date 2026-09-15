@@ -16,43 +16,33 @@ namespace Bit.Butil;
 /// <see cref="IndexedDbKeyRange"/>. Writes resolve once their transaction commits, not merely once
 /// the request succeeds, so a completed call means the data is durable.
 /// </remarks>
-// DotNetObjectReference.Create demands every public method of this type be preserved for trimming, and
-// this type's public surface includes [RequiresUnreferencedCode] JSON APIs (Put<T>, Get<T>, ...). The
-// interop ref only ever dispatches the [JSInvokable] callbacks, never the JSON generics, and those keep
-// their own RUC/RDC attributes so a trimming/AOT consumer is still warned at the real call site.
-// Scoped to this type (not assembly-wide).
-[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON APIs it pulls in are never invoked through this ref and stay annotated for consumers.")]
 public sealed class IndexedDbHandle : IAsyncDisposable
 {
-    internal const string VersionChangeMethodName = nameof(InvokeIndexedDbVersionChange);
-    internal const string CloseMethodName = nameof(InvokeIndexedDbClose);
-    internal const string BlockedMethodName = nameof(InvokeIndexedDbBlocked);
-
     private readonly IJSRuntime _js;
     private readonly Guid _id;
-    private readonly Action? _onVersionChange;
-    private readonly Action? _onClose;
-    private readonly Action? _onBlocked;
-    private DotNetObjectReference<IndexedDbHandle>? _dotNetRef;
+
+    // The connection callbacks live on a relay object rather than on this handle, because
+    // DotNetObjectReference.Create preserves every public method of what it is handed - which here is a
+    // surface spanning six JavaScript modules. Handing the handle itself over meant an app doing one
+    // store read still downloaded the index, cursor, metadata and transaction modules, since their
+    // identifiers survived on methods it never calls.
+    private readonly IndexedDbCallbacksInterop? _callbacks;
     private bool _disposed;
 
     internal IndexedDbHandle(IJSRuntime js, Guid id, Action? onVersionChange, Action? onClose, Action? onBlocked)
     {
         _js = js;
         _id = id;
-        _onVersionChange = onVersionChange;
-        _onClose = onClose;
-        _onBlocked = onBlocked;
 
         // Only pay for an interop reference when someone is actually listening; a handle with no
         // callbacks passes null to JS and nothing is ever dispatched back.
         if (onVersionChange is not null || onClose is not null || onBlocked is not null)
         {
-            _dotNetRef = DotNetObjectReference.Create(this);
+            _callbacks = new IndexedDbCallbacksInterop(onVersionChange, onClose, onBlocked);
         }
     }
 
-    internal DotNetObjectReference<IndexedDbHandle>? CallbackRef => _dotNetRef;
+    internal object? CallbackRef => _callbacks?.DotNetRef;
 
     internal void Initialize(IndexedDbOpenInfo? info)
     {
@@ -95,35 +85,22 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// </remarks>
     public bool WasUpgraded { get; private set; }
 
-    /// <summary>Invoked from JS when another tab requests a version change. See <see cref="IndexedDb.Open"/>.</summary>
-    [JSInvokable(VersionChangeMethodName)]
-    public void InvokeIndexedDbVersionChange(Guid id) => _onVersionChange?.Invoke();
-
-    /// <summary>Invoked from JS when the connection closes unexpectedly. See <see cref="IndexedDb.Open"/>.</summary>
-    [JSInvokable(CloseMethodName)]
-    public void InvokeIndexedDbClose(Guid id) => _onClose?.Invoke();
-
-    /// <summary>Invoked from JS when an open is blocked by another connection. See <see cref="IndexedDb.Open"/>.</summary>
-    [JSInvokable(BlockedMethodName)]
-    public void InvokeIndexedDbBlocked(Guid id) => _onBlocked?.Invoke();
-
-
     // ─── Metadata ───────────────────────────────────────────────────────────────
 
     /// <summary>Reads the database's current name, version and store list from JS.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbDatabaseInfo))]
     public ValueTask<IndexedDbDatabaseInfo?> GetInfo()
-        => _js.Invoke<IndexedDbDatabaseInfo?>("BitButil.indexedDb.info", _id);
+        => _js.Invoke<IndexedDbDatabaseInfo?>("BitButil.indexedDbInfo.info", _id);
 
     /// <summary>Reads a store's keypath, key generation setting and index list. Null when the store doesn't exist.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbStoreInfo))]
     public ValueTask<IndexedDbStoreInfo?> GetStoreInfo(string store)
-        => _js.Invoke<IndexedDbStoreInfo?>("BitButil.indexedDb.storeInfo", _id, store);
+        => _js.Invoke<IndexedDbStoreInfo?>("BitButil.indexedDbInfo.storeInfo", _id, store);
 
     /// <summary>Reads an index's keypath and flags. Null when the store or index doesn't exist.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbIndexInfo))]
     public ValueTask<IndexedDbIndexInfo?> GetIndexInfo(string store, string index)
-        => _js.Invoke<IndexedDbIndexInfo?>("BitButil.indexedDb.indexInfo", _id, store, index);
+        => _js.Invoke<IndexedDbIndexInfo?>("BitButil.indexedDbInfo.indexInfo", _id, store, index);
 
 
     // ─── Writes ─────────────────────────────────────────────────────────────────
@@ -135,13 +112,13 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<JsonElement> Put<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, T value, object? key = null)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.put", _id, store, value, key);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbStore.put", _id, store, value, key);
 
     /// <summary>Inserts a new value, returning its key. Throws on duplicate key.</summary>
     [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON serialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<JsonElement> Add<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, T value, object? key = null)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.add", _id, store, value, key);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbStore.add", _id, store, value, key);
 
     /// <summary>
     /// Stores raw bytes, keeping them binary on the JS side instead of routing them through JSON.
@@ -153,21 +130,21 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// JSON avoids the ~33% base64 overhead and the string-length ceiling on large blobs.
     /// </remarks>
     public ValueTask<JsonElement> PutBytes(string store, byte[] data, object? key = null)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.putBytes", _id, store, data, key);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbStore.putBytes", _id, store, data, key);
 
     /// <summary>
     /// Reads a record written by <see cref="PutBytes"/>. Null when the key is absent or the stored
     /// value isn't binary.
     /// </summary>
     public ValueTask<byte[]?> GetBytes(string store, object query)
-        => _js.Invoke<byte[]?>("BitButil.indexedDb.getBytes", _id, store, query);
+        => _js.Invoke<byte[]?>("BitButil.indexedDbStore.getBytes", _id, store, query);
 
     /// <summary>Deletes the record(s) matching <paramref name="query"/> (a key or an <see cref="IndexedDbKeyRange"/>).</summary>
     public ValueTask Delete(string store, object query)
-        => _js.InvokeVoid("BitButil.indexedDb.delete", _id, store, query);
+        => _js.InvokeVoid("BitButil.indexedDbStore.delete", _id, store, query);
 
     /// <summary>Empties the store.</summary>
-    public ValueTask Clear(string store) => _js.InvokeVoid("BitButil.indexedDb.clear", _id, store);
+    public ValueTask Clear(string store) => _js.InvokeVoid("BitButil.indexedDbStore.clear", _id, store);
 
 
     // ─── Reads ──────────────────────────────────────────────────────────────────
@@ -178,7 +155,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<T?> Get<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, object query)
-        => _js.Invoke<T?>("BitButil.indexedDb.get", _id, store, query);
+        => _js.Invoke<T?>("BitButil.indexedDbStore.get", _id, store, query);
 
     /// <summary>Reads a value as a <see cref="JsonElement"/> (no static type required).</summary>
     /// <remarks>
@@ -187,19 +164,19 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<JsonElement> GetRaw(string store, object query)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.get", _id, store, query);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbStore.get", _id, store, query);
 
     /// <summary>
     /// Reads the key of the first record matching <paramref name="query"/> without fetching its value.
     /// </summary>
     public ValueTask<JsonElement> GetKey(string store, object query)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.getKey", _id, store, query);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbStore.getKey", _id, store, query);
 
     /// <summary>Reads all values in a store, optionally limited to <paramref name="count"/>.</summary>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<T[]> GetAll<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, int? count = null)
-        => _js.Invoke<T[]>("BitButil.indexedDb.getAll", _id, store, null, count);
+        => _js.Invoke<T[]>("BitButil.indexedDbStore.getAll", _id, store, null, count);
 
     /// <summary>
     /// Reads every value whose key falls in <paramref name="range"/>, optionally limited to
@@ -208,15 +185,15 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<T[]> GetAll<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, IndexedDbKeyRange range, int? count = null)
-        => _js.Invoke<T[]>("BitButil.indexedDb.getAll", _id, store, range, count);
+        => _js.Invoke<T[]>("BitButil.indexedDbStore.getAll", _id, store, range, count);
 
     /// <summary>Lists every key in a store.</summary>
     public ValueTask<JsonElement[]> GetAllKeys(string store, int? count = null)
-        => _js.Invoke<JsonElement[]>("BitButil.indexedDb.getAllKeys", _id, store, null, count);
+        => _js.Invoke<JsonElement[]>("BitButil.indexedDbStore.getAllKeys", _id, store, null, count);
 
     /// <summary>Lists the keys falling in <paramref name="range"/>.</summary>
     public ValueTask<JsonElement[]> GetAllKeys(string store, IndexedDbKeyRange range, int? count = null)
-        => _js.Invoke<JsonElement[]>("BitButil.indexedDb.getAllKeys", _id, store, range, count);
+        => _js.Invoke<JsonElement[]>("BitButil.indexedDbStore.getAllKeys", _id, store, range, count);
 
     /// <summary>Counts records in a store, or just those matching <paramref name="query"/>.</summary>
     /// <remarks>
@@ -225,7 +202,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<int> Count(string store, object? query = null)
-        => _js.Invoke<int>("BitButil.indexedDb.count", _id, store, query);
+        => _js.Invoke<int>("BitButil.indexedDbStore.count", _id, store, query);
 
 
     // ─── Indexes ────────────────────────────────────────────────────────────────
@@ -234,23 +211,23 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<T?> GetByIndex<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, string index, object query)
-        => _js.Invoke<T?>("BitButil.indexedDb.getByIndex", _id, store, index, query);
+        => _js.Invoke<T?>("BitButil.indexedDbIndex.getByIndex", _id, store, index, query);
 
     /// <summary>
     /// Reads the <em>primary</em> key of the first record matching an index query, without its value.
     /// </summary>
     public ValueTask<JsonElement> GetKeyByIndex(string store, string index, object query)
-        => _js.Invoke<JsonElement>("BitButil.indexedDb.getKeyByIndex", _id, store, index, query);
+        => _js.Invoke<JsonElement>("BitButil.indexedDbIndex.getKeyByIndex", _id, store, index, query);
 
     /// <summary>Reads every value matching <paramref name="query"/> through an index.</summary>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public ValueTask<T[]> GetAllByIndex<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store, string index, object query, int? count = null)
-        => _js.Invoke<T[]>("BitButil.indexedDb.getAllByIndex", _id, store, index, query, count);
+        => _js.Invoke<T[]>("BitButil.indexedDbIndex.getAllByIndex", _id, store, index, query, count);
 
     /// <summary>Lists the primary keys of every record matching <paramref name="query"/> through an index.</summary>
     public ValueTask<JsonElement[]> GetAllKeysByIndex(string store, string index, object query, int? count = null)
-        => _js.Invoke<JsonElement[]>("BitButil.indexedDb.getAllKeysByIndex", _id, store, index, query, count);
+        => _js.Invoke<JsonElement[]>("BitButil.indexedDbIndex.getAllKeysByIndex", _id, store, index, query, count);
 
     /// <summary>Counts the records matching <paramref name="query"/> through an index.</summary>
     /// <remarks>
@@ -259,7 +236,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<int> CountByIndex(string store, string index, object? query = null)
-        => _js.Invoke<int>("BitButil.indexedDb.countByIndex", _id, store, index, query);
+        => _js.Invoke<int>("BitButil.indexedDbIndex.countByIndex", _id, store, index, query);
 
     /// <summary>
     /// Deletes every record matching an index query and returns how many were removed. An index has
@@ -272,7 +249,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// branch on it, defer the call to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<int> DeleteByIndex(string store, string index, object query)
-        => _js.Invoke<int>("BitButil.indexedDb.deleteByIndex", _id, store, index, query);
+        => _js.Invoke<int>("BitButil.indexedDbIndex.deleteByIndex", _id, store, index, query);
 
 
     // ─── Cursors ────────────────────────────────────────────────────────────────
@@ -300,7 +277,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         IndexedDbCursorDirection direction = IndexedDbCursorDirection.Next,
         int skip = 0,
         int take = 0)
-        => _js.Invoke<IndexedDbRecord<T>[]>("BitButil.indexedDb.getPage", _id, store, query, ToName(direction), skip, take);
+        => _js.Invoke<IndexedDbRecord<T>[]>("BitButil.indexedDbCursor.getPage", _id, store, query, ToName(direction), skip, take);
 
     /// <summary>
     /// Walks a store with a key-only cursor - same paging as <see cref="GetPage{T}"/> without
@@ -312,7 +289,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         IndexedDbCursorDirection direction = IndexedDbCursorDirection.Next,
         int skip = 0,
         int take = 0)
-        => _js.Invoke<IndexedDbKeyRecord[]>("BitButil.indexedDb.getKeyPage", _id, store, query, ToName(direction), skip, take);
+        => _js.Invoke<IndexedDbKeyRecord[]>("BitButil.indexedDbCursor.getKeyPage", _id, store, query, ToName(direction), skip, take);
 
     /// <summary>
     /// Walks an index with a cursor, returning records in index-key order. Each record carries the
@@ -328,7 +305,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         IndexedDbCursorDirection direction = IndexedDbCursorDirection.Next,
         int skip = 0,
         int take = 0)
-        => _js.Invoke<IndexedDbRecord<T>[]>("BitButil.indexedDb.getPageByIndex", _id, store, index, query, ToName(direction), skip, take);
+        => _js.Invoke<IndexedDbRecord<T>[]>("BitButil.indexedDbCursor.getPageByIndex", _id, store, index, query, ToName(direction), skip, take);
 
     /// <summary>
     /// Walks an index with a key-only cursor. Pair with <see cref="IndexedDbCursorDirection.NextUnique"/>
@@ -341,7 +318,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         IndexedDbCursorDirection direction = IndexedDbCursorDirection.Next,
         int skip = 0,
         int take = 0)
-        => _js.Invoke<IndexedDbKeyRecord[]>("BitButil.indexedDb.getKeyPageByIndex", _id, store, index, query, ToName(direction), skip, take);
+        => _js.Invoke<IndexedDbKeyRecord[]>("BitButil.indexedDbCursor.getKeyPageByIndex", _id, store, index, query, ToName(direction), skip, take);
 
 
     // ─── Transactions ───────────────────────────────────────────────────────────
@@ -368,7 +345,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     public ValueTask<JsonElement[]> Transact(IndexedDbOperation[] operations,
         IndexedDbTransactionMode mode = IndexedDbTransactionMode.ReadWrite,
         IndexedDbDurability durability = IndexedDbDurability.Default)
-        => _js.Invoke<JsonElement[]>("BitButil.indexedDb.transact", _id, operations, ToName(mode), ToName(durability));
+        => _js.Invoke<JsonElement[]>("BitButil.indexedDbTransaction.transact", _id, operations, ToName(mode), ToName(durability));
 
 
     // Enums cross the wire as the exact strings the DOM expects; Blazor's JSON options would other-
@@ -401,8 +378,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
         {
-            _dotNetRef?.Dispose();
-            _dotNetRef = null;
+            _callbacks?.Dispose();
         }
     }
 }

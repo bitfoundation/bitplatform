@@ -42,7 +42,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             };
 
             _trails[id] = { element, handler, style };
-            element.addEventListener('pointermove', handler as EventListener);
+            // Passive: the trail only ever reports where the pointer went, so saying up front that
+            // it will not cancel the gesture keeps it off the scrolling critical path - the browser
+            // no longer has to wait for this listener before it can scroll.
+            element.addEventListener('pointermove', handler as EventListener, { passive: true });
             return true;
         },
 

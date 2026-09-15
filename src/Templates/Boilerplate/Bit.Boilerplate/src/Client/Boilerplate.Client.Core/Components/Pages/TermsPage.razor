@@ -170,6 +170,9 @@
                 <ul>
                     <li><BitText Typography="BitTypography.Body1"><b>Sign-in</b> - keeps you signed in. Strictly necessary; cleared when you sign out.</BitText></li>
                     <li><BitText Typography="BitTypography.Body1"><b>Language and appearance</b> - remembers the language, theme and accent colour you chose, so the app looks the same next time. Strictly necessary for the preference you asked us to remember.</BitText></li>
+                    @*#if (signalR == true)*@
+                    <li><BitText Typography="BitTypography.Body1"><b>Your conversation with the AI assistant</b> - kept on your device so it is still there next time you open the app, and never sent anywhere it was not already going. Only the most recent messages are kept, only for whoever was signed in when they were written, and they are erased when you sign out or clear the chat. Strictly necessary for the conversation you asked us to keep going.</BitText></li>
+                    @*#endif*@
                     @*#if (appInsights == true)*@
                     <li><BitText Typography="BitTypography.Body1"><b>Usage analytics</b> - lets us recognise your device between visits so we can see which pages are used. Only after you agree, and you can withdraw at any time. Error reporting does not depend on it and does not identify your device.</BitText></li>
                     @*#endif*@

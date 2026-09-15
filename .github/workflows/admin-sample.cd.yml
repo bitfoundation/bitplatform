@@ -116,10 +116,10 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish Server Web
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     - name: Publish Server API
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}"
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundles

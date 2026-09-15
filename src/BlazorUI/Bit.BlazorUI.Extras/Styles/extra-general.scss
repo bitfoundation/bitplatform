@@ -13,9 +13,23 @@
     //--
     --bit-env-inset-inline-start: var(--bit-env-inset-left);
     --bit-env-inset-inline-end: var(--bit-env-inset-right);
+    //--
+    // The static maximums of the four insets above: what each of them is once every retractable piece of
+    // browser UI has retracted. The dynamic ones change while that UI slides in and out - the bottom bar
+    // of an edge-to-edge Chrome on Android does it on every scroll - so a layout sized from them is
+    // relaid out on every frame of the slide; sized from these it is not. A browser that does not know
+    // them falls back to the dynamic value, which is what they are the maximum of.
+    --bit-env-max-inset-top: env(safe-area-max-inset-top, env(safe-area-inset-top, 0px));
+    --bit-env-max-inset-left: env(safe-area-max-inset-left, env(safe-area-inset-left, 0px));
+    --bit-env-max-inset-right: env(safe-area-max-inset-right, env(safe-area-inset-right, 0px));
+    --bit-env-max-inset-bottom: env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px));
+    --bit-env-max-inset-inline-start: var(--bit-env-max-inset-left);
+    --bit-env-max-inset-inline-end: var(--bit-env-max-inset-right);
 
     [dir="rtl"] {
         --bit-env-inset-inline-start: var(--bit-env-inset-right);
         --bit-env-inset-inline-end: var(--bit-env-inset-left);
+        --bit-env-max-inset-inline-start: var(--bit-env-max-inset-right);
+        --bit-env-max-inset-inline-end: var(--bit-env-max-inset-left);
     }
 }

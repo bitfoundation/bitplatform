@@ -1,0 +1,38 @@
+﻿@inject IBrouter Brouter
+@inject HarnessScope Scope
+@implements IDisposable
+
+<h1 id="page-history" data-step="@Step">history @Step</h1>
+
+@* What Brouter reported to OnNavigating, newest last: the C# side of the push/pop/replace classification. *@
+<ol id="nav-log">
+    @foreach (var entry in Scope.NavigationLog)
+    {
+        <li>@entry</li>
+    }
+</ol>
+
+<p>state: <span id="history-state">@(Brouter.Location.HistoryState ?? "(none)")</span></p>
+
+<p>
+    <BrouterLink id="state-link" Href="/history/2" HistoryState="from-link">step 2 with state</BrouterLink>
+    <BrouterLink id="plain-link" Href="/history/4">step 4</BrouterLink>
+    <BrouterLink id="replace-link" Href="/history/3" Replace="true">replace with step 3</BrouterLink>
+    <button id="go-back" @onclick="GoBack">back</button>
+    <button id="go-forward" @onclick="GoForward">forward</button>
+</p>
+
+@code {
+    [Parameter] public int Step { get; set; }
+
+    // OnNavigated runs after the page rendered, so without this its entry would only appear on the next render.
+    protected override void OnInitialized() => Scope.Changed += OnScopeChanged;
+
+    private void OnScopeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Scope.Changed -= OnScopeChanged;
+
+    private Task GoBack() => Brouter.BackAsync().AsTask();
+
+    private Task GoForward() => Brouter.ForwardAsync().AsTask();
+}

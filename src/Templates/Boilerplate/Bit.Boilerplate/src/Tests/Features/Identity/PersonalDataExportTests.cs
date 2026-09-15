@@ -59,6 +59,11 @@ public class PersonalDataExportTests
         Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageSmall.webp"),
             "The profile picture was uploaded above and is the person's own data - exporting only its row leaves them with a description of a photograph.");
 
+        // The original is stored under a path with no extension, so its name is read back from the bytes - a png here,
+        // whatever the upload was. Without it the subject receives a file that opens in nothing by double-click.
+        Assert.IsNotNull(archive.GetEntry("files/attachments/UserProfileImageOriginal.png"),
+            "The original profile image is in the export without the extension of the format it is stored in.");
+
         foreach (var (key, section) in sections.AsObject())
         {
             Assert.IsNotNull(section!["purpose"], $"Section '{key}' has no purpose: Article 15(1)(a) asks why the data is held, and a dump of rows does not answer it.");

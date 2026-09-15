@@ -37,7 +37,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers, setting patch to 0 if absent, and calculating versionCode as major*10000 + minor*100 + patch (e.g., '1.0' becomes 10000, '1.0.1' becomes 10001). -->
+        <!-- Android requires a unique, increasing integer for `versionCode`. We derive it from Version (e.g., '1.0' or '1.0.0') by extracting major, minor, and patch numbers, setting patch to 0 if absent, and calculating versionCode as major*1000000 + minor*1000 + patch (e.g., '1.0' becomes 1000000, '1.0.1' becomes 1000001). -->
+        <!-- Three digits each for minor and patch (max 999). The same formula lives in AppVersionCodes (src/Shared) - change one, change the other. -->
         <_MajorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^(\d+)').Groups[1].Value)</_MajorVersionString>
         <_MinorVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.(\d+)').Groups[1].Value)</_MinorVersionString>
         <_PatchVersionString>$([System.Text.RegularExpressions.Regex]::Match($(Version), '^\d+\.\d+\.(\d+)').Groups[1].Value)</_PatchVersionString>
@@ -51,8 +52,8 @@
         <ApplicationVersion>
             $([MSBuild]::Add(
                 $([MSBuild]::Add(
-                    $([MSBuild]::Multiply($(MajorVersion), 10000)),
-                    $([MSBuild]::Multiply($(MinorVersion), 100))
+                    $([MSBuild]::Multiply($(MajorVersion), 1000000)),
+                    $([MSBuild]::Multiply($(MinorVersion), 1000))
                 )),
                 $(PatchVersion)
             ))
@@ -178,8 +179,10 @@
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
         <Error Text="Enable long paths in Windows. https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell#enable-long-paths-in-windows-10-version-1607-and-later" Condition=" $([MSBuild]::IsOSPlatform('windows')) AND $([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64)) != '1' " />
-        <Error Text="Version '$(Version)' cannot be represented as an android versionCode. versionCode is derived from major, minor and patch only, so a revision ('1.0.0.4') or a pre-release suffix ('1.0.0-rc1') is DISCARDED - '1.0.0.6' and '1.0.0.7' would both ship as 10000, and the store rejects the second upload or, worse, accepts an update no device receives. Pass major.minor or major.minor.patch, e.g. 1.0.0 or 1.0.1."
-               Condition=" '$([System.Text.RegularExpressions.Regex]::IsMatch($(Version), `^\d+\.\d+(\.\d+)?$`))' != 'true' " />
+        <Error Text="Version '$(Version)' cannot be represented as an android versionCode. versionCode is derived from major, minor and patch only, so a revision ('1.0.0.4') or a pre-release suffix ('1.0.0-rc1') is DISCARDED - '1.0.0.6' and '1.0.0.7' would both ship as 1000000, and the store rejects the second upload or, worse, accepts an update no device receives. Minor and patch each get three digits, so neither may pass 999 - '1.0.1000' and '1.1.0' would collide the same way. Pass major.minor or major.minor.patch with each part under 1000, e.g. 1.0.0 or 1.0.1."
+               Condition=" '$([System.Text.RegularExpressions.Regex]::IsMatch($(Version), `^\d+\.\d{1,3}(\.\d{1,3})?$`))' != 'true' " />
+        <Error Text="Version '$(Version)' derives versionCode $(ApplicationVersion), which is outside the 1 to 2100000000 range Google Play accepts. Pass a version between 0.0.1 and 2100.0.0."
+               Condition=" '$(ApplicationVersion)' &lt; '1' OR '$(ApplicationVersion)' &gt; '2100000000' " />
         <CallTarget Targets="BuildCssFiles" />
     </Target>
 

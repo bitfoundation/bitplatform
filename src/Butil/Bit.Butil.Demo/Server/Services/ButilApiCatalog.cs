@@ -13,7 +13,7 @@ namespace Bit.Butil.Demo.Server.Services;
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the
 /// shipped library - a new wrapper shows up the moment it is written, with the exact signature it
 /// actually has instead of one someone remembered to copy into a document. It matters more here
-/// than in a smaller library: Butil is more than a hundred services over two and a half thousand members, and the
+/// than in a smaller library: Butil is more than a hundred services over four thousand members, and the
 /// members are precisely what an agent otherwise invents.
 /// </para>
 /// </summary>

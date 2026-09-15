@@ -1,0 +1,33 @@
+﻿{
+  "profiles": {
+    "ssr": {
+      "commandName": "Project",
+      "commandLineArgs": "--BrouterHarness:Mode=ssr",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5290",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "server": {
+      "commandName": "Project",
+      "commandLineArgs": "--BrouterHarness:Mode=server",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5290",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "wasm": {
+      "commandName": "Project",
+      "commandLineArgs": "--BrouterHarness:Mode=wasm",
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:5290",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "auto": {
+      "commandName": "Project",
+      "commandLineArgs": "--BrouterHarness:Mode=auto",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5290",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}
