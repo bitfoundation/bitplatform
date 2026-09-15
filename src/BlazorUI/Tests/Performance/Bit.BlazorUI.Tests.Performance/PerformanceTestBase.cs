@@ -10,9 +10,14 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// Base class for Playwright-based performance tests.
-/// Manages the test host application lifecycle.
+/// Manages the test host application lifecycle, and the browser with a fresh page for every test.
 /// </summary>
-public abstract class PerformanceTestBase : PageTest
+/// <remarks>
+/// The browser is picked from environment variables, which the Microsoft.Testing.Platform runner passes through
+/// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>firefox</c> or <c>webkit</c>)
+/// and <c>HEADED=1</c> to watch the run.
+/// </remarks>
+public abstract class PerformanceTestBase
 {
     private static Process? _hostProcess;
     private static readonly object _lock = new();
@@ -20,8 +25,15 @@ public abstract class PerformanceTestBase : PageTest
     private static bool _isHostStarted;
     private static readonly HttpClient _sharedHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
+    private static readonly SemaphoreSlim _browserLock = new(1, 1);
+    private static IPlaywright? _playwright;
+    private static IBrowser? _browser;
+    private IBrowserContext? _context;
+
     protected const string BaseUrl = "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
+
+    protected IPage Page { get; private set; } = null!;
 
     /// <summary>
     /// Performance thresholds in milliseconds.
@@ -60,6 +72,19 @@ public abstract class PerformanceTestBase : PageTest
             }
         }
 
+        await _browserLock.WaitAsync();
+        try
+        {
+            _browser ??= await LaunchBrowser();
+        }
+        finally
+        {
+            _browserLock.Release();
+        }
+
+        _context = await _browser.NewContextAsync();
+        Page = await _context.NewPageAsync();
+
         // Wait for page to be ready.
         // NOTE: Do NOT use WaitForLoadStateAsync(NetworkIdle) here - Blazor Server keeps a
         // persistent SignalR WebSocket open, which Playwright counts as an active connection
@@ -68,17 +93,62 @@ public abstract class PerformanceTestBase : PageTest
     }
 
     [TestCleanup]
-    public void TestCleanupBase()
+    public async Task TestCleanupBase()
     {
+        if (_context is not null)
+        {
+            await _context.CloseAsync();
+            _context = null;
+        }
+
+        bool isLastTest;
         lock (_lock)
         {
             _testCount--;
+            isLastTest = _testCount == 0;
             // Stop host when no more tests are running
-            if (_testCount == 0)
+            if (isLastTest)
             {
                 StopTestHost();
             }
         }
+
+        if (isLastTest is false) return;
+
+        await _browserLock.WaitAsync();
+        try
+        {
+            if (_browser is not null) await _browser.CloseAsync();
+            _playwright?.Dispose();
+            _browser = null;
+            _playwright = null;
+        }
+        finally
+        {
+            _browserLock.Release();
+        }
+    }
+
+    private static async Task<IBrowser> LaunchBrowser()
+    {
+        _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+
+        SetDefaultExpectTimeout(DefaultTimeout);
+
+        var browserName = Environment.GetEnvironmentVariable("BROWSER");
+        var options = new BrowserTypeLaunchOptions { Headless = Environment.GetEnvironmentVariable("HEADED") != "1" };
+
+        return browserName?.ToLowerInvariant() switch
+        {
+            null or "" or "chromium" => await _playwright.Chromium.LaunchAsync(new(options)
+            {
+                // performance.memory only reports real numbers with this flag.
+                Args = ["--enable-precise-memory-info"]
+            }),
+            "firefox" => await _playwright.Firefox.LaunchAsync(options),
+            "webkit" => await _playwright.Webkit.LaunchAsync(options),
+            _ => throw new InvalidOperationException($"Unknown BROWSER '{browserName}'. Use chromium, firefox or webkit.")
+        };
     }
 
     private static void StartTestHost()
