@@ -93,8 +93,8 @@ public partial class AppAiChatPanel
 
             // The reverse cursor hands back the newest first; the greeting the panel just wrote stays above them.
             chatMessages.AddRange(stored.Reverse()
-                                        .Select(record => JsonSerializer.Deserialize(record.Value, JsonSerializerOptions.GetTypeInfo<AiChatMessage>()))
-                                        .OfType<AiChatMessage>());
+                                        .Select(record => ReadStoredItem(record.Value!))
+                                        .OfType<AiChatItem>());
         });
 
         isRestoringHistory = false;
@@ -128,12 +128,16 @@ public partial class AppAiChatPanel
         await ClearChat(); // Forgets the stored one too, under the current owner's name.
     });
 
-    /// <summary>Appends one settled message. Nothing on screen waits for it.</summary>
-    private Task RememberMessage(AiChatMessage message) => TryHistory("add to", async () =>
+    /// <summary>Appends one settled message or card. Nothing on screen waits for it.</summary>
+    private Task RememberMessage(AiChatItem item) => TryHistory("add to", async () =>
     {
         if (historyDb is null) return;
 
-        var key = await historyDb.Put(MessagesStore, JsonSerializer.Serialize(message, JsonSerializerOptions.GetTypeInfo<AiChatMessage>()));
+        var json = item is AiChatCard card
+            ? JsonSerializer.Serialize(card, JsonSerializerOptions.GetTypeInfo<AiChatCard>())
+            : JsonSerializer.Serialize((AiChatMessage)item, JsonSerializerOptions.GetTypeInfo<AiChatMessage>());
+
+        var key = await historyDb.Put(MessagesStore, json);
 
         // Keys only count up, so anything this far below the newest is past what a restore would read.
         if (key.TryGetInt64(out var newest) && newest > MaxStoredMessages)
@@ -141,6 +145,12 @@ public partial class AppAiChatPanel
             await historyDb.Delete(MessagesStore, IndexedDbKeyRange.UpperBound(newest - MaxStoredMessages));
         }
     });
+
+    /// <summary>A stored card is told from a message by the component it names.</summary>
+    private AiChatItem? ReadStoredItem(string json)
+        => JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<AiChatCard>()) is { ComponentType: not null } card
+            ? card
+            : JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<AiChatMessage>());
 
     /// <summary>Throws the stored conversation away, leaving it owned by whoever is at the device now.</summary>
     private Task ForgetHistory() => TryHistory("forget", async () =>

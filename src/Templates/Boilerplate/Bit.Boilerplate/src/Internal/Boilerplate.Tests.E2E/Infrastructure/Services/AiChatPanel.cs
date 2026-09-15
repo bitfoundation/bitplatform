@@ -16,7 +16,8 @@ public sealed class AiChatPanel
     /// <summary>Every locator is scoped to the panel: the app behind it has its own buttons and spinners.</summary>
     private ILocator Panel => page.Locator(".panel-cnt");
 
-    private ILocator Messages => Panel.Locator(".message-row");
+    /// <summary>Messages only: a card (products, a contact form, an approval) sits in a row of its own among them.</summary>
+    private ILocator Messages => Panel.Locator(".message-row:not(.card-row)");
 
     /// <summary>The header's spinner, up for exactly as long as an answer is on its way.</summary>
     private ILocator AnswerInFlight => Panel.Locator(".bit-ldn-rsq");
@@ -84,6 +85,13 @@ public sealed class AiChatPanel
         await Assertions.Expect(AnswerInFlight).ToHaveCountAsync(0, new() { Timeout = (float)AnswerTimeout.TotalMilliseconds });
 
         return (await Messages.Last.InnerTextAsync()).Trim();
+    }
+
+    /// <summary>The names on the product cards of the conversation (See ProductsCard), in the order they are numbered.</summary>
+    public async Task<string[]> ReadProductCards()
+    {
+        // Each title carries its number: "2. EQE SUV".
+        return [.. (await Panel.Locator(".products .product-name").AllInnerTextsAsync()).Select(title => title.Trim().Split(". ", 2) is [_, var name] ? name : title.Trim())];
     }
 
     /// <summary>

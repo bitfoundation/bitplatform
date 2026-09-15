@@ -13,7 +13,7 @@ public partial class MauiExternalNavigationService : IExternalNavigationService
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is not ("http" or "https"))
         {
             if (await Launcher.OpenAsync(uri) is false)
-                throw new DomainLogicException(localizer["No application on this device can open {0} links.", uri.Scheme]);
+                throw new DomainLogicException(localizer[nameof(AppStrings.NoAppCanOpenLinksOfScheme), uri.Scheme]);
 
             return;
         }

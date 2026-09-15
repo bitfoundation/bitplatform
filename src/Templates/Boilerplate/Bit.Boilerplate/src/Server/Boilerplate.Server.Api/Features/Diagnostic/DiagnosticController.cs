@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Runtime.CompilerServices;
 using Boilerplate.Shared.Features.Diagnostic;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
@@ -19,15 +20,18 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     //#endif
     [AutoInject] private ServerDiagnosticService diagnostic = default!;
 
+    /// <summary>
+    /// Streams the report one section at a time, so the report is not held up by the test push or the test SignalR
+    /// message, each of which waits on something outside this server.
+    /// <para>
+    /// Everything that can refuse the call runs before the stream is handed back: once the first section is written the
+    /// status code is sent, and a refusal after that could only cut the response short rather than answer 404.
+    /// </para>
+    /// </summary>
     [HttpGet]
-    public async Task<string[]> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
+    public async Task<IAsyncEnumerable<string>> PerformDiagnostic([FromQuery] string? signalRConnectionId, [FromQuery] string? pushNotificationSubscriptionDeviceId, CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "no-store";
-
-        // Only what this endpoint alone does - the test push and the test SignalR message - goes above the report, so
-        // it isn't buried under the headers. The report itself comes from the shared service, so /dev-mcp and the hub
-        // answer identically.
-        List<string> sections = [];
 
         // The report is reachable anonymously (7 header taps / Ctrl+Shift+X / the /diagnostic page), and an anonymous
         // visitor's subscription or connection is owned by no UserSession - so the rule is ownership, not
@@ -35,26 +39,17 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         var callerUserSessionId = User.IsAuthenticated() ? User.GetSessionId() : (Guid?)null;
 
         //#if (notification == true)
+        var subscriptionExists = false;
+
         if (string.IsNullOrWhiteSpace(pushNotificationSubscriptionDeviceId) is false)
         {
             var subscription = await DbContext.PushNotificationSubscriptions
                 .FirstOrDefaultAsync(d => d.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
 
-            sections.Add($"Subscription exists: {(subscription is not null).ToString().ToLowerInvariant()}");
-
             if (subscription?.UserSessionId is not null && subscription.UserSessionId != callerUserSessionId)
                 throw new ResourceNotFoundException().WithData("Reason", "The push notification subscription belongs to another user session.");
 
-            await pushNotificationService.RequestPush(new()
-            {
-                Title = "Test Push",
-                Message = $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC",
-                Action = "testAction",
-                PageUrl = PageUrls.Terms,
-                UserRelatedPush = false
-            }, s => s.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
-
-            sections.Add("Test push requested.");
+            subscriptionExists = subscription is not null;
         }
         //#endif
 
@@ -68,21 +63,68 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
 
             if (connectionOwnerUserSessionId is not null && connectionOwnerUserSessionId != callerUserSessionId)
                 throw new ResourceNotFoundException().WithData("Reason", "The SignalR connection belongs to another user session.");
-
-            var withAction = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
-
-            // Which of the two got through, not just whether anything did: a client that shows a plain message but no
-            // custom action is a different diagnosis from one the message never reached.
-            var delivered = withAction
-                ? "with custom action"
-                : await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Simple message. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", null, cancellationToken)
-                    ? "as a simple message, the custom action was refused"
-                    : "no";
-
-            sections.Add($"SignalR test message delivered: {delivered}.");
         }
         //#endif
 
-        return [.. sections, .. diagnostic.BuildSections(DiagnosticReportSource.Http)];
+        return StreamSections();
+
+        async IAsyncEnumerable<string> StreamSections()
+        {
+            // Only what this endpoint alone does - the test push and the test SignalR message - goes above the report,
+            // so it isn't buried under the headers. The report itself comes from the shared service, so /dev-mcp and the
+            // hub answer identically.
+
+            //#if (notification == true)
+            if (string.IsNullOrWhiteSpace(pushNotificationSubscriptionDeviceId) is false)
+            {
+                yield return $"Subscription exists: {subscriptionExists.ToString().ToLowerInvariant()}";
+
+                await pushNotificationService.RequestPush(new()
+                {
+                    Title = "Test Push",
+                    Message = $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC",
+                    Action = "testAction",
+                    PageUrl = PageUrls.Terms,
+                    UserRelatedPush = false
+                }, s => s.DeviceId == pushNotificationSubscriptionDeviceId, cancellationToken);
+
+                yield return "Test push requested.";
+            }
+            //#endif
+
+            //#if (signalR == true)
+            if (string.IsNullOrWhiteSpace(signalRConnectionId) is false)
+            {
+                var withAction = await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Open terms page. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", new Dictionary<string, string?> { { "pageUrl", PageUrls.Terms }, { "action", "testAction" } }, cancellationToken);
+
+                // Which of the two got through, not just whether anything did: a client that shows a plain message but
+                // no custom action is a different diagnosis from one the message never reached.
+                var delivered = withAction
+                    ? "with custom action"
+                    : await appHubContext.Clients.Client(signalRConnectionId).InvokeAsync<bool>(SharedAppMessages.SHOW_MESSAGE, $"Simple message. {TimeProvider.GetUtcNow():HH:mm:ss} UTC", null, cancellationToken)
+                        ? "as a simple message, the custom action was refused"
+                        : "no";
+
+                yield return $"SignalR test message delivered: {delivered}.";
+            }
+            //#endif
+
+            foreach (var section in diagnostic.BuildSections(DiagnosticReportSource.Http))
+            {
+                yield return section;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The interface's shape, which the typed client streams from. MVC serves the public action above instead, whose
+    /// refusals have to happen before the stream starts.
+    /// </summary>
+    async IAsyncEnumerable<string> IDiagnosticController.PerformDiagnostic(string? signalRConnectionId, string? pushNotificationSubscriptionDeviceId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var section in await PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, cancellationToken))
+        {
+            yield return section;
+        }
     }
 }

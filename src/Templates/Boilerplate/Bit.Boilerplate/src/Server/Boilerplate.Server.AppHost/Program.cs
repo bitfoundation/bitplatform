@@ -130,14 +130,19 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
             .WithExplicitStart();
     }
 
-    // Every container is created from scratch on each run and is destroyed as soon as the app host stops.
-    // Uncommenting the following line keeps them alive and reuses them instead, which makes starting the project
-    // (F5 / `aspire start`) and running the automated tests considerably faster.
-    // The costs are that those containers keep consuming memory even while you're not debugging the project (you can
-    // stop them from Docker Desktop whenever you need those resources back)
+    // By default every container is created from scratch on each run and is destroyed as soon as the app host stops.
+    // UsePersistentContainers keeps them alive and reuses them instead, which makes starting the project
+    // (F5 / `aspire start`) and running the automated tests considerably faster, at the cost of the memory they keep
+    // consuming while you're not debugging (stop them from Docker Desktop whenever you need it back).
+    // Inside a Dev Container / GitHub Codespaces it is always on: the containers run in its docker-in-docker, so they
+    // never outlive the dev container itself. To have it on your own machine as well, remove the `if` below and keep the `builder.UsePersistentContainers();`.
     // Check out the `.docs/20- .NET Aspire.md` file for more details.
 
-    //builder.UsePersistentContainers();
+    var inDevContainer = Environment.GetEnvironmentVariable("REMOTE_CONTAINERS") is "true" || Environment.GetEnvironmentVariable("CODESPACES") is "true";
+    if (inDevContainer)
+    {
+        builder.UsePersistentContainers();
+    }
 
     //#if (IsInsideProjectTemplate == true)
     builder.UsePersistentContainers();

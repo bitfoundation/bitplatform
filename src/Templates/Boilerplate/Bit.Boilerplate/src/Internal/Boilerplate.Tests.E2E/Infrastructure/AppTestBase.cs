@@ -107,6 +107,23 @@ public abstract class AppTestBase : AppPageTest
         await GoToWhenInteractive(page, PageUrls.SignIn);
         await WaitUntilInteractive(page);
 
+        await SubmitCredentials(page, email, password);
+
+        // Leaving the sign in page is the app saying it took the credentials; ChangeCulture waits for the layout swap
+        // that follows.
+        await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
+
+        // A hybrid WebView keeps its token natively, out of ReadSignedInUser's reach; the caller's own cleanup has to
+        // take that session.
+        if (IsHybrid(page) is false)
+        {
+            await DeleteSessionAtCleanup(page);
+        }
+    }
+
+    /// <summary>Fills the sign in form's email and password and submits it.</summary>
+    protected static async Task SubmitCredentials(IPage page, string email, string password)
+    {
         var emailBox = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
 
         await emailBox.FillEnsuringStable(email);
@@ -119,18 +136,10 @@ public abstract class AppTestBase : AppPageTest
             await emailBox.FillEnsuringStable(email);
 
         await passwordBox.PressAsync("Enter");
-
-        // Leaving the sign in page is the app saying it took the credentials; ChangeCulture waits for the layout swap
-        // that follows.
-        await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
-
-        // A hybrid WebView (https://0.0.0.1) keeps its token natively, out of ReadSignedInUser's reach; the caller's own
-        // cleanup has to take that session.
-        if (new Uri(page.Url).Host.StartsWith("0.0.0.", StringComparison.Ordinal) is false)
-        {
-            await DeleteSessionAtCleanup(page);
-        }
     }
+
+    /// <summary>A hybrid app's WebView serves the app from https://0.0.0.1.</summary>
+    protected static bool IsHybrid(IPage page) => new Uri(page.Url).Host.StartsWith("0.0.0.", StringComparison.Ordinal);
 
     /// <summary>
     /// Signs <see cref="StoreAdmin"/> in to AdminPanel through the app's own form. The deployment has two factor
@@ -138,23 +147,26 @@ public abstract class AppTestBase : AppPageTest
     /// </summary>
     protected async Task SignInStoreAdmin(IPage page)
     {
-        var mcp = (await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken)).McpClient!;
-
         await page.GotoAsync(DeployedApps.AdminPanel);
         await WaitUntilInteractive(page);
-        await page.GoToInApp(PageUrls.SignIn);
 
-        var storeAdminEmailBox = page.GetByPlaceholder(AppStrings.EmailPlaceholder);
+        await SignInStoreAdminInOpenApp(page);
+    }
 
-        await storeAdminEmailBox.FillEnsuringStable(StoreAdmin.Email);
-        var storeAdminPasswordBox = page.GetByPlaceholder(AppStrings.PasswordPlaceholder);
-        await storeAdminPasswordBox.FillEnsuringStable(StoreAdmin.Password);
+    /// <summary>
+    /// <see cref="SignInStoreAdmin"/> in whichever admin panel <paramref name="page"/> already shows: either web
+    /// deployment, or a hybrid app.
+    /// </summary>
+    protected async Task SignInStoreAdminInOpenApp(IPage page)
+    {
+        var mcp = (await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken)).McpClient!;
 
-        // See SignIn: a reset that lands while the password is filled leaves the email empty.
-        if (await storeAdminEmailBox.InputValueAsync() != StoreAdmin.Email)
-            await storeAdminEmailBox.FillEnsuringStable(StoreAdmin.Email);
+        // Unix seconds, and a little early: the server stamps the session. The server is this machine (See DeployedApps).
+        var startedOn = DateTimeOffset.UtcNow.AddSeconds(-10).ToUnixTimeSeconds();
 
-        await storeAdminPasswordBox.PressAsync("Enter");
+        await GoToWhenInteractive(page, PageUrls.SignIn);
+
+        await SubmitCredentials(page, StoreAdmin.Email, StoreAdmin.Password);
 
         var getCode = page.GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaPanelAnotherWayGetCode });
         await Expect(getCode).ToBeVisibleAsync();
@@ -171,7 +183,16 @@ public abstract class AppTestBase : AppPageTest
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
 
-        await DeleteSessionAtCleanup(page);
+        if (IsHybrid(page))
+        {
+            // Its token is out of reach (See SignIn), so the session is found by when it started. Not a web one: the
+            // web tests signing the store admin in are those sessions' owners.
+            RegisterForCleanup(() => DeleteNonWebSessions(StoreAdmin.Email, startedOn));
+        }
+        else
+        {
+            await DeleteSessionAtCleanup(page);
+        }
     }
 
     /// <summary>
@@ -298,10 +319,28 @@ public abstract class AppTestBase : AppPageTest
     }
 
     /// <summary>
+    /// The sessions of <paramref name="email"/> started since <paramref name="startedOn"/> from anything but the web.
+    /// A null platform counts: the app reports it only after signing in (See UserController.UpdateSession).
+    /// </summary>
+    private static async Task DeleteNonWebSessions(string email, long startedOn)
+    {
+        var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
+        await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
+
+        var normalizedEmail = email.ToUpperInvariant();
+
+        await dbContext.UserSessions.IgnoreQueryFilters()
+            .Where(session => session.User!.NormalizedEmail == normalizedEmail
+                              && session.StartedOn >= startedOn
+                              && session.PlatformType != AppPlatformType.Web)
+            .ExecuteDeleteAsync(CancellationToken.None);
+    }
+
+    /// <summary>
     /// <see cref="PlaywrightPageExtensions.GoToInApp"/> against a deadline: in-app navigation is a message only a
     /// running app is subscribed to, and one posted before a prerendered app boots is dropped silently.
     /// </summary>
-    private static async Task GoToWhenInteractive(IPage page, string path)
+    protected static async Task GoToWhenInteractive(IPage page, string path)
     {
         // Not the real signal - a prerendered page is idle long before its WebAssembly boots - but it keeps the
         // ordinary case to one attempt.

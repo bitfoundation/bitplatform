@@ -1332,7 +1332,122 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="Canceled" xml:space="preserve">
     <value>Abgebrochen</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Keine App auf diesem Gerät kann {0}-Links öffnen.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Sprachanruf</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Sprachanruf starten</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Sprachanruf beenden</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Zurück zum Sprachanruf</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Verbleibende Zeit des Sprachanrufs</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>Der Sprachanruf wurde beendet.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>Die Nachricht konnte nicht an den Anruf gesendet werden.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>Der Assistent ist gerade ausgelastet. Versuchen Sie es in {0} Sekunden erneut.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>Der Assistent konnte nicht antworten. Versuchen Sie es erneut.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Hinterlassen Sie Ihre Kontaktdaten, und ein Mitarbeiter meldet sich bei Ihnen.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Zusammenfassung des Gesprächs</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Angemeldet als</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Ihre Anfrage wurde erfolgreich gesendet. Ein Mitarbeiter meldet sich in Kürze bei Ihnen.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Was passiert</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Warten auf Ihre Antwort</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>Die Dateien der App auf diesem Gerät löschen?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Ein Neuanfang behebt die meisten Probleme, die durch beschädigte lokale Daten entstehen.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>Sie werden abgemeldet</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Dieses Gespräch wird gelöscht</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>Die App wird neu gestartet</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>Der Sprachanruf wird beendet</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Dateien löschen</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Nicht jetzt</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Die Dateien der App werden gelöscht</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>Sie haben die Dateien der App behalten.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>Es wurde nichts gelöscht: Die Anfrage blieb unbeantwortet.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>Dies genehmigen?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Genehmigen</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Ablehnen</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Genehmigt</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Abgelehnt.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>Die Anfrage blieb unbeantwortet.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Beste Übereinstimmung</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>Ebenfalls passend</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Fragen</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Erzähl mir mehr über {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-Chat-Panel</value>
   </data>
