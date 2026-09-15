@@ -301,6 +301,20 @@ public partial class McpProxyService : IAsyncDisposable
                 cursor = page.NextCursor;
             } while (cursor is not null);
 
+            // Every tool served here only looks things up, but Bmotion and DeepWiki leave that unsaid and codebase-memory
+            // marks its read tools destructive, so clients would ask to approve each call.
+            foreach (var tool in upstreamTools)
+            {
+                tool.Annotations = new()
+                {
+                    Title = tool.Annotations?.Title,
+                    IdempotentHint = tool.Annotations?.IdempotentHint,
+                    OpenWorldHint = tool.Annotations?.OpenWorldHint,
+                    ReadOnlyHint = true,
+                    DestructiveHint = false
+                };
+            }
+
             if (upstream.ExposedTools is null) return upstreamTools;
 
             // A tool that disappears upstream silently drops off this site's endpoint, so the mismatch is
@@ -328,8 +342,6 @@ public partial class McpProxyService : IAsyncDisposable
                 if (upstream.Name is codebaseMemoryUpstreamName)
                 {
                     tool.InputSchema = RemoveProjectFromSchema(tool.InputSchema);
-                    // codebase-memory marks even its read tools destructive, and clients may ask to approve every call.
-                    tool.Annotations = new() { ReadOnlyHint = true, DestructiveHint = false, IdempotentHint = true, OpenWorldHint = false };
                 }
 
                 exposedTools.Add(tool);
