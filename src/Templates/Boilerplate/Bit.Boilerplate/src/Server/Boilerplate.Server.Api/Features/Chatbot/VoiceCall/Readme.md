@@ -95,7 +95,7 @@ Step 3 is what guarantees billing stops, even when a client disappears without c
 - **Callers can change their own call.** Over the data channel, the client can change instructions or voice with `session.update`, add fake tool outputs, or ask for more responses. Only which tools actually run is fixed on the server. The effect stays inside the caller's own call and its time limit.
 - **Limits apply per server instance.** Rate-limit counters and `callsByUser` live in process memory. With N instances, one user can hold N calls. To cap the total bill, set a spend limit on the OpenAI key.
 - **App-side tools may reach a different tab.** They go to the session's most recently connected tab, which may not be the tab on the call. If the session has no connection, they report failure.
-- **Hanging up while dialing leaves a call open.** The call already exists at OpenAI. The runner keeps it until OpenAI closes it or the time limit ends it.
+- **Hanging up at the very end of dialing leaves a call open.** Hanging up cancels the request, and the runner hangs up the call it was creating. But once the runner has answered, an answer the client no longer wants is ignored, and that call runs until OpenAI closes it or the time limit ends it.
 
 ## Configuration
 

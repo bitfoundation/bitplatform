@@ -19,7 +19,8 @@ public partial class AppAiChatPanel
     private PeerConnectionHandle? voiceCallConnection;
     private RtcDataChannelHandle? voiceCallEvents;
 
-    private CancellationTokenSource? voiceCallTimerCts;
+    /// <summary>The call's own: dialing, then its countdown.</summary>
+    private CancellationTokenSource? voiceCallCts;
 
     /// <summary>Completes when the model's current response is done; null while it isn't responding.</summary>
     private TaskCompletionSource? voiceCallResponse;
@@ -65,12 +66,16 @@ public partial class AppAiChatPanel
                 return;
             }
 
+            // Hanging up cancels it, dialing included, so the server hangs up the call it was creating.
+            var callCts = voiceCallCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+
             PeerConnectionHandle? connection = null;
             connection = voiceCallConnection = await webRtc.CreatePeerConnection(
-                onConnectionState: state => _ = InvokeAsync(() => HandleVoiceCallState(connection, state)));
+                onConnectionState: state => _ = InvokeAsync(() => HandleVoiceCallState(connection, state)))
+                ?? throw new InvalidOperationException("The browser could not create the call's connection.");
 
             // Tracks and channel before the offer, which describes them.
-            await connection!.AddTracksFrom(microphone);
+            await connection.AddTracksFrom(microphone);
             voiceCallEvents = await connection.CreateDataChannel("oai-events");
             // The provider hanging up closes the channel at once; the connection only reports it much later, if ever.
             voiceCallEvents!.Listen(onMessage: message => _ = InvokeAsync(() => HandleVoiceCallEvent(message)),
@@ -92,17 +97,16 @@ public partial class AppAiChatPanel
                 TimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id,
                 DeviceInfo = TelemetryContext.Platform,
                 ChatMessagesHistory = ResentHistory()
-            }, CurrentCancellationToken);
+            }, callCts.Token);
 
-            // Hung up while the server was dialing.
+            // Hung up while the server was answering.
             if (ReferenceEquals(voiceCallConnection, connection) is false) return;
 
             await connection.SetRemoteDescription(new RtcSessionDescription("answer", answer!.Sdp, null));
 
             isInVoiceCall = true;
 
-            voiceCallTimerCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
-            _ = CountDownVoiceCall(answer.MaxDuration, connection, voiceCallTimerCts.Token);
+            _ = CountDownVoiceCall(answer.MaxDuration, connection, callCts.Token);
         }
         catch
         {
@@ -334,12 +338,12 @@ public partial class AppAiChatPanel
         voiceCallResponse?.TrySetResult();
         voiceCallResponse = null;
 
-        if (voiceCallTimerCts is not null)
+        if (voiceCallCts is not null)
         {
-            var timerCts = voiceCallTimerCts;
-            voiceCallTimerCts = null;
-            await timerCts.TryCancel();
-            timerCts.Dispose();
+            var callCts = voiceCallCts;
+            voiceCallCts = null;
+            await callCts.TryCancel();
+            callCts.Dispose();
         }
 
         var events = voiceCallEvents;

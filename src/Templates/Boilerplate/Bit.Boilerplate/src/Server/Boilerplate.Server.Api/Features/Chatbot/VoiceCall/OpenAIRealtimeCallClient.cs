@@ -127,13 +127,16 @@ public class OpenAIRealtimeCallClient(ServerApiSettings appSettings, IHttpClient
         {
             if (socket.State is WebSocketState.Open)
             {
+                // Bounded: a provider that never answers the close would keep the call's scope alive.
+                using var closeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
                 try
                 {
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, closeTimeout.Token);
                 }
-                catch (WebSocketException)
+                catch (Exception exp) when (exp is WebSocketException or OperationCanceledException)
                 {
-                    // Already closed by the provider.
+                    // Already closed by the provider, or no answer in time; Dispose below aborts it.
                 }
             }
 

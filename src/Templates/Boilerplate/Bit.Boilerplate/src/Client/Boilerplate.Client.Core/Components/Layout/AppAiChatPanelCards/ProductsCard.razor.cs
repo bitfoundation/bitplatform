@@ -24,7 +24,10 @@ public partial class ProductsCard
 
             try
             {
-                products = string.IsNullOrWhiteSpace(json) ? [] : JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<List<ProductRecommendationDto>>()) ?? [];
+                List<ProductRecommendationDto> parsed = string.IsNullOrWhiteSpace(json) ? [] : JsonSerializer.Deserialize(json, JsonSerializerOptions.GetTypeInfo<List<ProductRecommendationDto>>()) ?? [];
+
+                // A null entry would break rendering; the card shows its RawMarkdown instead.
+                products = parsed.Any(p => p is null || p.Product is null || p.Highlights is null) ? [] : parsed;
             }
             catch (JsonException exp)
             {

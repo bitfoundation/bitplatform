@@ -169,6 +169,10 @@ public static class IPlaywrightExtensions
 
                 while (await IsSoftKeyboardShown() && DateTimeOffset.UtcNow < deadline)
                     await Task.Delay(TimeSpan.FromMilliseconds(250));
+
+                // Another press would only close the keyboard, not reach the app.
+                if (await IsSoftKeyboardShown())
+                    throw new TimeoutException("The soft keyboard was still open 10 seconds after a back press.");
             }
 
             await RunAdb("shell input keyevent KEYCODE_BACK");

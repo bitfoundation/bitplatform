@@ -49,6 +49,9 @@ public class VoiceCallRunner(IServiceScopeFactory scopeFactory,
             // Before the user can say anything, so the model carries on the conversation rather than starting over.
             await SendHistory(sideband, chatbot.BelievableHistory(start.History), cancellationToken);
 
+            // Hung up while dialing: the catch hangs up now rather than the time limit later.
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Ends with the app too, so the call is hung up rather than left without a server.
             var lifetime = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
             lifetime.CancelAfter(MaxCallDuration);
