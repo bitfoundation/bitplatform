@@ -92,7 +92,12 @@
                     <b>Bordered</b> draws a hairline around it - which is the only thing that keeps a
                     mostly white flag, Japan's or Switzerland's, off a white surface - and <b>Shadow</b>
                     lifts it off the page with the card shadow of the theme. The border is drawn inside
-                    the frame, so a bordered flag takes up exactly as much room as one without.
+                    the frame, so the border itself takes no room.
+                    <br /><br />
+                    The packaged image draws each flag in its own proportions inside a square, so a
+                    shaped frame is cut to the flag rather than to that square: the corners, the border
+                    and the shadow are the flag's own, and a rounded, bordered or shadowed flag is as wide
+                    as the flag is at the height it was given.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -112,6 +117,11 @@
                     decide, though: the emoji fonts of Apple, Google and the Noto family draw the flags,
                     while Windows draws the two letters of the country code side by side instead - which
                     is why the image is what is drawn unless this asks otherwise.
+                    <br /><br />
+                    So on Windows every sample below is two letters rather than a flag, a subdivision is
+                    a plain black flag, and the shaped frame of the last one crops those letters the way
+                    it would crop the flag. That is the platform's emoji font rather than the component:
+                    the same markup draws the flags wherever the font has them.
                     <br /><br />
                     It is built out of the country code rather than looked up, so it also answers for a
                     code the packaged images do not cover, and for the three subdivisions Unicode
@@ -316,30 +326,41 @@
                     packaged flag standing in for it fails as well. <b>ImageAttributes</b> puts
                     attributes on the picture rather than on the frame, which is where a
                     <code>crossorigin</code> or a <code>referrerpolicy</code> for a CDN belongs.
+                    <br /><br />
+                    The flags below are only rendered when the button is pressed, so their images are
+                    fetched and their events fire in front of you - rather than long before this section
+                    was scrolled to. Every press renders them anew and starts the counts over.
                 </div>
                 <br />
-                <div class="flag-list">
-                    <div>
-                        <BitFlag Bordered Height="2rem"
-                                 Loading="BitImageLoading.Eager"
-                                 Country="BitCountries.Portugal"
-                                 ImageAttributes="@(new() { { "referrerpolicy", "no-referrer" } })" />
-                        <span>Loading="BitImageLoading.Eager" with a referrerpolicy on the picture</span>
+                <BitButton OnClick="RenderEventFlags">
+                    @(eventFlagsRenderCount == 0 ? "Render the flags" : "Render the flags again")
+                </BitButton>
+                <br /><br />
+                @if (eventFlagsRenderCount > 0)
+                {
+                    <div @key="eventFlagsRenderCount" class="flag-list">
+                        <div>
+                            <BitFlag Bordered Height="2rem"
+                                     Loading="BitImageLoading.Eager"
+                                     Country="BitCountries.Portugal"
+                                     ImageAttributes="@(new() { { "referrerpolicy", "no-referrer" } })" />
+                            <span>Loading="BitImageLoading.Eager" with a referrerpolicy on the picture</span>
+                        </div>
+                        <div>
+                            <BitFlag Bordered Height="2rem"
+                                     Country="BitCountries.Portugal"
+                                     OnLoad="@(() => loadedCount++)" />
+                            <span>OnLoad - fired @loadedCount time(s)</span>
+                        </div>
+                        <div>
+                            <BitFlag Bordered Height="2rem"
+                                     Src="/not-a-real-flag.png"
+                                     Country="BitCountries.Portugal"
+                                     OnError="@(() => failedCount++)" />
+                            <span>OnError - fired @failedCount time(s), and the packaged flag stood in</span>
+                        </div>
                     </div>
-                    <div>
-                        <BitFlag Bordered Height="2rem"
-                                 Country="BitCountries.Portugal"
-                                 OnLoad="@(() => loadedCount++)" />
-                        <span>OnLoad - fired @loadedCount time(s)</span>
-                    </div>
-                    <div>
-                        <BitFlag Bordered Height="2rem"
-                                 Src="/not-a-real-flag.png"
-                                 Country="BitCountries.Portugal"
-                                 OnError="@(() => failedCount++)" />
-                        <span>OnError - fired @failedCount time(s), and the packaged flag stood in</span>
-                    </div>
-                </div>
+                }
             </DemoExample>
 
             <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">

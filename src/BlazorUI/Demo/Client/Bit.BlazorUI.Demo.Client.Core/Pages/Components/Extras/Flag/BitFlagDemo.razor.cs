@@ -76,7 +76,7 @@ public partial class BitFlagDemo
             Name = "Emoji",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the flag as its Unicode emoji instead of as an image, which costs no request and stays crisp at any size. Windows draws the two letters of the country code instead of the flag. It wins over Src.",
+            Description = "Renders the flag as its Unicode emoji instead of as an image, which costs no request and stays crisp at any size. Windows draws the two letters of the country code instead of the flag, and a subdivision as a plain black flag. It wins over Src.",
         },
         new()
         {
@@ -501,6 +501,17 @@ public partial class BitFlagDemo
 
     private BitCountry? selectedCountry;
 
+    private int eventFlagsRenderCount;
     private int loadedCount;
     private int failedCount;
+
+    // Rendering the flags only on demand is what lets their load and error events be watched at all:
+    // rendered with the page, they would have fired before the section was ever scrolled to. A new key
+    // renders them anew, so each press fetches and counts from scratch.
+    private void RenderEventFlags()
+    {
+        loadedCount = 0;
+        failedCount = 0;
+        eventFlagsRenderCount++;
+    }
 }

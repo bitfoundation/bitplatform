@@ -1262,6 +1262,162 @@ public class BitFlagTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-cir"));
     }
 
+    [TestMethod,
+        DataRow("Rounded"),
+        DataRow("Bordered"),
+        DataRow("Shadow")]
+    public void BitFlagShouldCutAShapedFrameToThePackagedFlag(string shape)
+    {
+        // The packaged image draws the flag in its own proportions inside a square, so a frame shaped to
+        // the square would round, border and shadow the empty space around the flag.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+
+            switch (shape)
+            {
+                case "Rounded": parameters.Add(p => p.Rounded, true); break;
+                case "Bordered": parameters.Add(p => p.Bordered, true); break;
+                default: parameters.Add(p => p.Shadow, true); break;
+            }
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutACircularFrameToTheMiddleOfThePackagedFlag()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Circular, true);
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11");
+    }
+
+    [TestMethod,
+        DataRow("CH", "--bit-flg-crp-x:2;--bit-flg-crp-y:2;--bit-flg-crp-w:12;--bit-flg-crp-h:12"),
+        DataRow("NP", "--bit-flg-crp-x:3;--bit-flg-crp-y:1;--bit-flg-crp-w:10;--bit-flg-crp-h:13"),
+        DataRow("RE", "--bit-flg-crp-x:0;--bit-flg-crp-y:3;--bit-flg-crp-w:16;--bit-flg-crp-h:10"),
+        DataRow("va", "--bit-flg-crp-x:2;--bit-flg-crp-y:2;--bit-flg-crp-w:12;--bit-flg-crp-h:12")]
+    public void BitFlagShouldCutAShapedFrameToAFlagOfItsOwnProportions(string iso2, string expected)
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, iso2);
+            parameters.Add(p => p.Bordered, true);
+        });
+
+        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"), expected);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotCutAnUnshapedFrame()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Grayscale, true);
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-flg-crp"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-flg-crp"));
+    }
+
+    [TestMethod,
+        DataRow("AspectRatio"),
+        DataRow("WidthAndHeight"),
+        DataRow("Src"),
+        DataRow("Emoji")]
+    public void BitFlagShouldNotCutAFrameWhoseShapeIsNotTheFlags(string reason)
+    {
+        // A ratio or both lengths are a shape the page asked for, a Src of the page's own is drawn exactly
+        // as given, and the emoji flag is no image at all.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Bordered, true);
+
+            switch (reason)
+            {
+                case "AspectRatio": parameters.Add(p => p.AspectRatio, "3/2"); break;
+                case "WidthAndHeight":
+                    parameters.Add(p => p.Width, "4rem");
+                    parameters.Add(p => p.Height, "2rem");
+                    break;
+                case "Src": parameters.Add(p => p.Src, "/flags/jp.svg"); break;
+                default: parameters.Add(p => p.Emoji, true); break;
+            }
+        });
+
+        Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFreeTheHeightOfACutFrameGivenAWidth()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Rounded, true);
+            parameters.Add(p => p.Width, "3rem");
+        });
+
+        var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "width:3rem");
+        StringAssert.Contains(style, "height:auto");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutTheFrameOnceThePackagedFlagStandsInForAFailedSrc()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Bordered, true);
+            parameters.Add(p => p.Src, "/not-a-real-flag.png");
+        });
+
+        Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFollowTheCutChangingAfterRender()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+        });
+
+        Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-crp"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "ch");
+            parameters.Add(p => p.Bordered, true);
+        });
+
+        var root = component.Find(".bit-flg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-w:12;--bit-flg-crp-h:12");
+    }
+
 
 
     // ---------------------------------------------------------------- styling and the root element

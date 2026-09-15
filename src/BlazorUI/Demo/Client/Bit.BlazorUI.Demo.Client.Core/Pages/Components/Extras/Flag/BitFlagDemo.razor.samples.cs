@@ -138,23 +138,42 @@ private BitCountry? selectedCountry;";
 private const string netherlandsSvg = ""data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Crect width='900' height='600' fill='%231e4785'/%3E%3Crect width='900' height='400' fill='%23fff'/%3E%3Crect width='900' height='200' fill='%23ae1c28'/%3E%3C/svg%3E"";";
 
     private readonly string example11RazorCode = @"
-<BitFlag Bordered Height=""2rem""
-         Loading=""BitImageLoading.Eager""
-         Country=""BitCountries.Portugal""
-         ImageAttributes=""@(new() { { ""referrerpolicy"", ""no-referrer"" } })"" />
+<BitButton OnClick=""RenderEventFlags"">
+    @(eventFlagsRenderCount == 0 ? ""Render the flags"" : ""Render the flags again"")
+</BitButton>
 
-<BitFlag Bordered Height=""2rem""
-         Country=""BitCountries.Portugal""
-         OnLoad=""@(() => loadedCount++)"" />
+@if (eventFlagsRenderCount > 0)
+{
+    <div @key=""eventFlagsRenderCount"">
+        <BitFlag Bordered Height=""2rem""
+                 Loading=""BitImageLoading.Eager""
+                 Country=""BitCountries.Portugal""
+                 ImageAttributes=""@(new() { { ""referrerpolicy"", ""no-referrer"" } })"" />
 
-<BitFlag Bordered Height=""2rem""
-         Src=""/not-a-real-flag.png""
-         Country=""BitCountries.Portugal""
-         OnError=""@(() => failedCount++)"" />";
+        <BitFlag Bordered Height=""2rem""
+                 Country=""BitCountries.Portugal""
+                 OnLoad=""@(() => loadedCount++)"" />
+        <span>OnLoad - fired @loadedCount time(s)</span>
+
+        <BitFlag Bordered Height=""2rem""
+                 Src=""/not-a-real-flag.png""
+                 Country=""BitCountries.Portugal""
+                 OnError=""@(() => failedCount++)"" />
+        <span>OnError - fired @failedCount time(s)</span>
+    </div>
+}";
 
     private readonly string example11CsharpCode = @"
+private int eventFlagsRenderCount;
 private int loadedCount;
-private int failedCount;";
+private int failedCount;
+
+private void RenderEventFlags()
+{
+    loadedCount = 0;
+    failedCount = 0;
+    eventFlagsRenderCount++;
+}";
 
     private readonly string example12RazorCode = @"
 <BitFlag Size=""BitSize.Small"" Bordered Country=""BitCountries.Italy"" />

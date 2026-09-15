@@ -43,6 +43,24 @@ public partial class BitFlag : BitComponentBase
     private const string FlagsSuffix = "-flat-16.webp";
 
     /// <summary>
+    /// The box each packaged flag image draws its flag in, in the pixels of the 16 pixel image.
+    /// </summary>
+    /// <remarks>
+    /// The image is square, but the flag in it is drawn in its own proportions with transparent space
+    /// around it. A frame shaped to the image would round, border and shadow that empty space rather
+    /// than the flag, so a shaped frame is cut to this box instead. Nearly every flag of the set shares
+    /// the one box; the few drawn in other proportions carry their own.
+    /// </remarks>
+    private static readonly FlagBox FlagsContentBox = new(1, 2, 14, 11);
+    private static readonly Dictionary<string, FlagBox> FlagsContentBoxes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["CH"] = new(2, 2, 12, 12),
+        ["NP"] = new(3, 1, 10, 13),
+        ["RE"] = new(0, 3, 16, 10),
+        ["VA"] = new(2, 2, 12, 12),
+    };
+
+    /// <summary>
     /// The country the parameters resolved to, worked out once per parameter set rather than on every
     /// read: the flag, its emoji, its name and its tooltip all ask for it.
     /// </summary>
@@ -114,6 +132,22 @@ public partial class BitFlag : BitComponentBase
     /// drawn in it - a corner, a circle, a border, a shadow or a ratio.
     /// </summary>
     private bool _shaped => Rounded || Circular || Bordered || Shadow || AspectRatio.HasValue();
+
+    /// <summary>
+    /// Whether the frame is cut to the flag drawn inside the packaged image rather than to the image.
+    /// </summary>
+    /// <remarks>
+    /// Only a frame whose proportions are left to the flag is: one given a shape, and neither a ratio
+    /// nor both lengths of its own, which keep the shape they were asked for. A <see cref="Src"/> of the
+    /// page's own is drawn exactly as given, so it is only the packaged image - asked for, or standing
+    /// in for a Src that failed - that is cut.
+    /// </remarks>
+    private bool _cropped => _emoji is null
+                             && _src is not null
+                             && string.Equals(_src, _packagedSrc, StringComparison.Ordinal)
+                             && (Rounded || Circular || Bordered || Shadow)
+                             && AspectRatio.HasValue() is false
+                             && (Width.HasValue() && Height.HasValue()) is false;
 
     private string _loading => Loading switch
     {
@@ -188,9 +222,9 @@ public partial class BitFlag : BitComponentBase
     /// <remarks>
     /// A flag that is mostly white - Japan's, Switzerland's, Finland's - disappears into a white
     /// surface without one, which is the reason this exists. The border is drawn inside the frame, so
-    /// it costs no layout: a bordered flag is exactly as big as one without.
+    /// the border itself takes no room.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Bordered { get; set; }
 
     /// <summary>
@@ -203,10 +237,10 @@ public partial class BitFlag : BitComponentBase
     /// Clips the flag into a circle.
     /// </summary>
     /// <remarks>
-    /// The flag images are square, so nothing is cropped away but the corners. It wins over
+    /// The flag is cropped to fill the circle rather than squashed into it. It wins over
     /// <see cref="Rounded"/> where both are set.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Circular { get; set; }
 
     /// <summary>
@@ -242,13 +276,13 @@ public partial class BitFlag : BitComponentBase
     /// The emoji flag is text, so it costs no request at all and stays crisp at any size, where the
     /// packaged image is only as sharp as its 16 pixels. What it looks like is the platform's to
     /// decide, though: the emoji fonts of Apple, Google and the Noto family draw the flags, while
-    /// Windows draws the two letters of the country code side by side instead - which is why the image
-    /// is what is drawn unless this asks otherwise.
+    /// Windows draws the two letters of the country code side by side instead, and a subdivision as a
+    /// plain black flag - which is why the image is what is drawn unless this asks otherwise.
     /// <br />
     /// It is built from the country code rather than looked up, so it also answers for a code the
     /// packaged images do not cover, and it wins over <see cref="Src"/>.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Emoji { get; set; }
 
     /// <summary>
@@ -298,7 +332,7 @@ public partial class BitFlag : BitComponentBase
     /// <see cref="Width"/> is set - the flag images are square, so one length is usually all there is
     /// to say. Both of them win over <see cref="Size"/>.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Height { get; set; }
 
     /// <summary>
@@ -401,7 +435,7 @@ public partial class BitFlag : BitComponentBase
     /// <remarks>
     /// <see cref="Circular"/> wins over it where both are set.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Rounded { get; set; }
 
     /// <summary>
@@ -414,7 +448,7 @@ public partial class BitFlag : BitComponentBase
     /// other raised surface of the library does. The frame clips its contents but never its own
     /// shadow, so the shadow survives the rounded and circular shapes.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Shadow { get; set; }
 
     /// <summary>
@@ -469,7 +503,7 @@ public partial class BitFlag : BitComponentBase
     /// The flag images are square, so setting only a <see cref="Height"/> is usually enough - it sets
     /// the width as well. Both of them win over <see cref="Size"/>.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Width { get; set; }
 
 
@@ -525,6 +559,8 @@ public partial class BitFlag : BitComponentBase
         // every other flag is given has to come off first.
         ClassBuilder.Register(() => AspectRatio.HasValue() ? "bit-flg-asp" : string.Empty);
 
+        ClassBuilder.Register(() => _cropped ? "bit-flg-crp" : string.Empty);
+
         ClassBuilder.Register(() => Fit switch
         {
             BitImageFit.None => "bit-flg-non",
@@ -570,6 +606,31 @@ public partial class BitFlag : BitComponentBase
         StyleBuilder.Register(() => AspectRatio.HasValue() && Width.HasValue() && Height.HasValue() is false
                                     ? "height:auto"
                                     : string.Empty);
+
+        // A frame cut to the flag inside the packaged image takes the box that flag is drawn in, whose
+        // proportions become the frame's while the stylesheet crops the picture to it. A circle wants a
+        // square, which is cut out of the middle of that box.
+        StyleBuilder.Register(() =>
+        {
+            if (_cropped is false) return string.Empty;
+
+            var box = GetFlagContentBox(_country?.Iso2);
+
+            if (Circular)
+            {
+                var side = Math.Min(box.W, box.H);
+                box = new(box.X + (box.W - side) / 2, box.Y + (box.H - side) / 2, side, side);
+            }
+
+            return $"--bit-flg-crp-x:{FormatCssValue(box.X)};--bit-flg-crp-y:{FormatCssValue(box.Y)};" +
+                   $"--bit-flg-crp-w:{FormatCssValue(box.W)};--bit-flg-crp-h:{FormatCssValue(box.H)}";
+        });
+
+        // The same freeing of the height as for a ratio: a width alone leaves the height to the
+        // proportions of the flag.
+        StyleBuilder.Register(() => _cropped && Width.HasValue() && Height.HasValue() is false
+                                    ? "height:auto"
+                                    : string.Empty);
     }
 
     protected override void OnParametersSet()
@@ -595,6 +656,10 @@ public partial class BitFlag : BitComponentBase
             _packagedSrc = packaged;
             _hasError = false;
             _hasFallbackError = false;
+
+            // Whether the frame is cut to a packaged flag, and to which box, follows the image drawn.
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
         }
 
         // A flag that has stopped answering - disabled, or handed a handler no longer there - has
@@ -669,6 +734,11 @@ public partial class BitFlag : BitComponentBase
     /// </remarks>
     internal static string GetFlagUrl(string iso2) => $"{FlagsPath}{iso2.ToUpperInvariant()}{FlagsSuffix}";
 
+    private static FlagBox GetFlagContentBox(string? iso2) =>
+        iso2 is not null && FlagsContentBoxes.TryGetValue(iso2, out var box) ? box : FlagsContentBox;
+
+    private static string FormatCssValue(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
@@ -730,6 +800,10 @@ public partial class BitFlag : BitComponentBase
             _hasError = true;
         }
 
+        // The image drawn has changed, and with it whether the frame is cut to a packaged flag.
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
         await OnError.InvokeAsync();
     }
 
@@ -747,4 +821,9 @@ public partial class BitFlag : BitComponentBase
         MetaKey = e.MetaKey,
         ShiftKey = e.ShiftKey
     };
+
+    /// <summary>
+    /// A box inside a packaged flag image, in the pixels of that image.
+    /// </summary>
+    private readonly record struct FlagBox(double X, double Y, double W, double H);
 }
