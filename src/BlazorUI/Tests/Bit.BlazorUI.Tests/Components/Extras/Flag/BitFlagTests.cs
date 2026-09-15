@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -432,6 +434,469 @@ public class BitFlagTests : BunitTestContext
         await component.Find("img").TriggerEventAsync("onerror", new ProgressEventArgs());
 
         Assert.AreEqual(1, failed);
+    }
+
+
+
+    // ---------------------------------------------------------------- the image sets
+
+    private const string AssetsFlags = "_content/Bit.BlazorUI.Assets/flags/";
+
+    [TestMethod]
+    public void BitFlagShouldDrawThePackagedImageWithoutAnImageSet()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod,
+        DataRow(BitFlagImageSet.Flat, "flat"),
+        DataRow(BitFlagImageSet.Shiny, "shiny")]
+    public void BitFlagShouldOfferEverySizeOfTheImageSet(BitFlagImageSet set, string name)
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, set);
+        });
+
+        var image = component.Find("img");
+
+        // Drawn at the 16 pixels of the medium size, every size of the set is described by how many of its
+        // pixels fall on one pixel of the flag, and the browser fetches only the one the screen needs.
+        Assert.AreEqual($"{AssetsFlags}NL-{name}-16.webp", image.GetAttribute("src"));
+        Assert.AreEqual($"{AssetsFlags}NL-{name}-16.webp 1x, {AssetsFlags}NL-{name}-24.webp 1.5x, " +
+                        $"{AssetsFlags}NL-{name}-32.webp 2x, {AssetsFlags}NL-{name}-48.webp 3x, " +
+                        $"{AssetsFlags}NL-{name}-64.webp 4x",
+                        image.GetAttribute("srcset"));
+    }
+
+    [TestMethod,
+        DataRow("Small", "16", "1.33x 2x 2.67x 4x 5.33x"),
+        DataRow("Large", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
+        DataRow("Height:3rem", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
+        DataRow("Width:20px", "24", "0.8x 1.2x 1.6x 2.4x 3.2x"),
+        DataRow("Width:40px;Height:20px", "48", "0.4x 0.6x 0.8x 1.2x 1.6x"),
+        DataRow("Height:2rem;AspectRatio:3/2", "48", "0.33x 0.5x 0.67x 1x 1.33x"),
+        DataRow("Width:24px;AspectRatio:1/2", "48", "0.33x 0.5x 0.67x 1x 1.33x")]
+    public void BitFlagShouldDescribeTheImageSetBySizeOfTheFlag(string sizing, string expectedSrcSize, string expectedDensities)
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+
+            foreach (var part in sizing.Split(';'))
+            {
+                var pair = part.Split(':');
+
+                switch (pair[0])
+                {
+                    case "Small": parameters.Add(p => p.Size, BitSize.Small); break;
+                    case "Large": parameters.Add(p => p.Size, BitSize.Large); break;
+                    case "Height": parameters.Add(p => p.Height, pair[1]); break;
+                    case "Width": parameters.Add(p => p.Width, pair[1]); break;
+                    default: parameters.Add(p => p.AspectRatio, pair[1]); break;
+                }
+            }
+        });
+
+        var image = component.Find("img");
+        var densities = image.GetAttribute("srcset")!.Split(", ").Select(candidate => candidate[(candidate.LastIndexOf(' ') + 1)..]);
+
+        Assert.AreEqual($"{AssetsFlags}NL-flat-{expectedSrcSize}.webp", image.GetAttribute("src"));
+        Assert.AreEqual(expectedDensities, string.Join(" ", densities));
+    }
+
+    [TestMethod,
+        DataRow("50%"),
+        DataRow("2em"),
+        DataRow("calc(1rem + 2px)")]
+    public void BitFlagShouldDrawTheLargestImageOfTheSetForASizeItCannotRead(string height)
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.Height, height);
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}NL-flat-64.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod,
+        DataRow(BitFlagImageSize.Size16, "16"),
+        DataRow(BitFlagImageSize.Size24, "24"),
+        DataRow(BitFlagImageSize.Size32, "32"),
+        DataRow(BitFlagImageSize.Size48, "48"),
+        DataRow(BitFlagImageSize.Size64, "64")]
+    public void BitFlagShouldDrawTheImageSizeItIsGiven(BitFlagImageSize imageSize, string expectedSize)
+    {
+        // A flag 3rem tall would otherwise be offered every size and draw the 48 pixel image by default.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.Height, "3rem");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Shiny);
+            parameters.Add(p => p.ImageSize, imageSize);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}NL-shiny-{expectedSize}.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod,
+        DataRow(BitFlagImageSize.Size32, "32", "--bit-flg-crp-x:1;--bit-flg-crp-y:6;--bit-flg-crp-w:30;--bit-flg-crp-h:20;--bit-flg-crp-s:32"),
+        DataRow(BitFlagImageSize.Size16, "16", "--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11")]
+    public void BitFlagShouldCutAShapedFrameToTheImageSizeItIsGiven(BitFlagImageSize imageSize, string expectedSize, string expectedStyle)
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Bordered, true);
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+            parameters.Add(p => p.ImageSize, imageSize);
+        });
+
+        var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
+
+        Assert.AreEqual($"{AssetsFlags}JP-flat-{expectedSize}.webp", component.Find("img").GetAttribute("src"));
+        StringAssert.Contains(style, expectedStyle);
+
+        // The stylesheet already takes a box to be in the pixels of a 16 pixel image.
+        Assert.AreEqual(expectedSize != "16", style.Contains("--bit-flg-crp-s"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldDrawThePackagedImageForAnImageSizeWithoutAnImageSet()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSize, BitFlagImageSize.Size64);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFollowTheImageSizeChangingAfterRender()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+            parameters.Add(p => p.ImageSize, BitFlagImageSize.Size24);
+        });
+
+        Assert.AreEqual($"{AssetsFlags}NL-flat-24.webp", component.Find("img").GetAttribute("src"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ImageSize, (BitFlagImageSize?)null);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}NL-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsTrue(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldTakeTheCascadedImageSet()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<CascadingValue<BitFlagImageSet>>(0);
+            builder.AddAttribute(1, nameof(CascadingValue<BitFlagImageSet>.Value), BitFlagImageSet.Shiny);
+            builder.AddAttribute(2, nameof(CascadingValue<BitFlagImageSet>.ChildContent), (RenderFragment)(child =>
+            {
+                child.OpenComponent<BitFlag>(0);
+                child.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+                child.CloseComponent();
+
+                child.OpenComponent<BitFlag>(2);
+                child.AddAttribute(3, nameof(BitFlag.Iso2), "jp");
+                child.AddAttribute(4, nameof(BitFlag.ImageSet), (BitFlagImageSet?)BitFlagImageSet.Flat);
+                child.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        var images = component.FindAll("img");
+
+        Assert.AreEqual($"{AssetsFlags}NL-shiny-16.webp", images[0].GetAttribute("src"));
+
+        // One set on the flag itself wins over the cascaded one.
+        Assert.AreEqual($"{AssetsFlags}JP-flat-16.webp", images[1].GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFollowTheImageSetChangingAfterRender()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        Assert.AreEqual($"{AssetsFlags}NL-flat-16.webp", component.Find("img").GetAttribute("src"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ImageSet, (BitFlagImageSet?)null);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldPreferTheSrcOverTheImageSet()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.Src, "/my-flags/nl.svg");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual("/my-flags/nl.svg", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldPreferTheEmojiOverTheImageSet()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Emoji, true);
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-flg-emj").Count);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldNotAskTheImageSetForACountryItDoesNotCover()
+    {
+        // Asked of the sets, a code they do not cover would only cost a failed request before the packaged
+        // image stood in for it.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, new BitCountry("Kosovo", "383", "XK", "XKX"));
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var image = component.Find("img");
+
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/XK-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldFallBackToThePackagedFlagWhenTheImageSetFails()
+    {
+        var failed = 0;
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Shiny);
+            parameters.Add(p => p.OnError, () => failed++);
+            parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        // The package not being installed is the likeliest reason for it, and the flag that ships with the
+        // component is still there to draw.
+        var image = component.Find("img");
+
+        Assert.AreEqual("_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.AreEqual("!", component.Find(".bit-flg-fbk").TextContent);
+        Assert.AreEqual(2, failed);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutAShapedFrameToTheImageOfTheSetThatCoversItTwiceOver()
+    {
+        // The box a frame is cut to differs from one size of the image to the next, so a cut frame is drawn
+        // from one image rather than offered all of them: at the 16 pixels of the medium size, the flag of
+        // the 48 pixel image is the first one 32 pixels tall.
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Bordered, true);
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        var root = component.Find(".bit-flg");
+        var image = component.Find("img");
+
+        Assert.AreEqual($"{AssetsFlags}JP-flat-48.webp", image.GetAttribute("src"));
+        Assert.IsFalse(image.HasAttribute("srcset"));
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:1;--bit-flg-crp-y:8;--bit-flg-crp-w:46;--bit-flg-crp-h:32;--bit-flg-crp-s:48");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutACircularFrameToTheLargestImageOfTheSetWhereNoneCoversItTwiceOver()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Circular, true);
+            parameters.Add(p => p.Height, "2rem");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Shiny);
+        });
+
+        Assert.AreEqual($"{AssetsFlags}JP-shiny-64.webp", component.Find("img").GetAttribute("src"));
+        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"), "--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutAFrameGivenAWidthAloneToTheImageOfTheSetThatCoversItsWidth()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Rounded, true);
+            parameters.Add(p => p.Width, "1rem");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        Assert.AreEqual($"{AssetsFlags}JP-flat-48.webp", component.Find("img").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldCutTheFrameToThePackagedFlagOnceItStandsInForTheImageSet()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "jp");
+            parameters.Add(p => p.Bordered, true);
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+        });
+
+        component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        var root = component.Find(".bit-flg");
+        var style = root.GetAttribute("style") ?? string.Empty;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
+        StringAssert.Contains(style, "--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11");
+        Assert.IsFalse(style.Contains("--bit-flg-crp-s"));
+    }
+
+    [TestMethod]
+    public void BitFlagShouldKeepASrcSetOfThePageOwnOnlyWithItsSrc()
+    {
+        var withSrc = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.Src, "/my-flags/nl.png");
+            parameters.Add(p => p.ImageAttributes, new Dictionary<string, object> { { "srcset", "/my-flags/nl@2x.png 2x" } });
+        });
+
+        Assert.AreEqual("/my-flags/nl@2x.png 2x", withSrc.Find("img").GetAttribute("srcset"));
+
+        // Written over the packaged flag, it would be drawn in place of the very flag standing in for it.
+        withSrc.Find("img").TriggerEvent("onerror", EventArgs.Empty);
+
+        Assert.IsFalse(withSrc.Find("img").HasAttribute("srcset"));
+
+        var withSet = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
+            parameters.Add(p => p.ImageAttributes, new Dictionary<string, object> { { "srcset", "/my-flags/nl@2x.png 2x" } });
+        });
+
+        StringAssert.StartsWith(withSet.Find("img").GetAttribute("srcset"), $"{AssetsFlags}NL-flat-16.webp 1x");
+    }
+
+    [TestMethod]
+    public void BitFlagShouldOnlyPointAtImagesTheAssetsPackageShips()
+    {
+        // The images of the sets ship in the Bit.BlazorUI.Assets package, and nothing but their names ties
+        // the flag to them. The test project writes the names of the files the package holds beside the
+        // tests, and every image any flag offers the browser has to be one of them - with none left over.
+        var shipped = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "assets-flags.txt"))
+                          .Where(line => line.HasValue())
+                          .ToHashSet(StringComparer.Ordinal);
+
+        var offered = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var country in BitCountries.All)
+        {
+            foreach (var set in Enum.GetValues<BitFlagImageSet>())
+            {
+                var component = RenderComponent<BitFlag>(parameters =>
+                {
+                    parameters.Add(p => p.Country, country);
+                    parameters.Add(p => p.ImageSet, set);
+                });
+
+                foreach (var candidate in component.Find("img").GetAttribute("srcset")!.Split(", "))
+                {
+                    var url = candidate[..candidate.IndexOf(' ')];
+
+                    Assert.IsTrue(url.StartsWith(AssetsFlags, StringComparison.Ordinal), url);
+
+                    offered.Add(url[AssetsFlags.Length..]);
+                }
+
+                // Every size a page can pin a flag to has to be one of them too.
+                foreach (var imageSize in Enum.GetValues<BitFlagImageSize>())
+                {
+                    var pinned = RenderComponent<BitFlag>(parameters =>
+                    {
+                        parameters.Add(p => p.Country, country);
+                        parameters.Add(p => p.ImageSet, set);
+                        parameters.Add(p => p.ImageSize, imageSize);
+                    });
+
+                    var url = pinned.Find("img").GetAttribute("src")!;
+
+                    Assert.IsTrue(url.StartsWith(AssetsFlags, StringComparison.Ordinal), url);
+
+                    offered.Add(url[AssetsFlags.Length..]);
+                }
+            }
+        }
+
+        var missing = offered.Where(name => shipped.Contains(name) is false).Order().ToArray();
+        var unused = shipped.Where(name => offered.Contains(name) is false).Order().ToArray();
+
+        Assert.AreEqual(0, missing.Length, $"Not shipped: {string.Join(", ", missing.Take(10))}");
+        Assert.AreEqual(0, unused.Length, $"Shipped but never offered: {string.Join(", ", unused.Take(10))}");
     }
 
 

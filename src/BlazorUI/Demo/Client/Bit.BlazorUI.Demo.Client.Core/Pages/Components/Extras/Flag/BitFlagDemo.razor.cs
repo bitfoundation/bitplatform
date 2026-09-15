@@ -113,7 +113,25 @@ public partial class BitFlagDemo
             Name = "ImageAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Additional HTML attributes to render on the img element rather than on the frame - a crossorigin or a referrerpolicy for a Src pointing at a CDN. The src, the alt and the loading of the flag itself still win over them.",
+            Description = "Additional HTML attributes to render on the img element rather than on the frame - a crossorigin or a referrerpolicy for a Src pointing at a CDN. The src, the alt and the loading of the flag itself still win over them, and a srcset among them only goes with a Src of the page's own.",
+        },
+        new()
+        {
+            Name = "ImageSet",
+            Type = "BitFlagImageSet?",
+            DefaultValue = "null",
+            Description = "Draws the flag out of the flat or the shiny image set of the Bit.BlazorUI.Assets package - which has to be installed for it - at whichever of 16, 24, 32, 48 and 64 pixels the size of the flag and the density of the screen call for, unless ImageSize picks one. The size is read off Width, Height and AspectRatio in px or rem, and off Size otherwise. Unset, the flag is the packaged 16 pixel image. It is also cascaded, so a CascadingValue of a BitFlagImageSet sets it for every flag inside; Src and Emoji win over it.",
+            LinkType = LinkType.Link,
+            Href = "#flag-image-set-enum",
+        },
+        new()
+        {
+            Name = "ImageSize",
+            Type = "BitFlagImageSize?",
+            DefaultValue = "null",
+            Description = "Pins the flag to one size of the image of its ImageSet instead of offering the browser every size of it. The image is still scaled to the frame, and a shaped frame is cut to the flag inside that image. It only applies to an ImageSet: without one, the flag is the packaged 16 pixel image.",
+            LinkType = LinkType.Link,
+            Href = "#flag-image-size-enum",
         },
         new()
         {
@@ -182,7 +200,7 @@ public partial class BitFlagDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the flag, out of the icon sizes of the theme. Medium is the 16 pixels the packaged images are drawn at. Width and Height win over it.",
+            Description = "The size of the flag, out of the icon sizes of the theme. Medium is the 16 pixels the packaged images are drawn at, and past the sizes of the theme an ImageSet is what stays sharp. Width and Height win over it.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -191,7 +209,7 @@ public partial class BitFlagDemo
             Name = "Src",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The url of the image to render instead of the packaged flag image, for a set of images of the page's own. Emoji wins over it, and a source that fails falls back to the packaged flag of the same country and then to the FallbackTemplate.",
+            Description = "The url of the image to render instead of the packaged flag image, for a set of images of the page's own. It wins over ImageSet and Emoji wins over it, and a source that fails falls back to the packaged flag of the same country and then to the FallbackTemplate.",
         },
         new()
         {
@@ -397,6 +415,66 @@ public partial class BitFlagDemo
                     Name = "Large",
                     Description = "The large size.",
                     Value = "2",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "flag-image-set-enum",
+            Name = "BitFlagImageSet",
+            Description = "The image sets of the Bit.BlazorUI.Assets package a BitFlag can be drawn out of, each carrying every flag at 16, 24, 32, 48 and 64 pixels.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Flat",
+                    Description = "The flat artwork, in the same style as the packaged 16 pixel image.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Shiny",
+                    Description = "The shiny artwork, with a gloss and a soft edge over the flag.",
+                    Value = "1",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "flag-image-size-enum",
+            Name = "BitFlagImageSize",
+            Description = "The pixel sizes the image sets of the Bit.BlazorUI.Assets package draw every flag at, which a BitFlag with an ImageSet can be pinned to.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Size16",
+                    Description = "The 16 pixel image.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Size24",
+                    Description = "The 24 pixel image.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Size32",
+                    Description = "The 32 pixel image.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Size48",
+                    Description = "The 48 pixel image.",
+                    Value = "3",
+                },
+                new()
+                {
+                    Name = "Size64",
+                    Description = "The 64 pixel image.",
+                    Value = "4",
                 },
             ]
         },

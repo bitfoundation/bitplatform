@@ -120,19 +120,20 @@
     width: auto;
 }
 
-// The packaged image is a 16 pixel square, but the flag in it is drawn in its own proportions with
-// transparent space around it. A shaped frame fitted to the image would round, border and shadow that
-// empty space, so it is fitted to the flag instead: the component hands over the box the flag is drawn
-// in (--bit-flg-crp-x/y/w/h, in the pixels of the image), the frame takes its proportions from the
-// height, and the picture is blown up and moved so that box lands exactly on the frame.
+// A flag image is square, but the flag in it is drawn in its own proportions with transparent space
+// around it. A shaped frame fitted to the image would round, border and shadow that empty space, so it
+// is fitted to the flag instead: the component hands over the box the flag is drawn in
+// (--bit-flg-crp-x/y/w/h, in the pixels of the image, which is --bit-flg-crp-s pixels square - the 16
+// of the packaged image unless the image of a set says otherwise), the frame takes its proportions from
+// the height, and the picture is blown up and moved so that box lands exactly on the frame.
 //
 // The picture overhangs the frame and is clipped back to it, corner included, with a clip-path rather
 // than an overflow of the frame's own: that would also clip the hit box that grows a clickable flag to
 // a real target. A flag that is not a button has no such box, so it clips the overhang as well, which
 // keeps it out of the scrollable overflow of whatever the flag sits in.
-$flg-img-siz: 16;
-
 .bit-flg-crp {
+    --bit-flg-crp-s: 16;
+
     width: auto;
     aspect-ratio: var(--bit-flg-crp-w) / var(--bit-flg-crp-h);
 
@@ -147,12 +148,12 @@ $flg-img-siz: 16;
         position: absolute;
         top: calc(-100% * var(--bit-flg-crp-y) / var(--bit-flg-crp-h));
         left: calc(-100% * var(--bit-flg-crp-x) / var(--bit-flg-crp-w));
-        width: calc(100% * #{$flg-img-siz} / var(--bit-flg-crp-w));
-        height: calc(100% * #{$flg-img-siz} / var(--bit-flg-crp-h));
-        clip-path: inset(calc(100% * var(--bit-flg-crp-y) / #{$flg-img-siz})
-                         calc(100% * (#{$flg-img-siz} - var(--bit-flg-crp-x) - var(--bit-flg-crp-w)) / #{$flg-img-siz})
-                         calc(100% * (#{$flg-img-siz} - var(--bit-flg-crp-y) - var(--bit-flg-crp-h)) / #{$flg-img-siz})
-                         calc(100% * var(--bit-flg-crp-x) / #{$flg-img-siz})
+        width: calc(100% * var(--bit-flg-crp-s) / var(--bit-flg-crp-w));
+        height: calc(100% * var(--bit-flg-crp-s) / var(--bit-flg-crp-h));
+        clip-path: inset(calc(100% * var(--bit-flg-crp-y) / var(--bit-flg-crp-s))
+                         calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-x) - var(--bit-flg-crp-w)) / var(--bit-flg-crp-s))
+                         calc(100% * (var(--bit-flg-crp-s) - var(--bit-flg-crp-y) - var(--bit-flg-crp-h)) / var(--bit-flg-crp-s))
+                         calc(100% * var(--bit-flg-crp-x) / var(--bit-flg-crp-s))
                          round max(0px, calc(var(--bit-flg-rad) - var(--bit-flg-bdw))));
     }
 }

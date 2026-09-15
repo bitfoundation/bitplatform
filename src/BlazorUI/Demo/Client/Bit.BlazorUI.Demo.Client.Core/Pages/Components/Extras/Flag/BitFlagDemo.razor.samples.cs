@@ -176,6 +176,25 @@ private void RenderEventFlags()
 }";
 
     private readonly string example12RazorCode = @"
+<BitFlag Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+<BitFlag ImageSet=""BitFlagImageSet.Flat"" Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+<BitFlag ImageSet=""BitFlagImageSet.Shiny"" Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+<BitFlag ImageSet=""BitFlagImageSet.Flat"" ImageSize=""BitFlagImageSize.Size16"" Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+<BitFlag ImageSet=""BitFlagImageSet.Flat"" Rounded Bordered Height=""3rem"" Country=""BitCountries.Brazil"" />
+
+
+<CascadingValue Value=""BitFlagImageSet.Shiny"">
+    <BitFlag Height=""2rem"" Country=""BitCountries.Iran"" />
+    <BitFlag Height=""2rem"" Country=""BitCountries.Netherlands"" />
+    <BitFlag Height=""2rem"" Country=""BitCountries.Japan"" />
+    <BitFlag Height=""2rem"" ImageSet=""BitFlagImageSet.Flat"" Country=""BitCountries.Brazil"" />
+</CascadingValue>";
+
+    private readonly string example13RazorCode = @"
 <BitFlag Size=""BitSize.Small"" Bordered Country=""BitCountries.Italy"" />
 
 <BitFlag Size=""BitSize.Medium"" Bordered Country=""BitCountries.Italy"" />
@@ -186,7 +205,7 @@ private void RenderEventFlags()
 
 <BitFlag Width=""4rem"" Height=""2rem"" Bordered Country=""BitCountries.Italy"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         width: 3rem;
@@ -219,7 +238,7 @@ private void RenderEventFlags()
     <FallbackTemplate>?</FallbackTemplate>
 </BitFlag>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <div dir=""rtl"">
     <BitFlag Dir=""BitDir.Rtl"" Bordered Height=""2rem"" AutoTitle Country=""BitCountries.Iran"" />
 

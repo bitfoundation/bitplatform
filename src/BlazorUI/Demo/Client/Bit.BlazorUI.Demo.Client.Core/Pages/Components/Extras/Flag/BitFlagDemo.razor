@@ -6,7 +6,7 @@
 
 <div class="flag-demo">
     <DemoPage Name="Flag"
-              Description="BitFlag renders the flag of a country, named by a BitCountry, an ISO 3166-1 alpha-2 or alpha-3 code, a dialing code or an English name - alternative names, abbreviations and accents included. It draws the packaged image, the Unicode emoji flag or a set of images of the page's own, in a frame that carries the size, the aspect ratio and the shape - a rounded corner, a circle, a border for the flags that would otherwise disappear into a white surface. It is decorative to assistive technologies until it is named, and an OnClick turns it into a button that answers the keyboard as well as the pointer."
+              Description="BitFlag renders the flag of a country, named by a BitCountry, an ISO 3166-1 alpha-2 or alpha-3 code, a dialing code or an English name - alternative names, abbreviations and accents included. It draws the packaged image, the flat or shiny image set of the Bit.BlazorUI.Assets package at the size and density the screen needs, the Unicode emoji flag or a set of images of the page's own, in a frame that carries the size, the aspect ratio and the shape - a rounded corner, a circle, a border for the flags that would otherwise disappear into a white surface. It is decorative to assistive technologies until it is named, and an OnClick turns it into a button that answers the keyboard as well as the pointer."
               Parameters="componentParameters"
               PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
@@ -24,6 +24,17 @@
                 </BitLink>
                 nuget package, as described in the Optional steps of the
                 <BitLink Href="/getting-started">Getting started</BitLink> page.
+            </BitText>
+            <br />
+            <BitText>
+                The image sets its <b>ImageSet</b> parameter draws the flags out of ship in the
+                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Assets" Target="_blank">
+                    <BitTag Reversed
+                            Text="Bit.BlazorUI.Assets"
+                            Color="BitColor.SecondaryBackground"
+                            IconName="@BitIconName.NavigateExternalInline" />
+                </BitLink>
+                nuget package, which has to be installed as well for that parameter.
             </BitText>
             <br />
             <BitText>
@@ -363,14 +374,62 @@
                 }
             </DemoExample>
 
-            <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+            <DemoExample Title="Image sets" RazorCode="@example12RazorCode" Id="example12">
+                <div class="example-desc">
+                    The packaged image is 16 pixels, which is all a flag at the icon sizes of the theme
+                    needs and which blurs past them. <b>ImageSet</b> draws the flag out of one of the two
+                    image sets of the <b>Bit.BlazorUI.Assets</b> package instead - <b>Flat</b>, the same
+                    artwork as the packaged image, and <b>Shiny</b> - each carrying every flag at 16, 24,
+                    32, 48 and 64 pixels. Every size is offered to the browser, which fetches only the one
+                    the size of the flag and the density of the screen call for, so a large flag on a
+                    phone stays as sharp as a small one on a desktop.
+                    <br /><br />
+                    The size is read off <b>Width</b>, <b>Height</b> and <b>AspectRatio</b> where they
+                    are written in px or rem, and off <b>Size</b> otherwise. A frame cut to the flag -
+                    rounded, circular, bordered or shadowed - is drawn from the one image whose flag
+                    covers it twice over. The images ship in that package, so it has to be installed; a
+                    country the sets do not cover, and an image that fails to load, fall back to the
+                    packaged flag.
+                    <br /><br />
+                    <b>ImageSize</b> pins the flag to one of those sizes instead - <b>Size16</b> to
+                    <b>Size64</b> - where the page knows better than the size of the flag which image it
+                    wants: one it preloads, a known byte count for a long list, or a flag sized by a style
+                    of its own. The image is still scaled to the frame, so a small one drawn large is
+                    blurred. It only applies to an <b>ImageSet</b>, since the packaged image is 16 pixels
+                    and nothing else.
+                    <br /><br />
+                    The image set is also cascaded: a <b>CascadingValue</b> of a <b>BitFlagImageSet</b>
+                    sets it for every flag inside, and one set on the flag itself wins over it - the
+                    last flag of the row below.
+                </div>
+                <br />
+                <div class="flag-list">
+                    <div><BitFlag Height="3rem" Country="BitCountries.Brazil" /> <span>The packaged 16 pixel image</span></div>
+                    <div><BitFlag ImageSet="BitFlagImageSet.Flat" Height="3rem" Country="BitCountries.Brazil" /> <span>ImageSet="BitFlagImageSet.Flat"</span></div>
+                    <div><BitFlag ImageSet="BitFlagImageSet.Shiny" Height="3rem" Country="BitCountries.Brazil" /> <span>ImageSet="BitFlagImageSet.Shiny"</span></div>
+                    <div><BitFlag ImageSet="BitFlagImageSet.Flat" ImageSize="BitFlagImageSize.Size16" Height="3rem" Country="BitCountries.Brazil" /> <span>ImageSize="BitFlagImageSize.Size16" - pinned to the 16 pixel image, scaled up</span></div>
+                    <div><BitFlag ImageSet="BitFlagImageSet.Flat" Rounded Bordered Height="3rem" Country="BitCountries.Brazil" /> <span>A frame cut to the flag of the set</span></div>
+                </div>
+                <br />
+                <CascadingValue Value="BitFlagImageSet.Shiny">
+                    <div class="flag-row">
+                        <BitFlag Height="2rem" Country="BitCountries.Iran" />
+                        <BitFlag Height="2rem" Country="BitCountries.Netherlands" />
+                        <BitFlag Height="2rem" Country="BitCountries.Japan" />
+                        <BitFlag Height="2rem" ImageSet="BitFlagImageSet.Flat" Country="BitCountries.Brazil" />
+                    </div>
+                </CascadingValue>
+            </DemoExample>
+
+            <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
                 <div class="example-desc">
                     <b>Size</b> steps the flag through the icon sizes of the theme, and Medium is the 16
                     pixels the packaged images are drawn at - the size a flag with nothing set is.
                     <b>Width</b> and <b>Height</b> take any CSS length instead and win over it; the
-                    images are square, so a height alone sets the width as well. They are raster images,
-                    so a large one is those same 16 pixels scaled up: past these sizes, the emoji flag or
-                    a <b>Src</b> of a vector set of the page's own is what stays sharp.
+                    images are square, so a height alone sets the width as well. The packaged image is
+                    raster, so a large one is those same 16 pixels scaled up: past these sizes, an
+                    <b>ImageSet</b>, the emoji flag or a <b>Src</b> of a vector set of the page's own is
+                    what stays sharp.
                 </div>
                 <br />
                 <div class="flag-list">
@@ -382,7 +441,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+            <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
                 <div class="example-desc">
                     <b>Style</b> and <b>Class</b> reach the root element - the frame the flag is drawn in
                     - and <b>Styles</b> and <b>Classes</b> reach each part of the component by name: the
@@ -407,7 +466,7 @@
                 </div>
             </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+            <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
                 <div class="example-desc">
                     <b>Dir</b> renders the flag in a right-to-left direction, which is also cascaded, so
                     a flag inside an RTL container inherits it. The flag itself is a picture and is never

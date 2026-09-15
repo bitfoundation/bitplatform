@@ -12,10 +12,12 @@
 /// table does not carry draws nothing at all rather than a broken image, which is what
 /// <see cref="FallbackTemplate"/> is for.
 /// <br />
-/// What is drawn is a 16 pixel image out of the Extras package, unless <see cref="Emoji"/> asks for the
-/// Unicode emoji flag instead - which is text, so it costs no request and stays crisp at any size,
-/// where the image is only as sharp as its 16 pixels - or <see cref="Src"/> points the flag at a set of
-/// images of the page's own, which falls back to the packaged flag where it fails. The frame around it
+/// What is drawn is a 16 pixel image out of the Extras package, unless <see cref="ImageSet"/> draws it
+/// out of the flat or the shiny image set of the Bit.BlazorUI.Assets package - at whichever of their 16
+/// to 64 pixels the size of the flag and the density of the screen call for - <see cref="Emoji"/> asks
+/// for the Unicode emoji flag instead - which is text, so it costs no request and stays crisp at any
+/// size - or <see cref="Src"/> points the flag at a set of images of the page's own. An image of a set,
+/// or of the page's own, that fails to load falls back to the packaged flag. The frame around it
 /// takes the <see cref="Size"/>, or a <see cref="Width"/>, <see cref="Height"/> and
 /// <see cref="AspectRatio"/> of its own, and the shape: <see cref="Rounded"/>, <see cref="Circular"/>,
 /// <see cref="Bordered"/> - which is what keeps a mostly white flag off a white surface -
@@ -41,24 +43,19 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     private const string FlagsPath = "_content/Bit.BlazorUI.Extras/flags/";
     private const string FlagsSuffix = "-flat-16.webp";
+    private const int PackagedFlagSize = 16;
 
     /// <summary>
-    /// The box each packaged flag image draws its flag in, in the pixels of the 16 pixel image.
+    /// Where the image sets of the Bit.BlazorUI.Assets package live. Each image is named
+    /// <c>&lt;ISO2&gt;-&lt;set&gt;-&lt;size&gt;.webp</c>.
     /// </summary>
     /// <remarks>
-    /// The image is square, but the flag in it is drawn in its own proportions with transparent space
-    /// around it. A frame shaped to the image would round, border and shadow that empty space rather
-    /// than the flag, so a shaped frame is cut to this box instead. Nearly every flag of the set shares
-    /// the one box; the few drawn in other proportions carry their own.
+    /// The images are square, but the flag in each is drawn in its own proportions with transparent
+    /// space around it. A frame shaped to the image would round, border and shadow that empty space
+    /// rather than the flag, so a shaped frame is cut to the box the flag is drawn in instead - which is
+    /// what <c>GetFlagContentBox</c>, generated together with the images, answers for every one of them.
     /// </remarks>
-    private static readonly FlagBox FlagsContentBox = new(1, 2, 14, 11);
-    private static readonly Dictionary<string, FlagBox> FlagsContentBoxes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["CH"] = new(2, 2, 12, 12),
-        ["NP"] = new(3, 1, 10, 13),
-        ["RE"] = new(0, 3, 16, 10),
-        ["VA"] = new(2, 2, 12, 12),
-    };
+    private const string AssetsFlagsPath = "_content/Bit.BlazorUI.Assets/flags/";
 
     /// <summary>
     /// The country the parameters resolved to, worked out once per parameter set rather than on every
@@ -83,6 +80,30 @@ public partial class BitFlag : BitComponentBase
     /// page's own falls back to when it fails to load.
     /// </summary>
     private string? _packagedSrc;
+
+    /// <summary>
+    /// Every size of the image of an <see cref="ImageSet"/> the flag points at, as the srcset the browser
+    /// picks the one the screen needs out of. Null wherever there is only the one image to draw.
+    /// </summary>
+    private string? _srcSetCandidate;
+
+    /// <summary>
+    /// The pixel size of the image of an <see cref="ImageSet"/> the flag points at, and 0 wherever it
+    /// points at any other image.
+    /// </summary>
+    private int _imageSize;
+
+    /// <summary>
+    /// The image set the flag is drawn out of - its own, else the cascaded one - which is null for the
+    /// packaged image.
+    /// </summary>
+    private BitFlagImageSet? _imageSet;
+
+    /// <summary>
+    /// The upper-cased alpha-2 code of the country that resolved, which the images are named by and
+    /// their boxes keyed by.
+    /// </summary>
+    private string? _flagIso2;
 
     /// <summary>
     /// Whether the image currently pointed at has already failed to load. An image that failed is not
@@ -128,26 +149,47 @@ public partial class BitFlag : BitComponentBase
     }
 
     /// <summary>
+    /// The srcset actually drawn. It only ever goes with the image of the set it was built for: the
+    /// packaged flag standing in for one that failed is the one image there is.
+    /// </summary>
+    private string? _srcSet => _hasError ? null : _srcSetCandidate;
+
+    /// <summary>
+    /// Whether the image drawn is an image of an <see cref="ImageSet"/>, rather than the packaged flag
+    /// standing in for one that failed.
+    /// </summary>
+    private bool _drawsSetImage => _imageSize > 0 && _hasError is false;
+
+    /// <summary>
     /// Whether anything has asked the frame to be a shape of its own rather than whatever fits what is
     /// drawn in it - a corner, a circle, a border, a shadow or a ratio.
     /// </summary>
     private bool _shaped => Rounded || Circular || Bordered || Shadow || AspectRatio.HasValue();
 
     /// <summary>
-    /// Whether the frame is cut to the flag drawn inside the packaged image rather than to the image.
+    /// Whether a frame drawing an image with a flag inside it is cut to that flag rather than to the
+    /// image.
     /// </summary>
     /// <remarks>
     /// Only a frame whose proportions are left to the flag is: one given a shape, and neither a ratio
-    /// nor both lengths of its own, which keep the shape they were asked for. A <see cref="Src"/> of the
-    /// page's own is drawn exactly as given, so it is only the packaged image - asked for, or standing
-    /// in for a Src that failed - that is cut.
+    /// nor both lengths of its own, which keep the shape they were asked for.
+    /// </remarks>
+    private bool _cutsToFlag => (Rounded || Circular || Bordered || Shadow)
+                                && AspectRatio.HasValue() is false
+                                && (Width.HasValue() && Height.HasValue()) is false;
+
+    /// <summary>
+    /// Whether the frame is cut to the flag drawn inside the image rather than to the image.
+    /// </summary>
+    /// <remarks>
+    /// A <see cref="Src"/> of the page's own is drawn exactly as given, so it is only the images whose
+    /// boxes are known that are cut: the packaged image - asked for, or standing in for an image that
+    /// failed - and the images of an <see cref="ImageSet"/>.
     /// </remarks>
     private bool _cropped => _emoji is null
                              && _src is not null
-                             && string.Equals(_src, _packagedSrc, StringComparison.Ordinal)
-                             && (Rounded || Circular || Bordered || Shadow)
-                             && AspectRatio.HasValue() is false
-                             && (Width.HasValue() && Height.HasValue()) is false;
+                             && (_drawsSetImage || string.Equals(_src, _packagedSrc, StringComparison.Ordinal))
+                             && _cutsToFlag;
 
     private string _loading => Loading switch
     {
@@ -156,6 +198,12 @@ public partial class BitFlag : BitComponentBase
     };
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    /// <summary>
+    /// The image set cascaded from an ancestor, which an <see cref="ImageSet"/> of the flag's own wins
+    /// over.
+    /// </summary>
+    [CascadingParameter] private BitFlagImageSet? CascadingImageSet { get; set; }
 
 
 
@@ -280,7 +328,7 @@ public partial class BitFlag : BitComponentBase
     /// plain black flag - which is why the image is what is drawn unless this asks otherwise.
     /// <br />
     /// It is built from the country code rather than looked up, so it also answers for a code the
-    /// packaged images do not cover, and it wins over <see cref="Src"/>.
+    /// packaged images do not cover, and it wins over <see cref="ImageSet"/> and <see cref="Src"/>.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Emoji { get; set; }
@@ -291,8 +339,9 @@ public partial class BitFlag : BitComponentBase
     /// <remarks>
     /// It stands in for a country that resolved to nothing - a code no country of
     /// <see cref="BitCountries.All"/> carries, or none given at all - and for an image that failed to
-    /// load. A <see cref="Src"/> of the page's own that failed is stood in for by the packaged flag of
-    /// the same country first, so this is what is left once there is no flag to draw at all. Without
+    /// load. A <see cref="Src"/> of the page's own, or an image of an <see cref="ImageSet"/>, that failed
+    /// is stood in for by the packaged flag of the same country first, so this is what is left once there
+    /// is no flag to draw at all. Without
     /// one, such a flag draws nothing and leaves an empty frame of its own size.
     /// </remarks>
     [Parameter] public RenderFragment? FallbackTemplate { get; set; }
@@ -345,9 +394,57 @@ public partial class BitFlag : BitComponentBase
     /// <c>fetchpriority</c> for one that has to be fetched before the layout settles. They are written
     /// before everything the flag decides, so the src, the alt and the loading of the flag itself
     /// still win over them - but the two the flag only defaults, the <c>draggable</c> and the
-    /// <c>decoding</c>, are left exactly as they are given here.
+    /// <c>decoding</c>, are left exactly as they are given here. A <c>srcset</c> among them goes with a
+    /// <see cref="Src"/> of the page's own, and is dropped for the packaged flag and for the images of an
+    /// <see cref="ImageSet"/>, which carry the srcset of their own.
     /// </remarks>
     [Parameter] public Dictionary<string, object> ImageAttributes { get; set; } = [];
+
+    /// <summary>
+    /// Draws the flag out of one of the image sets of the Bit.BlazorUI.Assets package instead of the
+    /// packaged 16 pixel image.
+    /// </summary>
+    /// <remarks>
+    /// The Extras package carries one 16 pixel image per country, which is all a flag at the icon sizes
+    /// of the theme needs on a screen of ordinary density, and which blurs past them. The
+    /// Bit.BlazorUI.Assets package carries two sets of every flag - <see cref="BitFlagImageSet.Flat"/>
+    /// and <see cref="BitFlagImageSet.Shiny"/> - at 16, 24, 32, 48 and 64 pixels. Every size is offered
+    /// to the browser, which fetches only the one the size of the flag and the density of the screen
+    /// call for, unless <see cref="ImageSize"/> picks the one to draw. It is opt-in because the images
+    /// ship in that package: without it installed, every flag asked for one falls back to the packaged
+    /// image after a failed request.
+    /// <br />
+    /// Where no ImageSize picks one, the size of the flag is read off <see cref="Width"/>,
+    /// <see cref="Height"/> and <see cref="AspectRatio"/> where they are written in px or rem, and off
+    /// <see cref="Size"/>
+    /// otherwise. A flag sized in any other unit is drawn from the 64 pixel image, and one sized by a
+    /// style or a class of the page's own is read at its Size - so give such a flag its Width or Height.
+    /// A frame cut to the flag - rounded, circular, bordered or shadowed - is drawn from the one image
+    /// whose flag covers it twice over, since the box it is cut to differs from one size to the next.
+    /// <br />
+    /// It is also cascaded: a <c>CascadingValue</c> of a BitFlagImageSet sets it for every flag inside,
+    /// and one set on the flag wins over it. <see cref="Src"/> and <see cref="Emoji"/> win over it, and a
+    /// country the sets do not cover is drawn from the packaged image.
+    /// </remarks>
+    [Parameter] public BitFlagImageSet? ImageSet { get; set; }
+
+    /// <summary>
+    /// The size of the image of the <see cref="ImageSet"/> to draw, instead of leaving the browser to
+    /// pick one out of every size of it.
+    /// </summary>
+    /// <remarks>
+    /// Left unset, the browser is offered every size of the image and fetches the one the size of the
+    /// flag and the density of the screen call for. This pins the flag to exactly one: the image a page
+    /// already preloads or caches, a known byte count for a list of two hundred flags, or a size a flag
+    /// sized by a style or a class of the page's own - which the component cannot read - actually needs.
+    /// The image is still scaled to the frame, so a small one drawn large is blurred.
+    /// <br />
+    /// A frame cut to the flag - rounded, circular, bordered or shadowed - is cut to the box the flag is
+    /// drawn in inside this image. It only applies to an ImageSet: the packaged image of the Extras
+    /// package is 16 pixels and nothing else, so a flag without an ImageSet draws that one whatever this
+    /// says.
+    /// </remarks>
+    [Parameter] public BitFlagImageSize? ImageSize { get; set; }
 
     /// <summary>
     /// The ISO 3166-1 alpha-2 code of the country.
@@ -412,9 +509,10 @@ public partial class BitFlag : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is the browser's own error event, so it only fires for a flag drawn as an image - the emoji
-    /// flag is text and cannot fail. Where a <see cref="Src"/> of the page's own failed and the
-    /// packaged flag of the same country stood in for it, this fires once for each of them: the first
-    /// says the page's own image is not there, the second that there is nothing left to draw.
+    /// flag is text and cannot fail. Where a <see cref="Src"/> of the page's own, or an image of an
+    /// <see cref="ImageSet"/>, failed and the packaged flag of the same country stood in for it, this
+    /// fires once for each of them: the first says that image is not there, the second that there is
+    /// nothing left to draw.
     /// </remarks>
     [Parameter] public EventCallback OnError { get; set; }
 
@@ -458,8 +556,8 @@ public partial class BitFlag : BitComponentBase
     /// Medium is the 16 pixels the packaged images are drawn at and the size a flag has always been,
     /// so it is what a flag with no size set is. The images are raster rather than vector: a large
     /// flag is those same 16 pixels scaled up, which the flat artwork carries well but only so far -
-    /// past the sizes of the theme, either the emoji flag or a <see cref="Src"/> of a set of the page's
-    /// own stays sharp. <see cref="Width"/> and <see cref="Height"/> win over it.
+    /// past the sizes of the theme, an <see cref="ImageSet"/>, the emoji flag or a <see cref="Src"/> of a
+    /// set of the page's own stays sharp. <see cref="Width"/> and <see cref="Height"/> win over it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -475,8 +573,8 @@ public partial class BitFlag : BitComponentBase
     /// the country that resolved, and then to <see cref="FallbackTemplate"/>, so a set of a page's own
     /// that turns out not to cover a country is answered with the flag that ships rather than with
     /// nothing. Such a set is usually drawn in the proportions of the flags themselves rather than
-    /// square, which is what <see cref="AspectRatio"/> and <see cref="Fit"/> are for.
-    /// <see cref="Emoji"/> wins over it.
+    /// square, which is what <see cref="AspectRatio"/> and <see cref="Fit"/> are for. It wins over
+    /// <see cref="ImageSet"/>, and <see cref="Emoji"/> wins over it.
     /// </remarks>
     [Parameter] public string? Src { get; set; }
 
@@ -607,23 +705,22 @@ public partial class BitFlag : BitComponentBase
                                     ? "height:auto"
                                     : string.Empty);
 
-        // A frame cut to the flag inside the packaged image takes the box that flag is drawn in, whose
-        // proportions become the frame's while the stylesheet crops the picture to it. A circle wants a
-        // square, which is cut out of the middle of that box.
+        // A frame cut to the flag inside the image takes the box that flag is drawn in, whose proportions
+        // become the frame's while the stylesheet crops the picture to it. A circle wants a square, which
+        // is cut out of the middle of that box. The box is in the pixels of the image, which the
+        // stylesheet takes to be the 16 of the packaged one unless the image of a set says otherwise.
         StyleBuilder.Register(() =>
         {
             if (_cropped is false) return string.Empty;
 
-            var box = GetFlagContentBox(_country?.Iso2);
+            var drawsSetImage = _drawsSetImage;
+            var size = drawsSetImage ? _imageSize : PackagedFlagSize;
+            var box = GetCutBox(drawsSetImage ? _imageSet!.Value : BitFlagImageSet.Flat, size, _flagIso2);
 
-            if (Circular)
-            {
-                var side = Math.Min(box.W, box.H);
-                box = new(box.X + (box.W - side) / 2, box.Y + (box.H - side) / 2, side, side);
-            }
+            var style = $"--bit-flg-crp-x:{FormatCssValue(box.X)};--bit-flg-crp-y:{FormatCssValue(box.Y)};" +
+                        $"--bit-flg-crp-w:{FormatCssValue(box.W)};--bit-flg-crp-h:{FormatCssValue(box.H)}";
 
-            return $"--bit-flg-crp-x:{FormatCssValue(box.X)};--bit-flg-crp-y:{FormatCssValue(box.Y)};" +
-                   $"--bit-flg-crp-w:{FormatCssValue(box.W)};--bit-flg-crp-h:{FormatCssValue(box.H)}";
+            return size == PackagedFlagSize ? style : $"{style};--bit-flg-crp-s:{size}";
         });
 
         // The same freeing of the height as for a ratio: a width alone leaves the height to the
@@ -642,17 +739,38 @@ public partial class BitFlag : BitComponentBase
         _emoji = Emoji ? BitCountries.GetEmoji(_country?.Iso2 ?? Iso2) : null;
 
         var iso2 = _country?.Iso2;
-        var packaged = iso2.HasValue() ? GetFlagUrl(iso2!) : null;
-        var src = Src.HasValue() ? Src : packaged;
+        _flagIso2 = iso2.HasValue() ? iso2!.ToUpperInvariant() : null;
+        _imageSet = ImageSet ?? CascadingImageSet;
+
+        var packaged = _flagIso2 is null ? null : GetFlagUrl(_flagIso2);
+        var src = packaged;
+        string? srcSet = null;
+        var imageSize = 0;
+
+        if (Src.HasValue())
+        {
+            src = Src;
+        }
+        // A code the sets do not cover is not asked of them: it keeps the packaged image it always had
+        // rather than paying a failed request before falling back to it.
+        else if (_imageSet.HasValue && _flagIso2 is not null && BitCountries.HasFlag(_flagIso2))
+        {
+            (imageSize, srcSet) = PickSetImage(_imageSet.Value, _flagIso2);
+            src = GetFlagUrl(_flagIso2, _imageSet.Value, imageSize);
+        }
 
         // A new source is a new image, so whatever the previous one ended up as is no longer the
         // answer: an error is forgotten and both images are drawn again. The packaged one is watched
         // as well as the one asked for, since a flag whose Src stayed put while its country moved on
         // has a different second image to try.
         if (string.Equals(src, _srcCandidate, StringComparison.Ordinal) is false ||
-            string.Equals(packaged, _packagedSrc, StringComparison.Ordinal) is false)
+            string.Equals(srcSet, _srcSetCandidate, StringComparison.Ordinal) is false ||
+            string.Equals(packaged, _packagedSrc, StringComparison.Ordinal) is false ||
+            imageSize != _imageSize)
         {
             _srcCandidate = src;
+            _srcSetCandidate = srcSet;
+            _imageSize = imageSize;
             _packagedSrc = packaged;
             _hasError = false;
             _hasFallbackError = false;
@@ -734,8 +852,191 @@ public partial class BitFlag : BitComponentBase
     /// </remarks>
     internal static string GetFlagUrl(string iso2) => $"{FlagsPath}{iso2.ToUpperInvariant()}{FlagsSuffix}";
 
-    private static FlagBox GetFlagContentBox(string? iso2) =>
-        iso2 is not null && FlagsContentBoxes.TryGetValue(iso2, out var box) ? box : FlagsContentBox;
+    /// <summary>
+    /// The url of the image of an ISO 3166-1 alpha-2 code in one of the image sets of the
+    /// Bit.BlazorUI.Assets package.
+    /// </summary>
+    private static string GetFlagUrl(string iso2, BitFlagImageSet set, int size) =>
+        $"{AssetsFlagsPath}{iso2.ToUpperInvariant()}-{(set is BitFlagImageSet.Shiny ? "shiny" : "flat")}-{size}.webp";
+
+    /// <summary>
+    /// The box a shaped frame is cut to inside an image: the box the flag is drawn in, or the square out
+    /// of the middle of it that a circle wants.
+    /// </summary>
+    private FlagBox GetCutBox(BitFlagImageSet set, int size, string? iso2)
+    {
+        var box = GetFlagContentBox(set, size, iso2);
+
+        if (Circular is false) return box;
+
+        var side = Math.Min(box.W, box.H);
+
+        return new(box.X + (box.W - side) / 2, box.Y + (box.H - side) / 2, side, side);
+    }
+
+    /// <summary>
+    /// The size of the image of a set the flag is drawn from, and the srcset of every size of it the
+    /// browser picks out of.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ImageSize"/> of the page's own is that image alone, with nothing for the browser to
+    /// pick between.
+    /// <br />
+    /// Otherwise, a frame left to the image offers the browser every size, each described by how many of its pixels
+    /// fall on one CSS pixel of the flag, and the browser fetches only the one the density of the screen
+    /// needs. The src is the size that suits a screen of ordinary density, which is also what a browser
+    /// without srcset draws.
+    /// <br />
+    /// A frame cut to the flag cannot be offered that choice: the box it is cut to differs from one size
+    /// of the image to the next, and the frame cannot tell which one arrived. It is drawn from the
+    /// smallest image whose flag covers it twice over instead, which stays sharp on the high density
+    /// screens a flag is most often looked at closely on.
+    /// <br />
+    /// Where the size of the frame cannot be read, the largest image is drawn: it is the one that is
+    /// never too small.
+    /// </remarks>
+    private (int Size, string? SrcSet) PickSetImage(BitFlagImageSet set, string iso2)
+    {
+        var largest = FlagImageSizes[^1];
+
+        if (ImageSize is { } imageSize)
+        {
+            return (imageSize switch
+            {
+                BitFlagImageSize.Size16 => 16,
+                BitFlagImageSize.Size24 => 24,
+                BitFlagImageSize.Size32 => 32,
+                BitFlagImageSize.Size48 => 48,
+                _ => largest
+            }, null);
+        }
+
+        var (width, height) = GetFrameLengths();
+
+        if (_cutsToFlag)
+        {
+            // A cut frame takes its proportions from the flag, out of the one length it has: the height
+            // - or the icon size of the Size standing in for it - or else the width.
+            var byHeight = Height.HasValue() || Width.HasValue() is false;
+            var length = byHeight ? height : width;
+
+            if (length is null) return (largest, null);
+
+            foreach (var size in FlagImageSizes)
+            {
+                var box = GetCutBox(set, size, iso2);
+
+                if ((byHeight ? box.H : box.W) >= 2 * length) return (size, null);
+            }
+
+            return (largest, null);
+        }
+
+        if (width is null || height is null) return (largest, null);
+
+        // The picture covers the frame, so it is drawn as large as the longer of the frame's two sides.
+        var side = Math.Max(width.Value, height.Value);
+
+        var candidates = new List<string>(FlagImageSizes.Length);
+        string? lastDensity = null;
+
+        foreach (var size in FlagImageSizes)
+        {
+            var density = FormatCssValue(size / side);
+
+            // A density too small to write out is no candidate at all, and two sizes that come to the
+            // same one would be one candidate twice: the larger of them is kept.
+            if (density == "0") continue;
+
+            if (density == lastDensity) candidates.RemoveAt(candidates.Count - 1);
+
+            candidates.Add($"{GetFlagUrl(iso2, set, size)} {density}x");
+            lastDensity = density;
+        }
+
+        var srcSize = FlagImageSizes.FirstOrDefault(size => size >= side);
+
+        return (srcSize > 0 ? srcSize : largest, candidates.Count > 0 ? string.Join(", ", candidates) : null);
+    }
+
+    /// <summary>
+    /// The width and the height the frame of the flag comes to in CSS pixels, where they can be worked
+    /// out without a layout.
+    /// </summary>
+    /// <remarks>
+    /// It mirrors the stylesheet: both lengths are the Height, else the Width, else the icon size of the
+    /// Size - at the sizes of the packaged Fluent theme - unless a Width or a Height of the flag's own
+    /// says otherwise, and a ratio works out whichever of the two it frees. A length written in anything
+    /// but px or rem, or a ratio that is not a number or a pair of them, comes to null - and so does
+    /// whatever a style or a class of the page's own says, which is never read at all.
+    /// </remarks>
+    private (double? Width, double? Height) GetFrameLengths()
+    {
+        var sizeLength = Height ?? Width;
+        double? size = sizeLength.HasValue()
+            ? ParseCssPixels(sizeLength)
+            : Size switch { BitSize.Small => 12d, BitSize.Large => 20d, _ => 16d };
+
+        var width = Width.HasValue() ? ParseCssPixels(Width) : size;
+        var height = Height.HasValue() ? ParseCssPixels(Height) : size;
+
+        if (AspectRatio.HasValue() is false || (Width.HasValue() && Height.HasValue())) return (width, height);
+
+        var ratio = ParseAspectRatio(AspectRatio);
+
+        return Width.HasValue() ? (width, width / ratio) : (height * ratio, height);
+    }
+
+    /// <summary>
+    /// The CSS pixels a length written in px, or in rem at the 16 pixels a root font size comes to
+    /// unless the page changed it, stands for. Any other length is null.
+    /// </summary>
+    private static double? ParseCssPixels(string? length)
+    {
+        var value = length?.Trim();
+
+        if (value.HasValue() is false) return null;
+
+        double pixels;
+
+        if (value!.EndsWith("rem", StringComparison.OrdinalIgnoreCase))
+        {
+            pixels = 16;
+            value = value[..^3];
+        }
+        else if (value.EndsWith("px", StringComparison.OrdinalIgnoreCase))
+        {
+            pixels = 1;
+            value = value[..^2];
+        }
+        else
+        {
+            return null;
+        }
+
+        return double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && number > 0
+            ? number * pixels
+            : null;
+    }
+
+    /// <summary>
+    /// The width over the height a CSS aspect-ratio written as a number, or as a pair of them, stands
+    /// for. Anything else is null.
+    /// </summary>
+    private static double? ParseAspectRatio(string? ratio)
+    {
+        var parts = ratio?.Split('/');
+
+        if (parts is null || parts.Length > 2) return null;
+
+        if (double.TryParse(parts[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var width) is false || width <= 0) return null;
+
+        if (parts.Length == 1) return width;
+
+        return double.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var height) && height > 0
+            ? width / height
+            : null;
+    }
 
     private static string FormatCssValue(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
@@ -823,7 +1124,7 @@ public partial class BitFlag : BitComponentBase
     };
 
     /// <summary>
-    /// A box inside a packaged flag image, in the pixels of that image.
+    /// A box inside a flag image, in the pixels of that image.
     /// </summary>
     private readonly record struct FlagBox(double X, double Y, double W, double H);
 }
