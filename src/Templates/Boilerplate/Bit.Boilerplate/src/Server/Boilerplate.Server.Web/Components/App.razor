@@ -28,15 +28,15 @@
       bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
-    @* First in head on purpose: the CSP has to be in force before anything else in the document runs. *@
+    <base href="/" />
+
+    @* First after base on purpose: the CSP has to be in force before anything else in the document runs. *@
     @*#if (appInsights == true)*@
     @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
     @*#endif*@
     <AppHeadCoordinator @rendermode="null" InHead />
     <ResourcePreloader />
     <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
-    
-    <base href="/" />
 
     <meta charset="utf-8" />
     @* [mirror] The PWA status bar / browser chrome color. These must equal ThemeColors.cs's PrimaryLightBgColor and *@
@@ -130,7 +130,7 @@
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js?host=server-web-project" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>

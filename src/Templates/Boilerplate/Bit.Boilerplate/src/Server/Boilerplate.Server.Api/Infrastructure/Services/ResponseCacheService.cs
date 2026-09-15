@@ -28,8 +28,6 @@ public partial class ResponseCacheService
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
     [AutoInject] private IBackgroundJobClientV2 backgroundJobClient = default!;
     [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
-    //#else
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     //#endif
 
     /// <summary>For responses tagged by their path, which is the default.</summary>
@@ -55,16 +53,6 @@ public partial class ResponseCacheService
         {
             // A failed purge must not fail a change that is already saved; the job retries it instead.
             backgroundJobClient.Enqueue<ResponseCacheService>(x => x.PurgeCloudflareCache(tags));
-        }
-        //#else
-        // If you're using CDN like GCore or others, make sure to purge the Edge Cache of your CDN.
-        // The Cloudflare Cache API is already integrated into the Boilerplate, but for other CDNs,
-        // you'll need to implement the caching logic yourself. AppResponseCachePolicy already stamps every edge
-        // cacheable response with the tag to purge it by, under Cloudflare's `Cache-Tag` header name; other CDNs read
-        // the same idea from a different header (Fastly's `Surrogate-Key`, Akamai's `Edge-Cache-Tag`, ...).
-        if (httpContextAccessor.HttpContext!.Request.IsFromCDN())
-        {
-            throw new NotImplementedException();
         }
         //#endif
     }

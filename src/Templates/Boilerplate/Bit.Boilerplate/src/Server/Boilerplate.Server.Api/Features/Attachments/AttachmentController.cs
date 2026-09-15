@@ -326,6 +326,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                         cancellationToken: cancellationToken,
                         options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions));
 
+                    Features.Chatbot.ChatbotMetrics.RecordChatUsage(response.Usage, analyzeProductImageAgent.Name, configuration["AI:OpenAI:ChatModel"]);
+
                     if (response.Result.IsCar is false)
                     {
                         logger.LogWarning(

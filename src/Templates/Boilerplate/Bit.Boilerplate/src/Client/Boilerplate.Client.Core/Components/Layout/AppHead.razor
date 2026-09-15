@@ -5,7 +5,7 @@
 <ContentSecurityPolicy />
 
 @*#if (appInsights == true)*@
-<link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
+<Link rel="preconnect" href="https://js.monitor.azure.com" crossorigin />
 @* IsWasmStandalone reads backwards: false is what RENDERS the snippet, with the real connection string. *@
 <BlazorApplicationInsights.ApplicationInsightsInit IsWasmStandalone="false" />
 @*#endif*@

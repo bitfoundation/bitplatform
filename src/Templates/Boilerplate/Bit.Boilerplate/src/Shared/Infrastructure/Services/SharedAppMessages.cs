@@ -50,6 +50,21 @@ public partial class SharedAppMessages
     /// </summary>
     public const string SHOW_SIGN_IN_MODAL = nameof(SHOW_SIGN_IN_MODAL);
 
+    /// <summary>
+    /// A publisher that sends this message announces that the subscriber should show an AiChatCard in the AI chat panel's conversation.
+    /// </summary>
+    public const string SHOW_AI_CHAT_CARD = nameof(SHOW_AI_CHAT_CARD);
+
+    /// <summary>
+    /// A publisher that sends this message asks the subscriber to show an AiChatCard the user has to answer, and to return that answer (See AiChatCardDecision).
+    /// </summary>
+    public const string AWAIT_AI_CHAT_CARD = nameof(AWAIT_AI_CHAT_CARD);
+
+    /// <summary>
+    /// A publisher that sends this message announces what the AI chat panel should offer the user to ask or do next.
+    /// </summary>
+    public const string SHOW_AI_CHAT_SUGGESTIONS = nameof(SHOW_AI_CHAT_SUGGESTIONS);
+
     #endregion
 
     #region Server announcements to client
