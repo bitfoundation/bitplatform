@@ -1045,7 +1045,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitInfiniteScrollingShouldReloadWhenTheRefreshTokenChanges()
+    public void BitInfiniteScrollingShouldReloadWhenTheResetKeyChanges()
     {
         var requests = 0;
 
@@ -1054,13 +1054,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, PagedProvider(20, _ => requests++));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.PageSize, 5);
-            parameters.Add(p => p.RefreshToken, "even");
+            parameters.Add(p => p.ResetKey, "even");
             parameters.Add(p => p.Preload, true);
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(1, requests));
 
-        component.Render(parameters => parameters.Add(p => p.RefreshToken, "odd"));
+        component.Render(parameters => parameters.Add(p => p.ResetKey, "odd"));
 
         component.WaitForAssertion(() =>
         {
@@ -1070,7 +1070,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitInfiniteScrollingShouldNotReloadWhileTheRefreshTokenIsUnchanged()
+    public void BitInfiniteScrollingShouldNotReloadWhileTheResetKeyIsUnchanged()
     {
         var requests = 0;
 
@@ -1079,13 +1079,13 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, PagedProvider(20, _ => requests++));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.PageSize, 5);
-            parameters.Add(p => p.RefreshToken, "even");
+            parameters.Add(p => p.ResetKey, "even");
             parameters.Add(p => p.Preload, true);
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(1, requests));
 
-        component.Render(parameters => parameters.Add(p => p.RefreshToken, "even"));
+        component.Render(parameters => parameters.Add(p => p.ResetKey, "even"));
         component.Render(parameters => parameters.Add(p => p.LoadingMessage, "Working..."));
 
         Assert.AreEqual(1, requests);
@@ -1093,7 +1093,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitInfiniteScrollingShouldNotReloadForTheFirstRefreshToken()
+    public void BitInfiniteScrollingShouldNotReloadForTheFirstResetKey()
     {
         // The first value is what the component starts with, not a change of it.
         var requests = 0;
@@ -1103,7 +1103,7 @@ public class BitInfiniteScrollingTests : BunitTestContext
             parameters.Add(p => p.ItemsProvider, PagedProvider(20, _ => requests++));
             parameters.Add(p => p.ItemTemplate, ItemTemplate());
             parameters.Add(p => p.PageSize, 5);
-            parameters.Add(p => p.RefreshToken, "even");
+            parameters.Add(p => p.ResetKey, "even");
             parameters.Add(p => p.Preload, true);
         });
 

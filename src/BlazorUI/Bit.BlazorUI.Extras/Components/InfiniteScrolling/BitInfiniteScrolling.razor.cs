@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// sentinel element at the end of the list enters the scroll viewport, and it ships with loading, empty, end
 /// and error states, a manual (Load more) mode, a reversed (chat) mode that keeps the scroll position stable
 /// while older items get prepended, and a horizontal mode. The loaded items can be capped, keyed, driven from
-/// code and reset from a token.
+/// code and reset from a key.
 /// </summary>
 public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 {
@@ -18,8 +18,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     private int? _totalCount;
     private bool _initialized;
     private int _loadVersion;
-    private object? _refreshToken;
-    private bool _refreshTokenRead;
+    private object? _resetKey;
+    private bool _resetKeyRead;
     private bool _pendingScrollAdjust;
     private bool _pendingScrollToEnd;
     private bool _initialScrollDone;
@@ -225,9 +225,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     /// <remarks>
     /// A provider written as a lambda that captures a filter hands over the same method on every render, so a
     /// changed filter cannot be detected from the delegate itself. Passing the filter (or anything derived
-    /// from it) as this token is what tells the component that its data source now answers differently.
+    /// from it) as this key is what tells the component that its data source now answers differently.
     /// </remarks>
-    [Parameter] public object? RefreshToken { get; set; }
+    [Parameter] public object? ResetKey { get; set; }
 
     /// <summary>
     /// Prepends each loaded page before the already rendered items and moves the sentinel element to the top of
@@ -546,14 +546,14 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
                               && ItemsProvider?.Method != _itemsProvider?.Method;
 
         // That same lambda keeps its method when what it captured changes, which is exactly the case the
-        // refresh token is for: the data source is the same delegate but it now answers differently.
-        var tokenChanged = _refreshTokenRead && Equals(RefreshToken, _refreshToken) is false;
+        // reset key is for: the data source is the same delegate but it now answers differently.
+        var keyChanged = _resetKeyRead && Equals(ResetKey, _resetKey) is false;
 
         _itemsProvider = ItemsProvider;
-        _refreshToken = RefreshToken;
-        _refreshTokenRead = true;
+        _resetKey = ResetKey;
+        _resetKeyRead = true;
 
-        if (providerChanged || tokenChanged)
+        if (providerChanged || keyChanged)
         {
             if (_initialized || _items.Count > 0)
             {

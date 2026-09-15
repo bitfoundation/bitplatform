@@ -97,46 +97,49 @@
     color: $clr-fg-sec;
 }
 
+// The message sits on the list's own ground, so it takes the error color itself; $clr-err-text is the text
+// color ON an error fill.
 .bit-isc-err {
     width: 100%;
     box-sizing: border-box;
-    color: $clr-err-text;
+    color: $clr-err;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
 }
 
+// A link-like button with the least style a control can get away with: a primary-colored label, no box of
+// its own, so a list of any look can host it (and LoadMoreTemplate restyle it) without fighting it.
 .bit-isc-btn {
+    margin: 0;
+    border: none;
     cursor: pointer;
-    color: $clr-pri-text;
+    color: $clr-pri;
+    padding: spacing(0.5) 0;
     align-self: flex-start;
     background-color: transparent;
     font-family: $tg-font-family;
     font-size: $tg-fs-sm;
-    font-weight: $tg-fw-medium;
-    letter-spacing: $tg-ctrl-letter-spacing;
-    text-transform: $tg-ctrl-text-transform;
-    border-radius: $shp-radius-button;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
-    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
-    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    transition: color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-sec-hover;
+            color: $clr-pri-hover;
+            text-decoration: underline;
         }
     }
 
     &:active {
-        background-color: $clr-bg-sec-active;
+        color: $clr-pri-active;
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring($clr-pri-focus);
     }
 
     // The button keeps its place while the load it started runs, so the focus that pressed it is not dropped.
     &:disabled {
         cursor: default;
-        opacity: $opa-dis;
+        color: $clr-fg-dis;
+        text-decoration: none;
     }
 }

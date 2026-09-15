@@ -199,7 +199,7 @@ public partial class BitInfiniteScrollingDemo
          },
          new()
          {
-            Name = "RefreshToken",
+            Name = "ResetKey",
             Type = "object?",
             DefaultValue = "null",
             Description = "An arbitrary value that resets the component whenever it changes: the loaded items are thrown away and the first page is fetched again from the items provider. It is what tells the component that a provider written as a lambda over a changed filter now answers differently.",
@@ -421,7 +421,9 @@ public partial class BitInfiniteScrollingDemo
     private int appendedItems;
     private double membersOffset;
     private bool faultyLoadFailed;
+    private bool faultyTemplateLoadFailed;
     private string filter = "even";
+    private BitInfiniteScrolling<int>? errorTemplateRef;
     private BitInfiniteScrolling<int>? membersRef;
     private BitInfiniteScrolling<int>? catalogRef;
 
@@ -454,6 +456,20 @@ public partial class BitInfiniteScrollingDemo
         if (request.Skip == request.Count && faultyLoadFailed is false)
         {
             faultyLoadFailed = true;
+            throw new InvalidOperationException("The demo provider fails once on the second page.");
+        }
+
+        var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
+        return Enumerable.Range(request.Skip, count);
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadFaultyTemplateItems(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        await Task.Delay(1000);
+
+        if (request.Skip == request.Count && faultyTemplateLoadFailed is false)
+        {
+            faultyTemplateLoadFailed = true;
             throw new InvalidOperationException("The demo provider fails once on the second page.");
         }
 
@@ -532,6 +548,13 @@ public partial class BitInfiniteScrollingDemo
 
     private void HandleOnError(Exception exception) => lastError = exception.Message;
 
+
+    // The ErrorTemplate replaces the built-in retry button, so it offers its own.
+    private async Task RetryErrorTemplate()
+    {
+        if (errorTemplateRef is null) return;
+        await errorTemplateRef.LoadMoreAsync();
+    }
 
     // The status line below the list lives in this page, so it needs a render of its own to catch up with
     // what the component has just loaded.
@@ -623,7 +646,7 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
         padding: 0.5rem;
     }
 
-    .loading, .empty {
+    .loading {
         width: 100%;
         padding: 1rem;
         display: flex;
@@ -641,8 +664,42 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
             <BitEllipsisLoading />
         </div>
     </LoadingTemplate>
+</BitInfiniteScrolling>";
+    private readonly string example2CsharpCode = @"
+private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+    return Enumerable.Range(request.Skip, 20);
+}";
+
+    private readonly string example3RazorCode = @"
+<style>
+    .basic {
+        max-height: 300px;
+    }
+
+    .item {
+        padding: 0.5rem;
+    }
+
+    .empty {
+        width: 100%;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div>EmptyMessage:</div>
+<BitInfiniteScrolling ItemsProvider=""LoadEmptyItems""
+                      Class=""basic""
+                      Context=""item""
+                      EmptyMessage=""Nothing to show here."">
+    <div>Item @item</div>
 </BitInfiniteScrolling>
 
+<div>EmptyTemplate:</div>
 <BitInfiniteScrolling ItemsProvider=""LoadEmptyItems"" Class=""basic"">
     <ItemTemplate Context=""item"">
         <div class=""item"">Item @item</div>
@@ -651,41 +708,11 @@ private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingIte
         <div class=""empty""><b>--- No item ---</b></div>
     </EmptyTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example2CsharpCode = @"
-private async ValueTask<IEnumerable<int>> LoadBasicItems(BitInfiniteScrollingItemsProviderRequest request)
-{
-    await Task.Delay(1000);
-    return Enumerable.Range(request.Skip, 20);
-}
-
+    private readonly string example3CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadEmptyItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     await Task.Delay(2000);
     return [];
-}";
-
-    private readonly string example3RazorCode = @"
-<style>
-    .basic {
-        max-height: 300px;
-    }
-</style>
-
-<BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
-                      PageSize=""15""
-                      Class=""basic""
-                      Context=""item""
-                      EndMessage=""You have reached the end of the list."">
-    <div>Item @item</div>
-</BitInfiniteScrolling>";
-    private readonly string example3CsharpCode = @"
-private const int TotalItems = 40;
-
-private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
-{
-    await Task.Delay(1000);
-    var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
-    return Enumerable.Range(request.Skip, count);
 }";
 
     private readonly string example4RazorCode = @"
@@ -693,16 +720,33 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     .basic {
         max-height: 300px;
     }
+
+    .end {
+        width: 100%;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 
+<div>EndMessage:</div>
 <BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
-                      Manual
-                      PageSize=""10""
+                      PageSize=""15""
                       Class=""basic""
                       Context=""item""
-                      LoadMoreText=""Load more items""
-                      EndMessage=""No more items to load."">
+                      EndMessage=""You have reached the end of the list."">
     <div>Item @item</div>
+</BitInfiniteScrolling>
+
+<div>EndTemplate:</div>
+<BitInfiniteScrolling ItemsProvider=""LoadPagedItems"" PageSize=""15"" Class=""basic"">
+    <ItemTemplate Context=""item"">
+        <div>Item @item</div>
+    </ItemTemplate>
+    <EndTemplate>
+        <div class=""end""><b>--- The end ---</b></div>
+    </EndTemplate>
 </BitInfiniteScrolling>";
     private readonly string example4CsharpCode = @"
 private const int TotalItems = 40;
@@ -721,6 +765,57 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     }
 </style>
 
+<div>LoadMoreText:</div>
+<BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
+                      Manual
+                      PageSize=""10""
+                      Class=""basic""
+                      Context=""item""
+                      LoadMoreText=""Load more items""
+                      EndMessage=""No more items to load."">
+    <div>Item @item</div>
+</BitInfiniteScrolling>
+
+<div>LoadMoreTemplate:</div>
+<BitInfiniteScrolling ItemsProvider=""LoadPagedItems""
+                      Manual
+                      PageSize=""10""
+                      Class=""basic""
+                      EndMessage=""No more items to load."">
+    <ItemTemplate Context=""item"">
+        <div>Item @item</div>
+    </ItemTemplate>
+    <LoadMoreTemplate>
+        <b>+ Show 10 more</b>
+    </LoadMoreTemplate>
+</BitInfiniteScrolling>";
+    private readonly string example5CsharpCode = @"
+private const int TotalItems = 40;
+
+private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+    var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
+    return Enumerable.Range(request.Skip, count);
+}";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .basic {
+        max-height: 300px;
+    }
+
+    .error {
+        gap: 0.5rem;
+        width: 100%;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div>ErrorMessage:</div>
 <BitInfiniteScrolling ItemsProvider=""LoadFaultyItems""
                       PageSize=""10""
                       Class=""basic""
@@ -729,11 +824,31 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
                       ErrorMessage=""Something went wrong while loading the items.""
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
+</BitInfiniteScrolling>
+
+<div>ErrorTemplate:</div>
+<BitInfiniteScrolling @ref=""errorTemplateRef""
+                      TItem=""int""
+                      ItemsProvider=""LoadFaultyTemplateItems""
+                      PageSize=""10""
+                      Class=""basic""
+                      EndMessage=""No more items to load."">
+    <ItemTemplate Context=""item"">
+        <div>Item @item</div>
+    </ItemTemplate>
+    <ErrorTemplate Context=""error"">
+        <div class=""error"">
+            <span>@error.Message</span>
+            <BitButton Variant=""BitVariant.Text"" Size=""BitSize.Small"" OnClick=""RetryErrorTemplate"">Retry</BitButton>
+        </div>
+    </ErrorTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private const int TotalItems = 40;
 
 private bool faultyLoadFailed;
+private bool faultyTemplateLoadFailed;
+private BitInfiniteScrolling<int>? errorTemplateRef;
 
 private async ValueTask<IEnumerable<int>> LoadFaultyItems(BitInfiniteScrollingItemsProviderRequest request)
 {
@@ -747,9 +862,30 @@ private async ValueTask<IEnumerable<int>> LoadFaultyItems(BitInfiniteScrollingIt
 
     var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
     return Enumerable.Range(request.Skip, count);
+}
+
+private async ValueTask<IEnumerable<int>> LoadFaultyTemplateItems(BitInfiniteScrollingItemsProviderRequest request)
+{
+    await Task.Delay(1000);
+
+    if (request.Skip == request.Count && faultyTemplateLoadFailed is false)
+    {
+        faultyTemplateLoadFailed = true;
+        throw new InvalidOperationException(""The demo provider fails once on the second page."");
+    }
+
+    var count = Math.Clamp(TotalItems - request.Skip, 0, request.Count);
+    return Enumerable.Range(request.Skip, count);
+}
+
+// The ErrorTemplate replaces the built-in retry button, so it offers its own.
+private async Task RetryErrorTemplate()
+{
+    if (errorTemplateRef is null) return;
+    await errorTemplateRef.LoadMoreAsync();
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <style>
     .chat {
         gap: 0.5rem;
@@ -774,7 +910,7 @@ private async ValueTask<IEnumerable<int>> LoadFaultyItems(BitInfiniteScrollingIt
                       EndMessage=""This is the beginning of the conversation."">
     <div class=""message"">@message</div>
 </BitInfiniteScrolling>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private const int TotalMessages = 40;
 
 private async ValueTask<IEnumerable<string>> LoadOlderMessages(BitInfiniteScrollingItemsProviderRequest request)
@@ -790,7 +926,7 @@ private async ValueTask<IEnumerable<string>> LoadOlderMessages(BitInfiniteScroll
     return Enumerable.Range(start, count).Select(i => $""Message {i + 1}"");
 }";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .advanced {
         gap: 1rem;
@@ -829,7 +965,7 @@ private async ValueTask<IEnumerable<string>> LoadOlderMessages(BitInfiniteScroll
         </div>
     </LoadingTemplate>
 </BitInfiniteScrolling>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrollingItemsProviderRequest request)
 {
     if (request.Skip >= 200) return [];
@@ -837,7 +973,7 @@ private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrolling
     return Enumerable.Range(request.Skip, 50);
 }";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -856,7 +992,7 @@ private async ValueTask<IEnumerable<int>> LoadScrollerItems(BitInfiniteScrolling
 </BitInfiniteScrolling>
 
 <div>Loaded pages: @loadedPages, loaded items: @loadedItems @(reachedEnd ? ""(end reached)"" : "" "") @lastError</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private int loadedPages;
 private int loadedItems;
 private bool reachedEnd;
@@ -872,7 +1008,7 @@ private void HandleOnEnd() => reachedEnd = true;
 
 private void HandleOnError(Exception exception) => lastError = exception.Message;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -906,7 +1042,7 @@ private void HandleOnError(Exception exception) => lastError = exception.Message
     Items: @(membersRef?.Items.Count ?? 0) &nbsp; HasMore: @(membersRef?.HasMore) &nbsp;
     IsLoading: @(membersRef?.IsLoading) &nbsp; Offset: @membersOffset
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private int appendedItems;
 private double membersOffset;
 private BitInfiniteScrolling<int>? membersRef;
@@ -961,7 +1097,7 @@ private async Task ReadMembersOffset()
     membersOffset = await membersRef.GetScrollOffsetAsync();
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -980,7 +1116,7 @@ private async Task ReadMembersOffset()
 </BitInfiniteScrolling>
 
 <div>Loaded @(catalogRef?.Items.Count ?? 0) of @(catalogRef?.TotalCount?.ToString() ?? ""?"") items.</div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private const int TotalCatalogItems = 35;
 
 private BitInfiniteScrolling<int>? catalogRef;
@@ -999,7 +1135,7 @@ private async ValueTask<IEnumerable<int>> LoadCatalogItems(BitInfiniteScrollingI
 // The counter below the list lives in the page, so it needs a render of its own to catch up.
 private void HandleCatalogLoaded(IReadOnlyList<int> items) => StateHasChanged();";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .h-list {
         gap: 0.5rem;
@@ -1022,7 +1158,7 @@ private void HandleCatalogLoaded(IReadOnlyList<int> items) => StateHasChanged();
                       EndMessage=""The end."">
     <div class=""h-item"">Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -1032,7 +1168,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .chat {
         gap: 0.5rem;
@@ -1070,7 +1206,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
         <input class=""note"" placeholder=""note"" />
     </div>
 </BitInfiniteScrolling>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public record ChatMessage(int Id, string Text);
 
 private const int TotalMessages = 40;
@@ -1088,7 +1224,7 @@ private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteS
     return Enumerable.Range(start, count).Select(i => new ChatMessage(i, $""Message {i + 1}""));
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -1102,14 +1238,14 @@ private async ValueTask<IEnumerable<ChatMessage>> LoadKeyedMessages(BitInfiniteS
 
 <BitInfiniteScrolling TItem=""int""
                       ItemsProvider=""@(request => LoadFilteredItems(request, filter))""
-                      RefreshToken=""filter""
+                      ResetKey=""filter""
                       PageSize=""10""
                       Class=""basic""
                       Context=""item""
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private const int TotalItems = 40;
 
 private string filter = ""even"";
@@ -1129,7 +1265,7 @@ private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrolling
     return source.Skip(request.Skip).Take(request.Count);
 }";
 
-        private readonly string example14RazorCode = @"
+        private readonly string example15RazorCode = @"
 <style>
     .custom-loading {
         font-style: italic;
@@ -1152,7 +1288,7 @@ private async ValueTask<IEnumerable<int>> LoadFilteredItems(BitInfiniteScrolling
                       EndMessage=""No more items to load."">
     <div>Item @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingItemsProviderRequest request)
@@ -1162,7 +1298,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
     return Enumerable.Range(request.Skip, count);
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .basic {
         max-height: 300px;
@@ -1178,7 +1314,7 @@ private async ValueTask<IEnumerable<int>> LoadPagedItems(BitInfiniteScrollingIte
                       EndMessage=""به انتهای لیست رسیدید."">
     <div>آیتم @item</div>
 </BitInfiniteScrolling>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private const int TotalItems = 40;
 
 private async ValueTask<IEnumerable<int>> LoadRtlItems(BitInfiniteScrollingItemsProviderRequest request)

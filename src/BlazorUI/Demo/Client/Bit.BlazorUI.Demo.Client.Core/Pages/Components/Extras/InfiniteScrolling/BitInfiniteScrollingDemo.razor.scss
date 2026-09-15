@@ -25,7 +25,10 @@
 }
 
 .loading,
-.empty {
+.empty,
+.end,
+.error {
+    gap: 0.5rem;
     width: 100%;
     padding: 1rem;
     display: flex;
