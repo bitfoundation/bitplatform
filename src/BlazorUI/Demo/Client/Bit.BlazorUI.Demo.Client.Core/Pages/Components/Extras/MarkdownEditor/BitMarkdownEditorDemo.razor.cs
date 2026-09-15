@@ -1402,8 +1402,8 @@ private bool fullScreen;";
 
     private readonly string example10RazorCode = @"
 <div class=""commands-bar"">
-    <BitTextField @bind-Value=""findText"" Placeholder=""Find"" Immediate />
-    <BitTextField @bind-Value=""replaceText"" Placeholder=""Replace with"" Immediate />
+    <BitTextField Label=""Find"" @bind-Value=""findText"" Placeholder=""Find"" Immediate />
+    <BitTextField Label=""Replace with"" @bind-Value=""replaceText"" Placeholder=""Replace with"" Immediate />
     <BitButton Variant=""BitVariant.Outline"" OnClick=""FindNext"">Find next</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""FindPrevious"">Find previous</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""ReplaceAll"">Replace all</BitButton>
