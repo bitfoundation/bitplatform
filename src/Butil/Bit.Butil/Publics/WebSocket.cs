@@ -164,7 +164,7 @@ public class WebSocket(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.webSocket.disposeAll");
+            await js.InvokeTeardown("BitButil.webSocket.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

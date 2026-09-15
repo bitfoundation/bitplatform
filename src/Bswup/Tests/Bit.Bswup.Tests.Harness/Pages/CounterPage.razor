@@ -1,0 +1,10 @@
+﻿@page "/counter"
+
+<h1 id="page-counter">counter</h1>
+
+<button id="increment" type="button" @onclick="() => _count++">increment</button>
+<span id="count">@_count</span>
+
+@code {
+    private int _count;
+}

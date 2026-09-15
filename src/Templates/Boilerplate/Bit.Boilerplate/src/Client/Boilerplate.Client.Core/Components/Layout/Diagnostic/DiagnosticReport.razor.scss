@@ -1,0 +1,49 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.diagnostic-report {
+    padding: 1rem;
+    max-width: 60rem;
+    margin: 0 auto;
+}
+
+.pairs {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+}
+
+.key {
+    font-weight: 600;
+    color: $bit-color-foreground-secondary;
+    white-space: nowrap;
+}
+
+.value {
+    font-family: Consolas, 'Courier New', monospace;
+    overflow-wrap: anywhere;
+}
+
+.report {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chunk {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    border-left: 2px solid $bit-color-primary;
+    background-color: $bit-color-background-secondary;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    &.client {
+        border-left-color: $bit-color-secondary;
+    }
+}

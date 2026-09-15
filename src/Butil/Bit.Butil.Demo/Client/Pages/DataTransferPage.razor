@@ -90,6 +90,16 @@ var url = await dataTransfer.CreateObjectUrl(file.Id);     // <img src="@url">
 
 await dataTransfer.ReleaseFile(file.Id);
 """)>
+        <div @ref="_readTarget" class="playground" style="min-height:6rem;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border, #d4d4d8);border-radius:.5rem;text-align:center">
+            @if (_readPayload is null)
+            {
+                <span>Drop a file here, then read it.</span>
+            }
+            else
+            {
+                <span>@_readPayload.Files.Length file(s) ready to read.</span>
+            }
+        </div>
         <div class="controls">
             <button @onclick="ReadFirst">Read the first file</button>
             <button class="secondary" @onclick="PreviewFirst">Preview it as an image</button>
@@ -174,13 +184,18 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
     private DemoConsole readOutput = default!;
     private DemoConsole sourceOutput = default!;
 
+    // The reading section has a drop zone of its own: a file dropped four screens up is not
+    // something the reader can see while pressing Read.
     private ElementReference _target;
+    private ElementReference _readTarget;
     private ElementReference _chip;
     private ElementReference _dragImage;
 
     private ButilSubscription? _dropSubscription;
+    private ButilSubscription? _readDropSubscription;
     private ButilSubscription? _sourceSubscription;
     private DropPayload? _payload;
+    private DropPayload? _readPayload;
     private string? _previewUrl;
     private bool _draggable;
 
@@ -204,6 +219,15 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
 
             if (_dropSubscription is null)
                 await dropOutput.Warn("OnDrop returned null - the target was not wired up, so nothing will be dropped on it.");
+
+            _readDropSubscription = await dataTransfer.OnDrop(_readTarget, payload => InvokeAsync(async () =>
+            {
+                await ReleaseReadPayload();
+
+                _readPayload = payload;
+                await readOutput.Success("Dropped →", $"{payload.Files.Length} file(s) - now read one.");
+                StateHasChanged();
+            }));
         }
         catch (Exception ex)
         {
@@ -225,10 +249,10 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
 
     private async Task ReadFirst()
     {
-        var file = _payload?.Files.FirstOrDefault();
+        var file = _readPayload?.Files.FirstOrDefault();
         if (file is null)
         {
-            await readOutput.Warn("Drop a file first.");
+            await readOutput.Warn("Drop a file on this section's box first.");
             return;
         }
 
@@ -251,10 +275,10 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
 
     private async Task PreviewFirst()
     {
-        var file = _payload?.Files.FirstOrDefault();
+        var file = _readPayload?.Files.FirstOrDefault();
         if (file is null)
         {
-            await readOutput.Warn("Drop a file first.");
+            await readOutput.Warn("Drop a file on this section's box first.");
             return;
         }
 
@@ -274,12 +298,26 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
 
     private async Task ReleaseAll()
     {
-        if (_payload is null) return;
+        if (_readPayload is null) return;
 
-        var count = _payload.Files.Length;
-        await ReleasePayload();
+        var count = _readPayload.Files.Length;
+        await ReleaseReadPayload();
 
         await readOutput.Log($"Released {count} file(s) - reading them now answers null.");
+    }
+
+    private async Task ReleaseReadPayload()
+    {
+        if (_previewUrl is not null)
+        {
+            await objectUrls.Revoke(_previewUrl);
+            _previewUrl = null;
+        }
+
+        if (_readPayload is null) return;
+
+        foreach (var file in _readPayload.Files) await dataTransfer.ReleaseFile(file.Id);
+        _readPayload = null;
     }
 
     /// <summary>
@@ -288,12 +326,6 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
     /// </summary>
     private async Task ReleasePayload()
     {
-        if (_previewUrl is not null)
-        {
-            await objectUrls.Revoke(_previewUrl);
-            _previewUrl = null;
-        }
-
         if (_payload is null) return;
 
         foreach (var file in _payload.Files) await dataTransfer.ReleaseFile(file.Id);
@@ -348,11 +380,13 @@ _source = await dataTransfer.ConfigureDragSource(_chip,
         try
         {
             if (_dropSubscription is not null) await _dropSubscription.DisposeAsync();
+            if (_readDropSubscription is not null) await _readDropSubscription.DisposeAsync();
             if (_sourceSubscription is not null) await _sourceSubscription.DisposeAsync();
 
             // The whole payload, not just the preview URL: the retained file ids are held on the JS
             // side until they are released, and navigating away is not a release.
             await ReleasePayload();
+            await ReleaseReadPayload();
         }
         catch (Exception)
         {

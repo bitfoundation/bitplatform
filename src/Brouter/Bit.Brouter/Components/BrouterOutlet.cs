@@ -219,10 +219,15 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// Fires the deactivation side of the route lifecycle for an outlet-hosted child, called by the
     /// navigation pipeline BEFORE the render that hides or unmounts its content (see
     /// <see cref="BrouterRouteRenderer.NotifyDeparture"/> for the timing/willRemainMatched contract).
+    /// <paramref name="hostTornDown"/> says the subtree this outlet lives in is itself about to be
+    /// unmounted (its host route is being left or rebuilt): retention cannot save a kept child then,
+    /// so it is deactivated with Disposing and forgotten, and the outlet's own disposal finds nothing
+    /// still active.
     /// </summary>
-    internal void NotifyDeparture(Broute route, BrouterLocation to, bool willRemainMatched, Action<Exception> onError)
+    internal void NotifyDeparture(Broute route, BrouterLocation to, bool willRemainMatched, Action<Exception> onError,
+        bool hostTornDown = false)
     {
-        if (Name.Length == 0 && route.KeepAlive)
+        if (Name.Length == 0 && route.KeepAlive && hostTornDown is false)
         {
             // Kept entries survive; a transient hide (pending-UI render while the route stays
             // matched) is a no-op for them, resolving as a renavigation at commit. Snapshot:
@@ -235,6 +240,27 @@ public class BrouterOutlet : ComponentBase, IDisposable
                     k.Context.FireDeactivated(BrouterRouteDeactivationReason.Hidden, to, onError);
                 }
             }
+            return;
+        }
+
+        if (hostTornDown && route.KeepAlive)
+        {
+            // Same teardown as ForgetChild, reported against the navigation's destination: every
+            // entry of the route dies with the host's subtree (hidden ones already got Hidden and
+            // no-op here), and a later visit starts a fresh session.
+            foreach (var k in _kept.ToArray())
+            {
+                if (ReferenceEquals(k.Route, route))
+                {
+                    k.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+                }
+            }
+            if (_current is not null && ReferenceEquals(_current.Route, route))
+            {
+                _current.Context.FireDeactivated(BrouterRouteDeactivationReason.Disposing, to, onError);
+                _current = null;
+            }
+            _kept.RemoveAll(k => ReferenceEquals(k.Route, route));
             return;
         }
 
@@ -468,6 +494,14 @@ public class BrouterOutlet : ComponentBase, IDisposable
         var parameters = entry.Parameters;
 
         builder.OpenComponent<CascadingValue<BrouterOutlet>>(0);
+        // Key the child's subtree by its entry (the content session), for the same reason the inline
+        // renderer keys by its lifecycle context (see BrouterRouteRenderer.EmitContextCascade): a
+        // session that ends and restarts inside ONE render batch - DropChild + Render collapsed by
+        // ComponentBase into a single render - must diff as a replaced subtree, not as the same
+        // component instance re-bound to a new entry's context. An entry is stable across a
+        // renavigation, so re-binding still re-binds. Kept entries are already keyed by their
+        // wrapper element; keying the inner component too is harmless.
+        builder.SetKey(entry);
         builder.AddAttribute(1, "Name", "Outlet");
         builder.AddAttribute(2, "Value", this);
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>

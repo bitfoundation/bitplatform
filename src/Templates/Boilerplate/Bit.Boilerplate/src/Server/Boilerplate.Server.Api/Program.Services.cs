@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
 using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
+using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -99,6 +100,7 @@ public static partial class Program
         services.AddScoped<UserErasureService>();
         services.AddScoped<UserSessionsRetentionJobRunner>();
         services.AddScoped<UnconfirmedUsersRetentionJobRunner>();
+        services.AddScoped<ServerDiagnosticService>();
 
         services.AddPersonalDataServices();
         //#if (signalR == true)
@@ -275,11 +277,15 @@ public static partial class Program
 
         services
             .AddControllers(options => options.Filters.Add<AutoCsrfProtectionFilter>())
-            .AddJsonOptions(options => options.JsonSerializerOptions.ApplyDefaultOptions())
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ApplyDefaultOptions();
+                options.JsonSerializerOptions.Converters.Add(new SelectExpandWrapperJsonConverter());
+            })
             //#if (api == "Integrated")
             .AddApplicationPart(typeof(AppControllerBase).Assembly)
             //#endif
-            .AddOData(options => options.EnableQueryFeatures())
+            .AddOData(options => options.EnableQueryFeatures(maxTopValue: 100))
             .AddDataAnnotationsLocalization(options => options.DataAnnotationLocalizerProvider = StringLocalizerProvider.ProvideLocalizer)
             .ConfigureApiBehaviorOptions(options =>
             {
@@ -432,20 +438,41 @@ public static partial class Program
         {
             options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1;
 
+            // The spec says to ignore a header parameter named Authorization, so the bearer token is a security scheme
+            // instead. Clients and UIs (Scalar, generators) only offer a sign-in box for this.
+            const string bearerSchemeName = "Bearer";
+
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Components ??= new();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+                document.Components.SecuritySchemes[bearerSchemeName] = new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Get your JWT token by signing in through the Identity/SignIn endpoint."
+                };
+
+                return Task.CompletedTask;
+            });
+
             options.AddOperationTransformer(async (operation, context, cancellationToken) =>
             {
-                var isAuthorizedAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is AuthorizeAttribute);
+                // MapControllers().RequireAuthorization() makes every action authorized, so [AllowAnonymous] is what
+                // marks the exceptions - the AuthorizeAttribute on an action only narrows an already required token.
+                var isAnonymousAction = context.Description.ActionDescriptor.EndpointMetadata.Any(em => em is IAllowAnonymous);
                 var isODataEnabledAction = context.Description.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is EnableQueryAttribute);
 
                 operation.Parameters ??= [];
-                operation.Parameters.Add(new OpenApiParameter()
+
+                if (isAnonymousAction is false)
                 {
-                    In = ParameterLocation.Header,
-                    Name = HeaderNames.Authorization,
-                    Example = "Bearer XXX.YYY...",
-                    Description = "Get your JWT token by signin-in through Identity/SignIn endpoint",
-                    Required = isAuthorizedAction
-                });
+                    operation.Security =
+                    [
+                        new OpenApiSecurityRequirement() { [new OpenApiSecuritySchemeReference(bearerSchemeName, context.Document)] = [] }
+                    ];
+                }
 
                 if (isODataEnabledAction)
                 {
@@ -621,6 +648,13 @@ public static partial class Program
             .UseLogging()
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
         }
+
+        // Voice calls (See ChatbotController.StartVoiceCall).
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.RealtimeApiKey) is false)
+        {
+            services.AddSingleton<Features.Chatbot.VoiceCall.VoiceCallRunner>();
+            services.AddSingleton<Features.Chatbot.VoiceCall.OpenAIRealtimeCallClient>();
+        }
 #pragma warning restore MEAI001
         //#endif
         //#endif
@@ -685,35 +719,8 @@ public static partial class Program
     //#if (signalR == true)
     private static void AddAppAIAgents(this WebApplicationBuilder builder)
     {
-        static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)
-        {
-            var cache = sp.GetRequiredService<IFusionCache>();
-            var dbContext = sp.GetRequiredService<AppDbContext>();
-            //#if (multitenant == true)
-            var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
-            var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            //#if (multitenant != true)
-            var cacheKey = $"SystemPrompt_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            var result = cache.GetOrSet(
-                cacheKey, _ =>
-                {
-                    var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
-                    return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
-                },
-                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
-            return result;
-        }
-
         //#if (module == "Sales" || module == "Admin")
-        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
+        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
         //#endif
@@ -722,7 +729,7 @@ public static partial class Program
         {
             var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
 
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
+            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
         }, lifetime: ServiceLifetime.Scoped);

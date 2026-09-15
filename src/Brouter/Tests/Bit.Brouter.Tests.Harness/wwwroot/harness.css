@@ -1,0 +1,20 @@
+﻿/* Collapses every view transition to a single frame. Brouter's own default animations live in the
+   "bit-brouter" CSS layer, so these unlayered rules win; the transitions still start and complete
+   (which is what the suites assert), they just stop holding the page for ~300ms per navigation. */
+::view-transition-old(*),
+::view-transition-new(*),
+::view-transition-group(*) {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0 16px;
+}
+
+.harness-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}

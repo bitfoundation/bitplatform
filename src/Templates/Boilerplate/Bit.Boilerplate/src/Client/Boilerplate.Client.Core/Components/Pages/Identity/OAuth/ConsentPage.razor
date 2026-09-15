@@ -99,14 +99,14 @@
 
                 @if (consent.DeniedScopes.Any())
                 {
-                    <BitMessage Color="BitColor.Warning">
+                    <BitMessage Multiline Color="BitColor.Warning">
                         @Localizer[nameof(AppStrings.OAuthConsentDeniedScopesMessage), string.Join(", ", consent.DeniedScopes)]
                     </BitMessage>
                 }
 
                 @if (consent.IsPreRegistered is false)
                 {
-                    <BitMessage Color="BitColor.Info">
+                    <BitMessage Multiline Color="BitColor.Info">
                         @Localizer[nameof(AppStrings.OAuthConsentSelfDescribedMessage), AbsoluteServerAddress.GetAddress().Host]
                     </BitMessage>
                 }

@@ -15,7 +15,11 @@ internal static class EventsJsInterop
         string[] argsMembers,
         object? options = null,
         bool preventDefault = false,
-        bool stopPropagation = false)
+        bool stopPropagation = false,
+        double minInterval = 0)
+        // minInterval travels as its own argument rather than inside `options`, which is handed to
+        // addEventListener untouched: a rate limit is Butil's, not the browser's, and putting it
+        // there would mean passing the browser a key it does not know.
         => await js.InvokeVoid("BitButil.events.addEventListener",
             elementName,
             eventName,
@@ -25,7 +29,8 @@ internal static class EventsJsInterop
             argsMembers,
             options,
             preventDefault,
-            stopPropagation);
+            stopPropagation,
+            minInterval);
 
     internal static async Task RemoveEventListener(this IJSRuntime js,
         string elementName,

@@ -44,14 +44,55 @@ var withFiles = await launchQueue.SupportsFiles();
     <DemoSection Title="Receive the launch"
                  Api="SetConsumer"
                  Description="Registers the handler that receives this app's launch, with the target URL and any files. It fires immediately when the launch has already arrived, so registering late is safe. Dispose the returned subscription in DisposeAsync."
-                 Code=@("""
-_sub = await launchQueue.SetConsumer(launch =>
+                 Files=@([
+new("Open.razor", """
+@page "/open"
+@implements IAsyncDisposable
+@inject Bit.Butil.LaunchQueue launchQueue
+
+@code {
+    private string? _targetUrl;
+    private LaunchFile[] _files = [];
+    private ButilSubscription? _sub;
+
+    // Safe here rather than in OnInitialized: the consumer fires immediately when the launch has
+    // already arrived, so registering after the first render loses nothing.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _sub = await launchQueue.SetConsumer(launch =>
+        {
+            _targetUrl = launch.TargetUrl;
+            _files = launch.Files;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sub is not null) await _sub.DisposeAsync();
+    }
+}
+"""),
+new("wwwroot/manifest.json", """
 {
-    _targetUrl = launch.TargetUrl;
-    _files = launch.Files;
-    InvokeAsync(StateHasChanged);
-});
-""")>
+  "name": "Bit.Butil demo",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }],
+
+  "//": "Nothing reaches SetConsumer without these. The app must also be installed: a page in a tab is never launched by the OS.",
+  "file_handlers": [
+    { "action": "/open", "accept": { "text/markdown": [".md"] } }
+  ],
+  "protocol_handlers": [
+    { "protocol": "web+butil", "url": "/open?link=%s" }
+  ],
+  "launch_handler": { "client_mode": "focus-existing" }
+}
+"""),
+])>
         <div class="controls">
             <button @onclick="Subscribe" disabled="@(_sub is not null)">SetConsumer</button>
             <button class="danger" @onclick="Unsubscribe" disabled="@(_sub is null)">Dispose subscription</button>

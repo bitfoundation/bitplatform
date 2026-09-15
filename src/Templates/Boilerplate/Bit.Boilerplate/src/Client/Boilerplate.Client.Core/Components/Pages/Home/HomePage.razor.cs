@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Text.Json.Nodes;
 using Boilerplate.Shared.Features.Statistics;
 
 namespace Boilerplate.Client.Core.Components.Pages.Home;
@@ -6,6 +7,45 @@ namespace Boilerplate.Client.Core.Components.Pages.Home;
 public partial class HomePage
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
+
+    /// <summary>
+    /// The site itself, as JSON-LD. The home page is the one a crawler treats as the site, and it describes no entity
+    /// of its own - so a WebSite and the Organization publishing it, where <c>ProductPage</c> carries a Product.
+    /// </summary>
+    private string BuildSiteJsonLd()
+    {
+        // The origin, not this page's url: the same two nodes are the site's identity under every culture prefix.
+        var siteUrl = new Uri(NavigationManager.BaseUri).GetLeftPart(UriPartial.Authority);
+
+        var organization = new JsonObject
+        {
+            ["@type"] = "Organization",
+            ["@id"] = $"{siteUrl}/#organization",
+            ["name"] = "Boilerplate",
+            ["url"] = siteUrl,
+            ["logo"] = $"{siteUrl}/images/icons/bit-icon-512.png"
+        };
+
+        var webSite = new JsonObject
+        {
+            ["@type"] = "WebSite",
+            ["@id"] = $"{siteUrl}/#website",
+            ["name"] = "Boilerplate",
+            ["url"] = CanonicalUrl,
+            ["publisher"] = new JsonObject { ["@id"] = $"{siteUrl}/#organization" }
+        };
+
+        if (string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) is false)
+        {
+            webSite["inLanguage"] = CultureInfo.CurrentUICulture.Name;
+        }
+
+        return new JsonObject
+        {
+            ["@context"] = "https://schema.org",
+            ["@graph"] = new JsonArray(organization, webSite)
+        }.ToJsonString();
+    }
 
 
     //#if(module != "Sales")

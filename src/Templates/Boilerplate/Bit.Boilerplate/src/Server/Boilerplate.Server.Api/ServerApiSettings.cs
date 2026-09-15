@@ -217,6 +217,20 @@ public class OpenAIOptions
     public Uri? TextToSpeechEndpoint { get; set; }
     public string? TextToSpeechApiKey { get; set; }
     public string? TextToSpeechVoice { get; set; }
+
+    public string? RealtimeModel { get; set; }
+    public Uri? RealtimeEndpoint { get; set; }
+    public string? RealtimeApiKey { get; set; }
+    public string? RealtimeVoice { get; set; }
+
+    /// <summary>The call's reasoning effort, such as minimal, low or high; empty keeps the model's default.</summary>
+    public string? RealtimeReasoningEffort { get; set; }
+
+    /// <summary>Transcribes the user's side of a call; empty shows only the assistant's.</summary>
+    public string? RealtimeTranscriptionModel { get; set; }
+
+    /// <summary>Calls are hung up after this; billed per minute.</summary>
+    public TimeSpan RealtimeMaxCallDuration { get; set; }
     //#endif
 }
 

@@ -41,7 +41,9 @@ public sealed class BitMarkdownBlockquoteParser : BitMarkdownBlockParser
         }
 
         var quote = new BitMarkdownBlockquoteNode();
-        quote.Children.AddRange(state.ParseBlocks(inner));
+        // Every branch of the loop above consumed exactly one line for one inner line, so the
+        // quoted content maps one-to-one onto the lines from the marker on.
+        quote.Children.AddRange(state.ParseBlocks(inner, state.Line));
         output.Add(quote);
         state.Line = i;
         return true;

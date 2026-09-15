@@ -176,7 +176,7 @@ public partial class MainLayout
             {
                 managementItem.ChildItems.Add(new()
                 {
-                    Text = localizer["Applications"],
+                    Text = localizer[nameof(AppStrings.OAuthClients)],
                     IconName = BitIconName.PlugConnected,
                     Url = PageUrls.OAuthClients,
                 });

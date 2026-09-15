@@ -39,7 +39,7 @@ public sealed class StyleSheetHandle : IAsyncDisposable
     public ValueTask<int> InsertRule(string rule, int index = -1)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rule);
-        return _js.Invoke<int>("BitButil.css.insertRule", Id, rule, index);
+        return _js.Invoke<int>("BitButil.cssStyleSheet.insertRule", Id, rule, index);
     }
 
     /// <summary>
@@ -49,13 +49,13 @@ public sealed class StyleSheetHandle : IAsyncDisposable
     /// Indices shift as rules are removed, so removing several is a matter of going backwards - or
     /// of <see cref="Replace"/>ing the whole sheet.
     /// </remarks>
-    public ValueTask<bool> DeleteRule(int index) => _js.Invoke<bool>("BitButil.css.deleteRule", Id, index);
+    public ValueTask<bool> DeleteRule(int index) => _js.Invoke<bool>("BitButil.cssStyleSheet.deleteRule", Id, index);
 
     /// <summary>
     /// Every rule in the sheet, as text.
     /// </summary>
     /// <returns>The rules, or an empty array for a sheet that cannot be read.</returns>
-    public ValueTask<string[]> GetRules() => _js.Invoke<string[]>("BitButil.css.rules", Id);
+    public ValueTask<string[]> GetRules() => _js.Invoke<string[]>("BitButil.cssStyleSheet.rules", Id);
 
     /// <summary>
     /// Replaces the whole sheet with the given CSS. The simplest way to keep a theme in sync -
@@ -64,7 +64,7 @@ public sealed class StyleSheetHandle : IAsyncDisposable
     public ValueTask<bool> Replace(string css)
     {
         ArgumentNullException.ThrowIfNull(css);
-        return _js.Invoke<bool>("BitButil.css.replaceSheet", Id, css);
+        return _js.Invoke<bool>("BitButil.cssStyleSheet.replaceSheet", Id, css);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public sealed class StyleSheetHandle : IAsyncDisposable
         if (_removed) return;
         _removed = true;
 
-        try { await _js.InvokeVoid("BitButil.css.removeSheet", Id); }
+        try { await _js.InvokeVoid("BitButil.cssStyleSheet.removeSheet", Id); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
     }
 }

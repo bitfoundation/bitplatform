@@ -1332,7 +1332,122 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Canceled" xml:space="preserve">
     <value>Geannuleerd</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Geen enkele app op dit apparaat kan {0}-links openen.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Spraakgesprek</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Spraakgesprek starten</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Spraakgesprek beëindigen</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Terug naar het spraakgesprek</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Resterende tijd van het spraakgesprek</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>Het spraakgesprek is beëindigd.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>Het bericht kon niet naar het gesprek worden verzonden.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>De assistent is bezet. Probeer het over {0} seconden opnieuw.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>De assistent kon niet antwoorden. Probeer het opnieuw.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Laat uw contactgegevens achter, dan neemt een medewerker contact met u op.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Samenvatting van het gesprek</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Aangemeld als</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Uw verzoek is verzonden. Een medewerker neemt binnenkort contact met u op.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Wat er gebeurt</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Wachten op uw antwoord</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>De bestanden van de app op dit apparaat wissen?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Opnieuw beginnen lost de meeste problemen door beschadigde lokale gegevens op.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>U wordt afgemeld</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Dit gesprek wordt verwijderd</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>De app wordt opnieuw gestart</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>Het spraakgesprek wordt beëindigd</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Bestanden wissen</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Nu niet</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>De bestanden van de app worden gewist</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>U hebt de bestanden van de app behouden.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>Er is niets gewist: het verzoek bleef onbeantwoord.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>Dit goedkeuren?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Goedkeuren</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Weigeren</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Goedgekeurd</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Geweigerd.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>Het verzoek bleef onbeantwoord.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Beste match</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>Ook geschikt</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Vragen</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Vertel me meer over {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chatpaneel</value>
   </data>
@@ -1493,20 +1608,20 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Melding verzenden</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Meldingen inschakelen</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Meldingen uitschakelen</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn ingeschakeld voor deze sessie.</value>
+    <value>Meldingen zijn ingeschakeld voor deze sessie.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn gedempt voor deze sessie.</value>
+    <value>Meldingen zijn gedempt voor deze sessie.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Pushmeldingen zijn niet geconfigureerd voor deze sessie.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Meldingen</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Meldingen inschakelen</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Meldingen uitschakelen</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Meldingen staan aan</value>
@@ -1829,15 +1944,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Geen enkele tijdzone komt overeen met uw zoekopdracht.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Pushmeldingen</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Pushmeldingen inschakelen</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Pushmeldingen uitschakelen</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Pushmeldingen zijn geblokkeerd voor deze app. Sta meldingen toe in de instellingen van je browser of besturingssysteem en probeer het opnieuw.</value>
   </data>

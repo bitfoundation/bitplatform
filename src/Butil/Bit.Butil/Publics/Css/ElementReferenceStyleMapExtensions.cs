@@ -27,7 +27,7 @@ public static class ElementReferenceStyleMapExtensions
 {
     /// <summary>True when the runtime implements the CSS Typed OM.</summary>
     public static ValueTask<bool> IsStyleMapSupported(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.isTypedOmAvailable");
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.cssTypedOm.isTypedOmAvailable");
 
     /// <summary>
     /// Reads a computed value as a number and a unit.
@@ -41,14 +41,14 @@ public static class ElementReferenceStyleMapExtensions
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CssValue))]
     public static ValueTask<CssValue?> GetComputedValue(this ElementReference element, string property)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<CssValue?>("BitButil.css.computedValue", element, property);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<CssValue?>("BitButil.cssTypedOm.computedValue", element, property);
 
     /// <summary>
     /// Every property name in the element's computed style map. Empty when the runtime has no Typed OM.
     /// </summary>
     /// <remarks>Hundreds of entries - useful for exploring, rarely for shipping.</remarks>
     public static ValueTask<string[]> GetComputedProperties(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.css.computedProperties", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.cssTypedOm.computedProperties", element);
 
     /// <summary>
     /// Reads an <b>inline</b> style value as a number and a unit - what the element's own
@@ -57,7 +57,7 @@ public static class ElementReferenceStyleMapExtensions
     /// <returns>The value, or null when it isn't set inline or the runtime has no Typed OM.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CssValue))]
     public static ValueTask<CssValue?> GetStyleValue(this ElementReference element, string property)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<CssValue?>("BitButil.css.styleValue", element, property);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<CssValue?>("BitButil.cssTypedOm.styleValue", element, property);
 
     /// <summary>
     /// Writes an inline style value as a typed number.
@@ -71,7 +71,7 @@ public static class ElementReferenceStyleMapExtensions
     /// </param>
     /// <returns>False when the runtime has no Typed OM, or the value isn't valid for the property.</returns>
     public static ValueTask<bool> SetStyleValue(this ElementReference element, string property, double value, string unit = "px")
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.setStyleValue", element, property, value, unit);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.cssTypedOm.setStyleValue", element, property, value, unit);
 
     /// <summary>
     /// Writes an inline style value from text, for the values that aren't a number and a unit -
@@ -83,17 +83,17 @@ public static class ElementReferenceStyleMapExtensions
     /// which is the reason to prefer this even for text.
     /// </remarks>
     public static ValueTask<bool> SetStyleText(this ElementReference element, string property, string value)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.setStyleText", element, property, value);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.cssTypedOm.setStyleText", element, property, value);
 
     /// <summary>Removes one inline style property. False when the runtime has no Typed OM.</summary>
     public static ValueTask<bool> DeleteStyleValue(this ElementReference element, string property)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.deleteStyleValue", element, property);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.cssTypedOm.deleteStyleValue", element, property);
 
     /// <summary>Removes every inline style property. False when the runtime has no Typed OM.</summary>
     public static ValueTask<bool> ClearStyleValues(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.css.clearStyleValues", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.cssTypedOm.clearStyleValues", element);
 
     /// <summary>Every property name currently set inline. Empty when the runtime has no Typed OM.</summary>
     public static ValueTask<string[]> GetStyleProperties(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.css.styleProperties", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.cssTypedOm.styleProperties", element);
 }

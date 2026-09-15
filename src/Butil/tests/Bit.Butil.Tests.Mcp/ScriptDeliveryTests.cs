@@ -240,9 +240,30 @@ public class ScriptDeliveryTests : McpTestBase
         {
             Assert.Contains(LazyProperty, page);
             Assert.Contains(TrimProperty, page);
-            Assert.Contains(ModulesProperty, page);
-            Assert.Contains(ScanProperty, page);
             Assert.Contains("AddBitButilServices", page);
+
+            // Getting started names the one switch that turns the feature on and hands the rest of it
+            // to the trimming page, so that link is the only thing on this page leading to the
+            // properties an app the switch alone does not cover has to type.
+            Assert.Contains("javascript-trimming", page,
+                $"Nothing here leads to the page carrying {ScanProperty} and {ModulesProperty}.");
+        }
+    }
+
+    [TestMethod]
+    public async Task The_trimming_page_carries_the_properties_getting_started_hands_it()
+    {
+        var page = Text(await CallAsync("GetButilDocsPage", new { slug = "javascript-trimming" }));
+
+        using (Assert.Scope())
+        {
+            Assert.Contains(TrimProperty, page);
+            Assert.Contains(ScanProperty, page,
+                $"An agent reaching this page for an untrimmed publish never finds {ScanProperty}, which is what answers the question there.");
+            Assert.Contains(ModulesProperty, page,
+                $"{ModulesProperty} is what keeps the per-module files in a publish, and nothing else on the site is going to say so.");
+            Assert.Contains(ModuleItem, page,
+                $"Without {ModuleItem} there is no answer for an API reached by reflection or from the app's own JavaScript.");
         }
     }
 

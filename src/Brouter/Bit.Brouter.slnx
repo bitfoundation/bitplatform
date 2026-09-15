@@ -28,7 +28,15 @@
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
     <Project Path="Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj" />
     <Project Path="Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Hosting/Bit.Brouter.Tests.Hosting.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj" />
     <Project Path="Tests/Bit.Brouter.Benchmarks/Bit.Brouter.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Harness/">
+    <Project Path="Tests/Bit.Brouter.Tests.Harness/Bit.Brouter.Tests.Harness.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Harness.Web/Bit.Brouter.Tests.Harness.Web.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Harness.Web.Client/Bit.Brouter.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Harness.Hybrid/Bit.Brouter.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Project Path="Bit.Brouter/Bit.Brouter.csproj" />
   <Project Path="Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />

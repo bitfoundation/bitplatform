@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- Blazor Hybrid host for the Samples.Core pages. WinForms rather than MAUI: both sit on the same
+         Microsoft.AspNetCore.Components.WebView core (the WebViewManager that serves _content/ assets, runs the
+         renderer and bridges JS interop through WebViewJSRuntime), and on Windows both render through WebView2,
+         which Playwright can drive over the Chrome DevTools Protocol. WinForms gets there without the MAUI
+         workload, so it builds and runs on a stock windows-latest runner. -->
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <!-- Lets the whole Bit.Butil.slnx build on the Linux CI runner; running it still needs Windows. -->
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- Not under Bit.Butil, for the same reason as the web harness: Butil's Window and Screen services
+             would shadow the WinForms and framework types of the same name. -->
+        <RootNamespace>ButilTests.Harness.Hybrid</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.100" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="wwwroot\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <!-- The same worker scripts, frame and stream sample the web hosts serve, from the standalone sample's
+         wwwroot. BlazorWebView serves the files next to its host page from disk, so copying them into the output's
+         wwwroot is all it takes for the pages to find them at the same paths. -->
+    <PropertyGroup>
+        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Bit.Butil.Samples.Web\wwwroot\</_SamplesWebRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="$(_SamplesWebRoot)workers\**" Link="wwwroot\workers\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="$(_SamplesWebRoot)frames\**" Link="wwwroot\frames\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="$(_SamplesWebRoot)data\**" Link="wwwroot\data\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

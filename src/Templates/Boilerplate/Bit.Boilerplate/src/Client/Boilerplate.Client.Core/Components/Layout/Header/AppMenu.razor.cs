@@ -21,6 +21,11 @@ public partial class AppMenu
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     [AutoInject] private IPushNotificationController pushNotificationController = default!;
+    //#elseif (signalR == true)
+    [AutoInject] private Notification notification = default!;
+    //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
     //#endif
 
 
@@ -32,8 +37,11 @@ public partial class AppMenu
     private string? currentTimeZoneId;
     private string? timeZoneSearchText;
     private TimeZoneOption[] timeZones = [];
+    //#if (signalR == true || notification == true)
+    private bool notificationsEnabled;
+    //#endif
     //#if (notification == true)
-    private bool pushNotificationsEnabled;
+    private bool pushNotificationsBlocked;
     //#endif
     //#if (multitenant == true)
     private bool showTenants;
@@ -99,79 +107,105 @@ public partial class AppMenu
         await cultureService.ChangeCulture(cultureName);
     }
 
-    //#if (notification == true)
+    //#if (signalR == true || notification == true)
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
         // Warms the switch so the first open shows the real state; OnDropMenuOpen keeps it fresh from then on.
-        await RefreshPushNotificationsState();
+        await RefreshNotificationsState();
     }
 
-    private string PushNotificationsToggleLabel => pushNotificationsEnabled
-        ? Localizer[nameof(AppStrings.TurnPushNotificationsOff)].Value
-        : Localizer[nameof(AppStrings.TurnPushNotificationsOn)].Value;
+    private bool ShowNotificationsToggle
+    {
+        get
+        {
+            var show = AppPlatform.IsWindows is false; // Push is not implemented on Windows.
+            //#if (signalR == true)
+            show = true; // In-app messages reach every platform, and a signed out choice applies at the next sign-in.
+            //#endif
+            return show;
+        }
+    }
+
+    private string NotificationsToggleLabel => notificationsEnabled
+        ? Localizer[nameof(AppStrings.TurnNotificationsOff)].Value
+        : Localizer[nameof(AppStrings.TurnNotificationsOn)].Value;
 
     /// <summary>
-    /// What the switch shows: the preference stored on this device AND whether the platform will actually deliver a
-    /// push. The preference alone defaults to enabled for a device that was never asked, which read as on in a
-    /// browser whose notification permission was denied.
+    /// The switch shows the device's choice, which covers in-app messages too, so a push the platform refuses is
+    /// called out under it rather than turning it off.
     /// </summary>
-    private async Task RefreshPushNotificationsState()
+    private async Task RefreshNotificationsState()
     {
-        pushNotificationsEnabled = await pushNotificationService.IsEnabled()
-                                   && await pushNotificationService.IsAvailable(CurrentCancellationToken);
+        notificationsEnabled = await notificationPreferenceService.IsEnabled();
+        //#if (notification == true)
+        pushNotificationsBlocked = notificationsEnabled
+                                   && AppPlatform.IsWindows is false
+                                   && await pushNotificationService.IsAvailable(CurrentCancellationToken) is false;
+        //#endif
 
         StateHasChanged();
     }
 
-    private async Task TogglePushNotifications()
+    private async Task ToggleNotifications()
     {
-        var enable = pushNotificationsEnabled is false;
+        var enable = notificationsEnabled is false;
 
         if (enable)
         {
             // Asked first, so the prompt is still tied to the click that got us here.
-            await pushNotificationService.RequestPermission(CurrentCancellationToken);
+            //#if (notification == true)
+            if (AppPlatform.IsWindows is false)
+            {
+                await pushNotificationService.RequestPermission(CurrentCancellationToken);
+            }
+            //#else
+            if (await notification.IsSupported())
+            {
+                await notification.RequestPermission();
+            }
+            //#endif
         }
 
-        // Stored either way: the permission decides whether the device can receive a push, not whether the user
-        // asked for one. Bailing out before SetEnabled - as this used to, on a check taken right after the prompt -
-        // left anyone who had opted out stuck that way, and short circuited the automatic re-subscribe on the next
-        // auth-state change too (See PushNotificationServiceBase).
-        await pushNotificationService.SetEnabled(enable, CurrentCancellationToken);
+        // Stored either way: the permission decides whether a push can be delivered, not whether the user wants
+        // notifications, and in-app messages need no permission at all.
+        await notificationPreferenceService.SetEnabled(enable);
 
-        await RefreshPushNotificationsState();
-
-        // Reported from the outcome: after an enable, the switch is only off when the platform refused.
-        if (enable && pushNotificationsEnabled is false)
+        //#if (notification == true)
+        if (enable)
         {
-            SnackBarService.Error(Localizer[nameof(AppStrings.PushNotificationsBlockedMessage)]);
-            return;
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
         }
+        else
+        {
+            await pushNotificationService.Unsubscribe(CurrentCancellationToken);
+        }
+        //#endif
 
-        await ConfirmPushNotifications(enable);
+        await RefreshNotificationsState();
+
+        await ConfirmNotifications(enable);
     }
 
     /// <summary>
-    /// Tells the server what the switch now says, and the server answers with the welcome push that proves the setup
-    /// works. Signed in this is not optional bookkeeping: a subscription attached to a user session is only pushed to
-    /// while that session is Allowed (See PushNotificationService.RequestPush), so without it someone who turned the
-    /// switch on here received nothing until the sessions list in Settings was used.
+    /// Tells the server what the switch now says, and the server answers with the welcome notification that proves
+    /// the setup works. A later sign-in on this device gets the same choice through UpdateSession, silently.
     /// </summary>
-    private async Task ConfirmPushNotifications(bool enabled)
+    private async Task ConfirmNotifications(bool enabled)
     {
         var user = (await AuthenticationStateTask).User;
 
         if (user.IsAuthenticated())
         {
-            await userController.SetNotificationEnabled(user.GetSessionId(), enabled, CurrentCancellationToken);
+            await userController.SetNotificationEnabled(enabled, CurrentCancellationToken);
             return;
         }
 
-        // Signed out there is no session to store the preference on, and turning the switch off has just deleted the
-        // subscription, so only the enable path has anything left to say.
-        if (enabled is false)
+        //#if (notification == true)
+        // Signed out there is no session to store the choice on, and turning the switch off has just deleted the
+        // subscription, so only an enable the platform accepted has anything left to say. Windows has no push to test.
+        if (enabled is false || pushNotificationsBlocked || AppPlatform.IsWindows)
             return;
 
         var subscription = await pushNotificationService.GetSubscription(CurrentCancellationToken);
@@ -180,6 +214,7 @@ public partial class AppMenu
             return;
 
         await pushNotificationController.TestPushNotificationSetup(subscription, CurrentCancellationToken);
+        //#endif
     }
     //#endif
 
@@ -295,8 +330,8 @@ public partial class AppMenu
     /// </summary>
     private async Task OnDropMenuOpen()
     {
-        //#if (notification == true)
-        await RefreshPushNotificationsState();
+        //#if (signalR == true || notification == true)
+        await RefreshNotificationsState();
         //#endif
     }
 

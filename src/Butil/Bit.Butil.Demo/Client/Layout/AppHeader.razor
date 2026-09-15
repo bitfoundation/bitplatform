@@ -1,9 +1,10 @@
-@inject ThemeService theme
+﻿@inject ThemeService theme
 
 @* Fluent 2's command bar: one 56px band, an identity block at the start, the utilities at the end,
    and everything in it a 32px control on the 4px grid. The bar is the only chrome that is on every
    page - the nav panel is not on the home page - so anything a reader must be able to reach from
-   anywhere lives here: search, the two outbound links, and the theme. *@
+   anywhere lives here: search, the two outbound links, and the theme. Search is the one thing the
+   home page takes back, because its hero shows the same box larger. *@
 
 <header class="header">
     <div class="container@(IsHomePage ? " home-page" : "")">
@@ -45,8 +46,13 @@
             }
 
             @* In the bar rather than inside the nav panel, which only exists on documentation
-               pages: search has to work from the home page too. *@
-            <SearchBox />
+               pages: search has to work from every page that has one. The home page is the
+               exception - it puts the same box in its hero, where it is the thing being offered
+               rather than a utility, so the bar would only be showing it twice. *@
+            @if (IsHomePage is false)
+            {
+                <SearchBox />
+            }
 
             <a class="icon-btn" target="_blank" rel="noopener noreferrer"
                title="Bit.Butil on NuGet" aria-label="Bit.Butil on NuGet (opens in a new tab)"
