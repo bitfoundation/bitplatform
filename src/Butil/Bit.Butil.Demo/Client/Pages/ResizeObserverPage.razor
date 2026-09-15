@@ -50,11 +50,25 @@
              Api="ResizeObserverBox"
              Description="The box parameter selects which box dimensions trigger the observer: ContentBox (the default) excludes padding and borders, BorderBox includes them, and DevicePixelContentBox measures in physical device pixels - the choice that matters when sizing a canvas backing store. Pick one below and re-observe."
              Code=@("""
-await box.ObserveResize(js, entries =>
-{
-    // fires when the border box changes size
-}, ResizeObserverBox.BorderBox);
-""")>
+@inject IJSRuntime js
+
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await box.ObserveResize(js, entries =>
+        {
+            // fires when the border box changes size
+        }, ResizeObserverBox.BorderBox);
+    }
+}
+""")
+             Language="razor">
     <div class="field">
         <span class="field-label">Observed box</span>
         <select @bind="selectedBox" style="max-width:16rem;">
@@ -64,8 +78,13 @@ await box.ObserveResize(js, entries =>
             }
         </select>
     </div>
+    <div @ref="boxModelsBoxRef"
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
+        Drag my bottom-right corner to resize me.
+    </div>
     <div class="controls">
         <button @onclick="ReObserveWithBox">Re-observe with @selectedBox</button>
+        <button class="danger" @onclick="StopBoxModels" disabled="@(boxModelsSub is null)">Stop</button>
     </div>
     <DemoConsole @ref="boxModelsOutput" Title="box models output" />
 </DemoSection>
@@ -74,18 +93,38 @@ await box.ObserveResize(js, entries =>
              Api="ResizeObserverEntry"
              Description="Each entry flattens the browser's ResizeObserverEntry into the fields layout work actually needs: the content rect, the logical inline and block sizes of the observed box, and the device-pixel sizes for pixel-perfect rendering."
              Code=@("""
-await box.ObserveResize(js, entries =>
-{
-    var entry = entries[^1];
+@inject IJSRuntime js
 
-    Rect? rect = entry.ContentRect;      // content box geometry
-    var inline = entry.InlineSize;       // width in horizontal writing mode
-    var block = entry.BlockSize;         // height in horizontal writing mode
-    var dpInline = entry.DevicePixelInlineSize;
-    var dpBlock = entry.DevicePixelBlockSize;
-});
-""")>
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await box.ObserveResize(js, entries =>
+        {
+            var entry = entries[^1];
+
+            Rect? rect = entry.ContentRect;      // content box geometry
+            var inline = entry.InlineSize;       // width in horizontal writing mode
+            var block = entry.BlockSize;         // height in horizontal writing mode
+            var dpInline = entry.DevicePixelInlineSize;
+            var dpBlock = entry.DevicePixelBlockSize;
+        });
+    }
+}
+""")
+             Language="razor">
+    <div @ref="entriesBoxRef"
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
+        Drag my bottom-right corner to resize me.
+    </div>
     <div class="controls">
+        <button @onclick="StartEntries" disabled="@(entriesSub is not null)">Start observing</button>
+        <button class="danger" @onclick="StopEntries" disabled="@(entriesSub is null)">Stop</button>
         <button class="secondary" @onclick="LogLatestEntry" disabled="@(latestEntry is null)">Log latest entry as JSON</button>
     </div>
     <DemoConsole @ref="entriesOutput" Title="entries output" />
@@ -95,13 +134,77 @@ await box.ObserveResize(js, entries =>
              Api="ObserveResize + SetAttribute"
              Description="The observer does not care who changed the size: user drags, CSS state changes, Blazor re-renders and style writes all produce entries. Here the button widens the box through the Element extension SetAttribute while the observer reports each step."
              Code=@("""
-// any style write triggers the observer just like a user drag:
-await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overflow: auto;");
-""")>
+<div @ref="box">...</div>
+<button @onclick="Resize">Resize it from code</button>
+
+@code {
+    private ElementReference box;
+
+    // Any style write triggers the observer just like a user drag - the observer watches the box,
+    // not the input that changed it.
+    private async Task Resize() =>
+        await box.SetAttribute("style", "width: 20rem; height: 6rem; resize: both; overflow: auto;");
+}
+""")
+             Language="razor">
+    <div @ref="growBoxRef"
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
+        This box is widened from C#, not by dragging.
+    </div>
     <div class="controls">
+        <button @onclick="StartGrow" disabled="@(growSub is not null)">Start observing</button>
         <button class="secondary" @onclick="GrowBox">Grow the box by 3rem</button>
+        <button class="danger" @onclick="StopGrow" disabled="@(growSub is null)">Stop</button>
     </div>
     <DemoConsole @ref="growOutput" Title="programmatic changes output" />
+</DemoSection>
+
+<DemoSection Title="Rate limiting"
+             Api="minInterval"
+             Description="A ResizeObserver delivers an entry every frame for as long as a drag or a reflow lasts, and every entry is an interop round trip - under Blazor Server, a SignalR message and a network hop per frame. minInterval caps how often the handler is called. The gate is leading-edge with a trailing send, so the size the element settles at always arrives; it is just delivered a little later. Start a gated observer below and drag the box: the console fills at a fraction of the rate, and the last line still reads the final size."
+             Code=@("""
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<div @ref="box" style="resize:both; overflow:auto">...</div>
+
+@code {
+    private ElementReference box;
+    private ButilSubscription? subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        subscription = await box.ObserveResize(js, entries =>
+        {
+            // called at most once every 100 ms, and always once more
+            // after the drag stops - with the settled size
+        },
+        minInterval: TimeSpan.FromMilliseconds(100));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null) await subscription.DisposeAsync();
+    }
+}
+""")
+             Language="razor">
+    <div class="field">
+        <span class="field-label">Minimum interval (ms)</span>
+        <input type="number" min="0" step="10" @bind="minIntervalMs" style="max-width:8rem;" />
+    </div>
+    <div @ref="gatedBoxRef"
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
+        Drag my bottom-right corner to resize me.
+    </div>
+    <div class="controls">
+        <button @onclick="ReObserveGated">Re-observe with a @minIntervalMs ms gate</button>
+        <button class="secondary" @onclick="ReObserveUngated">Re-observe ungated</button>
+        <button class="danger" @onclick="StopGated" disabled="@(gatedSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="gatedOutput" Title="rate limiting output" />
 </DemoSection>
 
 <DemoSection Title="Stopping"
@@ -121,8 +224,13 @@ public async ValueTask DisposeAsync()
 }
 """)
              Language="razor">
+    <div @ref="stoppingBoxRef"
+         class="demo-box" style="resize:both;overflow:auto;width:16rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;">
+        Drag my bottom-right corner to resize me.
+    </div>
     <div class="controls">
-        <button class="danger" @onclick="() => StopObserving(stoppingOutput)" disabled="@(resizeSub is null)">Dispose the observer</button>
+        <button @onclick="StartStopping" disabled="@(stoppingSub is not null)">Start observing</button>
+        <button class="danger" @onclick="StopStopping" disabled="@(stoppingSub is null)">Dispose the observer</button>
     </div>
     <DemoConsole @ref="stoppingOutput" Title="stopping output" />
 </DemoSection>
@@ -135,7 +243,7 @@ public async ValueTask DisposeAsync()
 </Callout>
 
 <ApiTable Title="API reference">
-    <ApiMember Name="ObserveResize" Signature="Task<ButilSubscription> ObserveResize(IJSRuntime js, Action<ResizeObserverEntry[]> handler, ResizeObserverBox box = ResizeObserverBox.ContentBox)" Description="Extension method on ElementReference. Starts observing size changes and returns a disposable subscription." />
+    <ApiMember Name="ObserveResize" Signature="Task<ButilSubscription> ObserveResize(IJSRuntime js, Action<ResizeObserverEntry[]> handler, ResizeObserverBox box = ResizeObserverBox.ContentBox, TimeSpan? minInterval = null)" Description="Extension method on ElementReference. Starts observing size changes and returns a disposable subscription. minInterval rate-limits the handler in JavaScript, before the round trip." />
     <ApiMember Name="ResizeObserverBox" Signature="enum ResizeObserverBox { ContentBox, BorderBox, DevicePixelContentBox }" Description="Selects which box dimensions trigger the observer." />
     <ApiMember Name="ResizeObserverEntry.ContentRect" Signature="Rect? ContentRect { get; set; }" Description="The content box geometry of the observed element." />
     <ApiMember Name="ResizeObserverEntry.InlineSize" Signature="double InlineSize { get; set; }" Description="Logical inline size of the observed box (width in horizontal writing modes)." />
@@ -151,37 +259,91 @@ public async ValueTask DisposeAsync()
     private DemoConsole boxModelsOutput = default!;
     private DemoConsole entriesOutput = default!;
     private DemoConsole growOutput = default!;
+    private DemoConsole gatedOutput = default!;
     private DemoConsole stoppingOutput = default!;
 
+    // A resize observer is only readable next to the box it is watching, so every section brings its
+    // own box and its own subscription rather than sharing the first section's.
     private ElementReference boxRef;
+    private ElementReference boxModelsBoxRef;
+    private ElementReference entriesBoxRef;
+    private ElementReference growBoxRef;
+    private ElementReference gatedBoxRef;
+    private ElementReference stoppingBoxRef;
 
     private ButilSubscription? resizeSub;
+    private ButilSubscription? boxModelsSub;
+    private ButilSubscription? entriesSub;
+    private ButilSubscription? growSub;
+    private ButilSubscription? gatedSub;
+    private ButilSubscription? stoppingSub;
     private ResizeObserverBox selectedBox = ResizeObserverBox.BorderBox;
     private ResizeObserverEntry? latestEntry;
     private double boxWidthRem = 16;
+    private int minIntervalMs = 100;
 
     private async Task StartObserving()
     {
-        await StartWith(ResizeObserverBox.ContentBox, basicOutput);
+        resizeSub = await Observe(boxRef, ResizeObserverBox.ContentBox, basicOutput, resizeSub);
     }
+
+    private async Task StopObserving(DemoConsole output) => resizeSub = await Stop(resizeSub, output);
 
     private async Task ReObserveWithBox()
     {
-        await StopObserving(boxModelsOutput);
-        await StartWith(selectedBox, boxModelsOutput);
+        boxModelsSub = await Stop(boxModelsSub, boxModelsOutput);
+        boxModelsSub = await Observe(boxModelsBoxRef, selectedBox, boxModelsOutput, boxModelsSub);
     }
 
-    private async Task StartWith(ResizeObserverBox box, DemoConsole output)
+    private async Task StopBoxModels() => boxModelsSub = await Stop(boxModelsSub, boxModelsOutput);
+
+    private async Task StartEntries()
+    {
+        entriesSub = await Observe(entriesBoxRef, ResizeObserverBox.ContentBox, entriesOutput, entriesSub);
+    }
+
+    private async Task StopEntries() => entriesSub = await Stop(entriesSub, entriesOutput);
+
+    private async Task StartGrow()
+    {
+        growSub = await Observe(growBoxRef, ResizeObserverBox.ContentBox, growOutput, growSub);
+    }
+
+    private async Task StopGrow() => growSub = await Stop(growSub, growOutput);
+
+    private async Task ReObserveGated()
+    {
+        gatedSub = await Stop(gatedSub, gatedOutput);
+        gatedSub = await Observe(gatedBoxRef, ResizeObserverBox.ContentBox, gatedOutput, gatedSub, TimeSpan.FromMilliseconds(minIntervalMs));
+    }
+
+    private async Task ReObserveUngated()
+    {
+        gatedSub = await Stop(gatedSub, gatedOutput);
+        gatedSub = await Observe(gatedBoxRef, ResizeObserverBox.ContentBox, gatedOutput, gatedSub);
+    }
+
+    private async Task StopGated() => gatedSub = await Stop(gatedSub, gatedOutput);
+
+    private async Task StartStopping()
+    {
+        stoppingSub = await Observe(stoppingBoxRef, ResizeObserverBox.ContentBox, stoppingOutput, stoppingSub);
+    }
+
+    private async Task StopStopping() => stoppingSub = await Stop(stoppingSub, stoppingOutput);
+
+    private async Task<ButilSubscription?> Observe(ElementReference element, ResizeObserverBox box,
+        DemoConsole output, ButilSubscription? existing, TimeSpan? minInterval = null)
     {
         try
         {
-            if (resizeSub is not null)
+            if (existing is not null)
             {
                 await output.Warn("Already observing - stop first");
-                return;
+                return existing;
             }
 
-            resizeSub = await boxRef.ObserveResize(js, entries =>
+            var subscription = await element.ObserveResize(js, entries =>
             {
                 if (entries.Length == 0) return;
 
@@ -189,30 +351,36 @@ public async ValueTask DisposeAsync()
                 _ = output.Log($"{box} → {latestEntry.InlineSize:F0} x {latestEntry.BlockSize:F0} " +
                     $"(device px: {latestEntry.DevicePixelInlineSize:F0} x {latestEntry.DevicePixelBlockSize:F0})");
                 _ = InvokeAsync(StateHasChanged);
-            }, box);
+            }, box, minInterval);
 
-            await output.Log($"Observing with {box} - drag the corner of the box");
+            await output.Log(minInterval is null
+                ? $"Observing with {box} - drag the corner of the box"
+                : $"Observing with {box}, rate-limited to one call every {minInterval.Value.TotalMilliseconds:F0} ms - drag the corner");
+
+            return subscription;
         }
         catch (Exception ex)
         {
             await output.Error(ex.Message);
+            return existing;
         }
     }
 
-    private async Task StopObserving(DemoConsole output)
+    private async Task<ButilSubscription?> Stop(ButilSubscription? subscription, DemoConsole output)
     {
         try
         {
-            if (resizeSub is null) return;
+            if (subscription is null) return null;
 
-            await resizeSub.DisposeAsync();
-            resizeSub = null;
+            await subscription.DisposeAsync();
             await output.Warn("Resize observer disposed");
         }
         catch (Exception ex)
         {
             await output.Error(ex.Message);
         }
+
+        return null;
     }
 
     private async Task GrowBox()
@@ -220,7 +388,7 @@ public async ValueTask DisposeAsync()
         try
         {
             boxWidthRem += 3;
-            await boxRef.SetAttribute("style",
+            await growBoxRef.SetAttribute("style",
                 $"resize:both;overflow:auto;width:{boxWidthRem}rem;height:6rem;min-width:8rem;min-height:4rem;max-width:100%;");
             await growOutput.Info($"Box width set to {boxWidthRem}rem from C#");
         }
@@ -247,5 +415,10 @@ public async ValueTask DisposeAsync()
     public async ValueTask DisposeAsync()
     {
         if (resizeSub is not null) await resizeSub.DisposeAsync();
+        if (boxModelsSub is not null) await boxModelsSub.DisposeAsync();
+        if (entriesSub is not null) await entriesSub.DisposeAsync();
+        if (growSub is not null) await growSub.DisposeAsync();
+        if (gatedSub is not null) await gatedSub.DisposeAsync();
+        if (stoppingSub is not null) await stoppingSub.DisposeAsync();
     }
 }

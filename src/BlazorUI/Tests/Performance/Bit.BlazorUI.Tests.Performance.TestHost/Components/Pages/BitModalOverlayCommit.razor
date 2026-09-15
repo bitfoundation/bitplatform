@@ -1,0 +1,62 @@
+@page "/regression/modal-overlay-commit"
+
+<PageTitle>BitModal Overlay Commit Regression</PageTitle>
+
+@* A press on the overlay of a non-blocking Modal has to blur the input the user was typing into before the
+   click it turns into dismisses the Modal: the input only commits what was typed once it loses the focus,
+   so a press refused its default would hand OnOverlayClick and OnDismiss the value from before the typing. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitModal Overlay Commit Regression</h3>
+    <div style="margin-bottom: 10px;">
+        <button @onclick="Open" id="btn-open">Open</button>
+    </div>
+    <div id="metrics" style="font-family: monospace;">
+        <p>OnOverlayClick value: <span id="overlay-click-value">@_overlayClickValue</span></p>
+        <p>OnDismiss value: <span id="dismiss-value">@_dismissValue</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<BitModal @bind-IsOpen="_isOpen" OnOverlayClick="HandleOnOverlayClick" OnDismiss="HandleOnDismiss">
+    <div style="padding: 20px;">
+        <BitTextField @bind-Value="_value" Label="Value" />
+    </div>
+</BitModal>
+
+@code {
+    private bool _isOpen;
+    private string? _value;
+    private string? _overlayClickValue;
+    private string? _dismissValue;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void Open()
+    {
+        _value = null;
+        _overlayClickValue = null;
+        _dismissValue = null;
+        _isOpen = true;
+        _status = "Open";
+    }
+
+    private void HandleOnOverlayClick(MouseEventArgs e)
+    {
+        _overlayClickValue = _value;
+    }
+
+    private void HandleOnDismiss(MouseEventArgs e)
+    {
+        _dismissValue = _value;
+        _status = "Dismissed";
+    }
+}

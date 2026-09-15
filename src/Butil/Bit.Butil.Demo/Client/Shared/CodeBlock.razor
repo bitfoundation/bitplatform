@@ -6,13 +6,40 @@
    button out of the text: resting on the code, the button covered the end of the opening line on
    exactly the snippets - one-liners - where that line is the whole sample.
 
-   The language stays on the <pre> as a data attribute as well as in the bar, because that is where
-   Server/Services/HtmlToMarkdownService.cs reads it to label the fenced block it hands an MCP
-   client. *@
+   A sample that only runs as several files - a page plus the worker script it spawns, C# plus the
+   JS module it imports - passes Files instead of Code, and the bar becomes a tab strip naming them.
+   Every file is in the markup either way, with the inactive ones hidden, because the pane is also
+   what Server/Services/HtmlToMarkdownService.cs reads to build the fenced blocks it hands an MCP
+   client: a file only rendered once its tab is clicked would be a file no agent ever sees.
 
-<div class="code-holder">
+   The language stays on the <pre> as a data attribute as well as in the bar, because that is where
+   HtmlToMarkdownService reads it to label that block; the file name rides along as data-file so a
+   multi-file sample arrives as named blocks rather than an unattributed pile of sources. *@
+
+<div class="code-holder @(_files.Length > 1 ? "multi-file" : "")">
     <div class="code-bar">
-        <span class="code-lang">@Label</span>
+        @if (_files.Length > 1)
+        {
+            <div class="code-tabs" role="tablist" aria-label="Files in this sample" @onkeydown="OnTabKeyDown">
+                @for (var i = 0; i < _files.Length; i++)
+                {
+                    var index = i;
+                    <button type="button" role="tab" id="@TabId(index)"
+                            class="code-tab @(index == _active ? "active" : "")"
+                            aria-selected="@(index == _active ? "true" : "false")"
+                            aria-controls="@PaneId(index)"
+                            tabindex="@(index == _active ? 0 : -1)"
+                            @ref="_tabs[index]"
+                            @onclick="() => _active = index">
+                        @_files[index].Name
+                    </button>
+                }
+            </div>
+        }
+        else
+        {
+            <span class="code-lang">@Label</span>
+        }
         @* aria-live so the outcome is announced: the button confirms by swapping its own content,
            and a state change inside the control that was just activated is otherwise silent. The
            label tracks the same three states, so it never contradicts what the button now reads. *@
@@ -41,21 +68,51 @@
        every one of them wraps text that came out of Escape(), so the MarkupString carries nothing
        a sample could have injected. The language- class on the <code> is the convention every
        other docs site uses, and HtmlToMarkdownService falls back to reading it. *@
-    <pre data-language="@Language"><code class="language-@Language">@_highlighted</code></pre>
+    @for (var i = 0; i < _files.Length; i++)
+    {
+        var index = i;
+        var file = _files[index];
+        <pre data-language="@file.Language" data-file="@(_files.Length > 1 ? file.Name : null)"
+             id="@(_files.Length > 1 ? PaneId(index) : null)"
+             role="@(_files.Length > 1 ? "tabpanel" : null)"
+             aria-labelledby="@(_files.Length > 1 ? TabId(index) : null)"
+             hidden="@(index != _active)"><code class="language-@file.Language">@_highlighted[index]</code></pre>
+    }
 </div>
 
 @code {
+    /// <summary>A single-file sample. Ignored when <see cref="Files"/> is set.</summary>
     [Parameter] public string Code { get; set; } = "";
+
+    /// <summary>The fence slug <see cref="Code"/> is highlighted and labelled with.</summary>
     [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>A sample that spans more than one file, shown as a tab per file.</summary>
+    [Parameter] public CodeFile[]? Files { get; set; }
 
     private bool _copied;
     private bool _failed;
+    private int _active;
+
+    // Whatever was passed, seen as the one shape the markup draws.
+    private CodeFile[] _files = [];
 
     // Highlighting a sample costs a scan of it, and the copy button re-renders this component
     // three times per click, so it is done when the code changes rather than when it is drawn.
-    private MarkupString _highlighted;
+    private MarkupString[] _highlighted = [];
 
-    // What the bar shows. The slugs are what a Markdown fence wants; a human wants the name.
+    // Captured so the arrow keys can carry focus with the selection; a roving tabindex that leaves
+    // focus behind on the tab the reader has just left reads worse than no roving tabindex at all.
+    private ElementReference[] _tabs = [];
+
+    // Unique per instance so several panes on a page cannot claim each other's tabs.
+    private readonly string _id = $"code-{Guid.NewGuid().ToString("N")[..8]}";
+
+    private string TabId(int index) => $"{_id}-tab-{index}";
+    private string PaneId(int index) => $"{_id}-pane-{index}";
+
+    // What the bar shows for a single file. The slugs are what a Markdown fence wants; a human
+    // wants the name.
     private string Label => Language switch
     {
         "csharp" => "C#",
@@ -66,20 +123,55 @@
         "markdown" => "Markdown",
         "http" => "HTTP",
         "js" or "javascript" => "JavaScript",
+        "ts" or "typescript" => "TypeScript",
         "css" => "CSS",
         "xml" => "XML",
         "" or null => "Code",
         _ => Language,
     };
 
-    protected override void OnParametersSet() =>
-        _highlighted = (MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n'), Language);
+    protected override void OnParametersSet()
+    {
+        _files = Files is { Length: > 0 } files ? files : [new CodeFile("", Language, Code)];
+        _highlighted = [.. _files.Select(file => (MarkupString)SyntaxHighlighter.Highlight(file.Code.Trim('\r', '\n'), file.Language))];
+
+        if (_tabs.Length != _files.Length) _tabs = new ElementReference[_files.Length];
+
+        // A page swapping one sample for another - a shorter one - must not leave the strip
+        // pointing past the end of it.
+        if (_active >= _files.Length) _active = 0;
+    }
+
+    // A tablist is expected to move between its tabs with the arrow keys; without this the strip
+    // is a row of buttons wearing tab roles, which is worse for a screen reader than no roles. Only
+    // the horizontal keys, because the vertical pair is how a reader scrolls the page it sits on.
+    private async Task OnTabKeyDown(KeyboardEventArgs args)
+    {
+        var step = args.Key switch
+        {
+            "ArrowRight" => 1,
+            "ArrowLeft" => -1,
+            _ => 0,
+        };
+
+        if (args.Key is "Home") _active = 0;
+        else if (args.Key is "End") _active = _files.Length - 1;
+        else if (step is not 0) _active = (_active + step + _files.Length) % _files.Length;
+        else return;
+
+        // The strip has to have re-rendered around the new selection before the reference points at
+        // the tab the reader now wants under their cursor.
+        StateHasChanged();
+        await _tabs[_active].FocusAsync();
+    }
 
     private async Task Copy()
     {
+        var code = _files[_active].Code.Trim('\r', '\n');
+
         try
         {
-            await clipboard.WriteText(Code.Trim('\r', '\n'));
+            await clipboard.WriteText(code);
         }
         catch (JSException)
         {

@@ -1493,20 +1493,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>सूचना भेजें</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>सूचनाएं सक्षम करें</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>सूचनाएं अक्षम करें</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>इस सत्र पर पुश सूचनाएँ सक्षम हैं।</value>
+    <value>इस सत्र पर सूचनाएँ सक्षम हैं।</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>इस सत्र पर पुश सूचनाएँ म्यूट हैं।</value>
+    <value>इस सत्र पर सूचनाएँ म्यूट हैं।</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>इस सत्र पर पुश सूचनाएँ कॉन्फ़िगर नहीं की गई हैं।</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>सूचनाएँ</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>सूचनाएँ चालू करें</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>सूचनाएँ बंद करें</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>सूचनाएँ चालू हैं</value>
@@ -1829,15 +1829,6 @@
     <value>आपकी खोज से मेल खाने वाला कोई समय क्षेत्र नहीं है।</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>पुश सूचनाएँ</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>पुश सूचनाएँ चालू करें</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>पुश सूचनाएँ बंद करें</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
   </data>

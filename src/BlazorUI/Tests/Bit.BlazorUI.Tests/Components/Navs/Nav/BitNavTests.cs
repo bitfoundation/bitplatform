@@ -724,6 +724,55 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldKeepTheExpansionStateWhenItemsAreRebuiltWithNewInstances()
+    {
+        // A page that builds its items in a property hands the nav a fresh tree of fresh instances on every
+        // render, so an item the reader expanded has to be followed by its place in the tree, not by reference.
+        var component = RenderNav(TreeItems());
+
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, TreeItems()));
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+        Assert.AreEqual("true", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldFollowAKeyedItemAcrossARebuildThatReordersIt()
+    {
+        static List<BitNavItem> Items(bool reversed)
+        {
+            List<BitNavItem> items =
+            [
+                new() { Key = "fruits", Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
+                new() { Key = "drinks", Text = "Drinks", ChildItems = [new() { Text = "Tea" }, new() { Text = "Coffee" }] },
+            ];
+
+            if (reversed) items.Reverse();
+
+            return items;
+        }
+
+        var component = RenderNav(Items(reversed: false));
+
+        // Expand Fruits, the first item.
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, Items(reversed: true)));
+
+        // Fruits is now the second item and is still the one expanded, by its key rather than its place.
+        var headers = component.FindAll(".bit-nav-ict");
+        Assert.AreEqual(3, headers.Count);
+        Assert.AreEqual("false", headers[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", headers[1].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
     public void BitNavShouldRespectAllExpanded()
     {
         var component = RenderNav(TreeItems(), p => p.Add(c => c.AllExpanded, true));

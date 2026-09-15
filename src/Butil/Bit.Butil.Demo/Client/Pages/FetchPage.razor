@@ -183,14 +183,22 @@ var response = await responseTask;
                  Api="Start / AbortableFetch"
                  Description="Start launches the request and immediately returns an AbortableFetch handle without waiting for (or returning) the response payload. Call Abort to stop it; disposing the handle also aborts unless the request already completed. Prefer Send whenever you need the response."
                  Code=@("""
-AbortableFetch handle = await fetch.Start(new FetchRequest
-{
-    Url = "https://example.com/large-file",
-});
+@inject Bit.Butil.Fetch fetch
 
-// later:
-await handle.Abort();
-""")>
+@code {
+    private AbortableFetch? handle;
+
+    private async Task Start() =>
+        handle = await fetch.Start(new FetchRequest
+        {
+            Url = "https://example.com/large-file",
+        });
+
+    // Nothing waits for the response, so this is the only way to stop the transfer.
+    private async Task Cancel() => await handle!.Abort();
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartAndAbort" disabled="@_busy">Start, then abort after 300 ms</button>
         </div>

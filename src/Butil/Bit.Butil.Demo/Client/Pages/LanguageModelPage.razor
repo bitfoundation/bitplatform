@@ -81,8 +81,18 @@ _session = await languageModel.Create(
                  Api="LanguageModelSession.Prompt"
                  Description="Sends a turn and resolves with the whole answer. The session is stateful - every turn sees the ones before it - so this is a conversation, not a series of independent calls."
                  Code=@("""
-var answer = await _session.Prompt("Name three uses for a paperclip.");
-""")>
+@code {
+    // The session from Create above. It carries the conversation, so the model sees everything asked
+    // through it - which is also what fills the context window up.
+    private LanguageModelSession? _session;
+
+    private async Task Ask()
+    {
+        var answer = await _session!.Prompt("Name three uses for a paperclip.");
+    }
+}
+""")
+                 Language="razor">
         <div class="field">
             <span class="field-label">Prompt</span>
             <input @bind="_prompt" />
@@ -97,13 +107,24 @@ var answer = await _session.Prompt("Name three uses for a paperclip.");
                  Api="LanguageModelSession.PromptStreaming"
                  Description="The same turn, reported as it is generated. Each chunk is the delta, not the text so far - append it. The handler runs on the interop dispatch, so a component has to call StateHasChanged itself."
                  Code=@("""
-_answer = "";
-await _session.PromptStreaming(prompt, chunk =>
-{
-    _answer += chunk;
-    InvokeAsync(StateHasChanged);
-});
-""")>
+<p>@_answer</p>
+
+@code {
+    private string _answer = "";
+    private LanguageModelSession? _session;   // from Create
+
+    private async Task Stream(string prompt)
+    {
+        _answer = "";
+        await _session!.PromptStreaming(prompt, chunk =>
+        {
+            _answer += chunk;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StreamPrompt" disabled="@(_session is null)">PromptStreaming</button>
         </div>
@@ -121,13 +142,23 @@ await _session.PromptStreaming(prompt, chunk =>
                  Api="Append / MeasureInputUsage / GetUsage / Clone"
                  Description="Append adds turns the model should know about without asking for a reply. MeasureInputUsage says what a turn would cost before you spend it. GetUsage reports how much of the quota is gone - a session that runs out starts dropping the oldest turns. Clone forks the conversation, which is how 'regenerate this answer' keeps the original."
                  Code=@("""
-var cost = await _session.MeasureInputUsage(draft);
-var usage = await _session.GetUsage();
+@code {
+    private LanguageModelSession? _session;   // from Create
 
-if (cost > usage?.Remaining) TrimTheConversation();
+    private async Task Budget(string draft)
+    {
+        var cost = await _session!.MeasureInputUsage(draft);
+        var usage = await _session.GetUsage();
 
-var fork = await _session.Clone();
-""")>
+        if (cost > usage?.Remaining) TrimTheConversation();
+
+        // A fork shares everything said so far and diverges from here, which is how a branch of the
+        // conversation is explored without spending the original session's context on it.
+        var fork = await _session.Clone();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="Measure" disabled="@(_session is null)">MeasureInputUsage</button>
             <button @onclick="ReadUsage" disabled="@(_session is null)">GetUsage</button>

@@ -1,11 +1,14 @@
-// bit version: 10.6.0-pre-04
+// bit version: 10.6.0
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 self.assetsInclude = [];
 self.assetsExclude = [
     /bit\.blazorui\.fluent\.css$/,
     /bit\.blazorui\.fluent-dark\.css$/,
-    /bit\.blazorui\.fluent-light\.css$/
+    /bit\.blazorui\.fluent-light\.css$/,
+
+    // the flag image sets of Bit.BlazorUI.Assets: thousands of images, fetched as the flags are drawn
+    /_content\/Bit\.BlazorUI\.Assets\/flags/
 ];
 self.externalAssets = [
     {

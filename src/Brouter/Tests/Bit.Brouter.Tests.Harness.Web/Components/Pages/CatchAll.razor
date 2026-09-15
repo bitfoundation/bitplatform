@@ -1,0 +1,8 @@
+﻿@* Gives the endpoint router a page for every URL. App.razor never renders it: HarnessApp's Brouter
+   matches the real route, so this only exists to make MapRazorComponents answer the request. *@
+@page "/"
+@page "/{*path}"
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

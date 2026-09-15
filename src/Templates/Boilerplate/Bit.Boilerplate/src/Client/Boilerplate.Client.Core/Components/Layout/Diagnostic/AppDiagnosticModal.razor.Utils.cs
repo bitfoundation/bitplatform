@@ -8,8 +8,20 @@ public partial class AppDiagnosticModal
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private LocalStorage localStorage = default!;
     [AutoInject] private CacheStorage cacheStorage = default!;
+    //#if (signalR == true)
+    [AutoInject] private IndexedDb indexedDb = default!;
+    //#endif
     [AutoInject] private SessionStorage sessionStorage = default!;
+    //#if (api == "Integrated")
+    [AutoInject] private IUserController userController = default!;
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
+    //#endif
     [AutoInject] private IStorageService storageService = default!;
+    //#if (api == "Integrated")
+    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
+    //#endif
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
     //#if (offlineDb == true)
@@ -28,70 +40,35 @@ public partial class AppDiagnosticModal
             : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
     }
 
-    private async Task CallDiagnosticApi()
-    {
-        string? signalRConnectionId = null;
-        string? pushNotificationSubscriptionDeviceId = null;
-
-        //#if (signalR == true)
-        try
-        {
-            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get SignalR ConnectionId for diagnostic.");
-        }
-        //#endif
-
-        //#if (notification == true)
-        try
-        {
-            pushNotificationSubscriptionDeviceId = (await pushNotificationService.GetSubscription(CurrentCancellationToken))!.DeviceId;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get Push Notification Subscription DeviceId for diagnostic.");
-        }
-        //#endif
-
-        var serverResult = await diagnosticController.PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken);
-
-        StringBuilder resultBuilder = new(serverResult);
-        try
-        {
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
-            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
-            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
-
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"Env version: {Environment.Version}");
-            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
-            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
-
-            resultBuilder.AppendLine();
-
-            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
-                resultBuilder.AppendLine($"ServerGC: {serverGC}");
-
-            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
-                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
-        }
-        catch (Exception exp)
-        {
-            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
-        }
-
-        await messageBoxService.Show("Diagnostic Result", resultBuilder.ToString());
-    }
-
     private async Task OpenDevTools()
     {
         await JSRuntime.InvokeVoidAsync("App.openDevTools");
     }
+
+    //#if (api == "Integrated")
+    /// <summary>
+    /// Opens Hangfire's dashboard on the api, already signed in as this user. A plain browser navigation carries only
+    /// a cookie, which <see cref="IUserController.UpdateSession"/> writes with the token's own expiry - so the token
+    /// is refreshed first to buy a full lifetime rather than whatever is left of the current one.
+    /// </summary>
+    private async Task OpenHangfireDashboard()
+    {
+        await AuthManager.RefreshToken(requestedBy: nameof(OpenHangfireDashboard));
+
+        await userController.UpdateSession(new()
+        {
+            AppVersion = TelemetryContext.AppVersion,
+            DeviceInfo = TelemetryContext.Platform,
+            CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(), // Left out, it would mute the session.
+            //#endif
+            PlatformType = AppPlatform.Type
+        }, CurrentCancellationToken);
+
+        await externalNavigationService.NavigateTo(new Uri(AbsoluteServerAddress, "hangfire").ToString());
+    }
+    //#endif
 
     private async Task CallGC()
     {
@@ -195,6 +172,12 @@ public partial class AppDiagnosticModal
         await Attempt(nameof(LocalStorage), localStorage.Clear);
 
         await Attempt(nameof(SessionStorage), sessionStorage.Clear);
+
+        //#if (signalR == true)
+        // The conversation the AI chat panel keeps on this device (See AppAiChatPanel.RestoreHistory). The panel drops
+        // its connection on delete, which would otherwise block it.
+        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AppAiChatPanel.HistoryDatabase).AsTask());
+        //#endif
 
         await Attempt(nameof(Cookie), async () =>
         {

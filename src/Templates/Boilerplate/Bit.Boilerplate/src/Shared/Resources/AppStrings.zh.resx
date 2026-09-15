@@ -1493,20 +1493,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>发送通知</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>启用通知</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>禁用通知</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>此会话已启用推送通知。</value>
+    <value>此会话已启用通知。</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>此会话的推送通知已静音。</value>
+    <value>此会话的通知已静音。</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>此会话尚未配置推送通知。</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>开启通知</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>关闭通知</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>推送通知已开启</value>
@@ -1829,15 +1829,6 @@
     <value>没有与您的搜索匹配的时区。</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>推送通知</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>开启推送通知</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>关闭推送通知</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>此应用的推送通知已被阻止。请在浏览器或操作系统设置中允许通知，然后重试。</value>
   </data>

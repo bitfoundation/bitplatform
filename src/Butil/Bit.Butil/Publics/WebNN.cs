@@ -59,7 +59,7 @@ public class WebNN(IJSRuntime js) : IAsyncDisposable
     /// <summary>Releases every context created through this instance that is still open.</summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeVoid("BitButil.webNN.disposeAll"); }
+        try { await js.InvokeTeardown("BitButil.webNN.disposeAll"); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
 
         GC.SuppressFinalize(this);

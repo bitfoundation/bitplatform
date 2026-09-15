@@ -200,7 +200,7 @@ public class DeviceOrientation(IJSRuntime js) : IAsyncDisposable
         {
             _orientationHandlers.Clear();
             _motionHandlers.Clear();
-            await js.InvokeVoid("BitButil.deviceOrientation.disposeAll");
+            await js.InvokeTeardown("BitButil.deviceOrientation.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

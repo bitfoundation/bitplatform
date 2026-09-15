@@ -79,18 +79,57 @@ var platforms = await installPrompt.GetPlatforms();
     <DemoSection Title="Show the install dialog"
                  Api="Prompt"
                  Description="Shows the deferred dialog and resolves with what the user chose. Must be called from a user gesture. The event is spent afterwards whatever the answer, so IsAvailable becomes false; a user who dismissed it can only be asked again after the browser fires beforeinstallprompt anew on a later visit."
-                 Code=@("""
-var result = await installPrompt.Prompt();
+                 Files=@([
+new("InstallPrompt.razor", """
+@inject Bit.Butil.InstallPrompt installPrompt
 
-if (result.Accepted)
-{
-    // installing on result.Platform
+@* Must be a real user gesture: a prompt shown from a timer or from OnInitialized is refused. *@
+<button @onclick="Install" disabled="@(_canInstall is false)">Install</button>
+
+@code {
+    private bool _canInstall;
+
+    private async Task Install()
+    {
+        var result = await installPrompt.Prompt();
+
+        if (result.Accepted)
+        {
+            // installing on result.Platform
+        }
+        else if (result.Outcome == InstallPromptOutcome.Dismissed)
+        {
+            // asked and declined - don't nag
+        }
+
+        // The event is spent whatever the answer.
+        _canInstall = false;
+    }
 }
-else if (result.Outcome == InstallPromptOutcome.Dismissed)
+"""),
+new("wwwroot/manifest.json", """
 {
-    // asked and declined - don't nag
+  "name": "Bit.Butil demo",
+  "short_name": "Butil",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f6cbd",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
-""")>
+"""),
+new("wwwroot/index.html", """
+<!-- No manifest, no beforeinstallprompt: the browser has nothing to install. Chromium also wants a
+     service worker with a fetch handler and an icon of at least 192x192 before it decides an app is
+     installable, which is why IsAvailable can stay false on a page that looks complete. -->
+<link rel="manifest" href="manifest.json" />
+"""),
+])>
         <div class="controls">
             <button @onclick="ShowPrompt">Prompt</button>
         </div>

@@ -7,6 +7,7 @@ public sealed class BitChartSvgPath : BitChartSvgNode
     public string? Stroke;
     public double StrokeWidth = 0;
     public string? Dash;
+    public double DashOffset;
     public string LineCap = "butt";
     public string LineJoin = "miter";
     /// <summary>When true the path animates a "draw-on" effect via stroke-dashoffset.</summary>

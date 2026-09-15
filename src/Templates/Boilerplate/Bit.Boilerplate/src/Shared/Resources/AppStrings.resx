@@ -1493,20 +1493,20 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="EnableNotifications" xml:space="preserve">
-    <value>Enable notifications</value>
-  </data>
-    <data name="DisableNotifications" xml:space="preserve">
-    <value>Disable notifications</value>
-  </data>
     <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>Push notifications are enabled on this session.</value>
+    <value>Notifications are enabled on this session.</value>
   </data>
     <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>Push notifications are muted on this session.</value>
+    <value>Notifications are muted on this session.</value>
   </data>
-    <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>Push notifications are not configured on this session.</value>
+    <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+    <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Turn notifications on</value>
+  </data>
+    <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Turn notifications off</value>
   </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Push notifications are on</value>
@@ -1829,15 +1829,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>No time zone matches your search.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Push notifications</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Turn push notifications on</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Turn push notifications off</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again.</value>
   </data>
