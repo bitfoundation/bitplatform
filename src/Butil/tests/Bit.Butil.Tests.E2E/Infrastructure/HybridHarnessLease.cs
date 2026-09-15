@@ -36,6 +36,14 @@ public sealed class HybridHarnessLease : IHarnessLease
             // hand every later test in this window a rotated phone-sized screen.
             var cdp = await host.Page.Context.NewCDPSessionAsync(host.Page);
             await cdp.SendAsync("Emulation.clearDeviceMetricsOverride");
+
+            // The user data folder lives as long as the window, so an IndexedDB database, a cache, an OPFS file
+            // or a service worker one test created would otherwise be there waiting for the next.
+            await cdp.SendAsync("Storage.clearDataForOrigin", new Dictionary<string, object>
+            {
+                ["origin"] = HybridHarnessHost.AppOrigin,
+                ["storageTypes"] = "all"
+            });
             await cdp.DetachAsync();
         }
         catch

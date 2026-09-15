@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using Bit.Butil;
@@ -49,7 +50,7 @@ public static class PrerenderSweep
             {
                 if (property.GetIndexParameters().Length > 0 || property.GetMethod is not { IsPublic: true }) continue;
 
-                entries.Add(await CallAsync(type.Name, property.Name, () => property.GetValue(service)));
+                entries.Add(await CallAsync(type.Name, property.Name, [], () => property.GetValue(service)));
             }
 
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
@@ -67,7 +68,7 @@ public static class PrerenderSweep
                     continue;
                 }
 
-                entries.Add(await CallAsync(type.Name, member, () => callable.Invoke(service, arguments)));
+                entries.Add(await CallAsync(type.Name, member, callable.GetParameters(), () => callable.Invoke(service, arguments)));
             }
         }
 
@@ -79,7 +80,7 @@ public static class PrerenderSweep
             .Where(type => type.GetCustomAttribute<ButilServiceAttribute>(inherit: false) is not null)
             .OrderBy(type => type.Name, StringComparer.Ordinal);
 
-    private static async Task<PrerenderSweepEntry> CallAsync(string service, string member, Func<object?> call)
+    private static async Task<PrerenderSweepEntry> CallAsync(string service, string member, ParameterInfo[] parameters, Func<object?> call)
     {
         try
         {
@@ -98,10 +99,7 @@ public static class PrerenderSweep
         {
             return new(service, member, PrerenderSweepOutcome.Hung, $"did not complete within {CallTimeout.TotalSeconds}s");
         }
-        // An exception type the library declares itself (a GeolocationException, say) is a failure mode it
-        // documents on the member, chosen on purpose - not the accidental NullReferenceException or
-        // InvalidOperationException out of a read the prerender guard should have covered.
-        catch (Exception exception) when (exception is ArgumentException || exception.GetType().Assembly == typeof(BitButil).Assembly)
+        catch (Exception exception) when (IsDeliberateRefusal(exception, parameters))
         {
             return new(service, member, PrerenderSweepOutcome.Rejected, Describe(exception));
         }
@@ -109,6 +107,35 @@ public static class PrerenderSweep
         {
             return new(service, member, PrerenderSweepOutcome.Failed, Describe(exception));
         }
+    }
+
+    /// <summary>Whether <paramref name="exception"/> is the member refusing its made-up arguments on purpose.</summary>
+    private static bool IsDeliberateRefusal(Exception exception, ParameterInfo[] parameters)
+    {
+        var library = typeof(BitButil).Assembly;
+
+        // An exception type the library declares itself (a GeolocationException, say) is a failure mode it
+        // documents on the member, chosen on purpose - not the accidental NullReferenceException or
+        // InvalidOperationException out of a read the prerender guard should have covered.
+        if (exception.GetType().Assembly == library) return true;
+
+        if (exception is not ArgumentException argumentException) return false;
+
+        // Only validation the library does itself: an ArgumentException out of the framework underneath (the JSON
+        // serializer, JSInterop, a collection) is a call site that reached further than a prerender should. The
+        // throw helpers (ArgumentNullException.ThrowIfNull and the like) live in CoreLib, so the thrower is the
+        // first frame past them.
+        var thrower = new StackTrace(exception).GetFrames()
+            .Select(frame => frame.GetMethod()?.DeclaringType?.Assembly)
+            .FirstOrDefault(assembly => assembly is not null && assembly != typeof(object).Assembly);
+        if (thrower != library) return false;
+
+        // And only about what the sweep handed in: an argument, or a property of one, since options are validated
+        // a property at a time. A message-only refusal ("at least one of the callbacks") names no parameter.
+        return argumentException.ParamName is not { } name ||
+            parameters.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase) ||
+                p.ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Any(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)));
     }
 
     private static object? Unwrap(Func<object?> call)
