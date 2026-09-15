@@ -909,8 +909,7 @@ $$
 \int_0^1 x^2 \, dx = \frac{1}{3}
 $$
 
-Without a typesetter on the page the TeX reads as itself. Prices are left alone:
-this costs $5 and that one $10.
+Prices are left alone: this costs $5 and that one $10.
 ";
 
 
@@ -1518,7 +1517,18 @@ code stays literal.
 "";";
 
     private readonly string example12RazorCode = @"
-<BitMarkdownViewer Markdown=""@mathMarkdown"" Pipeline=""@mathPipeline"" />";
+<div class=""mdv-columns"">
+    <div class=""mdv-column"">
+        <div class=""mdv-column-title"">No typesetter</div>
+        <BitMarkdownViewer Markdown=""@mathMarkdown"" Pipeline=""@mathPipeline"" />
+    </div>
+    <div class=""mdv-column"">
+        <div class=""mdv-column-title"">KaTeX</div>
+        <KatexTypesetter>
+            <BitMarkdownViewer Markdown=""@mathMarkdown"" Pipeline=""@mathPipeline"" />
+        </KatexTypesetter>
+    </div>
+</div>";
     private readonly string example12CsharpCode = @"
 private readonly BitMarkdownPipeline mathPipeline = new BitMarkdownPipelineBuilder()
     .UseMathematics()
@@ -1530,9 +1540,71 @@ $$
 \int_0^1 x^2 \, dx = \frac{1}{3}
 $$
 
-Without a typesetter on the page the TeX reads as itself. Prices are left alone:
-this costs $5 and that one $10.
+Prices are left alone: this costs $5 and that one $10.
 "";";
+    private readonly string example12TypesetterCode = @"
+@* Typesets the TeX the viewer leaves in place, once it has rendered it. *@
+@inject IJSRuntime JSRuntime
+
+<div @ref=""host"">@ChildContent</div>
+
+@code {
+    private ElementReference host;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The script skips what it has already typeset, so only math drawn since is touched.
+        await JSRuntime.InvokeVoidAsync(""typesetMath"", host);
+    }
+}";
+    private readonly string example12ScriptCode = @"
+// Loaded by a <script> tag after Blazor's own. KaTeX is fetched the first time math is typeset.
+const katexBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.6/';
+let katexLoading;
+
+function loadKatex() {
+    katexLoading ??= new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = katexBaseUrl + 'katex.min.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = katexBaseUrl + 'katex.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => {
+            katexLoading = undefined;
+            reject(new Error('KaTeX could not be loaded.'));
+        };
+        document.head.appendChild(script);
+    });
+
+    return katexLoading;
+}
+
+// The class is read rather than the delimiters: KaTeX's auto-render does not take a single $ as
+// one by default, and the viewer has already told math from prices.
+async function typesetMath(element) {
+    if (element == null) return;
+
+    try {
+        await loadKatex();
+    } catch {
+        return; // with no typesetter the TeX still reads as itself
+    }
+
+    element.querySelectorAll('.math:not([data-typeset])').forEach(math => {
+        const display = math.classList.contains('math-display');
+        const delimiter = display ? 2 : 1;
+        const tex = (math.textContent ?? '').slice(delimiter, -delimiter);
+
+        katex.render(tex, math, { displayMode: display, throwOnError: false });
+        math.dataset.typeset = '';
+    });
+}";
+    private readonly DemoCodeFile[] example12CodeFiles;
 
     private readonly string example13RazorCode = @"
 <BitMarkdownViewer Markdown=""@figureMarkdown"" Pipeline=""@figurePipeline"" />";
@@ -1596,7 +1668,7 @@ Autolinks were left out, so https://bitplatform.dev stays plain text.
     @foreach (var mode in imageRenderingModes)
     {
         <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(imageRendering == mode)""
+                   aria-pressed=""@(imageRendering == mode ? ""true"" : ""false"")""
                    Variant=""@(imageRendering == mode ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => imageRendering = mode)"">@mode</BitButton>
     }
@@ -1859,15 +1931,15 @@ private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipeline
     <div class=""mdv-toolbar"">
         <span class=""mdv-label"">Flavor:</span>
         <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Basic)""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Basic ? ""true"" : ""false"")""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.Basic ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Basic))"">Basic</BitButton>
         <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.GitHub)""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.GitHub ? ""true"" : ""false"")""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.GitHub ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.GitHub))"">GitHub</BitButton>
         <BitButton Size=""BitSize.Small""
-                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Advanced)""
+                   aria-pressed=""@(playgroundFlavor == MarkdownFlavor.Advanced ? ""true"" : ""false"")""
                    Variant=""@(playgroundFlavor == MarkdownFlavor.Advanced ? BitVariant.Fill : BitVariant.Outline)""
                    OnClick=""@(() => SetPlaygroundFlavor(MarkdownFlavor.Advanced))"">Advanced</BitButton>
         <span class=""mdv-spacer""></span>
@@ -1961,6 +2033,12 @@ private readonly string rtlMarkdown = @""# نمایشگر مارک‌داون
 
     public BitMarkdownViewerDemo()
     {
+        example12CodeFiles =
+        [
+            new("KatexTypesetter.razor", example12TypesetterCode),
+            new("typeset-math.js", example12ScriptCode),
+        ];
+
         example20CodeFiles =
         [
             new("BitMarkdownViewerDemo.razor.scss", example20ScssCode),

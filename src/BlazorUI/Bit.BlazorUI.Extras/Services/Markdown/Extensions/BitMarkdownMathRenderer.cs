@@ -9,10 +9,11 @@ namespace Bit.BlazorUI;
 /// with its delimiters.
 /// </summary>
 /// <remarks>
-/// The delimiters are re-emitted on purpose. KaTeX's <c>renderMathInElement</c> and MathJax both
-/// find math by its delimiters, so the output typesets with either of them and with no
-/// configuration; the classes are there for a processor - or a stylesheet - that would rather look
-/// for those. With no typesetter loaded at all, the TeX simply reads as the text it is.
+/// The delimiters are re-emitted on purpose: with no typesetter loaded at all, the TeX simply reads
+/// as the text it is. A typesetter is best pointed at the classes rather than the delimiters -
+/// neither KaTeX's <c>renderMathInElement</c> nor MathJax takes a single <c>$</c> as an inline
+/// delimiter by default, and a scan of the page for <c>$</c> would have to tell math from prices
+/// again, which the parser has already done.
 /// </remarks>
 public sealed class BitMarkdownMathRenderer : BitMarkdownNodeRenderer
 {

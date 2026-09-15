@@ -805,6 +805,43 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldEndAFootnotesLastParagraphWithItsBackLinks()
+    {
+        var markdown = "One[^n] and two[^n].\n\n[^n]: The first paragraph.\n\n    The second paragraph.";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var item = component.Find(".bit-mdv .footnote-item");
+        var paragraphs = item.Children.Where(c => c.TagName == "P").ToList();
+
+        Assert.AreEqual(2, paragraphs.Count);
+        Assert.AreEqual(0, paragraphs[0].QuerySelectorAll(".footnote-backref").Length);
+        Assert.AreEqual(2, paragraphs[1].QuerySelectorAll(".footnote-backref").Length);
+        Assert.IsFalse(item.Children.Any(c => c.ClassList.Contains("footnote-backref")));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepFootnoteBackLinksAfterANoteEndingInAnotherBlock()
+    {
+        var markdown = "A note[^n].\n\n[^n]: The list:\n\n    - one\n    - two";
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, markdown);
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.Advanced);
+        });
+
+        var item = component.Find(".bit-mdv .footnote-item");
+
+        Assert.AreEqual("UL", item.Children[^2].TagName);
+        Assert.IsTrue(item.Children[^1].ClassList.Contains("footnote-backref"));
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldScopeFootnoteIdsToTheInstance()
     {
         const string markdown = "Text with a note[^1].\n\n[^1]: The note itself.";
