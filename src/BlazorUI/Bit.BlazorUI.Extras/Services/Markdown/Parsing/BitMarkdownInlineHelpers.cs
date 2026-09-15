@@ -36,6 +36,11 @@ public static class BitMarkdownInlineHelpers
                     case BitMarkdownCodeSpanNode c: sb.Append(c.Content); break;
                     case BitMarkdownImageNode im: sb.Append(im.Alt); break;
                     case BitMarkdownLineBreakNode: sb.Append(' '); break;
+                    // Two flavors put their text on the node itself rather than in a child text
+                    // run; without these, a heading holding either of them would slug as if the
+                    // words were not there.
+                    case BitMarkdownMathNode math: sb.Append(math.Content); break;
+                    case BitMarkdownAbbreviationNode ab: sb.Append(ab.Text); break;
                     default:
                         if (node.ChildNodes is { } children) Append(children, sb);
                         break;

@@ -1,4 +1,5 @@
 ﻿declare var Prism: any;
+declare var katex: any;
 
 function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
@@ -226,6 +227,56 @@ function highlightSnippet(id: string | undefined) {
 
 function getInnerText(element: HTMLElement) {
     return element?.innerText;
+}
+
+// The KaTeX build the Markdown viewer's Mathematics example typesets with. It is fetched the first
+// time that example is shown, so no other page pays for it.
+const katexBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.6/';
+let katexLoading: Promise<void> | undefined;
+
+function loadKatex() {
+    katexLoading ??= new Promise<void>((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = katexBaseUrl + 'katex.min.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = katexBaseUrl + 'katex.min.js';
+        script.onload = () => resolve();
+        // Forgotten on failure, so a later call tries again instead of inheriting the rejection.
+        script.onerror = () => {
+            katexLoading = undefined;
+            reject(new Error('KaTeX could not be loaded.'));
+        };
+        document.head.appendChild(script);
+    });
+
+    return katexLoading;
+}
+
+// BitMarkdownViewer leaves math as the TeX it is, delimiters included, in .math-inline and
+// .math-display elements. The class is what is read rather than the delimiters: KaTeX's auto-render
+// does not take a single $ as one by default, and the viewer has already told math from prices. An
+// element is typeset once and marked, so calling this again only touches math drawn since.
+async function typesetMath(element: HTMLElement | null) {
+    if (element == null) return;
+
+    try {
+        await loadKatex();
+    } catch {
+        // With no typesetter the TeX still reads as itself, which is the viewer's own fallback.
+        return;
+    }
+
+    element.querySelectorAll<HTMLElement>('.math:not([data-typeset])').forEach(math => {
+        const display = math.classList.contains('math-display');
+        const delimiter = display ? 2 : 1;
+        const tex = (math.textContent ?? '').slice(delimiter, -delimiter);
+
+        katex.render(tex, math, { displayMode: display, throwOnError: false });
+        math.dataset.typeset = '';
+    });
 }
 
 const windowResizeListeners: { [key: string]: () => void } = {};

@@ -23,4 +23,21 @@ public interface IBitMarkdownExtension
     /// <see cref="IBitMarkdownExtension"/>).
     /// </summary>
     void Setup(BitMarkdownPipelineBuilder builder);
+
+    /// <summary>
+    /// True when several instances of this extension may be registered on one pipeline, each
+    /// applying in turn. Defaults to <c>false</c>: a flavor is a flavor, and adding it twice is a
+    /// duplicate rather than two of anything. An extension whose whole content is a caller-supplied
+    /// rule - a URL rewrite - overrides this, so two of them compose instead of one being refused.
+    /// </summary>
+    bool AllowsMultiple => false;
+
+    /// <summary>
+    /// True when <paramref name="other"/> - always an extension of this same type - is configured
+    /// the way this one is, so registering it changes nothing and can be skipped. Defaults to
+    /// <c>true</c>, which is right for a flavor that has nothing to configure; an extension that
+    /// takes options compares them, so that adding it a second time with different ones is
+    /// reported instead of silently doing nothing.
+    /// </summary>
+    bool IsSameConfigurationAs(IBitMarkdownExtension other) => true;
 }

@@ -16,10 +16,13 @@ public enum BitMarkdownViewerImageRendering
     All,
 
     /// <summary>
-    /// Only same-origin images (relative paths, anchors and same-document references) are
-    /// loaded. Remote images (<c>http:</c>, <c>https:</c> and protocol-relative <c>//</c>)
-    /// are blocked so they cannot trigger automatic cross-origin requests. The alt text is
-    /// still rendered. This is the recommended mode for untrusted or AI-generated Markdown.
+    /// Only images the browser would fetch from the page's own origin are loaded: relative paths,
+    /// anchors, same-document references, absolute URLs pointing back at the current origin, and
+    /// embedded <c>data:</c> images, which are already part of the document and reach the network
+    /// not at all. Genuinely cross-origin images (<c>http:</c>, <c>https:</c> and protocol-relative
+    /// <c>//</c> URLs resolving elsewhere) are blocked so they cannot trigger an automatic
+    /// cross-origin request. The alt text is still rendered. This is the recommended mode for
+    /// untrusted or AI-generated Markdown.
     /// </summary>
     SameOrigin,
 
