@@ -1,3 +1,8 @@
+.map-container{
+    height: 360px;
+    isolation: isolate;
+}
+
 ::deep {
     .custom-map {
         height: 260px;

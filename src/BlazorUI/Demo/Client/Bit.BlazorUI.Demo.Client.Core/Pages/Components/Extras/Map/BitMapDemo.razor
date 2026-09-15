@@ -34,7 +34,6 @@
         </BitText>
     </NotesTemplate>
     <Examples>
-
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
                 The simplest usage: a Leaflet map centred on London. Leaflet 1.9.4 ships inside the Extras package rather than
@@ -45,7 +44,7 @@
                 collapses to nothing.
             </div>
             <br />
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider" />
             </div>
         </DemoExample>
@@ -62,7 +61,7 @@
                 for over a loop of <code>AddMarker</code> on a Blazor Server circuit.
             </div>
             <br />
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="markersMapRef"
                         Provider="@markersProvider"
@@ -93,7 +92,7 @@
                 the kind of geometry, and where the click landed.
             </div>
             <br />
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="vectorsMapRef"
                         Provider="@vectorsProvider"
@@ -120,7 +119,7 @@
                 document turns into a script injection.
             </div>
             <br />
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="geoJsonMapRef"
                         Provider="@geoJsonProvider"
@@ -151,7 +150,7 @@
                 <BitButton OnClick='() => SetTileProvider("carto")' Variant="@(tileProvider == "carto" ? BitVariant.Fill : BitVariant.Outline)">Carto Voyager</BitButton>
                 <BitButton OnClick='() => SetTileProvider("topo")' Variant="@(tileProvider == "topo" ? BitVariant.Fill : BitVariant.Outline)">OpenTopoMap</BitButton>
             </div>
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider" @key="tileProvider" Provider="@currentTileLeafletProvider" />
             </div>
         </DemoExample>
@@ -171,7 +170,7 @@
                 because taking it away costs the user "open in new tab", "copy image" and their assistive-technology equivalents.
             </div>
             <br />
-            <div style="height:320px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="eventsMapRef"
                         Provider="@eventsProvider"
@@ -212,7 +211,7 @@
                 <BitToggle Value="advScaleBar" ValueChanged="v => { advScaleBar = v; BuildAdvancedProvider(); }" Text="Scale bar" />
                 <BitToggle Value="advMaxBounds" ValueChanged="v => { advMaxBounds = v; BuildAdvancedProvider(); }" Text="Limit pan (London)" />
             </div>
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="advMapRef"
                         Provider="@advProvider"
@@ -247,7 +246,7 @@
                 prompt, and a refusal comes back as <code>null</code> rather than an exception.
             </div>
             <br />
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider" @ref="navMapRef" Provider="@navProvider" />
             </div>
             <br />
@@ -295,7 +294,7 @@
                 <BitToggle @bind-Value="a11yAnnounce" Text="Announce view changes" />
                 <BitToggle @bind-Value="a11yShowList" Text="Show the marker table" />
             </div>
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="a11yMapRef"
                         Provider="@a11yProvider"
@@ -326,7 +325,7 @@
             <br />
             <div>State: <b>@lifecycleState</b></div>
             <br />
-            <div style="height:320px;width:100%;max-width:100%;resize:both;overflow:auto;border:1px solid var(--bit-clr-brd-sec)">
+            <div class="map-container" style="width:100%;max-width:100%;resize:both;overflow:auto;border:1px solid var(--bit-clr-brd-sec)">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         Provider="@lifecycleProvider"
                         LazyLoad
@@ -334,7 +333,6 @@
                         OnLoadStateChanged="@(s => { lifecycleState = s; StateHasChanged(); })" />
             </div>
         </DemoExample>
-
 
         <DemoExample Title="Data binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
@@ -360,7 +358,7 @@
                 <BitButton OnClick="AddBoundMarker" Variant="BitVariant.Outline">Add a marker</BitButton>
                 <BitButton OnClick="MoveFirstBoundMarker" Variant="BitVariant.Outline">Move the first marker</BitButton>
             </div>
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @bind-Center="boundCenter"
                         @bind-Zoom="boundZoom"
@@ -372,7 +370,6 @@
                 zoom <b>@boundZoom?.ToString("F1")</b> — <b>@boundMarkers.Count</b> marker(s)
             </div>
         </DemoExample>
-
 
         <DemoExample Title="Clustering" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
@@ -399,7 +396,7 @@
                 <BitToggle Value="clusterEnabled" ValueChanged="ToggleClustering" Text="Cluster markers" />
                 <BitButton OnClick="RegenerateClusterMarkers" Variant="BitVariant.Outline">Scatter again</BitButton>
             </div>
-            <div style="height:420px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         Provider="@clusterProvider"
                         Markers="clusterMarkers"
@@ -410,7 +407,6 @@
             <br />
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@clusterLog</pre>
         </DemoExample>
-
 
         <DemoExample Title="Layer control" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
@@ -444,7 +440,7 @@
                 <BitButton OnClick="DimOverlay" Variant="BitVariant.Outline">Dim the overlay</BitButton>
                 <BitButton OnClick="GoFullscreen">Fullscreen</BitButton>
             </div>
-            <div style="height:400px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="layersMapRef"
                         Provider="@layersProvider"
@@ -454,7 +450,6 @@
             <br />
             <pre style="padding:0.75rem;background:transparent;font-size:0.85rem">@layersLog</pre>
         </DemoExample>
-
 
         <DemoExample Title="Popup content" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
@@ -476,7 +471,7 @@
                 position, and the next render of that region would corrupt or throw.
             </div>
             <br />
-            <div style="height:400px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         Provider="@popupProvider"
                         Markers="popupMarkers"
@@ -504,7 +499,7 @@
                 browser; without one the component shows its unsupported state rather than a blank canvas.
             </div>
             <br />
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitMapLibreMapProvider" Provider="@maplibreProvider" />
             </div>
         </DemoExample>
@@ -519,7 +514,7 @@
                 with first-class support for arbitrary projections and a wide format library.
             </div>
             <br />
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitOpenLayersMapProvider" Provider="@olProvider" />
             </div>
         </DemoExample>
@@ -554,7 +549,7 @@
                 so it can only be used from your own domains, and scope it to the minimum required services.
             </div>
             <br />
-            <div style="height:360px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitArcGisMapProvider" Provider="@arcGisProvider" />
             </div>
         </DemoExample>
@@ -589,11 +584,10 @@
                 so a copied token cannot be used from other origins.
             </div>
             <br />
-            <div style="height:420px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitCesiumMapProvider" Provider="@cesiumProvider" />
             </div>
         </DemoExample>
-
 
         <DemoExample Title="Marker icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
             <div>
@@ -614,7 +608,7 @@
             <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem">
                 <BitToggle Value="iconCentreAnchor" ValueChanged="ToggleIconAnchor" Text="Anchor the disc at its centre" />
             </div>
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="iconsMapRef"
                         Provider="@iconsProvider"
@@ -645,7 +639,7 @@
                 position an overlay of your own from.
             </div>
             <br />
-            <div style="height:380px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         @ref="geoMapRef"
                         Provider="@geoProvider"
@@ -670,7 +664,7 @@
                 a map inside a parent with no height of its own collapses to nothing.
             </div>
             <br />
-            <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <div class="map-container" style="display:flex;gap:1rem;flex-wrap:wrap">
                 <BitMap TMapProvider="BitLeafletMapProvider"
                         Provider="@styleProvider"
                         Style="height:260px;flex:1 1 260px;border-radius:1rem;box-shadow:0 0 1rem #6664" />
@@ -688,7 +682,7 @@
                 and any content you place in <code>ChildContent</code>.
             </div>
             <br />
-            <div style="height:320px">
+            <div class="map-container">
                 <BitMap TMapProvider="BitLeafletMapProvider" Dir="BitDir.Rtl" Provider="@rtlProvider" AriaLabel="نقشه تهران">
                     <div style="position:absolute;inset-inline-start:0.75rem;inset-block-start:0.75rem;padding:0.5rem 0.75rem;background:var(--bit-clr-bg-pri);border-radius:0.5rem">
                         تهران
