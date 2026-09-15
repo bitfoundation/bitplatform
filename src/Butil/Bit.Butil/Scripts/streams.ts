@@ -30,14 +30,35 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // result is revived with the second one's bytes, and the second finds its array gone, faulting the
     // read and, on Blazor Server, terminating the circuit. Letting one result settle per task keeps
     // each transfer whole. A done or failed result carries no bytes but still clears the buffer, so
-    // every result waits its turn; an uncontended read pays nothing.
+    // every result waits its turn.
+    //
+    // The gate reopens on a posted message rather than a timer: a message is a task of its own, so the
+    // result that took the gate has been sent by the time it runs, but unlike setTimeout it is neither
+    // clamped to 4ms once nested nor throttled to once a second in a background tab - either of which
+    // would cap a streamed download at that rate. Waiters are handed the gate in order when it reopens
+    // instead of polling for it.
     let _handingOff = false;
+    const _waiting: (() => void)[] = [];
+    let _gate: MessageChannel | null = null;
+
     async function handOff<T>(result: T): Promise<T> {
-        // Queued behind the timer that reopens the gate, so the result that took it has been sent by then.
-        while (_handingOff) await new Promise(resolve => setTimeout(resolve, 0));
+        if (_handingOff) await new Promise<void>(resolve => _waiting.push(resolve));
         _handingOff = true;
-        setTimeout(() => { _handingOff = false; }, 0);
+        reopenAfterThisTask();
         return result;
+    }
+
+    function reopenAfterThisTask() {
+        if (!_gate) {
+            _gate = new MessageChannel();
+            // Passed straight to the next waiter, so a read arriving in between cannot take its turn.
+            _gate.port1.onmessage = () => {
+                const next = _waiting.shift();
+                if (next) next();
+                else _handingOff = false;
+            };
+        }
+        _gate.port2.postMessage(null);
     }
 
     async function pull(entry: ReadableEntry | undefined) {

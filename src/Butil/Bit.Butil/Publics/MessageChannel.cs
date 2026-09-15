@@ -117,7 +117,9 @@ public class MessageChannel(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeTeardown("BitButil.messageChannel.disposeAll");
+            // windowMessaging and worker adopt the ports they receive into this registry from inside their own
+            // module files.
+            await js.InvokeTeardown("BitButil.messageChannel.disposeAll", "windowMessaging", "worker");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

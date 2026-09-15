@@ -68,6 +68,9 @@ generic type accompanying an existing non-generic one of the same name - those t
    scoped service is disposed with its scope whether or not it was used, and under lazy scripts an unconditional
    teardown imports the module just to release nothing - every page reload in a BlazorWebView and every ended
    circuit downloaded the module of every injected service. The hybrid run of `LazyScriptsTests` catches it.
+   The skip keys on which modules were *requested*, and a module that other modules fill through their own files
+   (`domHandles` via `dom`/`shadowDom`, `messageChannel` via `worker`/`windowMessaging`) is never requested itself -
+   so name those dependents in the `InvokeTeardown` call, or their state is never released.
 6. **Anything attaching a listener returns a `ButilSubscription`**; anything holding a browser resource open
    (streams, recorders, handles) is `IAsyncDisposable`. Document the gesture/HTTPS/permission preconditions.
    A listener for an event that fires **about once a frame** - a pointer move, a scroll, a resize, an

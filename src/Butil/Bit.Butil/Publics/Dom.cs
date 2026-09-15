@@ -122,7 +122,9 @@ public class Dom(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeTeardown("BitButil.domHandles.releaseAll"); }
+        // The handles are registered through dom and shadowDom, which carry domHandles inside their own module
+        // files - so under lazy scripts domHandles itself may never have been requested while holding every one.
+        try { await js.InvokeTeardown("BitButil.domHandles.releaseAll", "dom", "shadowDom"); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
 
         GC.SuppressFinalize(this);
