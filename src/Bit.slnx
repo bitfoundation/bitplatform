@@ -94,6 +94,14 @@
   </Folder>
   <Folder Name="/Bswup/Tests/">
     <Project Path="Bswup/Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj" />
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Hosting/Bit.Bswup.Tests.Hosting.csproj" />
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/Tests/Harness/">
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Harness/Bit.Bswup.Tests.Harness.csproj" />
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Harness.Web/Bit.Bswup.Tests.Harness.Web.csproj" />
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Harness.Web.Client/Bit.Bswup.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Harness.Wasm/Bit.Bswup.Tests.Harness.Wasm.csproj" />
   </Folder>
   <Folder Name="/Bswup/Samples/">
     <Project Path="Bswup/Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />

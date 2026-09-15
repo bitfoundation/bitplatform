@@ -1,0 +1,4 @@
+{
+  "purpose": "A precached asset no page needs to boot. The suites fault, corrupt, prohibit and range-request it without breaking the app itself.",
+  "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789"
+}

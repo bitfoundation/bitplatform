@@ -210,6 +210,14 @@ if (!BitBswup.initialized) {
             // (hard reload: controller null, reg.active set), never back to false.
             let hasActiveWorker = !!navigator.serviceWorker.controller;
 
+            // The worker that controlled this document when it started. WAITING_SKIPPED is broadcast to every
+            // in-scope client once the new worker's claim completes - and that includes a document that has
+            // just loaded UNDER the new worker: the tab that reloaded on its controllerchange is routinely up
+            // (its assets come straight from the cache) before the worker gets to the broadcast. That document
+            // already runs the new version, and reloading it on the broadcast was a second, spurious reload of
+            // every accepted update. Only a document whose controller changed since it started runs old code.
+            const initialController = navigator.serviceWorker.controller;
+
             // ============================================================
 
             // First-install stall watchdog. Every failure mode that *reports* something is
@@ -706,8 +714,15 @@ if (!BitBswup.initialized) {
                     // SW-free page during a cleanup-worker teardown - which already run
                     // network-fresh code; reloading them only discards their in-page state.
                     // Make sure they are booted instead (idempotent when already running).
+                    // And only when the controller changed since this document started: one
+                    // that loaded under the new worker is already on the new version (see
+                    // initialController).
                     if (navigator.serviceWorker.controller) {
-                        reloadOnce();
+                        if (navigator.serviceWorker.controller !== initialController) {
+                            reloadOnce();
+                        } else {
+                            verbose('WAITING_SKIPPED for the worker this document started on - already up to date.');
+                        }
                     } else {
                         startBlazor(true);
                     }
