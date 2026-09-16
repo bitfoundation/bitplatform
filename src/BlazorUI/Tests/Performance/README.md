@@ -117,6 +117,16 @@ BROWSER=webkit dotnet test
 HEADED=1 dotnet test
 ```
 
+### Run the Browser Regression Tests
+
+Classes marked `[RequiresBrowser]` (see `RequiresBrowserAttribute.cs`) need a test host and installed Playwright
+browsers, so they are skipped unless `RUN_BROWSER_TESTS=1` is set. They stay discoverable, so a name filter still
+selects them:
+
+```bash
+RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitTextFieldBrowserTests
+```
+
 ## Performance Thresholds
 
 Default thresholds are defined in `PerformanceTestBase.Thresholds`:
@@ -146,7 +156,7 @@ Run tests with Chromium browser for memory measurements.
 
 ### Tests Timeout
 
-1. Increase timeout in `.runsettings`
+1. Raise `PerformanceTestBase.DefaultTimeout`, or pass a longer `Timeout` to the individual wait call
 2. Check if the test host is starting properly
 3. Reduce component count for initial debugging
 
