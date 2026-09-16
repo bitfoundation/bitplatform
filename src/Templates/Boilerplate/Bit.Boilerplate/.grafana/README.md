@@ -6,7 +6,7 @@
 > exports OpenTelemetry over OTLP instead, so these panels will have no data source to point at. The folder is
 > shipped anyway so you can adopt it later; it is inert until then.
 >
-> One panel has a second requirement: **Ongoing AI Conversations** reads `appHub.ongoing_conversations_count`,
+> One panel has a second requirement: **Ongoing AI Conversations** reads `chatbot.active_conversations`,
 > which only exists with `--signalR true`.
 
 This folder contains a production-ready Grafana dashboard tailored for applications integrated with **Azure Application Insights (Log Analytics Workspace)**. It provides deep visibility into application health, performance metrics, and system exceptions using Kusto Query Language (KQL).

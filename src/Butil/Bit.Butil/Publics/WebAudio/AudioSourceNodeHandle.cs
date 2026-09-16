@@ -31,7 +31,7 @@ public sealed class AudioSourceNodeHandle : AudioNodeHandle
     /// stays in time in a way a .NET timer never can.
     /// </remarks>
     public ValueTask<bool> Start(double whenSeconds = 0, double offsetSeconds = 0, double durationSeconds = 0)
-        => Js.Invoke<bool>("BitButil.webAudio.start", NodeId, whenSeconds, offsetSeconds, durationSeconds);
+        => Js.Invoke<bool>("BitButil.webAudioParams.start", NodeId, whenSeconds, offsetSeconds, durationSeconds);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioScheduledSourceNode/stop">stop()</see>:
@@ -44,5 +44,5 @@ public sealed class AudioSourceNodeHandle : AudioNodeHandle
     /// milliseconds later.
     /// </remarks>
     public ValueTask<bool> Stop(double whenSeconds = 0)
-        => Js.Invoke<bool>("BitButil.webAudio.stopNode", NodeId, whenSeconds);
+        => Js.Invoke<bool>("BitButil.webAudioParams.stopNode", NodeId, whenSeconds);
 }

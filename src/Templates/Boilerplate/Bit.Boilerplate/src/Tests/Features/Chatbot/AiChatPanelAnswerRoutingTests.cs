@@ -1,26 +1,21 @@
 using Microsoft.Extensions.AI;
+using Boilerplate.Shared.Features.Chatbot;
 
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// An answer and the follow-up suggestions that belong to it reach the panel by two entirely different routes: the
-/// answer is streamed frame by frame down the hub method the panel is enumerating, while the suggestions are written
-/// by the model itself through the <c>SendFollowUpSuggestions</c> tool and published to the device (See
-/// <c>SharedAppMessages.SHOW_FOLLOW_UP_SUGGESTIONS</c>). Both halves are covered here because neither is observable
-/// anywhere else, and because the tool call is what makes the model's turn take more than one round trip - which is
-/// exactly the thing the panel's frame routing is fragile about.
+/// A turn is one json document (See <see cref="AssistantTurn"/>), streamed down the hub method the panel is
+/// enumerating, so what reaches the screen is a property of a document reassembled from prefixes rather than the frames
+/// themselves (<c>AppAiChatPanel.RunChannel</c>, <see cref="PartialJsonReader{T}"/>). Follow-up suggestions come the other
+/// way, from a tool the model calls (See <c>AppChatbot.ShowFollowUpSuggestions</c>).
 /// <para>
-/// That routing has no message identity on the wire: the stream is a bare sequence of strings, and which assistant
-/// bubble a frame belongs to is worked out by COUNTING terminal markers against the number of questions asked
-/// (<c>AppAiChatPanel.RunChannel</c>). One marker too many, or one too few, and the count is permanently out of step
-/// with the conversation - after which every frame fails its own "is this the current answer" test and is dropped. The
-/// panel then answers nothing, for ever, with no error anywhere: empty bubbles, a loader that flashes and stops, and a
-/// server that is answering every question correctly the whole time.
+/// The wire carries no message identity: a frame belongs to whichever question has waited longest, and a turn ends
+/// when its document does. One document too many or too few and the queue is out of step with the conversation for
+/// good - after which every answer lands in the wrong bubble or none, with no error anywhere.
 /// </para>
 /// <para>
-/// Playwright rather than bUnit because every defect these pin lives in the crossing: the counter and the subscription
-/// live in the client, the marker and the published suggestions are produced by the server, and the tool that sends
-/// them is dispatched by the agent pipeline. Nothing short of the real transport puts those together.
+/// Playwright rather than bUnit because these defects live in the crossing: the reader is the client's, the document
+/// is the server's, and the tools are dispatched by the agent pipeline.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
@@ -38,10 +33,11 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
         "Switch to dark mode"
     ];
 
+    /// <summary>Offered through a tool, capped to what fits above the message box, and sent as the user's words when tapped.</summary>
     [TestMethod]
-    public async Task Panel_Should_ShowTheSuggestions_TheAssistantSendsWithTheFollowUpTool()
+    public async Task Panel_Should_ShowTheSuggestionsTheModelOffered_AndSendTheOneTapped()
     {
-        var chatClient = new TestChatClient { StreamingUpdates = AnswerThenSendFollowUpSuggestions };
+        var chatClient = new TestChatClient { StreamingUpdates = OfferSuggestionsThenAnswer };
 
         var panel = await StartChat(chatClient);
 
@@ -49,37 +45,48 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
 
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        // The payoff: these were never part of the answer's stream. They travelled as a published message, from a tool
-        // the model called, into the panel's subscription - so a break anywhere along that route shows up right here.
-        foreach (var suggestion in followUpSuggestions)
-        {
-            await Expect(panel.Locator(".default-prompt-button").GetByText(suggestion)).ToBeVisibleAsync();
-        }
+        var suggestions = panel.Locator(".default-prompt-button");
+
+        // The blank one dropped, and the one too many left out.
+        await Expect(suggestions).ToHaveTextAsync(followUpSuggestions);
+
+        // And the document around the answer is the panel's business, never the user's.
+        await Expect(panel).Not.ToContainTextAsync("sentAt");
+
+        var conversationsBefore = chatClient.ReceivedConversations.Count;
+
+        await suggestions.GetByText(followUpSuggestions[2]).ClickAsync();
+
+        Assert.IsTrue(await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)),
+                      "Tapping a suggestion sent nothing.");
+
+        Assert.AreEqual(followUpSuggestions[2], chatClient.ReceivedConversations[^1].Last(message => message.Role == ChatRole.User).Text,
+                        "The tapped suggestion must be sent as the user's own words.");
+
+        await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
+        await Expect(suggestions).ToHaveCountAsync(0);
     }
 
     /// <summary>
-    /// The tool call turns one question into two round trips with the model, and the terminal marker must still be
-    /// sent exactly once for it. A second marker - the follow-up round trip reporting itself - would leave the panel's
-    /// counter one ahead of the conversation for good, and a counter that is ahead discards every later answer in
-    /// silence.
+    /// A tool call turns one question into two round trips with the model, and the turn must still be exactly one
+    /// document. A second closing - the extra round trip reporting itself - would end a turn that isn't over and put
+    /// the panel's queue one ahead of the conversation for good, discarding every later answer in silence.
     /// </summary>
     [TestMethod]
-    public async Task Panel_Should_ShowTheSecondAnswer_WhenTheFirstAnswerEndedWithAFollowUpToolCall()
+    public async Task Panel_Should_ShowTheSecondAnswer_WhenTheFirstAnswerNeededAToolCall()
     {
-        var chatClient = new TestChatClient { StreamingUpdates = AnswerThenSendFollowUpSuggestions };
+        var chatClient = new TestChatClient { StreamingUpdates = AskTheTimeThenAnswer };
 
         var panel = await StartChat(chatClient);
 
         await SendChatMessage(panel, FirstQuestion, chatClient);
 
+        // The first answer is only written on the round trip after the tool ran, so seeing it proves that extra round
+        // trip happened.
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        // The suggestions of the first answer are on screen, which is the proof that its tool call really ran - the
-        // extra round trip this test is about has happened by the time the second question is asked.
-        await Expect(panel.Locator(".default-prompt-button").GetByText(followUpSuggestions[0])).ToBeVisibleAsync();
-
-        // Sent through the connection the first message already proved is up, so the conversation - and the counter
-        // this test is about - survives into the second turn.
+        // Sent through the connection the first message already proved is up, so the conversation - and the queue this
+        // test is about - survives into the second turn.
         await SendFollowUpMessage(panel, SecondQuestion, chatClient);
 
         // No timeout of its own: the suite's default is what every other assertion here waits on, and a shorter one
@@ -88,30 +95,90 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
     }
 
     /// <summary>
-    /// Behaves the way the seeded system prompt asks the model to: answer, then call <c>SendFollowUpSuggestions</c>
-    /// with three suggestions. The call is not simulated - <c>AsAIAgent</c> wraps the client in a
-    /// <c>FunctionInvokingChatClient</c>, so the real tool runs with these arguments and really publishes to the
-    /// device, and this client is then called again to finish the turn.
+    /// A model that calls a tool can say so first ("let me look that up"), and write the answer on the round trip after
+    /// the tool. Only what came before the tool used to reach the screen, so the answer never did.
     /// </summary>
-    private static ChatResponseUpdate[] AnswerThenSendFollowUpSuggestions(int callIndex, ChatMessage[] conversation)
+    [TestMethod]
+    public async Task Panel_Should_ShowTheAnswerWrittenAfterAToolCall_UnderWhatWasWrittenBeforeIt()
     {
-        // The turn after the tool ran. The model has already said everything it had to say, so it adds nothing -
-        // which is also what stops this from calling the tool round after round.
-        if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
-            return [new ChatResponseUpdate(ChatRole.Assistant, "")];
+        var chatClient = new TestChatClient { StreamingUpdates = SayItThenAskTheTimeThenAnswer };
 
+        var panel = await StartChat(chatClient);
+
+        await SendChatMessage(panel, FirstQuestion, chatClient);
+
+        await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
+        await Expect(panel.GetByText(Preamble)).ToBeVisibleAsync();
+        await Expect(panel).Not.ToContainTextAsync("sentAt");
+
+        // Two round trips still close the turn once, or the next answer would land in no bubble.
+        await SendFollowUpMessage(panel, SecondQuestion, chatClient);
+
+        await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
+    }
+
+    /// <summary>The answer as a real model streams it: in pieces.</summary>
+    private static ChatResponseUpdate[] AnswerInPieces(int callIndex, ChatMessage[] conversation)
+    {
+        var answer = conversation.Last(message => message.Role == ChatRole.User).Text == FirstQuestion ? FirstAnswer : SecondAnswer;
+
+        // Seven characters at a time, so the splits land mid word.
+        return [.. answer.Chunk(7).Select(piece => new ChatResponseUpdate(ChatRole.Assistant, new string(piece)))];
+    }
+
+    /// <summary>Offers suggestions through the tool for the first question - a blank one and one too many included - then answers.</summary>
+    private static ChatResponseUpdate[] OfferSuggestionsThenAnswer(int callIndex, ChatMessage[] conversation)
+    {
         var question = conversation.Last(message => message.Role == ChatRole.User).Text;
+
+        if (question != FirstQuestion || conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return AnswerInPieces(callIndex, conversation);
 
         return
         [
-            new ChatResponseUpdate(ChatRole.Assistant, question == FirstQuestion ? FirstAnswer : SecondAnswer),
             new ChatResponseUpdate(ChatRole.Assistant, (IList<AIContent>)
             [
-                new FunctionCallContent($"follow-up-{callIndex}", "SendFollowUpSuggestions", new Dictionary<string, object?>
+                new FunctionCallContent($"suggest-{callIndex}", "ShowFollowUpSuggestions", new Dictionary<string, object?>
                 {
-                    ["suggestions"] = JsonSerializer.SerializeToElement(followUpSuggestions)
+                    ["suggestions"] = new[] { followUpSuggestions[0], " ", followUpSuggestions[1], followUpSuggestions[2], "One too many" }
                 })
             ])
+        ];
+    }
+
+    /// <summary>
+    /// Calls a tool before answering, like most real turns. Not simulated: <c>AsAIAgent</c> wraps this client in a
+    /// <c>FunctionInvokingChatClient</c>, so the real <c>AppChatbot</c> method runs and this client is called again.
+    /// </summary>
+    private static ChatResponseUpdate[] AskTheTimeThenAnswer(int callIndex, ChatMessage[] conversation)
+    {
+        if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return AnswerInPieces(callIndex, conversation);
+
+        return
+        [
+            new ChatResponseUpdate(ChatRole.Assistant, (IList<AIContent>)
+            [
+                new FunctionCallContent($"what-time-is-it-{callIndex}", "GetCurrentDateTime", new Dictionary<string, object?>
+                {
+                    ["timeZoneId"] = "UTC"
+                })
+            ])
+        ];
+    }
+
+    private const string Preamble = "Let me look that up.";
+
+    /// <summary>Says what it is about to do, calls the tool in the same round trip, then answers.</summary>
+    private static ChatResponseUpdate[] SayItThenAskTheTimeThenAnswer(int callIndex, ChatMessage[] conversation)
+    {
+        if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return AnswerInPieces(callIndex, conversation);
+
+        return
+        [
+            new ChatResponseUpdate(ChatRole.Assistant, Preamble),
+            .. AskTheTimeThenAnswer(callIndex, conversation)
         ];
     }
 

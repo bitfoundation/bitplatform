@@ -182,7 +182,7 @@ public class MediaRecorder(IJSRuntime js) : IAsyncDisposable
         {
             _dataHandlers.Clear();
             _errorHandlers.Clear();
-            await js.InvokeVoid("BitButil.mediaRecorder.disposeAll");
+            await js.InvokeTeardown("BitButil.mediaRecorder.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

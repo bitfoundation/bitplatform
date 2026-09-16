@@ -50,6 +50,18 @@ const p = globalThis.__bitMapOlBundle || Promise.all([
     toLonLat: olProj.toLonLat,
     transformExtent: olProj.transformExtent,
     Translate: olInteraction.Translate,
+    // The interaction classes are exported so the provider can identify a live
+    // interaction with `instanceof` instead of reading `constructor.name`, which the
+    // minified esm.sh bundle mangles - name matching silently stops working there.
+    MouseWheelZoom: olInteraction.MouseWheelZoom,
+    DoubleClickZoom: olInteraction.DoubleClickZoom,
+    DragPan: olInteraction.DragPan,
+    DragBox: olInteraction.DragBox,
+    DragZoom: olInteraction.DragZoom,
+    KeyboardPan: olInteraction.KeyboardPan,
+    KeyboardZoom: olInteraction.KeyboardZoom,
+    Attribution: olControl.Attribution,
+    Zoom: olControl.Zoom,
 }));
 
 // Clear the global on failure so future loader injections can retry the imports

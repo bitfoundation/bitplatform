@@ -61,11 +61,29 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
                  Api="Show / Hide"
                  Description="With virtualkeyboardpolicy set to manual on a contenteditable element, focusing it no longer raises the keyboard - Show and Hide do. That is what lets a custom editor decide when the keyboard is wanted."
                  Code=@("""
-await _editor.SetVirtualKeyboardPolicy(VirtualKeyboardPolicy.Manual);
+@inject Bit.Butil.VirtualKeyboard virtualKeyboard
 
-// from a click handler, with the editor focused:
-await virtualKeyboard.Show();
-""")>
+<div @ref="_editor" contenteditable="true">...</div>
+
+@code {
+    private ElementReference _editor;
+
+    // Manual policy stops the browser showing and hiding the keyboard on focus, which is the whole
+    // point: a custom editor that scrolls its own content wants to decide when it appears.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await _editor.SetVirtualKeyboardPolicy(VirtualKeyboardPolicy.Manual);
+    }
+
+    // From a click handler, with the editor focused - it is refused otherwise.
+    private async Task ShowKeyboard()
+    {
+        await _editor.Focus();
+        await virtualKeyboard.Show();
+    }
+}
+""")
+                 Language="razor">
         <div @ref="_editor" contenteditable="true" tabindex="0"
              style="min-height:2.5rem;padding:0.75rem;border:1px solid var(--border,#ccc);border-radius:6px">
             A contenteditable surface. Set the policy, focus it, then Show.

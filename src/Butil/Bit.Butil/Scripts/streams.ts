@@ -23,6 +23,57 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function trackReadable(id: string, stream: ReadableStream) { _readables[id] = { stream }; }
     function trackWritable(id: string, stream: WritableStream) { _writables[id] = { stream }; }
 
+    // Blazor's JS interop before .NET 10 serializes an async result in one microtask and sends it in
+    // the next, and every serialization numbers its byte arrays from zero into a buffer the whole
+    // runtime shares, which .NET clears after reviving each result. Two reads settling in the same
+    // task - exactly what tee's branches do, since one pull feeds both - interleave there: the first
+    // result is revived with the second one's bytes, and the second finds its array gone, faulting the
+    // read and, on Blazor Server, terminating the circuit. Letting one result settle per task keeps
+    // each transfer whole. A done or failed result carries no bytes but still clears the buffer, so
+    // every result waits its turn.
+    //
+    // The gate reopens on a posted message rather than a timer: a message is a task of its own, so the
+    // result that took the gate has been sent by the time it runs, but unlike setTimeout it is neither
+    // clamped to 4ms once nested nor throttled to once a second in a background tab - either of which
+    // would cap a streamed download at that rate. Waiters are handed the gate in order when it reopens
+    // instead of polling for it.
+    let _handingOff = false;
+    const _waiting: (() => void)[] = [];
+    let _gate: MessageChannel | null = null;
+
+    async function handOff<T>(result: T): Promise<T> {
+        if (_handingOff) await new Promise<void>(resolve => _waiting.push(resolve));
+        _handingOff = true;
+        reopenAfterThisTask();
+        return result;
+    }
+
+    function reopenAfterThisTask() {
+        if (!_gate) {
+            _gate = new MessageChannel();
+            // Passed straight to the next waiter, so a read arriving in between cannot take its turn.
+            _gate.port1.onmessage = () => {
+                const next = _waiting.shift();
+                if (next) next();
+                else _handingOff = false;
+            };
+        }
+        _gate.port2.postMessage(null);
+    }
+
+    async function pull(entry: ReadableEntry | undefined) {
+        if (!entry) return { done: true, data: null, error: 'unknown stream' };
+
+        try {
+            entry.reader = entry.reader ?? entry.stream.getReader();
+            const { value, done } = await entry.reader.read();
+            if (done) return { done: true, data: null, error: null };
+            return { done: false, data: value instanceof Uint8Array ? value : new Uint8Array(value), error: null };
+        } catch (e: any) {
+            return { done: true, data: null, error: e?.message ?? String(e) };
+        }
+    }
+
     butil.streams = {
         isSupported() { return typeof (window as any).ReadableStream === 'function'; },
         isTransformSupported() { return typeof (window as any).CompressionStream === 'function'; },
@@ -31,7 +82,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         async fromResponse(id: string, url: string, req: any) {
             if (typeof (window as any).ReadableStream !== 'function') return null;
 
-            // The request is built by the fetch module rather than here, so there is one mapping of
+            // The request is built by the fetchRequest module rather than here, so there is one mapping of
             // FetchRequest onto RequestInit - including how a shared AbortSignal composes with the
             // request's own controller, which is what cancel() reaches. Building it inside the try
             // along with the call is deliberate: an invalid header name or an unusable body throws
@@ -41,7 +92,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             let cleanup = () => { /* nothing was built yet */ };
             let response: Response;
             try {
-                const built = butil.fetch.requestInit(req ?? {}, controller);
+                const built = butil.fetchRequest.buildInit(req ?? {}, controller);
                 cleanup = built.cleanup;
                 response = await fetch(url, built.init);
             }
@@ -109,19 +160,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // Pull one chunk. The reader is acquired on first use, which is also what locks the stream -
         // tee() and pipeThrough() are unavailable from then on, by the specification's rules rather
         // than ours.
-        async read(id: string) {
-            const entry = _readables[id];
-            if (!entry) return { done: true, data: null, error: 'unknown stream' };
-
-            try {
-                entry.reader = entry.reader ?? entry.stream.getReader();
-                const { value, done } = await entry.reader.read();
-                if (done) return { done: true, data: null, error: null };
-                return { done: false, data: value instanceof Uint8Array ? value : new Uint8Array(value), error: null };
-            } catch (e: any) {
-                return { done: true, data: null, error: e?.message ?? String(e) };
-            }
-        },
+        async read(id: string) { return handOff(await pull(_readables[id])); },
 
         // Two streams from one, each getting every chunk. The original is locked afterwards and is
         // no longer readable itself - which is the point: it has been split, not copied.

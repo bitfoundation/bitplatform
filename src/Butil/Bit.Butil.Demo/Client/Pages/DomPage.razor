@@ -117,9 +117,17 @@ var rect = await reference.Value.GetBoundingClientRect();
                  Api="GetText / SetText / GetHtml / SetHtml"
                  Description="SetText is safe with any input - markup in it becomes visible characters rather than elements. SetHtml is an injection point: anything from a user, a URL or a server response can carry script. Not a script tag, which will not run, but an onerror on an img, which will. Use SetText for anything you did not write yourself."
                  Code=@("""
-await handle!.SetText("<b>not bold</b>");   // shows the characters
-await handle.SetHtml("<b>bold</b>");        // parses - only for markup you wrote
-""")>
+@code {
+    private DomHandle? handle;   // from dom.QuerySelector / CreateElement
+
+    private async Task Write()
+    {
+        await handle!.SetText("<b>not bold</b>");   // shows the characters
+        await handle.SetHtml("<b>bold</b>");        // parses - only for markup you wrote
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <input @bind="_content" aria-label="content" />
             <button @onclick="() => WriteContent(false)">SetText</button>

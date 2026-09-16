@@ -3,8 +3,14 @@ using System.Text.RegularExpressions;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// Shared validation helpers for BitMap providers and overlays. Centralized here so
-/// every backend uses the same rules (and so they can be unit-tested in one place).
+/// Shared validation helpers for BitMap providers, overlays and the imperative API.
+/// Centralized here so every backend uses the same rules (and so they can be unit-tested
+/// in one place).
+/// <para>
+/// Most of these exist to turn a value that would break somewhere far away - a NaN that
+/// <c>System.Text.Json</c> refuses to serialize, an empty id that silently shadows another
+/// layer - into an exception at the call site that produced it.
+/// </para>
 /// </summary>
 internal static class BitMapValidation
 {
@@ -66,6 +72,85 @@ internal static class BitMapValidation
         {
             throw new InvalidOperationException(
                 "IBitMapProvider.JsObjectName must be a non-empty JavaScript identifier (letters, digits, '_' and '$' only, not starting with a digit).");
+        }
+    }
+
+    /// <summary>
+    /// Validates an identifier used as a dictionary key on both sides of the interop boundary.
+    /// Whitespace-only ids are rejected as well as empty ones: they look distinct in source but
+    /// are indistinguishable in a UI, so they turn into silent overwrites.
+    /// </summary>
+    public static void ValidateId(string? id, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            throw new ArgumentException($"{propertyName} must be a non-empty, non-whitespace value.", propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Validates that a number is finite. NaN and ±Infinity are rejected by
+    /// <c>System.Text.Json</c> mid-serialization, which surfaces as an opaque interop failure
+    /// far from the call that produced the value.
+    /// </summary>
+    public static void ValidateFinite(double value, string propertyName)
+    {
+        if (double.IsFinite(value) is false)
+        {
+            throw new ArgumentOutOfRangeException(propertyName, value, $"{propertyName} must be a finite number.");
+        }
+    }
+
+    /// <summary>Validates a zoom level is finite and inside the range every supported backend accepts.</summary>
+    public static void ValidateZoom(double zoom, string propertyName)
+    {
+        ValidateFinite(zoom, propertyName);
+        if (zoom is < 0 or > 30)
+        {
+            throw new ArgumentOutOfRangeException(propertyName, zoom, $"{propertyName} must be between 0 and 30.");
+        }
+    }
+
+    /// <summary>Validates an optional zoom level; null means "keep the current zoom".</summary>
+    public static void ValidateOptionalZoom(double? zoom, string propertyName)
+    {
+        if (zoom.HasValue) ValidateZoom(zoom.Value, propertyName);
+    }
+
+    /// <summary>Validates a padding in pixels is finite and non-negative.</summary>
+    public static void ValidatePadding(int paddingPixels, string propertyName)
+    {
+        if (paddingPixels < 0)
+        {
+            throw new ArgumentOutOfRangeException(propertyName, paddingPixels, $"{propertyName} cannot be negative.");
+        }
+    }
+
+    /// <summary>
+    /// Validates a circle radius in meters. A non-finite radius would propagate NaN through every
+    /// point of the generated ring; a negative one has no meaning.
+    /// </summary>
+    public static void ValidateRadius(double radiusMeters, string propertyName)
+    {
+        ValidateFinite(radiusMeters, propertyName);
+        if (radiusMeters < 0)
+        {
+            throw new ArgumentOutOfRangeException(propertyName, radiusMeters, $"{propertyName} cannot be negative.");
+        }
+    }
+
+    /// <summary>
+    /// Validates that a geometry has enough points to be drawable. Fewer than two points is not a
+    /// line and fewer than three is not a polygon; the backends handle those inconsistently
+    /// (some throw, some render nothing), so reject them here instead.
+    /// </summary>
+    public static void ValidatePointCount(int count, int minimum, string propertyName, string geometryName)
+    {
+        if (count < minimum)
+        {
+            throw new ArgumentException(
+                $"{propertyName} must contain at least {minimum} points to form a {geometryName} (got {count}).",
+                propertyName);
         }
     }
 }

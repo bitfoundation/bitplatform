@@ -1,3 +1,5 @@
+﻿using System.Text.RegularExpressions;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitMarkdownPipelineBuilder"/>. Pipelines are thread-safe and should be
 /// cached and shared.
 /// </summary>
-public sealed class BitMarkdownPipeline
+public sealed partial class BitMarkdownPipeline
 {
     internal BitMarkdownPipeline(BitMarkdownPipelineBuilder builder)
     {
@@ -13,9 +15,12 @@ public sealed class BitMarkdownPipeline
         AstProcessors = builder.AstProcessors.OrderBy(p => p.Order).ToArray();
         Renderers = builder.Renderers.ToArray();
 
-        // Map trigger chars -> inline parsers (preserving registration order).
+        // Map trigger chars -> inline parsers. Parsers are ordered by their Order so an
+        // extension can be consulted before a core parser sharing the same trigger (the
+        // footnote parser must see '[' before the link parser does); OrderBy is stable,
+        // so equal orders keep registration order.
         var byChar = new Dictionary<char, List<BitMarkdownInlineParser>>();
-        foreach (var parser in builder.InlineParsers)
+        foreach (var parser in builder.InlineParsers.OrderBy(p => p.Order))
             foreach (var c in parser.TriggerChars)
                 (byChar.TryGetValue(c, out var l) ? l : byChar[c] = new()).Add(parser);
         InlineParsersByChar = byChar.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<BitMarkdownInlineParser>)kv.Value);
@@ -38,7 +43,20 @@ public sealed class BitMarkdownPipeline
         }
         DelimiterByChar = delimByChar;
         DelimiterChars = new HashSet<char>(delimByChar.Keys);
+
+        Texts = builder.Texts ?? BitMarkdownTexts.Default;
+        _renderer = new BitMarkdownRenderer(Renderers, Texts);
     }
+
+    private readonly BitMarkdownRenderer _renderer;
+
+    // Matches a line that opens a link reference definition, a footnote definition, or any
+    // other "[label]:" construct. Only the label is captured: the pre-scan exists purely to
+    // know which labels a reference could possibly resolve to, never to parse the definition.
+    // The label body excludes unescaped brackets and is bounded by CommonMark's 999-char
+    // ceiling, so the pattern cannot backtrack catastrophically.
+    [GeneratedRegex(@"^ {0,3}\[(?<label>(?:[^\[\]\\\n]|\\.){1,999})\]:", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex ReferenceDefinitionStart();
 
     internal IReadOnlyList<BitMarkdownBlockParser> BlockParsers { get; }
     internal IReadOnlyList<BitMarkdownAstProcessor> AstProcessors { get; }
@@ -57,7 +75,10 @@ public sealed class BitMarkdownPipeline
         if (string.IsNullOrEmpty(markdown))
             return document;
 
-        document.Children.AddRange(ParseBlocks(SplitLines(markdown), options, 0));
+        var lines = SplitLines(markdown);
+        var context = new BitMarkdownParseContext(options, ScanReferenceLabels(lines));
+
+        document.Children.AddRange(ParseBlocks(lines, context, 0, 0));
 
         foreach (var processor in AstProcessors)
             processor.Process(document, this);
@@ -65,31 +86,73 @@ public sealed class BitMarkdownPipeline
         return document;
     }
 
-    internal List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, BitMarkdownParseOptions options, int depth)
+    // Collects the normalized label of every "[label]:" line in the source. Reference
+    // definitions are allowed to appear after the references that use them, so the inline
+    // parsers cannot know from the text alone whether "[foo]" is a reference or ordinary
+    // prose; consulting this set first keeps documents that declare no definitions parsing
+    // exactly as they did before reference links existed.
+    private static HashSet<string> ScanReferenceLabels(IReadOnlyList<string> lines)
+    {
+        var labels = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var line in lines)
+        {
+            // Cheap rejection first: the vast majority of lines never open a definition.
+            if (line.Length < 4 || line.IndexOf('[') < 0 || line.IndexOf("]:", StringComparison.Ordinal) < 0)
+                continue;
+
+            try
+            {
+                var m = ReferenceDefinitionStart().Match(line);
+                if (m.Success)
+                    labels.Add(BitMarkdownLinkHelpers.NormalizeLabel(m.Groups["label"].Value));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                // Pathological line: skip it rather than hang. A missed label only means
+                // the corresponding reference degrades to literal text.
+            }
+        }
+        return labels;
+    }
+
+    internal List<BitMarkdownNode> ParseBlocks(IReadOnlyList<string> lines, BitMarkdownParseContext context, int depth, int lineOffset)
     {
         // Depth guard: stop recursing into ever-deeper nested blocks and instead keep
         // the remaining lines as a single plain-text paragraph. This caps recursion so
         // hostile input (e.g. ">>>>...") cannot trigger a StackOverflowException.
-        if (depth > options.MaxDepth)
+        if (depth > context.Options.MaxDepth)
         {
             var para = new BitMarkdownParagraphNode();
             para.Inlines.Add(new BitMarkdownTextNode(string.Join("\n", lines)));
             return new List<BitMarkdownNode> { para };
         }
 
-        return new BitMarkdownBlockProcessor(this, lines, options, depth).Run();
+        return new BitMarkdownBlockProcessor(this, lines, context, depth, lineOffset).Run();
     }
 
-    internal List<BitMarkdownNode> ParseInlines(string text, BitMarkdownParseOptions options, int depth)
+    internal List<BitMarkdownNode> ParseInlines(string text, BitMarkdownParseContext context, int depth)
     {
-        if (depth > options.MaxDepth)
+        if (depth > context.Options.MaxDepth)
             return new List<BitMarkdownNode> { new BitMarkdownTextNode(text) };
 
-        return new BitMarkdownInlineProcessor(this, options, depth).Parse(text);
+        return new BitMarkdownInlineProcessor(this, context, depth).Parse(text);
     }
 
+    /// <summary>
+    /// The words this pipeline's renderers write themselves - alert titles, footnote back-links,
+    /// the accessible names of the regions and controls the markup adds.
+    /// </summary>
+    public BitMarkdownTexts Texts { get; }
+
     /// <summary>Creates a renderer bound to this pipeline's node renderers.</summary>
-    public BitMarkdownRenderer CreateRenderer() => new(Renderers);
+    public BitMarkdownRenderer CreateRenderer() => new(Renderers, Texts);
+
+    /// <summary>
+    /// The renderer this pipeline hands its own callers. A renderer holds nothing but the
+    /// pipeline's (immutable) renderer list, so one instance serves every render of every
+    /// component sharing the pipeline instead of being allocated per render.
+    /// </summary>
+    public BitMarkdownRenderer Renderer => _renderer;
 
     private static List<string> SplitLines(string text)
     {

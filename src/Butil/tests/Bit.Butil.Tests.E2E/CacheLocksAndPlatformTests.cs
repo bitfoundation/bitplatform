@@ -47,15 +47,71 @@ public class CacheLocksAndPlatformTests : ButilObserversPageTest
     }
 
     [TestMethod]
-    public async Task UserAgent_Extract_Returns_The_Raw_User_Agent()
+    public async Task UserAgent_Extract_Names_The_Running_Browser()
     {
         await ClickAndExpectAsync("ua-extract", "ua:extract:True");
+    }
+
+    [TestMethod]
+    public async Task UserAgent_Extract_Parses_A_String_It_Was_Given()
+    {
+        // A fixed iPhone string, so the expectation is the parse itself rather than whatever
+        // browser the suite happens to be running in.
+        await ClickAndExpectAsync("ua-extract-string", "ua:extract-string:Safari/18.2/WebKit/iOS/18.2/iPhone");
     }
 
     [TestMethod]
     public async Task Screen_Reports_Positive_Metrics()
     {
         await ClickAndExpectAsync("screen-metrics", "screen:metrics:True");
+    }
+
+    /// <summary>
+    /// Where the Notifications API is missing, a bare <c>Notification</c> reference throws; the permission
+    /// reads have to report Denied instead. Removing the constructor stands in for such an engine.
+    /// </summary>
+    [TestMethod]
+    public async Task Notification_Permission_Reports_Denied_Without_The_Api()
+    {
+        await Page.EvaluateAsync("delete window.Notification");
+
+        await ClickAndExpectAsync("notification-missing", "notification:missing:False/Denied/Denied");
+    }
+
+    /// <summary>
+    /// An engine rejects an action name it does not know, so registering each newer action succeeding is
+    /// what proves the name sent for it is the spec's.
+    /// </summary>
+    [TestMethod]
+    public async Task MediaSession_Accepts_The_Slide_And_Picture_In_Picture_Actions()
+    {
+        await ClickAndExpectAsync("mediasession-actions", "mediasession:actions:True/True/True");
+    }
+
+    /// <summary>
+    /// The change event carries <c>screen.orientation.type</c>, a kebab-case keyword that has to be mapped
+    /// onto <c>ScreenOrientationType</c> - handed to System.Text.Json as-is it fails to deserialize,
+    /// and every event is dropped with nothing but a console error to show for it.
+    /// </summary>
+    [TestMethod]
+    public async Task ScreenOrientation_Change_Reports_The_New_Type_And_Angle()
+    {
+        await ClickAndExpectAsync("screen-orientation-watch", "screen:orientation-watching");
+
+        // Chromium-only, like the rest of the suite: DevTools rotates the emulated screen, which is
+        // what fires the change event on a headless desktop page.
+        var cdp = await Page.Context.NewCDPSessionAsync(Page);
+        await cdp.SendAsync("Emulation.setDeviceMetricsOverride", new Dictionary<string, object>
+        {
+            ["width"] = 400,
+            ["height"] = 800,
+            ["deviceScaleFactor"] = 1,
+            ["mobile"] = true,
+            ["screenOrientation"] = new Dictionary<string, object> { ["type"] = "portraitSecondary", ["angle"] = 180 },
+        });
+
+        await Microsoft.Playwright.Assertions.Expect(Page.Locator("#status"))
+            .ToContainTextAsync("screen:orientation-change:PortraitSecondary/180", new() { Timeout = 15_000 });
     }
 
     [TestMethod]

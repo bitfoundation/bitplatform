@@ -134,7 +134,7 @@ public class EventSource(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.eventSource.disposeAll");
+            await js.InvokeTeardown("BitButil.eventSource.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

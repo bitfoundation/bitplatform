@@ -35,7 +35,7 @@
                     <AppDataAnnotationsValidator @ref="validatorRef" />
 
                     <BitStack Gap="0.25rem">
-                        <BitTextField @bind-Value="category.Name"
+                        <BitTextField @bind-Value="category.Name" Immediate
                                       Label="@Localizer[nameof(AppStrings.Name)]"
                                       Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
                         <ValidationMessage For="() => category.Name" />

@@ -20,6 +20,16 @@ internal static partial class BitMarkdownUrlSanitizer
     private static readonly string[] AllowedImageSchemes =
         { "http:", "https:" };
 
+    // Inline image payloads that a browser only ever decodes as a bitmap. "image/svg+xml"
+    // is deliberately absent: an SVG document can carry script, and although a browser does
+    // not run it through <img>, allowing it would make the sanitizer's guarantee depend on
+    // where the URL is used. Everything here is a raster format with no scripting model.
+    private static readonly string[] AllowedImageDataTypes =
+    {
+        "data:image/png", "data:image/jpeg", "data:image/jpg", "data:image/gif",
+        "data:image/webp", "data:image/avif", "data:image/bmp", "data:image/x-icon"
+    };
+
     public static string Sanitize(string url, bool isImage)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -41,18 +51,18 @@ internal static partial class BitMarkdownUrlSanitizer
             trimmed.StartsWith("./") || trimmed.StartsWith("../") ||
             trimmed.StartsWith("//"))
         {
-            return trimmed;
+            return EncodeSpaces(trimmed);
         }
 
         // Only treat the text before the first ':' as a scheme if it appears
         // before any '/', '?' or '#'. Otherwise it's a relative path.
         int colon = trimmed.IndexOf(':');
         if (colon < 0)
-            return trimmed; // no scheme => relative
+            return EncodeSpaces(trimmed); // no scheme => relative
 
         int slash = trimmed.IndexOfAny(new[] { '/', '?', '#' });
         if (slash >= 0 && slash < colon)
-            return trimmed; // ':' belongs to the path, not a scheme
+            return EncodeSpaces(trimmed); // ':' belongs to the path, not a scheme
 
         // Compare scheme case-insensitively, ignoring embedded control chars.
         // Browsers normalize away all ASCII C0 control characters (0x00-0x1F) and
@@ -65,10 +75,36 @@ internal static partial class BitMarkdownUrlSanitizer
         foreach (var s in allowed)
         {
             if (scheme == s)
-                return trimmed;
+                return EncodeSpaces(trimmed);
         }
+
+        // Embedded raster images are a normal way to ship a self-contained document, so a
+        // "data:image/png;base64,..." source is allowed for images (never for links, where
+        // navigating to a data: URL is a known phishing vector).
+        if (isImage && IsAllowedImageData(trimmed))
+            return trimmed;
 
         // Unknown/blocked scheme.
         return string.Empty;
+    }
+
+    // A literal space is never valid in a URL - "[a](</my url>)" is written with one only
+    // because the angle brackets let it be. Percent-encoding it keeps the attribute well
+    // formed; every other character is left exactly as the author wrote it, so an already
+    // encoded URL is never encoded twice.
+    private static string EncodeSpaces(string url)
+        => url.IndexOf(' ') < 0 ? url : url.Replace(" ", "%20");
+
+    // Matches "data:<raster media type>" followed by the ';' or ',' that ends the type, so
+    // "data:image/pngx" or a type with a trailing suffix cannot slip through on a prefix.
+    private static bool IsAllowedImageData(string url)
+    {
+        foreach (var prefix in AllowedImageDataTypes)
+        {
+            if (url.Length <= prefix.Length) continue;
+            if (url.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) is false) continue;
+            if (url[prefix.Length] is ';' or ',') return true;
+        }
+        return false;
     }
 }

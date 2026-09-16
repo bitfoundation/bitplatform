@@ -18,12 +18,20 @@ namespace Bit.Butil;
 /// </summary>
 public static class ElementReferenceExtensions
 {
-    // Bind to the public-surface property getter rather than the compiler-generated
-    // "<JSRuntime>k__BackingField" field. The getter method name (get_JSRuntime) is part of the
-    // type's stable shape and far less likely to change across framework releases than the
-    // synthesized backing-field name, which is an implementation detail.
+#if NET9_0_OR_GREATER
+    // Bind to the property getter rather than the compiler-generated "<JSRuntime>k__BackingField"
+    // field. The getter method name (get_JSRuntime) is part of the type's stable shape and far less
+    // likely to change across framework releases than the synthesized backing-field name.
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_JSRuntime")]
     extern static IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
+#else
+    // The .NET 8 Mono runtime (Blazor WebAssembly) only resolves field accessors - a Method accessor
+    // throws MissingMethodException("Could not find get_JSRuntime") there, while CoreCLR accepts
+    // both. The backing field is the one shape both runtimes of that release agree on, and
+    // ASP.NET Core 8.0 is a closed target, so the field name can no longer move under it.
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "<JSRuntime>k__BackingField")]
+    extern static ref IJSRuntime JSRuntimeGetter(WebElementReferenceContext context);
+#endif
 
     private static IJSRuntime GetJSRuntime(ElementReference elementReference)
     {
@@ -740,10 +748,10 @@ public static class ElementReferenceExtensions
     /// </remarks>
     public static async ValueTask<Hidden> GetHidden(this ElementReference element)
     {
-        var value = await GetJSRuntime(element).Invoke<object>("BitButil.element.getHidden", element);
-        var v = value.ToString() switch
+        var value = await GetJSRuntime(element).Invoke<string>("BitButil.element.getHidden", element);
+        var v = value switch
         {
-            "True" => Hidden.True,
+            "true" => Hidden.True,
             "until-found" => Hidden.UntilFound,
             _ => Hidden.False
         };

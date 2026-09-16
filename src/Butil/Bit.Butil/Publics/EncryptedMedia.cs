@@ -167,7 +167,7 @@ public class EncryptedMedia(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.encryptedMedia.disposeAll");
+            await js.InvokeTeardown("BitButil.encryptedMedia.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

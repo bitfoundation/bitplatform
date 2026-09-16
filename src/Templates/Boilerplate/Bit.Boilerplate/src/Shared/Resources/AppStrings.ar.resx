@@ -1332,7 +1332,122 @@
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>لا يوجد تطبيق على هذا الجهاز يمكنه فتح روابط {0}.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>مكالمة صوتية</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>بدء مكالمة صوتية</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>إنهاء المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>العودة إلى المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>الوقت المتبقي للمكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>انتهت المكالمة الصوتية.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>تعذّر إرسال الرسالة إلى المكالمة.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>المساعد مشغول. حاول مرة أخرى بعد {0} ثانية.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>تعذّر على المساعد الرد. حاول مرة أخرى.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>اترك بيانات التواصل الخاصة بك وسيتواصل معك أحد موظفي الدعم.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>ملخص المحادثة</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>تم تسجيل الدخول باسم</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>تم إرسال طلبك بنجاح. سيتواصل معك أحد موظفي الدعم قريبًا.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>ما الذي سيحدث</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>في انتظار ردك</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>هل تريد مسح ملفات التطبيق على هذا الجهاز؟</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>البدء من جديد يحل معظم المشكلات الناتجة عن تلف البيانات المحلية.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>سيتم تسجيل خروجك</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>سيتم حذف هذه المحادثة</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>سيُعاد تشغيل التطبيق</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>ستنتهي المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>مسح الملفات</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>ليس الآن</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>جارٍ مسح ملفات التطبيق</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>احتفظت بملفات التطبيق.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>لم يُمسح أي شيء: لم يتم الرد على الطلب.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>هل توافق على هذا؟</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>تم الرفض.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>لم يتم الرد على الطلب.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>الأنسب</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>خيارات مناسبة أيضًا</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>اسأل</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>أخبرني المزيد عن {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>لوحة الدردشة بالذكاء الاصطناعي</value>
   </data>
@@ -1493,20 +1608,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>إرسال إشعار</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>تمكين الإشعارات</value>
-  </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>تعطيل الإشعارات</value>
-  </data>
   <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>الإشعارات الفورية مفعّلة في هذه الجلسة.</value>
+    <value>الإشعارات مفعّلة في هذه الجلسة.</value>
   </data>
   <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>الإشعارات الفورية مكتومة في هذه الجلسة.</value>
+    <value>الإشعارات مكتومة في هذه الجلسة.</value>
   </data>
-  <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>الإشعارات الفورية غير مهيّأة في هذه الجلسة.</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>تم تفعيل الإشعارات</value>
@@ -1829,15 +1944,6 @@
     <value>لا توجد منطقة زمنية تطابق بحثك.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>تشغيل الإشعارات الفورية</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>إيقاف الإشعارات الفورية</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>

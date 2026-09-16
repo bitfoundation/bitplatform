@@ -404,9 +404,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
+    // Where the flag images live and how they are named is BitFlag's to know, so the two cannot drift.
     private static string GetFlagUrl(BitCountry country)
     {
-        return $"_content/Bit.BlazorUI.Extras/flags/{country.Iso2.ToUpperInvariant()}-flat-16.webp";
+        return BitFlag.GetFlagUrl(country.Iso2);
     }
 
     private async Task HandleOnDropdownClick()

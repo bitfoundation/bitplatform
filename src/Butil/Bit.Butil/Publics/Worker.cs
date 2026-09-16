@@ -98,7 +98,8 @@ public class Worker(IJSRuntime js, MessageChannel messageChannel) : IAsyncDispos
     /// <paramref name="onError"/> instead, because the constructor returns before the script has
     /// been fetched.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMessage))]
+    // JsonSerialized, not All - see MessageChannel.Create: All keeps the RUC Deserialize<T> and raises IL2026 here.
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(ButilMessage))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WorkerError))]
     public async ValueTask<WorkerHandle?> Create(string scriptUrl,
                                                  Action<ButilMessage> onMessage,
@@ -141,7 +142,8 @@ public class Worker(IJSRuntime js, MessageChannel messageChannel) : IAsyncDispos
     /// There is no error callback: a shared worker's failures are reported to whichever context is
     /// looking, not reliably to every connected page.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMessage))]
+    // JsonSerialized, not All - see MessageChannel.Create: All keeps the RUC Deserialize<T> and raises IL2026 here.
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(ButilMessage))]
     public async ValueTask<SharedWorkerHandle?> CreateShared(string scriptUrl, WorkerOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scriptUrl);
@@ -164,7 +166,7 @@ public class Worker(IJSRuntime js, MessageChannel messageChannel) : IAsyncDispos
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.worker.disposeAll");
+            await js.InvokeTeardown("BitButil.worker.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally
