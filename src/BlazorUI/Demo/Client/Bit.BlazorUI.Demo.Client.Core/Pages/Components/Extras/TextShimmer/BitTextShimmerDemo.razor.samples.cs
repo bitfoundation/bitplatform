@@ -112,9 +112,9 @@ private async Task AskAsync()
 <BitTextShimmer Color=""BitColor.SevereWarning"" Text=""SevereWarning"" />
 <BitTextShimmer Color=""BitColor.Error"" Text=""Error"" />
 
-<BitTextShimmer BaseColor=""#3f3f46"" GradientColor=""#22d3ee"" Text=""An ocean colored shimmer"" />
+<BitTextShimmer BaseColor=""#64748b"" GradientColor=""#22d3ee"" Text=""An ocean colored shimmer"" />
 
-<BitTextShimmer BaseColor=""#92400e"" GradientColor=""#fbbf24"" Text=""A golden colored shimmer"" />";
+<BitTextShimmer BaseColor=""#a16207"" GradientColor=""#fbbf24"" Text=""A golden colored shimmer"" />";
 
     private readonly string example12RazorCode = @"
 <style>

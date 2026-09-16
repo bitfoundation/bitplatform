@@ -249,9 +249,9 @@
             <br /><br />
             <div>Custom colors:</div>
             <br />
-            <BitTextShimmer BaseColor="#3f3f46" GradientColor="#22d3ee" Text="An ocean colored shimmer" />
+            <BitTextShimmer BaseColor="#64748b" GradientColor="#22d3ee" Text="An ocean colored shimmer" />
             <br />
-            <BitTextShimmer BaseColor="#92400e" GradientColor="#fbbf24" Text="A golden colored shimmer" />
+            <BitTextShimmer BaseColor="#a16207" GradientColor="#fbbf24" Text="A golden colored shimmer" />
         </DemoExample>
 
         <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
@@ -264,11 +264,14 @@
                 inline, so it is set with <BitLink Href="#example3">SpreadLength</BitLink> or <b>Style</b> instead.
             </div>
             <br />
-            <BitTextShimmer Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
-            <br />
-            <BitTextShimmer Class="custom-class" Text="A classy text shimmer" />
-            <br />
-            <BitTextShimmer Style="--bit-tsh-gradient-clr:hotpink" Text="A band colored through a custom property" />
+            @* A plain element of this page for the scoped ::deep .custom-class rule to anchor on. *@
+            <div>
+                <BitTextShimmer Style="font-size:2rem;font-weight:bold" Text="A styled text shimmer" />
+                <br />
+                <BitTextShimmer Class="custom-class" Text="A classy text shimmer" />
+                <br />
+                <BitTextShimmer Style="--bit-tsh-gradient-clr:hotpink" Text="A band colored through a custom property" />
+            </div>
         </DemoExample>
 
         <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
