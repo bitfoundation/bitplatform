@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -2551,6 +2552,161 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual(2, component.Instance.Zoom, 0.0001);
         Assert.AreEqual(2, component.Instance.CurrentPage);
     }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNotReopenTheFindBoxOnARepeatedEscape()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+
+        // The root's shortcut listener and the find box's own handler can both see one
+        // Escape, the root's first. By the time the box's handler runs the box is
+        // already closed (its handler id outlives it in the browser), so it is called
+        // directly here - and must not reopen the box.
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+        Assert.IsFalse(component.Instance.IsSearchOpen);
+
+        var onSearchKeyDown = typeof(BitPdfViewer).GetMethod("OnSearchKeyDown", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        await component.InvokeAsync(() => (Task)onSearchKeyDown.Invoke(component.Instance, [new KeyboardEventArgs { Key = "Escape" }])!);
+        Assert.IsFalse(component.Instance.IsSearchOpen);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldCloseOnlyTheFindBoxOnEscapeWhilePresenting()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+
+        Assert.IsFalse(component.Instance.IsSearchOpen);
+        Assert.IsTrue(component.Instance.IsPresenting);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNavigateToTheClickedNestedBookmarkOnly()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        // The child points at page 2 and its parent at page 1: a click or key that
+        // bubbled to the parent's handler as well would leave the viewer on page 1, so
+        // every tree item stops its events from propagating. (bUnit does not bubble
+        // events, so the markers are what is checked.)
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[role='treeitem'] [role='treeitem']").Count));
+        foreach (var item in component.FindAll("[role='treeitem']"))
+        {
+            Assert.IsTrue(item.HasAttribute("blazor:onclick:stopPropagation"));
+            Assert.IsTrue(item.HasAttribute("blazor:onkeydown:stopPropagation"));
+        }
+
+        await component.Find("[role='treeitem'] [role='treeitem']").ClickAsync(new MouseEventArgs());
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+    }
+
+    // The viewport record is internal to the library, so its interop result is set up
+    // through reflection rather than the generic Setup<T> a public type would allow.
+    private void SetupViewport(double width, double height)
+    {
+        var viewportType = typeof(BitPdfViewer).Assembly.GetType("Bit.BlazorUI.BitPdfViewerViewport", throwOnError: true)!;
+        var setup = typeof(BunitJSInteropSetupExtensions).GetMethods()
+            .Single(m => m.Name == "Setup" && m.IsGenericMethodDefinition
+                && m.GetParameters().Select(p => p.ParameterType)
+                    .SequenceEqual([typeof(BunitJSInterop), typeof(string), typeof(InvocationMatcher)]))
+            .MakeGenericMethod(viewportType)
+            .Invoke(null, [Context.JSInterop, "BitBlazorUI.PdfViewer.getViewport", (InvocationMatcher)(_ => true)])!;
+        setup.GetType().GetMethod("SetResult")!.Invoke(setup, [Activator.CreateInstance(viewportType, width, height)]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldRestoreACustomZoomWhenLeavingPresentationMode()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        // Presentation mode fits the page, so the viewport has to have a size for that
+        // fit to move the zoom away from the reader's own.
+        SetupViewport(332, 332);
+
+        await component.InvokeAsync(() => component.Instance.SetZoom(2));
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+        Assert.AreNotEqual(2, component.Instance.Zoom, 0.0001);
+        await component.InvokeAsync(() => component.Instance.ExitPresentationMode());
+
+        Assert.AreEqual(BitPdfZoomMode.Custom, component.Instance.ZoomMode);
+        Assert.AreEqual(2, component.Instance.Zoom, 0.0001);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldStartThePasswordDialogOnThePasswordBox()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("hunter2")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-password").Count));
+
+        // The trap is told which control to start on: its first one is Close, and a
+        // separate focus call before it would also hide the opener from the trap.
+        component.WaitForAssertion(() =>
+        {
+            var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.trapFocus"].Last();
+            Assert.AreEqual(2, call.Arguments.Count);
+        });
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldMeasureADestinationFromThePageBoxOrigin()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithOffsetAndRotatedPages()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+
+        // Page 2's box runs from y=100 to y=500, so y=450 is 50pt below its top edge
+        // (not 50pt above it, as measuring from y=0 would have it).
+        await component.InvokeAsync(() => component.Instance.GoToDestination(
+            new BitPdfDestination { PageNumber = 2, Left = 0, Top = 450 }));
+        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        Assert.AreEqual(2, call.Arguments[1]);
+        Assert.AreEqual(50, Convert.ToDouble(call.Arguments[2]), 0.0001);
+
+        // Page 3 carries /Rotate 90, so the screen's vertical runs along the PDF's x.
+        await component.InvokeAsync(() => component.Instance.GoToDestination(
+            new BitPdfDestination { PageNumber = 3, Left = 120, Top = 10 }));
+        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        Assert.AreEqual(3, call.Arguments[1]);
+        Assert.AreEqual(120, Convert.ToDouble(call.Arguments[2]), 0.0001);
+    }
 }
 
 /// <summary>
@@ -2690,6 +2846,25 @@ internal static class TestPdf
             // 6/7: the groups - the second declares itself off on screen
             "<< /Type /OCG /Name (Screen) >>",
             "<< /Type /OCG /Name (Print only) /Usage << /View << /ViewState /OFF >> >> >>",
+        };
+        return Build(bodies, rootObjNum: 1);
+    }
+
+    /// <summary>
+    /// A three-page document: a plain page, a page whose media box does not start at
+    /// the origin, and a page with a built-in quarter turn. Exercises measuring an
+    /// in-page destination the way the renderer lays the page out.
+    /// </summary>
+    public static byte[] WithOffsetAndRotatedPages()
+    {
+        var bodies = new List<string>
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 400] /Contents 6 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 100 200 500] /Contents 6 0 R >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 200] /Rotate 90 /Contents 6 0 R >>",
+            Stream("BT ET"),
         };
         return Build(bodies, rootObjNum: 1);
     }

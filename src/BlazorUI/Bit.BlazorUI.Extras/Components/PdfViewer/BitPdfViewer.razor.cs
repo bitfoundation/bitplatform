@@ -157,6 +157,7 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _presenting;
     private BitPdfScrollMode _presentingScrollMode;
     private BitPdfZoomMode _presentingZoomMode;
+    private double _presentingZoom;
     private BitPdfSidebar _presentingSidebar;
 
     // The built-in password dialog. The load parks on this completion source while
@@ -772,9 +773,10 @@ public partial class BitPdfViewer : BitComponentBase
     /// vertical position - that position within the page, so a bookmark pointing at
     /// the middle of a long page lands there instead of at its top.
     /// <br />
-    /// The in-page offset is applied only while the pages are unrotated; a rotated
-    /// page's coordinates no longer run down the screen, so navigation falls back to
-    /// the page itself.
+    /// The offset follows the page's own <c>/Rotate</c> and <see cref="Rotation"/>:
+    /// on a page turned a quarter the screen's vertical runs along the PDF's x axis,
+    /// so it is read from the destination's left coordinate, and navigation falls
+    /// back to the page itself when the destination does not name that one.
     /// </summary>
     public async Task GoToDestination(BitPdfDestination? destination)
     {
@@ -791,12 +793,11 @@ public partial class BitPdfViewer : BitComponentBase
         if (IsDisposed) return;
 
         int index = pageNo - 1;
-        if (destination.Top is not double top || Rotation != 0
-            || index < 0 || index >= _pageHeights.Count) return;
+        if (_document is null || index < 0 || index >= _document.PageCount) return;
 
-        // PDF coordinates run up from the bottom-left, CSS ones down from the top, so
-        // the offset into the page is what is left above the destination.
-        double offset = (_pageHeights[index] - top) * Zoom;
+        if (DestinationOffset(_document.Pages[index], destination) is not double points) return;
+
+        double offset = points * Zoom;
         if (offset <= 0.5) return;
 
         try
@@ -804,6 +805,30 @@ public partial class BitPdfViewer : BitComponentBase
             await _js.BitPdfViewerScrollToPageOffset(_containerRef, pageNo, offset);
         }
         catch (JSDisconnectedException) { }
+    }
+
+    /// <summary>
+    /// How far down the displayed page, in points, a destination sits - or <c>null</c>
+    /// when it does not name the coordinate the screen's vertical is read from. It
+    /// mirrors the renderer's viewport: the page box need not start at the origin, and
+    /// the page's own rotation adds to the viewer's.
+    /// </summary>
+    private double? DestinationOffset(BitPdfPage page, BitPdfDestination destination)
+    {
+        double[] box = page.MediaBox;
+        double x0 = Math.Min(box[0], box[2]), x1 = Math.Max(box[0], box[2]);
+        double y0 = Math.Min(box[1], box[3]), y1 = Math.Max(box[1], box[3]);
+
+        int rotation = ((page.Rotate + Rotation) % 360 + 360) % 360;
+
+        // PDF coordinates run up from the bottom-left, CSS ones down from the top.
+        return rotation switch
+        {
+            90 => destination.Left - x0,
+            180 => destination.Top - y0,
+            270 => x1 - destination.Left,
+            _ => y1 - destination.Top,
+        };
     }
 
     /// <summary>
@@ -1249,6 +1274,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         _presentingScrollMode = _scrollMode;
         _presentingZoomMode = _zoomMode;
+        _presentingZoom = Zoom;
         _presentingSidebar = Sidebar;
         _presenting = true;
         ClassBuilder.Reset(); // the presenting modifier is on the root class
@@ -1277,7 +1303,16 @@ public partial class BitPdfViewer : BitComponentBase
         _presenting = false;
         ClassBuilder.Reset();
         await SetScrollMode(_presentingScrollMode);
-        await SetZoomMode(_presentingZoomMode);
+        // A custom zoom is a value, not a mode: re-fitting would drop a reader who
+        // was at 200% back to whatever fit-page worked out to.
+        if (_presentingZoomMode == BitPdfZoomMode.Custom)
+        {
+            await SetZoom(_presentingZoom);
+        }
+        else
+        {
+            await SetZoomMode(_presentingZoomMode);
+        }
         await ShowSidebar(_presentingSidebar);
         if (IsDisposed) return;
 
@@ -1875,7 +1910,7 @@ public partial class BitPdfViewer : BitComponentBase
                 }
                 else if (_showSearch)
                 {
-                    await ToggleSearch();
+                    await CloseSearch();
                 }
                 else if (_presenting)
                 {
@@ -2128,9 +2163,10 @@ public partial class BitPdfViewer : BitComponentBase
             _focusPasswordPending = false;
             try
             {
-                // The password box first, then the dialog around it keeps Tab inside.
-                await _js.BitPdfViewerFocus(_passwordInputRef);
-                await _js.BitPdfViewerTrapFocus(_passwordDialogRef);
+                // The dialog keeps Tab inside and starts on the password box, not on its
+                // first control (Close). One call, so the trap still sees the opener as
+                // the focused element and can hand focus back to it on close.
+                await _js.BitPdfViewerTrapFocus(_passwordDialogRef, _passwordInputRef);
                 _passwordTrapped = true;
             }
             catch (JSDisconnectedException) { }
@@ -3337,6 +3373,15 @@ public partial class BitPdfViewer : BitComponentBase
         await ClearSearchAsync();
     }
 
+    /// <summary>Closes the find box; a no-op when it is already closed, so a repeated
+    /// Escape can never reopen it the way a toggle would.</summary>
+    private async Task CloseSearch()
+    {
+        if (_showSearch is false) return;
+
+        await ToggleSearch();
+    }
+
     // Bumped per keystroke so a search only starts once typing pauses; without it
     // every character would run a full index sweep on the UI thread.
     private int _searchInputGeneration;
@@ -3513,7 +3558,7 @@ public partial class BitPdfViewer : BitComponentBase
         }
         else if (e.Key == "Escape")
         {
-            await ToggleSearch();
+            await CloseSearch();
         }
     }
 

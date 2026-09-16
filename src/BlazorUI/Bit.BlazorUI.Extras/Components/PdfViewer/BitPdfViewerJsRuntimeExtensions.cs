@@ -87,6 +87,11 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.trapFocus", dialog);
     }
 
+    public static ValueTask BitPdfViewerTrapFocus(this IJSRuntime jsRuntime, ElementReference dialog, ElementReference initial)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.trapFocus", dialog, initial);
+    }
+
     public static ValueTask BitPdfViewerReleaseFocus(this IJSRuntime jsRuntime)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.releaseFocus");

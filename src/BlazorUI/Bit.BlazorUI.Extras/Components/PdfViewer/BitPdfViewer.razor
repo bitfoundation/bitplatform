@@ -533,7 +533,9 @@
     @* An ARIA tree is ONE tab stop: the treeitem itself carries the focus and the
        arrow keys move it between items, so the focusable element and the element the
        role sits on have to be the same one - a focusable div nested inside the
-       treeitem would put focus somewhere assistive technology cannot name. *@
+       treeitem would put focus somewhere assistive technology cannot name. The items
+       nest, so their click and key handlers stop propagating: otherwise a child's event
+       would also run every ancestor's handler, and the outermost one would win. *@
     private RenderFragment RenderOutline(IReadOnlyList<BitPdfOutlineItem> items) =>
     @<ul class="bit-pdv-outline-list" role="group">
         @foreach (var item in items)
@@ -545,8 +547,8 @@
                 tabindex="@(IsOutlineTabStop(item) ? 0 : -1)"
                 aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
                 aria-selected="@AriaBool(item.PageNumber == CurrentPage)"
-                title="@item.Title" @onclick="@(() => OnOutlineClick(item))"
-                @onkeydown="@(e => OnOutlineKeyDown(e, item))">
+                title="@item.Title" @onclick="@(() => OnOutlineClick(item))" @onclick:stopPropagation="true"
+                @onkeydown="@(e => OnOutlineKeyDown(e, item))" @onkeydown:stopPropagation="true">
                 <div class="bit-pdv-outline-row">
                     @if (hasChildren)
                     {

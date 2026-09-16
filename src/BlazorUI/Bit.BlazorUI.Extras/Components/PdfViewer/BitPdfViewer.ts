@@ -479,6 +479,20 @@
             return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable === true;
         }
 
+        // Whether the event originates from a control that gives the navigation keys
+        // (Home/End, the arrows, Space) a meaning of its own: a button presses on
+        // Space, and the bookmark tree, the thumbnail list and the dialogs move their
+        // own focus with the arrows and Home/End. Taking those keys there would page
+        // the document instead of - or as well as - doing what the control says.
+        private static ownsNavigationKeys(target: EventTarget | null, root: HTMLElement) {
+            const el = target as HTMLElement | null;
+            if (!el || !el.closest) {
+                return false;
+            }
+            const owner = el.closest("button,summary,[role='tree'],[role='listbox'],[role='dialog']");
+            return !!owner && root.contains(owner);
+        }
+
         // Whether the viewer is showing one page (or spread) at a time - the layout in
         // which the surface does not scroll, so the arrow and space keys have nothing to
         // scroll and page instead. Presentation mode is that layout by definition.
@@ -510,9 +524,14 @@
                 return { command: "sidebar", prevent: true };
             }
             if (e.key === "Escape") {
-                // Escape must reach .NET even from the find box, whose own handler
-                // closes it; the duplicate is harmless (the second call finds nothing
-                // open) and it is what makes Escape work from anywhere else.
+                // The find box closes itself on Escape (so it still does with the
+                // shortcuts off). Forwarding that same key as well would reach .NET a
+                // second time and, depending on which call lands first, either close
+                // the box twice or close it and then also leave presentation mode.
+                const el = e.target as HTMLElement | null;
+                if (el && el.classList && el.classList.contains("bit-pdv-search-input")) {
+                    return null;
+                }
                 return { command: "escape", prevent: false };
             }
             if (typing || e.altKey) {
@@ -522,10 +541,17 @@
             switch (e.key) {
                 case "n": case "j": case "PageDown": return { command: "next", prevent: e.key !== "PageDown" };
                 case "p": case "k": case "PageUp": return { command: "prev", prevent: e.key !== "PageUp" };
-                case "Home": return { command: "first", prevent: true };
-                case "End": return { command: "last", prevent: true };
                 case "r": return { command: "rotateCw", prevent: true };
                 case "R": return { command: "rotateCcw", prevent: true };
+            }
+
+            if (PdfViewer.ownsNavigationKeys(e.target, root)) {
+                return null;
+            }
+
+            switch (e.key) {
+                case "Home": return { command: "first", prevent: true };
+                case "End": return { command: "last", prevent: true };
             }
 
             // One page at a time: the surface has nothing to scroll, so the keys that
@@ -693,8 +719,9 @@
         // Focuses a modal dialog and keeps Tab inside it. A modal the keyboard can tab
         // out of is a modal in name only: focus lands behind it, on controls the dialog
         // is covering. The listener lives on the dialog element, which .NET removes from
-        // the DOM when the dialog closes, so it needs no separate teardown.
-        public static trapFocus(dialog: HTMLElement) {
+        // the DOM when the dialog closes, so it needs no separate teardown. `initial`,
+        // when given, is the control focus starts on instead of the first one.
+        public static trapFocus(dialog: HTMLElement, initial?: HTMLElement) {
             if (!dialog) {
                 return;
             }
@@ -713,10 +740,13 @@
                     "textarea:not([disabled]),[tabindex]:not([tabindex='-1'])"),
                 (el: HTMLElement) => el.offsetParent !== null || el === document.activeElement) as HTMLElement[];
 
-            // The first control, or the dialog itself - which carries tabindex="-1" so
-            // it can hold focus while the reader has not reached a control yet.
-            const first = focusables()[0];
-            (first || dialog).focus();
+            // The requested control, else the first one, else the dialog itself - which
+            // carries tabindex="-1" so it can hold focus while the reader has not
+            // reached a control yet.
+            const start = initial && dialog.contains(initial) && !(initial as any).disabled
+                ? initial
+                : focusables()[0];
+            (start || dialog).focus();
 
             const onKeyDown = (e: KeyboardEvent) => {
                 if (e.key !== "Tab") {
