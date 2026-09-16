@@ -2089,6 +2089,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Geautoriseerde applicaties</value>
   </data>
+    <data name="HealthChecks" xml:space="preserve">
+    <value>Statuscontroles</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Externe applicaties die uw gebruikers via OAuth hebben geautoriseerd.</value>
   </data>

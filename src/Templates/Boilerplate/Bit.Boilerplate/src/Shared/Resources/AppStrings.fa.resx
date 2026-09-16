@@ -2089,6 +2089,9 @@
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>برنامه‌های مجاز شده</value>
   </data>
+    <data name="HealthChecks" xml:space="preserve">
+    <value>بررسی سلامت</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>برنامه‌های بیرونی که کاربران شما با OAuth به آن‌ها اجازه داده‌اند.</value>
   </data>

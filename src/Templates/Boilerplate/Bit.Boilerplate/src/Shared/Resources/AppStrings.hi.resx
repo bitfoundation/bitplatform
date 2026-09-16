@@ -2089,6 +2089,9 @@
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
   </data>
+    <data name="HealthChecks" xml:space="preserve">
+    <value>स्वास्थ्य जाँच</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>बाहरी एप्लिकेशन जिन्हें आपके उपयोगकर्ताओं ने OAuth के ज़रिए अनुमति दी है।</value>
   </data>

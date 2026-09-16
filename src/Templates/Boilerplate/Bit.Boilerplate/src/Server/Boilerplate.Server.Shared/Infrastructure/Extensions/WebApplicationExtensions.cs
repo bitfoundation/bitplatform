@@ -1,12 +1,17 @@
 //+:cnd:noEmit
 using System.Net;
+using System.Globalization;
 using Boilerplate.Server.Shared;
-using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Shared.Infrastructure.Dtos;
+using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -36,18 +41,14 @@ public static class WebApplicationExtensions
                 Predicate = static res => res.Tags.Contains("live")
             });
 
-            if (app.Environment.IsDevelopment())
+            // The detailed report of the health checks page: behind its feature and never cached, as it carries each
+            // failure's exception. Always 200, since the status is in the body and the client throws on a 503.
+            app.MapHealthChecks("/healthz", new HealthCheckOptions
             {
-                // This endpoint returns more details and must be protected by authentication and authorization in production
-                // Replace outer `IsDevelopment` check with a more robust check for production readiness before exposing this endpoint publicly
-                healthChecks.MapHealthChecks("/healthz", new HealthCheckOptions
-                {
-                    Predicate = _ => true,
-                    AllowCachingResponses = true,
-                    // The following `IsDevelopment` check must remain in place to avoid exposing sensitive information in production
-                    ResponseWriter = app.Environment.IsDevelopment() ? UIResponseWriter.WriteHealthCheckUIResponse : UIResponseWriter.WriteHealthCheckUIResponseNoExceptionDetails
-                });
-            }
+                Predicate = _ => true,
+                ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
+                ResponseWriter = WriteHealthReport
+            }).RequireAuthorization(AppFeatures.System.HealthChecks_View);
 
             return app;
         }
@@ -201,4 +202,41 @@ public static class WebApplicationExtensions
     /// Strict-Transport-Security below behaves exactly like <c>UseHsts()</c> did.
     /// </summary>
     private static readonly HashSet<string> HstsExcludedHosts = new(["localhost", "127.0.0.1", "[::1]"], StringComparer.OrdinalIgnoreCase);
+
+    private static Task WriteHealthReport(HttpContext context, HealthReport report)
+    {
+        var registrations = context.RequestServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.ToDictionary(r => r.Name);
+
+        HealthReportDto body = new()
+        {
+            Status = (HealthCheckStatus)report.Status,
+            TotalDuration = report.TotalDuration,
+            CheckedAt = context.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow(),
+            Entries = report.Entries.ToDictionary(entry => entry.Key, entry =>
+            {
+                var registration = registrations.GetValueOrDefault(entry.Key);
+
+                return new HealthReportEntryDto
+                {
+                    Status = (HealthCheckStatus)entry.Value.Status,
+                    FailureStatus = (HealthCheckStatus)(registration?.FailureStatus ?? HealthStatus.Unhealthy),
+                    Timeout = registration?.Timeout is { } timeout && timeout != Timeout.InfiniteTimeSpan ? timeout : null,
+                    Description = entry.Value.Description,
+                    Duration = entry.Value.Duration,
+                    // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
+                    Exception = entry.Value.Exception?.ToString(),
+                    Tags = [.. entry.Value.Tags],
+                    // Stringified, as a check may put anything in here.
+                    Data = entry.Value.Data.ToDictionary(item => item.Key, item => item.Value switch
+                    {
+                        DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
+                        IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+                        _ => item.Value?.ToString()
+                    })
+                };
+            })
+        };
+
+        return context.Response.WriteAsJsonAsync(body, AppJsonContext.Default.HealthReportDto, cancellationToken: context.RequestAborted);
+    }
 }

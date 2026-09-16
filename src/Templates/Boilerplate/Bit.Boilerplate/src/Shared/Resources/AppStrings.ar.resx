@@ -2089,6 +2089,9 @@
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>التطبيقات المصرّح لها</value>
   </data>
+    <data name="HealthChecks" xml:space="preserve">
+    <value>فحوصات السلامة</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>التطبيقات الخارجية التي صرّح لها مستخدموك عبر OAuth.</value>
   </data>

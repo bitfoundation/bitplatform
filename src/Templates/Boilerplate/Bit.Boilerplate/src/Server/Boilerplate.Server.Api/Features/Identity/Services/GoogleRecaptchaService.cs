@@ -12,6 +12,26 @@ public partial class GoogleRecaptchaService
     {
         if (string.IsNullOrWhiteSpace(googleRecaptchaResponse)) return false;
 
+        var result = await SiteVerify(googleRecaptchaResponse, cancellationToken);
+
+        return result?.Success is true;
+    }
+
+    /// <summary>
+    /// Verifies a response that can never be valid. Google checks the response before the secret, so this proves only
+    /// that siteverify is reachable and answering, not that the secret is right.
+    /// </summary>
+    public virtual async ValueTask EnsureReachable(CancellationToken cancellationToken)
+    {
+        var result = await SiteVerify("health-check", cancellationToken)
+            ?? throw new InvalidOperationException("siteverify answered with an unrecognized error.");
+
+        if (result.ErrorCodes?.Contains("invalid-input-response") is not true)
+            throw new InvalidOperationException($"siteverify answered with unexpected errors: {string.Join(", ", result.ErrorCodes ?? [])}");
+    }
+
+    private async ValueTask<GoogleRecaptchaVerificationResponse?> SiteVerify(string googleRecaptchaResponse, CancellationToken cancellationToken)
+    {
         using var payload = new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "secret", AppSettings.GoogleRecaptchaSecretKey! },
@@ -21,11 +41,9 @@ public partial class GoogleRecaptchaService
         using var response = await httpClient.PostAsync("api/siteverify", payload, cancellationToken);
 
         if (response.IsSuccessStatusCode is false)
-            return false;
+            return null;
 
-        var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<GoogleRecaptchaVerificationResponse>(), cancellationToken);
-
-        return result?.Success is true;
+        return await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<GoogleRecaptchaVerificationResponse>(), cancellationToken);
     }
 }
 
@@ -38,6 +56,6 @@ public partial class GoogleRecaptchaVerificationResponse
 
     public string? Hostname { get; set; }
 
-    [JsonPropertyName("error_codes")]
+    [JsonPropertyName("error-codes")]
     public string[]? ErrorCodes { get; set; }
 }

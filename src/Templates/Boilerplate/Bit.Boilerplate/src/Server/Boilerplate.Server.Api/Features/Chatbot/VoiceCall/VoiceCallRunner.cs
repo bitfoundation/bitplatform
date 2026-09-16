@@ -258,7 +258,8 @@ public class VoiceCallRunner(IServiceScopeFactory scopeFactory,
         }
     }
 
-    private JsonObject CreateSession(string instructions, string? language, List<AIFunction> functions)
+    /// <summary>Public for <see cref="RealtimeHealthCheck"/>, which has the provider validate the same session.</summary>
+    public JsonObject CreateSession(string instructions, string? language, List<AIFunction> functions)
     {
         JsonObject input = new();
 

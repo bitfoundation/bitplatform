@@ -17,6 +17,7 @@ using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 using Boilerplate.Server.Shared.Infrastructure.Services;
 //#if (redis == true)
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis;
 //#endif
 
@@ -61,6 +62,14 @@ public static class WebApplicationBuilderExtensions
 
             // Add optional Redis connection for caching (ephemeral Redis without persistence)
             builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
+
+            // Losing the cache only costs speed (FusionCache keeps serving from memory), so it degrades the instance instead of draining it.
+            services.PostConfigure<HealthCheckServiceOptions>(options =>
+            {
+                var redisCacheCheck = options.Registrations.SingleOrDefault(r => r.Name is "StackExchange.Redis_redis-cache");
+                redisCacheCheck?.FailureStatus = HealthStatus.Degraded;
+                redisCacheCheck?.Timeout = TimeSpan.FromSeconds(5);
+            });
             //#endif
 
             services

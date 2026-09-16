@@ -76,6 +76,30 @@ public class OpenAIRealtimeCallClient(ServerApiSettings appSettings, IHttpClient
         using var _ = await httpClientFactory.CreateClient("AI").SendAsync(request, cancellationToken);
     }
 
+    /// <summary>
+    /// Has the provider validate the session (key, model, voice) without starting a call. Used by <see cref="RealtimeHealthCheck"/>.
+    /// </summary>
+    public virtual async Task CreateClientSecret(JsonObject session, CancellationToken cancellationToken)
+    {
+        var body = new JsonObject
+        {
+            ["expires_after"] = new JsonObject { ["anchor"] = "created_at", ["seconds"] = 10 },
+            ["session"] = session.DeepClone()
+        };
+
+        using HttpRequestMessage request = new(HttpMethod.Post, Url("realtime/client_secrets"))
+        {
+            Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Authorization = new("Bearer", Options.RealtimeApiKey);
+
+        using var response = await httpClientFactory.CreateClient("AI").SendAsync(request, cancellationToken);
+
+        // The success body holds the secret, so only an error body is read.
+        if (response.IsSuccessStatusCode is false)
+            throw new InvalidOperationException($"The realtime provider refused the session ({(int)response.StatusCode}): {await response.Content.ReadAsStringAsync(cancellationToken)}");
+    }
+
     private Uri Url(string relativeUrl)
         => new($"{(Options.RealtimeEndpoint ?? new Uri("https://api.openai.com/v1")).AbsoluteUri.TrimEnd('/')}/{relativeUrl}");
 

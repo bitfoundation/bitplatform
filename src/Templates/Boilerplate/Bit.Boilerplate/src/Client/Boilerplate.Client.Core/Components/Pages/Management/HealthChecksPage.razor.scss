@@ -1,0 +1,222 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+section {
+    width: 100%;
+    // A hidden BitTooltip still takes room, so one near the right edge scrolls the page sideways.
+    overflow-x: clip;
+}
+
+::deep {
+    // Every surface below tints itself from its status.
+    .healthy {
+        --tone: #{$bit-color-success};
+    }
+
+    .degraded {
+        --tone: #{$bit-color-warning};
+    }
+
+    .unhealthy {
+        --tone: #{$bit-color-error};
+    }
+
+    .notconfigured {
+        --tone: #{$bit-color-info};
+    }
+
+    .hero {
+        border: 1px solid color-mix(in srgb, var(--tone) 35%, #{$bit-color-border-secondary});
+        background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 12%, transparent), transparent 55%), #{$bit-color-background-primary};
+    }
+
+    // A stack is full width by default, which would wrap each part of the hero.
+    .hero-gauge {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    .hero-summary {
+        width: auto;
+        flex: 1 1 22rem;
+        min-width: min(100%, 18rem);
+    }
+
+    .stat-grid {
+        gap: 0.75rem;
+        display: grid;
+        grid-auto-rows: 1fr;
+        grid-template-columns: repeat(2, 10rem);
+
+        @include xs {
+            width: 100%;
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .stat {
+        height: 100%;
+        cursor: pointer;
+        border: 1px solid color-mix(in srgb, var(--tone) 30%, #{$bit-color-border-secondary});
+        background-color: color-mix(in srgb, var(--tone) 6%, #{$bit-color-background-primary});
+        transition: transform 150ms ease, border-color 150ms ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            border-color: var(--tone);
+        }
+
+        &.empty {
+            opacity: 0.55;
+        }
+    }
+
+    .no-wrap {
+        white-space: nowrap;
+    }
+
+    .search-box {
+        flex: 1 1 18rem;
+        max-width: 28rem;
+    }
+
+    .empty-state {
+        padding: 3rem 1rem;
+    }
+
+    .check-grid {
+        gap: 1rem;
+        display: grid;
+        grid-auto-rows: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+    }
+
+    .check-card {
+        height: 100%;
+        border: 1px solid $bit-color-border-secondary;
+        border-top: 3px solid var(--tone);
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+
+        &:hover {
+            box-shadow: $bit-box-shadow-md;
+            border-color: color-mix(in srgb, var(--tone) 45%, #{$bit-color-border-secondary});
+            border-top-color: var(--tone);
+        }
+    }
+
+    .manual-section {
+        padding-top: 1rem;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
+    .manual {
+        --tone: #{$bit-color-primary};
+    }
+
+    .how-to {
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.5rem;
+        background-color: color-mix(in srgb, #{$bit-color-primary} 8%, transparent);
+    }
+
+    .check-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        flex-shrink: 0;
+        font-size: 1.125rem;
+        align-items: center;
+        border-radius: 0.625rem;
+        justify-content: center;
+        color: var(--tone);
+        background-color: color-mix(in srgb, var(--tone) 14%, transparent);
+    }
+
+    .check-title {
+        min-width: 0;
+    }
+
+    .status-tag {
+        flex-shrink: 0;
+    }
+
+    .check-description {
+        color: var(--tone);
+    }
+
+    // Tinted rather than red text, which is unreadable on a dark background.
+    .exception-summary {
+        direction: ltr;
+        text-align: left;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.625rem;
+        color: $bit-color-foreground-primary;
+        border-inline-start: 3px solid $bit-color-error;
+        background-color: color-mix(in srgb, #{$bit-color-error} 12%, transparent);
+    }
+
+    // A check's recent probes, oldest first.
+    .probes {
+        gap: 3px;
+        height: 1rem;
+        display: flex;
+        direction: ltr;
+    }
+
+    .probe {
+        flex: 1;
+        max-width: 0.625rem;
+        border-radius: 3px;
+        background-color: $bit-color-border-secondary;
+
+        &.healthy {
+            background-color: $bit-color-success;
+        }
+
+        &.degraded {
+            background-color: $bit-color-warning;
+        }
+
+        &.unhealthy {
+            background-color: $bit-color-error;
+        }
+    }
+
+    .data-list {
+        margin: 0;
+        gap: 0.25rem 1rem;
+        display: grid;
+        direction: ltr;
+        grid-template-columns: auto 1fr;
+
+        dd {
+            margin: 0;
+        }
+    }
+
+    .exception {
+        margin: 0;
+        padding: 0.75rem;
+        overflow: auto;
+        direction: ltr;
+        max-height: 18rem;
+        text-align: left;
+        border-radius: 0.5rem;
+        color: $bit-color-foreground-primary;
+        background-color: $bit-color-background-secondary;
+        border: 1px solid $bit-color-border-secondary;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::deep {
+        .stat,
+        .check-card {
+            transition: none;
+
+            &:hover {
+                transform: none;
+            }
+        }
+    }
+}

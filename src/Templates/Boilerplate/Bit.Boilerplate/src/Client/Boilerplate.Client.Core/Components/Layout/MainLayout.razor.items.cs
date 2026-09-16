@@ -117,6 +117,8 @@ public partial class MainLayout
 
         var manageOAuthClients = await authorizationService.IsAuthorized(authUser!, AppFeatures.System.OAuthClients_Manage);
 
+        var viewHealthChecks = await authorizationService.IsAuthorized(authUser!, AppFeatures.System.HealthChecks_View);
+
         //#if (signalR == true)
         var manageAiPrompt = await authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write);
         //#endif
@@ -134,7 +136,7 @@ public partial class MainLayout
         //#endif
 
         // Every flag in this condition has to be able to contribute a child item below, or the group renders empty.
-        if (manageRoles || manageUsers || manageOAuthClients
+        if (manageRoles || manageUsers || manageOAuthClients || viewHealthChecks
             //#if (signalR == true)
             || manageAiPrompt
             //#endif
@@ -179,6 +181,16 @@ public partial class MainLayout
                     Text = localizer[nameof(AppStrings.OAuthClients)],
                     IconName = BitIconName.PlugConnected,
                     Url = PageUrls.OAuthClients,
+                });
+            }
+
+            if (viewHealthChecks)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.HealthChecks)],
+                    IconName = BitIconName.Health,
+                    Url = PageUrls.HealthChecks,
                 });
             }
 
