@@ -17,7 +17,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.4.0" />
+        <PackageReference Include="MSTest" Version="4.4.1" />
         <!-- Hosts the real Program.cs in-memory, so the protocol tests exercise the wiring that
              ships rather than a second registration written for the tests. -->
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />

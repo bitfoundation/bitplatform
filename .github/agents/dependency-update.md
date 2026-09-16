@@ -81,6 +81,14 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
+**MAUI is held at 10.0.100** (`Microsoft.Maui.Controls` and `Components.WebView.Maui`, in the
+Boilerplate, the BlazorUI demo and the Butil sample). 10.0.101 bundles an `Svg.Skia` that calls a
+SkiaSharp overload missing from the SkiaSharp next to it, so the resizetizer fails with `MAUIR0001` /
+`MissingMethodException: SKImageFilter.CreateMatrixConvolution` on any SVG icon with a `<filter>`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). Move only once that issue is
+closed and `dotnet build -f net10.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has no
+resizetizer and is not held.
+
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
 
@@ -149,8 +157,13 @@ Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete
 
 ### Azure DevOps
 
-Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). Confirm against Microsoft's task
-reference; there is no API. All eight in use were current as of the last sweep.
+Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major is the highest
+`<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
+A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
+
+`AzureRmWebAppDeployment` is on @4 while @5 exists. For `webAppLinux` @5 defaults to `oneDeploy` with
+`CleanDeploymentFlag: true`, which deletes wwwroot files missing from the package — a deploy-behaviour
+decision for the maintainer, not a routine bump.
 
 ### devcontainers
 
@@ -228,3 +241,27 @@ different versions across projects. These are the ones worth a maintainer's atte
 - `npm install` in every directory whose `package.json` changed.
 - `dotnet build` the affected solutions; a Roslyn or MSBuild pin change needs a real build.
 - Never rewrite files through Python or `sed` — BOM and CRLF get clobbered. Use targeted edits.
+
+## Ship it
+
+Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoundation/bitplatform`,
+`origin` is the maintainer's fork.
+
+1. Issue on upstream, label `dependencies`, title `Project dependencies are outdated`. The body
+   lists what is behind, in a sentence or two per surface.
+2. Branch named after the issue number, cut from `upstream/develop`, not from whatever branch is
+   checked out. When the working tree sits on another branch, apply the diff in a worktree
+   (`git worktree add ../bitplatform-<n> -b <n> upstream/develop`, then `git diff | git apply --3way`)
+   so that branch and any build running on it stay untouched.
+3. One commit, `feat(deps): update project dependencies #<n>`. Push to `origin`.
+4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
+   The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
+   Held back, Missed / drifted, Not verified.
+5. Run `all.ci.yml` on the fork against the branch and give its URL with the PR link:
+
+   ```bash
+   gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
+   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   ```
+
+   A red job goes into the PR as a comment, with the failing step and its first error line.

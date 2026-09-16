@@ -15,13 +15,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
         <!-- The plain Playwright package rather than Microsoft.Playwright.MSTest: that one is built against
              MSTest 2, whose attributes MSTest 4 can no longer load, so not a single test was discovered.
              PerformanceTestBase owns the browser and the page instead of inheriting them from PageTest. -->
         <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
-        <PackageReference Include="MSTest" Version="4.4.0" />
-        <PackageReference Include="MSTest.Analyzers" Version="4.4.0">
+        <PackageReference Include="MSTest" Version="4.4.1" />
+        <PackageReference Include="MSTest.Analyzers" Version="4.4.1">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
