@@ -58,6 +58,7 @@
                     <b>LoadingTemplate</b> shows until the first window arrives. After that, <b>PlaceholderTemplate</b> fills the slot
                     of every item still loading; it receives the item's Index and reserved Size. While a request is in flight, the
                     list is marked aria-busy for assistive technologies. A simulated latency of 500ms makes both templates visible.
+                    With more than one template, the item template is given as <b>ItemTemplate</b>, the alias of the ChildContent.
                 </div>
                 <br />
                 <BitVirtualize TItem="Product" ItemsProvider="LoadProducts" ItemSize="60" Class="list">
@@ -303,7 +304,7 @@
                                OnStartReached="LoadChatHistory" ReachedThreshold="3"
                                Class="chat-list">
                     <HeaderTemplate>
-                        <div class="list-header">@(loadingChatHistory ? "Loading older messages..." : chatHistoryRemaining > 0 ? "" : "This is the beginning of the conversation")</div>
+                        <div class="list-header">@(loadingChatHistory ? "Loading older messages..." : chatHistoryRemaining > 0 ? "Scroll up for older messages" : "This is the beginning of the conversation")</div>
                     </HeaderTemplate>
                     <ItemTemplate Context="message">
                         <div class="message @(message.Mine ? "mine" : null)">

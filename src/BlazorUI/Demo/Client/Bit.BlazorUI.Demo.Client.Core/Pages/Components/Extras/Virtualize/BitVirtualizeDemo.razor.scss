@@ -36,7 +36,7 @@
 .list-footer {
     padding: 0.75rem 1rem;
     text-align: center;
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-tertiary;
 }
 
 .provider-item {
@@ -78,7 +78,7 @@
     padding: 0.5rem 1rem;
     align-items: center;
     box-sizing: border-box;
-    background-color: $bit-color-background-secondary;
+    background-color: $bit-color-background-tertiary;
 }
 
 .group-header.pinned {
@@ -108,7 +108,7 @@
         max-width: 70%;
         padding: 0.5rem 1rem;
         border-radius: 1rem;
-        background-color: $bit-color-background-secondary;
+        background-color: $bit-color-background-tertiary;
     }
 
     &.mine .bubble {

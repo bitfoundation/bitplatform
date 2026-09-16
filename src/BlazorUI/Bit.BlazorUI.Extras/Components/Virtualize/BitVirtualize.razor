@@ -70,7 +70,6 @@
                      aria-hidden="true"
                      class="bit-vir-stk @Classes?.Sticky"
                      style="@JoinStyles(GetStickyStyle(), Styles?.Sticky)"
-                     data-bit-vir-sticky-size="@FormatCssValue(GetItemSize(_stickyActiveIndex))"
                      data-bit-vir-sticky-next="@FormatCssValue(_stickyNextOffset)">
                     @((StickyTemplate ?? template)?.Invoke(stickyItem))
                 </div>

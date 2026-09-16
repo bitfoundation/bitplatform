@@ -28,19 +28,19 @@ internal static class BitVirtualizeJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.focusIndex", id, index);
     }
 
-    public static ValueTask BitVirtualizeScrollToOffset(this IJSRuntime jsRuntime, string id, double offset, bool smooth)
+    public static ValueTask BitVirtualizeScrollToOffset(this IJSRuntime jsRuntime, string id, double offset, bool smooth, int seq)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToOffset", id, offset, smooth);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToOffset", id, offset, smooth, seq);
     }
 
-    public static ValueTask BitVirtualizeScrollToEdge(this IJSRuntime jsRuntime, string id, bool end, bool smooth)
+    public static ValueTask BitVirtualizeScrollToEdge(this IJSRuntime jsRuntime, string id, bool end, bool smooth, int seq)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToEdge", id, end, smooth);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToEdge", id, end, smooth, seq);
     }
 
-    public static ValueTask BitVirtualizeAdjustScroll(this IJSRuntime jsRuntime, string id, double delta)
+    public static ValueTask BitVirtualizeAdjustScroll(this IJSRuntime jsRuntime, string id, double delta, int seq)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.adjustScroll", id, delta);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.adjustScroll", id, delta, seq);
     }
 
     public static ValueTask BitVirtualizeDispose(this IJSRuntime jsRuntime, string id)

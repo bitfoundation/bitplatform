@@ -511,14 +511,18 @@ public partial class BitVirtualizeDemo
     private void InitContacts()
     {
         var random = new Random(11);
+        var firstNames = "Alice Bruno Chloe Daniel Emma Felix Grace Hugo Isla Jack Kira Liam Maya Noah Olivia Paul Quinn Ruby Sam Tara Umar Vera Will Xena Yusuf Zoe".Split(' ');
+        var lastNames = "Adams Baker Clark Davis Evans Foster Green Hall Irwin Jones King Lewis Moore Nash Owen Price Reed Scott Turner".Split(' ');
+
         contacts = [];
         for (var c = 'A'; c <= 'Z'; c++)
         {
             contacts.Add(new Contact(true, c.ToString(), string.Empty));
-            for (var i = 0; i < random.Next(5, 20); i++)
+            var count = random.Next(5, lastNames.Length + 1);
+            for (var i = 0; i < count; i++)
             {
-                var name = $"{c}ontact {i + 1}";
-                contacts.Add(new Contact(false, name, $"{name.Replace(" ", ".").ToLower()}@example.com"));
+                var name = $"{firstNames[c - 'A']} {lastNames[i]}";
+                contacts.Add(new Contact(false, name, $"{name.Replace(' ', '.').ToLower()}@example.com"));
             }
         }
     }
@@ -799,7 +803,7 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(-500, scrollSmooth)"">-500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollByAsync(500, scrollSmooth)"">+500px</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => scrollRef.ScrollToEndAsync(scrollSmooth)"">To end</BitButton>
-    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible"")"" />
+    <BitTag Text=""@($""[{visibleRange.Start:N0}, {visibleRange.End:N0}) visible"")"" Color=""BitColor.SecondaryBackground"" />
 </div>
 
 <BitVirtualize @ref=""scrollRef"" Items=""scrollItems"" ItemSize=""48""
@@ -882,6 +886,7 @@ public record Article(string Title, string Summary);";
     .list-header,
     .list-footer {
         padding: 0.75rem 1rem;
+        text-align: center;
         background-color: #f4f4f4;
     }
 
@@ -936,6 +941,7 @@ private List<int> templateItems = [.. Enumerable.Range(0, 1_000)];";
 
     .list-footer {
         padding: 0.75rem 1rem;
+        text-align: center;
         background-color: #f4f4f4;
     }
 </style>
@@ -1029,14 +1035,18 @@ private List<Contact> contacts = [];
 protected override void OnInitialized()
 {
     var random = new Random(11);
+    var firstNames = ""Alice Bruno Chloe Daniel Emma Felix Grace Hugo Isla Jack Kira Liam Maya Noah Olivia Paul Quinn Ruby Sam Tara Umar Vera Will Xena Yusuf Zoe"".Split(' ');
+    var lastNames = ""Adams Baker Clark Davis Evans Foster Green Hall Irwin Jones King Lewis Moore Nash Owen Price Reed Scott Turner"".Split(' ');
+
     contacts = [];
     for (var c = 'A'; c <= 'Z'; c++)
     {
         contacts.Add(new Contact(true, c.ToString(), string.Empty));
-        for (var i = 0; i < random.Next(5, 20); i++)
+        var count = random.Next(5, lastNames.Length + 1);
+        for (var i = 0; i < count; i++)
         {
-            var name = $""{c}ontact {i + 1}"";
-            contacts.Add(new Contact(false, name, $""{name.Replace("" "", ""."").ToLower()}@example.com""));
+            var name = $""{firstNames[c - 'A']} {lastNames[i]}"";
+            contacts.Add(new Contact(false, name, $""{name.Replace(' ', '.').ToLower()}@example.com""));
         }
     }
 }
@@ -1144,7 +1154,7 @@ public record TaskItem(int Id, string Title);";
                OnStartReached=""LoadChatHistory"" ReachedThreshold=""3""
                Class=""chat-list"">
     <HeaderTemplate>
-        <div class=""list-header"">@(loadingChatHistory ? ""Loading older messages..."" : chatHistoryRemaining > 0 ? """" : ""This is the beginning of the conversation"")</div>
+        <div class=""list-header"">@(loadingChatHistory ? ""Loading older messages..."" : chatHistoryRemaining > 0 ? ""Scroll up for older messages"" : ""This is the beginning of the conversation"")</div>
     </HeaderTemplate>
     <ItemTemplate Context=""message"">
         <div class=""message @(message.Mine ? ""mine"" : null)"">

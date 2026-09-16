@@ -1160,6 +1160,75 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeReversedShouldNotScrollPastAHeaderInViewWhenAMessageArrives()
+    {
+        SetupViewport(300);
+
+        var list = Enumerable.Range(0, 100).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.ItemKey, i => i);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.HeaderTemplate, b => b.AddContent(0, "Beginning"));
+        });
+
+        // At the very top, with the 40px header in view the offset is measured from the first item.
+        await component.InvokeAsync(() => component.Instance._Scroll(-40, 300));
+        var offsetCalls = Calls(ScrollToOffsetFn).Count;
+
+        list.Add(100);
+        component.Render(p => p.Add(x => x.Items, list));
+
+        Assert.AreEqual(offsetCalls, Calls(ScrollToOffsetFn).Count);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldIgnoreTheOffsetOfAReportSentBeforeTheLatestScroll()
+    {
+        SetupViewport(300);
+
+        var fired = 0;
+        var list = Enumerable.Range(0, 100).ToList();
+        var component = RenderComponent<BitVirtualize<int>>(parameters =>
+        {
+            parameters.Add(p => p.Items, list);
+            parameters.Add(p => p.ItemSize, 50);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.ItemKey, i => i);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.OnStartReached, () => fired++);
+        });
+
+        // The browser reports the scroll to the end of the first render as performed, then the user scrolls up.
+        var initialSeq = Convert.ToInt32(Calls(ScrollToEdgeFn)[^1].Arguments[3], CultureInfo.InvariantCulture);
+        await component.InvokeAsync(() => component.Instance._Scroll(2000, 300, initialSeq));
+        Assert.AreEqual(0, fired);
+
+        // History prepended: item 40 moves to index 60, so the viewport is kept 1000px further down.
+        list.InsertRange(0, Enumerable.Range(-20, 20));
+        component.Render(p => p.Add(x => x.Items, list));
+        var seq = Convert.ToInt32(Calls(ScrollToOffsetFn)[^1].Arguments[3], CultureInfo.InvariantCulture);
+        Assert.AreEqual(3000, LastScrollToOffset());
+
+        // A report the browser sent before it got there still has the old position (e.g. the top, where a shrinking
+        // header left it): it neither moves the rendered window nor counts as reaching the start.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, seq - 1));
+        Assert.AreEqual(0, fired);
+        Assert.IsTrue(RenderedIndices(component).Contains(60));
+
+        // Its viewport size still counts.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 500, seq - 1));
+        Assert.IsTrue(RenderedIndices(component).Contains(69));
+
+        // Once the browser has performed the scroll, its reports count again.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 500, seq));
+        Assert.AreEqual(1, fired);
+    }
+
+    [TestMethod]
     public async Task BitVirtualizeReversedShouldKeepThePinnedEndWhenTheViewportShrinks()
     {
         SetupViewport(300);
@@ -1595,7 +1664,6 @@ public class BitVirtualizeTests : BunitTestContext
         var sticky = component.Find(".bit-vir-stk");
         Assert.AreEqual("Item 0", sticky.TextContent);
         Assert.AreEqual("true", sticky.GetAttribute("aria-hidden"));
-        Assert.AreEqual("50", sticky.GetAttribute("data-bit-vir-sticky-size"));
         Assert.AreEqual("500", sticky.GetAttribute("data-bit-vir-sticky-next"));
     }
 

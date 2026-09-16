@@ -73,6 +73,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private bool _initialScrollDone;
     private bool _stickToEnd;
     private Func<Task>? _queuedScroll;   // a scroll requested before the component was ready to perform it
+    // Numbers the scroll positions decided here that the browser has yet to reach. The browser sends back the
+    // number of the latest one it performed, so a report sent before it got there is told apart as stale.
+    private int _scrollSeq;
 
     // Keyboard navigation.
     private int _activeIndex = -1;
@@ -304,6 +307,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             return;
         }
 
+        var seq = NextScrollSeq();
         var virtualTarget = Math.Clamp(offset, 0, MaxScrollOffset);
         var realTarget = Math.Clamp(RealFromVirtual(virtualTarget), 0, Math.Max(0, _realTotal - _viewportSize));
 
@@ -313,7 +317,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             StateHasChanged();
         }
 
-        await _js.BitVirtualizeScrollToOffset(UniqueId, realTarget, smooth);
+        await _js.BitVirtualizeScrollToOffset(UniqueId, realTarget, smooth, seq);
 
         if (rangeChanged && ItemsProvider is not null)
         {
@@ -338,25 +342,40 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
 
 
+    /// <param name="seq">The number of the latest scroll requested from here that the browser had performed when it
+    /// sent this report; -1 when unknown.</param>
     [JSInvokable("Scroll")]
-    public async Task _Scroll(double scrollOffset, double viewportSize)
+    public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1)
     {
         if (IsDisposed) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
 
-        _viewportSize = viewportSize;
-        _realScrollOffset = scrollOffset;
-        UpdateScale();
-        _scrollOffset = VirtualFromReal(scrollOffset);
-
         var restick = false;
-        if (Reversed)
+        if (seq >= 0 && seq < _scrollSeq)
         {
-            // A resize (e.g. a soft keyboard opening) must not unpin a list that was pinned to the end.
-            var wasStuck = _stickToEnd;
-            _stickToEnd = IsNearEnd() || (viewportChanged && wasStuck && _initialScrollDone);
-            restick = _stickToEnd && IsNearEnd() is false;
+            // Sent before the browser performed a scroll decided since (e.g. keeping the items in view in place after
+            // a prepend), so its offset no longer holds: acting on it would render the wrong window and could fire an
+            // edge callback for an edge the viewport has already left. Its viewport size still holds.
+            if (viewportChanged is false) return;
+
+            _viewportSize = viewportSize;
+            UpdateScale();
+        }
+        else
+        {
+            _viewportSize = viewportSize;
+            _realScrollOffset = scrollOffset;
+            UpdateScale();
+            _scrollOffset = VirtualFromReal(scrollOffset);
+
+            if (Reversed)
+            {
+                // A resize (e.g. a soft keyboard opening) must not unpin a list that was pinned to the end.
+                var wasStuck = _stickToEnd;
+                _stickToEnd = IsNearEnd() || (viewportChanged && wasStuck && _initialScrollDone);
+                restick = _stickToEnd && IsNearEnd() is false;
+            }
         }
 
         int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
@@ -416,7 +435,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 var realDiff = diff / _ratio;
                 _scrollOffset += diff;
                 _realScrollOffset += realDiff;
-                await _js.BitVirtualizeAdjustScroll(UniqueId, realDiff);
+                await _js.BitVirtualizeAdjustScroll(UniqueId, realDiff, NextScrollSeq());
             }
 
             RecomputeRange();
@@ -493,8 +512,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var realTarget = Math.Clamp(RealFromVirtual(virtualTarget), 0, Math.Max(0, _realTotal - _viewportSize));
         var rangeChanged = MoveTo(virtualTarget, realTarget);
 
+        var seq = NextScrollSeq();
         StateHasChanged();
-        await _js.BitVirtualizeScrollToOffset(UniqueId, realTarget, false);
+        await _js.BitVirtualizeScrollToOffset(UniqueId, realTarget, false, seq);
 
         if (rangeChanged && ItemsProvider is not null)
         {
@@ -711,6 +731,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private double VirtualFromReal(double value) => value * _ratio;
 
+    // Every call is followed by a scroll sent to the browser with the returned number (for a scroll decided while
+    // rendering, by the pending scroll applied after the render), or the browser's reports would stay stale for good.
+    private int NextScrollSeq() => ++_scrollSeq;
+
     private void UpdateScale()
     {
         var total = GetTotalSize();
@@ -779,13 +803,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             return;
         }
 
+        var seq = NextScrollSeq();
         if (smooth is false && MoveTo(end ? MaxScrollOffset : 0, end ? Math.Max(0, _realTotal - _viewportSize) : 0))
         {
             StateHasChanged();
         }
 
         // The browser scrolls to its real edge, so the header / footer come into view as well.
-        await _js.BitVirtualizeScrollToEdge(UniqueId, end, smooth);
+        await _js.BitVirtualizeScrollToEdge(UniqueId, end, smooth, seq);
 
         if (ItemsProvider is not null)
         {
@@ -889,6 +914,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 if (GetTotalSize() > prevTotal)
                 {
                     _pendingScrollToEnd = true;
+                    NextScrollSeq();
                 }
             }
             else if (anchorKey is not null && (Reversed || _scrollOffset > 0))
@@ -896,11 +922,15 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 var index = FindIndexByKey(anchorKey, anchorIndex, _itemCount - prevCount);
                 if (index >= 0)
                 {
-                    var target = Math.Max(0, GetItemOffset(index) + anchorDelta);
+                    // Negative while the content before the items (a header) is in view; an anchor that has not
+                    // moved then compares equal to the offset instead of being clamped into a scroll past it.
+                    var target = GetItemOffset(index) + anchorDelta;
                     if (Math.Abs(target - _scrollOffset) > 0.5)
                     {
+                        target = Math.Max(0, target);
                         _scrollOffset = target;
                         _pendingScrollOffset = target;
+                        NextScrollSeq();
                     }
                 }
             }
@@ -909,6 +939,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 // Content grew (likely prepended history): keep the viewport anchored
                 // to the same distance from the end so it does not jump.
                 _preserveEndDistance = prevTotal - (_scrollOffset + _viewportSize);
+                NextScrollSeq();
             }
         }
 

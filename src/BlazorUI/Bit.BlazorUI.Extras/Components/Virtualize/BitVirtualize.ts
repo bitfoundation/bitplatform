@@ -26,16 +26,16 @@ namespace BitBlazorUI {
             Virtualize._instances.get(id)?.sync();
         }
 
-        public static scrollToOffset(id: string, offset: number, smooth: boolean) {
-            Virtualize._instances.get(id)?.scrollToOffset(offset, smooth);
+        public static scrollToOffset(id: string, offset: number, smooth: boolean, seq: number) {
+            Virtualize._instances.get(id)?.scrollToOffset(offset, smooth, seq);
         }
 
-        public static scrollToEdge(id: string, end: boolean, smooth: boolean) {
-            Virtualize._instances.get(id)?.scrollToEdge(end, smooth);
+        public static scrollToEdge(id: string, end: boolean, smooth: boolean, seq: number) {
+            Virtualize._instances.get(id)?.scrollToEdge(end, smooth, seq);
         }
 
-        public static adjustScroll(id: string, delta: number) {
-            Virtualize._instances.get(id)?.adjustScroll(delta);
+        public static adjustScroll(id: string, delta: number, seq: number) {
+            Virtualize._instances.get(id)?.adjustScroll(delta, seq);
         }
 
         public static focusIndex(id: string, index: number) {
@@ -114,6 +114,13 @@ namespace BitBlazorUI {
         // the end). Cached (rather than read via getComputedStyle on every scroll event) and refreshed
         // on render/resize, since the direction rarely changes.
         private _rtl = false;
+        // The number of the latest scroll .NET requested that got performed here, sent back with every report so
+        // .NET can tell the reports sent before it (describing a position that no longer holds) from the rest.
+        private _seq = 0;
+        // The item the keyboard navigation is known to be on: the one .NET last focused, or a key was last pressed on.
+        // A key pressed there continues from wherever the navigation has got to, since the keys pressed before it
+        // may not have moved the focus yet; a key pressed on any other item (e.g. a clicked one) continues from it.
+        private _navIndex = -1;
 
         constructor(element: HTMLElement, horizontal: boolean, dynamic: boolean, threshold: number, dotnetObj: DotNetObject) {
             this._element = element;
@@ -200,22 +207,27 @@ namespace BitBlazorUI {
             this._updateSticky();
         }
 
-        public scrollToOffset(offset: number, smooth: boolean) {
+        public scrollToOffset(offset: number, smooth: boolean, seq: number) {
             if (this._disposed) return;
 
+            this._adoptSeq(seq);
             this._scrollTo(offset + this._lead, smooth);
         }
 
-        public scrollToEdge(end: boolean, smooth: boolean) {
+        public scrollToEdge(end: boolean, smooth: boolean, seq: number) {
             if (this._disposed) return;
 
+            this._adoptSeq(seq);
             this._scrollTo(end ? this._maxRawOffset() : 0, smooth);
         }
 
         // Adjusts the scroll position by delta without emitting a user-scroll event.
         // Used for scroll anchoring after items above the viewport are re-measured.
-        public adjustScroll(delta: number) {
-            if (this._disposed || delta === 0) return;
+        public adjustScroll(delta: number, seq?: number) {
+            if (this._disposed) return;
+
+            this._adoptSeq(seq);
+            if (delta === 0) return;
 
             // Mid-animation the correction cannot be written (it would cancel the smooth scroll),
             // so it is accumulated and applied in one go once the animation has settled.
@@ -237,7 +249,9 @@ namespace BitBlazorUI {
         public focusIndex(index: number) {
             if (this._disposed) return;
             const el = this._element.querySelector(`:scope > .bit-vir-spc > .bit-vir-blk > [data-bit-vir-index='${index}']`) as HTMLElement | null;
-            el?.focus({ preventScroll: true });
+            if (!el) return;
+            this._navIndex = index;
+            el.focus({ preventScroll: true });
         }
 
         public dispose() {
@@ -257,6 +271,12 @@ namespace BitBlazorUI {
             this._stickyEl = null;
             this._spacer = null;
             this._header = null;
+        }
+
+        private _adoptSeq(seq: number | undefined) {
+            if (typeof seq === 'number' && seq > this._seq) {
+                this._seq = seq;
+            }
         }
 
         private _refreshRtl() {
@@ -446,7 +466,9 @@ namespace BitBlazorUI {
             let index = -1;
             if (target !== this._element) {
                 if (!target.classList.contains('bit-vir-itm') || target.parentElement?.parentElement?.parentElement !== this._element) return;
-                index = parseInt(target.getAttribute('data-bit-vir-index') || '-1', 10);
+                const focused = parseInt(target.getAttribute('data-bit-vir-index') || '-1', 10);
+                index = focused === this._navIndex ? -1 : focused;
+                this._navIndex = focused;
             }
 
             // In a right-to-left horizontal list the next item is on the left.
@@ -461,6 +483,8 @@ namespace BitBlazorUI {
 
         // Pushes the pinned sticky header out of the way as the next group header (whose offset
         // .NET exposes through the data-bit-vir-sticky-next attribute) approaches the viewport edge.
+        // The pinned header's size is its own: in dynamic mode, the size .NET has for its item is just the
+        // estimate until that item has been rendered in the list (which a jump into its group skips).
         private _updateSticky() {
             if (!this._stickyResolved) {
                 this._stickyEl = this._element.querySelector(':scope > .bit-vir-spc > .bit-vir-stk') as HTMLElement | null;
@@ -470,11 +494,11 @@ namespace BitBlazorUI {
             const el = this._stickyEl;
             if (!el || !el.isConnected) return;
 
-            const size = parseFloat(el.getAttribute('data-bit-vir-sticky-size') || '');
+            const size = this._horizontal ? el.offsetWidth : el.offsetHeight;
             const next = parseFloat(el.getAttribute('data-bit-vir-sticky-next') || '');
 
             let delta = 0;
-            if (!isNaN(size) && !isNaN(next) && next >= 0) {
+            if (!isNaN(next) && next >= 0) {
                 delta = Math.min(0, next - this._readOffset() - size);
             }
 
@@ -511,7 +535,7 @@ namespace BitBlazorUI {
             this._lastNotifiedOffset = offset;
             this._viewportChanged = false;
             if (this._trailingTimer) { clearTimeout(this._trailingTimer); this._trailingTimer = null; }
-            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize);
+            this._dotnetObj.invokeMethodAsync('Scroll', offset, viewportSize, this._seq);
         }
 
         // Ensure the final resting position is always reported after the user stops scrolling.
