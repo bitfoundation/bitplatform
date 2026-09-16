@@ -507,7 +507,7 @@ public class BitPdfViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.IsFalse(component.Find("button[aria-label='Document properties']").HasAttribute("disabled")));
         Assert.AreEqual(0, component.FindAll(".bit-pdv-dialog").Count);
 
-        component.Find("button[aria-label='Document properties']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Document properties']");
 
         var dialog = component.Find(".bit-pdv-dialog");
         Assert.AreEqual("dialog", dialog.GetAttribute("role"));
@@ -900,6 +900,15 @@ public class BitPdfViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-pdv-row").Count));
     }
 
+    // PageCount reads the page list, which is filled before the render that enables
+    // the toolbar; bUnit silently ignores a click on a disabled button, so a click
+    // straight after waiting for the page count can be lost on a slow runner.
+    private static void ClickWhenEnabled(IRenderedComponent<BitPdfViewer> component, string selector)
+    {
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(selector).HasAttribute("disabled")));
+        component.Find(selector).Click();
+    }
+
     [TestMethod]
     public void BitPdfViewerShouldToggleThePanTool()
     {
@@ -912,7 +921,7 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual(BitPdfCursorTool.Select, component.Instance.CurrentCursorTool);
         Assert.IsFalse(component.Find(".bit-pdv-surface").ClassList.Contains("bit-pdv-pan"));
 
-        component.Find("button[aria-label='Pan tool']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Pan tool']");
 
         Assert.AreEqual(BitPdfCursorTool.Pan, component.Instance.CurrentCursorTool);
         Assert.IsTrue(component.Find(".bit-pdv-surface").ClassList.Contains("bit-pdv-pan"));
@@ -964,7 +973,7 @@ public class BitPdfViewerTests : BunitTestContext
         // "cat", the "cat" inside "concatenate", and the trailing "cat".
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.SearchMatchCount));
 
-        component.Find("button[aria-label='Whole words']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Whole words']");
 
         // The substring inside "concatenate" is no longer a match; a full stop still
         // ends a word, so the trailing one is.
@@ -1051,7 +1060,7 @@ public class BitPdfViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.SearchMatchCount));
 
         // The fixture writes "Page N", so matching case drops every hit.
-        component.Find("button[aria-label='Match case']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Match case']");
         component.WaitForAssertion(() => Assert.AreEqual(0, component.Instance.SearchMatchCount));
 
         component.Find("button[aria-label='Match case']").Click();
@@ -2354,7 +2363,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
 
-        component.Find("button[aria-label='Document properties']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Document properties']");
         var dialog = component.Find("[role='dialog']");
         Assert.AreEqual("-1", dialog.GetAttribute("tabindex"));
 
@@ -2522,7 +2531,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
 
-        component.Find("button[aria-label='Document properties']").Click();
+        ClickWhenEnabled(component, "button[aria-label='Document properties']");
 
         // The dialog is focusable itself (so focus has somewhere to land) and asks the
         // browser side to keep Tab within it.
