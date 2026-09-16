@@ -89,6 +89,12 @@ SkiaSharp overload missing from the SkiaSharp next to it, so the resizetizer fai
 closed and `dotnet build -f net10.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has no
 resizetizer and is not held.
 
+**`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
+(through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
+graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
+`Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
+the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
+
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
 
@@ -265,3 +271,6 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.
+6. Clean up at once, without asking: `git restore` the pushed files in the original checkout (after
+   `git diff <pushed-commit> -- <files>` comes back empty), delete build artifacts the sweep created,
+   and `git worktree remove` the worktree. `git status` must match what it was before the sweep.
