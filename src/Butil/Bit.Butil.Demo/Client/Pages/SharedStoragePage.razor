@@ -72,16 +72,47 @@ await sharedStorage.Delete("campaign-seen");
     <DemoSection Title="Load the worklet"
                  Api="AddModule"
                  Description="The worklet module is the only code that ever sees a stored value. It must be same-origin, and a page may add one only once. Inside it, a register('name', …) call declares the operations Run and SelectUrl can call."
-                 Code=@("""
-// shared-storage-worklet.js
-class FrequencyCap {
-  async run(data) {
-    const seen = await sharedStorage.get('seen');
-    // decides, but cannot report back
-  }
+                 Files=@([
+new("SharedStorage.razor", """
+@inject Bit.Butil.SharedStorage sharedStorage
+
+@code {
+    // A page may add one module only, ever - a second call is refused for the life of the document.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        var added = await sharedStorage.AddModule("/shared-storage-worklet.js");
+        // false when there is no API here, the module 404'd, or one was already added
+    }
 }
+"""),
+new("wwwroot/shared-storage-worklet.js", """
+// The only code that ever sees a stored value. It runs in an isolated scope with no network access
+// and no way to reach the page, which is what makes reading cross-site data safe to allow at all.
+class FrequencyCap {
+    async run(data) {
+        // sharedStorage here is the worklet's own object, with the get() the page does not have.
+        const seen = await sharedStorage.get('seen');
+        await sharedStorage.set('seen', String((Number(seen) || 0) + 1));
+        // It decides, but it cannot report back: nothing returned from here reaches the page.
+    }
+}
+
+class PickCreative {
+    async run(urls, data) {
+        const seen = Number(await sharedStorage.get('seen')) || 0;
+        // The return value is an index into the urls array, and the page is never told which one.
+        return seen > 3 ? 1 : 0;
+    }
+}
+
+// The names Run and SelectUrl address. A name that was never registered makes the call return
+// false rather than throwing anywhere the page can see.
 register('frequency-cap', FrequencyCap);
-""") Language="javascript">
+register('pick-creative', PickCreative);
+"""),
+])>
         <div class="controls">
             <label class="field">
                 <span class="field-label">Module URL</span>

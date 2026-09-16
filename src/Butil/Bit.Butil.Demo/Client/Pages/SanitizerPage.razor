@@ -88,11 +88,26 @@ var clean = comments is null
                  Api="SanitizeInto"
                  Description="The same filter writing into an element rather than returning a string - what SetHtml does, with a configuration when you pass a handle. The result below is rendered live: the script and the event handler in the hostile sample are gone from it."
                  Code=@("""
-await sanitizer.SanitizeInto(preview, userHtml);
+@inject Bit.Butil.Sanitizer sanitizer
 
-// or under a configuration:
-await commentsHandle.SanitizeInto(preview, userHtml);
-""")>
+<div @ref="preview"></div>
+
+@code {
+    private ElementReference preview;
+    private SanitizerHandle? commentsHandle;   // from sanitizer.Create
+
+    // The markup never comes back to C# in between, so there is no window in which the raw string
+    // could be written somewhere else by accident.
+    private async Task Show(string userHtml)
+    {
+        await sanitizer.SanitizeInto(preview, userHtml);
+
+        // or under a configuration:
+        await commentsHandle!.SanitizeInto(preview, userHtml);
+    }
+}
+""")
+                 Language="razor">
         <div class="demo-box dashed" @ref="_preview">The sanitized markup will be rendered here.</div>
         <div class="controls">
             <button @onclick="RenderSanitized">SanitizeInto (default)</button>

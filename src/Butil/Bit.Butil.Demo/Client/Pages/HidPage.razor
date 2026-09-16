@@ -58,7 +58,7 @@ var granted = await hid.GetDevices();
             </div>
         </div>
         <div class="controls">
-            <button @onclick="RequestDevice">RequestDevice</button>
+            <button @onclick="() => RequestDevice(deviceOutput)">RequestDevice</button>
             <button class="secondary" @onclick="GetDevices">GetDevices</button>
             <button class="danger" @onclick="ReleaseDevice">Dispose handle</button>
         </div>
@@ -76,15 +76,29 @@ var granted = await hid.GetDevices();
                  Api="Open / Close / IsOpened / GetInfo"
                  Description="A device has to be opened before any report crosses. GetInfo re-reads its collections - the report ids it will accept, which is what a protocol implementation needs first."
                  Code=@("""
-await _device.Open();
+@code {
+    // The handle from RequestDevice above - a grant is per device, and this is the way back to one
+    // the user has already chosen.
+    private HidDevice? _device;
 
-var info = await _device.GetInfo();
-foreach (var collection in info!.Collections)
-{
-    // collection.UsagePage, collection.Usage
-    // collection.InputReports / OutputReports / FeatureReports
+    private async Task Inspect()
+    {
+        await _device!.Open();
+
+        var info = await _device.GetInfo();
+        foreach (var collection in info!.Collections)
+        {
+            // collection.UsagePage, collection.Usage
+            // collection.InputReports / OutputReports / FeatureReports
+        }
+    }
 }
-""")>
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="() => RequestDevice(openOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
+        </div>
         <div class="controls">
             <button @onclick="Open">Open</button>
             <button class="secondary" @onclick="Close">Close</button>
@@ -98,11 +112,29 @@ foreach (var collection in info!.Collections)
                  Api="SubscribeInputReports"
                  Description="The device's unprompted events: buttons, axes, whatever its report descriptor declares. Open the device first - a closed device sends nothing."
                  Code=@("""
-await using var reports = await _device.SubscribeInputReports(report =>
-{
-    // report.ReportId, report.Data
-});
-""")>
+@implements IAsyncDisposable
+
+@code {
+    private HidDevice? _device;   // from RequestDevice, and opened
+    private ButilSubscription? _reports;
+
+    private async Task Listen() =>
+        _reports = await _device!.SubscribeInputReports(report =>
+        {
+            // report.ReportId, report.Data
+        });
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_reports is not null) await _reports.DisposeAsync();
+    }
+}
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="() => RequestDevice(inputOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
+        </div>
         <div class="controls">
             <button @onclick="StartInputReports">SubscribeInputReports</button>
             <button class="danger" @onclick="StopInputReports">Stop</button>
@@ -114,11 +146,19 @@ await using var reports = await _device.SubscribeInputReports(report =>
                  Api="SendReport / SendFeatureReport / ReceiveFeatureReport"
                  Description="Output reports drive the device - an LED, a rumble motor, a display. Feature reports are read and written on demand and carry configuration rather than events."
                  Code=@("""
-await _device.SendReport(reportId: 0x01, [0x00, 0xff]);
+@code {
+    private HidDevice? _device;   // from RequestDevice, and opened
 
-await _device.SendFeatureReport(reportId: 0x02, [0x01]);
-var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
-""")>
+    private async Task Send()
+    {
+        await _device!.SendReport(reportId: 0x01, [0x00, 0xff]);
+
+        await _device.SendFeatureReport(reportId: 0x02, [0x01]);
+        var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Report id</span>
@@ -128,6 +168,10 @@ var feature = await _device.ReceiveFeatureReport(reportId: 0x02);
                 <span class="field-label">Payload (hex, space separated)</span>
                 <input type="text" @bind="_payloadHex" placeholder="00 ff" />
             </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => RequestDevice(reportOutput)">RequestDevice</button>
+            <span>@SelectedDeviceLabel</span>
         </div>
         <div class="controls">
             <button @onclick="SendReport">SendReport</button>
@@ -156,8 +200,18 @@ await using var watch = await hid.SubscribeConnection(
                  Api="Forget"
                  Description="Drops this origin's permission for the device, so it stops appearing in GetDevices until the user picks it again."
                  Code=@("""
-var revoked = await _device.Forget();
-""")>
+@code {
+    private HidDevice? _device;   // from RequestDevice
+
+    // Drops the grant, so GetDevices stops returning it and the picker has to be shown again.
+    private async Task Revoke()
+    {
+        var revoked = await _device!.Forget();
+        _device = null;
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button class="danger" @onclick="ForgetDevice">Forget</button>
         </div>
@@ -258,13 +312,19 @@ var revoked = await _device.Forget();
         }
     }
 
-    private async Task RequestDevice()
+    private string SelectedDeviceLabel => _device is null
+        ? "no device picked yet"
+        : $"{_device.ProductName ?? "(unnamed)"} {_device.Info.VendorId:x4}:{_device.Info.ProductId:x4}";
+
+    // Picking is the setup step every section below needs, so each can do it and read the answer in
+    // its own console rather than sending the reader back to the chooser section.
+    private async Task RequestDevice(DemoConsole output)
     {
         try
         {
             if (!await hid.IsSupported())
             {
-                await deviceOutput.Warn("WebHID is not supported in this browser.");
+                await output.Warn("WebHID is not supported in this browser.");
                 return;
             }
 
@@ -280,7 +340,7 @@ var revoked = await _device.Forget();
             if (requested is null)
             {
                 // A dismissed chooser is not a reason to throw away the device already in hand.
-                await deviceOutput.Warn("The chooser was dismissed.");
+                await output.Warn("The chooser was dismissed.");
                 return;
             }
 
@@ -295,12 +355,11 @@ var revoked = await _device.Forget();
             }
 
             _device = requested;
-            await deviceOutput.Success("RequestDevice →",
-                $"{devices.Length} device(s); using {_device.ProductName ?? "(unnamed)"}");
+            await output.Success("RequestDevice →", $"{devices.Length} device(s); using {SelectedDeviceLabel}");
         }
         catch (Exception ex)
         {
-            await deviceOutput.Error("RequestDevice failed →", ex.Message);
+            await output.Error("RequestDevice failed →", ex.Message);
         }
     }
 
@@ -500,7 +559,7 @@ var revoked = await _device.Forget();
     private async Task<bool> RequireDevice(DemoConsole output)
     {
         if (_device is not null) return true;
-        await output.Warn("Pick a device first with RequestDevice.");
+        await output.Warn("Pick a device first - the RequestDevice button in this section will do it.");
         return false;
     }
 

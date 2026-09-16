@@ -50,7 +50,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public ValueTask<bool> IsWorkletSupported() => js.Invoke<bool>("BitButil.webAudio.isWorkletSupported");
+    public ValueTask<bool> IsWorkletSupported() => js.Invoke<bool>("BitButil.webAudioWorklet.isWorkletSupported");
 
     /// <summary>
     /// Resumes a suspended <c>AudioContext</c>. Every browser creates it suspended, so this is what
@@ -178,7 +178,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// an instant change to a running signal is audible as a click.
     /// </remarks>
     public ValueTask<AudioNodeHandle?> CreateGain(double gain = 1)
-        => CreateNode("BitButil.webAudio.createGain", id => new AudioNodeHandle(js, id), gain);
+        => CreateNode("BitButil.webAudioNodes.createGain", id => new AudioNodeHandle(js, id), gain);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/BiquadFilterNode">BiquadFilterNode</see>:
@@ -195,7 +195,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// <see cref="AudioNodeHandle.RampParam"/> for a filter sweep.
     /// </remarks>
     public ValueTask<AudioNodeHandle?> CreateBiquadFilter(BiquadFilterType type, double frequency, double q = 1, double gain = 0, double detune = 0)
-        => CreateNode("BitButil.webAudio.createBiquadFilter", id => new AudioNodeHandle(js, id), ToName(type), frequency, q, gain, detune);
+        => CreateNode("BitButil.webAudioNodes.createBiquadFilter", id => new AudioNodeHandle(js, id), ToName(type), frequency, q, gain, detune);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</see>:
@@ -214,7 +214,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
                                                           double smoothingTimeConstant = 0.8,
                                                           double minDecibels = -100,
                                                           double maxDecibels = -30)
-        => CreateNode("BitButil.webAudio.createAnalyser", id => new AnalyserNodeHandle(js, id), fftSize, smoothingTimeConstant, minDecibels, maxDecibels);
+        => CreateNode("BitButil.webAudioNodes.createAnalyser", id => new AnalyserNodeHandle(js, id), fftSize, smoothingTimeConstant, minDecibels, maxDecibels);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ConvolverNode">ConvolverNode</see>:
@@ -236,7 +236,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(impulseResponse);
 
-        return CreateNode("BitButil.webAudio.createConvolver", id => new AudioNodeHandle(js, id), impulseResponse.Id, normalize);
+        return CreateNode("BitButil.webAudioNodes.createConvolver", id => new AudioNodeHandle(js, id), impulseResponse.Id, normalize);
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        return CreateNode("BitButil.webAudio.createPanner", id => new AudioNodeHandle(js, id), options.ToJsObject());
+        return CreateNode("BitButil.webAudioNodes.createPanner", id => new AudioNodeHandle(js, id), options.ToJsObject());
     }
 
     /// <summary>
@@ -270,7 +270,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// <see cref="AudioNodeHandle.RampParam"/> over <c>"pan"</c>.
     /// </remarks>
     public ValueTask<AudioNodeHandle?> CreateStereoPanner(double pan = 0)
-        => CreateNode("BitButil.webAudio.createStereoPanner", id => new AudioNodeHandle(js, id), pan);
+        => CreateNode("BitButil.webAudioNodes.createStereoPanner", id => new AudioNodeHandle(js, id), pan);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DelayNode">DelayNode</see>: holds
@@ -284,7 +284,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// one place a Web Audio graph is allowed to contain a cycle.
     /// </remarks>
     public ValueTask<AudioNodeHandle?> CreateDelay(double maxDelaySeconds = 1, double delaySeconds = 0)
-        => CreateNode("BitButil.webAudio.createDelay", id => new AudioNodeHandle(js, id), maxDelaySeconds, delaySeconds);
+        => CreateNode("BitButil.webAudioNodes.createDelay", id => new AudioNodeHandle(js, id), maxDelaySeconds, delaySeconds);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DynamicsCompressorNode">DynamicsCompressorNode</see>:
@@ -305,7 +305,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
                                                                  double ratio = 12,
                                                                  double attack = 0.003,
                                                                  double release = 0.25)
-        => CreateNode("BitButil.webAudio.createDynamicsCompressor", id => new AudioNodeHandle(js, id), threshold, knee, ratio, attack, release);
+        => CreateNode("BitButil.webAudioNodes.createDynamicsCompressor", id => new AudioNodeHandle(js, id), threshold, knee, ratio, attack, release);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/WaveShaperNode">WaveShaperNode</see>:
@@ -321,7 +321,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(curve);
 
-        return CreateNode("BitButil.webAudio.createWaveShaper", id => new AudioNodeHandle(js, id), curve, oversample);
+        return CreateNode("BitButil.webAudioNodes.createWaveShaper", id => new AudioNodeHandle(js, id), curve, oversample);
     }
 
     /// <summary>
@@ -337,7 +337,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// restarted - build another, which costs almost nothing.
     /// </remarks>
     public ValueTask<AudioSourceNodeHandle?> CreateOscillator(AudioOscillatorType type, double frequency, double detune = 0)
-        => CreateNode("BitButil.webAudio.createOscillator", id => new AudioSourceNodeHandle(js, id), ToName(type), frequency, detune);
+        => CreateNode("BitButil.webAudioNodes.createOscillator", id => new AudioSourceNodeHandle(js, id), ToName(type), frequency, detune);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode">AudioBufferSourceNode</see>:
@@ -362,7 +362,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(buffer);
 
-        return CreateNode("BitButil.webAudio.createBufferSource", id => new AudioSourceNodeHandle(js, id),
+        return CreateNode("BitButil.webAudioNodes.createBufferSource", id => new AudioSourceNodeHandle(js, id),
                           buffer.Id, loop, loopStartSeconds, loopEndSeconds, playbackRate, detune);
     }
 
@@ -377,7 +377,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// move together, sample-accurately, from a single ramp.
     /// </remarks>
     public ValueTask<AudioSourceNodeHandle?> CreateConstantSource(double offset = 1)
-        => CreateNode("BitButil.webAudio.createConstantSource", id => new AudioSourceNodeHandle(js, id), offset);
+        => CreateNode("BitButil.webAudioNodes.createConstantSource", id => new AudioSourceNodeHandle(js, id), offset);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaElementAudioSourceNode">MediaElementAudioSourceNode</see>:
@@ -396,7 +396,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// routed as silence rather than refused.
     /// </remarks>
     public ValueTask<AudioNodeHandle?> CreateMediaElementSource(ElementReference mediaElement)
-        => CreateNode("BitButil.webAudio.createMediaElementSource", id => new AudioNodeHandle(js, id), mediaElement);
+        => CreateNode("BitButil.webAudioMedia.createMediaElementSource", id => new AudioNodeHandle(js, id), mediaElement);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamAudioSourceNode">MediaStreamAudioSourceNode</see>:
@@ -412,7 +412,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        return CreateNode("BitButil.webAudio.createMediaStreamSource", id => new AudioNodeHandle(js, id), stream.Id);
+        return CreateNode("BitButil.webAudioMedia.createMediaStreamSource", id => new AudioNodeHandle(js, id), stream.Id);
     }
 
     /// <summary>
@@ -429,7 +429,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     {
         var id = Guid.NewGuid();
         var streamId = Guid.NewGuid();
-        var created = await js.Invoke<bool>("BitButil.webAudio.createMediaStreamDestination", id, streamId);
+        var created = await js.Invoke<bool>("BitButil.webAudioMedia.createMediaStreamDestination", id, streamId);
 
         return created ? new MediaStreamAudioDestinationHandle(js, id, streamId) : null;
     }
@@ -446,7 +446,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     /// twice is harmless.
     /// </remarks>
     public ValueTask<bool> AddWorkletModule(string moduleUrl)
-        => js.Invoke<bool>("BitButil.webAudio.addModule", moduleUrl);
+        => js.Invoke<bool>("BitButil.webAudioWorklet.addModule", moduleUrl);
 
     /// <summary>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletNode">AudioWorkletNode</see>:
@@ -476,7 +476,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
         bool created;
         try
         {
-            created = await js.Invoke<bool>("BitButil.webAudio.createWorkletNode",
+            created = await js.Invoke<bool>("BitButil.webAudioWorklet.createWorkletNode",
                                             id, processorName, options ?? new AudioWorkletNodeOptions(),
                                             handle.CallbackRef, AudioWorkletNodeHandle.MessageMethodName);
         }
@@ -520,7 +520,7 @@ public class WebAudio(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> SetListener(double x, double y, double z,
                                        double forwardX = 0, double forwardY = 0, double forwardZ = -1,
                                        double upX = 0, double upY = 1, double upZ = 0)
-        => js.Invoke<bool>("BitButil.webAudio.setListener", x, y, z, forwardX, forwardY, forwardZ, upX, upY, upZ);
+        => js.Invoke<bool>("BitButil.webAudioNodes.setListener", x, y, z, forwardX, forwardY, forwardZ, upX, upY, upZ);
 
     /// <summary>
     /// Closes the underlying <c>AudioContext</c> (releasing the browser audio thread) and stops

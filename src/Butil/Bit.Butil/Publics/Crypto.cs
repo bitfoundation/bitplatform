@@ -92,7 +92,7 @@ public class Crypto(IJSRuntime js)
     public ValueTask<byte[]> SignHmac(CryptoKeyHash algorithm, byte[] key, byte[] data)
     {
         var algo = HashAlgorithmName(algorithm);
-        return js.Invoke<byte[]>("BitButil.crypto.signHmac", algo, key, data);
+        return js.Invoke<byte[]>("BitButil.cryptoSign.signHmac", algo, key, data);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class Crypto(IJSRuntime js)
     public ValueTask<bool> VerifyHmac(CryptoKeyHash algorithm, byte[] key, byte[] signature, byte[] data)
     {
         var algo = HashAlgorithmName(algorithm);
-        return js.Invoke<bool>("BitButil.crypto.verifyHmac", algo, key, signature, data);
+        return js.Invoke<bool>("BitButil.cryptoSign.verifyHmac", algo, key, signature, data);
     }
 
     private static string HashAlgorithmName(CryptoKeyHash algorithm) => CryptoHashName.Resolve(algorithm);
@@ -121,14 +121,14 @@ public class Crypto(IJSRuntime js)
     /// <param name="bits">Key length in bits - 128, 192, or 256.</param>
     /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> GenerateAesKey(int bits = 256)
-        => js.Invoke<byte[]>("BitButil.crypto.generateAesKey", bits);
+        => js.Invoke<byte[]>("BitButil.cryptoKeys.generateAesKey", bits);
 
     /// <summary>
     /// Generates an HMAC key of the requested length and hash.
     /// </summary>
     /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> GenerateHmacKey(CryptoKeyHash algorithm = CryptoKeyHash.Sha256, int? lengthBits = null)
-        => js.Invoke<byte[]>("BitButil.crypto.generateHmacKey", HashAlgorithmName(algorithm), lengthBits);
+        => js.Invoke<byte[]>("BitButil.cryptoKeys.generateHmacKey", HashAlgorithmName(algorithm), lengthBits);
 
     /// <summary>
     /// Generates an RSA key pair (RSA-OAEP). Returns spki/pkcs8 DER bytes for public/private.
@@ -136,7 +136,7 @@ public class Crypto(IJSRuntime js)
     /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<RsaKeyPair> GenerateRsaKeyPair(int modulusLengthBits = 2048,
                                                     CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<RsaKeyPair>("BitButil.crypto.generateRsaKeyPair", modulusLengthBits, HashAlgorithmName(algorithm));
+        => js.Invoke<RsaKeyPair>("BitButil.cryptoKeys.generateRsaKeyPair", modulusLengthBits, HashAlgorithmName(algorithm));
 
     /// <summary>
     /// Generates an ECDSA key pair on the named curve.
@@ -144,7 +144,7 @@ public class Crypto(IJSRuntime js)
     /// <param name="curve">One of <c>"P-256"</c>, <c>"P-384"</c>, <c>"P-521"</c>.</param>
     /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<EcKeyPair> GenerateEcdsaKeyPair(string curve = "P-256")
-        => js.Invoke<EcKeyPair>("BitButil.crypto.generateEcdsaKeyPair", curve);
+        => js.Invoke<EcKeyPair>("BitButil.cryptoKeys.generateEcdsaKeyPair", curve);
 
     // ─── Derivation ────────────────────────────────────────────────────────────
 
@@ -154,7 +154,7 @@ public class Crypto(IJSRuntime js)
     /// <remarks>The derived bits are returned as raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> DerivePbkdf2(byte[] password, byte[] salt, int iterations,
                                           int outputLengthBits, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<byte[]>("BitButil.crypto.derivePbkdf2", password, salt, iterations, outputLengthBits, HashAlgorithmName(algorithm));
+        => js.Invoke<byte[]>("BitButil.cryptoDerive.derivePbkdf2", password, salt, iterations, outputLengthBits, HashAlgorithmName(algorithm));
 
     // ─── RSA-PSS sign / verify ─────────────────────────────────────────────────
 
@@ -163,7 +163,7 @@ public class Crypto(IJSRuntime js)
     /// </summary>
     public ValueTask<byte[]> SignRsaPss(byte[] privateKey, byte[] data, int saltLength = 32,
                                         CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<byte[]>("BitButil.crypto.signRsaPss", privateKey, data, saltLength, HashAlgorithmName(algorithm));
+        => js.Invoke<byte[]>("BitButil.cryptoSign.signRsaPss", privateKey, data, saltLength, HashAlgorithmName(algorithm));
 
     /// <summary>
     /// Verifies an RSA-PSS signature using an SPKI public key.
@@ -175,7 +175,7 @@ public class Crypto(IJSRuntime js)
     /// </remarks>
     public ValueTask<bool> VerifyRsaPss(byte[] publicKey, byte[] signature, byte[] data, int saltLength = 32,
                                         CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<bool>("BitButil.crypto.verifyRsaPss", publicKey, signature, data, saltLength, HashAlgorithmName(algorithm));
+        => js.Invoke<bool>("BitButil.cryptoSign.verifyRsaPss", publicKey, signature, data, saltLength, HashAlgorithmName(algorithm));
 
     // ─── ECDSA sign / verify ───────────────────────────────────────────────────
 
@@ -184,7 +184,7 @@ public class Crypto(IJSRuntime js)
     /// </summary>
     public ValueTask<byte[]> SignEcdsa(byte[] privateKey, byte[] data, string curve = "P-256",
                                        CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<byte[]>("BitButil.crypto.signEcdsa", privateKey, data, curve, HashAlgorithmName(algorithm));
+        => js.Invoke<byte[]>("BitButil.cryptoSign.signEcdsa", privateKey, data, curve, HashAlgorithmName(algorithm));
 
     /// <summary>
     /// Verifies an ECDSA signature using an SPKI public key.
@@ -196,7 +196,7 @@ public class Crypto(IJSRuntime js)
     /// </remarks>
     public ValueTask<bool> VerifyEcdsa(byte[] publicKey, byte[] signature, byte[] data, string curve = "P-256",
                                        CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<bool>("BitButil.crypto.verifyEcdsa", publicKey, signature, data, curve, HashAlgorithmName(algorithm));
+        => js.Invoke<bool>("BitButil.cryptoSign.verifyEcdsa", publicKey, signature, data, curve, HashAlgorithmName(algorithm));
 
     // ─── Key import / export ───────────────────────────────────────────────────
 
@@ -225,7 +225,7 @@ public class Crypto(IJSRuntime js)
         RequireByteFormat(sourceFormat, nameof(sourceFormat));
         RequireByteFormat(targetFormat, nameof(targetFormat));
 
-        return js.Invoke<byte[]>("BitButil.crypto.exportKey",
+        return js.Invoke<byte[]>("BitButil.cryptoKeys.exportKey",
             CryptoFormatName.Resolve(sourceFormat), key, CryptoFormatName.Resolve(targetFormat), new CryptoKeyAlgorithmJsOptions(algorithm));
     }
 
@@ -252,7 +252,7 @@ public class Crypto(IJSRuntime js)
         ArgumentNullException.ThrowIfNull(algorithm);
         RequireByteFormat(sourceFormat, nameof(sourceFormat));
 
-        return js.Invoke<CryptoJsonWebKey?>("BitButil.crypto.exportJwk",
+        return js.Invoke<CryptoJsonWebKey?>("BitButil.cryptoKeys.exportJwk",
             CryptoFormatName.Resolve(sourceFormat), key, new CryptoKeyAlgorithmJsOptions(algorithm));
     }
 
@@ -274,7 +274,7 @@ public class Crypto(IJSRuntime js)
         ArgumentNullException.ThrowIfNull(algorithm);
         RequireByteFormat(targetFormat, nameof(targetFormat));
 
-        return js.Invoke<byte[]>("BitButil.crypto.importJwk",
+        return js.Invoke<byte[]>("BitButil.cryptoKeys.importJwk",
             jwk, new CryptoKeyAlgorithmJsOptions(algorithm), CryptoFormatName.Resolve(targetFormat));
     }
 
@@ -298,7 +298,7 @@ public class Crypto(IJSRuntime js)
     /// <param name="curve">One of <c>"P-256"</c>, <c>"P-384"</c>, <c>"P-521"</c>.</param>
     /// <remarks>The private key is returned as extractable pkcs8 bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<EcKeyPair> GenerateEcdhKeyPair(string curve = "P-256")
-        => js.Invoke<EcKeyPair>("BitButil.crypto.generateEcdhKeyPair", curve);
+        => js.Invoke<EcKeyPair>("BitButil.cryptoKeys.generateEcdhKeyPair", curve);
 
     /// <summary>
     /// Derives raw shared-secret bits from your ECDH private key and the other party's public key.
@@ -315,7 +315,7 @@ public class Crypto(IJSRuntime js)
     /// usable key directly) rather than encrypting with it as it stands.
     /// </remarks>
     public ValueTask<byte[]> DeriveEcdhBits(byte[] privateKey, byte[] publicKey, int outputLengthBits, string curve = "P-256")
-        => js.Invoke<byte[]>("BitButil.crypto.deriveEcdhBits", privateKey, publicKey, curve, outputLengthBits);
+        => js.Invoke<byte[]>("BitButil.cryptoDerive.deriveEcdhBits", privateKey, publicKey, curve, outputLengthBits);
 
     /// <summary>
     /// Derives a usable key from an ECDH agreement, in one step.
@@ -332,7 +332,7 @@ public class Crypto(IJSRuntime js)
     {
         ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
 
-        return js.Invoke<byte[]>("BitButil.crypto.deriveEcdhKey",
+        return js.Invoke<byte[]>("BitButil.cryptoDerive.deriveEcdhKey",
             privateKey, publicKey, curve, new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
     }
 
@@ -352,7 +352,7 @@ public class Crypto(IJSRuntime js)
     /// </remarks>
     public ValueTask<byte[]> DeriveHkdfBits(byte[] keyMaterial, byte[]? salt, byte[]? info, int outputLengthBits,
                                             CryptoKeyHash algorithm = CryptoKeyHash.Sha256)
-        => js.Invoke<byte[]>("BitButil.crypto.deriveHkdfBits", keyMaterial, salt, info, outputLengthBits, HashAlgorithmName(algorithm));
+        => js.Invoke<byte[]>("BitButil.cryptoDerive.deriveHkdfBits", keyMaterial, salt, info, outputLengthBits, HashAlgorithmName(algorithm));
 
     /// <summary>
     /// Derives a usable key from existing high-entropy key material using HKDF.
@@ -371,7 +371,7 @@ public class Crypto(IJSRuntime js)
     {
         ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
 
-        return js.Invoke<byte[]>("BitButil.crypto.deriveHkdfKey",
+        return js.Invoke<byte[]>("BitButil.cryptoDerive.deriveHkdfKey",
             keyMaterial, salt, info, HashAlgorithmName(algorithm), new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
     }
 
@@ -393,7 +393,7 @@ public class Crypto(IJSRuntime js)
     {
         ArgumentNullException.ThrowIfNull(derivedKeyAlgorithm);
 
-        return js.Invoke<byte[]>("BitButil.crypto.derivePbkdf2Key",
+        return js.Invoke<byte[]>("BitButil.cryptoDerive.derivePbkdf2Key",
             password, salt, iterations, HashAlgorithmName(algorithm), new CryptoKeyAlgorithmJsOptions(derivedKeyAlgorithm));
     }
 
@@ -405,7 +405,7 @@ public class Crypto(IJSRuntime js)
     /// <param name="bits">Key length in bits - 128, 192, or 256.</param>
     /// <remarks>The key is returned as extractable raw bytes - see the security note on <see cref="Crypto"/>.</remarks>
     public ValueTask<byte[]> GenerateAesKwKey(int bits = 256)
-        => js.Invoke<byte[]>("BitButil.crypto.generateAesKwKey", bits);
+        => js.Invoke<byte[]>("BitButil.cryptoKeys.generateAesKwKey", bits);
 
     /// <summary>
     /// Encrypts key material with another key, so it can be stored or sent without ever appearing in
@@ -438,7 +438,7 @@ public class Crypto(IJSRuntime js)
         ArgumentNullException.ThrowIfNull(wrapAlgorithm);
         RequireByteFormat(format, nameof(format));
 
-        return js.Invoke<byte[]>("BitButil.crypto.wrapKey",
+        return js.Invoke<byte[]>("BitButil.cryptoKeys.wrapKey",
             CryptoFormatName.Resolve(format), key, new CryptoKeyAlgorithmJsOptions(keyAlgorithm),
             wrappingKey, wrapAlgorithm, wrappingKeyHash is null ? null : HashAlgorithmName(wrappingKeyHash.Value));
     }
@@ -470,7 +470,7 @@ public class Crypto(IJSRuntime js)
         ArgumentNullException.ThrowIfNull(unwrapAlgorithm);
         RequireByteFormat(format, nameof(format));
 
-        return js.Invoke<byte[]>("BitButil.crypto.unwrapKey",
+        return js.Invoke<byte[]>("BitButil.cryptoKeys.unwrapKey",
             CryptoFormatName.Resolve(format), wrappedKey, new CryptoKeyAlgorithmJsOptions(unwrappedKeyAlgorithm),
             unwrappingKey, unwrapAlgorithm, unwrappingKeyHash is null ? null : HashAlgorithmName(unwrappingKeyHash.Value));
     }
@@ -495,21 +495,21 @@ public class Crypto(IJSRuntime js)
                 _ => "SHA-256",
             };
 
-            return js.Invoke<byte[]>("BitButil.crypto.encryptRsaOaep", algorithm, key, data, keyHashString);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.encryptRsaOaep", algorithm, key, data, keyHashString);
         }
 
         if (algorithm.GetType() == typeof(AesCtrCryptoAlgorithmParams))
         {
-            return js.Invoke<byte[]>("BitButil.crypto.encryptAesCtr", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.encryptAesCtr", algorithm, key, data);
         }
 
         if (algorithm.GetType() == typeof(AesCbcCryptoAlgorithmParams))
         {
-            return js.Invoke<byte[]>("BitButil.crypto.encryptAesCbc", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.encryptAesCbc", algorithm, key, data);
         }
 
 
-        return js.Invoke<byte[]>("BitButil.crypto.encryptAesGcm", algorithm, key, data);
+        return js.Invoke<byte[]>("BitButil.cryptoCipher.encryptAesGcm", algorithm, key, data);
     }
 
     /// <summary>
@@ -560,20 +560,20 @@ public class Crypto(IJSRuntime js)
                 _ => "SHA-256",
             };
 
-            return js.Invoke<byte[]>("BitButil.crypto.decryptRsaOaep", algorithm, key, data, keyHashString);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.decryptRsaOaep", algorithm, key, data, keyHashString);
         }
 
         if (algorithm.GetType() == typeof(AesCtrCryptoAlgorithmParams))
         {
-            return js.Invoke<byte[]>("BitButil.crypto.decryptAesCtr", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.decryptAesCtr", algorithm, key, data);
         }
 
         if (algorithm.GetType() == typeof(AesCbcCryptoAlgorithmParams))
         {
-            return js.Invoke<byte[]>("BitButil.crypto.decryptAesCbc", algorithm, key, data);
+            return js.Invoke<byte[]>("BitButil.cryptoCipher.decryptAesCbc", algorithm, key, data);
         }
 
-        return js.Invoke<byte[]>("BitButil.crypto.decryptAesGcm", algorithm, key, data);
+        return js.Invoke<byte[]>("BitButil.cryptoCipher.decryptAesGcm", algorithm, key, data);
     }
     /// <summary>
     /// The Decrypt method of the Crypto interface that decrypts data.

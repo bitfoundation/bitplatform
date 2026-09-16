@@ -24,5 +24,13 @@ public sealed class BitDataGridReadRequest
     /// </summary>
     public IReadOnlyList<BitDataGridGroupDescriptor> Groups { get; init; } = Array.Empty<BitDataGridGroupDescriptor>();
 
+    /// <summary>
+    /// The grid-wide quick-search term (the grid's search box, or its <c>SearchText</c> parameter), or
+    /// <c>null</c> when no search is active. It is a free-text term the handler should match across the
+    /// columns it considers searchable, in addition to - not instead of - the per-column
+    /// <see cref="Filters"/>.
+    /// </summary>
+    public string? Search { get; init; }
+
     public CancellationToken CancellationToken { get; init; }
 }

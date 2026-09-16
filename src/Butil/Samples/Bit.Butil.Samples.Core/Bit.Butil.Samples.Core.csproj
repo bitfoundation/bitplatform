@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Multi-targeted because the library is: the test harness hosts (tests/Bit.Butil.Tests.Harness.*) serve
+         these pages on every runtime Bit.Butil ships for. The sample apps themselves pick net10.0. -->
+    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

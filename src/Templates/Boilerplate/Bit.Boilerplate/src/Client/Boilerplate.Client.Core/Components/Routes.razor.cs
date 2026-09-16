@@ -77,16 +77,15 @@ public partial class Routes : ComponentBase, IDisposable
 
         var navigationManager = currentServiceProvider!.GetRequiredService<NavigationManager>();
 
-        if (CultureInfoManager.InvariantGlobalization is false
-            && navigationManager.ToAbsoluteUri(url).GetCulture() is string culture
-            && string.IsNullOrWhiteSpace(culture) is false
-            && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
-        {
-            CultureInfoManager.SetCurrentCulture(culture);
-            currentServiceProvider!.GetRequiredService<PubSubService>().Publish(ClientAppMessages.SOFT_RESTART);
-        }
+        var culture = CultureInfoManager.InvariantGlobalization ? null : navigationManager.ToAbsoluteUri(url).GetCulture();
 
         navigationManager.NavigateTo(url, forceLoad, replace);
+
+        if (string.IsNullOrWhiteSpace(culture) is false
+            && string.Equals(culture, CultureInfo.CurrentUICulture.Name, StringComparison.InvariantCultureIgnoreCase) is false)
+        {
+            await currentServiceProvider!.GetRequiredService<CultureService>().ChangeCulture(culture);
+        }
     }
 }
 

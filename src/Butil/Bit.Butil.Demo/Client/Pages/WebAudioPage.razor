@@ -74,13 +74,24 @@ await handle.Stop();
                  Api="PlayBuffer"
                  Description="PlayBuffer decodes any container the browser understands (wav, mp3, ogg, ...) from a byte array and plays it - bytes you fetched over HTTP, read from a user file or, as here, synthesized in C#. Set loop to keep it repeating; the returned handle stops it and adjusts its gain while playing."
                  Code=@("""
-byte[] bytes = await httpClient.GetByteArrayAsync("music/chime.wav");
+@inject HttpClient httpClient
+@inject Bit.Butil.WebAudio webAudio
 
-var handle = await webAudio.PlayBuffer(bytes, startGain: 1.0, loop: false);
+@code {
+    private async Task Play()
+    {
+        // Any encoded format the browser can decode - the file itself is the sample, and it lives in
+        // wwwroot like any other static asset.
+        byte[] bytes = await httpClient.GetByteArrayAsync("music/chime.wav");
 
-await handle.SetGain(0.3); // duck the volume while it plays
-await handle.Stop();
-""")>
+        var handle = await webAudio.PlayBuffer(bytes, startGain: 1.0, loop: false);
+
+        await handle!.SetGain(0.3); // duck the volume while it plays
+        await handle.Stop();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <label><input type="checkbox" @bind="loopBuffer" /> Loop</label>
             <button @onclick="PlayChime">Play generated chime</button>
@@ -204,12 +215,24 @@ await filter.RampParam("frequency", 4000, overSeconds: 2);                 // th
                  Api="CreateAnalyser / GetByteFrequencyData / GetByteTimeDomainData"
                  Description="An analyser passes audio through unchanged and lets you read it - which is what every level meter, spectrum display and oscilloscope is made of. Connect it as a second connection that goes nowhere else and it measures without being in the way. Each read crosses the interop boundary, so poll at the rate the UI updates, not faster."
                  Code=@("""
-var analyser = await webAudio.CreateAnalyser(fftSize: 1024, smoothingTimeConstant: 0.8);
-await source.Connect(analyser!);      // in addition to whatever else source feeds
+@inject Bit.Butil.WebAudio webAudio
 
-var spectrum = await analyser!.GetByteFrequencyData();   // fftSize / 2 bins, 0-255
-var wave = await analyser.GetByteTimeDomainData();       // fftSize samples around 128
-""")>
+@code {
+    // Whatever is making the sound - an oscillator, a decoded buffer, a media element or the
+    // microphone. An analyser reads what passes through it and changes nothing.
+    private AudioNodeHandle? source;
+
+    private async Task Watch()
+    {
+        var analyser = await webAudio.CreateAnalyser(fftSize: 1024, smoothingTimeConstant: 0.8);
+        await source!.Connect(analyser!);      // in addition to whatever else source feeds
+
+        var spectrum = await analyser!.GetByteFrequencyData();   // fftSize / 2 bins, 0-255
+        var wave = await analyser.GetByteTimeDomainData();       // fftSize samples around 128
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="StartMeter" disabled="@(meterTimer is not null)">Analyse the running graph</button>
             <button class="danger" @onclick="StopMeter" disabled="@(meterTimer is null)">Stop analysing</button>
@@ -231,21 +254,31 @@ var wave = await analyser.GetByteTimeDomainData();       // fftSize samples arou
                  Api="CreatePanner / CreateStereoPanner / SetListener"
                  Description="A stereo panner is a mixer's pan knob: left to right, and cheap. A full panner places a sound at a point relative to the listener, and with the HRTF model it can be above, behind or beside them - convincing on headphones, and noticeably more expensive. Only the relationship between listener and source matters, so either can move."
                  Code=@("""
-var panner = await webAudio.CreatePanner(new AudioPannerOptions
-{
-    PanningModel = AudioPanningModel.Hrtf,
-    DistanceModel = AudioDistanceModel.Inverse,
-    PositionX = 2, PositionZ = -3,
-    RefDistance = 1, RolloffFactor = 1
-});
+@inject Bit.Butil.WebAudio webAudio
 
-await source.Connect(panner!);
-await panner!.ConnectToDestination();
+@code {
+    private AudioNodeHandle? source;   // whatever is making the sound
 
-await panner.SetParam("positionX", -2);                       // jump
-await panner.RampParam("positionX", 2, overSeconds: 4);       // or glide across
-await webAudio.SetListener(0, 0, 0);                          // where the ears are
-""")>
+    private async Task Place()
+    {
+        var panner = await webAudio.CreatePanner(new AudioPannerOptions
+        {
+            PanningModel = AudioPanningModel.Hrtf,
+            DistanceModel = AudioDistanceModel.Inverse,
+            PositionX = 2, PositionZ = -3,
+            RefDistance = 1, RolloffFactor = 1
+        });
+
+        await source!.Connect(panner!);
+        await panner!.ConnectToDestination();
+
+        await panner.SetParam("positionX", -2);                       // jump
+        await panner.RampParam("positionX", 2, overSeconds: 4);       // or glide across
+        await webAudio.SetListener(0, 0, 0);                          // where the ears are
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Stereo pan (@stereoPan.ToString("0.0"))</span>
@@ -285,18 +318,32 @@ var reverb = await webAudio.CreateConvolver(impulseResponseBuffer!);
                  Api="CreateMediaElementSource / CreateMediaStreamSource / CreateMediaStreamDestination"
                  Description="A media element's audio can be routed through the graph and filtered - but note that it then reaches the speakers only through that graph, so a chain that is not connected to the destination silences it, and an element can be the source of exactly one node ever. A stream destination is the way out: the processed audio becomes an ordinary MediaStream, ready for MediaRecorder."
                  Code=@("""
-var elementSource = await webAudio.CreateMediaElementSource(audioElement);
-var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 800);
-await elementSource!.Connect(filter!);
-await filter.ConnectToDestination();     // without this, the element is now silent
+@inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.MediaRecorder mediaRecorder
 
-var mic = await mediaDevices.GetUserMedia(audio: true, video: false);
-var micSource = await webAudio.CreateMediaStreamSource(mic!);   // do not connect this to the speakers
+<audio @ref="audioElement" src="music/chime.wav" controls></audio>
 
-var destination = await webAudio.CreateMediaStreamDestination();
-await filter.Connect(destination!);
-await mediaRecorder.Start(destination!.GetStream());            // records the processed signal
-""")>
+@code {
+    private ElementReference audioElement;
+
+    private async Task Route()
+    {
+        var elementSource = await webAudio.CreateMediaElementSource(audioElement);
+        var filter = await webAudio.CreateBiquadFilter(BiquadFilterType.Lowpass, 800);
+        await elementSource!.Connect(filter!);
+        await filter!.ConnectToDestination();    // without this, the element is now silent
+
+        var mic = await mediaDevices.GetUserMedia(audio: true, video: false);
+        var micSource = await webAudio.CreateMediaStreamSource(mic!);   // do not connect this to the speakers
+
+        var destination = await webAudio.CreateMediaStreamDestination();
+        await filter.Connect(destination!);
+        await mediaRecorder.Start(destination!.GetStream());            // records the processed signal
+    }
+}
+""")
+                 Language="razor">
         <audio @ref="audioElement" src="@ChimeDataUrl" controls loop style="width:100%;max-width:420px"></audio>
         <div class="controls">
             <button @onclick="RouteElement" disabled="@(elementSource is not null)">Route the element through a filter</button>
@@ -308,19 +355,109 @@ await mediaRecorder.Start(destination!.GetStream());            // records the p
     <DemoSection Title="Your own DSP"
                  Api="AddWorkletModule / CreateWorkletNode / PostMessage"
                  Description="An audio worklet is the only place custom per-sample processing can live. The processor is JavaScript by necessity - it runs on the audio thread, which cannot call into .NET and must never block - and .NET drives it two ways: declared AudioParams, which are sample-accurate, and messages, which arrive whenever the thread gets to them. This one applies a gain and reports its peak level back."
-                 Code=@("""
-await webAudio.AddWorkletModule("js/butil-gain-processor.js");
+                 Files=@([
+new("WebAudio.razor", """
+@inject Bit.Butil.WebAudio webAudio
 
-var node = await webAudio.CreateWorkletNode("butil-gain-processor",
-    new AudioWorkletNodeOptions { ProcessorOptions = "{\"reportIntervalSeconds\":0.1}" },
-    onMessage: json => peak = JsonSerializer.Deserialize<Report>(json)!.Peak);
+@code {
+    private double? peak;
+    private AudioWorkletNodeHandle? node;
 
-await source.Connect(node!);
-await node!.ConnectToDestination();
+    private record Report(double Peak, bool Muted);
 
-await node.SetParam("gain", 0.5);      // the declared AudioParam - sample-accurate
-await node.PostMessage("mute");        // a command - whenever the thread gets to it
-""")>
+    private async Task Start(AudioNodeHandle source)
+    {
+        // The module has to be loaded before a node naming one of its processors can be created,
+        // and a worklet needs a secure context - IsWorkletSupported is false without one.
+        await webAudio.AddWorkletModule("js/butil-gain-processor.js");
+
+        node = await webAudio.CreateWorkletNode("butil-gain-processor",
+            new AudioWorkletNodeOptions { ProcessorOptions = "{\"reportIntervalSeconds\":0.1}" },
+            onMessage: json => InvokeAsync(() =>
+            {
+                peak = JsonSerializer.Deserialize<Report>(json,
+                    new JsonSerializerOptions(JsonSerializerDefaults.Web))!.Peak;
+                StateHasChanged();
+            }));
+
+        await source.Connect(node!);
+        await node!.ConnectToDestination();
+
+        await node.SetParam("gain", 0.5);   // the declared AudioParam - sample-accurate
+        await node.PostMessage("mute");     // a command - whenever the thread gets to it
+    }
+}
+"""),
+new("wwwroot/js/butil-gain-processor.js", """
+// It has to be JavaScript, and it has to be a file: an AudioWorklet processor runs on the audio
+// thread, which cannot call into .NET and must never block. What crosses back to C# is what this
+// file chooses to send - here, a peak level a few times a second, over the node's message port.
+class ButilGainProcessor extends AudioWorkletProcessor {
+    // What SetParam addresses. A declared parameter is applied on the audio thread per sample,
+    // which is the difference between an automated gain and a stepped one.
+    static get parameterDescriptors() {
+        return [{ name: 'gain', defaultValue: 1, minValue: 0, maxValue: 4, automationRate: 'a-rate' }];
+    }
+
+    constructor(options) {
+        super();
+        // AudioWorkletNodeOptions.ProcessorOptions arrives here. Reporting every render quantum
+        // would be 375 messages a second for no benefit - the UI cannot use them.
+        this._interval = options?.processorOptions?.reportIntervalSeconds ?? 0.1;
+        this._muted = false;
+        this._peak = 0;
+        this._elapsed = 0;
+
+        // What PostMessage reaches.
+        this.port.onmessage = e => {
+            const command = typeof e.data === 'string' ? e.data : '';
+            if (command === 'mute') this._muted = true;
+            else if (command === 'unmute') this._muted = false;
+        };
+    }
+
+    process(inputs, outputs, parameters) {
+        const input = inputs[0];
+        const output = outputs[0];
+        const gain = parameters.gain;
+
+        for (let channel = 0; channel < output.length; channel++) {
+            const source = input[channel];
+            const target = output[channel];
+            if (!source) {
+                target.fill(0);
+                continue;
+            }
+
+            for (let i = 0; i < target.length; i++) {
+                // An a-rate parameter arrives as one value per sample; a k-rate one, or a parameter
+                // that happens not to be changing, arrives as a single value for the whole block.
+                const value = gain.length > 1 ? gain[i] : gain[0];
+                const sample = this._muted ? 0 : source[i] * value;
+                target[i] = sample;
+                const magnitude = sample < 0 ? -sample : sample;
+                if (magnitude > this._peak) this._peak = magnitude;
+            }
+        }
+
+        const quantum = output[0] ? output[0].length : 128;
+        this._elapsed += quantum / sampleRate;
+        if (this._elapsed >= this._interval) {
+            // What the onMessage callback on the C# side receives, as a string.
+            this.port.postMessage(JSON.stringify({ peak: this._peak, muted: this._muted }));
+            this._elapsed = 0;
+            this._peak = 0;
+        }
+
+        // Keeping the processor alive even with no input: the node stays in the graph until .NET
+        // disposes it, rather than being collected the first time the source falls silent.
+        return true;
+    }
+}
+
+registerProcessor('butil-gain-processor', ButilGainProcessor);
+"""),
+])>
         <div class="field">
             <span class="field-label">Worklet gain (@workletGain.ToString("0.00"))</span>
             <input type="range" min="0" max="2" step="0.05" @bind="workletGain" @bind:event="oninput" />

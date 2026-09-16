@@ -222,7 +222,7 @@ public class Streams(IJSRuntime js) : IAsyncDisposable
         try
         {
             _sinks.Clear();
-            await js.InvokeVoid("BitButil.streams.disposeAll");
+            await js.InvokeTeardown("BitButil.streams.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

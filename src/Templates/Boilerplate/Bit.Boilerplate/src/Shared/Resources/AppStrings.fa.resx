@@ -1332,7 +1332,122 @@
     <data name="Canceled" xml:space="preserve">
     <value>لغو شده</value>
   </data>
+    <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>هیچ برنامه‌ای روی این دستگاه نمی‌تواند لینک‌های {0} را باز کند.</value>
+  </data>
     <!--#if (signalR == true) -->
+    <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>تماس صوتی</value>
+  </data>
+    <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>شروع تماس صوتی</value>
+  </data>
+    <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>پایان تماس صوتی</value>
+  </data>
+    <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>بازگشت به تماس صوتی</value>
+  </data>
+    <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>زمان باقی‌مانده از تماس صوتی</value>
+  </data>
+    <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>تماس صوتی پایان یافت.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>پیام به تماس ارسال نشد.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>دستیار مشغول است. {0} ثانیه دیگر دوباره تلاش کنید.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>دستیار نتوانست پاسخ دهد. دوباره تلاش کنید.</value>
+  </data>
+    <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>اطلاعات تماس خود را وارد کنید تا یک اپراتور با شما تماس بگیرد.</value>
+  </data>
+    <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>خلاصهٔ گفتگو</value>
+  </data>
+    <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>وارد شده با حساب</value>
+  </data>
+    <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>درخواست شما با موفقیت ارسال شد. به‌زودی یک اپراتور با شما تماس می‌گیرد.</value>
+  </data>
+    <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>چه اتفاقی می‌افتد</value>
+  </data>
+    <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>در انتظار پاسخ شما</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>فایل‌های برنامه روی این دستگاه پاک شود؟</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>شروع دوباره بیشتر مشکلاتی را که داده‌های محلی خراب ایجاد می‌کنند برطرف می‌کند.</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>از حساب خود خارج می‌شوید</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>این گفتگو حذف می‌شود</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>برنامه دوباره راه‌اندازی می‌شود</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>تماس صوتی پایان می‌یابد</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>پاک کردن فایل‌ها</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>الآن نه</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>در حال پاک کردن فایل‌های برنامه</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>فایل‌های برنامه را نگه داشتید.</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>چیزی پاک نشد: به درخواست پاسخی داده نشد.</value>
+  </data>
+    <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>این را تأیید می‌کنید؟</value>
+  </data>
+    <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+    <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>رد کردن</value>
+  </data>
+    <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>تأیید شد</value>
+  </data>
+    <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>رد شد.</value>
+  </data>
+    <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>به درخواست پاسخی داده نشد.</value>
+  </data>
+    <!--#if (module == "Sales") -->
+    <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+    <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>بهترین گزینه</value>
+  </data>
+    <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>گزینه‌های مناسب دیگر</value>
+  </data>
+    <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>بپرسید</value>
+  </data>
+    <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>دربارهٔ {0} بیشتر توضیح بده</value>
+  </data>
+    <!--#endif -->
+    <!--#endif -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>پنل هوش مصنوعی</value>
   </data>
@@ -1493,20 +1608,20 @@
     <data name="SendRoleNotification" xml:space="preserve">
     <value>ارسال اعلان</value>
   </data>
-    <data name="EnableNotifications" xml:space="preserve">
-    <value>فعال‌سازی اعلان‌ها</value>
-  </data>
-    <data name="DisableNotifications" xml:space="preserve">
-    <value>غیرفعال‌سازی اعلان‌ها</value>
-  </data>
     <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
-    <value>اعلان‌های پوش برای این نشست فعال هستند.</value>
+    <value>اعلان‌ها برای این نشست فعال هستند.</value>
   </data>
     <data name="SessionNotificationsMutedTitle" xml:space="preserve">
-    <value>اعلان‌های پوش برای این نشست بی‌صدا شده‌اند.</value>
+    <value>اعلان‌ها برای این نشست بی‌صدا شده‌اند.</value>
   </data>
-    <data name="SessionNotificationsNotConfiguredTitle" xml:space="preserve">
-    <value>اعلان‌های پوش برای این نشست پیکربندی نشده‌اند.</value>
+    <data name="Notifications" xml:space="preserve">
+    <value>اعلان‌ها</value>
+  </data>
+    <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>روشن کردن اعلان‌ها</value>
+  </data>
+    <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>خاموش کردن اعلان‌ها</value>
   </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>اعلان‌ها فعال شد</value>
@@ -1829,15 +1944,6 @@
     <value>هیچ منطقه زمانی با جستجوی شما مطابقت ندارد.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>اعلان‌های پوش</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>روشن کردن اعلان‌های پوش</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>خاموش کردن اعلان‌های پوش</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>اعلان‌های پوش برای این برنامه مسدود شده‌اند. در تنظیمات مرورگر یا سیستم‌عامل، اعلان‌ها را مجاز کنید و دوباره تلاش کنید.</value>
   </data>

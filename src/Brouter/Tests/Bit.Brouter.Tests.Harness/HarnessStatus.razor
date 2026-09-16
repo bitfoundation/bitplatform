@@ -1,0 +1,23 @@
+﻿@inject HarnessScope Scope
+
+@* data-interactive only flips after the first interactive render, so a test can wait for it before
+   driving anything that needs event handlers. *@
+<p id="status"
+   data-interactive="@(_interactive ? "true" : "false")"
+   data-renderer="@RendererName"
+   data-platform="@HarnessRuntime.Platform"
+   data-scope="@Scope.Id">
+    @RendererName | @(_interactive ? "interactive" : "static") | @HarnessRuntime.Platform | scope @Scope.Id
+</p>
+
+@code {
+    private bool _interactive;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _interactive = true;
+        StateHasChanged();
+    }
+}

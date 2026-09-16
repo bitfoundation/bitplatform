@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/standalone/" />
+    <!-- An empty icon: the default /favicon.ico request would 404 and trip the suites' console-error check. -->
+    <link rel="icon" href="data:," />
+    <title>Bswup harness (standalone)</title>
+</head>
+
+<body>
+    <div id="app"><p id="loading">Loading...</p></div>
+
+    <!-- Hand-written update prompt, the way an app without BswupProgress wires it (see the README's
+         step 5): outside anything the app hides, shown for a staged update. -->
+    <button id="bit-bswup-reload" type="button" style="display: none;">Update ready</button>
+
+    <script src="_content/Bit.Bswup.Tests.Harness/harness.js"></script>
+    <script>
+        function bitBswupHandler(type, data) {
+            harnessBswupHandler(type, data);
+
+            switch (type) {
+                case BswupMessage.downloadFinished:
+                    if (data.firstInstall) {
+                        data.reload();
+                    } else {
+                        showReloadButton(data.reload);
+                    }
+                    return;
+
+                case BswupMessage.updateReady:
+                    return showReloadButton(data.reload);
+            }
+        }
+
+        function showReloadButton(reload) {
+            const button = document.getElementById('bit-bswup-reload');
+            button.style.display = 'block';
+            button.onclick = reload;
+        }
+    </script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <!-- The web host replaces data-harness-attributes with the script-tag options of the test session
+         (scope, sw, handler, updateInterval, ...). -->
+    <script src="_content/Bit.Bswup/bit-bswup.js" data-harness-attributes></script>
+</body>
+
+</html>

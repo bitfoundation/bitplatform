@@ -303,17 +303,23 @@ describe('range requests', () => {
         expect(seen[0].includes('?v=')).toBe(false);
     });
 
-    // A cached 200 that still declares Content-Encoding cannot be byte-sliced: blob() yields the
-    // DECODED body, so a 206 carrying the encoded header would make the client inflate raw slice
-    // bytes (corrupt). Fall back to the full response rather than emit a mislabeled 206.
-    it('falls back to the full response when the cached body declares a content encoding', async () => {
+    // blob() yields the DECODED body, while browsers keep the Content-Encoding header of a decoded
+    // response - Chromium does for cached ones, so every asset a compressing host (MapStaticAssets)
+    // served carries one, next to the compressed Content-Length. The slice is decoded bytes: it has
+    // to be served as a 206 that declares no encoding. Skipping such responses (the earlier behavior)
+    // left those hosts without a single 206 - the browser suite caught it.
+    it('slices the decoded body of a cached response that still declares a content encoding', async () => {
         const sw = boot({ config: { isPassive: true }, assets: [managed], fetchHandler: NETWORK_DOWN, configure: includeMp4 });
         const cache = await openAssetCache(sw);
-        await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'br', 'content-type': 'video/mp4' }) }));
+        await cache.put(`${ORIGIN}/clip.mp4.h1`, new FakeResponse(TEXT, { status: 200, headers: new Headers({ 'content-encoding': 'br', 'content-length': '7', 'content-type': 'video/mp4' }) }));
 
         const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
-        expect(response.status).toBe(200); // not sliced
-        expect(decode(response)).toBe(TEXT);
+        expect(response.status).toBe(206);
+        expect(decode(response)).toBe('2345');
+        expect(response.headers.get('content-encoding')).toBeNull();
+        expect(response.headers.get('content-length')).toBe('4');
+        expect(response.headers.get('content-range')).toBe('bytes 2-5/10');
+        expect(response.headers.get('content-type')).toBe('video/mp4');
     });
 
     // 'identity' is the no-op encoding and must still slice normally.

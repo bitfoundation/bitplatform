@@ -82,11 +82,27 @@ _session = await summarizer.Create(new SummarizerOptions
                  Api="SummarizerSession.Summarize / SummarizeStreaming"
                  Description="Summarize waits for the whole result; SummarizeStreaming reports it as it is produced, which is what a UI should use for anything longer than a paragraph. The per-call context argument describes this one document, on top of the session's shared context."
                  Code=@("""
-var summary = await _session.Summarize(article, context: "A conference talk abstract.");
+<p>@_summary</p>
 
-// or, streaming:
-await _session.SummarizeStreaming(article, chunk => { _summary += chunk; InvokeAsync(StateHasChanged); });
-""")>
+@code {
+    private string _summary = "";
+    private SummarizerSession? _session;   // from Create
+
+    private async Task Run(string article)
+    {
+        var summary = await _session!.Summarize(article, context: "A conference talk abstract.");
+
+        // or, streaming - the first words arrive long before the last:
+        _summary = "";
+        await _session.SummarizeStreaming(article, chunk =>
+        {
+            _summary += chunk;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}
+""")
+                 Language="razor">
         <div class="field">
             <span class="field-label">Text to summarize</span>
             <textarea rows="5" @bind="_input"></textarea>

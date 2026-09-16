@@ -132,7 +132,7 @@ public class MediaSource(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeVoid("BitButil.mediaSource.disposeAll"); }
+        try { await js.InvokeTeardown("BitButil.mediaSource.disposeAll"); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }

@@ -155,7 +155,7 @@ public class DocumentPictureInPicture(IJSRuntime js) : IAsyncDisposable
         try
         {
             _enterHandlers.Clear();
-            await js.InvokeVoid("BitButil.documentPictureInPicture.disposeAll");
+            await js.InvokeTeardown("BitButil.documentPictureInPicture.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

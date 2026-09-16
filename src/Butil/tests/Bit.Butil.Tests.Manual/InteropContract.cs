@@ -86,12 +86,29 @@ internal static class InteropContract
                 continue;
             }
 
+            // Compared against the identifiers that still resolve, not against surviving method names: a
+            // method whose [JSInvokable] was stripped is just as unreachable from JS as one that is gone.
+            var identifiers = contract.IsCallbackTarget
+                ? DispatchIdentifiers(type).ToHashSet(StringComparer.Ordinal)
+                : [];
+
+            // A callback target that lost its identifiers *as a set*, and is nothing else, counts as
+            // removed rather than as a defect - the same removal as a type that vanished outright, one
+            // level down. The small classes carrying Butil's callbacks (DomEventsInterop,
+            // PerformanceObserverInterop, WindowMediaQueryInterop) only ever reach JavaScript through
+            // DotNetObjectReference.Create, which preserves every public method of what it is handed. So
+            // identifiers gone means the code that would have dispatched them is gone too, and what
+            // survived is a shell kept alive by the field declaring it. Losing *some* of them is still a
+            // defect, and that is what the loop below keeps checking.
+            if (contract.IsCallbackTarget && contract.IsPayload is false && identifiers.Count == 0)
+            {
+                removedCount++;
+                continue;
+            }
+
             if (contract.IsCallbackTarget) callbackTargets.Add($"{type.Name}({contract.JSInvokableIdentifiers.Length})");
             if (contract.IsPayload) payloads.Add($"{type.Name}({contract.PublicProperties.Length})");
 
-            // Compared against the identifiers that still resolve, not against surviving method names: a
-            // method whose [JSInvokable] was stripped is just as unreachable from JS as one that is gone.
-            var identifiers = DispatchIdentifiers(type).ToHashSet(StringComparer.Ordinal);
             foreach (var missing in contract.JSInvokableIdentifiers.Where(identifier => identifiers.Contains(identifier) is false))
             {
                 failures.Add($"{contract.TypeName}.{missing} is [JSInvokable] but no longer resolves while its type survived - the method or its attribute was trimmed away, so JS would dispatch to nothing.");

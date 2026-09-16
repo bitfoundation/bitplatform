@@ -34,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.9.0" />
-        <PackageReference Include="MSTest" Version="4.3.3" />
+        <PackageReference Include="bunit" Version="2.10.3" />
+        <PackageReference Include="MSTest" Version="4.4.0" />
     </ItemGroup>
 
     <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and
@@ -44,12 +44,15 @@
          loudly on a .NET upgrade that reshapes them. -->
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.30" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.19" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.11" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.12" />
     </ItemGroup>
 
     <ItemGroup>
+        <!-- The Link and Script asset components ship in their own package; referenced here so the
+             duplicate-instance tests render the real components against the real BitAssetVersion. -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
@@ -117,5 +120,16 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the
+         component by nothing but their file names. Rather than copying the 2390 images beside the tests,
+         their names are written out there, and BitFlagTests checks that every image a flag offers the
+         browser is one the package ships. -->
+    <Target Name="WriteAssetsFlagNames" AfterTargets="Build">
+        <ItemGroup>
+            <_AssetsFlagImage Include="..\..\Bit.BlazorUI.Assets\wwwroot\flags\*.webp" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(OutDir)assets-flags.txt" Lines="@(_AssetsFlagImage->'%(Filename)%(Extension)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    </Target>
 
 </Project>

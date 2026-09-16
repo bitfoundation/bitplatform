@@ -6,10 +6,14 @@
     var monthEvents = BitFullCalendarHelpers.GetEventsForMonth(State.Events.ToList(), State.SelectedDate, State.Culture);
     if (!string.IsNullOrWhiteSpace(_search))
     {
-        var q = _search.ToLowerInvariant();
+        // Attendee names are part of what a reader is looking for in an agenda, so the search spans
+        // them as well as the title and the description. The comparison is already case-insensitive,
+        // so the term is used as typed.
+        var q = _search.Trim();
         monthEvents = monthEvents.Where(e =>
             (e.Title ?? "").Contains(q, StringComparison.OrdinalIgnoreCase) ||
-            (e.Description ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+            (e.Description ?? "").Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            e.Attendees.Any(a => a.FullName.Contains(q, StringComparison.OrdinalIgnoreCase))).ToList();
     }
 
     List<(string? DateKey, string GroupTitle, List<BitFullCalendarEvent> Items)> agendaGroups;
@@ -27,7 +31,7 @@
                 var title = DateTime.TryParse(g.Key, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dt)
                     ? $"{dt.ToString("dddd", State.Culture)}, {BitFullCalendarHelpers.FormatCultureDate(dt, State.Culture)}"
                     : g.Key;
-                return (DateKey: (string?)g.Key, GroupTitle: title, Items: g.ToList());
+                return (DateKey: (string?)g.Key, GroupTitle: title, Items: SortAgendaItems(g));
             })
             .ToList();
     }
@@ -37,7 +41,7 @@
             .GroupBy(e => e.Color)
             .OrderBy(g => ColorScheme.GetSortOrder(g.Key))
             .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: g.ToList()))
+            .Select(g => (DateKey: (string?)null, GroupTitle: ColorScheme.GetLabel(g.Key), Items: SortAgendaItems(g)))
             .ToList();
     }
 }
@@ -59,7 +63,8 @@
                 <div class="bit-bfc-agenda-group-title">@groupTitle</div>
                 @foreach (var ev in items)
                 {
-                    <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                    <button type="button" class="bit-bfc-agenda-item @ev.CssClass" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
+                            title="@BitFullCalendarHelpers.BuildEventTooltip(ev, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
                             @onclick="() => ShowDetails(ev)">
                         <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                             @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
@@ -69,7 +74,17 @@
                             <span class="bit-bfc-agenda-desc" style="display:block;">@ev.Description</span>
                         </span>
                         <span class="bit-bfc-agenda-time">
-                            @if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
+                            @* An all-day event has no clock time to show, so the label stands in for it. *@
+                            @if (ev.IsAllDay)
+                            {
+                                @if (State.AgendaModeGroupBy != BitFullCalendarAgendaGroupBy.Date)
+                                {
+                                    @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
+                                    <span> · </span>
+                                }
+                                @Texts.AllDayLabel
+                            }
+                            else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
                             {
                                 @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
                                 <span> - </span>

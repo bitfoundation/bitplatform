@@ -13,9 +13,9 @@ public static class BitMarkdownPipelines
     /// <summary>Basic CommonMark core only (no flavors).</summary>
     public static BitMarkdownPipeline Basic => _basic.Value;
 
-    /// <summary>GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks).</summary>
+    /// <summary>GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes and alerts.</summary>
     public static BitMarkdownPipeline GitHub => _gitHub.Value;
 
-    /// <summary>GFM plus emoji and auto-identifiers.</summary>
+    /// <summary>The GitHub flavors plus emoji and auto-identifiers.</summary>
     public static BitMarkdownPipeline Advanced => _advanced.Value;
 }

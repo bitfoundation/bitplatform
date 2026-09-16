@@ -35,26 +35,76 @@ var supported = await eventSource.IsSupported();
     <DemoSection Title="Open a stream"
                  Api="Open / EventSourceHandle"
                  Description="Named events never reach the default message listener, so anything the server names has to be declared in eventNames to be seen at all. The onError callback's argument distinguishes 'the browser is about to retry' (false) from 'this stream is finished' (true) - the browser reconnects on its own by default, so a transient failure is not something you have to handle."
-                 Code=@("""
-private EventSourceHandle? _stream;
+                 Files=@([
+new("Ticks.razor", """
+@implements IAsyncDisposable
+@inject Bit.Butil.EventSource eventSource
 
-_stream = await eventSource.Open(
-    "/sse/ticks",
-    onMessage: e => InvokeAsync(() =>
+@code {
+    private EventSourceHandle? _stream;
+    private readonly List<ServerSentEvent> _events = [];
+
+    private async Task Open()
     {
-        // e.EventName is "message" for unnamed events, the server's name otherwise
-        // e.Data is always text - deserialize it yourself
-        // e.LastEventId is what the browser replays on reconnect
-        _events.Insert(0, e);
-        StateHasChanged();
-    }),
-    eventNames: ["heartbeat"],
-    onOpen: () => InvokeAsync(StateHasChanged),
-    onError: fatal => InvokeAsync(StateHasChanged));
+        _stream = await eventSource.Open(
+            "/sse/ticks",
+            onMessage: e => InvokeAsync(() =>
+            {
+                // e.EventName is "message" for unnamed events, the server's name otherwise
+                // e.Data is always text - deserialize it yourself
+                // e.LastEventId is what the browser replays on reconnect
+                _events.Insert(0, e);
+                StateHasChanged();
+            }),
+            // Named events never reach the default listener, so anything the server names has to be
+            // declared here to be seen at all.
+            eventNames: ["heartbeat"],
+            onOpen: () => InvokeAsync(StateHasChanged),
+            onError: fatal => InvokeAsync(StateHasChanged));
+    }
 
-// closing is what stops the browser reconnecting:
-await _stream!.DisposeAsync();
-""")>
+    // Closing is what stops the browser reconnecting: an EventSource that is never closed keeps
+    // retrying on the browser's own schedule for as long as the page lives.
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null) await _stream.DisposeAsync();
+    }
+}
+"""),
+new("Program.cs", """
+// The other end. Server-sent events are ordinary HTTP with a content type and a wire format - there
+// is no protocol upgrade and no library involved.
+app.MapGet("/sse/ticks", async (HttpContext context, CancellationToken cancellationToken) =>
+{
+    context.Response.Headers.ContentType = "text/event-stream";
+    context.Response.Headers.CacheControl = "no-cache";
+    // Proxies that buffer would defeat the whole point; this is the conventional opt-out.
+    context.Response.Headers["X-Accel-Buffering"] = "no";
+
+    // What makes a reconnect resume rather than restart: the browser sends back the last id it saw.
+    var next = int.TryParse(context.Request.Headers["Last-Event-ID"], out var lastId) ? lastId + 1 : 1;
+
+    while (cancellationToken.IsCancellationRequested is false)
+    {
+        // Data is text on the wire; JSON is just the convention for putting structure in it.
+        var payload = JsonSerializer.Serialize(new { tick = next });
+
+        await context.Response.WriteAsync($"id: {next}\n", cancellationToken);
+
+        // An event with no name arrives on the default message listener; a named one only reaches a
+        // listener that asked for that name.
+        if (next % 3 == 0) await context.Response.WriteAsync("event: heartbeat\n", cancellationToken);
+
+        // The blank line is the frame delimiter - without it nothing is ever dispatched.
+        await context.Response.WriteAsync($"data: {payload}\n\n", cancellationToken);
+        await context.Response.Body.FlushAsync(cancellationToken);
+
+        next++;
+        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+    }
+});
+"""),
+])>
         <div class="controls">
             <button @onclick="OpenStream">Open</button>
             <button class="secondary" @onclick="ReadState">GetState</button>
@@ -84,17 +134,34 @@ await _stream!.DisposeAsync();
                  Api="EventSourceHandle.GetState"
                  Description="Drop the server (or your network) while the stream is open and the browser reconnects by itself, sending the last id it saw as a Last-Event-ID header. The demo endpoint reads that header and carries on counting rather than starting from one - which is the whole point of ids. GetState reports Connecting during the gap, which is a normal mid-stream state rather than a failure."
                  Code=@("""
-var state = await _stream!.GetState();
-// EventSourceState.Connecting - dropped, browser is retrying
-// EventSourceState.Open       - delivering
-// EventSourceState.Closed     - finished for good, no retry
-""")>
+@code {
+    private EventSourceHandle? _stream;   // from eventSource.Open
+
+    private async Task ReadState()
+    {
+        var state = await _stream!.GetState();
+        // EventSourceState.Connecting - dropped, browser is retrying
+        // EventSourceState.Open       - delivering
+        // EventSourceState.Closed     - finished for good, no retry
+    }
+}
+""")
+                 Language="razor">
         <div class="field">
             <span class="field-label">Try it</span>
             <span>
-                Open the stream, then stop the demo server for a few seconds and start it again -
-                the tick numbers continue rather than resetting.
+                Open this section's own stream, then stop the demo server for a few seconds and start
+                it again - the tick numbers continue rather than resetting.
             </span>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenReconnectStream">Open</button>
+            <button class="secondary" @onclick="ReadReconnectState">GetState</button>
+            <button class="danger" @onclick="CloseReconnectStream">Close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Latest tick</span>
+            <span>@(_reconnectTick ?? "(nothing yet)")</span>
         </div>
         <DemoConsole @ref="reconnectOutput" Title="reconnect output" />
     </DemoSection>
@@ -133,6 +200,12 @@ var state = await _stream!.GetState();
     private DemoConsole reconnectOutput = default!;
 
     private EventSourceHandle? _stream;
+
+    // The reconnection section runs a stream of its own: watching a drop and a resume is the whole
+    // demonstration, and it has to be readable without scrolling back to the section above.
+    private EventSourceHandle? _reconnectStream;
+    private string? _reconnectTick;
+
     private readonly List<ServerSentEvent> _events = [];
     private string _connectionState = "Not connected.";
     private int _received;
@@ -183,7 +256,7 @@ var state = await _stream!.GetState();
                     }
                     else
                     {
-                        await reconnectOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
+                        await streamOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
                     }
                     StateHasChanged();
                 }));
@@ -223,6 +296,68 @@ var state = await _stream!.GetState();
         }
     }
 
+    private async Task OpenReconnectStream()
+    {
+        await CloseReconnectStream();
+
+        try
+        {
+            _reconnectStream = await eventSource.Open("/sse/ticks",
+                onMessage: e => InvokeAsync(() =>
+                {
+                    _reconnectTick = $"#{e.LastEventId} - {e.Data}";
+                    StateHasChanged();
+                }),
+                eventNames: ["heartbeat"],
+                onOpen: () => InvokeAsync(async () =>
+                    await reconnectOutput.Success("Connected - the id counting continues from where it stopped.")),
+                onError: fatal => InvokeAsync(async () =>
+                {
+                    if (fatal) await reconnectOutput.Error("Stream closed for good - no retry.");
+                    else await reconnectOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
+                }));
+
+            if (_reconnectStream is null)
+            {
+                await reconnectOutput.Warn("Open returned null - EventSource is unavailable here.");
+                return;
+            }
+
+            await reconnectOutput.Success("Open → connecting to /sse/ticks.");
+        }
+        catch (Exception ex)
+        {
+            await reconnectOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadReconnectState()
+    {
+        if (_reconnectStream is null)
+        {
+            await reconnectOutput.Warn("Open this section's stream first.");
+            return;
+        }
+
+        try
+        {
+            await reconnectOutput.Success("GetState →", await _reconnectStream.GetState());
+        }
+        catch (Exception ex)
+        {
+            await reconnectOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseReconnectStream()
+    {
+        if (_reconnectStream is null) return;
+
+        await _reconnectStream.DisposeAsync();
+        _reconnectStream = null;
+        await reconnectOutput.Log("Closed.");
+    }
+
     private async Task CloseStream()
     {
         if (_stream is null) return;
@@ -241,6 +376,12 @@ var state = await _stream!.GetState();
             {
                 await _stream.DisposeAsync();
                 _stream = null;
+            }
+
+            if (_reconnectStream is not null)
+            {
+                await _reconnectStream.DisposeAsync();
+                _reconnectStream = null;
             }
         }
         catch (Exception)

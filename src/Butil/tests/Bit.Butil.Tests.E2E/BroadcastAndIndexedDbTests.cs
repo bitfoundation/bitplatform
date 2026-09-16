@@ -33,6 +33,23 @@ public class BroadcastAndIndexedDbTests : ButilObserversPageTest
         await ClickAndExpectAsync("idb-migrate", "idb:migrate:ok");
     }
 
+    /// <summary>
+    /// The connection callbacks, which JavaScript dispatches through the interop reference the handle hands
+    /// it. That reference is held by a small relay object rather than by the handle itself - which is what
+    /// keeps a trimmed app from downloading every IndexedDB module for one store read - so it is worth
+    /// proving in a browser that the events still arrive.
+    /// </summary>
+    /// <remarks>
+    /// The three values are: the open connection was told about the version change, the waiting open was
+    /// <em>not</em> reported blocked, and it got its upgrade. The middle one is the point: Butil's
+    /// connection closes itself as it reports the versionchange, so the other one is never held up.
+    /// </remarks>
+    [TestMethod]
+    public async Task IndexedDb_Connection_Callbacks_Report_VersionChange_And_Yield_The_Database()
+    {
+        await ClickAndExpectAsync("idb-connection-callbacks", "idb:connection-callbacks:True/False/True");
+    }
+
     [TestMethod]
     public async Task CookieStore_Change_Event_Reports_A_Written_Cookie()
     {

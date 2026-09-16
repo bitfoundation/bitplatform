@@ -81,14 +81,19 @@
                 }
                 else
                 {
-                    if (description.HasValue())
+                    @* The description of a group has no room in the rail either, so a header that is down
+                       to its icon renders through the same plain row an item without one does. *@
+                    if (description.HasValue() && Nav.IconOnly is false)
                     {
                         <div class="bit-nav-itg">
-                            <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                @if (isToggleable)
+                            <div class="bit-nav-iit">
+                                @if (hasChevron)
                                 {
+                                    @* Only the chevron moves to the far end of a reversed header. Reversing
+                                       the row itself would carry the icon of the item along with it, away
+                                       from the text it belongs to. *@
                                     <i style="@Nav.Styles?.ToggleIcon"
-                                       class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                       class="@chevronIcon?.GetCssClasses() @chevronRotation @(Nav.ReversedChevron ? "bit-nav-rch" : null) @Nav.Classes?.ToggleIcon"
                                        aria-hidden="true" />
                                 }
                                 @if (icon is not null)
@@ -106,11 +111,11 @@
                     }
                     else
                     {
-                        <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            @if (isToggleable)
+                        <div class="bit-nav-iit">
+                            @if (hasChevron)
                             {
                                 <i style="@Nav.Styles?.ToggleIcon"
-                                   class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                   class="@chevronIcon?.GetCssClasses() @chevronRotation @(Nav.ReversedChevron ? "bit-nav-rch" : null) @Nav.Classes?.ToggleIcon"
                                    aria-hidden="true" />
                             }
                             @if (icon is not null)
