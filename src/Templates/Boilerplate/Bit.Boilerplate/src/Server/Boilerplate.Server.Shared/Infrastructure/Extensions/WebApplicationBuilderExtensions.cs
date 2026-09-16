@@ -95,7 +95,7 @@ public static class WebApplicationBuilderExtensions
                 // It costs a serialize/deserialize per read though (including every output cache hit, since FusionOutputCacheStore
                 // shares these options), so it stays on in development to surface those bugs and off everywhere else.
                 .WithOptions(options => options.DefaultEntryOptions.EnableAutoClone = builder.Environment.IsDevelopment())
-                .WithSerializer(new FusionCacheSystemTextJsonSerializer())
+                .WithSystemTextJsonSerializer()
                 .WithCacheKeyPrefix("Boilerplate:Cache:");
 
             services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache

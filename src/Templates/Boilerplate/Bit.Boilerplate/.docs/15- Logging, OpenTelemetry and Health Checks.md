@@ -88,13 +88,14 @@ For tracking **count metrics** (e.g., number of ongoing operations), use **OpenT
 
 ```csharp
 // Define a counter at class level
-private static readonly UpDownCounter<long> ongoingConversationsCount = 
+public static readonly UpDownCounter<long> ActiveConversations =
     Meter.Current.CreateUpDownCounter<long>(
-        "appHub.ongoing_conversations_count", 
-        "Number of ongoing conversations in the chatbot hub.");
+        "chatbot.active_conversations",
+        "{conversation}",
+        "Text chats open in the AI chat panel right now.");
 
 // Increment when operation starts
-ongoingConversationsCount.Add(1);
+ActiveConversations.Add(1);
 
 try
 {
@@ -104,11 +105,15 @@ try
 finally
 {
     // Decrement when operation completes
-    ongoingConversationsCount.Add(-1);
+    ActiveConversations.Add(-1);
 }
 ```
 
-This pattern is used in `AppHub.Chatbot.cs` to track the number of active chatbot conversations in real-time, which can be monitored in the Aspire Dashboard, Azure Application Insights, or other observability tools.
+This pattern is used in `Features/Chatbot/ChatbotMetrics.cs` to track active chatbot conversations and voice calls in real-time, which can be monitored in the Aspire Dashboard, Azure Application Insights, or other observability tools. Name instruments the OpenTelemetry way: a lowercase `area.thing` name, `active_` for a count of things in progress, and the unit in curly braces (`{conversation}`, `{call}`).
+
+### AI token usage
+
+Every `IChatClient`, embedding generator and speech client registered with `.UseOpenTelemetry()` records `gen_ai.client.token.usage` (meter `Experimental.Microsoft.Extensions.AI`) with `gen_ai.token.type` set to `input` or `output`. `ChatbotMetrics` adds what those clients can't see to the same instrument: voice calls (`gen_ai.operation.name` = `realtime`), and the `input_text`, `input_audio`, `input_image`, `input_cached`, `output_text`, `output_audio` and `output_reasoning` split the bill depends on. Token types overlap (`input_cached` is part of `input_text`), so filter by one `gen_ai.token.type` before summing.
 
 ### Benefits
 

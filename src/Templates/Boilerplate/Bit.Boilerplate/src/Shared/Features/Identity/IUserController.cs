@@ -71,12 +71,11 @@ public interface IUserController : IAppController
 
     //#if (signalR == true || notification == true)
     /// <summary>
-    /// Takes the state the caller wants rather than flipping whatever the server holds, so the two callers that
-    /// already know it - AppMenu's push notifications toggle and the sessions list in Settings - cannot land on the
-    /// opposite one by acting on a status that has since changed. Returns the resulting status.
+    /// AppMenu's notifications switch, for the current session. Unlike the same status carried by
+    /// <see cref="UpdateSession"/>, a change made here is answered with the welcome notification.
     /// </summary>
-    [HttpPost("{userSessionId}/{enabled}")]
-    Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken);
+    [HttpPost("{enabled}")]
+    Task SetNotificationEnabled(bool enabled, CancellationToken cancellationToken);
     //#endif
 
     //#if (multitenant == true)

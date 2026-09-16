@@ -19,10 +19,6 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     private const string ElementName = "window";
     private const string DocumentElementName = "document";
 
-    internal const string MatchMediaMethodName = nameof(InvokeMediaQueryChange);
-
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, Action<MediaQueryList>> _matchMediaHandlers = new();
-
     private readonly System.Collections.Concurrent.ConcurrentDictionary<(Guid Id, string Element, string Event, bool UseCapture), byte> _listenerIds = new();
 
     // Popups opened by *this* instance, tracked so disposal can release only these refs from the
@@ -35,21 +31,21 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     // different circuits/apps - and the host app's own handler - isolated and leak-free.
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _beforeUnloadIds = new();
 
-    // DOM events go through a per-instance dispatcher; matchMedia callbacks are hosted directly on
-    // this instance. Both keep listeners isolated per circuit / WASM app and leak-free on disposal.
+    // DOM events and matchMedia callbacks each go through a small per-instance relay rather than through
+    // this class: DotNetObjectReference.Create preserves every public method of whatever it is handed, and
+    // this service's methods carry the identifiers of four JavaScript modules - so handing over the service
+    // itself made a page that reads InnerWidth download the selection API, the popup registry and the
+    // media-query module too. Both relays keep listeners isolated per circuit / WASM app and leak-free on
+    // disposal, which is what they were for in the first place.
     private readonly DomEventsInterop _events = new();
-    private DotNetObjectReference<Window>? _dotNetRef;
-    private DotNetObjectReference<Window> DotNetRef => DotNetObjectReferenceHelper.GetOrCreate(ref _dotNetRef, this);
+    private WindowMediaQueryInterop? _mediaQueries;
+    private WindowMediaQueryInterop MediaQueries => DotNetObjectReferenceHelper.GetOrCreate(ref _mediaQueries, static () => new WindowMediaQueryInterop());
 
-    /// <summary>
-    /// Invoked from JS when a watched media query changes. Public + <see cref="JSInvokableAttribute"/>
-    /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
-    /// </summary>
-    [JSInvokable(MatchMediaMethodName)]
-    public void InvokeMediaQueryChange(Guid id, MediaQueryList state)
-    {
-        if (_matchMediaHandlers.TryGetValue(id, out var handler)) handler.Invoke(state);
-    }
+    // Armed by the calls that create something JavaScript is holding for this instance - see Open() and
+    // SubscribeMatchMedia(). Disposal invokes whichever were armed instead of naming the modules itself,
+    // so an app that opens no popup and watches no media query ships neither module.
+    private Func<string[], ValueTask>? _popupTeardown;
+    private Func<Guid[], ValueTask>? _matchMediaTeardown;
 
     /// <summary>
     /// Adds a listener for one window-level event. <typeparamref name="T"/> is the event-args type
@@ -90,18 +86,26 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>
     /// <see cref="ButilEventListenerOptions"/> variant of <see cref="SubscribeEvent{T}(string, Action{T}, bool)"/>,
-    /// adding <c>passive</c> and <c>once</c> control on top of <c>capture</c>.
+    /// adding <c>passive</c>, <c>once</c> and
+    /// <see cref="ButilEventListenerOptions.MinInterval">rate limiting</see> on top of <c>capture</c>.
     /// </summary>
+    /// <remarks>
+    /// This is the overload to reach for on a high-frequency event: <c>mousemove</c>,
+    /// <c>pointermove</c>, <c>scroll</c>, <c>resize</c> and <c>wheel</c> all fire about once a
+    /// frame, and <see cref="ButilEventListenerOptions.MinInterval"/> caps how often that reaches
+    /// .NET without changing what the page does.
+    /// </remarks>
     public Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, ButilEventListenerOptions options)
-        => SubscribeEventCore(ElementName, domEvent, listener, options.Capture, options.Passive, options.Once);
+        => SubscribeEventCore(ElementName, domEvent, listener, options.Capture, options.Passive, options.Once,
+                              options.MinInterval?.TotalMilliseconds ?? 0);
 
     /// <summary>
     /// Subscribes to a DOM event on the given target ("window"/"document"). Tracks the element name
     /// per listener so disposal detaches from the correct target.
     /// </summary>
-    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture, bool passive = false, bool once = false)
+    private async Task<ButilSubscription> SubscribeEventCore<T>(string elementName, string domEvent, Action<T> listener, bool useCapture, bool passive = false, bool once = false, double minInterval = 0)
     {
-        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture, passive: passive, once: once);
+        var id = await _events.AddEventListener(js, elementName, domEvent, listener, useCapture, passive: passive, once: once, minInterval: minInterval);
         var key = (id, elementName, domEvent, useCapture);
         _listenerIds.TryAdd(key, 0);
 
@@ -455,12 +459,12 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     {
         if (id is null)
         {
-            await js.InvokeVoid("BitButil.window.close");
+            await js.InvokeVoid("BitButil.windowRefs.close");
             return;
         }
 
         _popupIds.TryRemove(id, out _);
-        await js.InvokeVoid("BitButil.window.close", id);
+        await js.InvokeVoid("BitButil.windowRefs.close", id);
     }
 
     /// <summary>
@@ -509,7 +513,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WindowSelection))]
     public async Task<WindowSelection?> GetSelection()
-        => await js.Invoke<WindowSelection?>("BitButil.window.getSelection");
+        => await js.Invoke<WindowSelection?>("BitButil.windowSelection.getSelection");
 
     /// <summary>
     /// Returns just the selected text (equivalent to <c>window.getSelection().toString()</c>).
@@ -517,10 +521,10 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection">https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection</see>
     /// </summary>
     public async Task<string> GetSelectionText()
-        => await js.Invoke<string>("BitButil.window.getSelectionText");
+        => await js.Invoke<string>("BitButil.windowSelection.getSelectionText");
 
     /// <summary>Removes any current selection.</summary>
-    public Task ClearSelection() => js.InvokeVoid("BitButil.window.clearSelection").AsTask();
+    public Task ClearSelection() => js.InvokeVoid("BitButil.windowSelection.clearSelection").AsTask();
 
     /// <summary>
     /// True when the runtime implements <c>Selection.getComposedRanges()</c>.
@@ -531,7 +535,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public async Task<bool> IsComposedRangesSupported()
-        => await js.Invoke<bool>("BitButil.window.isComposedRangesSupported");
+        => await js.Invoke<bool>("BitButil.windowSelection.isComposedRangesSupported");
 
     /// <summary>
     /// The selection's ranges as they really are, with boundary points inside shadow trees reported
@@ -550,14 +554,14 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ComposedRange))]
     public async Task<ComposedRange[]> GetComposedRanges(params ElementReference[] shadowHosts)
-        => await js.Invoke<ComposedRange[]>("BitButil.window.getComposedRanges", (object)shadowHosts);
+        => await js.Invoke<ComposedRange[]>("BitButil.windowSelection.getComposedRanges", (object)shadowHosts);
 
     /// <summary>
     /// Selects every text node inside <paramref name="element"/>. Works on form-control inputs
     /// too, falling back to <c>HTMLInputElement.select()</c>.
     /// </summary>
     public Task SelectElement(Microsoft.AspNetCore.Components.ElementReference element)
-        => js.InvokeVoid("BitButil.window.selectElement", element).AsTask();
+        => js.InvokeVoid("BitButil.windowSelection.selectElement", element).AsTask();
 
     /// <summary>Copies the current selection to the clipboard, returning true on success.</summary>
     /// <remarks>
@@ -565,7 +569,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// rather than throwing, so the result can't be distinguished from a genuine value. If you
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
-    public Task<bool> CopySelection() => js.Invoke<bool>("BitButil.window.copySelection").AsTask();
+    public Task<bool> CopySelection() => js.Invoke<bool>("BitButil.windowSelection.copySelection").AsTask();
 
     /// <summary>
     /// Returns a MediaQueryList object representing the specified media query string.
@@ -573,7 +577,7 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia">https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia</see>
     /// </summary>
     public async Task<MediaQueryList> MatchMedia(string query)
-        => await js.Invoke<MediaQueryList>("BitButil.window.matchMedia", query);
+        => await js.Invoke<MediaQueryList>("BitButil.windowMediaQuery.matchMedia", query);
 
     /// <summary>
     /// Subscribes to the <c>change</c> event of <c>matchMedia(query)</c>. The handler fires whenever
@@ -582,14 +586,16 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// <br/>
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event">https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event</see>
     /// </summary>
-    [DynamicDependency(nameof(InvokeMediaQueryChange), typeof(Window))]
+    [DynamicDependency(WindowMediaQueryInterop.MatchMediaMethodName, typeof(WindowMediaQueryInterop))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MediaQueryList))]
     public async Task<Guid> SubscribeMatchMedia(string query, Action<MediaQueryList> handler)
     {
         var listenerId = Guid.NewGuid();
-        _matchMediaHandlers.TryAdd(listenerId, handler);
+        var mediaQueries = MediaQueries;
+        mediaQueries.Add(listenerId, handler);
+        _matchMediaTeardown ??= ids => js.InvokeVoid("BitButil.windowMediaQuery.unsubscribeMatchMedia", ids);
 
-        await js.InvokeVoid("BitButil.window.subscribeMatchMedia", DotNetRef, listenerId, query);
+        await js.InvokeVoid("BitButil.windowMediaQuery.subscribeMatchMedia", mediaQueries.DotNetRef, listenerId, query);
 
         return listenerId;
     }
@@ -610,8 +616,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask UnsubscribeMatchMedia(Guid id)
     {
-        _matchMediaHandlers.TryRemove(id, out _);
-        await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", new[] { id });
+        _mediaQueries?.Remove(id);
+        await js.InvokeVoid("BitButil.windowMediaQuery.unsubscribeMatchMedia", new[] { id });
     }
 
     /// <summary>
@@ -619,12 +625,10 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask<Guid[]> UnsubscribeMatchMedia(Action<MediaQueryList> handler)
     {
-        var ids = _matchMediaHandlers.Where(h => Equals(h.Value, handler)).Select(h => h.Key).ToArray();
+        var ids = _mediaQueries?.RemoveAll(handler) ?? [];
         if (ids.Length == 0) return ids;
 
-        foreach (var id in ids) _matchMediaHandlers.TryRemove(id, out _);
-
-        await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
+        await js.InvokeVoid("BitButil.windowMediaQuery.unsubscribeMatchMedia", ids);
 
         return ids;
     }
@@ -646,7 +650,13 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// </remarks>
     public async Task<string?> Open(string? url = null, string? target = null, string? windowFeatures = null)
     {
-        var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures);
+        // Armed before the await, so a Window disposed while the open is in flight still finds the
+        // delegate and releases the popup's entry from the module-global _refs map.
+        // new object?[] { ids } wraps the array as a single JS argument; passing the string[] straight
+        // through would spread each id as its own argument.
+        _popupTeardown ??= ids => js.InvokeVoid("BitButil.windowRefs.dispose", new object?[] { ids });
+
+        var id = await js.Invoke<string?>("BitButil.windowRefs.open", Guid.NewGuid(), url, target, windowFeatures);
         if (id is not null) _popupIds.TryAdd(id, 0);
         return id;
     }
@@ -665,12 +675,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
     /// on <paramref name="windowFeatures"/>. Without it the opened page can reach back through
     /// <c>window.opener</c> and navigate this window (reverse tab-nabbing).
     /// </remarks>
-    public async Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
-    {
-        var id = await js.Invoke<string?>("BitButil.window.open", Guid.NewGuid(), url, target, windowFeatures?.ToString());
-        if (id is not null) _popupIds.TryAdd(id, 0);
-        return id;
-    }
+    public Task<string?> Open(string? url = null, string? target = null, WindowFeatures? windowFeatures = null)
+        => Open(url, target, windowFeatures?.ToString());
 
     /// <summary>
     /// Opens the Print Dialog to print the current document.
@@ -744,11 +750,13 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
         try
         {
-            if (_matchMediaHandlers.Count > 0)
+            // Through the delegate SubscribeMatchMedia armed rather than by naming the module here: an
+            // identifier in this always-reachable method would put windowMediaQuery in the bundle of
+            // every app that injects Window, subscriber or not.
+            var mediaQueryIds = _mediaQueries?.Drain() ?? [];
+            if (mediaQueryIds.Length > 0 && _matchMediaTeardown is not null)
             {
-                var ids = _matchMediaHandlers.Keys.ToArray();
-                _matchMediaHandlers.Clear();
-                await js.InvokeVoid("BitButil.window.unsubscribeMatchMedia", ids);
+                await _matchMediaTeardown(mediaQueryIds);
             }
 
             if (_listenerIds.IsEmpty is false)
@@ -763,14 +771,15 @@ public class Window(IJSRuntime js) : IAsyncDisposable
 
             // Release only the popups this instance opened. Passing the ids (rather than letting
             // JS wipe its shared _refs map) keeps popups from other live circuits/apps tracked, so
-            // their Close(id) keeps working. new object?[] { ids } wraps the array as a single JS
-            // argument; passing the string[] directly would spread each id as a separate arg.
-            // Skip the interop round-trip entirely when this instance opened no popups (the common case).
+            // their Close(id) keeps working. Through Open()'s delegate, for the same reason the media
+            // queries go through theirs - and it also skips the round-trip when nothing was opened,
+            // which is the common case. Open() arms the delegate before it records an id, so a
+            // non-empty set implies the delegate is there.
             if (_popupIds.IsEmpty is false)
             {
                 var popupIds = _popupIds.Keys.ToArray();
                 _popupIds.Clear();
-                await js.InvokeVoid("BitButil.window.dispose", new object?[] { popupIds });
+                await _popupTeardown!(popupIds);
             }
 
             // Detach this instance's beforeunload handlers so they don't outlive the component.
@@ -785,8 +794,8 @@ public class Window(IJSRuntime js) : IAsyncDisposable
         finally
         {
             _events.Dispose();
-            _dotNetRef?.Dispose();
-            _dotNetRef = null;
+            _mediaQueries?.Dispose();
+            _mediaQueries = null;
         }
     }
 }

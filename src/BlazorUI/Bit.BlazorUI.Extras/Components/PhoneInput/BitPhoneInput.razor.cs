@@ -1402,11 +1402,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
+    // Where the flag images live and how they are named is BitFlag's to know, so the two cannot drift.
     private string GetFlagUrl(BitCountry country)
     {
         var url = FlagUrlSelector?.Invoke(country);
 
-        return url.HasValue() ? url! : _flagUrls.GetOrAdd(country.Iso2, static iso2 => $"_content/Bit.BlazorUI.Extras/flags/{iso2.ToUpperInvariant()}-flat-16.webp");
+        return url.HasValue() ? url! : _flagUrls.GetOrAdd(country.Iso2, static iso2 => BitFlag.GetFlagUrl(iso2));
     }
 
     // A single live region carries everything the callout has to say, and a screen reader only

@@ -183,8 +183,8 @@
 <DemoExample Title="Indicator" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
         <b>Indicator</b> gives the selection a mark of its own beside the color of the item: a <b>Line</b>
-        along the edge of the selected item &mdash; its bottom edge across a bar and its leading edge down a
-        <b>Vertical</b> rail, the way a tab strip marks its current tab &mdash; or the <b>Pill</b> a Material
+        along the edge of the selected item - its bottom edge across a bar and its leading edge down a
+        <b>Vertical</b> rail, the way a tab strip marks its current tab - or the <b>Pill</b> a Material
         navigation bar draws behind the icon of its current destination. The pill is the filled part in that
         mode, so it takes the fill of the item over, and both follow the <b>Color</b> while <b>Filled</b> is
         enabled.
@@ -221,7 +221,7 @@
         A navbar squeezes its items into the room it has, which runs out once it holds more destinations than
         it fits. <b>Scrollable</b> leaves every item at the size of its own content and scrolls the list
         instead, with the scrollbar itself hidden, and it brings the selected item into view whenever the
-        selection moves &mdash; from a click, from the URL in the <b>Automatic</b> mode, or from the binding,
+        selection moves - from a click, from the URL in the <b>Automatic</b> mode, or from the binding,
         as the button below does. A <b>Vertical</b> rail scrolls down its own length in exactly the same way.
     </div>
     <br /><br />
@@ -327,7 +327,7 @@
         <b>Badge</b> puts a short count or status on the icon of an item, and <b>Dot</b> marks it as needing
         attention without a number. Both are drawn on the icon and hidden from assistive technology, and the
         badge is folded into the name of the item instead, so it is announced once rather than twice
-        &mdash; "Inbox (12)". <b>BadgeAriaLabel</b> replaces that with a description a screen reader can read
+        - "Inbox (12)". <b>BadgeAriaLabel</b> replaces that with a description a screen reader can read
         out on its own, and is the only way a <b>Dot</b> is announced at all, since a dot carries no text.
     </div>
     <br /><br />
@@ -340,7 +340,7 @@
     <div>
         <b>Filled</b> fills the hovered and the selected item, which gives the selection a mark of its own
         instead of leaving it to the text color alone. The fill takes the <b>Color</b> of the navbar, and the
-        content of the item &mdash; along with the <b>Indicator</b>, when the navbar carries one &mdash;
+        content of the item - along with the <b>Indicator</b>, when the navbar carries one -
         moves onto the on-color of that color so that it stays legible over the fill.
     </div>
     <br /><br />
@@ -356,7 +356,7 @@
         inside the anchor (or the button) the item is; <b>TemplateRenderMode</b> of an item (and
         <b>ItemTemplateRenderMode</b> of the navbar, for its own template) set to <b>Replace</b> has the
         template render that element itself instead, which is what an item that is a control of its own
-        &mdash; the center action of a mobile bar &mdash; needs, since an interactive element cannot be
+        - the center action of a mobile bar - needs, since an interactive element cannot be
         nested in another one. A replaced item owns its clicks, its focus and its accessible name, and is
         left out of the keyboard navigation of the bar.
     </div>

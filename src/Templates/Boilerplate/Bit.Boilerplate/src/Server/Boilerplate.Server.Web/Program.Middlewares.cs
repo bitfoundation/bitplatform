@@ -90,6 +90,19 @@ public static partial class Program
             // https://yurl.chayev.com/
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/.well-known"), wellKnownApp =>
             {
+                // iOS asks for the extension-less path, but the file on disk is the .json one - Azure Static Web Apps
+                // decides Content-Type from the extension and would serve an extension-less file as octet-stream,
+                // which Apple rejects, so staticwebapp.config.json rewrites the same way. One file, two hosts.
+                wellKnownApp.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.Equals("/.well-known/apple-app-site-association", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Request.Path = "/.well-known/apple-app-site-association.json";
+                    }
+
+                    await next.Invoke();
+                });
+
                 wellKnownApp.UseStaticFiles(new StaticFileOptions()
                 {
                     FileProvider = env.WebRootFileProvider,
@@ -115,6 +128,8 @@ public static partial class Program
                 DarkModeEnabled = true,
                 Authorization = [new HangfireDashboardAuthorizationFilter()]
             });
+
+            app.ScheduleAppRecurringJobs();
             //#endif
 
             app.UseCultureUrlRedirection();
@@ -198,16 +213,33 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
+                int? statusCode = null;
+
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        statusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                        statusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
                     }
+                }
+
+                if (statusCode is not null)
+                {
+                    // Applied as the response starts, not before the endpoint runs: a 404 already set by then makes
+                    // RazorComponentEndpointInvoker drop the rendered page and leave an empty body for status code pages.
+                    // Only over a 200 - the page itself; a redirect (the culture one, for instance) must stay a redirect.
+                    context.Response.OnStarting(() =>
+                    {
+                        if (context.Response.StatusCode is StatusCodes.Status200OK)
+                        {
+                            context.Response.StatusCode = statusCode.Value;
+                        }
+                        return Task.CompletedTask;
+                    });
                 }
 
                 await next.Invoke(context);

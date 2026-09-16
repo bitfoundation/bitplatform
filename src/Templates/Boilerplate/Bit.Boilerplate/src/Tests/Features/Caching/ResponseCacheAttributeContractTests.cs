@@ -9,8 +9,7 @@ namespace Boilerplate.Tests.Features.Caching;
 /// rather than against source text - so a Blazor page's <c>@attribute</c>, a controller action and a minimal api
 /// handler are all covered through the endpoint metadata <c>AppResponseCachePolicy</c> itself reads at runtime.
 /// <para>
-/// Unlike most of this suite it ships to generated projects, since that is where new pages and endpoints get the
-/// attribute - so it names no module or feature specific endpoint and validates whatever the project mapped.
+/// It names no module or feature specific endpoint and validates whatever the project mapped.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest"), TestCategory("Caching")]

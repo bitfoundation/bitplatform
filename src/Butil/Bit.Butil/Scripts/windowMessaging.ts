@@ -62,7 +62,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function windowFor(kind: string, element: HTMLIFrameElement | null, windowId: string | null): Window | null {
         switch (kind) {
             case 'frame': return element?.contentWindow ?? null;
-            case 'opened': return butil.window.refOf(windowId) ?? null;
+            case 'opened': return butil.windowRefs.refOf(windowId) ?? null;
             case 'opener': return window.opener ?? null;
             case 'parent': return window.parent ?? null;
             case 'top': return window.top ?? null;

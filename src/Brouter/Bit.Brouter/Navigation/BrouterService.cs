@@ -89,6 +89,10 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     public BrouterLocation Location => _activeBrouter?.CurrentLocation ?? BrouterLocation.Empty;
 
+    // The IBrouter Try... members check this and fall back to a no-op; everything else goes
+    // through EnsureMounted and throws.
+    public bool IsMounted => _activeBrouter is not null && _navigationManager is not null;
+
     public void Navigate(string url, bool replace = false, bool forceLoad = false, string? historyState = null)
     {
         EnsureMounted();
@@ -578,8 +582,10 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     private void EnsureMounted()
     {
-        if (_activeBrouter is null || _navigationManager is null)
-            throw new InvalidOperationException("No Brouter is currently mounted.");
+        if (IsMounted is false)
+            throw new InvalidOperationException(
+                $"No Brouter is currently mounted. Check {nameof(IBrouter)}.{nameof(IsMounted)}, or use the " +
+                $"Try... counterpart of this member (e.g. {nameof(IBrouter.TryNavigate)}) to skip the call when no router is mounted.");
     }
 
     // Internal (not private): BrouterQueryBuilder formats query values with the identical rules so

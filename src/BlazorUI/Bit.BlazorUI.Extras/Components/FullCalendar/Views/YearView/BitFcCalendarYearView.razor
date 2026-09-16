@@ -47,7 +47,8 @@
         if (firstValid.HasValue)
             months.Add(firstValid.Value);
     }
-    var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture);
+    var yearWeekDayHeaders = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
+    var yearColumnCount = State.VisibleWeekDayCount;
 
     // Pre-compute a date -> events lookup once instead of scanning every event for every cell
     // (the year grid has ~500 cells, so the per-cell Where was O(cells * events)).
@@ -92,20 +93,21 @@
 <div class="bit-bfc-year">
     @foreach (var monthDate in months)
     {
-        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture);
+        var cells = BitFullCalendarHelpers.GetCalendarCells(monthDate, State.Culture, State.FirstDayOfWeekOverride, State.HiddenDays);
         var monthIndex = cal.GetMonth(monthDate);
         var monthName = dtf.GetMonthName(monthIndex);
+        var yearGridTemplate = $"grid-template-columns:repeat({yearColumnCount}, minmax(0, 1fr));";
         <div class="bit-bfc-year-month">
             <button type="button" class="bit-bfc-year-month-title" @onclick="() => GoToMonth(monthDate)">
                 @monthName
             </button>
-            <div class="bit-bfc-year-weekdays">
+            <div class="bit-bfc-year-weekdays" style="@yearGridTemplate">
                 @foreach (var wd in yearWeekDayHeaders)
                 {
                     <div class="bit-bfc-year-weekday">@(wd.Length > 2 ? wd[..2] : wd)</div>
                 }
             </div>
-            <div class="bit-bfc-year-days">
+            <div class="bit-bfc-year-days" style="@yearGridTemplate">
                 @foreach (var cell in cells)
                 {
                     var cellCulturalMonth = cal.GetMonth(cell.Date);

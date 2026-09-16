@@ -37,6 +37,9 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
+    //#endif
     //#if (brouter == true)
     [AutoInject] private IBrouter brouter = default!;
     //#endif
@@ -197,9 +200,7 @@ public partial class AppClientCoordinator : AppComponentBase
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 
             //#if (brouter == true)
-            // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
-            // principal the previous one's search text and grid filters.
-            brouter.ClearKeepAlive();
+            brouter.TryClearKeepAlive();
             //#endif
 
             TelemetryContext.UserId = userId;
@@ -433,6 +434,9 @@ public partial class AppClientCoordinator : AppComponentBase
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(),
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }

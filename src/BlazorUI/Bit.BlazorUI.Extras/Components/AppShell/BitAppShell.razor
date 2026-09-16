@@ -9,12 +9,18 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    <div style="@Styles?.Top" class="bit-ash-top @Classes?.Top" />
+    <div style="@Styles?.Top" class="bit-ash-top @Classes?.Top"></div>
+    @* The direction is repeated here on purpose, and the pair of it and the LOGICAL inset variables the
+       two side bars are sized from is what keeps each safe area on the physical edge it belongs to. This
+       row lays its three children out in the reading direction, so the first of them is the physically
+       right one in a right-to-left shell - and the inline-start inset it reads is, under the same
+       direction, the inset of the physical right. Take either half away and the two stop cancelling out:
+       the left of the screen would be inset by whatever the right of it needed. *@
     <div style="@Styles?.Center"
          class="bit-ash-center @Classes?.Center"
          dir="@Dir?.ToString().ToLower()">
         <div style="@Styles?.Left" class="bit-ash-left @Classes?.Left"></div>
-        <div id="BitAppShell-container" @ref="_containerRef" style="@Styles?.Main" class="bit-ash-main @Classes?.Main">
+        <div id="@MainContainerId" @ref="_containerRef" style="@_MainStyle" class="@_MainClass" data-bit-ash-main>
             <CascadingValue Name="@BitAppShell.Container" Value="_containerRef">
                 <BitCascadingValueProvider Values="Values" ValueList="ValueList">
                     @ChildContent

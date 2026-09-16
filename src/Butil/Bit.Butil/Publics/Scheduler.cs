@@ -291,7 +291,7 @@ public class Scheduler(IJSRuntime js) : IAsyncDisposable
             _frameHandlers.Clear();
             _idleHandlers.Clear();
             _taskHandlers.Clear();
-            await js.InvokeVoid("BitButil.scheduler.disposeAll");
+            await js.InvokeTeardown("BitButil.scheduler.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

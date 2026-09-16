@@ -169,8 +169,25 @@ internal static class ScriptScanning
             (["Clipboard"], ["clipboard"], "a Bit.Butil class name resolves to the module behind it"),
             (["Bit.Butil.Clipboard"], ["clipboard"], "a class can be named in full"),
             (["LocalStorage"], ["storage"], "a class whose module is named nothing like it still resolves - the map, not the spelling, decides"),
-            (["Window"], ["events", "window"], "a class needing more than one module contributes all of them"),
+            (["Window"], ["events", "window", "windowMediaQuery", "windowRefs", "windowSelection"], "a class needing more than one module contributes all of them"),
             (["CLIPBOARD"], ["clipboard"], "a module named in the wrong case is understood rather than rejected"),
+
+            // A split family, from both ends. Naming the class has to reach every module the class can
+            // call - keeping a module by name is the escape hatch for an API reached from a consumer's own
+            // JavaScript, and half a family would be worse than nothing there. Naming one module of the
+            // family has to keep that one alone, which is the finer control the split exists to offer.
+            (["Crypto"], ["crypto", "cryptoCipher", "cryptoDerive", "cryptoKeys", "cryptoSign"],
+                "naming a class whose JavaScript is split across a family keeps the whole family"),
+            (["cryptoKeys"], ["cryptoKeys"], "naming one module of a family keeps that module alone"),
+            (["Performance"], ["performance", "performanceVitals"], "the same for a two-module family"),
+            (["performanceVitals"], ["performanceVitals"], "and for one module of it"),
+            (["UserAgent"], ["userAgent", "userAgentParser"],
+                "the class reaches the parser even though most of its members do not"),
+            (["userAgent"], ["userAgent"], "while the module name alone leaves the parser out"),
+            (["IndexedDb"], ["indexedDb", "indexedDbCursor", "indexedDbIndex", "indexedDbInfo", "indexedDbStore", "indexedDbTransaction"],
+                "a class handing out a handle contributes the handle's modules too"),
+            (["Css", "cssTypedOm"], ["css", "cssHighlight", "cssStyleSheet", "cssTypedOm", "cssWorklet"],
+                "a family named twice - once whole, once by one of its modules - is still one set"),
             (["clipboard", "Clipboard"], ["clipboard"], "the same module reached two ways is one module"),
             ([" clipboard ", ""], ["clipboard"], "surrounding space is trimmed and an empty entry is ignored"),
         ];
@@ -189,6 +206,20 @@ internal static class ScriptScanning
         checks.That(missing.Count == 1 && missing[0] == "Clippboard",
             "a name that is neither a module nor a class is reported rather than ignored",
             $"unresolved: [{string.Join(", ", missing)}]");
+
+        // A module name keeps that one module (asserted above), and the publish says so when the class
+        // of the same name calls more - the consumer who wrote `crypto` before the family was split is
+        // the one this message is for. A module its class needs nothing beyond, or a class name, gets none.
+        var hints = ButilScriptBundler.NarrowerThanClass(["crypto", "clipboard", "Crypto", "cryptoKeys"], manifest, map);
+        checks.That(hints.Count == 1
+                && hints[0].Name == "crypto"
+                && hints[0].ClassName == "Crypto"
+                && hints[0].Beyond.SequenceEqual(["cryptoCipher", "cryptoDerive", "cryptoKeys", "cryptoSign"], StringComparer.Ordinal),
+            "naming a split family's root module alone is pointed at the class that keeps the whole family",
+            $"hints: [{string.Join("; ", hints.Select(hint => $"{hint.Name} -> {hint.ClassName} + {string.Join(", ", hint.Beyond)}"))}]");
+
+        checks.That(ButilScriptBundler.NarrowerThanClass(["crypto"], manifest, null).Count == 0,
+            "without the class map there is nothing to compare a module name against, and no hint");
 
         // Without the map only module names can resolve, which is what a publish that never had reason to
         // read Bit.Butil.dll gets. A class named like its module (Clipboard/clipboard) still resolves on the

@@ -116,7 +116,12 @@ public class ButilCookie
 
         if (SameSite is not null)
         {
-            sb.Append(";samesite=").Append(SameSite.ToString()!.ToLowerInvariant());
+            sb.Append(";samesite=").Append(SameSite switch
+            {
+                Bit.Butil.SameSite.None => "none",
+                Bit.Butil.SameSite.Lax => "lax",
+                _ => "strict",
+            });
         }
 
         if (Secure)

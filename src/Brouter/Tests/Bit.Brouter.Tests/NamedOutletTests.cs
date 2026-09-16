@@ -75,4 +75,27 @@ public class NamedOutletTests : BunitTestContext
                 cut.Instance.USideLog);
         });
     }
+
+    [TestMethod]
+    public async Task Parameter_change_rebuilds_outlet_hosted_content_and_named_views_when_opted_in()
+    {
+        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = true);
+
+        var (cut, brouter) = RenderAt<NamedOutletHost>("http://localhost/dash/u/1");
+        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 1")));
+
+        await cut.InvokeAsync(() => brouter.Navigate("/dash/u/2"));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 2"));
+            Assert.IsTrue(cut.Find("[data-testid=u-side]").TextContent.Contains("sidebar for 2"));
+
+            // Fresh sessions in BOTH outlets: the primary content and the named view were each
+            // disposed with the route's rebuild and mounted anew - never re-bound as a renavigation.
+            var rebuilt = new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" };
+            CollectionAssert.AreEqual(rebuilt, cut.Instance.UMainLog);
+            CollectionAssert.AreEqual(rebuilt, cut.Instance.USideLog);
+        });
+    }
 }

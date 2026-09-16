@@ -29,7 +29,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/accessKeyLabel">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/accessKeyLabel</see>
     /// </summary>
     public static ValueTask<string> GetAccessKeyLabel(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.accessKeyLabel", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.accessKeyLabel", element);
 
     /// <summary>
     /// The name of the slot this element is assigned to inside its shadow host, or null when it is
@@ -43,7 +43,7 @@ public static class ElementReferenceStateExtensions
     /// minted by Blazor's renderer, so what crosses the boundary is the slot's name.
     /// </remarks>
     public static ValueTask<string> GetAssignedSlotName(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.assignedSlotName", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.assignedSlotName", element);
 
     /// <summary>
     /// How a virtual keyboard should capitalize text typed into the element.
@@ -52,7 +52,7 @@ public static class ElementReferenceStateExtensions
     /// </summary>
     public static async ValueTask<Autocapitalize> GetAutocapitalize(this ElementReference element)
     {
-        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getAutocapitalize", element);
+        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getAutocapitalize", element);
         return value switch
         {
             "none" => Autocapitalize.None,
@@ -81,7 +81,7 @@ public static class ElementReferenceStateExtensions
             Autocapitalize.Characters => "characters",
             _ => "",
         };
-        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setAutocapitalize", element, v);
+        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setAutocapitalize", element, v);
     }
 
     /// <summary>
@@ -91,14 +91,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect</see>
     /// </summary>
     public static async ValueTask<bool> GetAutocorrect(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.getAutocorrect", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.getAutocorrect", element);
     /// <summary>
     /// Whether the browser may autocorrect what the user types into the element.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect</see>
     /// </summary>
     public static async ValueTask SetAutocorrect(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setAutocorrect", element, value);
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setAutocorrect", element, value);
 
     /// <summary>
     /// Whether the element asks for focus when the page loads.
@@ -110,14 +110,14 @@ public static class ElementReferenceStateExtensions
     /// focus goes. Use <c>Focus</c> for that.
     /// </remarks>
     public static async ValueTask<bool> GetAutofocus(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.getAutofocus", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.getAutofocus", element);
     /// <summary>
     /// Whether the element asks for focus when the page loads.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autofocus">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autofocus</see>
     /// </summary>
     public static async ValueTask SetAutofocus(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setAutofocus", element, value);
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setAutofocus", element, value);
 
     /// <summary>
     /// How many element children the element has - text nodes and comments not counted.
@@ -125,7 +125,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/childElementCount">https://developer.mozilla.org/en-US/docs/Web/API/Element/childElementCount</see>
     /// </summary>
     public static async ValueTask<int> GetChildElementCount(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<int>("BitButil.element.childElementCount", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<int>("BitButil.elementState.childElementCount", element);
 
     /// <summary>
     /// The effective CSS <c>zoom</c> applied to the element by itself and its ancestors - the factor
@@ -135,7 +135,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/currentCSSZoom">https://developer.mozilla.org/en-US/docs/Web/API/Element/currentCSSZoom</see>
     /// </summary>
     public static async ValueTask<double> GetCurrentCssZoom(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<double>("BitButil.element.currentCSSZoom", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<double>("BitButil.elementState.currentCSSZoom", element);
 
     /// <summary>
     /// Whether the element can be dragged. Note that this is a tri-state attribute in HTML - the
@@ -144,14 +144,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/draggable">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/draggable</see>
     /// </summary>
     public static async ValueTask<bool> GetDraggable(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.getDraggable", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.getDraggable", element);
     /// <summary>
     /// Whether the element can be dragged.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/draggable">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/draggable</see>
     /// </summary>
     public static async ValueTask SetDraggable(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setDraggable", element, value);
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setDraggable", element, value);
 
     /// <summary>
     /// The name this element is reported under in Element Timing performance entries. Empty when
@@ -160,7 +160,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/elementTiming">https://developer.mozilla.org/en-US/docs/Web/API/Element/elementTiming</see>
     /// </summary>
     public static ValueTask<string> GetElementTiming(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getElementTiming", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getElementTiming", element);
     /// <summary>
     /// Marks the element for Element Timing under the given name, so a
     /// <c>PerformanceObserver</c> watching "element" entries reports when it was painted.
@@ -172,7 +172,7 @@ public static class ElementReferenceStateExtensions
     /// already on screen reports nothing.
     /// </remarks>
     public static ValueTask SetElementTiming(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setElementTiming", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setElementTiming", element, value);
 
     /// <summary>
     /// Whether the element hosts a shadow root that scripts can reach - an open one.
@@ -184,7 +184,7 @@ public static class ElementReferenceStateExtensions
     /// exposed to script, which is the point of closing it.
     /// </remarks>
     public static async ValueTask<bool> HasShadowRoot(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.hasShadowRoot", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.hasShadowRoot", element);
 
     /// <summary>
     /// The element's language, as a BCP 47 tag. Empty when it inherits one.
@@ -192,14 +192,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/lang">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/lang</see>
     /// </summary>
     public static ValueTask<string> GetLang(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getLang", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getLang", element);
     /// <summary>
     /// The element's language, as a BCP 47 tag.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/lang">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/lang</see>
     /// </summary>
     public static ValueTask SetLang(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setLang", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setLang", element, value);
 
     /// <summary>
     /// The element's local name, without a namespace prefix and in the case the document uses -
@@ -208,7 +208,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/localName">https://developer.mozilla.org/en-US/docs/Web/API/Element/localName</see>
     /// </summary>
     public static ValueTask<string> GetLocalName(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.localName", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.localName", element);
 
     /// <summary>
     /// The namespace the element belongs to - the XHTML namespace for HTML elements, and the SVG
@@ -217,7 +217,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/namespaceURI">https://developer.mozilla.org/en-US/docs/Web/API/Element/namespaceURI</see>
     /// </summary>
     public static ValueTask<string> GetNamespaceUri(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.namespaceURI", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.namespaceURI", element);
 
     /// <summary>
     /// The element's CSP nonce. Empty when it has none.
@@ -229,14 +229,14 @@ public static class ElementReferenceStateExtensions
     /// the property is what remains, and only same-origin script can reach it.
     /// </remarks>
     public static ValueTask<string> GetNonce(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getNonce", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getNonce", element);
     /// <summary>
     /// The element's CSP nonce.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/nonce">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/nonce</see>
     /// </summary>
     public static ValueTask SetNonce(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setNonce", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setNonce", element, value);
 
     /// <summary>
     /// The tag name of the element the offset metrics are measured against - the nearest positioned
@@ -249,7 +249,7 @@ public static class ElementReferenceStateExtensions
     /// be minted by Blazor's renderer, so what crosses the boundary is its tag name.
     /// </remarks>
     public static ValueTask<string> GetOffsetParentTagName(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.offsetParentTagName", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.offsetParentTagName", element);
 
     /// <summary>
     /// The element's rendered text, the way <c>InnerText</c> reports it.
@@ -257,7 +257,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/outerText">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/outerText</see>
     /// </summary>
     public static ValueTask<string> GetOuterText(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getOuterText", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getOuterText", element);
     /// <summary>
     /// Replaces the element itself - not its contents - with the given text.
     /// <br />
@@ -268,7 +268,7 @@ public static class ElementReferenceStateExtensions
     /// itself has: reading gives the text inside, writing removes the element.
     /// </remarks>
     public static ValueTask SetOuterText(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setOuterText", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setOuterText", element, value);
 
     /// <summary>
     /// The shadow parts the element exposes to the outside - what a <c>::part()</c> selector can
@@ -277,14 +277,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/part">https://developer.mozilla.org/en-US/docs/Web/API/Element/part</see>
     /// </summary>
     public static async ValueTask<string[]> GetPart(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.element.getPart", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<string[]>("BitButil.elementState.getPart", element);
     /// <summary>
     /// Sets the shadow parts the element exposes, as a space-separated list.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/part">https://developer.mozilla.org/en-US/docs/Web/API/Element/part</see>
     /// </summary>
     public static ValueTask SetPart(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setPart", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setPart", element, value);
 
     /// <summary>
     /// What kind of popover the element is, if any.
@@ -293,7 +293,7 @@ public static class ElementReferenceStateExtensions
     /// </summary>
     public static async ValueTask<ElementPopover> GetPopover(this ElementReference element)
     {
-        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getPopover", element);
+        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getPopover", element);
         return value switch
         {
             "auto" => ElementPopover.Auto,
@@ -317,7 +317,7 @@ public static class ElementReferenceStateExtensions
             ElementPopover.Hint => "hint",
             _ => null,
         };
-        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setPopover", element, v);
+        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setPopover", element, v);
     }
 
     /// <summary>
@@ -327,7 +327,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/prefix">https://developer.mozilla.org/en-US/docs/Web/API/Element/prefix</see>
     /// </summary>
     public static ValueTask<string> GetPrefix(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.prefix", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.prefix", element);
 
     /// <summary>
     /// The largest value <c>SetScrollLeft</c> will take - the element's scrollable width minus what
@@ -340,7 +340,7 @@ public static class ElementReferenceStateExtensions
     /// <c>clientWidth</c>, which is how the property is defined.
     /// </remarks>
     public static async ValueTask<float> GetScrollLeftMax(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<float>("BitButil.element.scrollLeftMax", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<float>("BitButil.elementState.scrollLeftMax", element);
 
     /// <summary>
     /// The largest value <c>SetScrollTop</c> will take - the element's scrollable height minus what
@@ -353,7 +353,7 @@ public static class ElementReferenceStateExtensions
     /// and <c>clientHeight</c>, which is how the property is defined.
     /// </remarks>
     public static async ValueTask<float> GetScrollTopMax(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<float>("BitButil.element.scrollTopMax", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<float>("BitButil.elementState.scrollTopMax", element);
 
     /// <summary>
     /// The name of the shadow-DOM slot the element asks to be placed in.
@@ -361,14 +361,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/slot">https://developer.mozilla.org/en-US/docs/Web/API/Element/slot</see>
     /// </summary>
     public static ValueTask<string> GetSlot(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getSlot", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getSlot", element);
     /// <summary>
     /// The name of the shadow-DOM slot the element asks to be placed in.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/slot">https://developer.mozilla.org/en-US/docs/Web/API/Element/slot</see>
     /// </summary>
     public static ValueTask SetSlot(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setSlot", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setSlot", element, value);
 
     /// <summary>
     /// Whether the browser should spell-check what the user types into the element.
@@ -376,14 +376,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/spellcheck">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/spellcheck</see>
     /// </summary>
     public static async ValueTask<bool> GetSpellcheck(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.getSpellcheck", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.getSpellcheck", element);
     /// <summary>
     /// Whether the browser should spell-check what the user types into the element.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/spellcheck">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/spellcheck</see>
     /// </summary>
     public static async ValueTask SetSpellcheck(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setSpellcheck", element, value);
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setSpellcheck", element, value);
 
     /// <summary>
     /// The element's advisory text - what a browser shows as a tooltip on hover.
@@ -391,14 +391,14 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/title">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/title</see>
     /// </summary>
     public static ValueTask<string> GetTitle(this ElementReference element)
-        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getTitle", element);
+        => ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getTitle", element);
     /// <summary>
     /// The element's advisory text - what a browser shows as a tooltip on hover.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/title">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/title</see>
     /// </summary>
     public static ValueTask SetTitle(this ElementReference element, string value)
-        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setTitle", element, value);
+        => ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setTitle", element, value);
 
     /// <summary>
     /// Whether the element's text should be translated when the page is. True by default.
@@ -406,7 +406,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/translate">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/translate</see>
     /// </summary>
     public static async ValueTask<bool> GetTranslate(this ElementReference element)
-        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.element.getTranslate", element);
+        => await ElementReferenceExtensions.GetRuntime(element).Invoke<bool>("BitButil.elementState.getTranslate", element);
     /// <summary>
     /// Whether the element's text should be translated when the page is. Set it false for code,
     /// identifiers and proper nouns a machine translator would mangle.
@@ -414,7 +414,7 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/translate">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/translate</see>
     /// </summary>
     public static async ValueTask SetTranslate(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setTranslate", element, value);
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setTranslate", element, value);
 
     /// <summary>
     /// Who controls the on-screen keyboard for this editable element.
@@ -424,7 +424,7 @@ public static class ElementReferenceStateExtensions
     /// <remarks>Chromium only; reads as <see cref="VirtualKeyboardPolicy.NotSet"/> elsewhere.</remarks>
     public static async ValueTask<VirtualKeyboardPolicy> GetVirtualKeyboardPolicy(this ElementReference element)
     {
-        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getVirtualKeyboardPolicy", element);
+        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getVirtualKeyboardPolicy", element);
         return value switch
         {
             "auto" => VirtualKeyboardPolicy.Auto,
@@ -445,7 +445,7 @@ public static class ElementReferenceStateExtensions
             VirtualKeyboardPolicy.Manual => "manual",
             _ => "",
         };
-        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setVirtualKeyboardPolicy", element, v);
+        await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setVirtualKeyboardPolicy", element, v);
     }
 
     /// <summary>
@@ -460,7 +460,7 @@ public static class ElementReferenceStateExtensions
     /// </remarks>
     public static async ValueTask<bool> GetWritingSuggestions(this ElementReference element)
     {
-        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.element.getWritingSuggestions", element);
+        var value = await ElementReferenceExtensions.GetRuntime(element).Invoke<string>("BitButil.elementState.getWritingSuggestions", element);
         return value != "false";
     }
     /// <summary>
@@ -470,5 +470,5 @@ public static class ElementReferenceStateExtensions
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/writingSuggestions">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/writingSuggestions</see>
     /// </summary>
     public static async ValueTask SetWritingSuggestions(this ElementReference element, bool value)
-        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.element.setWritingSuggestions", element, value ? "true" : "false");
+        => await ElementReferenceExtensions.GetRuntime(element).InvokeVoid("BitButil.elementState.setWritingSuggestions", element, value ? "true" : "false");
 }

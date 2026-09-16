@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
+using System.Text.RegularExpressions;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
@@ -10,12 +10,10 @@ namespace Bit.Websites.Platform.Server.Services;
 /// <summary>
 /// Backs this site's /mcp endpoint by fanning it out to the MCP servers below: the documentation servers
 /// of the bit platform libraries plus the third party ones the team relies on. A single connection to
-/// bitplatform.dev/mcp therefore exposes the tools of all of them at once, with the names, schemas and
-/// results of each tool passed through untouched. An upstream is either a remote http server or a local
-/// stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset of its
-/// tools, and such a tool may be given a description written here rather than the one its own server
-/// provides. An upstream marked internal is kept off the endpoint and served only to this site's own
-/// chatbot, which reaches it through <see cref="ListInternalFunctions"/> instead.
+/// bitplatform.dev/mcp therefore exposes the tools of all of them at once. An upstream is either a remote
+/// http server or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to
+/// a subset of its tools, and such a tool is then exposed under a name and a description written here, rather
+/// than the ones its own server gives it.
 /// </summary>
 public partial class McpProxyService : IAsyncDisposable
 {
@@ -44,6 +42,12 @@ public partial class McpProxyService : IAsyncDisposable
         """;
 
     /// <summary>
+    /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
+    /// own, which answers about its own project.
+    /// </summary>
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository, never the caller's own workspace, not even a project created from a bit template.";
+
+    /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
     /// detail no caller should have to know: it is stripped from the advertised schemas and filled in from
     /// <see cref="CodebaseMemoryIndexService.ProjectName"/> on the way through.
@@ -59,26 +63,25 @@ public partial class McpProxyService : IAsyncDisposable
         // Only ask_question is exposed: it answers against the whole repository by itself, while the
         // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
         // of a repository, which is a slower and far more token hungry way to reach the same answer.
-        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", askQuestionDescription)]),
+        // Renamed, as a developer may have DeepWiki's own server installed next to this one.
+        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)]),
         new("bitBlazorUI", new("https://blazorui.bitplatform.dev/mcp")),
         new("bitBrouter", new("https://brouter.bitplatform.dev/mcp")),
         new("bitButil", new("https://butil.bitplatform.dev/mcp")),
         new("bitBswup", new("https://bswup.bitplatform.dev/mcp")),
         new("bitMotion", new("https://bmotion.bitplatform.dev/mcp")),
         // codebase-memory-mcp (a stdio child process npx fetches) serves a graph index of the repository
-        // configured at AppSettings:CodebaseMemory:SourceRepositoryPath, so the chatbot can answer from
-        // the source itself rather than from documentation. Internal, because these are the tool names
-        // codebase-memory-mcp uses in a developer's own mcp.json: advertising them here too would give an
-        // agent wired up to both a duplicate of every one of them. Only the read side is listed anyway;
-        // index_repository, delete_project and the rest stay unreachable. The command below is the
-        // default one, resolved again per connection where configuration can replace it.
-        new(codebaseMemoryUpstreamName, CodebaseMemoryIndexService.ResolveCommand(null), CodebaseMemoryIndexService.ResolveArguments(null), internalOnly: true, exposedTools:
+        // configured at AppSettings:CodebaseMemory:SourceRepositoryPath, so agents can answer from the
+        // source itself rather than from documentation. Renamed, as a developer's own codebase-memory
+        // server answers about their project under the original names. Only three read tools are listed:
+        // trace_path binds calls by bare method name, which misleads across this monorepo, and
+        // get_architecture only counts nodes. The command below is the default one, resolved again per
+        // connection where configuration can replace it.
+        new(codebaseMemoryUpstreamName, CodebaseMemoryIndexService.ResolveCommand(null), CodebaseMemoryIndexService.ResolveArguments(null),
         [
-            new("search_graph", "Finds classes, methods and files of the bit platform source code by name pattern, returning qualified names for get_code_snippet."),
-            new("search_code", "Greps the bit platform source code and returns the matches grouped by the enclosing method or class, with signatures and line numbers."),
-            new("get_code_snippet", "Returns the full source of one class or method of the bit platform source code, addressed by the qualified name search_graph or search_code returned."),
-            new("trace_path", "Walks the call graph of the bit platform source code from a given function, in either direction, to show how a capability is wired together."),
-            new("get_architecture", "Summarizes the structure of the bit platform source code: its layers, entry points and dependency clusters.")
+            new("search_graph", "FindBitPlatformSymbols", $"Finds classes, methods, routes and other symbols by keywords (query) or by a regex over their names (name_pattern), returning the qualified names GetBitPlatformSymbolSource takes. Page with offset while has_more is true. {bitPlatformSourceScope}"),
+            new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. {bitPlatformSourceScope}"),
+            new("get_code_snippet", "GetBitPlatformSymbolSource", $"Returns the full source of one class, method or other symbol, addressed by a qualified name FindBitPlatformSymbols or SearchBitPlatformCode returned. A short name answers with candidates when it is ambiguous. {bitPlatformSourceScope}")
         ])
     ];
 
@@ -96,8 +99,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     private readonly SemaphoreSlim toolsSync = new(1, 1);
 
-    private Tool[] publicTools = [];
-    private Tool[] internalTools = [];
+    private Tool[] tools = [];
     private DateTimeOffset toolsExpiresAt;
     private Dictionary<string, Upstream> upstreamPerToolName = new(StringComparer.Ordinal);
 
@@ -105,27 +107,14 @@ public partial class McpProxyService : IAsyncDisposable
     {
         await RefreshToolsIfExpired(cancellationToken);
 
-        return publicTools;
-    }
-
-    /// <summary>
-    /// The internal tools as functions this site's own chatbot hands to its chat client. It gets its other
-    /// tools from the /mcp endpoint, which does not serve these, so they are invoked in process instead.
-    /// </summary>
-    public async ValueTask<IReadOnlyList<AIFunction>> ListInternalFunctions(CancellationToken cancellationToken)
-    {
-        await RefreshToolsIfExpired(cancellationToken);
-
-        return [.. internalTools.Select(tool => new ProxiedFunction(this, tool, upstreamPerToolName[tool.Name]))];
+        return tools;
     }
 
     public async ValueTask<CallToolResult> CallTool(CallToolRequestParams request, CancellationToken cancellationToken)
     {
         await RefreshToolsIfExpired(cancellationToken);
 
-        // An internal tool answers exactly like a name no upstream provides: the endpoint neither serves it
-        // nor confirms that it exists.
-        if (upstreamPerToolName.TryGetValue(request.Name, out var upstream) is false || upstream.InternalOnly)
+        if (upstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
             throw new McpException($"Unknown tool: '{request.Name}'.");
 
         return await CallTool(upstream, request, cancellationToken);
@@ -149,11 +138,13 @@ public partial class McpProxyService : IAsyncDisposable
 
         // Only the name and the arguments are forwarded: the remaining params (progress token, meta) belong
         // to the session between the caller and this site, not to the session between this site and upstream.
-        CallToolRequestParams upstreamRequest = new() { Name = request.Name, Arguments = arguments };
+        CallToolRequestParams upstreamRequest = new() { Name = upstream.GetToolName(request.Name), Arguments = arguments };
+
+        CallToolResult result;
 
         try
         {
-            return await (await GetClient(upstream, cancellationToken)).CallToolAsync(upstreamRequest, cancellationToken);
+            result = await (await GetClient(upstream, cancellationToken)).CallToolAsync(upstreamRequest, cancellationToken);
         }
         catch (Exception exp) when (exp is not OperationCanceledException)
         {
@@ -165,8 +156,21 @@ public partial class McpProxyService : IAsyncDisposable
 
             await Disconnect(upstream);
 
-            return await (await GetClient(upstream, cancellationToken)).CallToolAsync(upstreamRequest, cancellationToken);
+            result = await (await GetClient(upstream, cancellationToken)).CallToolAsync(upstreamRequest, cancellationToken);
         }
+
+        foreach (var block in result.Content.OfType<TextContentBlock>())
+        {
+            block.Text = AdaptResultText(upstream, block.Text, result.IsError is true);
+        }
+
+        // get_code_snippet repeats its answer as structured content.
+        if (result.StructuredContent is { } structuredContent)
+        {
+            result.StructuredContent = JsonSerializer.Deserialize<JsonElement>(AdaptResultText(upstream, structuredContent.GetRawText(), result.IsError is true));
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -190,6 +194,45 @@ public partial class McpProxyService : IAsyncDisposable
         }
 
         return JsonSerializer.SerializeToElement(schema);
+    }
+
+    /// <summary>
+    /// A schema, or the hint of an error, may point at a sibling tool by the name only its own server knows it under.
+    /// </summary>
+    private static string RenameTools(Upstream upstream, string text)
+    {
+        if (upstream.ExposedTools is null) return text;
+
+        foreach (var exposedTool in upstream.ExposedTools.Values)
+        {
+            text = Regex.Replace(text, $@"\b{Regex.Escape(exposedTool.Name)}\b", exposedTool.ExposedName);
+        }
+
+        return text;
+    }
+
+    /// <summary>
+    /// The index prefixes every qualified name with its project name and answers with absolute paths: details of
+    /// this machine that callers do not need, as a qualified name resolves without that prefix too. Tool names are
+    /// renamed in errors only, since an answer can quote source code that mentions them.
+    /// </summary>
+    private string AdaptResultText(Upstream upstream, string text, bool isError)
+    {
+        if (upstream.Name is codebaseMemoryUpstreamName)
+        {
+            if (CodebaseMemoryIndexService.ProjectName is { } projectName)
+            {
+                text = text.Replace($"{projectName}.", null, StringComparison.Ordinal);
+            }
+
+            if (appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath is { Length: > 0 } repositoryPath)
+            {
+                var repositoryRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(repositoryPath)).Replace('\\', '/');
+                text = text.Replace($"{repositoryRoot}/", null, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return isError ? RenameTools(upstream, text) : text;
     }
 
     private async ValueTask RefreshToolsIfExpired(CancellationToken cancellationToken)
@@ -229,8 +272,7 @@ public partial class McpProxyService : IAsyncDisposable
                 }
             }
 
-            publicTools = [.. mergedTools.Where(tool => mergedUpstreamPerToolName[tool.Name].InternalOnly is false)];
-            internalTools = [.. mergedTools.Where(tool => mergedUpstreamPerToolName[tool.Name].InternalOnly)];
+            tools = [.. mergedTools];
             upstreamPerToolName = mergedUpstreamPerToolName;
             toolsExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
         }
@@ -259,6 +301,20 @@ public partial class McpProxyService : IAsyncDisposable
                 cursor = page.NextCursor;
             } while (cursor is not null);
 
+            // Every tool served here only looks things up, but Bmotion and DeepWiki leave that unsaid and codebase-memory
+            // marks its read tools destructive, so clients would ask to approve each call.
+            foreach (var tool in upstreamTools)
+            {
+                tool.Annotations = new()
+                {
+                    Title = tool.Annotations?.Title,
+                    IdempotentHint = tool.Annotations?.IdempotentHint,
+                    OpenWorldHint = tool.Annotations?.OpenWorldHint,
+                    ReadOnlyHint = true,
+                    DestructiveHint = false
+                };
+            }
+
             if (upstream.ExposedTools is null) return upstreamTools;
 
             // A tool that disappears upstream silently drops off this site's endpoint, so the mismatch is
@@ -278,7 +334,10 @@ public partial class McpProxyService : IAsyncDisposable
 
                 // Freshly deserialized per call, so the tool of the upstream's own list result is never the
                 // one being changed here.
-                tool.Description = exposedTool.Description ?? tool.Description;
+                tool.Name = exposedTool.ExposedName;
+                tool.Title = null; // It spells out the name the tool is renamed from.
+                tool.Description = exposedTool.Description;
+                tool.InputSchema = JsonSerializer.Deserialize<JsonElement>(RenameTools(upstream, tool.InputSchema.GetRawText()));
 
                 if (upstream.Name is codebaseMemoryUpstreamName)
                 {
@@ -333,6 +392,10 @@ public partial class McpProxyService : IAsyncDisposable
                     // The data directory the index was built in, which no other client on this machine holds.
                     EnvironmentVariables = upstream.Name is codebaseMemoryUpstreamName
                         ? CodebaseMemoryIndexService.BuildEnvironment(appSettings.CurrentValue.CodebaseMemory)
+                        : null,
+                    // The server's git watcher follows its working directory, so pulls into the repository re-index it.
+                    WorkingDirectory = upstream.Name is codebaseMemoryUpstreamName
+                        ? appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath
                         : null
                 }, loggerFactory);
 
@@ -384,66 +447,37 @@ public partial class McpProxyService : IAsyncDisposable
     /// <param name="Name">
     /// The tool this site exposes out of the ones its server provides.
     /// </param>
-    /// <param name="Description">
-    /// The description to expose the tool with, or null to expose the one its own server provides.
+    /// <param name="ExposedName">
+    /// The name to expose the tool under, apart from the names other MCP servers give their tools.
     /// </param>
-    private sealed record ExposedTool(string Name, string? Description = null);
-
-    /// <summary>
-    /// Exposes one proxied tool to this site's chatbot under the name, description and schema the endpoint
-    /// would advertise it with, invoked in process rather than over http.
-    /// </summary>
-    private sealed class ProxiedFunction(McpProxyService proxy, Tool tool, Upstream upstream) : AIFunction
-    {
-        public override string Name => tool.Name;
-
-        public override string Description => tool.Description ?? string.Empty;
-
-        public override JsonElement JsonSchema => tool.InputSchema;
-
-        protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
-        {
-            var result = await proxy.CallTool(upstream, new()
-            {
-                Name = tool.Name,
-                Arguments = arguments.ToDictionary(argument => argument.Key,
-                                                   argument => argument.Value is JsonElement element ? element : JsonSerializer.SerializeToElement(argument.Value))
-            }, cancellationToken);
-
-            // Text is what every proxied tool answers with, and what the chat client passes back to the model.
-            return string.Join(Environment.NewLine, result.Content?.OfType<TextContentBlock>().Select(block => block.Text) ?? []);
-        }
-    }
+    /// <param name="Description">
+    /// The description to expose the tool with, rather than the one its own server provides.
+    /// </param>
+    private sealed record ExposedTool(string Name, string ExposedName, string Description);
 
     private sealed class Upstream
     {
         public Upstream(string name, Uri url, ExposedTool[]? exposedTools = null)
-            : this(name, exposedTools, internalOnly: false)
+            : this(name, exposedTools)
         {
             Url = url;
         }
 
-        public Upstream(string name, string command, string[] arguments, ExposedTool[]? exposedTools = null, bool internalOnly = false)
-            : this(name, exposedTools, internalOnly)
+        public Upstream(string name, string command, string[] arguments, ExposedTool[]? exposedTools = null)
+            : this(name, exposedTools)
         {
             Command = command;
             Arguments = arguments;
         }
 
-        private Upstream(string name, ExposedTool[]? exposedTools, bool internalOnly)
+        private Upstream(string name, ExposedTool[]? exposedTools)
         {
             Name = name;
-            InternalOnly = internalOnly;
             ExposedTools = exposedTools?.ToDictionary(exposedTool => exposedTool.Name, StringComparer.Ordinal);
         }
 
         /// <summary>
-        /// Whether this upstream is kept off the /mcp endpoint and served only to this site's own chatbot.
-        /// </summary>
-        public bool InternalOnly { get; }
-
-        /// <summary>
-        /// Used for logging only: the tools the server provides keep their own names.
+        /// Used for logging only: it does not prefix the names its tools are exposed under.
         /// </summary>
         public string Name { get; }
 
@@ -468,6 +502,12 @@ public partial class McpProxyService : IAsyncDisposable
         /// The tools of this server to expose, keyed by name, or null to expose all of them as they are.
         /// </summary>
         public Dictionary<string, ExposedTool>? ExposedTools { get; }
+
+        /// <summary>
+        /// The name this server gives the tool this site exposes as <paramref name="exposedName"/>.
+        /// </summary>
+        public string GetToolName(string exposedName)
+            => ExposedTools?.Values.FirstOrDefault(exposedTool => exposedTool.ExposedName == exposedName)?.Name ?? exposedName;
 
         public McpClient? Client { get; set; }
 

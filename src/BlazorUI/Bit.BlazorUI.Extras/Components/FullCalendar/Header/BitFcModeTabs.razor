@@ -1,4 +1,5 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @*
   Top-level mode switch (Event ⇄ Timeline). The whole switch is rendered only when the Timeline
@@ -8,15 +9,21 @@
 
 @if (State.IsTimelineModeAvailable)
 {
-    <div class="bit-bfc-mode-tabs" role="tablist">
+    @* A tab strip is a single tab stop the arrow keys move within, per the ARIA tabs pattern:
+       without the roving tabindex every mode would take its own place in the tab order. *@
+    <div class="bit-bfc-mode-tabs" role="tablist" aria-orientation="horizontal">
         @foreach (var mode in _modes)
         {
-            <button class="bit-bfc-mode-tab @(State.Mode == mode ? "active" : "")"
+            var m = mode;
+            <button class="bit-bfc-mode-tab @(State.Mode == m ? "active" : "")"
                     type="button"
                     role="tab"
-                    aria-selected="@(State.Mode == mode ? "true" : "false")"
-                    @onclick="() => State.SetMode(mode)">
-                @Texts.GetModeLabel(mode)
+                    id="@TabId(m)"
+                    aria-selected="@(State.Mode == m ? "true" : "false")"
+                    tabindex="@(State.Mode == m ? "0" : "-1")"
+                    @onkeydown="e => OnKeyDown(e, m)"
+                    @onclick="() => State.SetMode(m)">
+                @Texts.GetModeLabel(m)
             </button>
         }
     </div>

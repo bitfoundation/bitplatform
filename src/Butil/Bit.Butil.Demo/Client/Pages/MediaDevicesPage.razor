@@ -118,29 +118,52 @@ var mic = await mediaDevices.GetUserMedia(
                  Api="GetDisplayMedia / GetDisplaySettings"
                  Description="The Screen Capture API. GetDisplayMedia shows the browser's own surface picker and hands back the same MediaStreamHandle a camera does - AttachTo, SetEnabled and DisposeAsync all work the same way. Unlike a camera it grants nothing persistent: every call prompts again. The onEnded callback is the only way to hear about the user ending the share from the browser's own 'Stop sharing' bar."
                  Code=@("""
-_screen = await mediaDevices.GetDisplayMedia(
-    audio: false,
-    options: new DisplayMediaOptions
-    {
-        DisplaySurface = "monitor",     // pre-select a whole screen
-        SelfBrowserSurface = "exclude", // don't offer this tab (avoids the hall of mirrors)
-    },
-    onEnded: () => InvokeAsync(() =>
-    {
-        _screen = null;
-        StateHasChanged();
-    }));
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
 
-if (_screen is not null)
-{
-    await _screen.AttachTo(_screenPreview);
+<video @ref="_screenPreview" autoplay playsinline muted></video>
 
-    // what the user actually picked, not what was asked for:
-    var settings = await mediaDevices.GetDisplaySettings(_screen);
-    // settings.DisplaySurface: "monitor" | "window" | "browser"
-    // settings.Width / Height / FrameRate
+@* Must be a user gesture: the picker is refused without one. *@
+<button @onclick="Share">Share a screen</button>
+
+@code {
+    private ElementReference _screenPreview;
+    private MediaStreamHandle? _screen;
+
+    private async Task Share()
+    {
+        _screen = await mediaDevices.GetDisplayMedia(
+            audio: false,
+            options: new DisplayMediaOptions
+            {
+                DisplaySurface = "monitor",     // pre-select a whole screen
+                SelfBrowserSurface = "exclude", // don't offer this tab (avoids the hall of mirrors)
+            },
+            // The browser's own "stop sharing" bar ends it without telling the page anything else.
+            onEnded: () => InvokeAsync(() =>
+            {
+                _screen = null;
+                StateHasChanged();
+            }));
+
+        if (_screen is not null)
+        {
+            await _screen.AttachTo(_screenPreview);
+
+            // what the user actually picked, not what was asked for:
+            var settings = await mediaDevices.GetDisplaySettings(_screen);
+            // settings.DisplaySurface: "monitor" | "window" | "browser"
+            // settings.Width / Height / FrameRate
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_screen is not null) await _screen.DisposeAsync();
+    }
 }
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <label><input type="checkbox" @bind="_captureAudio" /> Request audio too</label>
             <label><input type="checkbox" @bind="_excludeSelf" /> Exclude this tab</label>

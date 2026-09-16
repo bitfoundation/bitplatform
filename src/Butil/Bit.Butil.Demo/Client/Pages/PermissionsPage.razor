@@ -73,20 +73,38 @@ foreach (var name in names)
                  Api="SubscribeChange"
                  Description="A permission can change without your page doing anything - the user revokes camera access from the address bar, or grants notifications in site settings. SubscribeChange is the only way to notice that short of polling Query. It returns the state at subscription time alongside the subscription, so you don't have to call Query first and race the handler. An unrecognized descriptor yields Unknown with a null subscription - there is nothing to watch."
                  Code=@("""
-var (state, subscription) = await permissions.SubscribeChange("geolocation", newState =>
-{
-    // the user granted or revoked it from browser UI
-    InvokeAsync(StateHasChanged);
-});
+@implements IAsyncDisposable
+@inject Bit.Butil.Permissions permissions
 
-if (subscription is null)
-{
-    // no Permissions API, or this browser doesn't know the descriptor
+@code {
+    private ButilSubscription? _subscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        var (state, subscription) = await permissions.SubscribeChange("geolocation", newState =>
+        {
+            // the user granted or revoked it from browser UI
+            InvokeAsync(StateHasChanged);
+        });
+
+        if (subscription is null)
+        {
+            // no Permissions API, or this browser doesn't know the descriptor
+            return;
+        }
+
+        _subscription = subscription;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
 }
-
-// later
-await subscription.DisposeAsync();
-""")>
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="WatchPermission" disabled="@(_watchSub is not null)">SubscribeChange</button>
             <button class="secondary" @onclick="UnwatchPermission" disabled="@(_watchSub is null)">Dispose</button>

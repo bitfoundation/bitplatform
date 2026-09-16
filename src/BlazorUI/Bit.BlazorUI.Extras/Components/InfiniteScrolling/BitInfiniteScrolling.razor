@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -6,45 +6,118 @@
     var template = ItemTemplate ?? ChildContent;
 }
 
+@* The status blocks are rendered after the items in every mode; in the reversed mode the stylesheet
+   pulls them to the top with a flex order, which keeps this markup free of a mirrored second copy. *@
+@* A live region has to be in the DOM before its content changes for a screen reader to announce it, so this
+   one is always rendered and only its text changes as the list moves between its states. It is kept outside
+   the root element, and not busy itself, because the root is marked busy while a page is in flight and
+   assistive technology holds back the updates under a busy element - the loading message among them. *@
+<div class="bit-isc-sts" role="status" aria-busy="false">@GetStatusMessage()</div>
+
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@TabIndex"
+     aria-label="@AriaLabel"
+     aria-busy="@(_isLoading ? "true" : "false")">
     @if (template is not null)
     {
-        foreach (var item in _currentItems)
+        if (ItemKey is null)
         {
-            @template(item)
-        }
-    }
-
-    @if (_isLoading is false && _currentItems.Count == 0)
-    {
-        if (EmptyTemplate is null)
-        {
-            <div class="bit-isc-emp">There is no item</div>
+            foreach (var item in _items)
+            {
+                @template(item)
+            }
         }
         else
         {
-            @EmptyTemplate
+            @* A keyed item is matched by its key instead of by its position, so a page prepended above the
+               rendered items inserts new nodes rather than rewriting the content of every node below it. The
+               wrapper the key needs is laid out with display:contents, so it adds nothing to the layout. *@
+            foreach (var item in _items)
+            {
+                <div @key="ItemKey(item)" class="bit-isc-itm">@template(item)</div>
+            }
         }
     }
 
+    @if (_showEmpty)
+    {
+        <div class="bit-isc-emp @Classes?.Empty" style="@Styles?.Empty">
+            @if (EmptyTemplate is null)
+            {
+                @EmptyMessage
+            }
+            else
+            {
+                @EmptyTemplate
+            }
+        </div>
+    }
+
     <div @ref="_lastElementRef"
-         class="@LastElementClass"
+         aria-hidden="true"
+         class="@GetLastElementClass()"
          style="@GetLastElementStyle()">
     </div>
 
     @if (_isLoading)
     {
-        @if (LoadingTemplate is null)
-        {
-            <div class="bit-isc-ldg">Loading...</div>
-        }
-        else
-        {
-            @LoadingTemplate
-        }
+        <div class="bit-isc-ldg @Classes?.Loading" style="@Styles?.Loading">
+            @if (LoadingTemplate is null)
+            {
+                @LoadingMessage
+            }
+            else
+            {
+                @LoadingTemplate
+            }
+        </div>
+    }
+
+    @if (_error is not null && ErrorTemplate is not null)
+    {
+        @ErrorTemplate(_error)
+    }
+    else if (_error is not null)
+    {
+        <div class="bit-isc-err @Classes?.Error" style="@Styles?.Error" role="alert">
+            @ErrorMessage
+        </div>
+    }
+
+    @if (_showEnd)
+    {
+        <div class="bit-isc-end @Classes?.End" style="@Styles?.End">
+            @if (EndTemplate is null)
+            {
+                @EndMessage
+            }
+            else
+            {
+                @EndTemplate
+            }
+        </div>
+    }
+
+    @if (_showButton && (ErrorTemplate is null || _error is null))
+    {
+        <button type="button"
+                class="bit-isc-btn @Classes?.Button"
+                style="@Styles?.Button"
+                disabled="@_isLoading"
+                aria-busy="@(_isLoading ? "true" : "false")"
+                @onclick="HandleLoadMoreClick">
+            @if (LoadMoreTemplate is null)
+            {
+                @_buttonText
+            }
+            else
+            {
+                @LoadMoreTemplate
+            }
+        </button>
     }
 </div>

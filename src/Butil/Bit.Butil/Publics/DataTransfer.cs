@@ -194,7 +194,7 @@ public class DataTransfer(IJSRuntime js) : IAsyncDisposable
         try
         {
             _dropHandlers.Clear();
-            await js.InvokeVoid("BitButil.dataTransfer.disposeAll");
+            await js.InvokeTeardown("BitButil.dataTransfer.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

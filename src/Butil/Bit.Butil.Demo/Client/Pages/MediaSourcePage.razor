@@ -72,22 +72,31 @@ var usable = await mediaSource.GetSupportedTypes();
                  Api="AddSourceBuffer / Append / GetBuffered / IsUpdating"
                  Description="One buffer per container-and-codec combination; the first thing appended has to be the stream's initialization segment. Append waits for the browser to finish and reports what became of it - QuotaExceeded above all, which is routine and means 'remove what has played and try again', not 'give up'. Pick a fragmented MP4 or WebM below to append it for real."
                  Code=@("""
-var buffer = await source.AddSourceBuffer("video/mp4;codecs=\"avc1.42E01E,mp4a.40.2\"");
+@code {
+    // The handle from the section above, already attached to a <video> element.
+    private MediaSourceHandle? source;
 
-var status = await buffer!.Append(initSegmentBytes);   // Success
-status = await buffer.Append(mediaSegmentBytes);
+    private async Task Feed(byte[] initSegmentBytes, byte[] mediaSegmentBytes, double currentTime)
+    {
+        var buffer = await source!.AddSourceBuffer("video/mp4;codecs=\"avc1.42E01E,mp4a.40.2\"");
 
-if (status == SourceBufferAppendStatus.QuotaExceeded)
-{
-    await buffer.Remove(0, currentTime - 10);          // evict what has already played
-    status = await buffer.Append(mediaSegmentBytes);   // and try the same segment again
+        var status = await buffer!.Append(initSegmentBytes);   // Success
+        status = await buffer.Append(mediaSegmentBytes);
+
+        if (status == SourceBufferAppendStatus.QuotaExceeded)
+        {
+            await buffer.Remove(0, currentTime - 10);          // evict what has already played
+            status = await buffer.Append(mediaSegmentBytes);   // and try the same segment again
+        }
+
+        foreach (var range in await buffer.GetBuffered())
+        {
+            Console.WriteLine($"{range.Start:0.00}s - {range.End:0.00}s");
+        }
+    }
 }
-
-foreach (var range in await buffer.GetBuffered())
-{
-    Console.WriteLine($"{range.Start:0.00}s - {range.End:0.00}s");
-}
-""")>
+""")
+                 Language="razor">
         <div class="field">
             <span class="field-label">Buffer type</span>
             <input @bind="bufferType" />
@@ -112,14 +121,23 @@ foreach (var range in await buffer.GetBuffered())
                  Api="SetDuration / SetMode / SetTimestampOffset / SetAppendWindow / Remove"
                  Description="What splicing is made of: the mode decides whether a segment keeps its own timestamps or is laid after the last one, the timestamp offset moves a segment along the timeline, and the append window trims what falls outside it. Remove is the eviction half of buffer management."
                  Code=@("""
-await source.SetDuration(120);                       // what the seek bar is drawn from
+@code {
+    private MediaSourceHandle? source;    // attached to a <video> element
+    private SourceBufferHandle? buffer;   // from AddSourceBuffer
 
-await buffer.SetMode(SourceBufferMode.Sequence);     // lay segments end to end
-await buffer.SetTimestampOffset(30);                 // or place them at a point you choose
-await buffer.SetAppendWindow(0, 10);                 // and drop whatever falls outside
+    private async Task Timeline()
+    {
+        await source!.SetDuration(120);                       // what the seek bar is drawn from
 
-await buffer.Remove(0, 30);                          // free what has already been played
-""")>
+        await buffer!.SetMode(SourceBufferMode.Sequence);     // lay segments end to end
+        await buffer.SetTimestampOffset(30);                  // or place them at a point you choose
+        await buffer.SetAppendWindow(0, 10);                  // and drop whatever falls outside
+
+        await buffer.Remove(0, 30);                           // free what has already been played
+    }
+}
+""")
+                 Language="razor">
         <div class="field-row">
             <div class="field">
                 <span class="field-label">Duration (seconds)</span>
@@ -144,13 +162,21 @@ await buffer.Remove(0, 30);                          // free what has already be
                  Api="EndOfStream / SetLiveSeekableRange / ClearLiveSeekableRange"
                  Description="EndOfStream declares that everything that will ever be appended has been - playback runs to the end of what is buffered and the element fires ended. Ending with a reason instead puts the element in an error state, which is how a failed stream is told apart from a finished one. A live stream uses the seekable range to give itself a DVR window."
                  Code=@("""
-await source.EndOfStream();                                   // finished cleanly
+@code {
+    private MediaSourceHandle? source;   // attached to a <video> element
 
-await source.EndOfStream(MediaSourceEndOfStreamError.Network); // the next segment never arrived
+    private async Task Finish(double liveEdge)
+    {
+        await source!.EndOfStream();                                   // finished cleanly
 
-await source.SetLiveSeekableRange(liveEdge - 60, liveEdge);    // a one-minute DVR window
-await source.ClearLiveSeekableRange();
-""")>
+        await source.EndOfStream(MediaSourceEndOfStreamError.Network); // the next segment never arrived
+
+        await source.SetLiveSeekableRange(liveEdge - 60, liveEdge);    // a one-minute DVR window
+        await source.ClearLiveSeekableRange();
+    }
+}
+""")
+                 Language="razor">
         <div class="controls">
             <button @onclick="EndStream" disabled="@(source is null)">EndOfStream</button>
             <button class="secondary" @onclick="EndStreamNetwork" disabled="@(source is null)">EndOfStream(Network)</button>

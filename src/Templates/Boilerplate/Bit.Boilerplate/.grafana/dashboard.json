@@ -383,7 +383,7 @@
                 "spec": {
                     "id": 18,
                     "title": "Ongoing AI Conversations",
-                    "description": "Number of active SignalR chatbot streams (`appHub.ongoing_conversations_count` UpDownCounter from customMetrics). Tracks concurrent AI workloads in the AppHub.",
+                    "description": "Number of active SignalR chatbot streams (`chatbot.active_conversations` UpDownCounter from customMetrics). Tracks concurrent AI workloads in the AppHub.",
                     "links": [],
                     "data": {
                         "kind": "QueryGroup",
@@ -403,7 +403,7 @@
                                                 "azureLogAnalytics": {
                                                     "dashboardTime": false,
                                                     "mode": "raw",
-                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"appHub.ongoing_conversations_count\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize ConversationCount = avg(Sum) by bin(TimeGenerated, $__interval), AppRoleName\n| order by TimeGenerated asc",
+                                                    "query": "AppMetrics\n| where $__timeFilter(TimeGenerated)\n| where Name == \"chatbot.active_conversations\"\n| extend AppRoleName = iff(isempty(AppRoleName), \"Client\", AppRoleName)\n| where $__contains(AppRoleName, $Apps)\n| summarize arg_max(TimeGenerated, Sum) by TimeBin = bin(TimeGenerated, $__interval), AppRoleName, AppRoleInstance\n| summarize ConversationCount = sum(Sum) by TimeGenerated = TimeBin, AppRoleName\n| order by TimeGenerated asc",
                                                     "resources": [
                                                         "${workspace}"
                                                     ],
