@@ -93,7 +93,6 @@ public partial class CodebaseMemoryIndexService : BackgroundService
     /// </summary>
     private async Task<string?> ResolveProjectName(string repositoryPath, CancellationToken cancellationToken)
     {
-        // Since 0.11.0 the cli answers in a tree format of its own unless json is asked for.
         using var listed = ParseJson(await Run(cancellationToken, "list_projects", "--format", "json"));
 
         if (listed is null || listed.RootElement.TryGetProperty("projects", out var projects) is false) return null;
