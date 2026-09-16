@@ -1,0 +1,25 @@
+@namespace Bit.BlazorUI
+
+<div class="bit-bfc-overlay" @onclick="OnCancel">
+    @* Escape backs out of the choice the way it closes every other modal of the calendar. *@
+    <div @ref="_dialogRef" class="bit-bfc-dialog bit-bfc-scope-dialog" role="dialog" aria-modal="true" aria-labelledby="@_titleId" tabindex="-1"
+         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
+        <div class="bit-bfc-dialog-header">
+            <h3 id="@_titleId">@Title</h3>
+        </div>
+        <div class="bit-bfc-dialog-body" role="radiogroup" aria-labelledby="@_titleId">
+            <label class="bit-bfc-field-inline bit-bfc-scope-option">
+                <input type="radio" name="@_groupName" checked="@(_allOccurrences is false)" @onchange="() => _allOccurrences = false" />
+                <span>@Texts.ThisOccurrenceOption</span>
+            </label>
+            <label class="bit-bfc-field-inline bit-bfc-scope-option">
+                <input type="radio" name="@_groupName" checked="@_allOccurrences" @onchange="() => _allOccurrences = true" />
+                <span>@Texts.AllOccurrencesOption</span>
+            </label>
+        </div>
+        <div class="bit-bfc-dialog-footer">
+            <button type="button" class="bit-bfc-btn" @onclick="OnCancel">@Texts.CancelButton</button>
+            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Confirm">@Texts.OkButton</button>
+        </div>
+    </div>
+</div>

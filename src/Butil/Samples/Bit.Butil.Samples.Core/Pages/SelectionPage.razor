@@ -33,6 +33,9 @@ await selection.Surround("mark");
 
     <DemoCard Title="Change and edit it" Api="SelectElementContents / Surround / ReplaceWithText"
               Description="Surround is the highlighting primitive. It returns false when the selection's ends are in different elements - normal for a user's selection, not an error.">
+        <p @ref="_editSample">
+            Select part of <b>this paragraph</b>, then wrap, replace or clear it - the edits land here.
+        </p>
         <div class="controls">
             <button @onclick="SelectAll">SelectElementContents</button>
             <button @onclick="Highlight">Surround in &lt;mark&gt;</button>
@@ -47,6 +50,9 @@ await selection.Surround("mark");
             <span class="field-label">Saved offsets</span>
             <input value="@(_saved is null ? "" : $"{_saved.Start} to {_saved.End}")" readonly placeholder="Select something, then save" />
         </div>
+        <p @ref="_caretSample">
+            Select part of <b>this paragraph</b>, save the offsets, click elsewhere, then restore them.
+        </p>
         <div class="controls">
             <button @onclick="Save">GetRangeIn</button>
             <button class="secondary" @onclick="Restore">SelectRange</button>
@@ -74,7 +80,11 @@ await selection.Surround("mark");
 @code {
     private DemoConsole output = default!;
 
+    // One paragraph per card: the selection is document-wide, but a card that acts on a paragraph in
+    // another card asks the reader to work in one place and watch another.
     private ElementReference _sample;
+    private ElementReference _editSample;
+    private ElementReference _caretSample;
     private SelectionOffsets? _saved;
     private ButilSubscription? _subscription;
     private int _changeCount;
@@ -135,7 +145,7 @@ await selection.Surround("mark");
     {
         try
         {
-            await output.Info("SelectElementContents →", await selection.SelectElementContents(_sample));
+            await output.Info("SelectElementContents →", await selection.SelectElementContents(_editSample));
         }
         catch (Exception ex)
         {
@@ -187,7 +197,7 @@ await selection.Surround("mark");
     {
         try
         {
-            _saved = await selection.GetRangeIn(_sample);
+            _saved = await selection.GetRangeIn(_caretSample);
 
             if (_saved is null) await output.Warn("GetRangeIn → nothing is selected inside the paragraph.");
             else await output.Success("GetRangeIn →", $"{_saved.Start} to {_saved.End}.");
@@ -208,7 +218,7 @@ await selection.Surround("mark");
 
         try
         {
-            var ok = await selection.SelectRange(_sample, _saved.Start, _saved.End);
+            var ok = await selection.SelectRange(_caretSample, _saved.Start, _saved.End);
             if (ok) await output.Success("SelectRange →", await selection.GetText());
             else await output.Warn("SelectRange → those offsets no longer exist.");
         }

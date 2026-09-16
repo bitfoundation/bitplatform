@@ -1,0 +1,21 @@
+﻿@inject HarnessScope Scope
+@implements IDisposable
+
+<h1 id="page-preload">preload</h1>
+
+<p>intent target loader runs: <span id="intent-runs">@Scope.IntentTargetRuns</span></p>
+<p>viewport target loader runs: <span id="viewport-runs">@Scope.ViewportTargetRuns</span></p>
+
+<p><BrouterLink id="intent-link" Href="/preload/intent-target" Preload="BrouterLinkPreload.Intent">intent target</BrouterLink></p>
+
+@* Below the fold of a 720px viewport, so the viewport preload cannot fire until a test scrolls. *@
+<div style="height: 3000px;"></div>
+<p><BrouterLink id="viewport-link" Href="/preload/viewport-target" Preload="BrouterLinkPreload.Viewport">viewport target</BrouterLink></p>
+
+@code {
+    protected override void OnInitialized() => Scope.Changed += OnScopeChanged;
+
+    private void OnScopeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Scope.Changed -= OnScopeChanged;
+}

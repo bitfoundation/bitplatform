@@ -3,35 +3,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _perfObservers: { [id: string]: PerformanceObserver } = {};
 
-    // The Web Vitals accumulator. All three metrics are running totals over the life of the
-    // document rather than values that can be read on demand, so the observers behind them stay up
-    // from the first webVitals() call onwards and this object is what they write into. Every metric
-    // starts as null and only becomes a number once the engine proves it reports that entry type -
-    // a 0 CLS on a browser with no layout-shift support would be a lie, not a good score.
-    const _vitals: any = {
-        started: false,
-        lcp: null, cls: null, inp: null, fcp: null, ttfb: null,
-        interactionCount: 0, layoutShiftCount: 0
-    };
-
-    // The largest CLS "session window" seen so far, and the window currently open. A window ends
-    // after a 1s gap between shifts or 5s in total, and CLS is the worst window - not the sum.
-    let _clsWindowValue = 0;
-    let _clsWindowStart = 0;
-    let _clsWindowLast = 0;
-
-    // The interactions INP can still be answered by, worst first, and the same records keyed by
-    // interactionId. One tap produces several events sharing an id, and the interaction's latency is
-    // the worst of them, not their sum - hence the map.
-    //
-    // Only the worst MAX_INTERACTIONS can ever be the answer: INP indexes this list at
-    // floor(count / 50) capped to its own length, so an entry past the cap is unreachable however
-    // long the session runs. Keeping every interaction of a long-lived document would grow without
-    // bound - and make every read sort a list that only its first ten entries are read from.
-    const MAX_INTERACTIONS = 10;
-    let _interactionList: { id: number, duration: number }[] = [];
-    let _interactions: { [id: string]: { id: number, duration: number } } = {};
-
     // These entry types are never kept on the performance timeline: getEntriesByType() answers them
     // with an empty array on every engine, and they only ever arrive through a PerformanceObserver.
     // So reading one has to mean "what an observer has collected", and this module keeps its own
@@ -46,202 +17,21 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // caller who asked for one, while these belong to the module rather than to any one caller.
     const _retainedObservers: { [type: string]: PerformanceObserver } = {};
 
-    // The observers behind the Web Vitals accumulator, for the same reason: webVitals() starts them,
-    // no caller holds a handle to them, and stopRetained() is the only thing that can stop them.
-    const _vitalObservers: PerformanceObserver[] = [];
-
     // The most recent entries kept per type. These observers run for the life of the document, and
     // an interaction-heavy page produces 'event' entries without end - so the records are a window
     // rather than a log, both to bound memory and to bound what each read marshals back to .NET.
     // 250 matches the resource buffer the platform itself keeps.
     const RETAINED_MAX = 250;
 
-    function supportsEntryType(type: string) {
-        // Read the constructor off window rather than as a bare identifier: optional chaining does
-        // not rescue an undeclared global, so `PerformanceObserver?.x` is still a ReferenceError on
-        // an engine that has no PerformanceObserver at all.
-        const types = (window as any).PerformanceObserver?.supportedEntryTypes;
-        return Array.isArray(types) && types.indexOf(type) >= 0;
-    }
+    // What has to run when this module is torn down but is not this module's to run - the Web
+    // Vitals accumulator stopping its own observers. A hook rather than a call into
+    // performanceVitals, so that module can depend on this one and not the other way around.
+    const _stopHooks: (() => void)[] = [];
 
-    // Returns the observer it started, or null when the type isn't collectable here - callers test
-    // it for truthiness where all they wanted was "did this metric start".
-    function observeVital(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}): PerformanceObserver | null {
-        if (!supportsEntryType(type)) return null;
-        try {
-            const observer = new PerformanceObserver(handler);
-            observer.observe({ type, buffered: true, ...options });
-            return observer;
-        } catch {
-            // The type is advertised but rejected here (a permissions policy, an unsupported
-            // option) - leave the metric at null rather than reporting a number nothing feeds.
-            return null;
-        }
-    }
-
-    // observeVital plus the bookkeeping the accumulator needs: an observer started for a Web Vital
-    // has no other owner, so this list is the only way stopWebVitals() can find it again.
-    function observeAccumulator(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}): PerformanceObserver | null {
-        const observer = observeVital(type, handler, options);
-        if (observer) _vitalObservers.push(observer);
-        return observer;
-    }
-
-    // Appends what an observer reported to the records of its type, as plain JSON, keeping only the
-    // most recent RETAINED_MAX of them. Shared by the observer callback and the synchronous drain
-    // below so both apply the same conversion and the same window.
-    function retain(type: string, entries: any[]) {
-        const bucket = _retained[type];
-        if (!bucket) return;
-        for (const entry of entries) bucket.push(entry.toJSON ? entry.toJSON() : entry);
-        if (bucket.length > RETAINED_MAX) bucket.splice(0, bucket.length - RETAINED_MAX);
-    }
-
-    // The records for one observer-only type. The first ask starts the observer; buffered:true
-    // backfills what the engine held from before it existed, but that report would only reach the
-    // callback on a later task - so the queue is drained synchronously here too, and the first read
-    // returns what was already buffered. Entries produced after the call still need a later read.
-    function retainedEntries(type: string, name?: string) {
-        if (!_retained[type]) {
-            _retained[type] = [];
-            // durationThreshold below the 104ms default so short interactions are counted too, for
-            // the same reason the vitals collector lowers it.
-            const options = type === 'event' ? { durationThreshold: 16 } : {};
-            const observer = observeVital(type, list => retain(type, list.getEntries()), options);
-            if (observer) {
-                _retainedObservers[type] = observer;
-                // takeRecords() hands over the queued reports - the buffered backfill among them -
-                // without waiting for the task that would have delivered them to the callback.
-                try { retain(type, observer.takeRecords()); } catch { /* not implemented here */ }
-            }
-        }
-
-        const entries = _retained[type];
-        return name ? entries.filter(e => e.name === name) : entries.slice();
-    }
-
-    function startWebVitals() {
-        if (_vitals.started || !('PerformanceObserver' in window)) return;
-        _vitals.started = true;
-
-        // LCP reports a new, larger candidate each time one paints; the one that counts is the last.
-        observeAccumulator('largest-contentful-paint', list => {
-            const entries = list.getEntries() as any[];
-            const last = entries[entries.length - 1];
-            if (last) _vitals.lcp = last.renderTime || last.loadTime || last.startTime;
-        });
-
-        if (observeAccumulator('layout-shift', list => {
-            for (const entry of list.getEntries() as any[]) addLayoutShift(entry);
-        })) _vitals.cls = 0;
-
-        // durationThreshold below the 104ms default so short interactions are counted too: INP is a
-        // percentile over the interactions there were, and dropping the fast ones inflates it.
-        const events = observeAccumulator('event', list => {
-            for (const entry of list.getEntries() as any[]) addInteraction(entry);
-        }, { durationThreshold: 16 });
-
-        // first-input is reported by engines that have no 'event' support at all, so it is the
-        // fallback rather than an addition.
-        if (!events) {
-            observeAccumulator('first-input', list => {
-                for (const entry of list.getEntries() as any[]) addInteraction(entry);
-            });
-        }
-
-        observeAccumulator('paint', list => {
-            for (const entry of list.getEntries()) {
-                if (entry.name === 'first-contentful-paint') _vitals.fcp = entry.startTime;
-            }
-        });
-
-        const nav = performance.getEntriesByType('navigation')[0] as any;
-        // activationStart is non-zero only for a prerendered document, where the other timestamps
-        // are relative to the prerender rather than to the moment the user saw the page.
-        if (nav) _vitals.ttfb = Math.max(0, nav.responseStart - (nav.activationStart || 0));
-    }
-
-    // Disconnects the accumulator's observers and puts it back to its pre-first-call state. Both
-    // halves matter: metrics that are running totals of observers no longer running would report a
-    // frozen score as a live one, and started:false is what lets a later webVitals() - a new circuit,
-    // a new scope - start collecting again rather than reading the leftovers of the last one.
-    // buffered:true backfills whatever the engine still holds when it does.
-    function stopWebVitals() {
-        for (const observer of _vitalObservers) observer.disconnect();
-        _vitalObservers.length = 0;
-
-        _vitals.started = false;
-        _vitals.lcp = _vitals.cls = _vitals.inp = _vitals.fcp = _vitals.ttfb = null;
-        _vitals.interactionCount = 0;
-        _vitals.layoutShiftCount = 0;
-
-        _clsWindowValue = 0;
-        _clsWindowStart = 0;
-        _clsWindowLast = 0;
-
-        _interactionList = [];
-        _interactions = {};
-    }
-
-    function addLayoutShift(entry: any) {
-        // A shift within 500ms of user input is the user's own doing and is excluded from CLS.
-        if (entry.hadRecentInput) return;
-
-        _vitals.layoutShiftCount++;
-
-        if (_clsWindowValue > 0 && (entry.startTime - _clsWindowLast > 1000 || entry.startTime - _clsWindowStart > 5000)) {
-            _clsWindowValue = 0;
-        }
-        if (_clsWindowValue === 0) _clsWindowStart = entry.startTime;
-        _clsWindowLast = entry.startTime;
-        _clsWindowValue += entry.value;
-
-        if (_clsWindowValue > _vitals.cls) _vitals.cls = _clsWindowValue;
-    }
-
-    function addInteraction(entry: any) {
-        const id = entry.interactionId;
-        // Events that are not part of an interaction carry id 0 and are not INP's business.
-        if (!id) return;
-
-        // An id already on the list: the interaction's latency is its worst event, so this only ever
-        // raises the record - and the list is at most MAX_INTERACTIONS long, so re-sorting it is free.
-        const kept = _interactions[id];
-        if (kept) {
-            if (entry.duration > kept.duration) {
-                kept.duration = entry.duration;
-                _interactionList.sort((a, b) => b.duration - a.duration);
-            }
-            return;
-        }
-
-        // The count is every interaction there was, not every one kept - it is what INP's index is
-        // derived from, and discarding the fast ones from it would move that index.
-        _vitals.interactionCount++;
-
-        const weakest = _interactionList[_interactionList.length - 1];
-        if (_interactionList.length >= MAX_INTERACTIONS && entry.duration <= weakest.duration) return;
-
-        const record = { id, duration: entry.duration };
-        _interactions[id] = record;
-        _interactionList.push(record);
-        _interactionList.sort((a, b) => b.duration - a.duration);
-
-        while (_interactionList.length > MAX_INTERACTIONS) {
-            delete _interactions[_interactionList.pop()!.id];
-        }
-    }
-
-    // INP is not the worst interaction: it is the worst discounted by one for every 50 interactions,
-    // so a single outlier in a long session does not define the page. The list is kept sorted by
-    // addInteraction, so this is an index rather than a sort.
-    function computeInp() {
-        if (_interactionList.length === 0) return null;
-
-        const index = Math.min(_interactionList.length - 1, Math.floor(_vitals.interactionCount / 50));
-        return _interactionList[index].duration;
-    }
-
+    // The performance timeline: marks, measures, entries and observers. The Web Vitals accumulator
+    // is performanceVitals - it runs observers for the life of the document and carries the CLS
+    // session-window and INP percentile logic, none of which a page that only measures its own
+    // marks has any use for.
     butil.performance = {
         now() { return performance.now(); },
         timeOrigin() { return performance.timeOrigin; },
@@ -274,18 +64,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 jsHeapSizeLimit: m.jsHeapSizeLimit ?? null,
                 totalJsHeapSize: m.totalJSHeapSize ?? null,
                 usedJsHeapSize: m.usedJSHeapSize ?? null
-            };
-        },
-        webVitals() {
-            startWebVitals();
-            return {
-                lcp: _vitals.lcp,
-                cls: _vitals.cls,
-                inp: computeInp(),
-                fcp: _vitals.fcp,
-                ttfb: _vitals.ttfb,
-                interactionCount: _vitals.interactionCount,
-                layoutShiftCount: _vitals.layoutShiftCount
             };
         },
         observe(dotNetRef: any, listenerId: string, entryTypes: string[], buffered: boolean) {
@@ -321,7 +99,67 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 delete _retained[type];
             }
 
-            stopWebVitals();
-        }
+            for (const hook of _stopHooks) hook();
+        },
+
+        // For the modules layered on this one.
+        observeVital,
+        onStopRetained(hook: () => void) { _stopHooks.push(hook); }
     };
+
+    function supportsEntryType(type: string) {
+        // Read the constructor off window rather than as a bare identifier: optional chaining does
+        // not rescue an undeclared global, so `PerformanceObserver?.x` is still a ReferenceError on
+        // an engine that has no PerformanceObserver at all.
+        const types = (window as any).PerformanceObserver?.supportedEntryTypes;
+        return Array.isArray(types) && types.indexOf(type) >= 0;
+    }
+
+    // Returns the observer it started, or null when the type isn't collectable here - callers test
+    // it for truthiness where all they wanted was "did this metric start".
+    function observeVital(type: string, handler: (list: PerformanceObserverEntryList) => void, options: any = {}): PerformanceObserver | null {
+        if (!supportsEntryType(type)) return null;
+        try {
+            const observer = new PerformanceObserver(handler);
+            observer.observe({ type, buffered: true, ...options });
+            return observer;
+        } catch {
+            // The type is advertised but rejected here (a permissions policy, an unsupported
+            // option) - leave the metric at null rather than reporting a number nothing feeds.
+            return null;
+        }
+    }
+
+    // Appends what an observer reported to the records of its type, as plain JSON, keeping only the
+    // most recent RETAINED_MAX of them. Shared by the observer callback and the synchronous drain
+    // below so both apply the same conversion and the same window.
+    function retain(type: string, entries: any[]) {
+        const bucket = _retained[type];
+        if (!bucket) return;
+        for (const entry of entries) bucket.push(entry.toJSON ? entry.toJSON() : entry);
+        if (bucket.length > RETAINED_MAX) bucket.splice(0, bucket.length - RETAINED_MAX);
+    }
+
+    // The records for one observer-only type. The first ask starts the observer; buffered:true
+    // backfills what the engine held from before it existed, but that report would only reach the
+    // callback on a later task - so the queue is drained synchronously here too, and the first read
+    // returns what was already buffered. Entries produced after the call still need a later read.
+    function retainedEntries(type: string, name?: string) {
+        if (!_retained[type]) {
+            _retained[type] = [];
+            // durationThreshold below the 104ms default so short interactions are counted too, for
+            // the same reason the vitals collector lowers it.
+            const options = type === 'event' ? { durationThreshold: 16 } : {};
+            const observer = observeVital(type, list => retain(type, list.getEntries()), options);
+            if (observer) {
+                _retainedObservers[type] = observer;
+                // takeRecords() hands over the queued reports - the buffered backfill among them -
+                // without waiting for the task that would have delivered them to the callback.
+                try { retain(type, observer.takeRecords()); } catch { /* not implemented here */ }
+            }
+        }
+
+        const entries = _retained[type];
+        return name ? entries.filter(e => e.name === name) : entries.slice();
+    }
 }(BitButil));

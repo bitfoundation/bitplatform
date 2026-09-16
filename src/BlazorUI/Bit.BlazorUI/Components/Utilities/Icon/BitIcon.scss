@@ -335,12 +335,19 @@
 .bit-ico-int {
     cursor: pointer;
     position: relative;
+    // The icon is the stacking context of the hit box below. Without one, the box's negative index
+    // would send it to the negative layer of whatever ancestor does form a context, under every plain
+    // block in between - the icon's own parent first - and a press on the overhang would land on that
+    // parent instead, leaving the box to work only where the parent happened to form a context itself.
+    isolation: isolate;
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
     // A small size class puts the glyph well under the 24x24 CSS pixels WCAG 2.2 asks of a target, and
     // the icon is now a target. This grows the area that answers the pointer without growing the icon:
     // a pseudo-element is part of its host for hit testing, so a press anywhere in this box is a press
-    // on the icon, while the layout keeps the size the glyph was given.
+    // on the icon, while the layout keeps the size the glyph was given. Painted with the icon, the
+    // overhang sits above the plain content beside it, so a neighbour placed closer than the box reaches
+    // gives up that sliver to the icon; a later positioned one keeps it.
     &::after {
         content: "";
         top: 50%;
@@ -349,10 +356,8 @@
         width: max(100%, 1.5rem);
         height: max(100%, 1.5rem);
         transform: translate(-50%, -50%);
-        // The box overhangs the icon's own, and a positioned element paints - and so hit-tests - above
-        // the plain content beside it, which would let the overhang take the presses meant for a
-        // tightly spaced neighbour. A negative index puts it back under that content while leaving it
-        // part of its host for hit testing, so it only grows the target where nothing else is.
+        // Inside the icon's own context the negative index only keeps the box under the glyph and the
+        // variant's painted box, whatever else the icon's markup puts inside it.
         z-index: -1;
     }
 

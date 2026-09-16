@@ -38,8 +38,6 @@ and documentation pages that ship today, not from memory:
   **not** a compile error - it is an empty box on the page, so never type one from memory.
 - **`GetBitBlazorUISetupGuide(hostingModel)`** - only if a project is missing `AddBitBlazorUIServices()` or the
   `bit.blazorui.css` / `bit.blazorui.js` tags. This template is already wired up, so you normally will not need it.
-- **`ask_question`** - for the **third-party** libraries its description names (Mapperly, Aspire, Hangfire,
-  FusionCache and the others). It explicitly excludes the bit platform libraries - never point it at Bit.BlazorUI.
 
 When any of these tools cannot resolve an argument it answers with the nearest candidates and the call that lists
 them - read that answer instead of retrying blind.
@@ -77,7 +75,7 @@ Look up every type a signature names with `GetBitBlazorUIType` - an enum paramet
 
 ### Step 4: Look Up Theming Questions with `GetBitBlazorUIThemingGuide`
 
-Theming, tokens and component styling are answered by the bit BlazorUI tools, **not** by `ask_question`. Call
+Theming, tokens and component styling are answered by the bit BlazorUI tools. Call
 `GetBitBlazorUIThemingGuide` with no argument for the index, then the chapter you need - "Design tokens" for the
 `--bit-*` custom properties behind the `$bit-color-*` SCSS variables, "Presets" for a packaged design system,
 "Color derivation and contrast" for deriving a palette from a brand color.

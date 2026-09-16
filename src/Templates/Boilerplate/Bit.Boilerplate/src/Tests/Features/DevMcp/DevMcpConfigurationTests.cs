@@ -27,10 +27,10 @@ public class DevMcpConfigurationTests
         Assert.IsTrue(json["identity"]!["requireConfirmedAccount"]!.GetValue<bool>());
         Assert.IsFalse(json["backgroundJobs"]!["useIsolatedStorage"]!.GetValue<bool>());
 
-        Assert.IsNotNull(json["request"]!["baseUrl"], "Request reports what this process sees of the inbound call.");
+        Assert.IsNull(json["request"], "What this process sees of the inbound call belongs to GetDiagnosticReport; a deployment's configuration is not a per-request thing.");
 
         var payload = text.ToLowerInvariant();
-        // Request.receivedHeaders is allow-listed; these two are what a deny-list would have leaked.
+        // Nothing about the request is in here at all, so neither is anything the request carried.
         Assert.DoesNotContain("authorization", payload);
         Assert.DoesNotContain("bearer ", payload);
         Assert.DoesNotContain("apikey", payload);

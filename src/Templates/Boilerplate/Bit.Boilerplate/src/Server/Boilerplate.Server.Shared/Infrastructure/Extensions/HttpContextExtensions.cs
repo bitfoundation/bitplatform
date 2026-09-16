@@ -45,7 +45,16 @@ public static class HttpContextExtensions
                 return authHeader["Bearer ".Length..].Trim();
             }
 
-            // 2. Priority: Cookie (Implicit & requires CSRF checks)
+            // 2. Priority: Query string, for the app hub only.
+            // Browsers can't set headers on a WebSocket, so SignalR's browser client (e.g. Blazor WebAssembly) sends the token
+            // as access_token. Only the hub accepts it: a token in a url ends up in server and proxy logs.
+            string? queryToken = context.Request.Query["access_token"];
+            if (string.IsNullOrWhiteSpace(queryToken) is false && context.Request.Path.StartsWithSegments("/app-hub"))
+            {
+                return queryToken;
+            }
+
+            // 3. Priority: Cookie (Implicit & requires CSRF checks)
             // If no header is found, we fall back to the cookie.
             // This is typically used for standard web browser clients.
             if (context.Request.Cookies.TryGetValue("access_token", out var cookieToken))

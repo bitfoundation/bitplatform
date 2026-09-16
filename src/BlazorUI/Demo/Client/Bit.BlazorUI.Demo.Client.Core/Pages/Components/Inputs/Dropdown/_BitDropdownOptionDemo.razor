@@ -4,7 +4,7 @@
         reports itself as required to assistive technologies), one preserving its original callout width instead of
         matching the width of the dropdown, and a custom delimiter for joining the selected values in multi select mode.
         A <b>disabled</b> dropdown cannot be focused or opened at all, while a <b>read-only</b> one stays focusable and
-        its callout can still be browsed &mdash; only changing the selection is blocked, and every control that would
+        its callout can still be browsed - only changing the selection is blocked, and every control that would
         change it (the clear button, the chip remove buttons) is hidden accordingly.
         The <b>Title</b> parameter adds the tooltip shown while the pointer rests on the dropdown.
         Clicking the <b>Label</b> moves the focus to the dropdown, and the <b>Name</b> parameter names the
@@ -117,7 +117,7 @@
         scrolled past, so a long grouped list never leaves the user looking at options whose group has scrolled away.
         <br /><br />
         The grouping survives a search: the headers of the groups that still have a match stay above them, and only
-        the ones left naming nothing &mdash; along with a divider that lost the options on one of its sides &mdash; go
+        the ones left naming nothing - along with a divider that lost the options on one of its sides - go
         with the options they framed. A result that arrived as a flat list would take the grouping away exactly when
         the list is hardest to read, so the third example below keeps it while filtering.
     </div>
@@ -171,8 +171,8 @@
 
 <DemoExample Title="Prefix & Suffix" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>
-        The <b>Prefix</b> and <b>Suffix</b> parameters put fixed text before and after the selected value &mdash; a
-        unit, a currency, a category &mdash; and <b>PrefixTemplate</b> and <b>SuffixTemplate</b> replace them with any
+        The <b>Prefix</b> and <b>Suffix</b> parameters put fixed text before and after the selected value - a
+        unit, a currency, a category - and <b>PrefixTemplate</b> and <b>SuffixTemplate</b> replace them with any
         content, an icon for instance. They are decoration only: they are not part of the value and are not read out
         with it, so keep a descriptive <b>Label</b> for screen reader users.
     </div>
@@ -276,8 +276,8 @@
 <DemoExample Title="Variants" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
         Three parameters change how much furniture the dropdown draws around itself. <b>NoBorder</b> removes its border
-        entirely, <b>Underlined</b> replaces the box with a single bottom border &mdash; the variant that suits a dense
-        form where a box per field would be too much &mdash; and <b>Transparent</b> removes the background, so the
+        entirely, <b>Underlined</b> replaces the box with a single bottom border - the variant that suits a dense
+        form where a box per field would be too much - and <b>Transparent</b> removes the background, so the
         control can sit on a colored or image surface without cutting a rectangle out of it. They are independent and
         combine freely; the callout keeps its own surface either way, so the options stay readable. Since the two
         borderless variants have no box to draw a focus ring around, the keyboard focus (and the invalid state) is
@@ -376,7 +376,7 @@
         <br /><br />
         <b>MaxHeight</b> caps the scrollable item list at a height of your own, in pixels, so a long list stays a
         modest panel instead of stretching to whatever the viewport allows. It is applied on top of that available
-        space rather than in place of it, so it can only ever make the list shorter &mdash; a dropdown near the bottom
+        space rather than in place of it, so it can only ever make the list shorter - a dropdown near the bottom
         of the window is still limited by the room it actually has. Note that this is the one size a stylesheet cannot
         reach: the height is measured and written as an inline style every time the callout opens, so a CSS rule would
         always lose to it.
@@ -427,7 +427,7 @@
         finding a button with the mouse. Escape stays a dismiss key first: it closes the callout, and in the
         ComboBox mode it drops the text that was typed into it, and only a press with nothing left to dismiss
         reaches the selection. It goes through the very same clear as the button, so it raises <b>OnClear</b> and
-        is refused wherever the button would be &mdash; and it needs no <b>ShowClearButton</b>, so a dropdown that
+        is refused wherever the button would be - and it needs no <b>ShowClearButton</b>, so a dropdown that
         shows no clear button can still be cleared this way.
     </div>
     <br />
@@ -564,7 +564,7 @@
 <DemoExample Title="Search options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
         A handful of parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
-        is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
+        is matched against the typed term - <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
         <b>ExactMatch</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
         given number of characters, which keeps a one-letter term from being treated as a real query (and, with an
         <b>ItemsProvider</b>, from turning every first keystroke into a request). While the term is still
@@ -573,7 +573,7 @@
         <b>MinSearchLengthText</b> is the composite format of that hint, which receives the number of characters that
         are still needed and is announced to screen readers along with it. <b>SearchIgnoreDiacritics</b> matches
         the term against the item texts with the diacritics of both folded away, so <b>Jose</b> finds <b>José</b> and
-        <b>Muller</b> finds <b>Müller</b> &mdash; which is what makes the search usable to anyone typing on a keyboard
+        <b>Muller</b> finds <b>Müller</b> - which is what makes the search usable to anyone typing on a keyboard
         that has no accented keys. <b>HighlightSearch</b> emphasizes the matched part of each item text so the reason an
         item is in the result is visible at a glance, and it keeps lining up with the accented text because the folding
         replaces each character with exactly one character. Whenever a search is active the number of results is also
@@ -774,7 +774,7 @@
         the selected value shown on the closed dropdown and <b>PlaceholderTemplate</b> what is shown while nothing is
         selected, <b>LabelTemplate</b> replaces the label, <b>CaretDownIconName</b> and <b>CaretDownTemplate</b> the
         chevron, and <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> add fixed content above and below the
-        scrollable item list &mdash; the footer being the usual home of an "add a new item" action. The templates that
+        scrollable item list - the footer being the usual home of an "add a new item" action. The templates that
         render an item receive the item itself, so the extra state carried in its <b>Data</b> property is available to
         them.
     </div>
@@ -902,12 +902,12 @@
         Every piece of the dropdown's state can be bound or observed. The selection is two-way bound over <b>Value</b>
         in single select mode and <b>Values</b> in multi select mode, or left uncontrolled with <b>DefaultValue</b> and
         <b>DefaultValues</b> and observed through the <b>OnChange</b> and <b>OnValuesChange</b> events;
-        <b>OnSelectItem</b> hands over the clicked item itself rather than its value &mdash; in multi select mode for
+        <b>OnSelectItem</b> hands over the clicked item itself rather than its value - in multi select mode for
         every pick, including the one that unselects an already selected item, which <b>OnDeselectItem</b> reports on
         its own so that an addition and a removal can be told apart. <b>Reselectable</b> makes the
         select events fire even when the already selected item is picked again, which is otherwise treated as a no-op.
         The open state of the callout is two-way bound via <b>IsOpen</b>, so it can be opened and closed from code, and
-        the <b>OnOpen</b> and <b>OnClose</b> events report every change to it &mdash; a natural place to start fetching
+        the <b>OnOpen</b> and <b>OnClose</b> events report every change to it - a natural place to start fetching
         the items on first open.
         <br /><br />
         <b>ValueComparer</b> decides whether two values stand for the same selection, in place of the default equality
@@ -915,8 +915,8 @@
         value compares by reference by default, so a value arriving from a form, a query string or a fresh fetch would
         never match the item it names, however equal the two look. The example below uses a case-insensitive comparer,
         so the value <b>F-APP</b> selects the item whose value is <b>f-app</b>. The comparer governs every value
-        comparison the component makes &mdash; which item a value selects, which chip a removal takes away, whether a
-        typed term is already selected &mdash; so two values it calls equal are one and the same selection throughout. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
+        comparison the component makes - which item a value selects, which chip a removal takes away, whether a
+        typed term is already selected - so two values it calls equal are one and the same selection throughout. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
         dropdown as a whole: they sit on the trigger and focusin/focusout bubble, so moving between the trigger and the
         ComboBox input inside it does not report a round trip through the outside.
     </div>
@@ -1105,7 +1105,7 @@
         The <b>Combo</b> parameter turns the dropdown into a ComboBox: an editable input renders in place of the selected
         text and filters the items as you type, so the trigger doubles as the search box. <b>Enter</b> selects the item
         whose text matches what was typed, <b>Backspace</b> on an empty input removes the last selected item, the arrow
-        keys &mdash; and typing itself, which reveals the list it filters &mdash; open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
+        keys - and typing itself, which reveals the list it filters - open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
         selection is discarded when the callout closes, so the input goes back to showing the current selection.
         <br /><br />
         Requiring the typed text to match an item exactly makes Enter a dead key for anyone who only typed the beginning
@@ -1113,14 +1113,14 @@
         <b>ban</b> and pressing Enter then selects <b>Banana</b>. It takes precedence over the <b>Dynamic</b> mode below,
         so a term that names an item the list already has selects that item instead of creating a second one beside it.
         <br /><br />
-        Whichever item a commit would take &mdash; the one the typed text names exactly, or the first one it still
-        matches under <b>AutoSelectFirstMatch</b> &mdash; is marked in the list as you type, so what <b>Enter</b> is
+        Whichever item a commit would take - the one the typed text names exactly, or the first one it still
+        matches under <b>AutoSelectFirstMatch</b> - is marked in the list as you type, so what <b>Enter</b> is
         about to select is visible before it is pressed rather than only afterwards. The same item is named to a screen
         reader through the <b>aria-activedescendant</b> of the input, so the cue is not a visual-only one. When nothing
         is marked, <b>Enter</b> either creates a new item (with <b>Dynamic</b>) or does nothing at all.
         <br /><br />
         <b>SelectTextOnFocus</b> selects whatever is already in the input when it takes the focus, so coming back to a
-        combo box that holds a term and typing replaces that term instead of appending to it &mdash; which is what a
+        combo box that holds a term and typing replaces that term instead of appending to it - which is what a
         field the user returns to in order to look for something else needs. An empty input has nothing to select, and
         neither has a read-only one, where the selection would only be a highlight over text that cannot be changed.
     </div>
@@ -1252,7 +1252,7 @@
         how many of them the closed dropdown shows: with <b>Chips</b> the extra ones collapse into an overflow chip
         whose text comes from <b>OverflowTextFormat</b> (<b>"+{0}"</b> by default), and without chips the joined list
         is replaced by the summary of <b>SelectedItemsTextFormat</b> (<b>"{0} items selected"</b> by default) as soon
-        as the limit is passed. Nothing is removed from the selection &mdash; only the way it is displayed changes.
+        as the limit is passed. Nothing is removed from the selection - only the way it is displayed changes.
         <br /><br />
         <b>AutoClearSearch</b> covers the other half of a multi select session: the callout stays open after a pick, so
         by default the next item has to be found through the filter left over from the previous one. Enabling it clears
@@ -1341,7 +1341,7 @@
         When the <b>Dynamic</b> parameter is true, a text typed into the ComboBox that matches no existing item can be
         added as a new one, which is what makes free-form values (tags, e-mail recipients, ad-hoc categories) possible.
         <b>DynamicValueGenerator</b> produces the value of the new item from its text and <b>OnDynamicAdd</b> notifies
-        about the addition so the item can be persisted into the source collection &mdash; and only about an addition
+        about the addition so the item can be persisted into the source collection - and only about an addition
         that stands, so a term refused by the selection limit or by a one-way binding is never reported as one. Before
         creating anything the component first looks for an existing match; <b>FindItemFunction</b> and
         <b>ExistsSelectedItemFunction</b> replace the default case-insensitive text comparison used for those two
@@ -1442,29 +1442,29 @@
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
         first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on &mdash; from the trigger just as much as from inside the callout, so a
+        dropdown, and <b>Tab</b> closes it and moves on - from the trigger just as much as from inside the callout, so a
         popup revealed without the focus is never left behind when the focus leaves the dropdown.
         <b>Alt+ArrowDown</b> is the exception among the openers: it
         reveals the list without moving the focus into it, so the trigger keeps it and the plain arrows can walk the
         list afterwards. Opening the callout with a mouse click focuses the selected
         item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
-        selects every item the current search shows &mdash; or clears them when they are all selected already &mdash;
+        selects every item the current search shows - or clears them when they are all selected already -
         while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
         Typing printable characters runs a typeahead: the accumulated characters jump to the
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
         resets after a short pause. The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
         back to the first one; <b>NoWrapNavigation</b> stops them at the ends instead, which suits a long list where
         the jump from one end to the other is more likely to read as the focus having been lost than as a move that
-        was asked for &mdash; the typeahead keeps wrapping either way, since it looks for the item that matches rather
+        was asked for - the typeahead keeps wrapping either way, since it looks for the item that matches rather
         than for the one that comes next. Disabled and hidden items are skipped throughout. In virtualize mode only the
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
         match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
         reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
-        In ComboBox mode the keys that belong to the typed text &mdash; the printable characters, <b>Backspace</b>,
-        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> &mdash; return the focus to the input and act on it
+        In ComboBox mode the keys that belong to the typed text - the printable characters, <b>Backspace</b>,
+        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> - return the focus to the input and act on it
         there, so arrowing into the list never strands the user away from the term they are typing.
-        However the callout is dismissed &mdash; a key, a click outside it, the close button of the responsive panel or
-        a swipe &mdash; the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
+        However the callout is dismissed - a key, a click outside it, the close button of the responsive panel or
+        a swipe - the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
         being dropped at the top of the page along with the element that was holding it.
         <b>ClearOnEscape</b> gives <b>Escape</b> one more job once it has nothing left to dismiss: a press with the
         callout already closed (and, in the ComboBox mode, with nothing typed) clears the selection, which is what a
@@ -1517,8 +1517,8 @@
         result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
         come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected. It also honors
         <b>MaxSelectedItems</b>: it stops at the limit, and once there is no room left it clears the selection instead
-        of doing nothing. It also goes away when there is nothing left for it to select &mdash; an empty list, or a
-        search that matched nothing &mdash; instead of topping the empty state with a control that cannot do anything.
+        of doing nothing. It also goes away when there is nothing left for it to select - an empty list, or a
+        search that matched nothing - instead of topping the empty state with a control that cannot do anything.
         While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
         from the keyboard, even when the select all item itself is not shown.
     </div>
@@ -1560,10 +1560,10 @@
         The <b>MaxSelectedItems</b> parameter limits how many items can be selected in the multi select dropdown. Once
         the limit is reached the unselected items are disabled rather than silently refusing the click, so the boundary
         is visible before it is hit, and they become available again as soon as an item is unselected. The select all
-        item honors the same limit and stops adding items once it is reached &mdash; and since it can then never reach
+        item honors the same limit and stops adding items once it is reached - and since it can then never reach
         "all selected", the next click on it clears the selection instead of leaving the user with a control that does
         nothing. The items turning unavailable is a change only a sighted user notices, so reaching the limit is also
-        announced to screen readers, with a message you can localize through <b>MaxSelectedItemsText</b> &mdash; and the
+        announced to screen readers, with a message you can localize through <b>MaxSelectedItemsText</b> - and the
         announcement goes quiet again as soon as unselecting an item makes room.
     </div>
     <br />
@@ -1589,7 +1589,7 @@
         When there is no item to show, the callout renders a message instead of an empty list. There are two distinct
         cases and each gets its own text: <b>EmptyText</b> and <b>EmptyTemplate</b> cover a list that has nothing in it
         ("No items found" by default), while <b>NoResultsText</b> and <b>NoResultsTemplate</b> cover a search that
-        matched nothing ("No results found" by default) &mdash; telling the user that their term found nothing is a
+        matched nothing ("No results found" by default) - telling the user that their term found nothing is a
         different message from telling them the list is empty. When the no-results pair is not set the empty pair is used
         for both cases.
     </div>
@@ -1803,7 +1803,7 @@
         <b>ChipsRemoveIconName</b> for the remove button of a chip, and <b>ResponsiveCloseIconName</b> and
         <b>ComboBoxAddButtonIconName</b> for the close and add buttons that only the responsive panel shows.
         Each of them has an <b>...Icon</b> counterpart that takes a <b>BitIconInfo</b> and wins when both are set, which
-        is how an icon from outside the Fluent set gets in &mdash; see the <b>External Icons</b> section below.
+        is how an icon from outside the Fluent set gets in - see the <b>External Icons</b> section below.
         None of them is ever read out on its own: the icons are hidden from assistive technologies and the button
         around them carries the accessible name, which is why those names are parameters of their own.
     </div>
@@ -1895,7 +1895,7 @@
         without reopening the list. <b>CloseOnSelect</b> overrides that decision in both directions. Set it to
         <b>false</b> on a single select dropdown to keep the list open while the user tries one option after another
         against the page behind it, or to <b>true</b> on a multi select one to turn every pick into a complete
-        interaction of its own &mdash; useful when each selection triggers work that the user should see before
+        interaction of its own - useful when each selection triggers work that the user should see before
         choosing again.
         <br /><br />
         Whichever way it goes, the focus follows: a callout that closes hands the focus back to the dropdown (or to its
@@ -1938,7 +1938,7 @@
         The <b>TokenSeparators</b> parameter turns the listed characters into term endings for the multi select
         ComboBox input: typing one commits the term before it exactly as pressing Enter would, and pasting a whole
         delimited list commits every term it contains in one go. A term that names an existing item selects that item,
-        and &mdash; with <b>Dynamic</b> enabled &mdash; a term that names none becomes a new item, so a list copied out
+        and - with <b>Dynamic</b> enabled - a term that names none becomes a new item, so a list copied out
         of a spreadsheet or an e-mail turns into a selection without being retyped item by item. A term the selection
         already covers is refused, so committing the same list twice does not duplicate anything.
     </div>
@@ -1967,7 +1967,7 @@
 <DemoExample Title="Open on focus" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
     <div>
         The <b>OpenOnFocus</b> parameter opens the callout the moment the dropdown receives the focus, so tabbing into
-        it (or clicking any part of it) already shows the items without a further click or key press &mdash; one
+        it (or clicking any part of it) already shows the items without a further click or key press - one
         interaction fewer in a form that is filled top to bottom. The component still tells the focus a user moved
         apart from the focus it moves itself: a dismissal that returns the focus to the dropdown (Escape, a pick that
         closes the callout) does not reopen what was just closed.
@@ -1991,13 +1991,13 @@
 
 <DemoExample Title="Description" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
     <div>
-        The <b>Description</b> parameter renders a line of helper text under the dropdown &mdash; the place for the rule
+        The <b>Description</b> parameter renders a line of helper text under the dropdown - the place for the rule
         that the label has no room for ("only the categories you have access to", "leave empty for all regions").
         It is not decoration: the dropdown points at it with <b>aria-describedby</b>, so a screen reader reads it along
         with the control instead of leaving it as text that merely happens to sit underneath. In the ComboBox mode the
         editable input is described by it as well, since that is the element the user is actually typing into.
-        <b>DescriptionTemplate</b> replaces it with any content &mdash; a link, an icon, a warning that changes with the
-        selection &mdash; and is tied to the dropdown in exactly the same way.
+        <b>DescriptionTemplate</b> replaces it with any content - a link, an icon, a warning that changes with the
+        selection - and is tied to the dropdown in exactly the same way.
     </div>
     <br />
     <div class="example-content">
@@ -2031,7 +2031,7 @@
             <DescriptionTemplate>
                 <div class="custom-drp custom-drp-des">
                     <BitIcon IconName="@BitIconName.Info" />
-                    <span>Nothing here is final &mdash; you can change it later.</span>
+                    <span>Nothing here is final - you can change it later.</span>
                 </div>
             </DescriptionTemplate>
             <Options>
@@ -2046,8 +2046,8 @@
 
 <DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
     <div>
-        The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
-        underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
+        The <b>Color</b> parameter paints the accents of the dropdown - the focus border, the search box
+        underline and icon, the group headers and the check boxes of the multi select items - in one of the theme
         colors, <b>Primary</b> being the default. It changes the accents only, not the surface of the control, so the
         dropdown keeps fitting its surroundings.
     </div>
@@ -2156,8 +2156,8 @@
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
         <b>SearchBoxClearIcon</b>, <b>ResponsiveCloseIcon</b> and <b>ItemCheckIcon</b> parameters take a
-        <b>BitIconInfo</b> &mdash; built with <b>BitIconInfo.Fa</b>, <b>BitIconInfo.Bi</b> or the generic
-        <b>BitIconInfo.Css</b> &mdash; and each takes precedence over its <b>...IconName</b> counterpart when both are
+        <b>BitIconInfo</b> - built with <b>BitIconInfo.Fa</b>, <b>BitIconInfo.Bi</b> or the generic
+        <b>BitIconInfo.Css</b> - and each takes precedence over its <b>...IconName</b> counterpart when both are
         set. The items themselves follow the same rule through their <b>Icon</b> and <b>IconName</b> members. Remember
         to reference the stylesheet of the icon library you use.
     </div>
@@ -2337,7 +2337,7 @@
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
-        of the component individually &mdash; the label, the container, the callout, the search box, the scroll
+        of the component individually - the label, the container, the callout, the search box, the scroll
         container, the items and everything else listed in the class-styles reference below. Because the callout is
         rendered outside the root element, styling it through <b>Styles.Callout</b> or <b>Classes.Callout</b> is the way
         to reach it rather than a descendant selector on the root.
@@ -2409,7 +2409,7 @@
         callout aligns to the right edge of the dropdown, and the responsive panel slides in from the left and is
         swiped away in the opposite direction. The callout is rendered outside the dropdown so that it can escape any
         clipping ancestor around it, which also puts it out of the reach of the direction the dropdown declares, so it
-        carries that direction itself &mdash; the list of an RTL dropdown reads right-to-left even on a page that does not.
+        carries that direction itself - the list of an RTL dropdown reads right-to-left even on a page that does not.
     </div>
     <br />
     <dir dir="rtl" style="padding:0">

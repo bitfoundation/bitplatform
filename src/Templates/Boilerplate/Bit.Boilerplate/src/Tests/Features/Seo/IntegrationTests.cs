@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Text.Json.Nodes;
 
 namespace Boilerplate.Tests.Features.Seo;
 
@@ -118,6 +119,51 @@ public partial class IntegrationTests
 
         Assert.Contains(homeMessage, html);
     }
+
+    /// <summary>
+    /// A product page describes a Product; the home page is the one a crawler treats as the site itself, and until it
+    /// carries a WebSite and an Organization the site has no machine-readable identity at all. Read out of the
+    /// pre-rendered html, because that is the only version of the page a crawler is given.
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering")]
+    public async Task Prerendering_HomePage_Should_DescribeTheSiteAsJsonLd()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
+
+        var script = JsonLdScript().Match(html);
+
+        Assert.IsTrue(script.Success, "The home page carries no JSON-LD block.");
+
+        var graph = JsonNode.Parse(WebUtility.HtmlDecode(script.Groups["json"].Value))!["@graph"]!.AsArray();
+
+        var organization = graph.Single(node => node!["@type"]!.GetValue<string>() is "Organization")!;
+        var webSite = graph.Single(node => node!["@type"]!.GetValue<string>() is "WebSite")!;
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(organization["name"]?.GetValue<string>()), "The Organization has no name.");
+        Assert.IsTrue(Uri.IsWellFormedUriString(organization["logo"]?.GetValue<string>(), UriKind.Absolute), "The Organization's logo has to be an absolute url; a crawler does not resolve a relative one.");
+
+        Assert.AreEqual(organization["@id"]!.GetValue<string>(), webSite["publisher"]!["@id"]!.GetValue<string>(),
+            "The WebSite names a publisher that is not the Organization next to it, so the two nodes do not join up.");
+
+        Assert.IsTrue(Uri.IsWellFormedUriString(webSite["url"]?.GetValue<string>(), UriKind.Absolute), "The WebSite's url has to be absolute.");
+    }
+
+    /// <summary>
+    /// Razor writes the media type as <c>application/ld&amp;#x2B;json</c>, where <c>&amp;#x2B;</c> is a plus, and a
+    /// page with a scoped stylesheet also puts its CSS isolation attribute on the tag.
+    /// </summary>
+    [GeneratedRegex("""<script type="application/ld(\+|&#x2B;)json"[^>]*>(?<json>.*?)</script>""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex JsonLdScript();
 
     /// <summary>
     /// Enabling output caching makes HttpRequestExtensions.IsStreamPrerenderingSuppressed() return true,

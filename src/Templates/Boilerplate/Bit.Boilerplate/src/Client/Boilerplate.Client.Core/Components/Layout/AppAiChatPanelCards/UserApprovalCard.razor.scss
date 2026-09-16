@@ -1,0 +1,83 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+// A message row sizes its children to their content.
+.approval-card {
+    width: 100%;
+}
+
+::deep {
+    .approval {
+        border-inline-start: 0.25rem solid $bit-color-error;
+        animation: approval-in 0.24s ease-out both;
+    }
+
+    .approval-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        color: $bit-color-error;
+        background-color: color-mix(in srgb, #{$bit-color-error} 14%, transparent);
+
+        i {
+            font-size: 1.25rem;
+        }
+    }
+
+    .approval-consequences {
+        margin: 0;
+        list-style: none;
+        padding: 0.75rem 0.875rem;
+        border-radius: $bit-shape-border-radius;
+        background-color: $bit-color-background-secondary;
+    }
+
+    .approval-consequence-icon {
+        font-size: 1rem;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .approval-waiting-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background-color: $bit-color-warning;
+        animation: approval-waiting 1.4s ease-in-out infinite;
+    }
+
+    .approval-outcome {
+        width: fit-content;
+        padding: 0.375rem 0.75rem;
+        border-radius: $bit-shape-border-radius;
+        color: $bit-color-foreground-secondary;
+        background-color: $bit-color-background-secondary;
+
+        i {
+            font-size: 0.875rem;
+        }
+
+        &.approved {
+            color: $bit-color-foreground-primary;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .approval, .approval-waiting-dot {
+            animation: none;
+        }
+    }
+}
+
+@keyframes approval-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.375rem);
+    }
+}
+
+@keyframes approval-waiting {
+    50% {
+        opacity: 0.35;
+        transform: scale(0.8);
+    }
+}

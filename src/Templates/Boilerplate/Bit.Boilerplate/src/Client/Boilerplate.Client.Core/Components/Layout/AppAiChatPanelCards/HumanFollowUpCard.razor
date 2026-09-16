@@ -1,0 +1,66 @@
+@inherits AiChatCardBase
+
+@if (IsSent)
+{
+    <BitMessage DelayedAnnouncement Color="BitColor.Success">
+        @Localizer[nameof(AppStrings.AiChatHumanFollowUpSent)]
+    </BitMessage>
+}
+else
+{
+    <BitCard FullWidth>
+        <EditForm Model="request" OnValidSubmit="WrapHandled(Send)" novalidate>
+            <AppDataAnnotationsValidator />
+            <BitStack Gap="0.75rem">
+                <BitText Typography="BitTypography.Subtitle1">
+                    @Localizer[nameof(AppStrings.AiChatHumanFollowUpPrompt)]
+                </BitText>
+
+                @* Drafted by the model, so the user gets the last word on it. *@
+                <BitStack Gap="0">
+                    <BitTextField Rows="3"
+                                  Immediate
+                                  FullWidth
+                                  Multiline
+                                  AutoHeight
+                                  MaxRows="8"
+                                  MaxLength="2048"
+                                  @bind-Value="request.ConversationSummary"
+                                  Label="@Localizer[nameof(AppStrings.AiChatHumanFollowUpConversationSummary)]" />
+                    <ValidationMessage For="@(() => request.ConversationSummary)" />
+                </BitStack>
+
+                @if (CurrentUser is not null)
+                {
+                    <BitTextField ReadOnly
+                                  FullWidth
+                                  Value="@CurrentUser.DisplayName"
+                                  Label="@Localizer[nameof(AppStrings.AiChatHumanFollowUpSignedInAs)]" />
+                }
+                else
+                {
+                    <BitStack Gap="0">
+                        <BitTextField @bind-Value="request.Email"
+                                      FullWidth Type="BitInputType.Email"
+                                      Immediate DebounceTime="500"
+                                      Label="@Localizer[nameof(AppStrings.Email)]"
+                                      Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
+                        <ValidationMessage For="@(() => request.Email)" />
+                    </BitStack>
+
+                    <BitStack Gap="0">
+                        <BitPhoneInput @bind-Value="request.PhoneNumber"
+                                       FullWidth
+                                       DefaultCountry="@BitCountries.Current"
+                                       Immediate DebounceTime="500"
+                                       Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
+                                       Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
+                        <ValidationMessage For="@(() => request.PhoneNumber)" />
+                    </BitStack>
+                }
+
+                <BitButton ButtonType="BitButtonType.Submit">@Localizer[nameof(AppStrings.Send)]</BitButton>
+            </BitStack>
+        </EditForm>
+    </BitCard>
+}

@@ -1,0 +1,22 @@
+﻿@inject HarnessScope Scope
+
+<h1 id="page-data">data</h1>
+
+<dl>
+    <dt>loaded in scope</dt>
+    <dd id="data-scope">@Info?.ScopeId</dd>
+    <dt>loaded on</dt>
+    <dd id="data-platform">@Info?.Platform</dd>
+    <dt>loader run</dt>
+    <dd id="data-run">@Info?.Run</dd>
+    <dt>rendered in scope</dt>
+    <dd id="render-scope">@Scope.Id</dd>
+    <dt>rendered on</dt>
+    <dd id="render-platform">@HarnessRuntime.Platform</dd>
+</dl>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+
+    private HarnessData? Info => Data?.GetOrDefault<HarnessData>();
+}

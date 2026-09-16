@@ -184,7 +184,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
                 throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
 
-            await blobStorage.DeleteObject(filePath, cancellationToken);
+            await blobStorage.DeleteSingleObject(filePath, cancellationToken);
 
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
@@ -325,6 +325,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                         ],
                         cancellationToken: cancellationToken,
                         options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions));
+
+                    Features.Chatbot.ChatbotMetrics.RecordChatUsage(response.Usage, analyzeProductImageAgent.Name, configuration["AI:OpenAI:ChatModel"]);
 
                     if (response.Result.IsCar is false)
                     {

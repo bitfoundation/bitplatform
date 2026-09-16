@@ -1,0 +1,8 @@
+﻿<h1 id="page-keepalive">keep-alive</h1>
+
+<p>count <span id="keepalive-count">@_count</span></p>
+<button id="keepalive-increment" @onclick="@(() => _count++)">increment</button>
+
+@code {
+    private int _count;
+}

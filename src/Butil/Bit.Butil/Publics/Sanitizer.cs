@@ -115,7 +115,7 @@ public class Sanitizer(IJSRuntime js) : IAsyncDisposable
     {
         try
         {
-            await js.InvokeVoid("BitButil.sanitizer.disposeAll");
+            await js.InvokeTeardown("BitButil.sanitizer.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
 

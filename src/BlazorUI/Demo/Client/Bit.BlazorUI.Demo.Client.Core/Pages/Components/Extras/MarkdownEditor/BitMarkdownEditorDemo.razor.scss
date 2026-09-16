@@ -1,3 +1,10 @@
+.commands-bar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
 ::deep {
     .code-box {
         margin: 0;
@@ -8,13 +15,6 @@
         white-space: pre-wrap;
         border-radius: 0.25rem;
         border: 1px solid #808080;
-    }
-
-    .commands-bar {
-        gap: 0.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
     }
 
     .custom-class {

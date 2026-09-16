@@ -113,6 +113,18 @@ await midi.Clear(outputId);
             </div>
         </div>
         <div class="controls">
+            <button @onclick="() => RequestAccess(sendOutput)">RequestAccess</button>
+            @if (_outputs.Length > 0)
+            {
+                <select @bind="_selectedOutputId" aria-label="output port">
+                    @foreach (var output in _outputs)
+                    {
+                        <option value="@output.Id">@(output.Name ?? output.Id)</option>
+                    }
+                </select>
+            }
+        </div>
+        <div class="controls">
             <button @onclick="SendNoteOn">SendNoteOn</button>
             <button class="secondary" @onclick="SendNoteOff">SendNoteOff</button>
             <button @onclick="SendProgramChange">Send (program change)</button>
@@ -213,22 +225,26 @@ await using var watch = await midi.SubscribeStateChange(port =>
         }
     }
 
-    private async Task RequestAccess()
+    private Task RequestAccess() => RequestAccess(accessOutput);
+
+    // Access is cached for the page and does not re-prompt, so the sending section can ask for it
+    // and pick its port without the reader going back to the section that first asked.
+    private async Task RequestAccess(DemoConsole output)
     {
         try
         {
             if (!await midi.IsSupported())
             {
-                await accessOutput.Warn("Web MIDI is not supported in this browser.");
+                await output.Warn("Web MIDI is not supported in this browser.");
                 return;
             }
 
             var access = await midi.RequestAccess(_sysex, _software);
-            await Report(access, "RequestAccess");
+            await Report(access, "RequestAccess", output);
         }
         catch (Exception ex)
         {
-            await accessOutput.Error("RequestAccess failed →", ex.Message);
+            await output.Error("RequestAccess failed →", ex.Message);
         }
     }
 
@@ -244,11 +260,13 @@ await using var watch = await midi.SubscribeStateChange(port =>
         }
     }
 
-    private async Task Report(MidiAccessInfo? access, string call)
+    private async Task Report(MidiAccessInfo? access, string call, DemoConsole? output = null)
     {
+        output ??= accessOutput;
+
         if (access is null)
         {
-            await accessOutput.Warn($"{call} → no access. Request it first, or the prompt was refused.");
+            await output.Warn($"{call} → no access. Request it first, or the prompt was refused.");
             return;
         }
 
@@ -261,12 +279,12 @@ await using var watch = await midi.SubscribeStateChange(port =>
 
         _selectedOutputId ??= _outputs.FirstOrDefault()?.Id;
 
-        await accessOutput.Success($"{call} →",
+        await output.Success($"{call} →",
             $"sysex={access.SysexEnabled}, inputs={access.Inputs.Length}, outputs={access.Outputs.Length}");
 
         foreach (var port in access.Inputs.Concat(access.Outputs))
         {
-            await accessOutput.Log($"  [{port.Type}] {port.Name ?? port.Id}", $"{port.State}/{port.Connection}");
+            await output.Log($"  [{port.Type}] {port.Name ?? port.Id}", $"{port.State}/{port.Connection}");
         }
     }
 
@@ -390,7 +408,7 @@ await using var watch = await midi.SubscribeStateChange(port =>
     private async Task<bool> RequireOutput()
     {
         if (string.IsNullOrEmpty(_selectedOutputId) is false) return true;
-        await sendOutput.Warn("Request access first, then pick an output port.");
+        await sendOutput.Warn("Request access with the button in this section, then pick an output port.");
         return false;
     }
 

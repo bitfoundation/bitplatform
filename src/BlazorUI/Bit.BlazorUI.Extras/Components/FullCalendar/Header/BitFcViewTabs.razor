@@ -1,21 +1,30 @@
 @namespace Bit.BlazorUI
+@inject IJSRuntime JS
 
 @{
     var views = State.AvailableViews;
+    // The rendered order is what the arrow keys walk, so it is captured for the key handler.
+    _views = views;
 }
 
 @* A lone tab offers no choice, so the whole strip is collapsed when a single view is available. *@
 @if (views.Count > 1)
 {
-    <div class="bit-bfc-view-tabs" role="tablist">
+    @* A tab strip is a single tab stop the arrow keys move within, per the ARIA tabs pattern:
+       without the roving tabindex every view would take its own place in the tab order. *@
+    <div class="bit-bfc-view-tabs" role="tablist" aria-orientation="horizontal">
         @foreach (var view in views)
         {
-            <button class="bit-bfc-view-tab @(State.View == view ? "active" : "")"
+            var v = view;
+            <button class="bit-bfc-view-tab @(State.View == v ? "active" : "")"
                     type="button"
                     role="tab"
-                    aria-selected="@(State.View == view ? "true" : "false")"
-                    @onclick="() => State.SetView(view)">
-                @Texts.GetViewLabel(view)
+                    id="@TabId(v)"
+                    aria-selected="@(State.View == v ? "true" : "false")"
+                    tabindex="@(State.View == v ? "0" : "-1")"
+                    @onkeydown="e => OnKeyDown(e, v)"
+                    @onclick="() => State.SetView(v)">
+                @Texts.GetViewLabel(v)
             </button>
         }
     </div>
