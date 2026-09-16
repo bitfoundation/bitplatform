@@ -109,8 +109,13 @@ namespace BitBlazorUI {
                 if (el.scrollTop === top) continue;
 
                 // A plain assignment is animated by a container with scroll-behavior: smooth, and the content
-                // would stay displaced while it runs.
-                el.scrollTo({ top, behavior: 'instant' });
+                // would stay displaced while it runs. Safari before 16.4 rejects 'instant' with a TypeError, so
+                // it falls back to the assignment rather than leave the remaining containers unrestored.
+                try {
+                    el.scrollTo({ top, behavior: 'instant' });
+                } catch {
+                    el.scrollTop = top;
+                }
             }
         }
 

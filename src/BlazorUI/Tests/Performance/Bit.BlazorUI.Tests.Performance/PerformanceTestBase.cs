@@ -131,7 +131,9 @@ public abstract class PerformanceTestBase
 
     private static async Task<IBrowser> LaunchBrowser()
     {
-        _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+        // A launch that failed leaves the driver behind; the next test reuses it instead of starting
+        // another one that only the cleanup of the last test would dispose.
+        _playwright ??= await Microsoft.Playwright.Playwright.CreateAsync();
 
         SetDefaultExpectTimeout(DefaultTimeout);
 
