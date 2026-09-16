@@ -652,7 +652,7 @@ public partial class BitPhoneInputDemo
     private string? clearedAt;
     private string? bindingValue;
     private string? bindingNumber;
-    private BitCountry? bindingCountry;
+    private BitCountry? bindingCountry = BitCountries.Germany;
     private BitCountry? changedCountry;
     private string? changedValue;
     private string? searchedText;
@@ -844,7 +844,7 @@ private string? throttledNumber;";
     private readonly string example13CsharpCode = @"
 private string? bindingValue;
 private string? bindingNumber;
-private BitCountry? bindingCountry;";
+private BitCountry? bindingCountry = BitCountries.Germany;";
 
     private readonly string example14RazorCode = @"
 <BitPhoneInput Mask=""(###) ###-####""
