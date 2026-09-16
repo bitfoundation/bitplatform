@@ -92,8 +92,7 @@
                            OnClick="WrapHandled(OpenDevTools)"
                            IconName="@BitIconName.DeveloperTools" />
 
-                @*#if (api == "Integrated")*@
-                @if (AppPlatform.IsBlazorHybrid is false)
+                @if (AppPlatform.IsBrowser && AppPlatform.IsWasmStandalone is false)
                 {
                     <AuthorizeView Policy="@AppFeatures.System.Jobs_Manage">
                         <BitButton IconOnly
@@ -104,7 +103,6 @@
                                    OnClick="WrapHandled(OpenHangfireDashboard)" />
                     </AuthorizeView>
                 }
-                @*#endif*@
 
                 @if (AppPlatform.IsBrowser is false)
                 {

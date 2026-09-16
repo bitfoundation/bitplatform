@@ -39,6 +39,7 @@ public static partial class Program
         //#endif
         builder.AddServerSharedServices();
         builder.AddDefaultHealthChecks();
+        services.AddHttpForwarder();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.Authority = configuration.GetServerAddress();
@@ -129,6 +130,7 @@ public static partial class Program
 
         services.AddSingleton(_ => new SocketsHttpHandler
         {
+            UseCookies = false,
             EnableMultipleHttp2Connections = true,
             EnableMultipleHttp3Connections = true,
             PooledConnectionLifetime = TimeSpan.FromMinutes(15),

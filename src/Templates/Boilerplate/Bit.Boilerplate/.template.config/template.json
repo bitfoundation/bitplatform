@@ -720,6 +720,7 @@
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
                         "src/Tests/Features/Identity/GetAccessTokenTests.cs",
+                        "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
@@ -821,6 +822,13 @@
                         "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
                         "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
+                    ]
+                },
+                {
+                    // RequestHeadersDelegatingHandler sends UpdateSession to the page's own host only under a standalone api.
+                    "condition": "(advancedTests != true || api == Integrated)",
+                    "exclude": [
+                        "src/Tests/Features/Identity/AccessTokenCookieUITests.cs"
                     ]
                 },
                 {
