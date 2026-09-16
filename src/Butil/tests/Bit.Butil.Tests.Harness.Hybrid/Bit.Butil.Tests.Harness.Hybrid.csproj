@@ -4,7 +4,7 @@
          Microsoft.AspNetCore.Components.WebView core (the WebViewManager that serves _content/ assets, runs the
          renderer and bridges JS interop through WebViewJSRuntime), and on Windows both render through WebView2,
          which Playwright can drive over the Chrome DevTools Protocol. WinForms gets there without the MAUI
-         workload, so it builds and runs on a stock windows-latest runner. -->
+         workload, so it builds and runs on a stock windows-2025 runner. -->
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.100" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.101" />
     </ItemGroup>
 
     <ItemGroup>

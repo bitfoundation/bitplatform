@@ -88,7 +88,7 @@ jobs:
   e2e-hybrid:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: Brouter E2E - Blazor Hybrid (WebView2)
-    runs-on: windows-latest
+    runs-on: windows-2025
 
     steps:
     - name: Checkout source code
@@ -105,7 +105,7 @@ jobs:
       with:
         node-version: 24
 
-    # windows-latest ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
     - name: Install the WebView2 Runtime
       shell: pwsh
       run: |

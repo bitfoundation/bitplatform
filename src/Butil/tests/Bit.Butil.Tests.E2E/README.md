@@ -168,5 +168,5 @@ elevated process - such as a GitHub-hosted runner - ignores `--remote-debugging-
 A BlazorWebView has exactly one page, so a test rents a whole window for its duration; the pool clears the page's
 storage and any device emulation before lending a window again, and the navigation to the harness route reloads
 the page with a fresh DI scope. It needs the WebView2 Runtime (Windows 11 has it; Windows Server images, including
-GitHub's `windows-latest`, may only have the Edge browser - CI installs the runtime first). When the WebView cannot
+GitHub's `windows-2025`, may only have the Edge browser - CI installs the runtime first). When the WebView cannot
 start, the host exits with the reason on stderr, and the failing test quotes it.
