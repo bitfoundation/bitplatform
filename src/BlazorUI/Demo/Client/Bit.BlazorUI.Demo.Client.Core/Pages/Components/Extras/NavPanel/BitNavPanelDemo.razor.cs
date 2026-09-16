@@ -129,7 +129,7 @@ public partial class BitNavPanelDemo
             Name = "FitWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the nav panel with fit-content width.",
+            Description = "Renders the nav panel with fit-content width. The width is then the items' rather than the panel's, so this is the one mode whose toggle resizes the panel in a single step instead of travelling between the two widths.",
         },
         new()
         {
@@ -1591,7 +1591,16 @@ public partial class BitNavPanelDemo
     private BitNavItem? onItemClick;
     private BitNavItem? onItemToggle;
 
-    private List<BitNavItem> basicNavItems =
+    // The expanded state of a nav item lives on the item itself, so every example that opens or closes a
+    // group gets a tree of its own: one list shared between two of them would carry what was opened here
+    // into the other - and the AllExpanded of the StickyEnds panel would open the groups of both.
+    private readonly List<BitNavItem> basicNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> publicApiNavItems = CreateBasicNavItems();
+    private readonly List<BitNavItem> singleExpandNavItems = CreateExpansionNavItems();
+    private readonly List<BitNavItem> groupedNavItems = CreateExpansionNavItems();
+    private readonly List<BitNavItem> stickyNavItems = CreateExpansionNavItems();
+
+    private static List<BitNavItem> CreateBasicNavItems() =>
     [
         new()
         {
@@ -1644,7 +1653,8 @@ public partial class BitNavPanelDemo
             Url = "TermsPage",
         }
     ];
-    private List<BitNavItem> singleExpandNavItems =
+
+    private static List<BitNavItem> CreateExpansionNavItems() =>
     [
         new()
         {
@@ -1709,6 +1719,44 @@ public partial class BitNavPanelDemo
             Url = "TermsPage",
         }
     ];
+
+    // The manual mode reports the clicked item instead of following it, so none of these items carries a
+    // URL: an item with one is still a link, and the click that selects it would leave this page.
+    private readonly List<BitNavItem> selectionNavItems =
+    [
+        new()
+        {
+            Text = "Home",
+            IconName = BitIconName.Home,
+        },
+        new()
+        {
+            Text = "AdminPanel",
+            IconName = BitIconName.Admin,
+            ChildItems =
+            [
+                new() { Text = "Dashboard", IconName = BitIconName.BarChartVerticalFill },
+                new() { Text = "Categories", IconName = BitIconName.BuildQueue },
+                new() { Text = "Products", IconName = BitIconName.Product }
+            ]
+        },
+        new()
+        {
+            Text = "Todo",
+            IconName = BitIconName.ToDoLogoOutline,
+        },
+        new()
+        {
+            Text = "Settings",
+            IconName = BitIconName.Equalizer,
+        },
+        new()
+        {
+            Text = "Terms",
+            IconName = BitIconName.EntityExtraction,
+        }
+    ];
+
     private List<BitNavItem> eventNavItems =
     [
         new()

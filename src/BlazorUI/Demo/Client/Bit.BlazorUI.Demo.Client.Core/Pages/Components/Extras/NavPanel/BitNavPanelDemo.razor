@@ -51,7 +51,9 @@
         <DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 By default the panel takes the width its container gives it. <b>FitWidth</b> shrinks it to the
-                width of its widest item, so it takes no more room than the items it holds.
+                width of its widest item, so it takes no more room than the items it holds. Its width is then
+                the items' rather than the panel's, and they lose their text the moment the panel collapses -
+                so this is the one mode whose toggle resizes in a single step instead of sliding.
             </div>
             <br />
             <div class="open-btn">
@@ -227,15 +229,15 @@
             </div>
             <div class="example-content">
                 <div>Selected item: <b>@selectedItem?.Text</b></div>
-                <BitButton OnClick="() => selectedItem = basicNavItems[3]">Select Settings</BitButton>
+                <BitButton OnClick="() => selectedItem = selectionNavItems[3]">Select Settings</BitButton>
             </div>
             <br />
             <div style="width:222px">
                 <BitNavPanel @bind-IsOpen="selectionIsOpen"
-                             Items="basicNavItems"
+                             Items="selectionNavItems"
                              NavMode="BitNavMode.Manual"
                              @bind-SelectedItem="selectedItem"
-                             DefaultSelectedItem="basicNavItems[0]" />
+                             DefaultSelectedItem="selectionNavItems[0]" />
             </div>
         </DemoExample>
 
@@ -279,7 +281,8 @@
                 on a swipe towards the side it came from, and on the navigation of an item.
                 <b>NoAutoClose</b> keeps it open after a navigation, <b>NoOverlay</b> drops the overlay so the
                 page behind it stays clickable, and <b>NoSwipe</b> turns the swipe gesture off. The panel below
-                shows all three, so it can only be closed through its own button. <b>AutoFocus</b> goes the
+                shows all three, so the only ways left to close it are its own button and the Escape key,
+                which none of the three takes away. <b>AutoFocus</b> goes the
                 other way and moves the focus into the drawer as it opens - onto the search box, or onto the
                 first item of a panel without one - which is what a surface covering the page is expected to
                 do. All of these belong to the drawer of a small screen: the column of a wide one is not a
@@ -371,7 +374,7 @@
             </div>
             <br />
             <div style="width:222px">
-                <BitNavPanel @bind-IsOpen="publicApiIsOpen" @ref="navPanelRef" Items="basicNavItems" HideToggle />
+                <BitNavPanel @bind-IsOpen="publicApiIsOpen" @ref="navPanelRef" Items="publicApiNavItems" HideToggle />
             </div>
         </DemoExample>
 
@@ -390,11 +393,10 @@
             </div>
             <div style="width:240px">
                 <BitNavPanel @bind-IsOpen="groupedIsOpen"
-                             Items="singleExpandNavItems"
+                             Items="groupedNavItems"
                              RenderType="BitNavRenderType.Grouped"
                              IndentValue="24"
-                             ReversedChevron
-                             NoPad />
+                             ReversedChevron />
             </div>
         </DemoExample>
 
@@ -439,7 +441,7 @@
             </div>
             <div style="width:240px">
                 <BitNavPanel @bind-IsOpen="stickyIsOpen"
-                             Items="singleExpandNavItems"
+                             Items="stickyNavItems"
                              Style="height:264px"
                              AllExpanded
                              StickyEnds>
@@ -545,7 +547,9 @@
                 <BitToggleButton @bind-IsChecked="rtlIsOpen" OnText="Close" OffText="Open" />
             </div>
             <div dir="rtl">
-                <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="rtlNavItems" FitWidth Dir="BitDir.Rtl" />
+                <div style="width:222px">
+                    <BitNavPanel @bind-IsOpen="rtlIsOpen" Items="rtlNavItems" Dir="BitDir.Rtl" />
+                </div>
             </div>
         </DemoExample>
     </Examples>

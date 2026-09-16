@@ -158,6 +158,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Renders the nav panel with fit-content width.
     /// </summary>
+    /// <remarks>
+    /// The width is then the items' rather than the panel's, and the items lose their text the moment the
+    /// panel collapses into its rail - so this is the one mode whose toggle resizes the panel in a single
+    /// step instead of travelling between the two widths.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool FitWidth { get; set; }
 
@@ -896,10 +901,18 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
         if (await AssignIsToggled(!IsToggled) is false) return;
 
-        // A rail has no room for a search box, so the panel that collapses into one drops the search it was
-        // showing instead of keeping a filtered list the user can no longer see the reason for.
         if (IsToggled)
         {
+            // The pointer that clicked the toggle button is still over the panel, and the focus is still on
+            // the button itself - which is inside it - so a rail that expands on either of them would open
+            // again in the same frame and the click would look like it did nothing. Both are let go of here
+            // instead: the next pointer that enters the rail, and the next element inside it that takes the
+            // focus, expand it again.
+            _isHovered = false;
+            _isFocused = false;
+
+            // A rail has no room for a search box, so the panel that collapses into one drops the search it
+            // was showing instead of keeping a filtered list the user can no longer see the reason for.
             await ClearSearch();
         }
     }

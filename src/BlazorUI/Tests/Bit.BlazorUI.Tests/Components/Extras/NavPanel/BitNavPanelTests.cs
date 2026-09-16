@@ -1060,6 +1060,36 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavPanelExpandOnHoverShouldCollapseOnTheToggleItIsPointedAt()
+    {
+        var isToggled = false;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.ExpandOnHover, true);
+            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+        });
+
+        // The pointer is over the panel and the focus lands on the button being clicked, both of which
+        // expand a rail - so a panel that only read them would collapse into one and open again at once.
+        component.Find(".bit-npn").MouseEnter();
+        component.Find(".bit-npn").FocusIn();
+        component.Find(".bit-npn-tbn").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(isToggled);
+            Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl"));
+        });
+
+        // The pointer that leaves the collapsed rail and comes back to it expands it again.
+        component.Find(".bit-npn").MouseEnter();
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl")));
+    }
+
+    [TestMethod]
     public void BitNavPanelWithoutExpandOnHoverShouldNotListenForHover()
     {
         var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
