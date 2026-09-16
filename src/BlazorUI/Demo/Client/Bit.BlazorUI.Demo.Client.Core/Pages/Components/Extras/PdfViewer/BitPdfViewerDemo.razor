@@ -154,13 +154,13 @@
             </div>
             <br />
             <div style="display:flex;gap:1rem;flex-wrap:wrap">
-                <BitDropdown @bind-Value="scrollMode" Label="ScrollMode" TItem="BitDropdownItem<BitPdfScrollMode>" TValue="BitPdfScrollMode" Style="min-width:12rem">
+                <BitDropdown @bind-Value="scrollMode" Label="ScrollMode" TItem="BitDropdownOption<BitPdfScrollMode>" TValue="BitPdfScrollMode" Style="width:12rem">
                     <BitDropdownOption Text="Vertical" Value="BitPdfScrollMode.Vertical" />
                     <BitDropdownOption Text="Horizontal" Value="BitPdfScrollMode.Horizontal" />
                     <BitDropdownOption Text="Wrapped" Value="BitPdfScrollMode.Wrapped" />
                     <BitDropdownOption Text="Page" Value="BitPdfScrollMode.Page" />
                 </BitDropdown>
-                <BitDropdown @bind-Value="spreadMode" Label="SpreadMode" TItem="BitDropdownItem<BitPdfSpreadMode>" TValue="BitPdfSpreadMode" Style="min-width:12rem">
+                <BitDropdown @bind-Value="spreadMode" Label="SpreadMode" TItem="BitDropdownOption<BitPdfSpreadMode>" TValue="BitPdfSpreadMode" Style="width:12rem">
                     <BitDropdownOption Text="None" Value="BitPdfSpreadMode.None" />
                     <BitDropdownOption Text="Odd" Value="BitPdfSpreadMode.Odd" />
                     <BitDropdownOption Text="Even" Value="BitPdfSpreadMode.Even" />
