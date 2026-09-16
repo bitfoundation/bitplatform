@@ -30,8 +30,12 @@
     // asked for it - the toggle button, the Toggle method, or the pointer over an ExpandOnHover rail. Only
     // on the screens the panel is a column of the page on: below the breakpoint it is an off-canvas drawer,
     // and sliding in from the edge it came from is the movement that belongs there.
+    // A FitWidth panel is the exception: its width is its content's, far short of the container its open
+    // bound is, so the travel would spend most of its time where nothing visibly moves - it jumps instead.
     @include gt-sm {
-        transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;
+        &:not(.bit-npn-fiw) {
+            transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;
+        }
 
         // The open end of that transition needs a bound of the same kind as the rail's: a panel widening
         // into an unbounded max-width has nothing to travel to and snaps open instead. A panel given no
