@@ -29,7 +29,11 @@ public partial class BitRichTextEditor
                           .Distinct()
                           .ToArray()),
             AllowedUriSchemes = SanitizationPolicy.AllowedUriSchemes.Select(s => s.ToLowerInvariant()).ToArray(),
-            AllowDataImageUris = SanitizationPolicy.AllowDataImageUris
+            AllowDataImageUris = SanitizationPolicy.AllowDataImageUris,
+            // Null is passed through as null: the bridge then applies its built-in approved embed
+            // hosts, so a policy that lists the iframe tag without saying where from is still held
+            // to them rather than accepting any source its scheme allowlist happens to permit.
+            AllowedIframeHosts = SanitizationPolicy.AllowedIframeHosts?.Select(h => h.ToLowerInvariant()).ToArray()
         };
     }
 }
