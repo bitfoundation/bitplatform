@@ -693,6 +693,63 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldMoveOnlyTheChevronOfAReversedGroupHeader()
+    {
+        // One header of each shape: the one that carries a description renders through a branch of its own.
+        List<BitNavItem> items =
+        [
+            new() { Text = "Fruits", IconName = "Home", ChildItems = [new() { Text = "Apple" }] },
+            new() { Text = "Drinks", IconName = "Home", Description = "some drinks", ChildItems = [new() { Text = "Tea" }] },
+        ];
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.ReversedChevron, true);
+        });
+
+        // The row itself keeps its order, so the icon stays at the start beside the text it names; only the
+        // chevron is moved to the far end. Reversing the row would carry the icon along with it.
+        foreach (var row in component.FindAll(".bit-nav-gcb .bit-nav-iit"))
+        {
+            Assert.IsFalse((row.GetAttribute("style") ?? string.Empty).Contains("row-reverse"));
+
+            var parts = row.Children.Select(child => child.ClassList.Contains("bit-nav-rch") ? "chevron"
+                                                  : child.ClassList.Contains("bit-nav-iic") ? "icon"
+                                                  : child.ClassList.Contains("bit-nav-ghd") ? "text" : "?").ToArray();
+
+            CollectionAssert.AreEqual(new[] { "chevron", "icon", "text" }, parts);
+        }
+    }
+
+    [TestMethod]
+    public void BitNavShouldStripAGroupHeaderDownToItsIconInTheIconOnlyMode()
+    {
+        var component = RenderNav(PartsItems(), p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.IconOnly, true);
+        });
+
+        var header = component.Find(".bit-nav-gcb");
+
+        // The rail has room for the icon that stands for the group and nothing else: the chevron and the
+        // description are not rendered at all, and the name itself is what the icon-only styles hide.
+        Assert.AreEqual(0, header.QuerySelectorAll(".bit-nav-des").Length);
+        Assert.AreEqual(0, header.QuerySelectorAll(".bit-nav-exp, .bit-ico-r90").Length);
+        Assert.AreEqual(1, header.QuerySelectorAll(".bit-nav-iic").Length);
+        Assert.AreEqual(1, header.QuerySelectorAll(".bit-nav-ghd").Length);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotMarkTheChevronOfAGroupHeaderThatIsNotReversed()
+    {
+        var component = RenderNav(PartsItems(), p => p.Add(c => c.RenderType, BitNavRenderType.Grouped));
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-rch").Count);
+    }
+
+    [TestMethod]
     public void BitNavShouldDropTheIndentationInTheIconOnlyMode()
     {
         var component = RenderNav(TreeItems(), p =>

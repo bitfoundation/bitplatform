@@ -706,27 +706,27 @@ private List<BitNavItem> basicNavItems =
 <BitToggleButton @bind-IsChecked=""selectionIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div>Selected item: <b>@selectedItem?.Text</b></div>
-<BitButton OnClick=""() => selectedItem = basicNavItems[3]"">Select Settings</BitButton>
+<BitButton OnClick=""() => selectedItem = selectionNavItems[3]"">Select Settings</BitButton>
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""selectionIsOpen""
-                 Items=""basicNavItems""
+                 Items=""selectionNavItems""
                  NavMode=""BitNavMode.Manual""
                  @bind-SelectedItem=""selectedItem""
-                 DefaultSelectedItem=""basicNavItems[0]"" />
+                 DefaultSelectedItem=""selectionNavItems[0]"" />
 </div>";
     private readonly string example12CsharpCode = @"
 private bool selectionIsOpen;
 private BitNavItem? selectedItem;
 
-private List<BitNavItem> basicNavItems =
+// The manual mode reports the clicked item instead of following it, so none of these items carries a URL:
+// an item with one is still a link, and the click that selects it would navigate away.
+private List<BitNavItem> selectionNavItems =
 [
     new()
     {
         Text = ""Home"",
         IconName = BitIconName.Home,
-        Url = ""HomePage"",
-        Data = 13,
     },
     new()
     {
@@ -734,42 +734,25 @@ private List<BitNavItem> basicNavItems =
         IconName = BitIconName.Admin,
         ChildItems =
         [
-            new() {
-                Text = ""Dashboard"",
-                IconName = BitIconName.BarChartVerticalFill,
-                Url = ""DashboardPage"",
-                Data = 63,
-            },
-            new() {
-                Text = ""Categories"",
-                IconName = BitIconName.BuildQueue,
-                Url = ""CategoriesPage"",
-            },
-            new() {
-                Text = ""Products"",
-                IconName = BitIconName.Product,
-                Url = ""ProductsPage"",
-            }
+            new() { Text = ""Dashboard"", IconName = BitIconName.BarChartVerticalFill },
+            new() { Text = ""Categories"", IconName = BitIconName.BuildQueue },
+            new() { Text = ""Products"", IconName = BitIconName.Product }
         ]
     },
     new()
     {
         Text = ""Todo"",
         IconName = BitIconName.ToDoLogoOutline,
-        Url = ""TodoPage"",
     },
     new()
     {
         Text = ""Settings"",
         IconName = BitIconName.Equalizer,
-        Url = ""SettingsPage"",
-        Data = 85,
     },
     new()
     {
         Text = ""Terms"",
         IconName = BitIconName.EntityExtraction,
-        Url = ""TermsPage"",
     }
 ];";
 
@@ -1090,13 +1073,13 @@ private List<BitNavItem> eventNavItems =
 <BitButton OnClick=""() => navPanelRef.ClearSearch()"">Clear search</BitButton>
 
 <div style=""width:222px"">
-    <BitNavPanel @bind-IsOpen=""publicApiIsOpen"" @ref=""navPanelRef"" Items=""basicNavItems"" HideToggle />
+    <BitNavPanel @bind-IsOpen=""publicApiIsOpen"" @ref=""navPanelRef"" Items=""publicApiNavItems"" HideToggle />
 </div>";
     private readonly string example18CsharpCode = @"
 private bool publicApiIsOpen;
 private BitNavPanel<BitNavItem> navPanelRef = default!;
 
-private List<BitNavItem> basicNavItems =
+private List<BitNavItem> publicApiNavItems =
 [
     new()
     {
@@ -1155,16 +1138,15 @@ private List<BitNavItem> basicNavItems =
 
 <div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""groupedIsOpen""
-                 Items=""singleExpandNavItems""
+                 Items=""groupedNavItems""
                  RenderType=""BitNavRenderType.Grouped""
                  IndentValue=""24""
-                 ReversedChevron
-                 NoPad />
+                 ReversedChevron />
 </div>";
     private readonly string example19CsharpCode = @"
 private bool groupedIsOpen;
 
-private List<BitNavItem> singleExpandNavItems =
+private List<BitNavItem> groupedNavItems =
 [
     new()
     {
@@ -1244,7 +1226,7 @@ private List<BitNavItem> basicNavItems =
 
 <div style=""width:240px"">
     <BitNavPanel @bind-IsOpen=""stickyIsOpen""
-                 Items=""singleExpandNavItems""
+                 Items=""stickyNavItems""
                  Style=""height:264px""
                  AllExpanded
                  StickyEnds>
@@ -1256,7 +1238,7 @@ private List<BitNavItem> basicNavItems =
     private readonly string example21CsharpCode = @"
 private bool stickyIsOpen;
 
-private List<BitNavItem> singleExpandNavItems =
+private List<BitNavItem> stickyNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""HomePage"" },
     new()
@@ -1580,7 +1562,11 @@ private List<BitNavItem> basicNavItems =
     private readonly string example26RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
-<BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" FitWidth Dir=""BitDir.Rtl"" />";
+<div dir=""rtl"">
+    <div style=""width:222px"">
+        <BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" Dir=""BitDir.Rtl"" />
+    </div>
+</div>";
     private readonly string example26CsharpCode = @"
 private bool rtlIsOpen;
 

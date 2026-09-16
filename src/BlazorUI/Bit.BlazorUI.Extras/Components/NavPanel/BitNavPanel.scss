@@ -26,23 +26,26 @@
         }
     }
 
-    // A rail that expands on hover widens in place, so the two widths are the two ends of a transition
-    // rather than a jump. Only on the screens the panel is a column of the page on: below the breakpoint it
-    // is an off-canvas drawer, and a transition declared here outranks the one the drawer slides in with
-    // (two classes against one) and would replace it with a widening the drawer never does.
-    &.bit-npn-eoh {
-        @include gt-sm {
-            transition: min-width 150ms $mot-easing, max-width 150ms $mot-easing;
+    // The rail and the open panel are the two ends of a transition rather than a jump, whichever of them
+    // asked for it - the toggle button, the Toggle method, or the pointer over an ExpandOnHover rail. Only
+    // on the screens the panel is a column of the page on: below the breakpoint it is an off-canvas drawer,
+    // and sliding in from the edge it came from is the movement that belongs there.
+    @include gt-sm {
+        transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;
+
+        // The open end of that transition needs a bound of the same kind as the rail's: a panel widening
+        // into an unbounded max-width has nothing to travel to and snaps open instead. A panel given no
+        // Width travels to the width of its container, which is the width it takes anyway - so the cap
+        // never changes what the panel is, only how it gets there.
+        &:not(.bit-npn-tgl) {
+            max-width: var(--bit-npn-w, 100%);
         }
 
-        // The expanded end of that transition needs a width of the same kind as the collapsed one: a rail
-        // that widens into an unbounded max-width has nothing to travel to and snaps open instead. A panel
-        // given no Width keeps both ends open (an invalid max-width is dropped) and stays as wide as its
-        // container makes it, and so do the two modes that size the panel themselves - the Width they are
-        // documented to ignore is not allowed back in as a bound.
-        &:not(.bit-npn-tgl):not(.bit-npn-fiw):not(.bit-npn-fuw) {
-            min-width: var(--bit-npn-w, auto);
-            max-width: var(--bit-npn-w, auto);
+        // The two modes that size the panel themselves travel to the width of their container like a panel
+        // that was given none: the Width they are documented to ignore is not let back in as a bound.
+        &.bit-npn-fiw:not(.bit-npn-tgl),
+        &.bit-npn-fuw:not(.bit-npn-tgl) {
+            max-width: 100%;
         }
     }
 
@@ -105,7 +108,7 @@
         z-index: $zindex-callout;
         bottom: $bit-env-inset-bottom;
         top: $bit-env-inset-top !important;
-        transition: transform 150ms $mot-easing, opacity 100ms $mot-easing;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short $mot-easing;
 
         // The drawer is docked to the edge it comes from, which the Position expresses in the text direction:
         // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
@@ -128,7 +131,7 @@
             // tree, so the closed one is hidden outright once it has finished sliding away.
             visibility: hidden;
             pointer-events: none;
-            transition: transform 150ms $mot-easing, opacity 100ms $mot-easing, visibility 0s linear 150ms;
+            transition: transform $mot-duration $mot-easing, opacity $mot-duration-short $mot-easing, visibility 0s linear $mot-duration;
 
             &.bit-rtl,
             &.bit-npn-end {
