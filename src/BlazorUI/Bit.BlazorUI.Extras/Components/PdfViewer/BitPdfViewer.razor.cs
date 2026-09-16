@@ -126,6 +126,12 @@ public partial class BitPdfViewer : BitComponentBase
 
     private bool _showSearch;
     private string _searchQuery = "";
+    // What the find box is RENDERED with, which follows the query only when code sets
+    // it. Rendering the query itself would write each keystroke's value back into the
+    // box while the reader is already further on, and every character typed during
+    // that round trip would be lost ("trace" arriving as "tace").
+    private string _searchBoxValue = "";
+    private bool _searchBoxSyncPending;
     private bool _matchCase;  // find option: case-sensitive matching
     private bool _wholeWord;  // find option: match whole words only
     // find option: when off, a letter and its accented form match each other. Off by
@@ -175,9 +181,10 @@ public partial class BitPdfViewer : BitComponentBase
     private ElementReference _thumbsRef;
     private ElementReference _searchInputRef;
     private bool _spyPending;
-    // A wheel/pinch zoom stashed an anchor point in JS; put it back after the pages
-    // have been laid out at the new scale.
+    // A zoom or rotation stashed the reading position (or a wheel/pinch its anchor
+    // point) in JS; put it back after the pages have been laid out at the new scale.
     private bool _zoomAnchorPending;
+    private bool _refitInFlight;
     private bool _thumbSpyPending; // (re)attach the sidebar's lazy-render spy after render
     private bool _keyboardPending = true; // (re)attach the keyboard-shortcut listener after render
     private bool _keyboardAttached;
@@ -593,7 +600,12 @@ public partial class BitPdfViewer : BitComponentBase
 
         using var stream = new MemoryStream(attachment.Content, writable: false);
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-        await _js.BitPdfViewerDownload(attachment.Name, streamRef);
+        // An attachment is whatever file it is, not a pdf: offer it under its declared
+        // type, or as opaque bytes, so the browser keeps the name the document gave it.
+        string mimeType = attachment.MimeType is { } declared && declared.Contains('/')
+            ? declared
+            : "application/octet-stream";
+        await _js.BitPdfViewerDownload(attachment.Name, streamRef, mimeType);
     }
 
     /// <summary>
@@ -723,14 +735,36 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (_pages.Count == 0) return;
 
+        // While a navigation is on its way to its scroll, whatever the spy reports is
+        // where the surface WAS - acting on it would cancel this navigation.
+        _navigationsInFlight++;
+        try
+        {
+            await GoToPageCoreAsync(pageNumber);
+        }
+        finally
+        {
+            _navigationsInFlight--;
+        }
+    }
+
+    // Navigations between their start and the scroll they end with (see OnPageVisible).
+    private int _navigationsInFlight;
+
+    private async Task GoToPageCoreAsync(int pageNumber)
+    {
+        // Going somewhere else replaces keeping the old spot: a zoom that preceded this
+        // jump (a destination's own scale, say) must not pull the reader back to where
+        // they were once its render lands.
+        _zoomAnchorPending = false;
+
         int version = _loadVersion; // a reload during the awaits below supersedes this navigation
         int target = Math.Clamp(pageNumber, 1, _pages.Count);
         if (target != CurrentPage)
         {
             // A host that bound the page one way owns it: the assignment is refused
             // and this navigation stops rather than desynchronizing the two.
-            if (await AssignCurrentPage(target) is false) return;
-            _appliedPage = CurrentPage;
+            if (await AssignPageFromViewer(target) is false) return;
             AnnouncePage();
             await OnPageChanged.InvokeAsync(CurrentPage);
             // OnPageChanged is user code: a reload (or new Source) during it makes
@@ -766,6 +800,24 @@ public partial class BitPdfViewer : BitComponentBase
         {
             await ScrollActiveThumbIntoViewAsync();
         }
+    }
+
+    /// <summary>Moves <see cref="CurrentPage"/> on the viewer's own account (a toolbar
+    /// jump, a scroll) and keeps the applied snapshot in step. The snapshot is taken
+    /// BEFORE the assignment: a bound host re-renders with the new value while
+    /// <c>CurrentPageChanged</c> runs, and that echo must not read as the host
+    /// navigating - it would restart the scroll, cutting a smooth jump off halfway.</summary>
+    private async Task<bool> AssignPageFromViewer(int page)
+    {
+        int previous = _appliedPage;
+        _appliedPage = page;
+        if (await AssignCurrentPage(page) is false)
+        {
+            _appliedPage = previous;
+            return false;
+        }
+        _appliedPage = CurrentPage;
+        return true;
     }
 
     /// <summary>
@@ -867,6 +919,7 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task SetZoom(double zoom)
     {
         _zoomMode = BitPdfZoomMode.Custom;
+        await KeepReadingPositionAsync();
         await SetZoomValueAsync(zoom);
         Repaint();
     }
@@ -877,6 +930,7 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task SetZoomMode(BitPdfZoomMode mode)
     {
         _zoomMode = mode;
+        await KeepReadingPositionAsync();
         if (mode == BitPdfZoomMode.ActualSize)
         {
             await SetZoomValueAsync(1.0);
@@ -886,6 +940,24 @@ public partial class BitPdfViewer : BitComponentBase
             await ApplyFitAsync();
         }
         Repaint();
+    }
+
+    /// <summary>Records where the reader is before a zoom re-sizes the pages, so the
+    /// render that follows puts that spot back at the viewport's edge. Without it the
+    /// scroll offset stays put in pixels while everything above it grows or shrinks,
+    /// and zooming on page 5 of a long document lands the reader on page 3.</summary>
+    private async Task KeepReadingPositionAsync()
+    {
+        // Only once the surface is live: there is nothing to keep before the first
+        // interactive render, and no JS to call while prerendering.
+        if (_dotnetObj is null || _pages.Count == 0) return;
+
+        try
+        {
+            await _js.BitPdfViewerStashViewAnchor(_containerRef);
+            _zoomAnchorPending = true;
+        }
+        catch (JSDisconnectedException) { }
     }
 
     /// <summary>
@@ -946,7 +1018,15 @@ public partial class BitPdfViewer : BitComponentBase
         int normalized = NormalizeRotation(degrees);
         if (normalized == Rotation) return;
 
-        if (await AssignRotation(normalized) is false) return;
+        // Snapshot first, as for the page: the host's echo of the new angle arrives
+        // during the assignment and must not re-apply the rotation a second time.
+        int previous = _appliedRotation;
+        _appliedRotation = normalized;
+        if (await AssignRotation(normalized) is false)
+        {
+            _appliedRotation = previous;
+            return;
+        }
         await OnRotationChanged.InvokeAsync(Rotation);
         if (IsDisposed) return;
 
@@ -972,9 +1052,14 @@ public partial class BitPdfViewer : BitComponentBase
         if (normalized != Rotation && await AssignRotation(normalized)) _appliedRotation = Rotation;
         if (IsDisposed) return;
 
+        // A turned page has another height, so the pixel offset alone would land the
+        // reader pages away from where they were: keep the spot, as a zoom does.
+        await KeepReadingPositionAsync();
         PreparePages();
-        await RenderCurrentPageEagerlyAsync();
+        // Flagged before the eager render yields: the render it lets through re-fits the
+        // turned pages, and the kept spot must wait for that fit, not land before it.
         _spyPending = true;
+        await RenderCurrentPageEagerlyAsync();
         Repaint();
     }
 
@@ -1004,7 +1089,11 @@ public partial class BitPdfViewer : BitComponentBase
         _source = source;
         if (replacing)
         {
-            // Through the two-way setters, so a bound host sees the reset.
+            // Through the two-way setters, so a bound host sees the reset. The snapshots
+            // go first: the host's echo of these values arrives DURING the assignment,
+            // and must not read as the host rotating or navigating the old document.
+            _appliedRotation = 0;
+            _appliedPage = 1;
             await AssignRotation(0);
             await AssignCurrentPage(1);
         }
@@ -1291,6 +1380,16 @@ public partial class BitPdfViewer : BitComponentBase
         {
             await _js.BitPdfViewerToggleFullscreen(RootElement);
         }
+
+        // Presenting hides the toolbar, so the button (or anything else in it) that
+        // started the presentation loses focus to the body - outside the root, where
+        // the shortcut listener never sees the arrow keys, Space or Escape. The
+        // surface is the one part left on screen, so focus goes there.
+        try
+        {
+            await _js.BitPdfViewerFocus(_containerRef, preventScroll: true);
+        }
+        catch (JSDisconnectedException) { }
     }
 
     /// <summary>
@@ -1460,7 +1559,7 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task Search(string? query)
     {
         _showSearch = true;
-        _searchQuery = query ?? "";
+        SetSearchQueryFromCode(query ?? "");
         Repaint(); // the find box may not be in the DOM yet
         await RunSearchAsync();
     }
@@ -1523,7 +1622,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     public async Task ClearSearch()
     {
-        _searchQuery = "";
+        SetSearchQueryFromCode("");
         await ClearSearchAsync();
         Repaint();
     }
@@ -1787,12 +1886,21 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnPageVisible(int pageNumber)
     {
+        // One page (or spread) at a time: what is on screen is the current page by
+        // construction, so a report can only be late - the page just left, arriving
+        // while the key that moves on from it is already navigating - and acting on it
+        // would cancel that navigation.
+        if (_scrollMode == BitPdfScrollMode.Page) return;
+
+        // Likewise while a navigation is still heading for its scroll: the report is
+        // from before it, and the navigation's own arrival is reported afterwards.
+        if (_navigationsInFlight > 0) return;
+
         if (pageNumber != CurrentPage && pageNumber >= 1 && pageNumber <= _pages.Count)
         {
             // As GoToPage: a one-way-bound page belongs to the host, so a scroll must
             // not move it behind the host's back.
-            if (await AssignCurrentPage(pageNumber) is false) return;
-            _appliedPage = CurrentPage;
+            if (await AssignPageFromViewer(pageNumber) is false) return;
             AnnouncePage();
             await OnPageChanged.InvokeAsync(pageNumber);
             if (IsDisposed) return;
@@ -1829,6 +1937,10 @@ public partial class BitPdfViewer : BitComponentBase
     {
         if (_zoomMode != BitPdfZoomMode.Custom)
         {
+            // A fit re-sizes every page when the box changes (leaving fullscreen, a
+            // sidebar opening, the window resizing), which moves the reader just as a
+            // zoom does.
+            await KeepReadingPositionAsync();
             await ApplyFitAsync();
             StateHasChanged();
         }
@@ -2053,16 +2165,18 @@ public partial class BitPdfViewer : BitComponentBase
 
         // A host-driven change of a two-way value navigates, zooms or rotates. The
         // applied snapshots tell a host assignment apart from the viewer's own, which
-        // already moved both the value and its snapshot.
-        if (CurrentPage != _appliedPage)
-        {
-            _appliedPage = CurrentPage;
-            await GoToPage(CurrentPage);
-        }
+        // already moved both the value and its snapshot. The zoom goes first: it keeps
+        // the reading position, and a page change arriving in the same render then
+        // moves on from there instead of being pulled back to it.
         if (Math.Abs(Zoom - _appliedZoom) > 0.0001)
         {
             _appliedZoom = Zoom;
             await SetZoom(Zoom);
+        }
+        if (CurrentPage != _appliedPage)
+        {
+            _appliedPage = CurrentPage;
+            await GoToPage(CurrentPage);
         }
         if (Rotation != _appliedRotation)
         {
@@ -2202,11 +2316,30 @@ public partial class BitPdfViewer : BitComponentBase
             catch (JSDisconnectedException) { }
         }
 
+        // Set when this pass re-fitted the zoom: the pages are about to be re-sized
+        // again, so a reading position waiting to be restored waits for that render.
+        bool refitted = false;
         if (_spyPending && _dotnetObj is not null)
         {
             _spyPending = false;
-            await _js.BitPdfViewerRegisterScrollSpy(_containerRef, _dotnetObj);
-            await ApplyFitAsync();
+            // Render passes overlap across these awaits; one that runs meanwhile must
+            // not restore a kept position the fit is about to move again.
+            _refitInFlight = true;
+            try
+            {
+                await _js.BitPdfViewerRegisterScrollSpy(_containerRef, _dotnetObj);
+                double zoomBefore = Zoom;
+                await ApplyFitAsync();
+                if (Math.Abs(Zoom - zoomBefore) > 0.0001)
+                {
+                    refitted = true;
+                    StateHasChanged();
+                }
+            }
+            finally
+            {
+                _refitInFlight = false;
+            }
             if (string.IsNullOrEmpty(_searchQuery) is false)
             {
                 await RunSearchAsync();
@@ -2242,9 +2375,21 @@ public partial class BitPdfViewer : BitComponentBase
             catch (JSDisconnectedException) { }
         }
 
+        // A query set from code reaches a find box that is showing what the reader typed:
+        // the rendered value may not have changed, so Blazor would leave the box alone.
+        if (_searchBoxSyncPending && _showSearch)
+        {
+            _searchBoxSyncPending = false;
+            try
+            {
+                await _js.BitPdfViewerSetValue(_searchInputRef, _searchQuery);
+            }
+            catch (JSDisconnectedException) { }
+        }
+
         // A wheel or pinch zoom asked for the point under the cursor to stay put; the
         // pages have their new size now, so the stashed anchor can be restored.
-        if (_zoomAnchorPending)
+        if (_zoomAnchorPending && refitted is false && _refitInFlight is false)
         {
             _zoomAnchorPending = false;
             try
@@ -3267,7 +3412,15 @@ public partial class BitPdfViewer : BitComponentBase
         double clamped = Math.Clamp(zoom, EffectiveMinZoom, EffectiveMaxZoom);
         if (Math.Abs(clamped - Zoom) < 0.0001) return;
 
-        if (await AssignZoom(clamped) is false) return;
+        // Snapshot first: a bound host echoes the value back during the assignment,
+        // and taken as a host zoom that echo would switch a fit mode to Custom.
+        double previous = _appliedZoom;
+        _appliedZoom = clamped;
+        if (await AssignZoom(clamped) is false)
+        {
+            _appliedZoom = previous;
+            return;
+        }
         _appliedZoom = Zoom;
         await OnZoomChanged.InvokeAsync(Zoom);
     }
@@ -3369,8 +3522,19 @@ public partial class BitPdfViewer : BitComponentBase
             _focusSearchPending = true;
             return;
         }
-        _searchQuery = "";
+        SetSearchQueryFromCode("");
         await ClearSearchAsync();
+    }
+
+    /// <summary>Sets the find query on the code's account (not the reader typing it),
+    /// so the box is brought in line with it: through the rendered value when that
+    /// changes, and directly after the render when the box shows something else the
+    /// reader typed since.</summary>
+    private void SetSearchQueryFromCode(string query)
+    {
+        _searchQuery = query;
+        _searchBoxValue = query;
+        _searchBoxSyncPending = true;
     }
 
     /// <summary>Closes the find box; a no-op when it is already closed, so a repeated
@@ -3457,13 +3621,22 @@ public partial class BitPdfViewer : BitComponentBase
             _ => 0,
         };
         if (target == 0) return;
+        target = Math.Clamp(target, 1, _thumbs.Count);
 
-        await GoToPage(target);
-        // The focused element left the tab order when the active thumbnail moved;
-        // follow the selection so the next arrow key still reaches this listbox.
+        // The focused element leaves the tab order when the active thumbnail moves, so
+        // focus follows the selection - and goes FIRST: the navigation below renders and
+        // scrolls to the page, and a focus that waited for it trails the key by that long
+        // (and sends the next key to the thumbnail just left).
         try
         {
-            await _js.BitPdfViewerFocusThumb(_thumbsRef, CurrentPage);
+            await _js.BitPdfViewerFocusThumb(_thumbsRef, target);
+            await GoToPage(target);
+            // A host that owns the page may have refused the move: focus goes back to
+            // the thumbnail that is actually selected.
+            if (CurrentPage != target)
+            {
+                await _js.BitPdfViewerFocusThumb(_thumbsRef, CurrentPage);
+            }
         }
         catch (JSDisconnectedException) { }
     }
@@ -3559,6 +3732,15 @@ public partial class BitPdfViewer : BitComponentBase
         else if (e.Key == "Escape")
         {
             await CloseSearch();
+            // The box held the focus and is about to leave the DOM, which would drop
+            // the reader onto the body - outside the viewer and its shortcuts. The
+            // surface is what the find box was searching, so focus lands there - without
+            // scrolling the hosting page, which already shows it.
+            try
+            {
+                await _js.BitPdfViewerFocus(_containerRef, preventScroll: true);
+            }
+            catch (JSDisconnectedException) { }
         }
     }
 

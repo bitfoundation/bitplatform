@@ -720,6 +720,33 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerShouldNotWriteTypedTextBackIntoTheFindBox()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+
+        // Each keystroke's value, rendered back, would land in a box the reader has
+        // typed further into since - dropping what they typed in between.
+        component.Find(".bit-pdv-search-input").Input("Hel");
+        component.WaitForAssertion(() => Assert.AreEqual("Hel", component.Instance.SearchQuery));
+        Assert.IsFalse(component.Find(".bit-pdv-search-input").HasAttribute("value")
+            && component.Find(".bit-pdv-search-input").GetAttribute("value") == "Hel");
+
+        // A query set from code still reaches the box, even one the reader typed into.
+        int sets = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Count;
+        await component.InvokeAsync(() => component.Instance.Search("world"));
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(sets + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Count));
+        Assert.AreEqual("world", Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Last().Arguments[1]);
+    }
+
+    [TestMethod]
     public void BitPdfViewerShouldOfferZoomPresetsWithinTheConfiguredBounds()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
@@ -2631,6 +2658,199 @@ public class BitPdfViewerTests : BunitTestContext
 
         await component.Find("[role='treeitem'] [role='treeitem']").ClickAsync(new MouseEventArgs());
         Assert.AreEqual(2, component.Instance.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldNumberEveryBookmarkRowInPaintOrder()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithNestedOutline()));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[role='treeitem']").Count));
+
+        // The arrow keys move DOM focus by this ordinal, so every row needs its own
+        // number - not the literal text of the expression that should produce it.
+        var ordinals = component.FindAll("[role='treeitem']").Select(i => i.GetAttribute("data-bit-pdv-outline")).ToArray();
+        CollectionAssert.AreEqual(new[] { "0", "1" }, ordinals);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldDownloadAnAttachmentUnderItsOwnType()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithAttachments()));
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.HasAttachments));
+
+        var notes = component.Instance.Attachments.Single(a => a.Name == "notes.txt");
+        var data = component.Instance.Attachments.Single(a => a.Name == "data.csv");
+        await component.InvokeAsync(() => component.Instance.DownloadAttachment(notes));
+        await component.InvokeAsync(() => component.Instance.DownloadAttachment(data));
+
+        // A browser renames a download to match the blob's type, so an attachment
+        // offered as a pdf would be saved as "notes.pdf".
+        var calls = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"];
+        Assert.AreEqual("notes.txt", calls[0].Arguments[0]);
+        Assert.AreEqual("text/plain", calls[0].Arguments[2]);
+        Assert.AreEqual("application/octet-stream", calls[1].Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldMoveFocusOntoTheSurfaceWhenPresenting()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+
+        // Presenting hides the toolbar, so the button that started it can no longer
+        // hold the focus the arrow keys need.
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+
+        Assert.AreEqual(before + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldKeepFocusInTheViewerWhenTheFindBoxClosesOnEscape()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+
+        component.Find(".bit-pdv-search-input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Instance.IsSearchOpen);
+            Assert.AreEqual(before + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+        });
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldMoveThumbnailFocusBeforeNavigating()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
+
+        component.Find("[data-thumb='1']").KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        // Focus lands on the new option before the jump renders and scrolls to its
+        // page; a focus that waited would take the next key on the option just left.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(3, component.Instance.CurrentPage);
+            var calls = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+            int focus = calls.LastIndexOf("BitBlazorUI.PdfViewer.focusThumb");
+            int scroll = calls.LastIndexOf("BitBlazorUI.PdfViewer.scrollToPage");
+            Assert.IsTrue(focus >= 0 && focus < scroll, $"focusThumb at {focus}, scrollToPage at {scroll}");
+        });
+        Assert.AreEqual(3, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"].Last().Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldNotTakeTheHostsEchoOfAScrolledPageForANavigation()
+    {
+        IRenderedComponent<BitPdfViewer>? component = null;
+
+        // A bound host re-renders with the new value while CurrentPageChanged runs.
+        void Echo(int page) => component?.Render(parameters =>
+        {
+            parameters.Add(p => p.CurrentPage, page);
+            parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, Echo));
+        });
+
+        component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
+            parameters.Add(p => p.CurrentPage, 1);
+            parameters.Add(p => p.CurrentPageChanged, EventCallback.Factory.Create<int>(this, Echo));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPage"].Count;
+
+        // The reader scrolled to page 3: the surface is already there, and scrolling it
+        // again (smoothly, from wherever it is mid-fling) would pull it off course.
+        await component.InvokeAsync(() => component.Instance.OnPageVisible(3));
+
+        Assert.AreEqual(3, component.Instance.CurrentPage);
+        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPage"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldKeepAFitModeWhenTheHostEchoesTheZoom()
+    {
+        SetupViewport(800, 600);
+        IRenderedComponent<BitPdfViewer>? component = null;
+
+        void Echo(double zoom) => component?.Render(parameters =>
+        {
+            parameters.Add(p => p.Zoom, zoom);
+            parameters.Add(p => p.ZoomChanged, EventCallback.Factory.Create<double>(this, Echo));
+        });
+
+        component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
+            parameters.Add(p => p.Zoom, 1);
+            parameters.Add(p => p.ZoomChanged, EventCallback.Factory.Create<double>(this, Echo));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+
+        // The fit computes a new factor and assigns it; the host sending that same
+        // factor back is not the host asking for a custom zoom.
+        await component.InvokeAsync(() => component.Instance.SetZoomMode(BitPdfZoomMode.FitPage));
+
+        Assert.AreEqual(BitPdfZoomMode.FitPage, component.Instance.ZoomMode);
+        Assert.AreNotEqual(1, component.Instance.Zoom, 0.0001);
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldKeepTheReadingPositionAcrossAZoom()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        int restores = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count;
+
+        await component.InvokeAsync(() => component.Instance.SetZoom(2));
+
+        // The spot is taken before the pages re-size and put back after they have.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.stashViewAnchor"].Count);
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(restores + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count));
+
+        // A quarter turn changes every page's height just as much.
+        await component.InvokeAsync(() => component.Instance.RotateClockwise());
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.stashViewAnchor"].Count);
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(restores + 2, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count));
     }
 
     // The viewport record is internal to the library, so its interop result is set up

@@ -170,7 +170,7 @@
                         <div class="bit-pdv-search-box @Classes?.SearchBox" style="@Styles?.SearchBox" role="search">
                             <input class="bit-pdv-search-input" type="search" placeholder="@ActiveTexts.FindPlaceholder"
                                    aria-label="@ActiveTexts.FindPlaceholder" @ref="_searchInputRef"
-                                   value="@_searchQuery" @oninput="OnSearchInput" @onkeydown="OnSearchKeyDown" @onkeydown:stopPropagation="true"
+                                   value="@_searchBoxValue" @oninput="OnSearchInput" @onkeydown="OnSearchKeyDown" @onkeydown:stopPropagation="true"
                                    disabled="@(_pages.Count == 0)" />
                             <button type="button" class="bit-pdv-opt @(_matchCase ? "bit-pdv-act" : "")"
                                     title="@ActiveTexts.MatchCase" aria-label="@ActiveTexts.MatchCase" aria-pressed="@AriaBool(_matchCase)"
@@ -542,7 +542,7 @@
         {
             bool hasChildren = item.Children.Count > 0;
             bool collapsed = IsOutlineCollapsed(item);
-            <li role="treeitem" data-bit-pdv-outline="@_outlineOrdinal++"
+            <li role="treeitem" data-bit-pdv-outline="@(_outlineOrdinal++)"
                 class="bit-pdv-outline-node @(item.PageNumber is null ? "bit-pdv-dis" : "") @Classes?.OutlineItem" style="@Styles?.OutlineItem"
                 tabindex="@(IsOutlineTabStop(item) ? 0 : -1)"
                 aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"

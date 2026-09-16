@@ -20,7 +20,9 @@
             }
             const target = container.querySelector(`[data-page='${pageNumber}']`);
             if (target) {
-                PdfViewer.scrollWithin(container, target, "start", "smooth");
+                // .NET is already on this page: the spy has nothing to tell it on arrival.
+                (container as any).__bitPdvLastPage = pageNumber;
+                PdfViewer.scrollWithin(container, target, "start", "smooth", pageNumber);
                 // Render the destination immediately so jumps don't land on a placeholder.
                 PdfViewer.scheduleRender(container, (container as any).__bitPdvDotnet);
             }
@@ -30,7 +32,7 @@
         // scrollIntoView, which also scrolls every scrollable ancestor (including
         // the hosting page, yanking the whole document around when the viewer is
         // embedded mid-page).
-        private static scrollWithin(container: HTMLElement, target: Element, block: "start" | "center" | "nearest", behavior: ScrollBehavior = "auto") {
+        private static scrollWithin(container: HTMLElement, target: Element, block: "start" | "center" | "nearest", behavior: ScrollBehavior = "auto", page?: number) {
             const cRect = container.getBoundingClientRect();
             const tRect = target.getBoundingClientRect();
 
@@ -53,8 +55,83 @@
             }
 
             if (top !== container.scrollTop || left !== container.scrollLeft) {
+                if (behavior === "smooth") {
+                    PdfViewer.holdScrollSpy(container, top, left, page);
+                }
                 container.scrollTo({ top, left, behavior });
             }
+        }
+
+        // A smooth jump crosses every page between where the reader was and where they
+        // are going. Reported one by one, each would become the current page in turn -
+        // moving a bound CurrentPage, raising OnPageChanged and announcing a page the
+        // reader never stopped on. The spy is held until the jump arrives, then reports
+        // once, wherever it actually landed. "Arrived" is the target offset reached (or
+        // as near as the content allows) - a pause in scroll events is not enough, since
+        // a browser that scrolls off the main thread can stall them mid-flight - with
+        // the reader taking over, or a hard cap, as the ways out of a jump that never ends.
+        private static holdScrollSpy(container: HTMLElement, top?: number, left?: number, page?: number) {
+            const c = container as any;
+            // Going somewhere replaces keeping the old spot (as GoToPage does in .NET): a
+            // position stashed before this jump must not pull the reader back mid-flight.
+            if (page) {
+                c.__bitPdvViewAnchor = null;
+            }
+            if (c.__bitPdvSpyHold) {
+                c.__bitPdvSpyHold.retarget(top, left);
+                if (page) {
+                    c.__bitPdvSpyHold.page = page;
+                }
+                return;
+            }
+            let settle = 0;
+            let cap = 0;
+            let goal = { top, left };
+            // The goal as the content can actually reach it (a right-to-left surface
+            // scrolls through negative offsets).
+            const near = (want: number | undefined, now: number, max: number) =>
+                want === undefined || Math.abs((want < 0 ? Math.max(want, -max) : Math.min(want, max)) - now) < 2;
+            const arrived = () =>
+                near(goal.top, container.scrollTop, container.scrollHeight - container.clientHeight)
+                && near(goal.left, container.scrollLeft, container.scrollWidth - container.clientWidth);
+            // Not keydown: a shortcut starts the next jump itself, which retargets the hold.
+            const takeover = ["wheel", "touchstart", "pointerdown"];
+            const release = () => {
+                clearTimeout(settle);
+                clearTimeout(cap);
+                container.removeEventListener("scroll", restart);
+                takeover.forEach((t) => container.removeEventListener(t, release));
+                c.__bitPdvSpyHold = null;
+                if (c.__bitPdvReportPage) {
+                    c.__bitPdvReportPage();
+                }
+            };
+            // Scrolling has paused (no scroll event for a while) short of the goal: WebKit
+            // drops a smooth scroll when the content changes under it - the destination
+            // rendering in, say - and nothing would ever finish the jump. The reader did
+            // not take over (that releases the hold), so the jump is completed at once.
+            const check = () => {
+                if (!arrived()) {
+                    container.scrollTo({ top: goal.top, left: goal.left, behavior: "instant" as ScrollBehavior });
+                }
+                release();
+            };
+            const restart = () => {
+                clearTimeout(settle);
+                settle = setTimeout(check, 150);
+            };
+            const retarget = (t?: number, l?: number) => {
+                goal = { top: t, left: l };
+                clearTimeout(cap);
+                cap = setTimeout(release, 2000);
+                restart();
+            };
+            container.addEventListener("scroll", restart, { passive: true });
+            takeover.forEach((t) => container.addEventListener(t, release, { passive: true }));
+            // `page` is where the jump is heading, which a zoom or resize landing mid-jump
+            // keeps as the reading position (see stashViewAnchor).
+            c.__bitPdvSpyHold = { retarget, release, page };
+            retarget(top, left);
         }
 
         // Throttles render passes to one per animation frame.
@@ -173,32 +250,60 @@
             (container as any).__bitPdvDotnet = dotnetRef;
 
             const ratios = new Map<Element, number>();
+            const report = () => {
+                let best: Element | null = null;
+                let bestRatio = 0;
+                ratios.forEach((ratio, el) => {
+                    if (ratio > bestRatio) {
+                        bestRatio = ratio;
+                        best = el;
+                    }
+                });
+                if (best) {
+                    const n = parseInt((best as Element).getAttribute("data-page") || "", 10);
+                    // Only cross the interop boundary when the focused page actually
+                    // changed - the observer fires on every threshold crossing while
+                    // scrolling, and each call would otherwise run .NET on the UI thread.
+                    if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
+                        (container as any).__bitPdvLastPage = n;
+                        dotnetRef.invokeMethodAsync("OnPageVisible", n);
+                    }
+                }
+            };
             const observer = new IntersectionObserver(
                 (entries) => {
                     for (const entry of entries) {
                         ratios.set(entry.target, entry.isIntersecting ? entry.intersectionRatio : 0);
                     }
-                    let best: Element | null = null;
-                    let bestRatio = 0;
-                    ratios.forEach((ratio, el) => {
-                        if (ratio > bestRatio) {
-                            bestRatio = ratio;
-                            best = el;
-                        }
-                    });
-                    if (best) {
-                        const n = parseInt((best as Element).getAttribute("data-page") || "", 10);
-                        // Only cross the interop boundary when the focused page actually
-                        // changed - the observer fires on every threshold crossing while
-                        // scrolling, and each call would otherwise run .NET on the UI thread.
-                        if (!Number.isNaN(n) && (container as any).__bitPdvLastPage !== n) {
-                            (container as any).__bitPdvLastPage = n;
-                            dotnetRef.invokeMethodAsync("OnPageVisible", n);
-                        }
+                    // A jump in flight passes over every page between here and there;
+                    // only where it lands is the reader's page (see holdScrollSpy). Nor is
+                    // the page under a stale offset while a kept reading position waits to
+                    // be restored after a zoom or rotation (bounded, should the restore
+                    // never come).
+                    const c = container as any;
+                    const anchored = c.__bitPdvViewAnchor && performance.now() - c.__bitPdvViewAnchor.at < 2000;
+                    if (!c.__bitPdvSpyHold && !anchored) {
+                        report();
                     }
                 },
                 { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
             );
+            // A held spy reports when the jump settles, which can be before the observer
+            // has delivered the entries for it (a page mode hiding the page just left,
+            // say) - so that report measures the pages itself instead of trusting ratios
+            // that may still describe the layout before the jump.
+            (container as any).__bitPdvReportPage = () => {
+                const rect = container.getBoundingClientRect();
+                ratios.clear();
+                container.querySelectorAll("[data-page]").forEach((page) => {
+                    const r = page.getBoundingClientRect();
+                    const w = Math.max(0, Math.min(r.right, rect.right) - Math.max(r.left, rect.left));
+                    const h = Math.max(0, Math.min(r.bottom, rect.bottom) - Math.max(r.top, rect.top));
+                    const area = r.width * r.height;
+                    ratios.set(page, area > 0 ? (w * h) / area : 0);
+                });
+                report();
+            };
 
             container.querySelectorAll("[data-page]").forEach((p) => observer.observe(p));
             (container as any).__bitPdvObserver = observer;
@@ -248,6 +353,18 @@
             };
             container.addEventListener("click", onClick);
             (container as any).__bitPdvClick = onClick;
+
+            // A Shift+click is how a browser EXTENDS the selection, so left alone the
+            // click that means "previous slide" would first select the text between the
+            // last click and this one - and a click over a selection is not an advance.
+            // Stopping the extension where it starts keeps Shift+click a page turn.
+            const onMouseDown = (e: MouseEvent) => {
+                if (e.shiftKey && e.button === 0 && container.closest(".bit-pdv-presenting")) {
+                    e.preventDefault();
+                }
+            };
+            container.addEventListener("mousedown", onMouseDown);
+            (container as any).__bitPdvMouseDown = onMouseDown;
 
             // Ctrl+wheel (and pinch, which browsers report as ctrl+wheel) zooms, keeping
             // the point under the cursor where it is instead of jumping to the top-left.
@@ -366,6 +483,11 @@
                 c.__bitPdvObserver.disconnect();
                 c.__bitPdvObserver = null;
             }
+            // A held jump outlives this: a layout change re-registers the spy mid-jump,
+            // and the jump is still heading where it was. Its release reports through
+            // whichever spy is registered by then - none, once the viewer is gone - and
+            // its own cap bounds how long it lingers.
+            c.__bitPdvReportPage = null;
             if (c.__bitPdvScroll) {
                 container.removeEventListener("scroll", c.__bitPdvScroll);
                 c.__bitPdvScroll = null;
@@ -382,6 +504,10 @@
             if (c.__bitPdvClick) {
                 container.removeEventListener("click", c.__bitPdvClick);
                 c.__bitPdvClick = null;
+            }
+            if (c.__bitPdvMouseDown) {
+                container.removeEventListener("mousedown", c.__bitPdvMouseDown);
+                c.__bitPdvMouseDown = null;
             }
             if (c.__bitPdvWheel) {
                 container.removeEventListener("wheel", c.__bitPdvWheel);
@@ -424,20 +550,95 @@
             };
         }
 
-        // Puts the stashed point back under the cursor now that the pages have been
-        // re-sized. A no-op when nothing was stashed, so an ordinary zoom (a toolbar
-        // button, a fit mode) still lands wherever it always did.
+        // Remembers the reading position ahead of a zoom that has no cursor to keep
+        // still (a toolbar button, the dropdown, a bound Zoom, the API): the page at
+        // the viewport's leading edge and how far into it that edge falls. Kept as a
+        // fraction OF THE PAGE, not of the whole content, because the gaps between
+        // pages do not scale - over a long document a content fraction drifts by
+        // whole pages. A wheel or pinch anchor already stashed takes precedence.
+        public static stashViewAnchor(container: HTMLElement) {
+            const c = container as any;
+            if (!container || c.__bitPdvZoomAnchor) {
+                return;
+            }
+            const horizontal = container.getAttribute("data-bit-pdv-axis") === "h";
+            // Mid-jump the spot under the viewport is only a page being flown over: the
+            // reader's position is the page the jump is heading for.
+            if (c.__bitPdvSpyHold && c.__bitPdvSpyHold.page) {
+                c.__bitPdvViewAnchor = { at: performance.now(), page: String(c.__bitPdvSpyHold.page), horizontal, fx: 0, fy: 0 };
+                return;
+            }
+            const rect = container.getBoundingClientRect();
+            const pages = container.querySelectorAll("[data-page]");
+            for (let i = 0; i < pages.length; i++) {
+                const r = pages[i].getBoundingClientRect();
+                if (r.width === 0 && r.height === 0) {
+                    continue; // hidden by page mode
+                }
+                if ((horizontal ? r.right : r.bottom) <= (horizontal ? rect.left : rect.top)) {
+                    continue; // entirely before the viewport
+                }
+                c.__bitPdvViewAnchor = {
+                    at: performance.now(),
+                    page: pages[i].getAttribute("data-page"),
+                    horizontal,
+                    fx: r.width > 0 ? (rect.left - r.left) / r.width : 0,
+                    fy: r.height > 0 ? (rect.top - r.top) / r.height : 0,
+                };
+                return;
+            }
+        }
+
+        // Puts the stashed point back under the cursor (or the stashed page back at
+        // the viewport's edge) now that the pages have been re-sized. A no-op when
+        // nothing was stashed.
         public static restoreZoomAnchor(container: HTMLElement) {
             if (!container) {
                 return;
             }
-            const anchor = (container as any).__bitPdvZoomAnchor;
-            (container as any).__bitPdvZoomAnchor = null;
-            if (!anchor) {
+            const c = container as any;
+            const anchor = c.__bitPdvZoomAnchor;
+            const view = c.__bitPdvViewAnchor;
+            c.__bitPdvZoomAnchor = null;
+            c.__bitPdvViewAnchor = null;
+            if (anchor) {
+                container.scrollLeft = anchor.fx * container.scrollWidth - anchor.x;
+                container.scrollTop = anchor.fy * container.scrollHeight - anchor.y;
                 return;
             }
-            container.scrollLeft = anchor.fx * container.scrollWidth - anchor.x;
-            container.scrollTop = anchor.fy * container.scrollHeight - anchor.y;
+            if (!view) {
+                return;
+            }
+            const page = container.querySelector(`[data-page='${view.page}']`);
+            if (!page) {
+                return;
+            }
+            const rect = container.getBoundingClientRect();
+            const r = page.getBoundingClientRect();
+            // The scrolling axis always follows the page; the cross axis only when the
+            // viewport started inside the page, since a page narrower than the surface
+            // is centered by a margin that does not scale with it.
+            let top = container.scrollTop;
+            let left = container.scrollLeft;
+            if (!view.horizontal || view.fy >= 0) {
+                top += r.top - rect.top + view.fy * r.height;
+            }
+            if (view.horizontal || view.fx >= 0) {
+                left += r.left - rect.left + view.fx * r.width;
+            }
+            // An explicit instant scroll, not an offset assignment: a jump still in
+            // flight is heading for where its page sat before the re-size, and WebKit
+            // lets that animation run on over a plain assignment. The hold then waits
+            // for this offset - the computed one, since reading it back mid-animation
+            // can return where the animation had got to.
+            container.scrollTo({ top, left, behavior: "instant" as ScrollBehavior });
+            if (c.__bitPdvSpyHold) {
+                c.__bitPdvSpyHold.retarget(top, left);
+            }
+            // The spy stayed quiet while the spot was pending; once the observer has
+            // seen the restored offset, report the page it shows - unless a jump is
+            // still held, whose own release reports where it lands.
+            setTimeout(() => !c.__bitPdvSpyHold && c.__bitPdvReportPage && c.__bitPdvReportPage(), 100);
         }
 
         // Scrolls a page to the top of the surface, then a further `offset` CSS pixels
@@ -453,11 +654,11 @@
             }
             const cRect = container.getBoundingClientRect();
             const tRect = target.getBoundingClientRect();
-            container.scrollTo({
-                top: container.scrollTop + (tRect.top - cRect.top) + (offset || 0),
-                left: container.scrollLeft + Math.min(0, tRect.left - cRect.left),
-                behavior: "smooth",
-            });
+            const top = container.scrollTop + (tRect.top - cRect.top) + (offset || 0);
+            const left = container.scrollLeft + Math.min(0, tRect.left - cRect.left);
+            (container as any).__bitPdvLastPage = pageNumber;
+            PdfViewer.holdScrollSpy(container, top, left, pageNumber);
+            container.scrollTo({ top, left, behavior: "smooth" });
             PdfViewer.scheduleRender(container, (container as any).__bitPdvDotnet);
         }
 
@@ -676,9 +877,11 @@
 
         // Moves focus to an element, used after .NET opens a control that was not in
         // the DOM yet (the find box) so the user can type into it straight away.
-        public static focus(element: HTMLElement) {
+        // `preventScroll` keeps the hosting page where it is when focus only moves
+        // within an element the reader is already looking at (the surface).
+        public static focus(element: HTMLElement, preventScroll?: boolean) {
             if (element && element.focus) {
-                element.focus();
+                element.focus({ preventScroll: !!preventScroll });
             }
         }
 
@@ -902,9 +1105,11 @@
 
         // Streams the document bytes from .NET (via a DotNetStreamReference) into a Blob
         // and triggers a download, avoiding a multi-megabyte base64 string over SignalR.
-        public static async download(fileName: string, streamRef: any) {
+        // The blob carries the file's own type: Firefox renames a download to match
+        // it, so an attachment typed as a pdf would be saved as "notes.pdf".
+        public static async download(fileName: string, streamRef: any, mimeType?: string) {
             const buffer = await streamRef.arrayBuffer();
-            const blob = new Blob([buffer], { type: "application/pdf" });
+            const blob = new Blob([buffer], { type: mimeType || "application/pdf" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
@@ -1080,7 +1285,17 @@
                 doc.body.appendChild(sheet);
             }
 
-            const cleanup = () => setTimeout(() => frame.remove(), 1000);
+            // Printing focuses the frame, and removing a focused frame drops focus on the
+            // body - outside the viewer, where its shortcuts no longer reach. The reader
+            // goes back to wherever they printed from.
+            const returnFocus = document.activeElement as HTMLElement | null;
+            const cleanup = () => setTimeout(() => {
+                const hadFocus = document.activeElement === frame;
+                frame.remove();
+                if (hadFocus && returnFocus && returnFocus.isConnected && returnFocus.focus) {
+                    returnFocus.focus({ preventScroll: true });
+                }
+            }, 1000);
             if (frame.contentWindow) {
                 frame.contentWindow.addEventListener("afterprint", cleanup, { once: true });
             }

@@ -27,6 +27,11 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.scrollToPageOffset", container, pageNumber, offset);
     }
 
+    public static ValueTask BitPdfViewerStashViewAnchor(this IJSRuntime jsRuntime, ElementReference container)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.stashViewAnchor", container);
+    }
+
     public static ValueTask BitPdfViewerRestoreZoomAnchor(this IJSRuntime jsRuntime, ElementReference container)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.restoreZoomAnchor", container);
@@ -77,6 +82,11 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focus", element);
     }
 
+    public static ValueTask BitPdfViewerFocus(this IJSRuntime jsRuntime, ElementReference element, bool preventScroll)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.focus", element, preventScroll);
+    }
+
     public static ValueTask BitPdfViewerSetValue(this IJSRuntime jsRuntime, ElementReference element, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.setValue", element, value);
@@ -112,9 +122,9 @@ internal static class BitPdfViewerJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.scrollThumbIntoView", container, pageNumber);
     }
 
-    public static ValueTask BitPdfViewerDownload(this IJSRuntime jsRuntime, string fileName, DotNetStreamReference streamRef)
+    public static ValueTask BitPdfViewerDownload(this IJSRuntime jsRuntime, string fileName, DotNetStreamReference streamRef, string mimeType = "application/pdf")
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.download", fileName, streamRef);
+        return jsRuntime.InvokeVoid("BitBlazorUI.PdfViewer.download", fileName, streamRef, mimeType);
     }
 
     public static ValueTask BitPdfViewerCorrectTextWidths(this IJSRuntime jsRuntime, ElementReference container)

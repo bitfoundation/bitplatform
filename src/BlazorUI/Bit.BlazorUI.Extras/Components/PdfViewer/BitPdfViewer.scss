@@ -812,9 +812,19 @@
 /* The open-file control is the file input itself, laid transparently over a
    button-shaped span: the input keeps the click and the keyboard focus, the span
    supplies the look every other toolbar button has. */
+/* The picker is clipped to its button: WebKit lays a file input's own upload button
+   and "no file selected" label out past the input's box, and they still take clicks
+   there - on the Download button beside it. */
 .bit-pdv-open {
-    position: relative;
     cursor: pointer;
+    overflow: hidden;
+    position: relative;
+
+    /* The input is invisible, and so is its focus ring: the button shape shows it. */
+    &:has(.bit-pdv-file:focus-visible) {
+        outline: $shp-border-width-thick $shp-border-style $clr-pri;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
 }
 
 .bit-pdv-file {
@@ -824,6 +834,7 @@
     width: 100%;
     height: 100%;
     cursor: pointer;
+    overflow: hidden;
     position: absolute;
 }
 
