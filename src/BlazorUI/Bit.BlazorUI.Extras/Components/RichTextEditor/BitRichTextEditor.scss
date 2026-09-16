@@ -289,6 +289,19 @@
     min-height: 0;
     position: relative;
 
+    // Source view hides the surface with the hidden attribute, which any display rule aimed at
+    // the surface (a host class, for one) would otherwise override.
+    &[hidden] {
+        display: none;
+    }
+
+    // Content takes its font from the surface, or from the font family applied around it. A host
+    // stylesheet that sets a font on every element (* { font-family: ... }) would otherwise
+    // override both, and a size applied inside a font family would drop that family.
+    * {
+        font-family: inherit;
+    }
+
     &:focus-visible {
         outline: spacing(0.25) solid $clr-pri;
         outline-offset: spacing(-0.25);

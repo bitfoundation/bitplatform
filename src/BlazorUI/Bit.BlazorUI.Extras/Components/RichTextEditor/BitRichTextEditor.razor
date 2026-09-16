@@ -253,6 +253,10 @@
         </div>
     }
 
+    @* A non-editable div is not focusable, so a read-only editor would be unreachable by keyboard -
+       its content unable to be scrolled or read out. The surface below therefore gets a tab stop
+       while read-only, unless the whole component is disabled, where nothing inside it should take
+       focus. (A Razor comment cannot sit inside the tag: it is emitted as an attribute name.) *@
     <div class="bit-rte-edt @(Resizable ? "bit-rte-edt-rsz" : null) @Classes?.Editor"
          @ref="_editorRef"
          role="textbox"
@@ -263,9 +267,6 @@
          aria-describedby="@(ShowCount ? $"{UniqueId}-count" : null)"
          spellcheck="@SpellCheck.ToString().ToLowerInvariant()"
          contenteditable="@((EffectiveReadOnly is false && _inSourceView is false).ToString().ToLowerInvariant())"
-         @* A non-editable div is not focusable, so a read-only editor would be unreachable by
-            keyboard - its content unable to be scrolled or read out. Give it a tab stop, unless
-            the whole component is disabled, where nothing inside it should take focus. *@
          tabindex="@(ReadOnly && IsEnabled && _inSourceView is false ? "0" : null)"
          data-placeholder="@Placeholder"
          hidden="@_inSourceView"

@@ -99,9 +99,13 @@ namespace BitBlazorUI {
             options = options || {};
             editor._dotNetRef = dotnetObj;
             RichTextEditor.updateOptions(editor, options);
+            // Enter - and leaving a list or a quote - starts a <p>, the block every other path
+            // writes, instead of the <div> the engines default to (which Gecko also nests).
+            try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch { /* not supported */ }
             let timer: ReturnType<typeof setTimeout> | null = null;
 
             const notify = () => {
+                RichTextEditor.stripEngineStyles(editor);
                 RichTextEditor.updateEmpty(editor);
                 if (editor._dotNetRef)
                     editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
@@ -110,6 +114,8 @@ namespace BitBlazorUI {
 
             editor._onInput = () => {
                 RichTextEditor.updateEmpty(editor);
+                // Text typed before a selected image moves it out from under its resize handle.
+                if (editor._resizeReposition) editor._resizeReposition();
                 if (timer) clearTimeout(timer);
                 timer = setTimeout(notify, editor._debounce);
             };
@@ -229,6 +235,7 @@ namespace BitBlazorUI {
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;
             editor._range = null;
+            editor._leaveMark = null;
             editor._activeImage = null;
             // Transient view/input state, cleared so a re-initialized element never starts out
             // believing it is in the CSS full-screen fallback or owes someone a plain-text paste.
@@ -282,11 +289,12 @@ namespace BitBlazorUI {
         // temporary <mark class="bit-rte-find"> nodes never leak into persisted Value.
         private static cleanHtml(editor: any): string {
             if (!editor) return '';
-            if (!editor.querySelector('mark.bit-rte-find')) return editor.innerHTML;
+            if (!editor.querySelector('mark.bit-rte-find') && !RichTextEditor.needsBlockNormalizing(editor)) return editor.innerHTML;
             const clone = editor.cloneNode(true) as HTMLElement;
             clone.querySelectorAll('mark.bit-rte-find').forEach((m: Element) => {
                 m.replaceWith(...Array.from(m.childNodes));
             });
+            RichTextEditor.normalizeBlocks(clone, false);
             clone.normalize();
             return clone.innerHTML;
         }
@@ -1412,13 +1420,18 @@ namespace BitBlazorUI {
             RichTextEditor.restoreSelection(editor);
             const block = RichTextEditor.currentBlock(editor);
             if (block && (block.textContent || '').startsWith('/')) {
-                block.textContent = block.textContent!.slice(1);
+                const rest = block.textContent!.slice(1);
+                // A line that held only the trigger is emptied the way the typing rules empty
+                // one, so the command lands on it rather than on the line before.
+                if (rest) block.textContent = rest;
+                else RichTextEditor.clearBlockText(editor, block);
             }
             if (['h1', 'h2', 'h3', 'p', 'blockquote', 'pre'].includes(command)) {
                 RichTextEditor.dispatch(editor, 'formatBlock', { value: command });
             } else {
                 RichTextEditor.dispatch(editor, command, {});
             }
+            RichTextEditor.normalizeBlocks(editor, true);
             RichTextEditor.afterChange(editor);
         }
 
@@ -1483,6 +1496,19 @@ namespace BitBlazorUI {
                     return RichTextEditor.toggleInlineCode(editor);
                 case 'createLink':
                     return RichTextEditor.createLinkImpl(editor, args?.value);
+                case 'unlink': {
+                    // The engines only unlink what is selected, so a caret resting in a link (what
+                    // the link button reports as "in a link") selects that whole link first.
+                    const sel = document.getSelection();
+                    const link = sel && sel.isCollapsed ? RichTextEditor.linkAtSelection(editor) : null;
+                    if (sel && link) {
+                        const range = document.createRange();
+                        range.selectNodeContents(link);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    return RichTextEditor.execNative(editor, 'unlink');
+                }
                 case 'insertTable':
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
                 case 'insertMedia':
@@ -1493,8 +1519,161 @@ namespace BitBlazorUI {
         }
 
         private static execNative(editor: any, command: string, value?: any): boolean {
+            if (command === 'insertHTML') return RichTextEditor.insertHtmlExact(editor, value);
             try { return document.execCommand(command, false, value ?? undefined); }
             catch { return false; }
+        }
+
+        private static readonly INSERT_MARK = 'data-bit-rte-ins';
+        private static readonly BLOCK_TAGS = /^(ADDRESS|ARTICLE|ASIDE|AUDIO|BLOCKQUOTE|DD|DETAILS|DIV|DL|DT|FIGCAPTION|FIGURE|FOOTER|H[1-6]|HEADER|HR|IFRAME|LI|MAIN|NAV|OL|P|PRE|SECTION|TABLE|TBODY|TD|TFOOT|TH|THEAD|TR|UL|VIDEO)$/;
+
+        // insertHTML as the page sees it is not what the engine writes. Blink restyles the inserted
+        // elements to match what the page's stylesheets made them look like in a scratch copy: it
+        // bakes computed values (the page's font family, "display: inline !important", a class'
+        // colors) into style attributes that the sanitizer then keeps as presentational, and it
+        // rebuilds an attributed <span> from those computed values alone - a mention loses its
+        // class and data-mention-id. So an inline fragment carrying a span is placed with a DOM
+        // range, and every other fragment still goes through the engine (keeping it on the native
+        // undo stack) with each element's own attributes put back afterwards.
+        private static insertHtmlExact(editor: any, html: string): boolean {
+            if (!html) return false;
+            const tpl = document.createElement('template');
+            tpl.innerHTML = html;
+            const elements = Array.from(tpl.content.querySelectorAll('*'));
+            const inline = elements.every(e => !RichTextEditor.BLOCK_TAGS.test(e.tagName));
+            // Blink also drops an inserted <code> for a span that only mimics its look.
+            const rebuilt = (e: Element) => e.tagName === 'CODE'
+                || (e.tagName === 'SPAN' && Array.from(e.attributes).some(a => a.name !== 'style'));
+            if (inline && elements.some(rebuilt)) {
+                if (RichTextEditor.insertInlineFragment(editor, tpl.content)) return true;
+            }
+
+            const original = elements.map(e => Array.from(e.attributes).map(a => [a.name, a.value]));
+            elements.forEach((e, i) => e.setAttribute(RichTextEditor.INSERT_MARK, String(i)));
+            let ok = false;
+            try { ok = document.execCommand('insertHTML', false, tpl.innerHTML); }
+            catch { ok = false; }
+            editor.querySelectorAll(`[${RichTextEditor.INSERT_MARK}]`).forEach((e: Element) => {
+                const attrs = original[Number(e.getAttribute(RichTextEditor.INSERT_MARK))];
+                Array.from(e.attributes).forEach(a => e.removeAttribute(a.name));
+                attrs?.forEach(([name, value]) => e.setAttribute(name, value));
+            });
+            return ok;
+        }
+
+        // Keeps the block structure the engines' list commands break. Blink and WebKit build a list
+        // inside the <p> it was made from, and <p><ul> is not HTML: parsed again after a save it
+        // comes back as the list between two stray empty paragraphs. Gecko instead leaves the text
+        // of a list it toggles off (and of an emptied surface) directly in the surface. So a
+        // paragraph holding blocks is unwrapped, and each run of inline content left in the root
+        // is given the paragraph it reads as.
+        // It runs on the outbound copy of the content, and on the live surface only where an
+        // input rule has already edited the DOM by hand: rewriting the surface after a native
+        // command would take that command off the engine's undo stack. On the live surface the
+        // selection is carried over, since moving a node resets any selection inside it.
+        private static needsBlockNormalizing(root: any): boolean {
+            return RichTextEditor.invalidParagraphs(root).length > 0
+                || (Array.from(root.childNodes) as any[]).some(n => RichTextEditor.isLooseInline(n));
+        }
+
+        private static invalidParagraphs(root: any): HTMLElement[] {
+            return (Array.from(root.querySelectorAll('p')) as HTMLElement[])
+                .filter(p => Array.from(p.children).some(c => RichTextEditor.BLOCK_TAGS.test(c.tagName)));
+        }
+
+        private static isLooseInline(n: any): boolean {
+            if (n.nodeType === 3) return /\S/.test(n.nodeValue || '');
+            return n.nodeType === 1 && n.tagName !== 'BR' && !RichTextEditor.BLOCK_TAGS.test(n.tagName);
+        }
+
+        private static normalizeBlocks(root: any, live: boolean) {
+            if (!RichTextEditor.needsBlockNormalizing(root)) return;
+
+            const sel = live ? document.getSelection() : null;
+            const saved = sel && sel.rangeCount > 0 && sel.anchorNode !== root && sel.focusNode !== root
+                ? [sel.anchorNode!, sel.anchorOffset, sel.focusNode!, sel.focusOffset] as const
+                : null;
+
+            // The browser's placeholder <br> goes with the paragraph that held it.
+            RichTextEditor.invalidParagraphs(root).forEach(p => {
+                if (p.lastChild && p.lastChild.nodeName === 'BR') p.lastChild.remove();
+                p.replaceWith(...Array.from(p.childNodes));
+            });
+
+            const isInline = (n: any) => n.nodeType === 3 || (n.nodeType === 1 && !RichTextEditor.BLOCK_TAGS.test(n.tagName));
+            let run: any[] = [];
+            const flush = () => {
+                if (run.some(n => RichTextEditor.isLooseInline(n))) {
+                    const p = document.createElement('p');
+                    run[0].before(p);
+                    p.append(...run);
+                }
+                run = [];
+            };
+            for (const n of Array.from(root.childNodes) as any[]) {
+                if (isInline(n)) run.push(n);
+                else flush();
+            }
+            flush();
+
+            if (sel && saved && root.contains(saved[0]) && root.contains(saved[2])) {
+                sel.setBaseAndExtent(saved[0], saved[1], saved[2], saved[3]);
+            }
+        }
+
+        // Blink and WebKit copy what the page's stylesheets resolve to into the style attribute of
+        // the elements their commands create or move - the page's font stack, "display: inline
+        // !important", a heading's font-size variable - and the sanitizer keeps those as
+        // presentational. None of it was applied by the user: a font family equal to the
+        // surface's own, an inline display and any value built on a custom property (no toolbar
+        // control writes one) are dropped, and a span left with nothing to say is unwrapped
+        // unless the caret is inside it. Only attributes change, so the caret never moves.
+        private static stripEngineStyles(editor: any) {
+            const styled = editor.querySelectorAll('[style]');
+            if (styled.length === 0) return;
+            const family = (v: string) => v.replace(/["'\s]/g, '').toLowerCase();
+            const surfaceFont = family(getComputedStyle(editor).fontFamily);
+            const sel = document.getSelection();
+            const anchor = sel && sel.rangeCount > 0 ? sel.anchorNode : null;
+            styled.forEach((el: HTMLElement) => {
+                const style = el.style;
+                if (style.getPropertyValue('display') === 'inline') style.removeProperty('display');
+                const font = style.getPropertyValue('font-family');
+                if (font && family(font) === surfaceFont) style.removeProperty('font-family');
+                for (let i = style.length - 1; i >= 0; i--) {
+                    if (style.getPropertyValue(style[i]).includes('var(')) style.removeProperty(style[i]);
+                }
+                if (style.length === 0) el.removeAttribute('style');
+                if (el.tagName === 'SPAN' && el.attributes.length === 0 && !(anchor && el.contains(anchor))) {
+                    el.replaceWith(...Array.from(el.childNodes));
+                }
+            });
+        }
+
+        // Replaces the selection with an inline fragment and leaves the caret right after it.
+        private static insertInlineFragment(editor: any, fragment: DocumentFragment): boolean {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return false;
+            const range = sel.getRangeAt(0);
+            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
+            const last = fragment.lastChild;
+            if (!last) return false;
+            range.deleteContents();
+            // An emptied line still holds the browser's placeholder <br>, which would otherwise
+            // stay behind the inserted content as a stray line break.
+            const container = range.startContainer as any;
+            if (container.nodeType === 1 && container.childNodes.length === 1 && container.firstChild.nodeName === 'BR') {
+                container.firstChild.remove();
+            }
+            range.insertNode(fragment);
+            const after = document.createRange();
+            if (last.nodeType === 3) after.setStart(last, (last.nodeValue || '').length);
+            else after.setStartAfter(last);
+            after.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(after);
+            editor._range = after.cloneRange();
+            return true;
         }
 
         // Normalize execCommand fontSize (1-7) onto a real size by rewriting the produced
@@ -1514,6 +1693,15 @@ namespace BitBlazorUI {
         // ====================================================================
         private static onInputMarkdown(editor: any, e: InputEvent) {
             if (editor._mdBusy || editor._readOnly) return;
+            // Gecko types into the surface itself once everything has been deleted, leaving the
+            // text with no block around it - and every rule below works on a block. The text is
+            // given the paragraph any other engine would have typed it into.
+            if (!RichTextEditor.currentBlock(editor)) {
+                const anchor = document.getSelection()?.anchorNode;
+                if (anchor && anchor.nodeType === 3 && anchor.parentNode === editor) {
+                    RichTextEditor.execNative(editor, 'formatBlock', '<p>');
+                }
+            }
             const block = RichTextEditor.currentBlock(editor);
             if (!block) return;
             const text = block.textContent || '';
@@ -1568,8 +1756,9 @@ namespace BitBlazorUI {
             const marker = text.trim();
             const run = (fn: () => void) => {
                 editor._mdBusy = true;
-                RichTextEditor.clearBlockText(block);
+                RichTextEditor.clearBlockText(editor, block);
                 fn();
+                RichTextEditor.normalizeBlocks(editor, true);
                 editor._mdBusy = false;
                 RichTextEditor.afterChange(editor);
             };
@@ -1584,7 +1773,25 @@ namespace BitBlazorUI {
                 const checked = marker === '[x]' || marker === '[X]';
                 run(() => RichTextEditor.toggleTaskList(editor, checked));
             } else if (marker === '---' || marker === '***' || marker === '___') {
-                run(() => RichTextEditor.insertHorizontalRule(editor));
+                if (block.parentNode === editor && RichTextEditor.isTagAllowed(editor, 'hr')) {
+                    // The engines each leave the caret somewhere else around an inserted rule
+                    // (Blink: after it with no line to type on). A top-level line is simply
+                    // replaced by the rule and a fresh paragraph to carry on in.
+                    const rule = document.createElement('hr');
+                    const next = document.createElement('p');
+                    next.appendChild(document.createElement('br'));
+                    block.replaceWith(rule, next);
+                    const caret = document.createRange();
+                    caret.setStart(next, 0);
+                    caret.collapse(true);
+                    const sel = document.getSelection();
+                    sel?.removeAllRanges();
+                    sel?.addRange(caret);
+                    editor._range = caret.cloneRange();
+                    RichTextEditor.afterChange(editor);
+                } else {
+                    run(() => RichTextEditor.insertHorizontalRule(editor));
+                }
             }
         }
 
@@ -1626,10 +1833,80 @@ namespace BitBlazorUI {
                 // to undo and would corrupt the entries around it.
                 const html = `<${rule.tag}>${RichTextEditor.escapeHtml(match[1])}</${rule.tag}>`;
                 if (!RichTextEditor.replaceRange(editor, node, match.index, offset, 'insertHTML', html)) continue;
+                RichTextEditor.leaveInlineMark(editor, rule.tag);
                 RichTextEditor.afterChange(editor);
                 return true;
             }
             return false;
+        }
+
+        // A mark made by an input rule is finished: what is typed next belongs after it. Engines
+        // leave the caret at the end of the new element and keep typing into it - moving the caret
+        // behind it is not enough, since Blink and WebKit put it straight back inside - so the next
+        // character typed is placed behind the mark by typeOutsideMark.
+        private static leaveInlineMark(editor: any, tag: string) {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            const name = tag.toUpperCase();
+            let mark: Element | null = null;
+            for (let n: Node | null = range.startContainer; n && n !== editor; n = n.parentNode) {
+                if (n.nodeName === name) { mark = n as Element; break; }
+            }
+            if (!mark && range.startContainer.nodeType === 1 && range.startOffset > 0) {
+                const previous = range.startContainer.childNodes[range.startOffset - 1];
+                if (previous && previous.nodeName === name) mark = previous as Element;
+            }
+            if (!mark) return;
+
+            const after = document.createRange();
+            after.setStartAfter(mark);
+            after.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(after);
+            editor._range = after.cloneRange();
+            editor._leaveMark = mark;
+        }
+
+        // The first character typed right behind a mark an input rule just made is written into a
+        // text node of its own after the mark, and the engine takes over from there.
+        private static typeOutsideMark(editor: any, e: InputEvent): boolean {
+            const mark = editor._leaveMark as Element | null;
+            editor._leaveMark = null;
+            if (!mark || !mark.isConnected || e.inputType !== 'insertText' || !e.data) return false;
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
+            const range = sel.getRangeAt(0);
+            const parent = mark.parentNode;
+            const behind = range.startContainer === parent
+                && range.startOffset === Array.prototype.indexOf.call(parent!.childNodes, mark) + 1;
+            const atEnd = mark.contains(range.startContainer)
+                && range.startContainer === RichTextEditor.lastTextIn(mark)
+                && range.startOffset === (range.startContainer.nodeValue || '').length;
+            if (!behind && !atEnd) return false;
+
+            e.preventDefault();
+            // A lone trailing space collapses away unless it is non-breaking, which is also what
+            // the engines themselves write for it.
+            const text = document.createTextNode(e.data === ' ' ? ' ' : e.data);
+            mark.after(text);
+            const caret = document.createRange();
+            caret.setStart(text, text.length);
+            caret.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(caret);
+            editor._range = caret.cloneRange();
+            editor.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: e.data, bubbles: true }));
+            return true;
+        }
+
+        private static lastTextIn(node: Node): Node | null {
+            for (let n: Node | null = node.lastChild; n; n = n.previousSibling) {
+                if (n.nodeType === 3) return n;
+                const inner = RichTextEditor.lastTextIn(n);
+                if (inner) return inner;
+            }
+            return null;
         }
 
         // Selects a run of the given text node and replaces it through the editing engine (rather
@@ -1675,7 +1952,10 @@ namespace BitBlazorUI {
             const offset = sel.anchorOffset;
             const value = node.nodeValue || '';
             const before = value.slice(0, offset);
-            if (before.length < 1 || before[offset - 1] !== typed) return false;
+            // A space typed at the end of a line is stored as a non-breaking space until more text
+            // follows it, so both count as the space that finishes the word.
+            const last = before[offset - 1];
+            if (before.length < 1 || (last !== typed && !(typed === ' ' && last === ' '))) return false;
 
             if (typed === '"' || typed === "'") {
                 // An opening quote follows nothing, whitespace or an opening bracket/dash; anything
@@ -1718,6 +1998,18 @@ namespace BitBlazorUI {
                 // and do it through the engine, so the substitution is one Ctrl+Z away.
                 const rewritten = match[0].replace(rule.rx, rule.to);
                 if (!RichTextEditor.replaceRange(editor, node, match.index, offset - 1, 'insertText', rewritten)) return false;
+                // The engine leaves the caret at the end of the replacement, in front of the space
+                // that triggered it; typing continues after that space.
+                const caret = sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+                const at = caret?.startContainer;
+                if (caret && at && at.nodeType === 3 && /^[  ]/.test((at.nodeValue || '').slice(caret.startOffset))) {
+                    const past = document.createRange();
+                    past.setStart(at, caret.startOffset + 1);
+                    past.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(past);
+                    editor._range = past.cloneRange();
+                }
                 RichTextEditor.afterChange(editor);
                 return true;
             }
@@ -1762,7 +2054,12 @@ namespace BitBlazorUI {
             try { range.surroundContents(anchor); } catch { return false; }
             // Put the caret back after the trailing space so typing continues outside the link.
             const after = document.createRange();
-            after.setStartAfter(anchor);
+            const rest = anchor.nextSibling;
+            // The space sits at the start of the text split off behind the link (after any
+            // trailing punctuation left out of it).
+            const spaceAt = rest && rest.nodeType === 3 ? (rest.nodeValue || '').search(/[\s ]/) : -1;
+            if (rest && spaceAt >= 0) after.setStart(rest, spaceAt + 1);
+            else after.setStartAfter(anchor);
             after.collapse(true);
             sel.removeAllRanges();
             sel.addRange(after);
@@ -1893,14 +2190,22 @@ namespace BitBlazorUI {
             return node && node !== editor ? node : null;
         }
 
-        private static clearBlockText(block: HTMLElement) {
+        private static clearBlockText(editor: any, block: HTMLElement) {
             block.textContent = '';
+            // An empty block has no line box, so it is no place for a caret: the engine would move
+            // the selection to the end of the previous block and format that one instead. The
+            // placeholder <br> is what the browser itself leaves in an emptied line, and it is
+            // replaced by the first character typed there.
+            block.appendChild(document.createElement('br'));
             const sel = document.getSelection();
             const range = document.createRange();
             range.selectNodeContents(block);
             range.collapse(true);
             sel!.removeAllRanges();
             sel!.addRange(range);
+            // The command that follows restores the saved range, which selectionchange updates
+            // only after the fact - behind a fast typist it still points into an earlier line.
+            editor._range = range.cloneRange();
         }
 
         // ====================================================================
@@ -2510,27 +2815,28 @@ namespace BitBlazorUI {
             // still raise beforeinput against it; refuse the edit rather than relying on that.
             if (editor._readOnly) { e.preventDefault(); return; }
             const max = editor._maxLength;
-            if (max == null) return;
-            const current = (editor.textContent || '').length;
-
             const isInsert = e.inputType && e.inputType.startsWith('insert');
-            if (!isInsert) return;
-            if (e.inputType === 'insertFromPaste') return;
-
-            // Account for any selected text that will be replaced so in-place edits at the
-            // limit are allowed when the net length does not increase.
-            const sel = document.getSelection();
-            const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
-            const adding = (e.data ? e.data.length : 1);
-            if (current - selected + adding > max) {
-                e.preventDefault();
+            if (max != null && isInsert && e.inputType !== 'insertFromPaste') {
+                const current = (editor.textContent || '').length;
+                // Account for any selected text that will be replaced so in-place edits at the
+                // limit are allowed when the net length does not increase.
+                const sel = document.getSelection();
+                const selected = (sel && !sel.isCollapsed) ? sel.toString().length : 0;
+                const adding = (e.data ? e.data.length : 1);
+                if (current - selected + adding > max) {
+                    e.preventDefault();
+                    editor._leaveMark = null;
+                    return;
+                }
             }
+            RichTextEditor.typeOutsideMark(editor, e);
         }
 
         // ====================================================================
         // Selection state + content facts
         // ====================================================================
         private static afterChange(editor: any) {
+            RichTextEditor.stripEngineStyles(editor);
             RichTextEditor.updateEmpty(editor);
             if (!editor._dotNetRef) return;
             editor._dotNetRef.invokeMethodAsync('OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
@@ -2668,6 +2974,8 @@ namespace BitBlazorUI {
                 img.style.marginLeft = 'auto';
                 img.style.marginRight = 'auto';
             }
+            // The image moved, and the resize handle has to follow it.
+            if (editor._resizeReposition) editor._resizeReposition();
             RichTextEditor.afterChange(editor);
         }
 

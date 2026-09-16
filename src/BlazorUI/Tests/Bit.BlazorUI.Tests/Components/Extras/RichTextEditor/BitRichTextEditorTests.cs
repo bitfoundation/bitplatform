@@ -92,6 +92,28 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("toolbar", component.Find(".bit-rte-tlb").GetAttribute("role"));
     }
 
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitRichTextEditorShouldRenderOnlyValidAttributeNames(bool readOnly)
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        // A Razor comment written inside a tag is emitted as an attribute named after its text, which
+        // the browser refuses in setAttribute - taking the whole circuit down on the first render.
+        var invalid = component.FindAll("*")
+            .SelectMany(e => e.Attributes)
+            .Select(a => a.Name)
+            .Where(n => System.Text.RegularExpressions.Regex.IsMatch(n, "^[a-zA-Z_:][-a-zA-Z0-9_:.]*$") is false)
+            .ToArray();
+        Assert.AreEqual(0, invalid.Length, string.Join(", ", invalid));
+    }
+
     [TestMethod]
     public void BitRichTextEditorShouldHideToolbar()
     {
