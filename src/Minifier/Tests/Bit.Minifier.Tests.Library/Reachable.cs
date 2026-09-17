@@ -1,7 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components;
 
+// ResourceManager reads it at runtime to skip the satellite lookup for the neutral culture
+[assembly: System.Resources.NeutralResourcesLanguage("en")]
+
 namespace Bit.Minifier.Tests.Library
 {
+    /// <summary>An embedded resource is named after it: ResourceManager and IStringLocalizer find it that way.</summary>
+    internal static class Glossary
+    {
+        public static int Count() => 1;
+    }
+
     /// <summary>Found through Type.GetType by its name, as plugins and serializers do.</summary>
     public class Plugin
     {
@@ -66,7 +75,13 @@ namespace Bit.Minifier.Tests.Shelf
 {
     public class Crate
     {
-        public int Count(int rows, int columns) => rows * columns;
+        public int Count(int rows, int columns) => new Pallet().Stack(rows, columns);
+    }
+
+    // renamed at every aggressive level; only super aggressive may take its namespace
+    internal sealed class Pallet
+    {
+        public int Stack(int rows, int columns) => rows * columns;
     }
 }
 

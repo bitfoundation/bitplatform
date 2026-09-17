@@ -14,4 +14,9 @@
         <InternalsVisibleTo Include="Bit.Minifier.Tests.Friend" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- named after Glossary, the way ResourceManager(typeof(Glossary)) finds it -->
+        <EmbeddedResource Include="Glossary.txt" LogicalName="Bit.Minifier.Tests.Library.Glossary.txt" />
+    </ItemGroup>
+
 </Project>

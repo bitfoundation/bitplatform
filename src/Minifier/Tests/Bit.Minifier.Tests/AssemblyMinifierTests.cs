@@ -221,7 +221,10 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void PutsTheOriginalsBackWhenReplacingThemFails()
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
+    public void PutsTheOriginalsBackWhenReplacingThemFails(Level level)
     {
         // only Windows refuses to move a file that is open
         if (OperatingSystem.IsWindows() is false) Assert.Inconclusive("Needs a file that can't be moved.");
@@ -231,7 +234,7 @@ public class AssemblyMinifierTests
         // the library is replaced first, then the friend's pdb can't be
         using (File.Open(Path.Combine(minified, Friend + ".pdb"), FileMode.Open, FileAccess.Read, FileShare.None))
         {
-            Assert.Throws<IOException>(() => Minify(Level.SuperAggressive, mapFile: map));
+            Assert.Throws<IOException>(() => Minify(level, mapFile: map));
         }
 
         CollectionAssert.AreEqual(before, Snapshot(minified));
@@ -381,6 +384,118 @@ public class AssemblyMinifierTests
         var names = AllNames(module);
         CollectionAssert.Contains(names, "<Note>k__BackingField");
         CollectionAssert.DoesNotContain(names, "<Label>k__BackingField");
+    }
+
+    [TestMethod]
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    public void OnlySuperAggressiveTouchesPublicNames(Level level)
+    {
+        var map = Path.Combine(root, "bit-minifier.map");
+
+        Minify(level, mapFile: map);
+
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
+        var names = AllNames(module);
+        foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Generic", "Crate", "Count", "IComponent", "get_HistoryCount", "add_Added" })
+        {
+            CollectionAssert.Contains(names, name);
+        }
+        // namespaces, event metadata and generic parameter names stay
+        Assert.IsTrue(module.Types.Where(t => t.Name.StartsWith('<') is false).All(t => t.Namespace.Length > 0));
+        CollectionAssert.AreEquivalent(new[] { "Added", "Recorded" }, module.GetType("Bit.Minifier.Tests.Library.Calculator").Events.Select(e => e.Name).ToArray());
+        CollectionAssert.AreEqual(new[] { "T" }, module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters.Select(p => p.Name).ToArray());
+        Assert.IsTrue(module.GetTypes().SelectMany(t => t.GenericParameters).Any(p => p.Name == "TSelf"));
+        // and so do public parameter names and the attributes only super aggressive removes
+        var count = module.GetType("Bit.Minifier.Tests.Shelf.Crate").Methods.Single(m => m.Name == "Count");
+        CollectionAssert.AreEqual(new[] { "rows", "columns" }, count.Parameters.Select(p => p.Name).ToArray());
+        Assert.IsTrue(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "EnumeratorCancellationAttribute")));
+
+        var lines = File.ReadAllLines(map).Select(l => l.Split('\t')).ToList();
+        Assert.IsFalse(lines.Any(l => l[1] == "G"));
+        // a renamed top-level type stays in its namespace
+        foreach (var line in lines.Where(l => l[1] == "T" && l[2].Contains('/') is false))
+        {
+            Assert.AreEqual(NamespaceOf(line[2]), NamespaceOf(line[3]));
+        }
+        // the default level renames generated names only
+        if (level == Level.Default) Assert.IsTrue(lines.All(l => l[2].Split(["::", "/"], StringSplitOptions.None).Last().StartsWith('<')), string.Join(Environment.NewLine, lines.Select(l => l[2])));
+
+        static string NamespaceOf(string name) => name.Contains('.') ? name[..name.LastIndexOf('.')] : "";
+    }
+
+    [TestMethod]
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
+    public void KeepsWhatResourceManagerReads(Level level)
+    {
+        Minify(level);
+
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
+        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "NeutralResourcesLanguageAttribute"));
+        // the internal type an embedded resource is named after keeps its full name
+        Assert.AreEqual("Bit.Minifier.Tests.Library", module.GetTypes().Single(t => t.Name == "Glossary").Namespace);
+        Assert.AreEqual("Bit.Minifier.Tests.Library.Glossary.txt", module.Resources.Single().Name);
+    }
+
+    [TestMethod]
+    [DataRow(null, Level.Default)]
+    [DataRow("--aggressive", Level.Aggressive)]
+    [DataRow("--super-aggressive", Level.SuperAggressive)]
+    public async Task CommandLinePicksTheLevel(string? option, Level level)
+    {
+        var expected = await Drive(original);
+        string[] args = option is null ? [minified, Library, Friend] : [minified, option, Library, Friend];
+
+        var (exitCode, output) = RunCommandLine(args);
+
+        Assert.AreEqual(0, exitCode, output);
+        StringAssert.Contains(output, "Bit.Minifier: 2 assemblies");
+        using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
+        {
+            var names = AllNames(module);
+            Assert.AreEqual(level == Level.Default, names.Contains("Record"));
+            Assert.AreEqual(level != Level.SuperAggressive, names.Contains("Calculator"));
+        }
+        CollectionAssert.AreEqual(expected, await Drive(minified));
+    }
+
+    [TestMethod]
+    [DataRow("--agressive")]
+    [DataRow("--map")]
+    [DataRow("--map --aggressive")]
+    public void CommandLineRejectsWhatItDoesNotKnow(string options)
+    {
+        var before = Snapshot(minified);
+
+        var (exitCode, output) = RunCommandLine([minified, .. options.Split(' ')]);
+
+        Assert.AreEqual(2, exitCode);
+        StringAssert.StartsWith(output, "usage: ");
+        CollectionAssert.AreEqual(before, Snapshot(minified));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("--aggressive")]
+    [DataRow("--super-aggressive")]
+    public void CommandLineReportsAFailureAsAWarning(string? option)
+    {
+        var map = Path.Combine(root, "bit-minifier.map");
+        // the default level renames nothing another assembly can see, so only a file that can't be read fails it
+        File.WriteAllBytes(Path.Combine(minified, Library + ".pdb"), [1, 2, 3]);
+        var before = Snapshot(minified);
+        string[] args = option is null ? [minified, "--map", map, Library, Friend] : [minified, "--map", map, option, Library, Friend];
+
+        var (exitCode, output) = RunCommandLine(args);
+
+        // MSBuild shows it as a warning, and the publish goes on with the trimmed assemblies
+        Assert.AreEqual(0, exitCode, output);
+        StringAssert.StartsWith(output, "Bit.Minifier : warning BITMIN001: ");
+        StringAssert.Contains(output, "The assemblies were left unminified.");
+        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.IsFalse(File.Exists(map));
     }
 
     [TestMethod]
@@ -548,6 +663,25 @@ public class AssemblyMinifierTests
         results.Add($"friend add {await Call<int>(friendCalculator, "AddTwiceAsync", 2)}");
         results.Add($"friend sum {Invoke(friendCalculator, "SumWhere", new[] { 1, 2, 3 }, 2)}");
         return results;
+    }
+
+    // the tool's own entry point, as the MSBuild targets run it
+    private static (int exitCode, string output) RunCommandLine(string[] args)
+    {
+        var (stdout, stderr) = (Console.Out, Console.Error);
+        using var output = new StringWriter();
+        Console.SetOut(output);
+        Console.SetError(output);
+        try
+        {
+            var exitCode = (int)typeof(AssemblyMinifier).Assembly.EntryPoint!.Invoke(null, [args])!;
+            return (exitCode, output.ToString());
+        }
+        finally
+        {
+            Console.SetOut(stdout);
+            Console.SetError(stderr);
+        }
     }
 
     // through the driver, the one entry the super aggressive level leaves the tests

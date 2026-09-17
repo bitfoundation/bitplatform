@@ -20,6 +20,8 @@ public class Calculator
 
     public event Action<int>? Added;
 
+    internal event Action<int>? Recorded;
+
     public async Task<int> AddAsync(int value)
     {
         await Task.Yield();
@@ -88,6 +90,7 @@ public class Calculator
         Total += value;
         Tally++;
         Added?.Invoke(value);
+        Recorded?.Invoke(value);
     }
 
     private static void ThrowFromHelper(int total)
