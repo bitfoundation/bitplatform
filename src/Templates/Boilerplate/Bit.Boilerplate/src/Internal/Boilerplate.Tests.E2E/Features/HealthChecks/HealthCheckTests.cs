@@ -2,8 +2,8 @@ namespace Boilerplate.Tests.E2E.Features.HealthChecks;
 
 /// <summary>
 /// MapAppHealthChecks (Server.Shared) on every deployment: /health runs every check, /alive only the "live" ones, and
-/// both answer with the bare status - the names and details stay behind /healthz, mapped in Development only, and the
-/// Dev MCP's GetHealth, which is global-admin only.
+/// both answer with the bare status - the names and details stay behind /healthz and the Dev MCP's GetHealth, which
+/// are both global-admin only.
 /// </summary>
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public partial class HealthCheckTests
@@ -48,12 +48,11 @@ public partial class HealthCheckTests
     [DataRow(DeployedApps.Sales, DisplayName = "Sales (integrated API)")]
     [DataRow(DeployedApps.AdminPanelApi, DisplayName = "AdminPanelApi")]
     [DataRow(DeployedApps.TodoApi, DisplayName = "TodoApi")]
-    public async Task DetailedEndpoint_Should_NotBeServedInProduction(string host)
+    public async Task DetailedEndpoint_Should_NotBeServedAnonymously(string host)
     {
         using var response = await Send(host, "healthz");
 
-        // A 404 from an API, a redirect to NotFoundPage from a web app - anything but the report.
-        Assert.AreNotEqual(HttpStatusCode.OK, response.StatusCode, $"{host}healthz is served in production.");
+        Assert.AreNotEqual(HttpStatusCode.OK, response.StatusCode, $"{host}healthz is served to an anonymous caller.");
     }
 
     /// <summary>

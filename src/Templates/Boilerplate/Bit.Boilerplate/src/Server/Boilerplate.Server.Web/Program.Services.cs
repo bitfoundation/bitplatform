@@ -38,8 +38,21 @@ public static partial class Program
         /*
         //#endif
         builder.AddServerSharedServices();
-        builder.AddDefaultHealthChecks();
         services.AddHttpForwarder();
+        var healthChecksBuilder = builder.AddDefaultHealthChecks();
+        var serverWebSettings = configuration.Get<ServerWebSettings>()!;
+        var serverApiAddress = string.IsNullOrWhiteSpace(serverWebSettings.ServerSideHttpClientBaseAddress) is false
+            ? serverWebSettings.ServerSideHttpClientBaseAddress
+            : configuration.GetServerAddress();
+        if (Uri.TryCreate($"{serverApiAddress.TrimEnd('/')}/alive", UriKind.Absolute, out var serverApiAliveUrl))
+        {
+            // Degraded: an api outage is no reason to drain this instance.
+            healthChecksBuilder.AddUrlGroup(serverApiAliveUrl,
+                name: "serverApi",
+                failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
+                tags: [],
+                timeout: TimeSpan.FromSeconds(5));
+        }
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.Authority = configuration.GetServerAddress();

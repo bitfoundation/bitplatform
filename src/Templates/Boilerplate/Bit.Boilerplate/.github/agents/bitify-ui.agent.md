@@ -73,6 +73,10 @@ For **each component** you plan to use, call `GetBitBlazorUIComponent("<Componen
 Look up every type a signature names with `GetBitBlazorUIType` - an enum parameter takes the enum
 (`Color="BitColor.Primary"`), never a string (`Color="Primary"`).
 
+The tools describe the latest release, while the project pins the version in `Directory.Packages.props`. When a
+parameter or a default matters and the versions differ, confirm it against the referenced package, or the page
+compiles and behaves differently from what the tools described.
+
 ### Step 4: Look Up Theming Questions with `GetBitBlazorUIThemingGuide`
 
 Theming, tokens and component styling are answered by the bit BlazorUI tools. Call
@@ -99,6 +103,13 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
   `BitComponentBase` parameters that every component has, and both keep the accessibility behavior the component
   implements
 - Per-part overrides belong in the component's `Classes` / `Styles` bag, not in a wrapper selector
+- Keep the page's raw root element (the `<section>` of the pages in this template). Scoped CSS only tags raw
+  elements, so a `::deep` rule needs a raw ancestor to hang on - replace that root with a component and every
+  `::deep` rule of the page silently stops applying
+- `BitText` covers text elements too: `Element="pre"` / `"dt"` / `"dd"` / `"span"` with `Monospace`,
+  `PreserveWhitespace`, `BreakWord`, `Weight` and `Typography` replaces `<pre>`, `<b>` and their font CSS
+- `BitGrid` is flex based, so it cannot give cards in different rows one height, and `MinItemWidth` stretches the
+  last row. A plain `<div>` with `display: grid; grid-auto-rows: 1fr` is the right tool there
 
 **SCSS:**
 - Replace hardcoded colors with SCSS variables from `_bit-css-variables.scss`:
@@ -122,7 +133,10 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
 
 ### Step 6: Build and Verify
 
-Run `dotnet build` in the `Boilerplate.Server.Web` project directory to confirm everything compiles. Fix any errors before finishing.
+If the app is already running under `dotnet watch` or `aspire start`, let hot reload pick the changes up instead of
+rebuilding; otherwise start it that way rather than with `dotnet run`, so later edits do not need a rebuild either.
+Fix any build errors before finishing, then open the page in both the light and the dark theme: a hardcoded or
+non-token color only shows up in one of them.
 
 ---
 

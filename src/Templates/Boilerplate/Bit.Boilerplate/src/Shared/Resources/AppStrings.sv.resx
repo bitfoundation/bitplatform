@@ -2089,6 +2089,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Auktoriserade applikationer</value>
   </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Drift</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Externa applikationer som dina användare har auktoriserat via OAuth.</value>
   </data>

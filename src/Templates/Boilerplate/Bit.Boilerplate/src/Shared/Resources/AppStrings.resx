@@ -2089,6 +2089,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Authorized applications</value>
   </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Operations</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>External applications your users have authorized over OAuth.</value>
   </data>

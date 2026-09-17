@@ -1,0 +1,408 @@
+@using Boilerplate.Shared.Features.Diagnostic
+@attribute [Route(PageUrls.Operations)]
+@attribute [Route("{culture?}" + PageUrls.Operations)]
+@attribute [Authorize(Policy = AppFeatures.System.Operations_View)]
+@inherits AppPageBase
+
+<AppPageData Title="@Localizer[nameof(AppStrings.Operations)]" PageTitle="@Localizer[nameof(AppStrings.Operations)]" />
+
+<section>
+    <BitStack Gap="1.25rem" HorizontalAlign="BitAlignment.Stretch">
+
+        @* The browser itself has to call UpdateSession, so the dashboard's cookie lands there (See OpenHangfireDashboard). *@
+        @if (AppPlatform.IsBrowser && AppPlatform.IsWasmStandalone is false)
+        {
+            <AuthorizeView Policy="@AppFeatures.System.Jobs_Manage">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                    <BitButton AutoLoading
+                               Size="BitSize.Large"
+                               Variant="BitVariant.Outline"
+                               IconName="@BitIconName.RecurringTask"
+                               SecondaryText="Queued, scheduled, recurring and failed background jobs"
+                               OnClick="WrapHandled(OpenHangfireDashboard)">
+                        Hangfire dashboard
+                    </BitButton>
+                </BitStack>
+            </AuthorizeView>
+        }
+
+        <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+            <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                Live status of every dependency this deployment relies on.
+            </BitText>
+            <BitSpacer />
+            <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                @if (autoRefresh)
+                {
+                    <BitBadge Dot Pulse Color="BitColor.Success" Description="Auto refresh is on" />
+                }
+                <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" Numeric>
+                    Updated @Ago(loadedAt)
+                </BitText>
+            </BitStack>
+            <BitToggle @bind-Value="autoRefresh" Text="Auto refresh" Inline />
+            <BitDropdown TItem="BitDropdownItem<int>" TValue="int"
+                         Items="refreshIntervals"
+                         @bind-Value="refreshSeconds"
+                         IsEnabled="autoRefresh"
+                         AriaLabel="Refresh interval"
+                         FitWidth />
+            <BitButton Variant="BitVariant.Outline"
+                       IconName="@BitIconName.Refresh"
+                       IsLoading="isLoading"
+                       OnClick="WrapHandled(Load)">
+                Refresh
+            </BitButton>
+        </BitStack>
+
+        @if (loadError is not null)
+        {
+            <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline" Title="Couldn't read the health report">
+                <ChildContent>
+                    @loadError
+                    @if (report is not null)
+                    {
+                        <text> The last report is still shown below.</text>
+                    }
+                </ChildContent>
+                <Actions>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Class="no-wrap" OnClick="WrapHandled(Load)">Try again</BitButton>
+                </Actions>
+            </BitMessage>
+        }
+
+        @if (report is null)
+        {
+            @if (loadError is null)
+            {
+                <BitStack Gap="1rem" HorizontalAlign="BitAlignment.Stretch" aria-busy="true">
+                    <BitShimmer Width="100%" Height="11rem" Radius="0.75rem" Label="Loading the health report" />
+                    <div class="check-grid">
+                        @for (var i = 0; i < 6; i++)
+                        {
+                            <BitShimmer Width="100%" Height="13rem" Radius="0.75rem" />
+                        }
+                    </div>
+                </BitStack>
+            }
+        }
+        else
+        {
+            <BitCard FullWidth NoShadow Class="@($"hero {ToneClass(OverallTone)}")">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="2rem">
+
+                    <BitStack FitWidth FitHeight HorizontalAlign="BitAlignment.Center" Gap="0.25rem" Class="hero-gauge">
+                        <BitChart Config="gaugeChart" Width="9.5rem" Height="9.5rem" AriaLabel="Checks by status" />
+                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                            @Count(StatusFilter.Healthy) of @checks.Count checks passed
+                        </BitText>
+                    </BitStack>
+
+                    <BitStack Gap="0.6rem" FitHeight Class="hero-summary">
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.6rem">
+                            <BitIcon IconName="@ToneIcon(OverallTone)" Color="ToneColor(OverallTone)" Size="BitSize.Large" />
+                            <BitText Typography="BitTypography.H4" role="status">@OverallHeadline</BitText>
+                        </BitStack>
+                        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                            @OverallExplanation
+                        </BitText>
+                        <BitStack Horizontal Wrap Gap="0.5rem">
+                            <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="ToneColor(OverallTone)"
+                                    IconName="@BitIconName.Health"
+                                    Text="@($"/health → {(OverallTone is Tone.Unhealthy ? "503" : "200")}")"
+                                    Title="What load balancers and Kubernetes see" />
+                            <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                                    IconName="@BitIconName.Clock"
+                                    Text="@($"Checked at {LocalTime(report.CheckedAt, "HH:mm:ss")}")"
+                                    Title="@LocalTime(report.CheckedAt, "F")" />
+                            <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="DurationColor(report.TotalDuration)"
+                                    IconName="@BitIconName.Timer"
+                                    Text="@($"Took {FormatDuration(report.TotalDuration)}")"
+                                    Title="The whole report takes as long as its slowest check" />
+                        </BitStack>
+                    </BitStack>
+
+                    <div class="stat-grid">
+                        @foreach (var (filter, tone, label) in new[]
+                        {
+                            (StatusFilter.Unhealthy, Tone.Unhealthy, "Unhealthy"),
+                            (StatusFilter.Degraded, Tone.Degraded, "Degraded"),
+                            (StatusFilter.NotConfigured, Tone.NotConfigured, "Not configured"),
+                            (StatusFilter.Healthy, Tone.Healthy, "Healthy")
+                        })
+                        {
+                            var count = Count(filter);
+                            <BitCard NoShadow Hoverable FullWidth
+                                     Class="@($"stat {ToneClass(tone)} {(count is 0 ? "empty" : "")}")"
+                                     OnClick="WrapHandled(() => ShowOnly(filter))"
+                                     AriaLabel="@($"{count} {label}, show them")">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.6rem">
+                                    <BitIcon IconName="@ToneIcon(tone)" Color="ToneColor(tone)" />
+                                    <BitStack Gap="0">
+                                        <BitText Typography="BitTypography.H5" Numeric>@count</BitText>
+                                        <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@label</BitText>
+                                    </BitStack>
+                                </BitStack>
+                            </BitCard>
+                        }
+                    </div>
+
+                </BitStack>
+            </BitCard>
+
+            @if (Count(StatusFilter.Attention) is > 0 and var attentionCount)
+            {
+                <BitMessage Color="ToneColor(OverallTone)" Variant="BitVariant.Outline">
+                    <ChildContent>
+                        <BitText Element="span" Typography="BitTypography.Inherit" Weight="BitFontWeight.Semibold">
+                            @attentionCount @(attentionCount is 1 ? "check needs" : "checks need") attention:
+                        </BitText>
+                        @string.Join(", ", checks.Where(c => c.Tone is not Tone.Healthy).Select(c => c.Title))
+                    </ChildContent>
+                    <Actions>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Class="no-wrap" OnClick="WrapHandled(() => ShowOnly(StatusFilter.Attention))">Show them</BitButton>
+                    </Actions>
+                </BitMessage>
+            }
+
+            <BitStack Gap="1.25rem" HorizontalAlign="BitAlignment.Stretch">
+
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                    <BitSearchBox @bind-Value="searchText"
+                                  Immediate DebounceTime="200"
+                                  Placeholder="Search names, descriptions and errors"
+                                  Class="search-box" />
+                    @foreach (var (filter, tone, label) in new[]
+                    {
+                        (StatusFilter.All, Tone.Neutral, "All"),
+                        (StatusFilter.Attention, Tone.Neutral, "Needs attention"),
+                        (StatusFilter.Unhealthy, Tone.Unhealthy, "Unhealthy"),
+                        (StatusFilter.Degraded, Tone.Degraded, "Degraded"),
+                        (StatusFilter.NotConfigured, Tone.NotConfigured, "Not configured"),
+                        (StatusFilter.Healthy, Tone.Healthy, "Healthy")
+                    })
+                    {
+                        var count = Count(filter);
+                        <BitTag Variant="BitVariant.Outline"
+                                Shape="BitTagShape.Circular"
+                                Color="@(tone is Tone.Neutral ? BitColor.Primary : ToneColor(tone))"
+                                Text="@($"{label} · {count}")"
+                                IsEnabled="@(filter is StatusFilter.All || count > 0)"
+                                Selected="@(statusFilter == filter)"
+                                SelectedChanged="@(_ => SetFilter(filter))" />
+                    }
+                </BitStack>
+
+                @{
+                    var visible = FilteredChecks.ToArray();
+                }
+
+                @if (visible.Length is 0)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Class="empty-state">
+                        <BitIcon IconName="@BitIconName.ClearFilter" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+                        <BitText Typography="BitTypography.Subtitle1">No check matches</BitText>
+                        <BitButton Variant="BitVariant.Text" OnClick="WrapHandled(ClearFilters)">Clear the filters</BitButton>
+                    </BitStack>
+                }
+
+                @foreach (var category in categories)
+                {
+                    var group = visible.Where(c => c.Category == category.Name).ToArray();
+                    if (group.Length is 0) continue;
+
+                    <BitStack Gap="0.75rem" HorizontalAlign="BitAlignment.Stretch" Element="section" aria-label="@category.Name">
+                        <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                            <BitIcon IconName="@category.IconName" Color="BitColor.Primary" />
+                            <BitText Typography="BitTypography.H6">@category.Name</BitText>
+                            <BitBadge Content="group.Length" Color="BitColor.Primary" Variant="BitVariant.Outline" Size="BitSize.Small" />
+                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">@category.About</BitText>
+                        </BitStack>
+
+                        <div class="check-grid">
+                            @foreach (var check in group)
+                            {
+                                <BitCard @key="check.Name" NoShadow FullWidth Class="@($"check-card {ToneClass(check.Tone)}")">
+                                    <BitStack Gap="0.75rem">
+
+                                        <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Start" Gap="0.75rem">
+                                            <BitIcon IconName="@check.IconName" Class="check-icon" />
+                                            <BitStack Gap="0" FitHeight FillContent Class="check-title">
+                                                <BitText Typography="BitTypography.Subtitle1" NoWrap Title="@check.Title">@check.Title</BitText>
+                                                <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground" Monospace NoWrap Title="@check.Name">@check.Name</BitText>
+                                            </BitStack>
+                                            <BitTag Size="BitSize.Small"
+                                                    Class="status-tag"
+                                                    Variant="@(check.Tone is Tone.Healthy ? BitVariant.Outline : BitVariant.Fill)"
+                                                    Color="ToneColor(check.Tone)"
+                                                    IconName="@ToneIcon(check.Tone)"
+                                                    Text="@check.StatusText" />
+                                        </BitStack>
+
+                                        @if (string.IsNullOrEmpty(check.About) is false)
+                                        {
+                                            <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@check.About</BitText>
+                                        }
+
+                                        @if (check.Tone is not Tone.Healthy && string.IsNullOrWhiteSpace(check.Description) is false)
+                                        {
+                                            <BitText Typography="BitTypography.Body2" Class="check-description">@check.Description</BitText>
+                                        }
+
+                                        @if (check.ExceptionSummary is { } summary)
+                                        {
+                                            <BitText Typography="BitTypography.Caption1" Monospace BreakWord LineClamp="3" Class="exception-summary" Title="@summary">@summary</BitText>
+                                        }
+
+                                        <BitStack Gap="0.3rem" FitHeight>
+                                            <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.4rem">
+                                                <BitIcon IconName="@BitIconName.Stopwatch" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
+                                                <BitText Typography="BitTypography.Caption1" Numeric Color="UsageColor(check.TimeoutUsage)">@FormatDuration(check.Duration)</BitText>
+                                                @if (check.Entry.Timeout is { } timeout)
+                                                {
+                                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">of a @FormatDuration(timeout) timeout</BitText>
+                                                }
+                                                <BitSpacer />
+                                                @if (check.VerifiedAt is { } verifiedAt)
+                                                {
+                                                    <BitTooltip Text="@($"A healthy result is reused for {check.CacheDuration?.TotalMinutes:N0} min, so probes don't turn into paid calls. A failure is checked again on every probe.")">
+                                                        <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Center" Gap="0.25rem">
+                                                            <BitIcon IconName="@BitIconName.History" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
+                                                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">Verified @Ago(verifiedAt)</BitText>
+                                                        </BitStack>
+                                                    </BitTooltip>
+                                                }
+                                            </BitStack>
+                                            @if (check.TimeoutUsage is { } usage)
+                                            {
+                                                <BitProgress Rounded
+                                                             Percent="usage"
+                                                             Thickness="4"
+                                                             Color="UsageColor(usage)"
+                                                             AriaLabel="Share of the timeout the check used" />
+                                            }
+                                        </BitStack>
+
+                                        @if (ProbesOf(check).Count > 1)
+                                        {
+                                            <div class="probes" role="img" aria-label="@($"Last {ProbesOf(check).Count} probes of {check.Title}")">
+                                                @foreach (var probe in ProbesOf(check))
+                                                {
+                                                    <span class="probe @probe.Status.ToString().ToLowerInvariant()"
+                                                          title="@($"{LocalTime(probe.At, "HH:mm:ss")} · {probe.Status} · {FormatDuration(probe.Duration)}")"></span>
+                                                }
+                                            </div>
+                                        }
+
+                                        @if (check.HasDetails)
+                                        {
+                                            <BitAccordion Title="Details" NoBorder Size="BitSize.Small" LazyContent Class="check-details">
+                                                <BitStack Gap="0.75rem" FitHeight>
+                                                    @if (check.ExtraData.Any())
+                                                    {
+                                                        <dl class="data-list">
+                                                            @foreach (var (key, value) in check.ExtraData)
+                                                            {
+                                                                <BitText Element="dt" Typography="BitTypography.Caption1" Weight="BitFontWeight.Semibold" Color="BitColor.SecondaryForeground">@key</BitText>
+                                                                <BitText Element="dd" Typography="BitTypography.Caption1" BreakWord>@value</BitText>
+                                                            }
+                                                        </dl>
+                                                    }
+                                                    @if (string.IsNullOrWhiteSpace(check.Entry.Exception) is false)
+                                                    {
+                                                        <BitText Element="pre" Typography="BitTypography.Caption1" Monospace PreserveWhitespace BreakWord Class="exception">@check.Entry.Exception</BitText>
+                                                    }
+                                                    <BitButton Size="BitSize.Small"
+                                                               Variant="BitVariant.Text"
+                                                               IconName="@(copiedCheck == check.Name ? BitIconName.CheckMark : BitIconName.Copy)"
+                                                               OnClick="WrapHandled(() => CopyDetails(check))">
+                                                        Copy details
+                                                    </BitButton>
+                                                </BitStack>
+                                            </BitAccordion>
+                                        }
+
+                                        @* Keeps the tags at the bottom, so cards in a row line up. *@
+                                        <BitSpacer />
+
+                                        @if (check.IsCritical || check.Entry.Tags.Length > 0)
+                                        {
+                                            <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.3rem">
+                                                @if (check.IsCritical)
+                                                {
+                                                    <BitTooltip Text="If this fails, /health answers 503 and load balancers stop sending traffic to this instance.">
+                                                        <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Health" Text="Readiness" />
+                                                    </BitTooltip>
+                                                }
+                                                @if (check.IsLiveness)
+                                                {
+                                                    <BitTooltip Text="Also runs on /alive, the liveness probe.">
+                                                        <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Heart" Text="Liveness" />
+                                                    </BitTooltip>
+                                                }
+                                                @foreach (var tag in check.Entry.Tags.Where(t => t is not "live"))
+                                                {
+                                                    <BitTag Size="BitSize.Small" Variant="BitVariant.Text" Text="@tag" />
+                                                }
+                                            </BitStack>
+                                        }
+
+                                    </BitStack>
+                                </BitCard>
+                            }
+                        </div>
+                    </BitStack>
+                }
+            </BitStack>
+
+            <BitStack Gap="0.75rem" HorizontalAlign="BitAlignment.Stretch" Element="section" aria-label="Not covered" Class="manual-section">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+                    <BitIcon IconName="@BitIconName.TestBeaker" Color="BitColor.Primary" />
+                    <BitText Typography="BitTypography.H6">Not covered</BitText>
+                    <BitBadge Content="manualChecks.Length" Color="BitColor.Primary" Variant="BitVariant.Outline" Size="BitSize.Small" />
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                        What no health check can prove, because it needs a user, a device or a delivery. Verify these by hand after a deployment or a configuration change.
+                    </BitText>
+                </BitStack>
+                <div class="check-grid">
+                    @foreach (var manual in manualChecks)
+                    {
+                        <BitCard @key="manual.Title" NoShadow FullWidth Class="check-card manual">
+                            <BitStack Gap="0.75rem">
+                                <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                                    <BitIcon IconName="@manual.IconName" Class="check-icon" />
+                                    <BitText Typography="BitTypography.Subtitle1">@manual.Title</BitText>
+                                </BitStack>
+                                <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@manual.Why</BitText>
+                                <BitSpacer />
+                                <BitStack FitHeight Gap="0.75rem" Class="how-to">
+                                    <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Start" Gap="0.5rem">
+                                        <BitIcon IconName="@BitIconName.TestBeaker" Color="BitColor.Primary" />
+                                        <BitText Typography="BitTypography.Body2">@manual.HowTo</BitText>
+                                    </BitStack>
+                                    @if (manual.Test is not ManualTest.None)
+                                    {
+                                        var (buttonText, buttonIcon) = TestButton(manual.Test);
+                                        <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                                            <BitButton Size="BitSize.Small"
+                                                       IconName="@buttonIcon"
+                                                       IsLoading="@(runningTest == manual.Test)"
+                                                       IsEnabled="@(runningTest is ManualTest.None)"
+                                                       OnClick="WrapHandled(() => RunTest(manual.Test))">
+                                                @buttonText
+                                            </BitButton>
+                                            @if (testResults.TryGetValue(manual.Test, out var testResult))
+                                            {
+                                                <BitText Typography="BitTypography.Caption1" Color="@(testResult.Sent ? BitColor.Success : BitColor.Warning)">@testResult.Message</BitText>
+                                            }
+                                        </BitStack>
+                                    }
+                                </BitStack>
+                            </BitStack>
+                        </BitCard>
+                    }
+                </div>
+            </BitStack>
+        }
+    </BitStack>
+</section>

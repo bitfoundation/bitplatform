@@ -2089,6 +2089,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Applications autorisées</value>
   </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Opérations</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Applications externes que vos utilisateurs ont autorisées via OAuth.</value>
   </data>

@@ -2,22 +2,17 @@
 using Twilio.Rest.Api.V2010;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Boilerplate.Server.Api.Infrastructure.Services;
+namespace Boilerplate.Server.Api.Infrastructure.HealthChecks;
 
 /// <summary>
 /// Checks Twilio SMS service connectivity by fetching account info.
 /// </summary>
-public partial class TwilioHealthCheck : IHealthCheck
+public class TwilioHealthCheck : IHealthCheck
 {
-    [AutoInject] private ServerApiSettings settings = default!;
-
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (settings.Sms?.Configured is not true)
-                return HealthCheckResult.Healthy("Twilio SMS is not configured - skipping check.");
-
             var account = await AccountResource.FetchAsync().WaitAsync(cancellationToken);
 
             return account.Status == AccountResource.StatusEnum.Active

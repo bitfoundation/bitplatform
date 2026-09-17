@@ -2089,6 +2089,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Aplicaciones autorizadas</value>
   </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Operaciones</value>
+  </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Aplicaciones externas que sus usuarios han autorizado mediante OAuth.</value>
   </data>

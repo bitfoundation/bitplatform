@@ -781,6 +781,10 @@
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/PubSub/SoftRestartTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
+                        "src/Tests/Features/Diagnostics/HealthCheckRulesTests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticTestMessagesTests.cs",
+                        "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
+                        "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
@@ -877,6 +881,8 @@
                         "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
+                        "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
+                        "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
                 },
@@ -887,7 +893,8 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
-                        "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs"
+                        "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
+                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs"
                     ]
                 },
                 {
@@ -918,7 +925,8 @@
                 {
                     "condition": "(cloudflare != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs"
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/CloudflareHealthCheck.cs"
                     ]
                 },
                 {
@@ -941,6 +949,14 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs",
                         ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
+                    ]
+                },
+                {
+                    // Microsoft.Extensions.AI.OpenAI is only referenced under these configurations.
+                    "condition": "(signalR != true && database != PostgreSQL && database != SqlServer)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/AIChatAgentHealthCheck.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/AIEmbeddingHealthCheck.cs"
                     ]
                 },
                 {
@@ -982,6 +998,8 @@
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/GoogleRecaptchaService.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/HealthChecks/GoogleRecaptchaHealthCheck.cs",
+                        "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor"
                     ]
                 },
