@@ -3,9 +3,9 @@
 // The following code gives you ideas on how to handle bit theme changes in your application.
 
 (function () {
-    if (typeof BitTheme === 'undefined')
+    if (typeof BitBlazorUI === 'undefined')
         return;
-    BitTheme.init({
+    BitBlazorUI.Theme.init({
         system: true,
         persist: true,
         onChange: (newTheme, oldTheme) => {

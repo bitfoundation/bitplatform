@@ -12,7 +12,7 @@ export class App {
         return App.jsBridgeObj?.invokeMethodAsync('ShowDiagnostic');
     }
 
-    public static publishMessage(message: string, payload: any) {
+    public static publishMessage(message: string, payload: unknown) {
         return App.jsBridgeObj?.invokeMethodAsync('PublishMessage', message, payload);
     }
 
@@ -21,7 +21,7 @@ export class App {
     private static readonly erudaScriptId = 'app-eruda-script';
 
     public static openDevTools() {
-        const eruda = (window as any).eruda;
+        const eruda = window.eruda;
 
         if (eruda) {
             eruda.show();
@@ -38,8 +38,8 @@ export class App {
         script.integrity = App.erudaIntegrity;
         script.crossOrigin = 'anonymous';
         script.onload = () => {
-            (window as any).eruda.init();
-            (window as any).eruda.show();
+            window.eruda?.init();
+            window.eruda?.show();
         };
         script.onerror = () => {
             script.remove();
@@ -52,14 +52,14 @@ export class App {
        Called by `WebAppUpdateService.cs` when the user clicks the app version in `AppShell.razor`
        or when `ForceUpdateSnackbar.razor` appears after a forced update. */
     public static async tryUpdatePwa(autoReload: boolean) {
-        const bswup = (window as any).BitBswup; // https://bitplatform.dev/bswup
+        const bswup = window.BitBswup; // https://bitplatform.dev/bswup
         if (!bswup) return;
 
         if (autoReload) {
             if (await bswup.skipWaiting()) return; // Use new service worker if available and reload the page.
         }
 
-        const bswupProgress = (window as any).BitBswupProgress;
+        const bswupProgress = window.BitBswupProgress;
         if (!bswupProgress) return;
 
         bswupProgress.config({ autoReload });
