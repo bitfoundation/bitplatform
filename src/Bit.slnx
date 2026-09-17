@@ -179,6 +179,15 @@
     <File Path="CodeAnalyzers/README.md" />
     <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
   </Folder>
+  <Folder Name="/Minifier/">
+    <File Path="Minifier/README.md" />
+    <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  </Folder>
+  <Folder Name="/Minifier/Tests/">
+    <Project Path="Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
+    <Project Path="Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
+    <Project Path="Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
+  </Folder>
   <Folder Name="/ResxTranslator/">
     <Project Path="ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj" />
   </Folder>

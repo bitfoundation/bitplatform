@@ -557,6 +557,11 @@ jobs:
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Minifier
+      run: |
+        dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
+
     - name: Build and pack ResxTranslator
       run: |
         dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -722,6 +727,12 @@ jobs:
 
     - name: Build CodeAnalyzers solution in Release mode
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
+
+    - name: Build Minifier solution in Release mode
+      run: dotnet build src/Minifier/Bit.Minifier.slnx -c Release
+
+    - name: Test Minifier
+      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj -c Release --no-build
 
     - name: Build ResxTranslator solution in Release mode
       run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release

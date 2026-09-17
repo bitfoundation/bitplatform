@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <!-- Publish-time IL minifier, shipped as the Bit.Minifier package: installing it is all an app does.
+         The package carries this tool under tools/ and buildTransitive/Bit.Minifier.targets, which runs it
+         right after ILLink in a Blazor WebAssembly publish.
+
+         An executable rather than an MSBuild task: Mono.Cecil then never shares a process with the copy
+         ILLink.Tasks may have loaded, and one binary serves both MSBuild flavours. net8.0 + RollForward=Major
+         runs on whatever runtime the SDK doing the publish carries. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>Major</RollForward>
+        <UseAppHost>false</UseAppHost>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+        <IsAotCompatible>false</IsAotCompatible>
+        <!-- a tool nothing binds to; unsigned so the unsigned tests can be its InternalsVisibleTo friend -->
+        <SignAssembly>false</SignAssembly>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <DocumentationFile></DocumentationFile>
+
+        <PackageDescription>Shrinks the .NET assemblies of a Blazor WebAssembly app on publish, keeping them debuggable. Install it; there is nothing to configure.</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;WebAssembly;minify;ILLink;trimming</PackageTags>
+        <!-- a build-time tool: nothing to reference, nothing that flows to the app -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <!-- NU5100: the tool's assemblies sit under tools/ on purpose -->
+        <NoWarn>$(NoWarn);NU5100</NoWarn>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_BitMinifierIncludeTool</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.Minifier.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="buildTransitive\Bit.Minifier.targets" Pack="true" PackagePath="buildTransitive\Bit.Minifier.targets" />
+    </ItemGroup>
+
+    <Target Name="_BitMinifierIncludeTool">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(OutDir)Bit.Minifier.dll;$(OutDir)Bit.Minifier.runtimeconfig.json;$(OutDir)Mono.Cecil.dll" PackagePath="tools\" />
+        </ItemGroup>
+    </Target>
+
+</Project>

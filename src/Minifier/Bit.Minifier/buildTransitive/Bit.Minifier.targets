@@ -1,0 +1,47 @@
+﻿<Project>
+
+    <!--
+    Bit.Minifier: shrinks every assembly of a trimmed Blazor WebAssembly publish, right after ILLink, and rewrites
+    their pdbs to match. Installing the package is all it takes; the build output, dotnet run and dotnet watch are
+    never touched. See the package README.
+
+      BitMinifyAggressive    false (default): attributes only the compiler reads go, and compiler-generated names
+                             get shorter.
+                             true: everything that can go, goes - every non-public name, non-public parameter names
+                             and properties, and the attributes only debuggers and analyzers read. Public names stay,
+                             so logged stack traces still name the public frames.
+
+    Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true).
+    obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed.
+    -->
+
+    <Target Name="BitMinifyTrimmedAssemblies"
+            AfterTargets="_RunILLink"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(_ILLinkExitCode)' == '' or '$(_ILLinkExitCode)' == '0')"
+            Inputs="$(_LinkSemaphore)"
+            Outputs="$(IntermediateOutputPath)bit-minifier.stamp">
+        <PropertyGroup>
+            <_BitMinifierPath>$(MSBuildThisFileDirectory)..\tools\Bit.Minifier.dll</_BitMinifierPath>
+            <!-- imported straight from this repository's source tree, the tool is in its own build output -->
+            <_BitMinifierPath Condition="!Exists('$(_BitMinifierPath)')">$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net8.0\Bit.Minifier.dll</_BitMinifierPath>
+            <!-- ILLink's own fallback for Visual Studio's msbuild.exe, where DOTNET_HOST_PATH is not set -->
+            <_BitMinifyDotNetHost>$(DOTNET_HOST_PATH)</_BitMinifyDotNetHost>
+            <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == '' and $([MSBuild]::IsOSPlatform(`Windows`))">$(NetCoreRoot)dotnet.exe</_BitMinifyDotNetHost>
+            <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == ''">$(NetCoreRoot)dotnet</_BitMinifyDotNetHost>
+            <_BitMinifyArgs>&quot;$(IntermediateLinkDir.TrimEnd('\').TrimEnd('/'))&quot; --map &quot;$(IntermediateOutputPath)bit-minifier.map&quot;</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(NullabilityInfoContextSupport)' == 'true'">$(_BitMinifyArgs) --keep-nullable</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(BitMinifyAggressive)' == 'true'">$(_BitMinifyArgs) --aggressive</_BitMinifyArgs>
+        </PropertyGroup>
+        <!-- A failure is a warning, never a broken publish: the tool writes nothing unless every reference into the
+             rewritten assemblies still resolves, so the app then ships what ILLink produced. -->
+        <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; $(_BitMinifyArgs)"
+              ContinueOnError="WarnAndContinue"
+              StandardOutputImportance="normal" />
+        <!-- runs again only when ILLink rewrote the folder, so nothing is minified twice -->
+        <Touch Files="$(IntermediateOutputPath)bit-minifier.stamp" AlwaysCreate="true" />
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)bit-minifier.stamp;$(IntermediateOutputPath)bit-minifier.map" />
+        </ItemGroup>
+    </Target>
+
+</Project>
