@@ -110,7 +110,9 @@ public class Broute : ComponentBase, IDisposable
     /// (<see cref="IBrouterRoute.OnRenavigatedAsync"/>), the same reuse the built-in <c>Router</c>
     /// gives a page. Set it explicitly to opt this one route either way - <c>true</c> to dispose the
     /// content and mount a fresh instance on every parameter change, <c>false</c> to keep it even
-    /// where the application default is to rebuild. The parameters that count are every parameter
+    /// where the application default is to rebuild. When unset, a <see cref="Component"/> carrying
+    /// <see cref="BrouterRemountOnParameterChangeAttribute"/> decides before the application default
+    /// does - the way an attribute-discovered page opts in. The parameters that count are every parameter
     /// of the route's full template, ancestors' included. Ignored on a <see cref="KeepAlive"/>
     /// route, which never remounts.
     /// </summary>
@@ -413,11 +415,36 @@ public class Broute : ComponentBase, IDisposable
     internal int EffectiveKeepAliveMax => Math.Max(1, KeepAliveMax ?? Brouter?.Options.DefaultKeepAliveMax ?? 1);
 
     // Whether a parameter-only navigation rebuilds this route's content rather than re-binding the
-    // live instance: the route's own setting, else the global option (off by default). KeepAlive
-    // always wins - retaining the instance is what the route asked for, and a per-parameter
-    // keep-alive route already mounts one instance per parameter set.
+    // live instance: the route's own setting, else the rendered Component's
+    // [BrouterRemountOnParameterChange], else the global option (off by default). KeepAlive always
+    // wins - retaining the instance is what the route asked for, and a per-parameter keep-alive
+    // route already mounts one instance per parameter set.
     internal bool EffectiveRemountOnParameterChange =>
-        KeepAlive is false && (RemountOnParameterChange ?? Brouter?.Options.RemountOnParameterChange ?? false);
+        KeepAlive is false && (RemountOnParameterChange
+                               ?? GetComponentRemountOnParameterChange()
+                               ?? Brouter?.Options.RemountOnParameterChange
+                               ?? false);
+
+    // The Component's [BrouterRemountOnParameterChange] value, cached per Component type so the
+    // reflection lookup runs once per route rather than on every navigation.
+    private Type? _remountAttributeSource;
+    private bool? _componentRemountOnParameterChange;
+
+    private bool? GetComponentRemountOnParameterChange()
+    {
+        if (Component is not { } component) return null;
+
+        if (_remountAttributeSource != component)
+        {
+            _componentRemountOnParameterChange = component
+                .GetCustomAttributes(typeof(BrouterRemountOnParameterChangeAttribute), inherit: true)
+                .OfType<BrouterRemountOnParameterChangeAttribute>()
+                .FirstOrDefault()?.Remount;
+            _remountAttributeSource = component;
+        }
+
+        return _componentRemountOnParameterChange;
+    }
 
     /// <summary>
     /// Builds this route's parameter identity from the values it is currently matched with - see

@@ -283,6 +283,43 @@ public class RemountOnParameterChangeTests : BunitTestContext
         });
     }
 
+    private async Task AssertCounterAfterParameterChange(string from, string to, string expected)
+    {
+        var (cut, brouter) = RenderAt<RemountAttributeHost>("http://localhost" + from);
+        cut.WaitForAssertion(() => Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent));
+
+        cut.Find("[data-testid=inc]").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent));
+
+        await cut.InvokeAsync(() => brouter.Navigate(to));
+
+        // The location check is what tells "navigated and kept" apart from "not navigated yet".
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(to, brouter.Location.Path);
+            Assert.AreEqual(expected, cut.Find("[data-testid=stateful]").TextContent);
+        });
+    }
+
+    [TestMethod]
+    public Task Page_attribute_opts_a_discovered_page_in()
+        => AssertCounterAfterParameterChange("/rmattr/1", "/rmattr/2", "count:0");
+
+    [TestMethod]
+    public Task Page_attribute_opts_a_discovered_page_out_under_the_rebuilding_default()
+    {
+        UseRemount();
+        return AssertCounterAfterParameterChange("/rmattroff/1", "/rmattroff/2", "count:1");
+    }
+
+    [TestMethod]
+    public Task Page_attribute_applies_to_a_hand_declared_Component_route()
+        => AssertCounterAfterParameterChange("/rmattrhand/1", "/rmattrhand/2", "count:0");
+
+    [TestMethod]
+    public Task Explicit_route_setting_beats_the_page_attribute()
+        => AssertCounterAfterParameterChange("/rmattrexplicit/1", "/rmattrexplicit/2", "count:1");
+
     [TestMethod]
     public async Task Kept_child_hosted_in_a_re_bound_parent_is_hidden_by_default()
     {
