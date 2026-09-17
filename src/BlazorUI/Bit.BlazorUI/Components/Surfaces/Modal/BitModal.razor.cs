@@ -361,15 +361,6 @@ public partial class BitModal : BitComponentBase
     public bool Modeless { get; set; }
 
     /// <summary>
-    /// Whether the overlay is rendered behind the Modal.
-    /// </summary>
-    [Obsolete("Use Modeless instead. ShowOverlay=\"false\" is Modeless=\"true\", which stands the overlay down " +
-              "along with the modality the Modal reports, the focus trap and the hold it takes on the page - " +
-              "the three things a Modal rendering no overlay was never really doing anyway.")]
-    [Parameter, ResetClassBuilder]
-    public bool ShowOverlay { get; set; } = true;
-
-    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens, for the cases where the focus is
     /// placed by the consumer instead.
     /// </summary>
@@ -1461,9 +1452,7 @@ public partial class BitModal : BitComponentBase
             // Can only force on (default is off): see remarks on asymmetric merge.
             ModeFull = ModeFull ? true : p.ModeFull,
             // Can only force on (default is off): see remarks on asymmetric merge.
-#pragma warning disable CS0618 // read here on purpose: the obsolete parameter still has to work
-            Modeless = (Modeless || ShowOverlay is false) ? true : p.Modeless,
-#pragma warning restore CS0618
+            Modeless = Modeless ? true : p.Modeless,
             // Can only force on (default is off): see remarks on asymmetric merge.
             NoAutoFocus = NoAutoFocus ? true : p.NoAutoFocus,
             // Can only force on (default is off): see remarks on asymmetric merge.
