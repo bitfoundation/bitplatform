@@ -69,7 +69,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int _anchorIndex;
     private bool _pendingScrollToEnd;
     private double _pendingScrollOffset = -1;
-    private double _preserveEndDistance = -1;
+    // A scroll the render carries to the browser, which performs it as the render lands, before painting it: the
+    // browser would otherwise paint the rendered items once at the old scroll position (a visible jump) before the
+    // scroll sent after the render arrives. "o:{offset}:{seq}" scrolls to an offset, "d:{delta}:{seq}" by a delta.
+    private string? _renderedScroll;
     private bool _initialScrollDone;
     private bool _stickToEnd;
     private Func<Task>? _queuedScroll;   // a scroll requested before the component was ready to perform it
@@ -403,7 +406,13 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         if (IsDisposed || Dynamic is false || _tree is null || indices.Length == 0 || indices.Length != sizes.Length) return;
 
+        // The first item that starts in view: the resize of an item cut by the leading edge then moves only its hidden
+        // part, rather than everything in view below it.
         var anchor = _visibleStart;
+        if (anchor + 1 < _itemCount && _tree.PrefixSum(anchor) < _scrollOffset - 0.01)
+        {
+            anchor++;
+        }
         var oldAnchorOffset = _tree.PrefixSum(anchor);
 
         var changed = false;
@@ -435,7 +444,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                 var realDiff = diff / _ratio;
                 _scrollOffset += diff;
                 _realScrollOffset += realDiff;
-                await _js.BitVirtualizeAdjustScroll(UniqueId, realDiff, NextScrollSeq());
+                _renderedScroll = $"d:{FormatCssValue(realDiff)}:{NextScrollSeq()}";
             }
 
             RecomputeRange();
@@ -731,8 +740,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private double VirtualFromReal(double value) => value * _ratio;
 
-    // Every call is followed by a scroll sent to the browser with the returned number (for a scroll decided while
-    // rendering, by the pending scroll applied after the render), or the browser's reports would stay stale for good.
+    // Every call is followed by a scroll that takes the returned number to the browser (sent to it, or carried by the
+    // next render in _renderedScroll), or the browser's reports would stay stale for good.
     private int NextScrollSeq() => ++_scrollSeq;
 
     private void UpdateScale()
@@ -854,21 +863,14 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         {
             _pendingScrollToEnd = false;
             _pendingScrollOffset = -1;
-            _preserveEndDistance = -1;
             await ScrollToEdgeAsync(end: true, smooth: false);
         }
         else if (_pendingScrollOffset >= 0)
         {
-            // Keep the anchored item where it was after data got inserted or removed before it.
+            // The render has carried this scroll already (see _renderedScroll); it is sent again for a browser that
+            // had no items element to read it from.
             var target = _pendingScrollOffset;
             _pendingScrollOffset = -1;
-            await ScrollToOffsetAsync(target, false);
-        }
-        else if (_preserveEndDistance >= 0)
-        {
-            // Restore the distance from the end after a prepend so the viewport stays put.
-            var target = Math.Max(0, GetTotalSize() - _viewportSize - _preserveEndDistance);
-            _preserveEndDistance = -1;
             await ScrollToOffsetAsync(target, false);
         }
     }
@@ -906,6 +908,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         SetItemCount(_itemList.Count);
         ComputeStickyIndices();
 
+        var anchored = false;
         if (hadItems && _itemCount > 0)
         {
             if (atEnd)
@@ -927,10 +930,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                     var target = GetItemOffset(index) + anchorDelta;
                     if (Math.Abs(target - _scrollOffset) > 0.5)
                     {
-                        target = Math.Max(0, target);
-                        _scrollOffset = target;
-                        _pendingScrollOffset = target;
-                        NextScrollSeq();
+                        _scrollOffset = Math.Max(0, target);
+                        anchored = true;
                     }
                 }
             }
@@ -938,9 +939,19 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             {
                 // Content grew (likely prepended history): keep the viewport anchored
                 // to the same distance from the end so it does not jump.
-                _preserveEndDistance = prevTotal - (_scrollOffset + _viewportSize);
-                NextScrollSeq();
+                var endDistance = prevTotal - (_scrollOffset + _viewportSize);
+                _scrollOffset = Math.Max(0, GetTotalSize() - _viewportSize - endDistance);
+                anchored = true;
             }
+        }
+
+        if (anchored)
+        {
+            // The window gets rendered at the new offset, and the render carries the scroll that takes the browser there.
+            UpdateScale();
+            _realScrollOffset = Math.Clamp(RealFromVirtual(_scrollOffset), 0, Math.Max(0, _realTotal - _viewportSize));
+            _pendingScrollOffset = _scrollOffset;
+            _renderedScroll = $"o:{FormatCssValue(_realScrollOffset)}:{NextScrollSeq()}";
         }
 
         RecomputeRange();

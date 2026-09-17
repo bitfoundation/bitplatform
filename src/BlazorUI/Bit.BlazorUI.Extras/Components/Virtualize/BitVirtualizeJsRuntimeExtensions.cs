@@ -38,11 +38,6 @@ internal static class BitVirtualizeJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.scrollToEdge", id, end, smooth, seq);
     }
 
-    public static ValueTask BitVirtualizeAdjustScroll(this IJSRuntime jsRuntime, string id, double delta, int seq)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.adjustScroll", id, delta, seq);
-    }
-
     public static ValueTask BitVirtualizeDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Virtualize.dispose", id);

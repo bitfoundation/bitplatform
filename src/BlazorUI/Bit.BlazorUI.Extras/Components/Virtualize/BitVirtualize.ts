@@ -34,10 +34,6 @@ namespace BitBlazorUI {
             Virtualize._instances.get(id)?.scrollToEdge(end, smooth, seq);
         }
 
-        public static adjustScroll(id: string, delta: number, seq: number) {
-            Virtualize._instances.get(id)?.adjustScroll(delta, seq);
-        }
-
         public static focusIndex(id: string, index: number) {
             Virtualize._instances.get(id)?.focusIndex(index);
         }
@@ -110,6 +106,9 @@ namespace BitBlazorUI {
         private _viewportObserver: ResizeObserver;
         private _leadObserver: ResizeObserver;
         private _itemObserver: ResizeObserver;
+        // Performs the scroll a render carries (data-bit-vir-scroll on the spacer) as soon as the render lands:
+        // mutation callbacks run before the browser paints, so the moved items and the scroll show up together.
+        private _renderObserver: MutationObserver;
         // In RTL horizontal mode, browsers report scrollLeft as <= 0 (0 at the start, negative toward
         // the end). Cached (rather than read via getComputedStyle on every scroll event) and refreshed
         // on render/resize, since the direction rarely changes.
@@ -161,6 +160,9 @@ namespace BitBlazorUI {
 
             // Track item resizes (dynamic mode).
             this._itemObserver = new ResizeObserver(entries => this._onItemsResized(entries));
+
+            this._renderObserver = new MutationObserver(() => this._applyRenderedScroll());
+            this._renderObserver.observe(this._element, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-bit-vir-scroll'] });
 
             this._syncStructure();
         }
@@ -263,6 +265,7 @@ namespace BitBlazorUI {
             this._viewportObserver.disconnect();
             this._leadObserver.disconnect();
             this._itemObserver.disconnect();
+            this._renderObserver.disconnect();
             if (this._trailingTimer) clearTimeout(this._trailingTimer);
             if (this._smoothTimer) clearTimeout(this._smoothTimer);
             this._observed.clear();
@@ -271,6 +274,28 @@ namespace BitBlazorUI {
             this._stickyEl = null;
             this._spacer = null;
             this._header = null;
+        }
+
+        // "o:{offset}:{seq}" scrolls to an offset, "d:{delta}:{seq}" by a delta; each is performed once, and not at all
+        // when a later scroll has been performed already.
+        private _applyRenderedScroll() {
+            if (this._disposed) return;
+
+            const scroll = this._element.querySelector(':scope > .bit-vir-spc')?.getAttribute('data-bit-vir-scroll');
+            if (!scroll) return;
+
+            const [kind, valueText, seqText] = scroll.split(':');
+            const value = parseFloat(valueText);
+            const seq = parseInt(seqText, 10);
+            if (isNaN(value) || !(seq > this._seq)) return;
+
+            if (kind === 'd') {
+                this.adjustScroll(value, seq);
+            } else {
+                // The same render may have resized what comes before the items (e.g. a header's text changed).
+                this._syncStructure();
+                this.scrollToOffset(value, false, seq);
+            }
         }
 
         private _adoptSeq(seq: number | undefined) {

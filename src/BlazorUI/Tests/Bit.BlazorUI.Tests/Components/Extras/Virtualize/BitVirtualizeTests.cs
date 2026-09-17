@@ -17,7 +17,6 @@ public class BitVirtualizeTests : BunitTestContext
     private const string SetupFn = "BitBlazorUI.Virtualize.setup";
     private const string ScrollToOffsetFn = "BitBlazorUI.Virtualize.scrollToOffset";
     private const string ScrollToEdgeFn = "BitBlazorUI.Virtualize.scrollToEdge";
-    private const string AdjustScrollFn = "BitBlazorUI.Virtualize.adjustScroll";
     private const string FocusIndexFn = "BitBlazorUI.Virtualize.focusIndex";
     private const string UpdateFn = "BitBlazorUI.Virtualize.update";
     private const string SyncFn = "BitBlazorUI.Virtualize.sync";
@@ -34,6 +33,9 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     private IReadOnlyList<JSRuntimeInvocation> Calls(string identifier) => Context.JSInterop.Invocations[identifier];
+
+    private static string? RenderedScroll<T>(IRenderedComponent<BitVirtualize<T>> component) =>
+        component.Find(".bit-vir-spc").GetAttribute("data-bit-vir-scroll");
 
     private double LastScrollToOffset() => Convert.ToDouble(Calls(ScrollToOffsetFn)[^1].Arguments[1], CultureInfo.InvariantCulture);
 
@@ -1213,6 +1215,10 @@ public class BitVirtualizeTests : BunitTestContext
         var seq = Convert.ToInt32(Calls(ScrollToOffsetFn)[^1].Arguments[3], CultureInfo.InvariantCulture);
         Assert.AreEqual(3000, LastScrollToOffset());
 
+        // The render that shows the prepended items already carries that scroll, so no frame shows them unanchored.
+        Assert.AreEqual($"o:3000:{seq - 1}", RenderedScroll(component));
+        Assert.IsTrue(RenderedIndices(component).Contains(60));
+
         // A report the browser sent before it got there still has the old position (e.g. the top, where a shrinking
         // header left it): it neither moves the rendered window nor counts as reaching the start.
         await component.InvokeAsync(() => component.Instance._Scroll(0, 300, seq - 1));
@@ -1409,12 +1415,29 @@ public class BitVirtualizeTests : BunitTestContext
         // Item 18 is in the overscan above the first visible item (20) and turned out 100px taller.
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([18], [150d]));
 
-        Assert.AreEqual(100d, Convert.ToDouble(Calls(AdjustScrollFn)[^1].Arguments[1], CultureInfo.InvariantCulture));
+        // The render that moves the items carries the scroll correction, so the browser applies both in one frame.
+        var adjustment = RenderedScroll(component);
+        StringAssert.StartsWith(adjustment, "d:100:");
 
         // Items below the first visible one do not move what is in view.
-        var adjustments = Calls(AdjustScrollFn).Count;
         await component.InvokeAsync(() => component.Instance._ItemsMeasured([22], [150d]));
-        Assert.AreEqual(adjustments, Calls(AdjustScrollFn).Count);
+        Assert.AreEqual(adjustment, RenderedScroll(component));
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeDynamicShouldKeepTheItemsBelowStillWhenAnItemCutByTheTopIsMeasured()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100, 50, p => p.Add(x => x.Dynamic, true));
+
+        // Item 20 is first in view, its top 10px above the viewport.
+        await component.InvokeAsync(() => component.Instance._Scroll(1010, 300));
+
+        // It turns out 20px shorter: item 21 and everything after it would move up 20px, so the scroll follows them.
+        await component.InvokeAsync(() => component.Instance._ItemsMeasured([20], [30d]));
+
+        StringAssert.StartsWith(RenderedScroll(component), "d:-20:");
     }
 
     [TestMethod]
