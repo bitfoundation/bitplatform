@@ -40,7 +40,14 @@ export class WebInteropApp {
                 : `http://localhost:${localHttpPort}/api/LogError`;
 
             // Blazor Hybrid:
-            const errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${String(err)}`;
+            // A promise can be rejected with null/undefined (or an unserializable value), and a throw here would
+            // skip the fetch below and leave the TaskCompletionSource pending, so never let building the message fail.
+            let errMsg = String(err);
+            if (err != null) {
+                try {
+                    errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${errMsg}`;
+                } catch { }
+            }
             await fetch(logErrorUrl, {
                 method: 'POST',
                 credentials: 'omit',
