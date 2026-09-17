@@ -33,6 +33,20 @@
             }
         }
 
+        // Whether the viewport can be shrunk by an on-screen keyboard, so that a resize or a short visible band
+        // may be the keyboard's doing rather than the window's. It is the PRIMARY pointer being coarse that says
+        // so, not touch merely being available: a touch-screen laptop has a touch screen and a physical keyboard,
+        // and a window resized there is the window being resized. A phone, a tablet and a convertible folded
+        // into its tablet posture all report a coarse primary pointer, whatever the width of their screen.
+        public static hasOnScreenKeyboard() {
+            try {
+                return window.matchMedia("(pointer: coarse)").matches;
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.hasOnScreenKeyboard:", e);
+                return false;
+            }
+        }
+
         // Returns the currently visible region of the page. On iOS the on-screen keyboard
         // shrinks the visual viewport without changing window.innerHeight, so relying on
         // window.inner* mispositions fixed elements (e.g. callouts) behind the keyboard.
