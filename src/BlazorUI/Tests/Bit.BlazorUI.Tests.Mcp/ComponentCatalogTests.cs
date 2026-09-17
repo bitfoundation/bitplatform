@@ -183,7 +183,6 @@ public class ComponentCatalogTests : McpTestBase
     /// caught up with. A parameter this server does not name is one no agent will use.
     /// </summary>
     [TestMethod]
-    [DataRow("BitModal", "ShowOverlay")]
     [DataRow("BitText", "Align")]
     [DataRow("BitMarkdownEditor", "SyncScroll")]
     [DataRow("BitCircularTimePicker", "DisablePast")]

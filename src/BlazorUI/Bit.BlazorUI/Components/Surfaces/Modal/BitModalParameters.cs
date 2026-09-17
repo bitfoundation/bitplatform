@@ -195,17 +195,6 @@ public class BitModalParameters
     public bool? Modeless { get; set; }
 
     /// <summary>
-    /// Whether the overlay is rendered behind the modal.
-    /// </summary>
-    [Obsolete("Use Modeless instead: ShowOverlay=false is Modeless=true, which stands the overlay down along " +
-              "with the modality the modal reports, the focus trap and the hold it takes on the page.")]
-    public bool? ShowOverlay
-    {
-        get => Modeless is null ? null : Modeless is false;
-        set => Modeless = value is null ? null : value is false;
-    }
-
-    /// <summary>
     /// Prevents the Modal from moving the focus into itself when it opens. <c>null</c> means not set (defaults to <c>false</c>).
     /// </summary>
     public bool? NoAutoFocus { get; set; }
