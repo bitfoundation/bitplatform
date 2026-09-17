@@ -1,0 +1,10 @@
+﻿@page "/rmattr/{id:int}"
+@attribute [BrouterRemountOnParameterChange]
+
+@* Attribute-discovered page that opts into RemountOnParameterChange on itself. *@
+
+<StatefulCounter />
+
+@code {
+    [Parameter] public int Id { get; set; }
+}

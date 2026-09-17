@@ -48,7 +48,8 @@
         or through an uncontrolled <code>Default*</code> parameter on a UI component - sees the new
         one; the change is then reported as a <code>Disposing</code> deactivation followed by a first
         activation, never as a renavigation. Individual routes override either default with
-        <code>Broute.RemountOnParameterChange</code>. Rebuilding only ever applies to routes that
+        <code>Broute.RemountOnParameterChange</code>, and an attribute-routed page can do the same on
+        itself with <code>@@attribute [BrouterRemountOnParameterChange]</code>. Rebuilding only ever applies to routes that
         aren't keep-alive: a <code>KeepAlive</code> route ignores the setting and keeps its content
         across its own parameter change - no disposal, no fresh activation, the change arrives as a
         renavigation as usual.

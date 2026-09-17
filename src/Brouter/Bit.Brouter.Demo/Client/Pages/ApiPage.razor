@@ -78,7 +78,7 @@
             <tr><td>Meta</td><td>object?</td><td>Static per-route metadata, cascaded as <code>BrouterRouteMeta</code>. No code runs.</td></tr>
             <tr><td>KeepAlive</td><td>bool (false)</td><td>Retain the rendered component (hidden) when navigated away.</td></tr>
             <tr><td>KeepAliveMax</td><td>int?</td><td>Retained-instance budget. Above 1, one instance per distinct parameter set, LRU-evicted. Defaults to <code>DefaultKeepAliveMax</code>.</td></tr>
-            <tr><td>RemountOnParameterChange</td><td>bool?</td><td>Rebuild this route's content when only its parameter values change, instead of re-binding the live instance. Defaults to the <code>RemountOnParameterChange</code> option; ignored on a keep-alive route.</td></tr>
+            <tr><td>RemountOnParameterChange</td><td>bool?</td><td>Rebuild this route's content when only its parameter values change, instead of re-binding the live instance. Defaults to the page's <code>[BrouterRemountOnParameterChange]</code> attribute, then the <code>RemountOnParameterChange</code> option; ignored on a keep-alive route.</td></tr>
             <tr><td>ErrorContent</td><td>RenderFragment&lt;BrouterErrorContext&gt;?</td><td>Error boundary for this route and its descendants; nearest boundary wins.</td></tr>
         </tbody>
     </table>
