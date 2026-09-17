@@ -40,20 +40,20 @@
         <code>Register(this)</code> / <code>Unregister(this)</code> yourself.
     </p>
     <p class="bb-card-desc">
-        <strong>Rebuilding is opt-in.</strong> By default a parameter-only navigation re-binds the
-        live instance - the same reuse the built-in <code>Router</code> gives a page - and
-        <code>OnRenavigated</code> carries the change. Set
-        <code>BrouterOptions.RemountOnParameterChange = true</code> to dispose the content and mount
-        a fresh instance instead, so a page that reads a value once - in <code>OnInitialized</code>,
+        <strong>Rebuilding is the default.</strong> A parameter-only navigation disposes the content
+        and mounts a fresh instance, so a page that reads a value once - in <code>OnInitialized</code>,
         or through an uncontrolled <code>Default*</code> parameter on a UI component - sees the new
-        one; the change is then reported as a <code>Disposing</code> deactivation followed by a first
-        activation, never as a renavigation. Individual routes override either default with
+        one; the change is reported as a <code>Disposing</code> deactivation followed by a first
+        activation, never as a renavigation. Set
+        <code>BrouterOptions.RemountOnParameterChange = false</code> to re-bind the live instance
+        instead - the reuse the built-in <code>Router</code> gives a page - and
+        <code>OnRenavigated</code> carries the change. Individual routes override either default with
         <code>Broute.RemountOnParameterChange</code>. Rebuilding only ever applies to routes that
         aren't keep-alive: a <code>KeepAlive</code> route ignores the setting and keeps its content
         across its own parameter change - no disposal, no fresh activation, the change arrives as a
         renavigation as usual.
     </p>
-    <pre class="bb-code">services.<span class="k">AddBitBrouterServices</span>(o =&gt; o.RemountOnParameterChange = <span class="k">true</span>);</pre>
+    <pre class="bb-code">services.<span class="k">AddBitBrouterServices</span>(o =&gt; o.RemountOnParameterChange = <span class="k">false</span>);</pre>
     <div class="bb-try">
         <BrouterLink Href="/lifecycle/1" class="btn btn-outline">/lifecycle/1 - live event log (IBrouterRoute)</BrouterLink>
     </div>
@@ -113,7 +113,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Singleton re-commit vs disposal</h3>
     <p class="bb-card-desc">
         The lifecycle log makes the instance model tangible: <code>/lifecycle/1 → /lifecycle/2</code>
-        keeps the route matched, so the <em>same instance</em> re-commits and
+        keeps the route matched and the route opts out of the default rebuild, so the
+        <em>same instance</em> re-commits and
         <code>OnRenavigatedAsync</code> fires with old and new locations - no dispose, no rebuild.
         Leaving the route entirely fires <code>OnDeactivatedAsync</code> with
         <code>Reason = Disposing</code>. The page stamps each instance with a random id so you can

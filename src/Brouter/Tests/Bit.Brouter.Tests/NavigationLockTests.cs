@@ -60,6 +60,8 @@ public class NavigationLockTests : BunitTestContext
     [TestMethod]
     public void Renavigating_lock_vetoes_a_parameter_change_on_the_same_route()
     {
+        // The renavigating lock belongs to content that survives the change, i.e. a re-bound route.
+        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = false);
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/doc/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=doc]"));

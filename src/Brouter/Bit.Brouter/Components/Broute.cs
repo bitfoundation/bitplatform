@@ -105,12 +105,12 @@ public class Broute : ComponentBase, IDisposable
     /// <summary>
     /// Whether a navigation that stays on this route but changes its parameter values rebuilds the
     /// route's content instead of re-binding the live instance. Null (the default) follows
-    /// <see cref="BrouterOptions.RemountOnParameterChange"/>, which defaults to <c>false</c>: the
-    /// instance survives and takes the change as a renavigation
-    /// (<see cref="IBrouterRoute.OnRenavigatedAsync"/>), the same reuse the built-in <c>Router</c>
-    /// gives a page. Set it explicitly to opt this one route either way - <c>true</c> to dispose the
-    /// content and mount a fresh instance on every parameter change, <c>false</c> to keep it even
-    /// where the application default is to rebuild. The parameters that count are every parameter
+    /// <see cref="BrouterOptions.RemountOnParameterChange"/>, which defaults to <c>true</c>: the
+    /// content is disposed and a fresh instance mounted on every parameter change. Set it
+    /// explicitly to opt this one route either way - <c>false</c> to keep the live instance and take
+    /// the change as a renavigation (<see cref="IBrouterRoute.OnRenavigatedAsync"/>, the reuse the
+    /// built-in <c>Router</c> gives a page), <c>true</c> to rebuild even where the application
+    /// default is to re-bind. The parameters that count are every parameter
     /// of the route's full template, ancestors' included. Ignored on a <see cref="KeepAlive"/>
     /// route, which never remounts.
     /// </summary>
@@ -417,7 +417,7 @@ public class Broute : ComponentBase, IDisposable
     // always wins - retaining the instance is what the route asked for, and a per-parameter
     // keep-alive route already mounts one instance per parameter set.
     internal bool EffectiveRemountOnParameterChange =>
-        KeepAlive is false && (RemountOnParameterChange ?? Brouter?.Options.RemountOnParameterChange ?? false);
+        KeepAlive is false && (RemountOnParameterChange ?? Brouter?.Options.RemountOnParameterChange ?? true);
 
     /// <summary>
     /// Builds this route's parameter identity from the values it is currently matched with - see

@@ -70,10 +70,10 @@
         <code>OnDeactivatingAsync</code> / <code>OnRenavigatingAsync</code>: both are awaited
         before the navigation commits, may show a custom dialog, and cancel or redirect through
         their context. <code>OnRenavigatingAsync</code> closes the gap leave guards can't see -
-        parameter changes on the <em>same</em> route (<code>/lock/1 → /lock/2</code>). A route that
-        opted into <code>RemountOnParameterChange</code> is the exception: its content is disposed by
-        such a change, so it votes through <code>OnDeactivatingAsync</code> and its
-        <code>LeaveGuard</code>, exactly as if it were left. The
+        parameter changes on a <em>re-binding</em> route (<code>/lock/1 → /lock/2</code>, whose
+        route sets <code>RemountOnParameterChange="false"</code>). Under the default rebuild the
+        content is disposed by such a change instead, so it votes through
+        <code>OnDeactivatingAsync</code> and its <code>LeaveGuard</code>, exactly as if it were left. The
         context's <code>CancellationToken</code> fires if a newer navigation supersedes the pending
         one, letting an open dialog dismiss itself. A thrown exception fails closed: the
         navigation is cancelled.

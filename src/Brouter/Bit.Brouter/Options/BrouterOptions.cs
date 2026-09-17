@@ -140,23 +140,22 @@ public sealed class BrouterOptions
     /// <summary>
     /// Whether a navigation that stays on the same route but changes its route parameter values
     /// (<c>/settings/profile</c> -> <c>/settings/account</c>) rebuilds the route's content instead of
-    /// re-binding the live instance. Defaults to <c>false</c>: the component instance survives, the
-    /// new values arrive as parameters, and the route lifecycle reports the navigation as a
-    /// renavigation (<see cref="IBrouterRoute.OnRenavigatingAsync"/> /
-    /// <see cref="IBrouterRoute.OnRenavigatedAsync"/>) rather than a deactivation + activation. That
-    /// is the same instance reuse the built-in <c>Router</c> gives a page (its <c>RouteView</c>
-    /// re-parameterizes the existing component - <c>OnParametersSet</c> runs, <c>OnInitialized</c>
-    /// does not) and what Angular and Vue do; it keeps scroll position, form state and in-flight
-    /// work across the change, at the cost of every such component having to react to the new
-    /// parameters itself.
+    /// re-binding the live instance. Defaults to <c>true</c>: the old components are disposed and a
+    /// brand-new instance mounts on every parameter change, so anything a component reads once -
+    /// <c>OnInitialized</c>, a child that captures a parameter when it registers, an uncontrolled
+    /// <c>Default*</c> value on a UI component - sees the new values. The content votes on the
+    /// change through <see cref="IBrouterRoute.OnDeactivatingAsync"/> (reason Disposing) and the
+    /// route's <see cref="Broute.LeaveGuard"/>, exactly like a route being left.
     /// <para>
-    /// Set it to <c>true</c> to dispose the old components and mount a brand-new instance on every
-    /// parameter change, so anything a component reads once - <c>OnInitialized</c>, a child that
-    /// captures a parameter when it registers, an uncontrolled <c>Default*</c> value on a UI
-    /// component - sees the new values. The content then votes on the change through
-    /// <see cref="IBrouterRoute.OnDeactivatingAsync"/> (reason Disposing) and the route's
-    /// <see cref="Broute.LeaveGuard"/>, exactly like a route being left. Individual routes can opt
-    /// either way with <see cref="Broute.RemountOnParameterChange"/>. Everything nested below a
+    /// Set it to <c>false</c> to keep the component instance instead: the new values arrive as
+    /// parameters, and the route lifecycle reports the navigation as a renavigation
+    /// (<see cref="IBrouterRoute.OnRenavigatingAsync"/> / <see cref="IBrouterRoute.OnRenavigatedAsync"/>)
+    /// rather than a deactivation + activation. That is the instance reuse the built-in
+    /// <c>Router</c> gives a page (its <c>RouteView</c> re-parameterizes the existing component -
+    /// <c>OnParametersSet</c> runs, <c>OnInitialized</c> does not); it keeps scroll position, form
+    /// state and in-flight work across the change, at the cost of every such component having to
+    /// react to the new parameters itself. Individual routes can opt either way with
+    /// <see cref="Broute.RemountOnParameterChange"/>. Everything nested below a
     /// rebuilt route is rebuilt with it - including, for pages rendered through
     /// <c>Brouter.DefaultLayout</c> / <c>Found</c>, the framework <c>RouteView</c> and the layout it
     /// composes inside the page's subtree; a layout declared as a parent <c>Broute</c> whose own
@@ -169,7 +168,7 @@ public sealed class BrouterOptions
     /// A kept route hosted in the outlet of an ancestor that IS rebuilt dies with that subtree.
     /// </para>
     /// </summary>
-    public bool RemountOnParameterChange { get; set; }
+    public bool RemountOnParameterChange { get; set; } = true;
 
     /// <summary>
     /// Debounce for <see cref="BrouterLinkPreload.Intent"/> preloading: the pointer must rest on the

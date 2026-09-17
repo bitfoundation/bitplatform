@@ -1,0 +1,15 @@
+﻿@page "/sections/{Section?}"
+@page "/{culture?}/sections/{Section?}"
+@using Microsoft.AspNetCore.Components
+
+@* Mirrors a settings page whose accordion expands the section named in the URL through an
+   uncontrolled DefaultExpandedKey: the value is only read when the component initializes. *@
+<div data-testid="section">initial:@initialSection current:@Section</div>
+
+@code {
+    [Parameter] public string? Section { get; set; }
+
+    private string? initialSection;
+
+    protected override void OnInitialized() => initialSection = Section;
+}

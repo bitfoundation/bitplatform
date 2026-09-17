@@ -68,7 +68,7 @@
             <tr>
                 <td>2</td>
                 <td>Leave chain <em>(leaf → root)</em></td>
-                <td>Per route: the component-level lock first (<code>OnDeactivatingAsync</code> when the route is being left, <code>OnRenavigatingAsync</code> when it stays matched with new parameters), then the route's <code>LeaveGuard</code> - only for routes actually being deactivated.</td>
+                <td>Per route: the component-level lock first (<code>OnDeactivatingAsync</code> when the route is being left or its content rebuilt for new parameters, <code>OnRenavigatingAsync</code> when it stays matched and keeps its instance), then the route's <code>LeaveGuard</code> - only for routes whose content actually goes away.</td>
                 <td><strong>yes</strong></td>
             </tr>
             <tr>

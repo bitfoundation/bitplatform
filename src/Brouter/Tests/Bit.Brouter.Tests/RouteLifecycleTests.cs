@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Brouter.Tests;
@@ -38,6 +39,8 @@ public class RouteLifecycleTests : BunitTestContext
     [TestMethod]
     public async Task Singleton_route_parameter_change_fires_renavigation_on_the_same_instance()
     {
+        // Same instance only when re-binding; the default rebuilds (see RemountOnParameterChangeTests).
+        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = false);
         var (cut, brouter) = RenderAt<KeepAliveHost>("http://localhost/ren/1");
         cut.WaitForAssertion(() =>
             StringAssert.Contains(cut.Find("[data-testid=lifecycle]").TextContent, "activated:1"));

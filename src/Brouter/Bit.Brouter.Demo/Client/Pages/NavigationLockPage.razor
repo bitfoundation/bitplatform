@@ -44,10 +44,10 @@
         <li><BrouterLink Href="/">Home</BrouterLink> <em>(deactivation - the page would be disposed)</em></li>
     </ul>
     <p class="bb-card-desc">
-        A parameter change (<code>/lock/1 → /lock/2</code>) keeps this route matched, so a
-        route-declared <code>LeaveGuard</code> would never fire - <code>OnRenavigating</code> is what
-        protects the dirty draft there. A route that opts into
-        <code>RemountOnParameterChange</code> is the exception: its content is rebuilt by the change,
+        This route sets <code>RemountOnParameterChange="false"</code>, so a parameter change
+        (<code>/lock/1 → /lock/2</code>) keeps the instance alive and a route-declared
+        <code>LeaveGuard</code> would never fire - <code>OnRenavigating</code> is what protects the
+        dirty draft there. Under the default rebuild the content is disposed by the change instead,
         so the instance about to be disposed votes with <code>OnDeactivating</code> (reason
         <code>Disposing</code>) and the <code>LeaveGuard</code> runs - either way the dirty draft is
         protected.

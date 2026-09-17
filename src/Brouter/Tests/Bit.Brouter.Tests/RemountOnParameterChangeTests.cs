@@ -9,19 +9,18 @@ namespace Bit.Brouter.Tests;
 /// What happens to a route's content when a navigation keeps the route matched but changes its
 /// parameter values (<c>/settings/profile</c> -> <c>/settings/account</c>).
 /// <para>
-/// By default the instance survives and the change arrives as a renavigation - the same reuse the
-/// built-in <c>Router</c> gives a page. <see cref="BrouterOptions.RemountOnParameterChange"/>
-/// (globally) and <see cref="Broute.RemountOnParameterChange"/> (per route) switch to rebuilding
-/// the content instead, so everything a component reads once - <c>OnInitialized</c>, a child that
-/// captures a value when it registers with its parent, an uncontrolled <c>Default*</c> parameter on
-/// a UI component - sees the new values. A rebuild disposes the content, so it votes and is notified
-/// exactly like a route being left.
+/// By default the content is rebuilt, so everything a component reads once - <c>OnInitialized</c>,
+/// a child that captures a value when it registers with its parent, an uncontrolled <c>Default*</c>
+/// parameter on a UI component - sees the new values. A rebuild disposes the content, so it votes
+/// and is notified exactly like a route being left. <see cref="BrouterOptions.RemountOnParameterChange"/>
+/// (globally) and <see cref="Broute.RemountOnParameterChange"/> (per route) switch to re-binding the
+/// live instance instead, with the change arriving as a renavigation.
 /// </para>
 /// </summary>
 [TestClass]
 public class RemountOnParameterChangeTests : BunitTestContext
 {
-    private void UseRemount() => Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = true);
+    private void UseRebind() => Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = false);
 
     private static void Increment(IRenderedComponent<RemountHost> cut) => cut.Find("[data-testid=inc]").Click();
 
@@ -29,8 +28,9 @@ public class RemountOnParameterChangeTests : BunitTestContext
         => cut.Find("[data-testid=stateful]").TextContent;
 
     [TestMethod]
-    public async Task Parameter_change_re_binds_the_instance_by_default()
+    public async Task Option_re_binds_the_instance_on_a_parameter_change()
     {
+        UseRebind();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rm/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -47,9 +47,8 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Option_rebuilds_the_content_on_a_parameter_change()
+    public async Task Parameter_change_rebuilds_the_content_by_default()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rm/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -67,9 +66,23 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task Discovered_page_reads_a_newly_supplied_optional_parameter_once()
+    {
+        // /sections -> /sections/profile: an optional parameter going from absent to a value is a
+        // parameter change too, and the page rendered through Found reads it in OnInitialized.
+        var (cut, brouter) = RenderAt<FoundHost>("http://localhost/sections");
+        cut.WaitForAssertion(() => Assert.AreEqual("initial: current:", cut.Find("[data-testid=section]").TextContent));
+
+        await cut.InvokeAsync(() => brouter.Navigate("/sections/profile"));
+        cut.WaitForAssertion(() => Assert.AreEqual("initial:profile current:profile", cut.Find("[data-testid=section]").TextContent));
+
+        await cut.InvokeAsync(() => brouter.Navigate("/sections/account"));
+        cut.WaitForAssertion(() => Assert.AreEqual("initial:account current:account", cut.Find("[data-testid=section]").TextContent));
+    }
+
+    [TestMethod]
     public async Task Query_only_change_does_not_rebuild_the_content()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rm/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -88,7 +101,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Route_can_opt_out_of_rebuilding()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmoff/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -101,22 +113,22 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Route_can_opt_in_under_the_re_binding_default()
+    public async Task Route_can_opt_in_under_a_re_binding_default()
     {
+        UseRebind();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmon/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
         Increment(cut);
         await cut.InvokeAsync(() => brouter.Navigate("/rmon/2"));
 
-        // The route asked for a rebuild explicitly, so it rebuilds regardless of the default.
+        // The route asked for a rebuild explicitly, so it rebuilds regardless of the application default.
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
     }
 
     [TestMethod]
     public async Task KeepAlive_route_keeps_its_instance_across_a_parameter_change()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmka/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -130,7 +142,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Component_route_page_is_rebuilt_too()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmpage/1");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -143,7 +154,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Outlet_hosted_child_is_rebuilt_while_its_layout_is_left_alone()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/shell/doc/1");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=doc]").TextContent, "doc 1"));
 
@@ -171,7 +181,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Rebuilding_a_parent_rebuilds_the_child_nested_inside_it()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/user/1/edit");
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
 
@@ -198,7 +207,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Deactivating_lock_vetoes_a_remounting_parameter_change()
     {
-        UseRemount();
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmlock/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=locked]"));
@@ -224,7 +232,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
         // A parameter change on a route that keeps its instance is not a leave, so LeaveGuard stays
         // silent there (see LeaveGuardTests). Under a rebuild the content is disposed exactly as if
         // the route were left, so the route-declared guard gets its veto too.
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/rmguard/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=guarded]"));
 
@@ -250,7 +257,6 @@ public class RemountOnParameterChangeTests : BunitTestContext
     [TestMethod]
     public async Task Kept_child_hosted_in_a_rebuilt_parent_is_disposed_not_hidden()
     {
-        UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/acct/1/draft");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0"));
 
@@ -284,11 +290,12 @@ public class RemountOnParameterChangeTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Kept_child_hosted_in_a_re_bound_parent_is_hidden_by_default()
+    public async Task Kept_child_hosted_in_a_re_bound_parent_is_hidden()
     {
-        // The control for the test above: with the host re-binding (the default), the kept child's
+        // The control for the test above: with the host re-binding (opted into), the kept child's
         // outlet survives the parameter change, so leaving the child is an ordinary Hidden and
         // returning resumes the retained instance.
+        UseRebind();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/acct/1/draft");
         cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0"));
 

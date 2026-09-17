@@ -33,9 +33,9 @@
         <dd>@(_tab ?? "-")</dd>
     </dl>
     <p class="bb-card-desc">
-        This route is a singleton (not keep-alive), so switching between ids re-commits the
-        <strong>same component instance</strong> (a route that opts into
-        <code>RemountOnParameterChange</code> would be rebuilt instead):
+        This route is a singleton (not keep-alive) that sets
+        <code>RemountOnParameterChange="false"</code>, so switching between ids re-commits the
+        <strong>same component instance</strong> (under the default it would be rebuilt instead):
         <code>OnInitialized</code> does not re-run, and
         <code>OnRenavigated</code> is the "user arrived here again" signal, carrying both locations.
         Navigating away fires <code>OnDeactivated</code> with reason <code>Disposing</code> (its

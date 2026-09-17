@@ -52,8 +52,10 @@ public class NamedOutletTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Parameter_change_preserves_outlet_hosted_content_and_named_views_as_a_renavigation()
+    public async Task Parameter_change_preserves_outlet_hosted_content_and_named_views_when_re_binding()
     {
+        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = false);
+
         var (cut, brouter) = RenderAt<NamedOutletHost>("http://localhost/dash/u/1");
         cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 1")));
 
@@ -77,10 +79,8 @@ public class NamedOutletTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Parameter_change_rebuilds_outlet_hosted_content_and_named_views_when_opted_in()
+    public async Task Parameter_change_rebuilds_outlet_hosted_content_and_named_views_by_default()
     {
-        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = true);
-
         var (cut, brouter) = RenderAt<NamedOutletHost>("http://localhost/dash/u/1");
         cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 1")));
 

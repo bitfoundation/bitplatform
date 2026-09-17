@@ -526,9 +526,10 @@
 
         @* Component-level navigation lock: the PAGE holds the veto (OnDeactivating/OnRenavigating
            on BrouterRouteBase) and shows a custom confirmation dialog - including for /lock/1 ->
-           /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. *@
+           /lock/2 parameter changes, which the route-declared LeaveGuard above can never see. The
+           route re-binds on a parameter change so that change arrives as OnRenavigating. *@
         <Broute Path="/lock" RedirectTo="/lock/1" />
-        <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" />
+        <Broute Path="/lock/{id:int}" Component="@typeof(NavigationLockPage)" RemountOnParameterChange="false" />
 
         <Broute Path="/history-state">
             <Content>
@@ -572,12 +573,13 @@
 
         @*============================================================================*@
         @* Route lifecycle: /lifecycle/{id} is a singleton Component route whose page implements
-           IBrouterRoute directly (auto-discovered by the router - no base class needed). The same
-           instance is re-committed across id/query changes (OnRenavigated); leaving fires
+           IBrouterRoute directly (auto-discovered by the router - no base class needed). It opts
+           out of the default rebuild, so the same instance is re-committed across id/query
+           changes (OnRenavigated); leaving fires
            OnDeactivated with reason Disposing. Contrast with /sticky above, where keep-alive
            retention makes the reason Hidden. *@
 
-        <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" />
+        <Broute Path="/lifecycle/{id:int}" Component="@typeof(LifecyclePage)" RemountOnParameterChange="false" />
 
         @*============================================================================*@
         @* View Transitions showcase: shared-element morphs between the gallery grid and the item

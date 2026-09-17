@@ -99,6 +99,9 @@ public class LeaveGuardTests : BunitTestContext
     [TestMethod]
     public void Parameter_only_change_on_the_same_route_is_not_a_leave()
     {
+        // Only when the instance is re-bound: a rebuild disposes the content, which is a leave
+        // (see RemountOnParameterChangeTests).
+        Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = false);
         var (cut, _) = RenderAt<LeaveGuardHost>("http://localhost/users/1");
         cut.WaitForAssertion(() => cut.Find("[data-testid=user]"));
 
