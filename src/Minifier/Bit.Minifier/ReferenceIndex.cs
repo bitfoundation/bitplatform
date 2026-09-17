@@ -6,14 +6,16 @@ namespace Bit.Minifier;
 
 /// <summary>
 /// References that name a definition by string rather than by token: member and type references between the
-/// minified assemblies (friend assemblies reach each other's internals) and <c>typeof</c> values inside
-/// custom attributes (<c>[AsyncStateMachine(typeof(&lt;M&gt;d__3))]</c>). Resolved before anything is
-/// renamed, re-pointed after.
+/// minified assemblies (friend assemblies reach each other's internals), type forwarders, and types inside
+/// custom attributes - <c>typeof</c> values (<c>[AsyncStateMachine(typeof(&lt;M&gt;d__3))]</c>) and the enum
+/// types of named and boxed arguments, which the blob spells out. Resolved before anything is renamed,
+/// re-pointed after.
 /// </summary>
 internal sealed class ReferenceIndex
 {
     private readonly List<(MemberReference reference, MemberReference definition)> members = [];
     private readonly List<(TypeReference reference, TypeDefinition definition)> types = [];
+    private readonly List<(ModuleDefinition module, ExportedType forwarder, TypeDefinition definition)> forwarders = [];
     private readonly List<(ModuleDefinition module, TypeDefinition definition, string name, Action fix)> attributeFixes = [];
 
     public static ReferenceIndex Collect(HashSet<ModuleDefinition> modules)
@@ -34,6 +36,11 @@ internal sealed class ReferenceIndex
                 if (Resolve(reference) is { } definition && modules.Contains(definition.Module)) index.types.Add((reference, definition));
             }
 
+            foreach (var forwarder in module.ExportedTypes)
+            {
+                if (Resolve(forwarder) is { } definition && modules.Contains(definition.Module)) index.forwarders.Add((module, forwarder, definition));
+            }
+
             foreach (var provider in AssemblyMinifier.Providers(module))
             {
                 foreach (var attribute in provider.CustomAttributes)
@@ -45,6 +52,54 @@ internal sealed class ReferenceIndex
             }
         }
         return index;
+    }
+
+    /// <summary>
+    /// The type references and forwarders of <paramref name="module"/> that resolve into <paramref name="modules"/>
+    /// now, so that <see cref="AssemblyMinifier"/> can tell afterwards whether one of them stopped resolving.
+    /// </summary>
+    public static List<(ModuleDefinition module, string name, Func<bool> resolves)> ResolvableTypes(ModuleDefinition module, HashSet<ModuleDefinition> modules)
+    {
+        var result = new List<(ModuleDefinition, string, Func<bool>)>();
+        foreach (var reference in module.GetTypeReferences())
+        {
+            if (Resolve(reference) is { } definition && modules.Contains(definition.Module))
+                result.Add((module, reference.FullName, () => Resolve(reference) is not null));
+        }
+        foreach (var forwarder in module.ExportedTypes)
+        {
+            if (Resolve(forwarder) is { } definition && modules.Contains(definition.Module))
+                result.Add((module, forwarder.FullName, () => Resolve(forwarder) is not null));
+        }
+        // attribute blobs name types by string; the argument is read again when checked, since fixes replace it
+        foreach (var provider in AssemblyMinifier.Providers(module))
+        {
+            foreach (var attribute in provider.CustomAttributes)
+            {
+                var name = attribute.AttributeType.FullName;
+                for (int i = 0; i < attribute.ConstructorArguments.Count; i++)
+                {
+                    int index = i;
+                    Add(name, () => attribute.ConstructorArguments[index]);
+                }
+                foreach (var named in new[] { attribute.Fields, attribute.Properties })
+                {
+                    for (int i = 0; i < named.Count; i++)
+                    {
+                        int index = i;
+                        Add($"{name}.{named[index].Name}", () => named[index].Argument);
+                    }
+                }
+            }
+        }
+        return result;
+
+        void Add(string name, Func<CustomAttributeArgument> argument)
+        {
+            var types = NamedTypes(argument()).Select(t => Resolve(t)).ToList();
+            if (types.Any(t => t is not null && modules.Contains(t.Module)) && types.All(t => t is not null))
+                result.Add((module, $"[{name}] argument", () => NamedTypes(argument()).All(t => Resolve(t) is not null)));
+        }
     }
 
     /// <summary>Re-points the references; returns the modules in which one of them actually changed.</summary>
@@ -59,13 +114,24 @@ internal sealed class ReferenceIndex
         }
         foreach (var (reference, definition) in types)
         {
-            if (reference.Name == definition.Name) continue;
+            // a nested reference keeps the empty namespace its declaring type implies
+            var @namespace = definition.IsNested ? reference.Namespace : definition.Namespace;
+            if (reference.Name == definition.Name && reference.Namespace == @namespace) continue;
             reference.Name = definition.Name;
+            reference.Namespace = @namespace;
             changed.Add(reference.Module);
+        }
+        foreach (var (module, forwarder, definition) in forwarders)
+        {
+            var @namespace = definition.IsNested ? forwarder.Namespace : definition.Namespace;
+            if (forwarder.Name == definition.Name && forwarder.Namespace == @namespace) continue;
+            forwarder.Name = definition.Name;
+            forwarder.Namespace = @namespace;
+            changed.Add(module);
         }
         foreach (var (module, definition, name, fix) in attributeFixes)
         {
-            if (definition.Name == name) continue;
+            if (NameOf(definition) == name) continue;
             fix();
             changed.Add(module);
         }
@@ -112,6 +178,8 @@ internal sealed class ReferenceIndex
 
     public static TypeDefinition? Resolve(TypeReference reference) => Try(reference.Resolve);
 
+    public static TypeDefinition? Resolve(ExportedType forwarder) => Try(forwarder.Resolve);
+
     // an assembly missing from the folder makes Cecil throw rather than return null
     private static T? Try<T>(Func<T?> resolve) where T : class
     {
@@ -151,28 +219,104 @@ internal sealed class ReferenceIndex
 
     private void AddFix(ModuleDefinition module, List<TypeDefinition> targets, Action fix)
     {
-        foreach (var target in targets) attributeFixes.Add((module, target, target.Name, fix));
+        // each fix rebuilds the whole argument, so running it once per renamed target is harmless
+        foreach (var target in targets.Distinct()) attributeFixes.Add((module, target, NameOf(target), fix));
     }
 
-    // a Type value, boxed as object or inside an array, that names a type of the minified set
+    /// <summary>
+    /// The name as it is now. TypeReference.FullName is cached, and renaming a type doesn't clear the cache of the
+    /// types nested in it.
+    /// </summary>
+    private static string NameOf(TypeDefinition type)
+        => type.DeclaringType is { } declaring ? NameOf(declaring) + "/" + type.Name : type.Namespace + "." + type.Name;
+
+    // a Type value, boxed as object or inside an array, or an enum value, that names a type of the minified set
     private static Func<CustomAttributeArgument>? Retarget(ModuleDefinition module, HashSet<ModuleDefinition> modules, CustomAttributeArgument argument, List<TypeDefinition> targets)
     {
-        switch (argument.Value)
+        var type = RetargetArgumentType(module, modules, argument.Type, targets);
+        Func<object?>? value = argument.Value switch
         {
-            case TypeReference type when Resolve(type) is { } definition && modules.Contains(definition.Module):
-                targets.Add(definition);
-                return () => new CustomAttributeArgument(argument.Type, definition.Module == module ? definition : module.ImportReference(definition));
+            TypeReference reference when RetargetType(module, modules, reference, targets) is { } retargeted => () => retargeted(),
+            CustomAttributeArgument boxed when Retarget(module, modules, boxed, targets) is { } inner => () => inner(),
+            CustomAttributeArgument[] array => RetargetArray(array),
+            _ => null,
+        };
+        if (type is null && value is null) return null;
+        return () => new CustomAttributeArgument(type?.Invoke() ?? argument.Type, value is null ? argument.Value : value());
 
-            case CustomAttributeArgument boxed when Retarget(module, modules, boxed, targets) is { } inner:
-                return () => new CustomAttributeArgument(argument.Type, inner());
-
-            case CustomAttributeArgument[] array:
-                var fixes = array.Select(element => Retarget(module, modules, element, targets)).ToArray();
-                if (fixes.All(f => f is null)) return null;
-                return () => new CustomAttributeArgument(argument.Type, array.Select((element, i) => fixes[i]?.Invoke() ?? element).ToArray());
-
-            default:
-                return null;
+        Func<object?>? RetargetArray(CustomAttributeArgument[] array)
+        {
+            var fixes = array.Select(element => Retarget(module, modules, element, targets)).ToArray();
+            if (fixes.All(f => f is null)) return null;
+            return () => array.Select((element, i) => fixes[i]?.Invoke() ?? element).ToArray();
         }
     }
+
+    // the argument's own type: of the set's types, only an enum can be one, and named and boxed arguments spell it out
+    private static Func<TypeReference>? RetargetArgumentType(ModuleDefinition module, HashSet<ModuleDefinition> modules, TypeReference type, List<TypeDefinition> targets)
+    {
+        if (type is ArrayType array)
+        {
+            var element = RetargetArgumentType(module, modules, array.ElementType, targets);
+            return element is null ? null : () => new ArrayType(element(), array.Rank);
+        }
+        if (type is TypeSpecification || type.IsGenericParameter || Resolve(type) is not { IsEnum: true }) return null;
+        return RetargetType(module, modules, type, targets);
+    }
+
+    // a type as a blob spells it out, with every type of the set in it, however deep in arrays and generic arguments
+    private static Func<TypeReference>? RetargetType(ModuleDefinition module, HashSet<ModuleDefinition> modules, TypeReference type, List<TypeDefinition> targets)
+    {
+        switch (type)
+        {
+            case ArrayType array:
+                var element = RetargetType(module, modules, array.ElementType, targets);
+                return element is null ? null : () => new ArrayType(element(), array.Rank);
+
+            case GenericInstanceType generic:
+                var open = RetargetType(module, modules, generic.ElementType, targets);
+                var arguments = generic.GenericArguments.Select(a => RetargetType(module, modules, a, targets)).ToArray();
+                if (open is null && arguments.All(a => a is null)) return null;
+                return () =>
+                {
+                    var rebuilt = new GenericInstanceType(open?.Invoke() ?? generic.ElementType);
+                    for (int i = 0; i < arguments.Length; i++) rebuilt.GenericArguments.Add(arguments[i]?.Invoke() ?? generic.GenericArguments[i]);
+                    return rebuilt;
+                };
+
+            // pointers, byrefs and modifiers have no place in a blob
+            case TypeSpecification or GenericParameter:
+                return null;
+
+            default:
+                if (Resolve(type) is not { } definition || modules.Contains(definition.Module) is false) return null;
+                targets.Add(definition);
+                return () => Import(module, definition);
+        }
+    }
+
+    private static TypeReference Import(ModuleDefinition module, TypeDefinition definition)
+        => definition.Module == module ? definition : module.ImportReference(definition);
+
+    /// <summary>The types an attribute argument names in its blob: its enum type and its Type values.</summary>
+    private static IEnumerable<TypeReference> NamedTypes(CustomAttributeArgument argument)
+    {
+        foreach (var type in Leaves(argument.Type)) yield return type;
+        var values = argument.Value switch
+        {
+            TypeReference reference => Leaves(reference),
+            CustomAttributeArgument boxed => NamedTypes(boxed),
+            CustomAttributeArgument[] array => array.SelectMany(NamedTypes),
+            _ => [],
+        };
+        foreach (var type in values) yield return type;
+    }
+
+    private static IEnumerable<TypeReference> Leaves(TypeReference type) => type switch
+    {
+        GenericInstanceType generic => Leaves(generic.ElementType).Concat(generic.GenericArguments.SelectMany(Leaves)),
+        TypeSpecification specification => Leaves(specification.ElementType),
+        GenericParameter => [],
+        _ => [type],
+    };
 }

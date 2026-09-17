@@ -31,9 +31,23 @@ internal sealed class MinifierOptions
     /// Everything that can go, goes (see <see cref="AggressiveMinifier"/>). Implies the full treatment for
     /// every assembly, whatever <see cref="FullyMinified"/> says.
     /// </summary>
-    public bool Aggressive { get; init; }
+    public bool Aggressive { get => aggressive || SuperAggressive; init => aggressive = value; }
+
+    /// <summary>
+    /// Experimental: <see cref="Aggressive"/>, and public names go too - public types and their namespaces,
+    /// non-virtual methods and property accessors, fields, parameter and generic parameter names - in every
+    /// assembly that only minified assemblies of the folder reference. Only for apps nothing reaches by a public
+    /// name from outside the client, or through reflection over names no string literal mentions.
+    /// </summary>
+    public bool SuperAggressive { get; init; }
+
+    private readonly bool aggressive;
 }
 
 internal sealed record MinifiedAssembly(string Name, long OriginalSize, long MinifiedSize, int RemovedAttributes, int RenamedMembers);
 
-internal sealed class MinifierException(string message) : Exception(message);
+internal sealed class MinifierException(string message, bool folderUntouched = true) : Exception(message)
+{
+    /// <summary>Whether the folder is still exactly as ILLink left it.</summary>
+    public bool FolderUntouched { get; } = folderUntouched;
+}

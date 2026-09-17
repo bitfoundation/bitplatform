@@ -16,6 +16,10 @@ public class Calculator
 
     internal int InternalCounter;
 
+    public int Tally;
+
+    public event Action<int>? Added;
+
     public async Task<int> AddAsync(int value)
     {
         await Task.Yield();
@@ -55,6 +59,7 @@ public class Calculator
         return value is not null;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void Fail() => ThrowFromHelper(Total);
 
     public int HistoryCount => _history.Count;
@@ -81,6 +86,8 @@ public class Calculator
     {
         _history.Add(value);
         Total += value;
+        Tally++;
+        Added?.Invoke(value);
     }
 
     private static void ThrowFromHelper(int total)
@@ -123,4 +130,88 @@ public enum Shade
 {
     Light,
     Dark,
+}
+
+internal enum Flavor
+{
+    Plain,
+    Spicy,
+}
+
+[AttributeUsage(AttributeTargets.All)]
+internal sealed class FlavoredAttribute : Attribute
+{
+    public Flavor Flavor { get; set; }
+
+    public object? Boxed { get; set; }
+
+    public Flavor[]? Many { get; set; }
+}
+
+[AttributeUsage(AttributeTargets.All)]
+internal sealed class TypedAttribute(Type type) : Attribute
+{
+    public Type Type { get; } = type;
+
+    public Type[]? More { get; set; }
+}
+
+internal sealed class Satchel<T>
+{
+}
+
+internal sealed class Lattice
+{
+    // a runtime attribute keeps the nested type's name while the type around it is renamed
+    [Flags]
+    public enum Knot
+    {
+        None = 0,
+        Tight = 1,
+    }
+}
+
+/// <summary>Attributes whose named arguments carry an internal enum: the blob names the enum type by string.</summary>
+public static class Flavors
+{
+    [Flavored(Flavor = Flavor.Spicy, Boxed = Flavor.Plain, Many = [Flavor.Spicy, Flavor.Plain])]
+    public static string Describe()
+    {
+        var attribute = (FlavoredAttribute)typeof(Flavors).GetMethod("Describe")!.GetCustomAttributes(false).Single(a => a is FlavoredAttribute);
+        return $"{attribute.Flavor} {attribute.Boxed} {string.Join("+", attribute.Many!)}";
+    }
+}
+
+/// <summary>A private property reached through an expression tree: the tree holds its getter by token.</summary>
+public class Shapes
+{
+    private int Hidden => 42;
+
+    public int ReadThroughExpression()
+    {
+        System.Linq.Expressions.Expression<Func<Shapes, int>> read = s => s.Hidden;
+        return read.Compile()(this);
+    }
+}
+
+internal interface IParsable2<TSelf> where TSelf : IParsable2<TSelf>
+{
+    static abstract TSelf Fabricate(int value);
+}
+
+internal readonly struct Meters : IParsable2<Meters>
+{
+    public Meters(int value) => Value = value;
+
+    public int Value { get; }
+
+    public static Meters Fabricate(int value) => new(value);
+}
+
+/// <summary>Static abstract interface members, implemented implicitly by a plain static method.</summary>
+public static class Generic
+{
+    public static int MakeMeters(int value) => Create<Meters>(value).Value;
+
+    private static T Create<T>(int value) where T : IParsable2<T> => T.Fabricate(value);
 }

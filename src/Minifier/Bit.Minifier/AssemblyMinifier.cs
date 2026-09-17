@@ -6,7 +6,8 @@ namespace Bit.Minifier;
 /// <summary>
 /// Shrinks trimmed assemblies without changing what they do or how they debug: drops attributes only the
 /// compiler reads, shortens compiler-generated names (keeping the shape debuggers parse) and rewrites the
-/// portable pdb to match. Hand-written names are kept unless <see cref="MinifierOptions.Aggressive"/>.
+/// portable pdb to match. Hand-written names are kept unless <see cref="MinifierOptions.Aggressive"/>, public
+/// ones unless <see cref="MinifierOptions.SuperAggressive"/>.
 /// </summary>
 internal sealed class AssemblyMinifier(MinifierOptions options)
 {
@@ -72,15 +73,21 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         if (assemblies.Count == 0) return [];
 
         var modules = assemblies.Select(a => a.MainModule).ToHashSet();
+        // the other assemblies of the folder: not rewritten, but they may reference or name the rewritten ones
+        var others = OtherModules(resolver, modules);
         var references = ReferenceIndex.Collect(modules);
+        var types = others.Concat(modules).SelectMany(m => ReferenceIndex.ResolvableTypes(m, modules)).ToList();
 
         var fully = options.FullyMinified.ToHashSet(StringComparer.OrdinalIgnoreCase);
         // EF Core reads [Nullable] itself to tell required columns apart, whatever NullabilityInfoContext says
         var keepNullable = options.KeepNullable || File.Exists(Path.Combine(options.Directory, "Microsoft.EntityFrameworkCore.dll"));
 
         // every rename keeps the names string literals mention: nameof(...), GetField("..."), [UnsafeAccessor(Name = "...")]
-        literals = new AggressiveMinifier(Map);
-        literals.CollectLiterals(modules);
+        // Newtonsoft.Json serializes public fields by name
+        var keepPublicFields = File.Exists(Path.Combine(options.Directory, "Newtonsoft.Json.dll"));
+        literals = new AggressiveMinifier(Map, options.SuperAggressive, keepPublicFields);
+        // super aggressive renames what any assembly may name, so every assembly's strings count
+        literals.Collect(modules, options.SuperAggressive ? others : [], wordsOnly: options.Aggressive is false);
 
         var stats = new Dictionary<ModuleDefinition, (int attributes, int names)>();
         foreach (var module in modules)
@@ -90,15 +97,16 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             var removable = new HashSet<string>(CompileTimeAttributes);
             if (options.KeepNullable is false && (full || keepNullable is false)) removable.UnionWith(NullableAttributes);
             if (options.Aggressive) removable.UnionWith(AggressiveMinifier.MoreAttributes);
+            if (options.SuperAggressive) removable.UnionWith(AggressiveMinifier.SuperAttributes);
 
             var attributes = StripAttributes(module, removable, full);
             var names = ShortenGeneratedNames(module, full);
-            if (options.Aggressive) names += literals.Run(module, CanRenameInternals(module, modules));
+            if (options.Aggressive) names += literals.Run(module, Scope(module, modules, others));
             stats[module] = (attributes, names);
         }
 
         var retargeted = references.Apply();
-        Verify(resolver, modules);
+        Verify(modules, others, types);
 
         // an assembly nothing changed in is left as ILLink wrote it
         var changed = assemblies.Where(a => stats[a.MainModule] != (0, 0) || retargeted.Contains(a.MainModule)).ToList();
@@ -145,6 +153,19 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         return result;
     }
 
+    /// <summary>The other managed assemblies of the folder, as the resolver hands them out.</summary>
+    private List<ModuleDefinition> OtherModules(DirectoryResolver resolver, HashSet<ModuleDefinition> modules)
+    {
+        var names = modules.Select(m => m.Assembly.Name.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var others = new List<ModuleDefinition>();
+        foreach (var path in Directory.EnumerateFiles(options.Directory, "*.dll"))
+        {
+            var name = Path.GetFileNameWithoutExtension(path);
+            if (names.Contains(name) is false && resolver.TryLoad(name) is { } other) others.Add(other.MainModule);
+        }
+        return others;
+    }
+
     private static int StripAttributes(ModuleDefinition module, HashSet<string> removable, bool full)
     {
         int removed = 0;
@@ -179,6 +200,9 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var scopes = new Dictionary<TypeDefinition, Dictionary<string, string>>();
         int renamed = 0;
 
+        // a name that is skipped may already be what another one shortens to (<a>k__BackingField)
+        static bool Clashes(IEnumerable<IMemberDefinition> siblings, string name) => siblings.Any(s => s.Name == name);
+
         string Shorten(TypeDefinition owner, string name)
         {
             if (GeneratedName.TryParse(name, out var inner, out var rest) is false) return name;
@@ -194,29 +218,38 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             if (type.IsNested && IsNameNeutral(type) && literals.IsMentioned(type.Name) is false)
             {
                 var name = Shorten(type.DeclaringType, type.Name);
-                if (name != type.Name) { Map(module, "T", type.FullName, name); type.Name = name; renamed++; }
+                if (name != type.Name && Clashes(type.DeclaringType.NestedTypes, name) is false) { Map(module, "T", type.FullName, name); type.Name = name; renamed++; }
             }
             foreach (var method in type.Methods)
             {
                 if (method.IsVirtual || method.HasOverrides || IsNameNeutral(method) is false || literals.IsMentioned(method.Name)) continue;
                 var name = Shorten(type, method.Name);
-                if (name != method.Name) { Map(module, "M", $"{type.FullName}::{method.Name}", name); method.Name = name; renamed++; }
+                if (name != method.Name && Clashes(type.Methods, name) is false) { Map(module, "M", $"{type.FullName}::{method.Name}", name); method.Name = name; renamed++; }
             }
             if (full is false) continue;
             foreach (var field in type.Fields)
             {
                 if (field.IsPublic || IsNameNeutral(field) is false || literals.IsMentioned(field.Name)) continue;
                 var name = Shorten(type, field.Name);
-                if (name != field.Name) { Map(module, "F", $"{type.FullName}::{field.Name}", name); field.Name = name; renamed++; }
+                if (name != field.Name && Clashes(type.Fields, name) is false) { Map(module, "F", $"{type.FullName}::{field.Name}", name); field.Name = name; renamed++; }
             }
         }
         return renamed;
     }
 
     /// <summary>
-    /// Internal names are only safe to change when every assembly that can see them is rewritten too:
-    /// an InternalsVisibleTo friend that is published but not minified would keep the old names.
+    /// Names are only safe to change when every assembly that can see them is rewritten too: an
+    /// InternalsVisibleTo friend that is published but not minified would keep the old internal names, and an
+    /// assembly that references this one but is not minified would keep the old public ones.
     /// </summary>
+    private RenameScope Scope(ModuleDefinition module, HashSet<ModuleDefinition> modules, List<ModuleDefinition> others)
+    {
+        if (CanRenameInternals(module, modules) is false) return RenameScope.Private;
+        if (options.SuperAggressive is false) return RenameScope.Internal;
+        var name = module.Assembly.Name.Name;
+        return others.Any(o => o.AssemblyReferences.Any(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase))) ? RenameScope.Internal : RenameScope.Public;
+    }
+
     private bool CanRenameInternals(ModuleDefinition module, HashSet<ModuleDefinition> modules)
     {
         var minified = modules.Select(m => m.Assembly.Name.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -231,21 +264,16 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
 
     /// <summary>
     /// Every reference into the rewritten assemblies - from each other and from every other assembly in the
-    /// folder - must still resolve. Nothing is written otherwise.
+    /// folder - must still resolve: the member references, and the type references and forwarders that resolved
+    /// before (<paramref name="types"/>). Nothing is written otherwise.
     /// </summary>
-    private void Verify(DirectoryResolver resolver, HashSet<ModuleDefinition> modules)
+    private static void Verify(HashSet<ModuleDefinition> modules, List<ModuleDefinition> others, List<(ModuleDefinition module, string name, Func<bool> resolves)> types)
     {
         var names = modules.Select(m => m.Assembly.Name.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var toCheck = new List<ModuleDefinition>(modules);
-        foreach (var path in Directory.EnumerateFiles(options.Directory, "*.dll"))
-        {
-            var name = Path.GetFileNameWithoutExtension(path);
-            if (names.Contains(name)) continue;
-            var dependent = resolver.TryLoad(name);
-            if (dependent is not null && dependent.MainModule.AssemblyReferences.Any(r => names.Contains(r.Name))) toCheck.Add(dependent.MainModule);
-        }
+        toCheck.AddRange(others.Where(o => o.AssemblyReferences.Any(r => names.Contains(r.Name))));
 
-        var broken = new List<string>();
+        var broken = types.Where(t => t.resolves() is false).Select(t => $"{t.module.Assembly.Name.Name}: {t.name}").ToList();
         foreach (var module in toCheck)
         {
             foreach (var reference in ReferenceIndex.MemberReferences(module))
@@ -264,6 +292,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     {
         // everything is written aside first, so a failure leaves the folder as ILLink produced it
         var staging = Path.Combine(options.Directory, ".bit-minifier");
+        if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
         Directory.CreateDirectory(staging);
         var results = new List<MinifiedAssembly>();
         try
@@ -285,29 +314,81 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 });
             }
 
+            if (options.MapFile is not null)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.MapFile))!);
+                File.WriteAllLines(options.MapFile, map);
+            }
+
+            Swap(assemblies, staging, stats, results);
+        }
+        finally
+        {
+            try { Directory.Delete(staging, recursive: true); }
+            catch (IOException) { /* a leftover is removed by the next run */ }
+            catch (UnauthorizedAccessException) { }
+        }
+        return results;
+    }
+
+    /// <summary>
+    /// Moves the originals aside rather than overwriting them, so a failure halfway can put them all back. If one
+    /// can't be, the folder is half minified: ILLink's semaphore goes, so the next publish trims it afresh.
+    /// </summary>
+    private void Swap(List<AssemblyDefinition> assemblies, string staging, Dictionary<ModuleDefinition, (int attributes, int names)> stats, List<MinifiedAssembly> results)
+    {
+        var replaced = new List<(string original, string target)>();
+        var added = new List<string>();
+        try
+        {
             foreach (var assembly in assemblies)
             {
                 var name = assembly.Name.Name;
                 var target = Path.Combine(options.Directory, name + ".dll");
                 var originalSize = new FileInfo(target).Length;
-                File.Move(Path.Combine(staging, name + ".dll"), target, overwrite: true);
-                if (assembly.MainModule.HasSymbols)
-                    File.Move(Path.Combine(staging, name + ".pdb"), Path.ChangeExtension(target, ".pdb"), overwrite: true);
+                foreach (var extension in assembly.MainModule.HasSymbols ? new[] { ".dll", ".pdb" } : [".dll"])
+                {
+                    var file = Path.ChangeExtension(target, extension);
+                    if (File.Exists(file))
+                    {
+                        var original = Path.Combine(staging, name + extension + ".original");
+                        File.Move(file, original);
+                        replaced.Add((original, file));
+                    }
+                    else
+                    {
+                        added.Add(file);
+                    }
+                    File.Move(Path.Combine(staging, name + extension), file);
+                }
                 var (attributes, names) = stats[assembly.MainModule];
                 results.Add(new MinifiedAssembly(name, originalSize, new FileInfo(target).Length, attributes, names));
             }
         }
-        finally
+        catch (Exception e)
         {
-            Directory.Delete(staging, recursive: true);
+            results.Clear();
+            var failed = new List<string>();
+            foreach (var (original, target) in replaced)
+            {
+                try { File.Move(original, target, overwrite: true); }
+                catch (Exception restore) when (restore is IOException or UnauthorizedAccessException) { failed.Add(Path.GetFileName(target)); }
+            }
+            foreach (var file in added) TryDelete(file);
+            if (options.MapFile is not null) TryDelete(options.MapFile);
+            if (failed.Count == 0) throw;
+
+            TryDelete(Path.Combine(options.Directory, "Link.semaphore"));
+            throw new MinifierException(
+                $"Replacing the assemblies failed ({e.Message}) and {string.Join(", ", failed)} could not be restored, so the folder is partly minified. Publish again: the assemblies will be trimmed afresh.",
+                folderUntouched: false);
         }
 
-        if (options.MapFile is not null)
+        static void TryDelete(string file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.MapFile))!);
-            File.WriteAllLines(options.MapFile, map);
+            try { File.Delete(file); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
-        return results;
     }
 
     private void Map(ModuleDefinition module, string kind, string original, string name)

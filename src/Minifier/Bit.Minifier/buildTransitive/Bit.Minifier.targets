@@ -11,15 +11,18 @@
                              and properties, and the attributes only debuggers and analyzers read. Public names stay,
                              so logged stack traces still name the public frames.
 
+      BitMinifySuperAggressive  experimental, false (default). true: BitMinifyAggressive, and public names go too -
+                             public types and their namespaces, non-virtual methods and property accessors, fields,
+                             parameter and generic parameter names - in every assembly only minified assemblies
+                             reference. For apps nothing reaches by a public name from outside the WebAssembly
+                             client, or through reflection no string spells out. See the package README.
+
     Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true).
     obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed.
     -->
 
-    <Target Name="BitMinifyTrimmedAssemblies"
-            AfterTargets="_RunILLink"
-            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(_ILLinkExitCode)' == '' or '$(_ILLinkExitCode)' == '0')"
-            Inputs="$(_LinkSemaphore)"
-            Outputs="$(IntermediateOutputPath)bit-minifier.stamp">
+    <Target Name="_BitMinifierComputeArguments"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
         <PropertyGroup>
             <_BitMinifierPath>$(MSBuildThisFileDirectory)..\tools\Bit.Minifier.dll</_BitMinifierPath>
             <!-- imported straight from this repository's source tree, the tool is in its own build output -->
@@ -30,8 +33,34 @@
             <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == ''">$(NetCoreRoot)dotnet</_BitMinifyDotNetHost>
             <_BitMinifyArgs>&quot;$(IntermediateLinkDir.TrimEnd('\').TrimEnd('/'))&quot; --map &quot;$(IntermediateOutputPath)bit-minifier.map&quot;</_BitMinifyArgs>
             <_BitMinifyArgs Condition="'$(NullabilityInfoContextSupport)' == 'true'">$(_BitMinifyArgs) --keep-nullable</_BitMinifyArgs>
-            <_BitMinifyArgs Condition="'$(BitMinifyAggressive)' == 'true'">$(_BitMinifyArgs) --aggressive</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(BitMinifyAggressive)' == 'true' and '$(BitMinifySuperAggressive)' != 'true'">$(_BitMinifyArgs) --aggressive</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(BitMinifySuperAggressive)' == 'true'">$(_BitMinifyArgs) --super-aggressive</_BitMinifyArgs>
+            <_BitMinifySettings>$(_BitMinifyArgs) @ $(_BitMinifierPath) $([System.IO.File]::GetLastWriteTime('$(_BitMinifierPath)').Ticks)</_BitMinifySettings>
         </PropertyGroup>
+    </Target>
+
+    <!-- ILLink's output is minified in place, so other settings (or another version of the tool) need a fresh one:
+         ILLink only runs again when its own inputs change, and a -p:BitMinify... switch is not one of them. -->
+    <Target Name="_BitMinifierInvalidateTrimmedAssemblies"
+            BeforeTargets="_RunILLink"
+            DependsOnTargets="_BitMinifierComputeArguments"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+        <ReadLinesFromFile File="$(IntermediateOutputPath)bit-minifier.settings" Condition="Exists('$(IntermediateOutputPath)bit-minifier.settings')">
+            <Output TaskParameter="Lines" PropertyName="_BitMinifyPreviousSettings" />
+        </ReadLinesFromFile>
+        <Delete Files="$(_LinkSemaphore)" Condition="'$(_BitMinifyPreviousSettings)' != '$(_BitMinifySettings)'" />
+        <WriteLinesToFile File="$(IntermediateOutputPath)bit-minifier.settings" Lines="$(_BitMinifySettings)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)bit-minifier.settings" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BitMinifyTrimmedAssemblies"
+            AfterTargets="_RunILLink"
+            DependsOnTargets="_BitMinifierComputeArguments"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(_ILLinkExitCode)' == '' or '$(_ILLinkExitCode)' == '0')"
+            Inputs="$(_LinkSemaphore)"
+            Outputs="$(IntermediateOutputPath)bit-minifier.stamp">
         <!-- A failure is a warning, never a broken publish: the tool writes nothing unless every reference into the
              rewritten assemblies still resolves, so the app then ships what ILLink produced. -->
         <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; $(_BitMinifyArgs)"
