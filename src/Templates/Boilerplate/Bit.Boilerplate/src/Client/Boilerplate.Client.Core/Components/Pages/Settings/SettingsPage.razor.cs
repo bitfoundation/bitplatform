@@ -20,6 +20,7 @@ public partial class SettingsPage
         if (string.Equals(Section, lastSection, StringComparison.OrdinalIgnoreCase)) return;
 
         lastSection = Section;
-        expandedSection = Section;
+        // The accordion keys (PageUrls.SettingsSections) are lowercase and matched case-sensitively.
+        expandedSection = Section?.ToLowerInvariant();
     }
 }
