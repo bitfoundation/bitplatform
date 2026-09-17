@@ -110,10 +110,6 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
   `PreserveWhitespace`, `BreakWord`, `Weight` and `Typography` replaces `<pre>`, `<b>` and their font CSS
 - `BitGrid` is flex based, so it cannot give cards in different rows one height, and `MinItemWidth` stretches the
   last row. A plain `<div>` with `display: grid; grid-auto-rows: 1fr` is the right tool there
-- A hidden `BitTooltip` bubble still takes room, so one near the right edge scrolls the page sideways. Check the
-  page's `scrollWidth` at phone width and give the page root `overflow-x: clip` if it overflows
-- Parameters that take a CSS color string (for example the `BitChart` plugins, which render SVG) do not always
-  default to a theme token. Pass `$"var({BitCss.Var.Color.Foreground.Primary.Main})"` and check the dark theme
 
 **SCSS:**
 - Replace hardcoded colors with SCSS variables from `_bit-css-variables.scss`:
