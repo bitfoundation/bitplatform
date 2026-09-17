@@ -60,4 +60,14 @@
         <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
+    <!-- Bit.Minifier from source (src/Minifier/README.md); inert wherever that source isn't around -->
+    <PropertyGroup>
+        <BitMinifierSourceDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'src/Minifier/Bit.Minifier/Bit.Minifier.csproj'))/src/Minifier/Bit.Minifier/</BitMinifierSourceDir>
+        <BitMinifyAggressive>true</BitMinifyAggressive>
+    </PropertyGroup>
+    <ItemGroup Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')">
+        <ProjectReference Include="$(BitMinifierSourceDir)Bit.Minifier.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />
+    </ItemGroup>
+    <Import Project="$(BitMinifierSourceDir)buildTransitive/Bit.Minifier.targets" Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')" />
+
 </Project>
