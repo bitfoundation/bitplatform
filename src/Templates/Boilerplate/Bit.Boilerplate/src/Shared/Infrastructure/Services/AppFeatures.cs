@@ -54,9 +54,9 @@ public class AppFeatures
         public const string OAuthClients_Manage = "2.3";
 
         /// <summary>
-        /// See every health check's status and failure details through /healthz and the health checks page.
+        /// Open the operations page, and see every health check's status and failure details through /healthz.
         /// </summary>
-        public const string HealthChecks_View = "2.4";
+        public const string Operations_View = "2.4";
     }
 
     public class AdminPanel

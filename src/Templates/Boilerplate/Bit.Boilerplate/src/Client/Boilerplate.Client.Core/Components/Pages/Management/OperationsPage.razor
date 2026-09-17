@@ -1,13 +1,30 @@
 @using Boilerplate.Shared.Features.Diagnostic
-@attribute [Route(PageUrls.HealthChecks)]
-@attribute [Route("{culture?}" + PageUrls.HealthChecks)]
-@attribute [Authorize(Policy = AppFeatures.System.HealthChecks_View)]
+@attribute [Route(PageUrls.Operations)]
+@attribute [Route("{culture?}" + PageUrls.Operations)]
+@attribute [Authorize(Policy = AppFeatures.System.Operations_View)]
 @inherits AppPageBase
 
-<AppPageData Title="@Localizer[nameof(AppStrings.HealthChecks)]" PageTitle="@Localizer[nameof(AppStrings.HealthChecks)]" />
+<AppPageData Title="@Localizer[nameof(AppStrings.Operations)]" PageTitle="@Localizer[nameof(AppStrings.Operations)]" />
 
 <section>
     <BitStack Gap="1.25rem" HorizontalAlign="BitAlignment.Stretch">
+
+        @* The browser itself has to call UpdateSession, so the dashboard's cookie lands there (See OpenHangfireDashboard). *@
+        @if (AppPlatform.IsBrowser && AppPlatform.IsWasmStandalone is false)
+        {
+            <AuthorizeView Policy="@AppFeatures.System.Jobs_Manage">
+                <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                    <BitButton AutoLoading
+                               Size="BitSize.Large"
+                               Variant="BitVariant.Outline"
+                               IconName="@BitIconName.RecurringTask"
+                               SecondaryText="Queued, scheduled, recurring and failed background jobs"
+                               OnClick="WrapHandled(OpenHangfireDashboard)">
+                        Hangfire dashboard
+                    </BitButton>
+                </BitStack>
+            </AuthorizeView>
+        }
 
         <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="0.75rem">
             <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">

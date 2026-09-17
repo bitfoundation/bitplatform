@@ -48,7 +48,7 @@ public static class WebApplicationExtensions
                 Predicate = _ => true,
                 ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
                 ResponseWriter = WriteHealthReport
-            }).RequireAuthorization(AppFeatures.System.HealthChecks_View);
+            }).RequireAuthorization(AppFeatures.System.Operations_View);
 
             return app;
         }

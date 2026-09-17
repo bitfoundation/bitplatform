@@ -5,12 +5,12 @@ using Boilerplate.Tests.E2E.Infrastructure.Services;
 namespace Boilerplate.Tests.E2E.Features.Jobs;
 
 /// <summary>
-/// The diagnostic modal's "Open Hangfire dashboard", as the global admin clicks it: the dashboard opens on the app's
+/// The operations page's "Hangfire dashboard", as the global admin clicks it: the dashboard opens on the app's
 /// own host, signed in by the access_token cookie UpdateSession wrote there - through Server.Web's forwarder on a
 /// standalone api.
 /// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
-public partial class DiagnosticHangfireButtonTests : AppTestBase
+public partial class OperationsHangfireButtonTests : AppTestBase
 {
     protected override IAppOpener AppOpener => new WebAppOpener();
 
@@ -26,8 +26,10 @@ public partial class DiagnosticHangfireButtonTests : AppTestBase
         await WaitUntilInteractive(page);
         await SignInGlobalAdmin(page);
 
-        var openHangfire = page.Locator("button[title='Open Hangfire dashboard']");
-        await OpenDiagnosticModal(page, openHangfire);
+        // The button shows once the signed-in user's features are known.
+        await GoToWhenInteractive(page, PageUrls.Operations);
+        var openHangfire = page.GetByRole(AriaRole.Button, new() { Name = "Hangfire dashboard" });
+        await openHangfire.WaitForAsync(new() { Timeout = 120_000 });
 
         var dashboard = await page.RunAndWaitForPopupAsync(() => openHangfire.ClickAsync());
         await dashboard.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
@@ -65,28 +67,5 @@ public partial class DiagnosticHangfireButtonTests : AppTestBase
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
 
         await DeleteSessionAtCleanup(page);
-    }
-
-    /// <summary>
-    /// App.showDiagnostic reaches .NET only once the app has booted, and the button only once the signed-in user's
-    /// features are known, so it is called until the button shows.
-    /// </summary>
-    private static async Task OpenDiagnosticModal(IPage page, ILocator button)
-    {
-        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(2);
-
-        while (true)
-        {
-            await page.EvaluateAsync("() => window.App?.showDiagnostic?.()");
-
-            try
-            {
-                await button.WaitForAsync(new() { Timeout = 5_000 });
-                return;
-            }
-            catch (TimeoutException) when (DateTimeOffset.UtcNow < deadline)
-            {
-            }
-        }
     }
 }

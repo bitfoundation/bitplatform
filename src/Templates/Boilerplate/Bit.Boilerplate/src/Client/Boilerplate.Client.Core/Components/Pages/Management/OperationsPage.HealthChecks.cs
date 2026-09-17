@@ -3,7 +3,7 @@ using Boilerplate.Shared.Features.Diagnostic;
 
 namespace Boilerplate.Client.Core.Components.Pages.Management;
 
-public partial class HealthChecksPage
+public partial class OperationsPage
 {
     /// <summary>
     /// The groups the page shows checks in, in this order. A check the catalog below doesn't know lands in "Other".

@@ -36,7 +36,7 @@ public class CachedHealthCheck(IHealthCheck healthCheck, CachedHealthCheck.Resul
         var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
         var checkedAt = timeProvider.GetUtcNow();
 
-        // Tells how old a reused result is and how long its run took, as the report's duration is the cache lookup's (See HealthChecksPage).
+        // Tells how old a reused result is and how long its run took, as the report's duration is the cache lookup's (See OperationsPage).
         result = new HealthCheckResult(result.Status, result.Description, result.Exception, new Dictionary<string, object>(result.Data)
         {
             ["CheckedAt"] = checkedAt,

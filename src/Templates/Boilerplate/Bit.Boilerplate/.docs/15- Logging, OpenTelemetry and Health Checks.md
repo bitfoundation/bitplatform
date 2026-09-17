@@ -301,9 +301,9 @@ The project includes **health check endpoints** to monitor application health.
 
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
-3. **`/healthz`** - the detailed report behind the **Health checks** page (Management menu). It keeps the HealthChecks UI
+3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
    format and adds each check's failure status, timeout and full exception, plus the time of the report. It needs the
-   `AppFeatures.System.HealthChecks_View` feature, which only global admins have, and it always answers 200: the status is
+   `AppFeatures.System.Operations_View` feature, which only global admins have, and it always answers 200: the status is
    in the body.
 
 `/health` and `/alive` are mapped in **every** environment and are **anonymous**, and they answer with one word.
@@ -314,13 +314,21 @@ expose `/health` publicly or to restrict it to your load balancer's network, bec
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a
 failing (non-200) response.
 
-The **Health checks** page (`/health-checks`) reads `/healthz`, refreshes it on an interval you pick, and keeps each
+The **Operations** page (`/operations`) is where a deployment is run from. It opens the **Hangfire dashboard** for a user
+who also holds `AppFeatures.System.Jobs_Manage`, the claim
+[`HangfireDashboardAuthorizationFilter`](/src/Server/Boilerplate.Server.Api/Infrastructure/RequestPipeline/HangfireDashboardAuthorizationFilter.cs)
+checks, and only in a browser app served by the server: a hybrid app would open the url in the system browser, which
+shares no cookie jar with its web view. The button refreshes the access token, calls `IUserController.UpdateSession`,
+which writes the `access_token` cookie with the token's own expiry, and then opens `/hangfire`, a plain browser
+navigation for which that cookie is the only credential.
+
+The page also reads `/healthz`, refreshes it on an interval you pick, and keeps each
 check's recent probes while it is open. It shows how long each check took against its timeout, which checks take the
 instance out of rotation when they fail, when a cached check really ran, and each failure's details. It also lists
 what no check can prove (push notification, email and SMS delivery, social sign in, ...) and how to verify each. Push,
 email and SMS have a button that sends a test message through `IDiagnosticController`: the push to the current device's
-subscription, the email and the SMS, which need `HealthChecks_View` too, to the signed-in user's own address and phone number, if the
-account has them. Its catalog (`HealthChecksPage.Checks.cs`) gives each registration name a title, a group and a description; add
+subscription, the email and the SMS, which need `Operations_View` too, to the signed-in user's own address and phone number, if the
+account has them. Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
 a new check there to give it the same treatment.
 
 ### Registered Checks

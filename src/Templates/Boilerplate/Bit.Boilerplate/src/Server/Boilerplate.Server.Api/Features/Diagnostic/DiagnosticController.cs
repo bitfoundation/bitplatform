@@ -152,10 +152,10 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     }
     //#endif
 
-    // The two below are for the health checks page, and send right away rather than through a background job, so a
+    // The two below are for the operations page, and send right away rather than through a background job, so a
     // failure reaches the caller.
 
-    [HttpPost, Authorize(Policy = AppFeatures.System.HealthChecks_View)]
+    [HttpPost, Authorize(Policy = AppFeatures.System.Operations_View)]
     public async Task<bool> SendTestEmail(CancellationToken cancellationToken)
     {
         var user = await GetCurrentUser();
@@ -175,7 +175,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         return true;
     }
 
-    [HttpPost, Authorize(Policy = AppFeatures.System.HealthChecks_View)]
+    [HttpPost, Authorize(Policy = AppFeatures.System.Operations_View)]
     public async Task<bool> SendTestSms(CancellationToken cancellationToken)
     {
         var user = await GetCurrentUser();

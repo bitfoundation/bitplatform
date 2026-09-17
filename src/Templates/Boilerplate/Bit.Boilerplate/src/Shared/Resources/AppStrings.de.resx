@@ -2089,8 +2089,8 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Autorisierte Anwendungen</value>
   </data>
-    <data name="HealthChecks" xml:space="preserve">
-    <value>Integritätsprüfungen</value>
+    <data name="Operations" xml:space="preserve">
+    <value>Betrieb</value>
   </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Externe Anwendungen, die Ihre Benutzer über OAuth autorisiert haben.</value>

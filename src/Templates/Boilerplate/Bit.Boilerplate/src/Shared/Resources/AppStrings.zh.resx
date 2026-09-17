@@ -2089,8 +2089,8 @@
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>已授权的应用</value>
   </data>
-    <data name="HealthChecks" xml:space="preserve">
-    <value>健康检查</value>
+    <data name="Operations" xml:space="preserve">
+    <value>运维</value>
   </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>您的用户通过 OAuth 授权过的外部应用。</value>

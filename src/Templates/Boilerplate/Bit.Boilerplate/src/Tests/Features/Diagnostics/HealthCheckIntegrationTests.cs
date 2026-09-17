@@ -54,7 +54,7 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
-    /// <c>/healthz</c> needs <see cref="AppFeatures.System.HealthChecks_View"/>, is never cached, and answers 200 even
+    /// <c>/healthz</c> needs <see cref="AppFeatures.System.Operations_View"/>, is never cached, and answers 200 even
     /// when a check is Unhealthy.
     /// </summary>
     [TestMethod]
