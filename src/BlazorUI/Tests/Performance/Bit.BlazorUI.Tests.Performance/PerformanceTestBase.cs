@@ -14,8 +14,8 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// </summary>
 /// <remarks>
 /// The browser is picked from environment variables, which the Microsoft.Testing.Platform runner passes through
-/// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>firefox</c> or <c>webkit</c>)
-/// and <c>HEADED=1</c> to watch the run.
+/// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or
+/// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
 /// </remarks>
 public abstract class PerformanceTestBase
 {
@@ -34,6 +34,12 @@ public abstract class PerformanceTestBase
     protected const int DefaultTimeout = 30000;
 
     protected IPage Page { get; private set; } = null!;
+
+    /// <summary>
+    /// The browser context a test class needs, for the ones that cannot be driven in the default desktop one -
+    /// a test of behaviour that only runs on a touch device, or at a phone's viewport. Null takes the defaults.
+    /// </summary>
+    protected virtual BrowserNewContextOptions? ContextOptions => null;
 
     /// <summary>
     /// Performance thresholds in milliseconds.
@@ -82,7 +88,7 @@ public abstract class PerformanceTestBase
             _browserLock.Release();
         }
 
-        _context = await _browser.NewContextAsync();
+        _context = await _browser.NewContextAsync(ContextOptions);
         Page = await _context.NewPageAsync();
 
         // Wait for page to be ready.
@@ -147,14 +153,25 @@ public abstract class PerformanceTestBase
                 // performance.memory only reports real numbers with this flag.
                 Args = ["--enable-precise-memory-info"]
             }),
+            // The installed Edge, for a machine that has no Playwright-managed Chromium downloaded.
+            "edge" or "msedge" => await _playwright.Chromium.LaunchAsync(new(options)
+            {
+                Channel = "msedge",
+                Args = ["--enable-precise-memory-info"]
+            }),
             "firefox" => await _playwright.Firefox.LaunchAsync(options),
             "webkit" => await _playwright.Webkit.LaunchAsync(options),
-            _ => throw new InvalidOperationException($"Unknown BROWSER '{browserName}'. Use chromium, firefox or webkit.")
+            _ => throw new InvalidOperationException($"Unknown BROWSER '{browserName}'. Use chromium, edge, firefox or webkit.")
         };
     }
 
     private static void StartTestHost()
     {
+        // A host already serving the URL is used as it is. It lets a run attach to one started by hand -
+        // in another configuration, or left running between runs so the implicit build is paid once - and
+        // it is what keeps a second run from launching a host that could only fail to take the port.
+        if (IsTestHostResponding()) return;
+
         var testHostPath = GetTestHostPath();
 
         // The test host project targets multiple frameworks (net8.0/net9.0/net10.0).
@@ -224,6 +241,19 @@ public abstract class PerformanceTestBase
             _hostProcess = null;
         }
         _isHostStarted = false;
+    }
+
+    private static bool IsTestHostResponding()
+    {
+        try
+        {
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            return httpClient.GetAsync(BaseUrl).Result.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string GetTestHostPath()
