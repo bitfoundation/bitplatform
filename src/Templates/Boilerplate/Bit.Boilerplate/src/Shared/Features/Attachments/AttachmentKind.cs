@@ -1,6 +1,12 @@
 //+:cnd:noEmit
 namespace Boilerplate.Shared.Features.Attachments;
 
+//#if (IsInsideProjectTemplate == true)
+/// <summary>
+/// Persisted as an integer, so every member has an explicit value: the template options remove some members, and
+/// implicit values would then shift between projects that share a database.
+/// </summary>
+//#endif
 public enum AttachmentKind
 {
     /// <summary>
