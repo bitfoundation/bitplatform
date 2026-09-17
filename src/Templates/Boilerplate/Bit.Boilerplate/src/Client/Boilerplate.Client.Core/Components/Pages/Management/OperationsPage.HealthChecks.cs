@@ -14,6 +14,9 @@ public partial class OperationsPage
         ("Messaging", BitIconName.Message, "How the app reaches people: email, SMS, push and realtime."),
         ("Identity", BitIconName.Permissions, "External sign in providers and bot protection."),
         ("AI", BitIconName.Robot, "The models behind the chatbot, search and voice calls."),
+        //#if (api == "Standalone")
+        ("Web server", BitIconName.Website, "Server.Web, which renders the pages in front of the standalone API."),
+        //#endif
         ("Other", BitIconName.Diagnostic, "Checks this page has no description for.")
     ];
 
@@ -30,7 +33,13 @@ public partial class OperationsPage
         ["StackExchange.Redis_redis-cache"] = ("Redis (cache)", "Platform", BitIconName.ServerProcesses, "The distributed cache and backplane. Memory keeps serving without it."),
         ["userProfileImages"] = ("File storage", "Platform", BitIconName.Photo2, "The storage container of the uploaded files."),
         ["cloudflare"] = ("Cloudflare", "Platform", BitIconName.Globe, "The zones whose edge cache the app purges."),
-        ["serverApi"] = ("Server API", "Platform", BitIconName.PlugConnected, "The standalone API this web app calls."),
+
+        //#if (api == "Standalone")
+        // Server.Web's own checks (See AddWebAppChecks).
+        ["web:binStorage"] = ("Web server disk space", "Web server", BitIconName.HardDrive, "At least 2 GB free where Server.Web runs. Its only liveness check."),
+        ["web:serverApi"] = ("Server API", "Web server", BitIconName.PlugConnected, "Server.Web reaches the API it prerenders with and forwards to."),
+        ["web:healthz"] = ("Web server report", "Web server", BitIconName.Website, "Server.Web's own health report can be read."),
+        //#endif
 
         ["smtp"] = ("Email", "Messaging", BitIconName.Mail, "Signs in to the SMTP server without sending anything."),
         ["sms"] = ("SMS", "Messaging", BitIconName.CellPhone, "The Twilio account is active."),

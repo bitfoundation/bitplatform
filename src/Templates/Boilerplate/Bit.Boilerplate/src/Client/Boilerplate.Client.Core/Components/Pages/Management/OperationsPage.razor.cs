@@ -118,8 +118,18 @@ public partial class OperationsPage
 
         try
         {
-            var newReport = await httpClient.GetFromJsonAsync("healthz", JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken)
-                ?? throw new InvalidOperationException("/healthz returned no report.");
+            //#if (api == "Standalone")
+            var webAppReport = WebAppHealthReportUrl() is { } webAppHealthReportUrl ? GetReport(webAppHealthReportUrl) : null;
+            //#endif
+
+            var newReport = await GetReport("healthz") ?? throw new InvalidOperationException("/healthz returned no report.");
+
+            //#if (api == "Standalone")
+            if (webAppReport is not null)
+            {
+                await AddWebAppChecks(newReport, webAppReport);
+            }
+            //#endif
 
             RecordProbes(newReport);
 
@@ -143,6 +153,58 @@ public partial class OperationsPage
             StateHasChanged();
         }
     }
+
+    private Task<HealthReportDto?> GetReport(string url) =>
+        httpClient.GetFromJsonAsync(url, JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
+
+    //#if (api == "Standalone")
+    /// <summary>
+    /// Server.Web runs health checks of its own, which the api's report doesn't have. Null where the app doesn't come from
+    /// a separate Server.Web: a standalone WASM app is served by a static host, and a hybrid app without WebAppUrl only
+    /// knows the api.
+    /// </summary>
+    private string? WebAppHealthReportUrl()
+    {
+        if (AppPlatform.IsWasmStandalone) return null;
+
+        var webAppUrl = new Uri(httpClient.DefaultRequestHeaders.GetValues("X-Origin").Single());
+
+        return Uri.Compare(webAppUrl, httpClient.BaseAddress, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is 0
+            ? null
+            : new Uri(webAppUrl, "healthz").ToString();
+    }
+
+    /// <summary>
+    /// Adds Server.Web's checks under a "web:" prefix. A report that can't be read shows up as a failing check.
+    /// </summary>
+    private static async Task AddWebAppChecks(HealthReportDto report, Task<HealthReportDto?> webAppReport)
+    {
+        try
+        {
+            var webApp = await webAppReport ?? throw new InvalidOperationException("Server.Web's /healthz returned no report.");
+
+            foreach (var (name, entry) in webApp.Entries)
+            {
+                report.Entries[$"web:{name}"] = entry;
+            }
+
+            report.Status = (HealthCheckStatus)Math.Min((int)report.Status, (int)webApp.Status);
+            report.TotalDuration = report.TotalDuration > webApp.TotalDuration ? report.TotalDuration : webApp.TotalDuration;
+        }
+        catch (Exception exp) when (exp is not OperationCanceledException)
+        {
+            report.Entries["web:healthz"] = new()
+            {
+                Status = HealthCheckStatus.Degraded,
+                FailureStatus = HealthCheckStatus.Degraded,
+                Description = "Couldn't read Server.Web's health report.",
+                Exception = exp.ToString()
+            };
+
+            report.Status = (HealthCheckStatus)Math.Min((int)report.Status, (int)HealthCheckStatus.Degraded);
+        }
+    }
+    //#endif
 
     private void RecordProbes(HealthReportDto newReport)
     {

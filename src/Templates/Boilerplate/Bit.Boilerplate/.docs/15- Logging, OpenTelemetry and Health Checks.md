@@ -331,6 +331,10 @@ subscription, the email and the SMS, which need `Operations_View` too, to the si
 account has them. Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
 a new check there to give it the same treatment.
 
+With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks
+under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). If that report can't be read, a
+`web:healthz` check says so. A standalone WASM app, and a hybrid app without `WebAppUrl`, have no `Server.Web` to ask.
+
 ### Registered Checks
 
 `AddDefaultHealthChecks` contributes the disk-space check (at least **2 GB** free), which is the only one tagged
