@@ -75,11 +75,14 @@ It breaks what finds a public name some other way, so don't use it when:
 
 An app picked at random, its WebAssembly client published in Release (managed `.wasm` files, brotli):
 
-| | size | saved |
-|---|---:|---:|
-| without Bit.Minifier | 6,223 KB | |
-| default | 5,827 KB | 396 KB (-6.4%) |
-| aggressive | 5,756 KB | 467 KB (-7.5%) |
+| | size | saved | time |
+|---|---:|---:|---:|
+| without Bit.Minifier | 6,223 KB | | |
+| default | 5,827 KB | 396 KB (-6.4%) | 9s |
+| aggressive | 5,756 KB | 467 KB (-7.5%) | 11s |
+
+The time is what the minifier itself adds to the publish on an average build server, for the 128 trimmed
+assemblies (22 MB of IL) this app ships. It runs once per publish, after ILLink.
 
 ## Reading a stack trace
 
