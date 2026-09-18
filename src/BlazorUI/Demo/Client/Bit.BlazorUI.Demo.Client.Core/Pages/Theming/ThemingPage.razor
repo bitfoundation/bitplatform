@@ -111,6 +111,12 @@
 &lt;!-- Animate theme swaps (View Transitions API cross-fade) --&gt;
 &lt;html bit-theme-system bit-theme-view-transition&gt;...&lt;/html&gt;
 
+&lt;!-- Keep &lt;meta name="theme-color"&gt; with the page (browser chrome / PWA status bar) --&gt;
+&lt;html bit-theme-system bit-theme-color-meta&gt;...&lt;/html&gt;
+
+&lt;!-- ...reading a token other than the default --bit-clr-bg-pri --&gt;
+&lt;html bit-theme-system bit-theme-color-meta="--bit-clr-bg-sec"&gt;...&lt;/html&gt;
+
 &lt;!-- Mix and match --&gt;
 &lt;html bit-theme-system bit-theme-persist bit-theme-default="fluent-light"&gt;...&lt;/html&gt;</CodeBox>
             </DocSection>
@@ -119,6 +125,25 @@
 
                 <BitText>
                     <code>bit-theme-view-transition</code> is purely presentational: when present, every theme swap (from <code>SetThemeAsync</code>, <code>ToggleDarkLightAsync</code>, the JS API, or an OS appearance change while following the system) runs inside <code>document.startViewTransition</code>, so the page cross-fades to the new palette instead of hard-swapping. It is checked live on every change - add or remove it at runtime to turn the effect on or off - and it is skipped automatically (falling back to an instant swap) in browsers without the View Transitions API and for users with <code>prefers-reduced-motion: reduce</code>. Style the animation itself in CSS via the standard <code>::view-transition-old(root)</code> / <code>::view-transition-new(root)</code> pseudo-elements (e.g. a circular reveal instead of the default cross-fade).
+                </BitText>
+            </DocSection>
+
+            <DocSection Level="3" Id="theme-color-meta" Title="Browser chrome (PWA status bar)">
+
+                <BitText>
+                    The one piece of an app's appearance CSS cannot reach is the browser chrome: the status bar of an installed PWA, the address bar on mobile. It is painted from <code>&lt;meta name="theme-color"&gt;</code>, and <code>bit-theme-color-meta</code> keeps that tag equal to a color of the live page - <code>--bit-clr-bg-pri</code> by default, or whatever custom property the attribute names (<code>bit-theme-color-meta="--bit-clr-bg-sec"</code> for an app whose pages sit on the secondary surface). Every <code>theme-color</code> tag in the document is rewritten, so a first-paint pair split by <code>media="(prefers-color-scheme: …)"</code> is corrected on both when the visitor pins a theme against their OS; a document with no tag at all gets one.
+                </BitText>
+
+                <BitText>
+                    The color is <b>read back from the page</b> rather than mapped from the theme name, because a name carries no color: each design system paints its own surfaces, an app's stylesheet may re-declare the tokens, and an accent (<code>BitAccentColorSwitcher</code>) re-derives the whole palette - surfaces included - as an overlay on <code>&lt;body&gt;</code>. That is also why this is not something to write in an <code>onChange</code> callback: with <code>bit-theme-view-transition</code> the <code>bit-theme</code> attribute is written a frame <i>after</i> the change is announced, so a callback would still read the outgoing palette. What the library watches instead is the DOM the color comes from.
+                </BitText>
+
+                <BitText>
+                    It stays off unless asked for, since an app that hardcodes its own tag must keep the tag it wrote. The same switch is available from JavaScript as <code>init({ themeColorMeta: true })</code> (or a property name, or <code>false</code> to turn it off), and <code>BitBlazorUI.ThemeColorMeta.sync()</code> forces a re-read after a change the observer cannot see, such as a stylesheet swapped through <code>ExternalTheme</code>.
+                </BitText>
+
+                <BitText>
+                    It cannot cover the <b>first</b> paint: the browser paints the chrome from the tag in the served HTML, long before any script or stylesheet has loaded. Give the tag a sensible starting color there (a per-theme literal, or the pair of media-qualified tags) exactly as before - this keeps it honest from the first frame the app can compute it.
                 </BitText>
             </DocSection>
 
@@ -1357,9 +1382,10 @@ BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
 
             <BitText><b>onChange / isSystemDark / getPersisted</b> - observation helpers.</BitText>
 
-            <CodeBox Language="js">BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
-    const meta = document.querySelector('meta[name=theme-color]');
-    meta?.setAttribute('content', newTheme.includes('dark') ? '#0d1117' : '#ffffff');
+            <CodeBox Language="js">// For the browser chrome itself, prefer bit-theme-color-meta (see "Browser chrome" below) -
+// it reads the live palette, which a callback cannot do while a view transition is pending.
+BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
+    document.body.classList.toggle('is-dark', newTheme.includes('dark'));
 });
 
 const dark = BitBlazorUI.Theme.isSystemDark();          // boolean
@@ -1382,9 +1408,10 @@ const stored = BitBlazorUI.Theme.getPersisted();        // null when persistence
     default: 'fluent-light',
     darkTheme: 'brand-dark',
     lightTheme: 'brand-light',
+    // true for --bit-clr-bg-pri, or name another property; same as bit-theme-color-meta
+    themeColorMeta: '--bit-clr-bg-sec',
     onChange: (newTheme, oldTheme) =&gt; {
-        document.querySelector('meta[name=theme-color]')
-                ?.setAttribute('content', newTheme === 'brand-dark' ? '#0d1117' : '#ffffff');
+        console.log(`theme: ${oldTheme} -&gt; ${newTheme}`);
     }
 });</CodeBox>
 
@@ -1404,10 +1431,11 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 </BitText>
 
                 <BitText>
-                    Drop the full <code>&lt;script&gt;</code> at the very start of <code>&lt;head&gt;</code> in your root document (e.g. <code>Components/App.razor</code>):
+                    Drop the full <code>&lt;script&gt;</code> at the start of <code>&lt;head&gt;</code> in your root document (e.g. <code>Components/App.razor</code>) - before any stylesheet, but after <code>&lt;meta charset&gt;</code>, which the browser only honors inside the document’s first 1024 bytes:
                 </BitText>
 
                 <CodeBox Language="razor">&lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
     @@((MarkupString)BitThemeSsr.InlineHeadScript)
 
     &lt;!-- bit BlazorUI / Fluent stylesheet links AFTER the script --&gt;
@@ -1463,6 +1491,43 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
 
                 <BitText>
                     With <code>bit-theme-persist-cookie</code> on <code>&lt;html&gt;</code>, the runtime script mirrors every theme change into the <code>bit-theme-preference</code> cookie automatically, keeping the client (<code>localStorage</code>) and server (cookie) stores in sync - no manual <code>BitThemeNotifications.ThemeChanged</code> subscription is needed for that.
+                </BitText>
+            </DocSection>
+
+            <DocSection Level="3" Id="theme-head" Title="The whole host page in two calls">
+
+                <BitText>
+                    The attributes above and the head content are the two halves of one setup, and each has a helper that owns every name involved - so a host page states what it wants rather than spelling out attributes, scripts and colors. <code>BitThemeSsrOptions</code> carries the document-level switches into the attribute builder, and <code>&lt;BitThemeHead&gt;</code> emits the head half: the first-paint script, and the <code>theme-color</code> tag in the surface color of the theme this very response renders.
+                </BitText>
+
+                <CodeBox Language="razor">@@{
+    var preference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
+    var themeOptions = new BitThemeSsrOptions
+    {
+        Persist = true,
+        PersistCookie = true,
+        ViewTransition = true,
+        ThemeColorMeta = BitCss.Var.Color.Background.Secondary.Main, // or true for the page background
+        LightTheme = BitExtraThemePresets.Fluent2Light,
+        DarkTheme = BitExtraThemePresets.Fluent2Dark,
+    };
+}
+
+&lt;html lang="en" @@attributes="BitThemeSsr.BuildRootThemeAttributeMap(preference, themeOptions)"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
+    &lt;BitThemeHead PersistedPreference="@@preference"
+                  LightTheme="@@themeOptions.LightTheme"
+                  DarkTheme="@@themeOptions.DarkTheme"
+                  ThemeColors="@@BitExtraThemeSurfaces.BackgroundSecondary" /&gt;
+    ...</CodeBox>
+
+                <BitText>
+                    <b>Why the colors are a table.</b> Everything else about the theme is read off the live page, but the browser paints its chrome from the served HTML - before any stylesheet exists - so that one value has to be a literal. <code>BitThemeSurfaces</code> has the two surfaces (<code>BackgroundPrimary</code>, <code>BackgroundSecondary</code>) of the packaged Fluent presets and <code>BitExtraThemeSurfaces</code> the same for every packaged preset, each pinned to its stylesheet by a contract test. An app with its own palette passes its own map; a theme the map does not carry falls back to the light or dark entry - and, failing that, to any entry of the map on the same side - by the same "ends with dark" rule the stylesheets use. Pass <code>EmitThemeColor="false"</code> to keep a tag the page writes itself.
+                </BitText>
+
+                <BitText>
+                    Hand both halves the same preference and the same light / dark pair: that is what makes the tag and the document agree about which theme was painted. The client can still resolve a third theme the server never saw - it follows the OS, or its <code>localStorage</code> is newer than the cookie this response was rendered from - so <code>BitThemeHead</code> always emits a small script that reads the resolved attribute back and corrects the tag, still before first paint, writing nothing when the two already agree.
                 </BitText>
             </DocSection>
         </DocSection>
@@ -1620,10 +1685,14 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">Hosting</BitText>
 
             <ul>
-                <li><code>BitThemeSsr</code>: <code>InlineHeadScript</code>, <code>InlineHeadScriptBody</code>, <code>BuildInlineHeadScript(nonce)</code>, <code>BuildRootThemeAttributes(preference, defaultTheme)</code></li>
+                <li><code>BitThemeSsr</code>: <code>InlineHeadScript</code>, <code>InlineHeadScriptBody</code>, <code>BuildInlineHeadScript(nonce)</code>, <code>BuildRootThemeAttributes(preference, defaultTheme)</code>, <code>BuildRootThemeAttributes(preference, options)</code> and the <code>…AttributeMap</code> pair</li>
+                <li><code>BitThemeSsrOptions</code> - the document-level setup the attribute builders emit</li>
+                <li><code>BitThemeHead</code> - the head half: first-paint script + <code>theme-color</code> tag</li>
+                <li><code>BitThemeSurfaces</code> / <code>BitExtraThemeSurfaces</code>: <code>BackgroundPrimary</code>, <code>BackgroundSecondary</code></li>
                 <li><code>BitThemeCookie.PreferenceCookieName</code></li>
                 <li><code>bit-theme-persist-cookie</code> (attribute)</li>
                 <li><code>bit-theme-view-transition</code> (attribute)</li>
+                <li><code>bit-theme-color-meta</code> (attribute) - and <code>BitThemeAttributeNames</code>, the C# names of all of them</li>
                 <li><code>BitExternalThemeLoader</code>: <code>AttachStylesheetAsync</code>, <code>DetachStylesheetAsync</code></li>
             </ul>
 
@@ -1638,6 +1707,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
 
             <ul>
                 <li><code>BitBlazorUI.Theme</code>: <code>get</code>, <code>set</code>, <code>toggleDarkLight</code>, <code>useSystem</code>, <code>applyTheme</code>, <code>clearAppliedTheme</code>, <code>onChange</code>, <code>isSystemDark</code>, <code>getPersisted</code>, <code>init</code></li>
+                <li><code>BitBlazorUI.ThemeColorMeta</code>: <code>enable</code>, <code>disable</code>, <code>sync</code></li>
                 <li><code>BitBlazorUI.ExternalTheme</code>: <code>attach</code>, <code>detach</code></li>
             </ul>
         </DocSection>

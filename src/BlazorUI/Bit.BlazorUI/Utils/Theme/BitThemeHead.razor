@@ -1,0 +1,24 @@
+@namespace Bit.BlazorUI
+
+@* Before anything is painted: re-resolves bit-theme from localStorage / the preference cookie, which
+   is what covers everything the server could not - following the OS, and a store newer than the
+   cookie the response was rendered from. *@
+@((MarkupString)BitThemeSsr.BuildInlineHeadScript(Nonce))
+
+@if (EmitThemeColor)
+{
+    @* The browser paints its chrome from this tag while the document is still being parsed, so the
+       color has to be a literal - no stylesheet has loaded yet. From the first frame the app can
+       compute anything, bit-theme-color-meta takes over and re-reads the live palette (which is what
+       brings an app's own token overrides and a picked accent into the chrome). *@
+    <meta name="theme-color" content="@ResolveThemeColor()" />
+
+    @* Always, not only when the server could not resolve a theme: the script above prefers
+       localStorage over the cookie this response was rendered from, so it can land on a theme the
+       tag was NOT painted for even when the server resolved one (a store newer than the cookie, a
+       cookie stripped in transit). Read the attribute it just wrote back, while the browser is still
+       parsing <head>, and correct the tag. Rewrites that one tag rather than adding a media-qualified
+       pair, so there is a single tag for bit-theme-color-meta to keep current afterwards, and writes
+       nothing when the two already agree - the common case, and one chrome repaint saved. *@
+    @((MarkupString)BuildThemeColorCorrectionScript())
+}
