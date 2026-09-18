@@ -63,4 +63,10 @@ function scheduleThemeColorSync() {
 const themeColorObserver = new MutationObserver(scheduleThemeColorSync);
 themeColorObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['bit-theme'] });
 themeColorObserver.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+// A stylesheet still in flight leaves --bit-clr-bg-pri empty, and the read above then keeps whatever
+// the tag carries rather than blanking it - so the landing has to be noticed. A <head> child appearing
+// covers a stylesheet linked by a script; the one-shot load catch-up covers the rest, since a
+// stylesheet that was already in the markup changes no node when it finally applies.
+themeColorObserver.observe(document.head, { childList: true });
+window.addEventListener('load', scheduleThemeColorSync, { once: true });
 scheduleThemeColorSync();

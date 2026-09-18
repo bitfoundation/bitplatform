@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,10 +32,67 @@ public class BitThemeHeadTests : BunitTestContext
 
         StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.FluentLight], StringComparison.OrdinalIgnoreCase,
             "A visitor with a stored preference is painted that theme, so the chrome must carry that theme's surface.");
-        // Nothing to correct: the theme is known here, so the OS-resolution script would only be a
-        // second script running before every first paint.
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex("querySelector"),
-            "With the theme resolved server-side there is nothing for the correction script to fix.");
+        // Still corrected: the head script prefers localStorage over the cookie this response was
+        // rendered from, so a resolved theme is not the same as an agreed one.
+        StringAssert.Contains(component.Markup, "querySelector", StringComparison.Ordinal,
+            "The client can re-resolve to a theme the cookie never mentioned; the tag has to follow it.");
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldCorrectTheTagWhenTheClientResolvesAThemeTheCookieDidNot()
+    {
+        // The head script reads localStorage first and the cookie only as a fallback, so the theme
+        // this response painted can be overruled a moment later. The correction script is what has to
+        // carry the color of THAT theme - not of whichever light / dark preset was configured.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitExtraThemePresets.Fluent2Light)
+            .Add(p => p.LightTheme, BitExtraThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitExtraThemePresets.Fluent2Dark)
+            .Add(p => p.ThemeColors, BitExtraThemeSurfaces.BackgroundSecondary));
+
+        var script = component.Markup[component.Markup.IndexOf("querySelector", StringComparison.Ordinal)..];
+        StringAssert.Contains(script, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialLight], StringComparison.OrdinalIgnoreCase,
+            "A stored material-light is a light name the configured light surface does not cover, so it has to be carried by name.");
+        StringAssert.Contains(script, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialDark], StringComparison.OrdinalIgnoreCase);
+        // The scheme fallback is a statement of its own rather than the right side of an `||`: in one
+        // expression the ternary would swallow the lookup (`a||b?c:d` is `(a||b)?c:d`) and every
+        // resolved name would get the light color. The guard is a typeof so a name that reaches
+        // Object.prototype - 'constructor', 'toString' - falls through instead of painting a function.
+        StringAssert.Contains(script, "if(typeof c!=='string')", StringComparison.Ordinal);
+        StringAssert.DoesNotMatch(script, new System.Text.RegularExpressions.Regex(@"\}\[t\]\s*\|\|"),
+            "A lookup or-ed straight into the ternary is the precedence trap this shape exists to avoid.");
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldCarryNoLookupTableWhenTheSchemeFallbackAlreadyCoversTheMap()
+    {
+        // The default map's four names share two colors with the light / dark pair, so naming them
+        // would put bytes in front of every first paint that resolve to what the fallback already says.
+        var component = RenderComponent<BitThemeHead>();
+
+        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex($"'{BitThemePresets.FluentDark}'"),
+            "No entry of the default map needs naming; the scheme fallback resolves all four.");
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldFallBackWithinTheSuppliedMapRatherThanThePackagedSurfaces()
+    {
+        // An app that hands in its own map has replaced the packaged table on purpose - reaching past
+        // it for an unmapped name paints the chrome from a palette the app does not use.
+        var colors = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["acme-day"] = "#ABCDEF",
+            ["acme-dark"] = "#123456",
+        };
+
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, "acme-noon")
+            .Add(p => p.ThemeColors, colors));
+
+        StringAssert.Contains(component.Markup, "#ABCDEF", StringComparison.OrdinalIgnoreCase,
+            "The only light-side entry of the supplied map, rather than the packaged light surface.");
+        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], System.Text.RegularExpressions.RegexOptions.IgnoreCase),
+            "The packaged surfaces are the last resort, not the first one past a missing name.");
     }
 
     [TestMethod]

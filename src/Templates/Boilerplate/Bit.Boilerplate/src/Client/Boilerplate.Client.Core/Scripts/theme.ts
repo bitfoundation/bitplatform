@@ -42,5 +42,10 @@
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['bit-theme', 'bit-accent'] });
     observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
     observer.observe(document.head, { childList: true });
+    // A stylesheet still in flight leaves --bit-clr-bg-pri empty, and sync() then keeps whatever the
+    // tags carry rather than blanking them. The <head> observation above catches one linked by a
+    // script; a stylesheet that was already in the markup changes no node when it finally applies, so
+    // it takes this one-shot catch-up.
+    window.addEventListener('load', schedule, { once: true });
     schedule();
 }());

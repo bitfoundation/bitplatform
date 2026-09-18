@@ -13,12 +13,12 @@
        brings an app's own token overrides and a picked accent into the chrome). *@
     <meta name="theme-color" content="@ResolveThemeColor()" />
 
-    @if (ResolvedTheme is null)
-    {
-        @* This visitor follows the OS, which only the client can resolve - and the script above just
-           did, onto <html>. Read it back while the browser is still parsing <head> and correct the
-           guess above. Rewrites that one tag rather than adding a media-qualified pair, so there is a
-           single tag for bit-theme-color-meta to keep current afterwards. *@
-        @((MarkupString)BuildThemeColorCorrectionScript())
-    }
+    @* Always, not only when the server could not resolve a theme: the script above prefers
+       localStorage over the cookie this response was rendered from, so it can land on a theme the
+       tag was NOT painted for even when the server resolved one (a store newer than the cookie, a
+       cookie stripped in transit). Read the attribute it just wrote back, while the browser is still
+       parsing <head>, and correct the tag. Rewrites that one tag rather than adding a media-qualified
+       pair, so there is a single tag for bit-theme-color-meta to keep current afterwards, and writes
+       nothing when the two already agree - the common case, and one chrome repaint saved. *@
+    @((MarkupString)BuildThemeColorCorrectionScript())
 }

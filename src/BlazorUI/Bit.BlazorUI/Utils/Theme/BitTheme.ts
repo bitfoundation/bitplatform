@@ -39,9 +39,10 @@ namespace BitBlazorUI {
         lightTheme?: string | null;
         onChange?: onThemeChangeType;
         /**
-         * Keep `<meta name="theme-color">` equal to a palette color of the live page: `true` for the
-         * default custom property, a `--bit-*` name to read another one, `false` to turn it off
-         * again. Same feature as the bit-theme-color-meta attribute (see ThemeColorMeta).
+         * Keep `<meta name="theme-color">` equal to a palette color of the live page: `true` (or the
+         * empty string) for the default custom property, a `--bit-*` name to read another one,
+         * `false` / `null` to turn it off again, omitted to leave it as it is. Same feature as the
+         * bit-theme-color-meta attribute (see ThemeColorMeta).
          */
         themeColorMeta?: boolean | string | null;
     }
@@ -206,10 +207,13 @@ namespace BitBlazorUI {
             // After the first set(), so the tag is read from the theme this init resolved rather than
             // the one being replaced. An omitted key leaves the feature as it is (the self-init below
             // may already have turned it on from the attribute); false / null turns it back off.
+            // Anything else turns it on - including the empty string, which enable() reads as "the
+            // default custom property", the same as the valueless bit-theme-color-meta attribute the
+            // self-init below maps to true. One value, one meaning.
             const themeColorMeta = Theme._initOptions.themeColorMeta;
             if (themeColorMeta === false || themeColorMeta === null) {
                 ThemeColorMeta.disable();
-            } else if (themeColorMeta) {
+            } else if (themeColorMeta !== undefined) {
                 ThemeColorMeta.enable(typeof themeColorMeta === 'string' ? themeColorMeta : null);
             }
 

@@ -1,14 +1,18 @@
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// The single-drop first-paint setup for the theme: place it at the very start of a server-rendered
-/// host page's <c>&lt;head&gt;</c> (before any stylesheet) and it emits both halves of getting the
-/// appearance right before anything is painted - the inline script that re-resolves
-/// <c>bit-theme</c> from <c>localStorage</c> / the preference cookie (<see cref="BitThemeSsr"/>), and
-/// the <c>&lt;meta name="theme-color"&gt;</c> tag that paints the browser chrome, with the color of
-/// the theme this response actually renders.
+/// The single-drop first-paint setup for the theme: place it at the start of a server-rendered host
+/// page's <c>&lt;head&gt;</c> and it emits both halves of getting the appearance right before anything
+/// is painted - the inline script that re-resolves <c>bit-theme</c> from <c>localStorage</c> / the
+/// preference cookie (<see cref="BitThemeSsr"/>), and the <c>&lt;meta name="theme-color"&gt;</c> tag
+/// that paints the browser chrome, with the color of the theme this response actually renders.
 /// </summary>
 /// <remarks>
+/// <para>
+/// "The start of <c>&lt;head&gt;</c>" means before any stylesheet - painting must not begin until the
+/// script has run - but AFTER <c>&lt;meta charset&gt;</c>: the encoding declaration is only honored
+/// inside the document's first 1024 bytes, and what this emits is more than that on its own.
+/// </para>
 /// <para>
 /// Pair it with <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/> on
 /// the <c>&lt;html&gt;</c> element, handing both the same persisted preference: that call writes the
@@ -64,14 +68,15 @@ public partial class BitThemeHead : ComponentBase
     /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of the packaged Fluent
     /// presets. <c>BitExtraThemeSurfaces</c> has the same two maps covering every packaged preset, and
     /// an app with its own palette (or one whose pages sit on the secondary surface) passes its own.
-    /// A name the map does not carry falls back to the light / dark entry by the same "ends with dark"
-    /// rule the packaged stylesheets classify names with.
+    /// A name the map does not carry falls back to the light / dark entry - and, failing that, to any
+    /// entry of the map on the same side of the scheme - by the same "ends with dark" rule the
+    /// packaged stylesheets classify names with.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, string>? ThemeColors { get; set; }
 
     /// <summary>
-    /// Whether to emit the <c>&lt;meta name="theme-color"&gt;</c> tag (and, for an OS-following
-    /// visitor, the script that corrects it before first paint). Default <see langword="true"/>. Turn
+    /// Whether to emit the <c>&lt;meta name="theme-color"&gt;</c> tag (and the script that corrects it
+    /// before first paint, once the client has re-resolved the theme). Default <see langword="true"/>. Turn
     /// it off to keep a tag the host page writes itself - a media-qualified light / dark pair, say -
     /// which <see cref="BitThemeAttributeNames.ThemeColorMeta"/> still keeps current afterwards.
     /// </summary>
@@ -86,9 +91,10 @@ public partial class BitThemeHead : ComponentBase
 
 
     /// <summary>
-    /// The theme this response renders, or <see langword="null"/> when the visitor follows the OS -
-    /// the case the correction script covers. Resolved exactly as the root attributes are, so the tag
-    /// and the document can never disagree about which theme was painted.
+    /// The theme this response renders, or <see langword="null"/> when the visitor follows the OS.
+    /// Resolved exactly as the root attributes are, so the tag and the server-rendered document
+    /// cannot disagree - the client can still re-resolve to a third theme from a store the server
+    /// never saw, which is what the correction script covers.
     /// </summary>
     private string? ResolvedTheme =>
         BitThemeSsr.BuildRootThemeAttributeMap(PersistedPreference, new BitThemeSsrOptions { DefaultTheme = DefaultTheme })
@@ -125,8 +131,18 @@ public partial class BitThemeHead : ComponentBase
         var fallback = isDark ? DarkTheme ?? BitThemePresets.Dark : LightTheme ?? BitThemePresets.Light;
         if (fallback != theme && Colors.TryGetValue(fallback, out color)) return color;
 
-        // Nothing in the map for either name: the packaged surfaces of the scheme, which is what the
-        // tag would have carried before an app handed in a map of its own.
+        // Still nothing: any entry of the CALLER's map on the right side of the scheme, before the
+        // packaged surfaces - an app whose pages sit on the secondary surface (or on a palette of its
+        // own) must not have the chrome painted from a table it deliberately replaced. Ordered so the
+        // pick is the same on every render rather than whatever the dictionary happens to enumerate.
+        var sameScheme = Colors.Where(entry => IsDarkName(entry.Key) == isDark)
+                               .OrderBy(entry => entry.Key, StringComparer.Ordinal)
+                               .Select(entry => entry.Value)
+                               .FirstOrDefault();
+        if (sameScheme is not null) return sameScheme;
+
+        // An empty map, or one with no name on this side at all: the packaged surfaces of the scheme,
+        // which is what the tag would have carried before an app handed in a map of its own.
         return isDark
             ? BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark]
             : BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light];
@@ -141,18 +157,50 @@ public partial class BitThemeHead : ComponentBase
 
     /// <summary>
     /// Reads back the attribute the inline script resolved and rewrites the tag to match, while the
-    /// browser is still parsing head. Only the two colors reach the document, both from the map.
+    /// browser is still parsing head. Only colors from the map reach the document: the light / dark
+    /// pair, plus a lookup table for the names whose color the pair does not already give - which is
+    /// most of them, so the table is usually small and often empty.
     /// </summary>
     private string BuildThemeColorCorrectionScript()
     {
+        var light = ResolveLightThemeColor();
+        var dark = ResolveDarkThemeColor();
+
         var body =
-            "(function(){var t=document.documentElement.getAttribute('" + BitThemeAttributeNames.Theme + "')||'';" +
-            "var m=document.querySelector('meta[name=theme-color]');" +
-            "if(m){m.content=/dark$/.test(t)?'" + JsString(ResolveDarkThemeColor()) + "':'" + JsString(ResolveLightThemeColor()) + "';}})();";
+            "(function(){var m=document.querySelector('meta[name=theme-color]');if(!m)return;" +
+            "var t=document.documentElement.getAttribute('" + BitThemeAttributeNames.Theme + "')||'';" +
+            BuildThemeColorLookup(light, dark) +
+            "if(c&&m.content!==c){m.content=c;}})();";
 
         return string.IsNullOrWhiteSpace(Nonce)
             ? $"<script>{body}</script>"
             : $"<script nonce=\"{BitThemeSsr.HtmlEncodeAttribute(Nonce)}\">{body}</script>";
+    }
+
+    /// <summary>
+    /// The statements that leave the corrected color in <c>c</c>. The scheme fallback alone would
+    /// paint every light name with the configured light theme's surface, which is wrong for a map
+    /// whose presets do not share one (Material's light surface is not Fluent 2's) - so the names the
+    /// fallback would get wrong, and only those, are carried as an object literal in front of it.
+    /// </summary>
+    private string BuildThemeColorLookup(string light, string dark)
+    {
+        var scheme = "c=/dark$/.test(t)?'" + JsString(dark) + "':'" + JsString(light) + "';";
+
+        var overrides = Colors.Where(entry => entry.Value != (IsDarkName(entry.Key) ? dark : light))
+                              .OrderBy(entry => entry.Key, StringComparer.Ordinal)
+                              .Select(entry => "'" + JsString(entry.Key) + "':'" + JsString(entry.Value) + "'")
+                              .ToArray();
+
+        // Nothing the fallback gets wrong: the whole table would be dead weight in front of every
+        // first paint. This is the default map's case, where all four names share the two colors.
+        if (overrides.Length == 0) return "var " + scheme;
+
+        // The typeof guard rather than a plain falsy test: t is whatever the client resolved, so a
+        // name like 'constructor' or 'toString' reaches Object.prototype and hands back a function
+        // the tag would then be painted with.
+        return "var c={" + string.Join(',', overrides) + "}[t];" +
+               "if(typeof c!=='string'){" + scheme + "}";
     }
 
     /// <summary>

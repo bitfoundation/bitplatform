@@ -1431,10 +1431,11 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 </BitText>
 
                 <BitText>
-                    Drop the full <code>&lt;script&gt;</code> at the very start of <code>&lt;head&gt;</code> in your root document (e.g. <code>Components/App.razor</code>):
+                    Drop the full <code>&lt;script&gt;</code> at the start of <code>&lt;head&gt;</code> in your root document (e.g. <code>Components/App.razor</code>) - before any stylesheet, but after <code>&lt;meta charset&gt;</code>, which the browser only honors inside the document’s first 1024 bytes:
                 </BitText>
 
                 <CodeBox Language="razor">&lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
     @@((MarkupString)BitThemeSsr.InlineHeadScript)
 
     &lt;!-- bit BlazorUI / Fluent stylesheet links AFTER the script --&gt;
@@ -1514,6 +1515,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
 
 &lt;html lang="en" @@attributes="BitThemeSsr.BuildRootThemeAttributeMap(preference, themeOptions)"&gt;
 &lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
     &lt;BitThemeHead PersistedPreference="@@preference"
                   LightTheme="@@themeOptions.LightTheme"
                   DarkTheme="@@themeOptions.DarkTheme"
@@ -1521,11 +1523,11 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
     ...</CodeBox>
 
                 <BitText>
-                    <b>Why the colors are a table.</b> Everything else about the theme is read off the live page, but the browser paints its chrome from the served HTML - before any stylesheet exists - so that one value has to be a literal. <code>BitThemeSurfaces</code> has the two surfaces (<code>BackgroundPrimary</code>, <code>BackgroundSecondary</code>) of the packaged Fluent presets and <code>BitExtraThemeSurfaces</code> the same for every packaged preset, each pinned to its stylesheet by a contract test. An app with its own palette passes its own map; a theme the map does not carry falls back to the light or dark entry by the same "ends with dark" rule the stylesheets use. Pass <code>EmitThemeColor="false"</code> to keep a tag the page writes itself.
+                    <b>Why the colors are a table.</b> Everything else about the theme is read off the live page, but the browser paints its chrome from the served HTML - before any stylesheet exists - so that one value has to be a literal. <code>BitThemeSurfaces</code> has the two surfaces (<code>BackgroundPrimary</code>, <code>BackgroundSecondary</code>) of the packaged Fluent presets and <code>BitExtraThemeSurfaces</code> the same for every packaged preset, each pinned to its stylesheet by a contract test. An app with its own palette passes its own map; a theme the map does not carry falls back to the light or dark entry - and, failing that, to any entry of the map on the same side - by the same "ends with dark" rule the stylesheets use. Pass <code>EmitThemeColor="false"</code> to keep a tag the page writes itself.
                 </BitText>
 
                 <BitText>
-                    Hand both halves the same preference and the same light / dark pair: that is what makes the tag and the document agree about which theme was painted. When the visitor follows the OS - which the server cannot read - <code>BitThemeHead</code> emits a small script that reads the resolved attribute back and corrects the tag, still before first paint.
+                    Hand both halves the same preference and the same light / dark pair: that is what makes the tag and the document agree about which theme was painted. The client can still resolve a third theme the server never saw - it follows the OS, or its <code>localStorage</code> is newer than the cookie this response was rendered from - so <code>BitThemeHead</code> always emits a small script that reads the resolved attribute back and corrects the tag, still before first paint, writing nothing when the two already agree.
                 </BitText>
             </DocSection>
         </DocSection>

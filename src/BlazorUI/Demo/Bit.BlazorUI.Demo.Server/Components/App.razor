@@ -58,7 +58,11 @@
 <html lang="en" @attributes="rootThemeAttributes">
 
 <head>
-    @* First thing in the document, and the whole of the theme's first paint: the inline script that
+    @* Ahead of the theme and accent scripts below, which together run to well over a kilobyte: the
+       encoding declaration is only honored inside the document's first 1024 bytes, and a page that
+       falls out of that window is sniffed instead. *@
+    <meta charset="utf-8" />
+    @* First script in the document, and the whole of the theme's first paint: the inline script that
        re-resolves bit-theme from localStorage / the preference cookie before anything is painted (the
        attributes above are already correct for a visitor whose cookie reached us, so this is what
        covers the rest - following the OS, which the server cannot read, and a localStorage value
@@ -88,7 +92,6 @@
     <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
     <ResourcePreloader />
     <base href="/" />
-    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),
