@@ -15,9 +15,7 @@
     });
 
     // Keeps the browser chrome (the status bar of an installed PWA, the mobile address bar) painted
-    // with the page's own background. The library does this itself from the bit-theme-color-meta
-    // attribute on <html>, which is the shorter way to write everything below - but only from the
-    // release AFTER 10.6.0, the version this template references, so it is done here for now.
+    // with the page's own background.
     //
     // The color cannot be read inside onChange: with bit-theme-view-transition the bit-theme
     // attribute is only written a frame after the callback, and a picked accent re-derives the whole
