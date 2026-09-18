@@ -17,6 +17,29 @@ public class TrustedOriginsTests
     }
 
     /// <summary>
+    /// Tokens name the origin they were minted at and <c>TrustedOrigins</c> ships empty, so unless the request's own
+    /// origin counts a production deployment refuses every token it issued. Pinned with a non-loopback host, because
+    /// the Development-only loopback regex hides it from the integration suite.
+    /// </summary>
+    [TestMethod]
+    public void IsTrustedIssuer_Should_TrustTheRequestsOwnOrigin_WithNothingConfigured()
+    {
+        var settings = new ServerSharedSettings { TrustedOrigins = [] };
+        var request = new DefaultHttpContext().Request;
+        (request.Scheme, request.Host) = ("https", new HostString("myapp.example"));
+
+        Assert.IsTrue(settings.IsTrustedIssuer("https://myapp.example", request),
+            "A token minted at the origin the request arrived on must be accepted without any TrustedOrigins entry.");
+        Assert.IsFalse(settings.IsTrustedIssuer("https://other.example", request),
+            "Any other origin still needs to be trusted explicitly.");
+        Assert.IsTrue(settings.IsTrustedIssuer("https://other.example", request) is false
+                      && new ServerSharedSettings { TrustedOrigins = ["https://other.example"] }.IsTrustedIssuer("https://other.example", request),
+            "And an explicit entry is what makes it trusted.");
+        Assert.IsFalse(settings.IsTrustedIssuer("Boilerplate", request),
+            "A bare name is not an origin, however it got into a token.");
+    }
+
+    /// <summary>
     /// A <c>*</c> in an entry stands in for any run of characters within the authority, so <c>https://*.myapp.com</c>
     /// trusts every tenant subdomain while still refusing the apex, sibling domains and look-alike suffixes.
     /// </summary>

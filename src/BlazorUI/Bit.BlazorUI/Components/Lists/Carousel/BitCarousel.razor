@@ -55,8 +55,8 @@
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
                                 disabled="@(IsEnabled is false)"
-                                style="@Styles?.Dots @(_currentPage == index ? Styles?.GetCurrentDot() : null)"
-                                class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
+                                style="@Styles?.Dots @(_currentPage == index ? Styles?.CurrentDot : null)"
+                                class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
             }

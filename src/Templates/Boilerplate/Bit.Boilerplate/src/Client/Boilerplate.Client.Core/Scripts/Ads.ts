@@ -1,10 +1,10 @@
 //+:cnd:noEmit
-const gtag = (window as any).googletag = (window as any).googletag || { cmd: [] };
+const gtag = window.googletag = window.googletag || { cmd: [] } as unknown as GooglePublisherTag.Googletag;
 
 export class Ads {
-    private static rewardedSlot: any;
-    private static rewardPayload: any;
-    private static slotReadyEvent: any;
+    private static rewardedSlot: GooglePublisherTag.Slot | null = null;
+    private static rewardPayload: GooglePublisherTag.RewardedPayload | null = null;
+    private static slotReadyEvent: GooglePublisherTag.RewardedSlotReadyEvent | null = null;
     private static listenersRegistered = false;
     private static dotnetObj: DotNetObject | undefined;
 
@@ -54,7 +54,7 @@ export class Ads {
     }
 
     private static addEventListeners() {
-        gtag.pubads().addEventListener('rewardedSlotReady', async (event: any) => {
+        gtag.pubads().addEventListener('rewardedSlotReady', async event => {
             Ads.slotReadyEvent = event;
             await Ads.dotnetObj?.invokeMethodAsync('AdReady');
         });
@@ -68,12 +68,12 @@ export class Ads {
             Ads.destroySlot();
         });
 
-        gtag.pubads().addEventListener('rewardedSlotGranted', async (event: any) => {
+        gtag.pubads().addEventListener('rewardedSlotGranted', async event => {
             Ads.rewardPayload = event.payload;
             await Ads.dotnetObj?.invokeMethodAsync('AdRewardGranted', Ads.rewardPayload?.amount, Ads.rewardPayload?.type);
         });
 
-        gtag.pubads().addEventListener('slotRenderEnded', async (event: any) => {
+        gtag.pubads().addEventListener('slotRenderEnded', async event => {
             await Ads.dotnetObj?.invokeMethodAsync('AdSlotRendered', event.isEmpty);
 
             if (event.slot === Ads.rewardedSlot && event.isEmpty) {
@@ -107,11 +107,11 @@ export class Ads {
 
         if (notAddedScripts.length === 0) return Promise.resolve();
 
-        const promise = new Promise(async (res: any, rej: any) => {
+        const promise = new Promise<void>(async (res, rej) => {
             try {
                 await Promise.all(notAddedScripts.map(addScript));
                 res();
-            } catch (e: any) {
+            } catch (e) {
                 // A blocked or offline load is not permanent: caching the rejection would fail every later retry
                 // on a network that works again.
                 delete Ads.initScriptPromises[key];
@@ -123,13 +123,13 @@ export class Ads {
         return promise;
 
         async function addScript(url: string) {
-            return new Promise((res, rej) => {
+            return new Promise<void>((res, rej) => {
                 const script = document.createElement('script');
                 script.src = url;
                 script.async = true;
                 script.crossOrigin = "anonymous";
 
-                script.onload = res;
+                script.onload = () => res();
                 script.onerror = e => {
                     // The tag has to go with the cache entry, otherwise the check above reads the dead tag as
                     // already loaded and the retry resolves without ever loading anything.

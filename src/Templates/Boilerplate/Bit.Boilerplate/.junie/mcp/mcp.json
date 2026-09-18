@@ -2,7 +2,11 @@
     "mcpServers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp"
+            "url": "https://bitplatform.dev/mcp?v=10.6"
+        },
+        "dev-mcp": {
+            "type": "http",
+            "url": "https://use-your-api-server-url-here.com/dev-mcp"
         },
         "aspire": {
             "command": "aspire",

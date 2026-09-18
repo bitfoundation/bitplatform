@@ -50,6 +50,12 @@
                 <a class="btn-ghost" href="window">Explore the APIs</a>
             </div>
 
+            @* The command bar drops its own copy on this page: a visitor who arrived here knowing
+               what they were after should not have to find a 13rem field among the utilities. *@
+            <div class="hero-search">
+                <SearchBox />
+            </div>
+
             <div class="hero-install">
                 <CodeBlock Language="shell" Code="dotnet add package Bit.Butil" />
             </div>

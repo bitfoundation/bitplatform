@@ -38,6 +38,11 @@ public class BitNavPanelClassStyles
     public string? ToggleButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the close button of the BitNavPanel.
+    /// </summary>
+    public string? CloseButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box of the BitNavPanel.
     /// </summary>
     public string? SearchBox { get; set; }

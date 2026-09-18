@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- In-process HTTP tests: the real Blazor Web App harness host booted with WebApplicationFactory, in every
+         render mode, asserting what only a server response can show - what the first response already contains,
+         which static assets are served and as what, whether every page renders statically without an error in
+         the server log, and whether every member of every Butil service keeps the prerendering contract. No
+         browser, so this runs on every target framework in the regular CI job. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <!-- Not under Bit.Butil: the harness host brings Bit.Butil in, and a namespace nested there would let its
+             Console, Window and Navigator services shadow the framework types throughout this project. -->
+        <RootNamespace>ButilTests.Hosting</RootNamespace>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner builds that
+             test host into the assembly itself, and it only generates the entry point for an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.4.1" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Butil.Tests.Harness.Web\Bit.Butil.Tests.Harness.Web.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,8 +1,7 @@
 //+:cnd:noEmit
-using System.Diagnostics.Metrics;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.RateLimiting;
 using Boilerplate.Shared.Features.Chatbot;
+using Boilerplate.Server.Api.Features.Chatbot.VoiceCall;
 
 namespace Boilerplate.Server.Api.Features.Chatbot;
 
@@ -12,14 +11,10 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
 {
     [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
+    [AutoInject] private ChatbotAnswerSigner answerSigner = default!;
 
-    // For open telemetry metrics. Both providers bill by characters spoken and seconds heard rather than by request,
-    // so a request count says nothing about what speech costs - these are what any limit worth setting is chosen
-    // from, and what shows a bill running away before the invoice does.
-    private static readonly Counter<long> synthesizedCharactersCounter = Meter.Current.CreateCounter<long>("chatbot.synthesized_characters", "{character}", "Characters handed to the text to speech provider.");
-    private static readonly Histogram<long> transcribedBytesHistogram = Meter.Current.CreateHistogram<long>("chatbot.transcribed_bytes", "By", "Size of each recording handed to the speech to text provider.");
-    /// <summary>Only some providers report where in the audio each stretch of text was heard, so this is thinner than <see cref="transcribedBytesHistogram"/>, which is always recorded.</summary>
-    private static readonly Histogram<double> transcribedSecondsHistogram = Meter.Current.CreateHistogram<double>("chatbot.transcribed_seconds", "s", "Length of each recording handed to the speech to text provider, where it reports one.");
+    /// <summary>The largest recording the speech endpoints accept; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxSpeechUploadSizeBytes = 2 * 1024 * 1024;
 
     [HttpGet]
     [EnableQuery]
@@ -64,7 +59,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// Turns a recording made by the AI chat panel's microphone into the text it puts in the message box.
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<TranscribeSpeechResponseDto> TranscribeSpeech(IFormFile? file, CancellationToken cancellationToken)
     {
@@ -86,7 +81,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
         }
         recording.Position = 0;
 
-        transcribedBytesHistogram.Record(recording.Length);
+        ChatbotMetrics.TranscribedBytes.Record(recording.Length);
 
         var response = await speechToTextClient.GetTextAsync(recording, new()
         {
@@ -98,8 +93,10 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
         // every provider fills it in.
         if (response.EndTime - response.StartTime is TimeSpan heard)
         {
-            transcribedSecondsHistogram.Record(heard.TotalSeconds);
+            ChatbotMetrics.RecordTranscribedSeconds(heard.TotalSeconds, AppSettings.AI?.OpenAI?.SpeechToTextModel);
         }
+
+        ChatbotMetrics.RecordSpeechToTextUsage(response.Usage, AppSettings.AI?.OpenAI?.SpeechToTextModel);
 
         return new() { Text = response.Text?.Trim() ?? string.Empty };
     }
@@ -109,18 +106,18 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     /// <para>
     /// It accepts the text itself rather than the id of a message because nothing stores the conversation -
     /// <c>AppChatbot</c> holds it in memory for the lifetime of one SignalR connection - so there is no id that
-    /// would name an answer. <see cref="RememberAnswer"/> stands in for that id; without it this endpoint reads out
-    /// whatever it is sent, which is a text to speech api billed to whoever runs the app.
+    /// would name an answer. The signature <c>AppChatbot</c> sent with the answer stands in for that id; without it
+    /// this endpoint reads out whatever it is sent, which is a text to speech api billed to whoever runs the app.
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(2 * 1024 * 1024 /*2MB*/)]
+    [RequestSizeLimit(MaxSpeechUploadSizeBytes)]
     [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
     public async Task<IActionResult> SynthesizeSpeech(SynthesizeSpeechRequestDto request, CancellationToken cancellationToken)
     {
         // Before anything is read or reduced: whatever the answer turns out to be worth saying, this caller has to be
         // handing back words this assistant wrote.
-        if (await cache.GetOrDefaultAsync(AnswerCacheKey(request.Text), false, token: cancellationToken) is false)
+        if (answerSigner.Verify(request.Text, request.Signature) is false)
             throw new ForbiddenException().WithData("Reason", "Only an answer this assistant wrote can be read aloud.");
 
         var text = SpeakableText.FromMarkdown(request.Text);
@@ -156,7 +153,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
             // so the first speaks for all.
             mediaType ??= audio.MediaType;
 
-            synthesizedCharactersCounter.Add(segment.Length);
+            ChatbotMetrics.SynthesizedCharacters.Add(segment.Length);
         }
 #pragma warning restore MEAI001
 
@@ -164,28 +161,50 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
     }
 
     /// <summary>
-    /// How long an answer stays speakable. Long enough that a user scrolling back to something said early in the
-    /// conversation still gets it, short enough that the record - one small entry per answer - does not accumulate.
+    /// Starts a voice call. Audio flows browser-to-provider over WebRTC; the call itself is created here with the
+    /// server's key, prompt and tools, and <see cref="VoiceCallRunner"/> stays in it.
     /// </summary>
-    private static readonly TimeSpan AnswersStaySpeakableFor = TimeSpan.FromHours(2);
-
-    /// <summary>
-    /// Records that this assistant wrote <paramref name="markdown"/>, which is what lets
-    /// <see cref="SynthesizeSpeech"/> read it out. Called by <c>AppChatbot</c> as each answer finishes streaming.
-    /// </summary>
-    public static async Task RememberAnswer(IFusionCache cache, string markdown, CancellationToken cancellationToken)
+    [HttpPost]
+    [EnableRateLimiting(RateLimitOptionsExtensions.SPEECH)]
+    public async Task<StartVoiceCallResponseDto> StartVoiceCall(StartVoiceCallRequestDto request, CancellationToken cancellationToken)
     {
-        await cache.SetAsync(AnswerCacheKey(markdown), true, options => options.Duration = AnswersStaySpeakableFor, cancellationToken);
-    }
+        var voiceCallRunner = serviceProvider.GetService<VoiceCallRunner>()
+            ?? throw new InvalidOperationException($"No {nameof(VoiceCallRunner)} is registered. Set AI:OpenAI:RealtimeApiKey to enable voice calls.");
 
-    /// <summary>
-    /// The markdown as it was written rather than what <see cref="SpeakableText.FromMarkdown"/> makes of it: reducing
-    /// an answer costs a pass of regexes, and on the recording side nobody knows yet whether the speaker will ever be
-    /// pressed. Hashed because the entry is only ever compared for equality.
-    /// </summary>
-    private static string AnswerCacheKey(string markdown)
-    {
-        return $"SpeakableAnswer_{Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(markdown)))}";
+        var webAppUrl = Request.GetWebAppUrl();
+
+        var culture = request.CultureId is int cultureId && CultureInfoManager.SupportedCultures.Any(sc => sc.Culture.LCID == cultureId)
+            ? CultureInfo.GetCultureInfo(cultureId)
+            : null;
+
+        // The text chat's prompt and variables (See AppChatbot.ProcessNewMessage). The realtime model speaks plainly on its
+        // own, but that prompt asks for markdown links - hence the override.
+        var instructions = $$$"""
+            {{{SystemPromptProvider.GetSystemPrompt(PromptKind.Support, HttpContext.RequestServices)}}}
+
+            ### Voice call:
+            This is a live voice call and nothing you say is shown as text: use no markdown or links, and never read out a URL. Your tools still show the user cards and suggestions on the screen. When a tool asks the user to approve something there, tell them to tap the button: a spoken yes is not an approval.
+
+            ### Variables:
+            {{UserCulture}}: "{{{culture?.NativeName ?? "English"}}}"
+            {{DeviceInfo}}: "{{{SystemPromptProvider.SanitizeVariable(request.DeviceInfo) ?? "Generic Device"}}}"
+            {{UserTimeZoneId}}: "{{{SystemPromptProvider.KnownTimeZoneId(request.TimeZoneId) ?? "Unknown"}}}"
+            {{IsAuthenticated}}: "True"
+            {{WebAppUrl}}: "{{{SystemPromptProvider.EscapeVariable(webAppUrl.ToString())}}}"
+            """;
+
+        var answerSdp = await voiceCallRunner.Start(new(UserId: User.GetUserId(),
+                                                        User: User.Clone(),
+                                                        OfferSdp: request.Sdp,
+                                                        Instructions: instructions,
+                                                        BaseUrl: Request.GetBaseUrl(),
+                                                        WebAppUrl: webAppUrl,
+                                                        SafetyIdentifier: Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(User.GetUserId().ToByteArray())),
+                                                        Language: culture?.TwoLetterISOLanguageName,
+                                                        History: request.ChatMessagesHistory),
+                                                    cancellationToken);
+
+        return new() { Sdp = answerSdp, MaxDuration = voiceCallRunner.MaxCallDuration };
     }
 
     /// <summary>

@@ -19,21 +19,8 @@
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
 
-            <BitAccordion Title="Telemetry Context">
-                <BitButton IconOnly
-                           Title="Copy"
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Copy"
-                           OnClick="WrapHandled(CopyTelemetry)" />
-                <BitScrollablePane>
-                    <BitStack>
-                        @foreach (var (key, value) in telemetryContext.ToDictionary())
-                        {
-                            <BitText NoWrap><b>@key</b>: @value</BitText>
-                        }
-                    </BitStack>
-                </BitScrollablePane>
+            <BitAccordion Title="Diagnostic">
+                <DiagnosticReport AutoRun="false" />
             </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
@@ -98,12 +85,6 @@
                            OnClick="ThrowTestException"
                            IconName="@BitIconName.Error"
                            Color="BitColor.SecondaryBackground" />
-
-                <BitButton IconOnly AutoLoading
-                           Title="Call Diag API"
-                           Color="BitColor.SecondaryBackground"
-                           OnClick="WrapHandled(CallDiagnosticApi)"
-                           IconName="@BitIconName.DiagnosticDataViewerApp" />
 
                 <BitButton IconOnly AutoLoading
                            Title="Open dev tools"

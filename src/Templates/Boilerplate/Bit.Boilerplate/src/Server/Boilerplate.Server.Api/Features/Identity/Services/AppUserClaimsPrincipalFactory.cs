@@ -61,6 +61,7 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
         AppClaimTypes.SESSION_ID,
         AppClaimTypes.PRIVILEGED_SESSION,
         AppClaimTypes.ELEVATED_SESSION,
+        AppClaimTypes.AMR,
         AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
         //#if (multitenant == true)
         AppClaimTypes.TENANT_ID,

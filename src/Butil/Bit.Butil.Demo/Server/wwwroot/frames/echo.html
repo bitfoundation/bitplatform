@@ -1,0 +1,59 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Butil messaging frame</title>
+<style>
+    body { margin: 0; font: 13px/1.5 system-ui, sans-serif; padding: .75rem; background: #eef2ff; color: #1e1b4b; }
+    b { display: block; margin-bottom: .35rem; }
+    ol { margin: 0; padding-left: 1.1rem; max-height: 7rem; overflow: auto; }
+</style>
+
+<b>An embedded document</b>
+<ol id="log"><li>Waiting for a message from the page that embedded me.</li></ol>
+
+<script>
+    // The other half of the WindowMessaging page. A separate document, so the messages crossing
+    // between it and the page are real cross-document messages rather than a simulation - which is
+    // the only way the origin checks mean anything.
+    const log = document.getElementById('log');
+    const write = text => {
+        const item = document.createElement('li');
+        item.textContent = text;
+        log.prepend(item);
+    };
+
+    addEventListener('message', e => {
+        // Same rule on this side: a document that does not check the origin accepts messages from
+        // anyone who can get a reference to it.
+        if (e.origin !== location.origin) return;
+
+        if (e.data instanceof ArrayBuffer) {
+            const bytes = new Uint8Array(e.data);
+            write(`Received ${bytes.length} bytes; summing and replying.`);
+            let sum = 0;
+            for (const b of bytes) sum += b;
+            e.source.postMessage({ op: 'sum', length: bytes.length, sum }, e.origin);
+            return;
+        }
+
+        // A port arrived: from here on the conversation moves off window messaging entirely - no
+        // origin argument on every message, and nobody else listening in.
+        if (e.ports && e.ports.length > 0) {
+            const port = e.ports[0];
+            port.addEventListener('message', m => {
+                write(`Over the port: ${JSON.stringify(m.data)}`);
+                port.postMessage({ op: 'fromFrame', echoOf: m.data });
+            });
+            port.start();
+            write('Took a port - replying on it from now on.');
+            e.source.postMessage({ op: 'tookPort' }, e.origin);
+            return;
+        }
+
+        write(`Received: ${JSON.stringify(e.data)}`);
+        e.source.postMessage({ op: 'echo', payload: e.data, from: 'the frame' }, e.origin);
+    });
+
+    // Announce readiness upwards, so the page knows the frame's document has actually loaded -
+    // a message posted to a frame that has not loaded goes nowhere rather than being queued.
+    if (parent !== window) parent.postMessage({ op: 'frameReady' }, location.origin);
+</script>

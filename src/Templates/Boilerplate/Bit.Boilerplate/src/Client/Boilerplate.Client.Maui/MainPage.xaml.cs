@@ -10,10 +10,5 @@ public partial class MainPage
     public MainPage()
     {
         InitializeComponent();
-        AppWebView.RootComponents.Add(new()
-        {
-            ComponentType = typeof(HeadOutlet),
-            Selector = "head::after"
-        });
     }
 }

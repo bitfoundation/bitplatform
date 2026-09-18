@@ -1332,7 +1332,122 @@
   <data name="Canceled" xml:space="preserve">
     <value>रद्द</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>इस डिवाइस पर कोई भी ऐप {0} लिंक नहीं खोल सकता।</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल शुरू करें</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त करें</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल पर वापस जाएँ</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>वॉइस कॉल का शेष समय</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त हो गई।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>संदेश कॉल में नहीं भेजा जा सका।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>सहायक व्यस्त है। {0} सेकंड में फिर से प्रयास करें।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>सहायक उत्तर नहीं दे सका। फिर से प्रयास करें।</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>अपनी संपर्क जानकारी छोड़ें, एक सहायता प्रतिनिधि आपसे संपर्क करेगा।</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>बातचीत का सारांश</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>इस रूप में साइन इन किया गया</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>आपका अनुरोध सफलतापूर्वक भेज दिया गया। एक सहायता प्रतिनिधि जल्द ही आपसे संपर्क करेगा।</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>क्या होगा</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>आपके उत्तर की प्रतीक्षा है</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>क्या इस डिवाइस पर ऐप की फ़ाइलें साफ़ करें?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>नए सिरे से शुरू करने से खराब स्थानीय डेटा के कारण होने वाली अधिकांश समस्याएँ ठीक हो जाती हैं।</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>आप साइन आउट हो जाएँगे</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>यह बातचीत हटा दी जाएगी</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>ऐप फिर से शुरू होगा</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त हो जाएगी</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>फ़ाइलें साफ़ करें</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>अभी नहीं</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>ऐप की फ़ाइलें साफ़ की जा रही हैं</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>आपने ऐप की फ़ाइलें रखीं।</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>कुछ भी साफ़ नहीं किया गया: अनुरोध का उत्तर नहीं मिला।</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>क्या इसे स्वीकृत करें?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>स्वीकृत करें</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>स्वीकृत</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>अस्वीकार किया गया।</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>अनुरोध का उत्तर नहीं मिला।</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>सबसे उपयुक्त</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>ये भी उपयुक्त हैं</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>पूछें</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>मुझे {0} के बारे में और बताएँ</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>एआई चैट पैनल</value>
   </data>
@@ -1493,11 +1608,20 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>सूचना भेजें</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>सूचनाएं सक्षम करें</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>इस सत्र पर सूचनाएँ सक्षम हैं।</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>सूचनाएं अक्षम करें</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>इस सत्र पर सूचनाएँ म्यूट हैं।</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>सूचनाएँ</value>
+  </data>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>सूचनाएँ चालू करें</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>सूचनाएँ बंद करें</value>
   </data>
   <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>सूचनाएँ चालू हैं</value>
@@ -1699,9 +1823,6 @@
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>उपयोगकर्ता सत्र लॉग पढ़ें</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
@@ -1823,15 +1944,6 @@
     <value>आपकी खोज से मेल खाने वाला कोई समय क्षेत्र नहीं है।</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>पुश सूचनाएँ</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>पुश सूचनाएँ चालू करें</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>पुश सूचनाएँ बंद करें</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>इस ऐप के लिए पुश सूचनाएँ अवरुद्ध हैं। अपने ब्राउज़र या ऑपरेटिंग सिस्टम की सेटिंग में सूचनाओं की अनुमति दें और फिर से प्रयास करें।</value>
   </data>
@@ -1905,4 +2017,137 @@
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>सहमत हूँ और जारी रखें</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>एप्लिकेशन को अनुमति दें</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>इस अनुरोध की जाँच हो रही है...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>इस अनुरोध को अधिकृत नहीं किया जा सकता</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>कुछ भी साझा नहीं किया गया। आप यह पेज बंद करके एप्लिकेशन से दोबारा कोशिश कर सकते हैं।</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>होम पेज पर जाएँ</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>आप एप्लिकेशन पर वापस जा सकते हैं</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>परिणाम {0} को सौंप दिया गया। अगर वह अपने आप सामने न आए, तो उस पर स्विच करें।</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>{0} को अनुमति दें?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>यह आपकी ओर से काम करने की अनुमति माँग रहा है। आगे तभी बढ़ें जब आपने इसे किसी भरोसेमंद एप्लिकेशन से शुरू किया हो।</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>पहुँच सकता है</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>आपको वापस भेजता है</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>यह ये कर सकेगा:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>आपका खाता वह सब कुछ नहीं दे सकता जो इस एप्लिकेशन ने माँगा है, इसलिए ये छोड़ दिए जाएँगे: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>इस एप्लिकेशन ने खुद अपना परिचय दिया है; {0} पर किसी ने इसकी पुष्टि नहीं की है।</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>अनुमति दें</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>यह अनुरोध करने वाले एप्लिकेशन की पहचान नहीं हो सकी।</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस पते पर वापस भेजा जाना चाहता है, वह उसके पंजीकृत पतों में से नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है।</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना - कॉन्फ़िगरेशन, डेटाबेस स्कीमा, बैकग्राउंड जॉब। यह कुछ भी बदल नहीं सकता।</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>एप्लिकेशन</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>संचालन</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>बाहरी एप्लिकेशन जिन्हें आपके उपयोगकर्ताओं ने OAuth के ज़रिए अनुमति दी है।</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>अभी तक किसी एप्लिकेशन को अनुमति नहीं दी गई है।</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>जैसे ही कोई किसी एप्लिकेशन को अनुमति देता है, वह यहाँ दिखने लगता है; पहले से कुछ पंजीकृत करने की ज़रूरत नहीं।</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>सक्रिय अनुमतियाँ</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>उपयोगकर्ताओं को वापस भेजता है:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>पहुँच रद्द करें</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} के पास इस समय {1} अनुमति है। रद्द करने पर वह उन सभी के लिए साइन आउट हो जाएगा जिन्होंने अनुमति दी थी; वे दोबारा अनुमति दे सकते हैं।</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>{0} अनुमति रद्द की गई।</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>पूर्व-कॉन्फ़िगर</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>स्व-वर्णित</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>इस एप्लिकेशन की पहचान नहीं हो सकी, इसलिए लौटने के लिए कोई जगह नहीं है।</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>यह प्राधिकरण अनुरोध मान्य नहीं है ({0})।</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>आपके खाते के पास वे अनुमतियाँ नहीं हैं जो यह एप्लिकेशन माँग रहा है।</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>इस एप्लिकेशन के लिए दो-कारक प्रमाणीकरण ज़रूरी है। इसे अपने खाते की सेटिंग्स में चालू करें, दोबारा साइन इन करें, फिर एप्लिकेशन से नए सिरे से शुरू करें।</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>कार्यक्षेत्र</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>यह एप्लिकेशन जिस कार्यक्षेत्र की माँग कर रहा है, आप उसके सदस्य नहीं हैं।</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना - उससे सवाल पूछना और जो वह खोज सकता है उसे खोजना। यह आपके डिवाइस पर कुछ नहीं कर सकता।</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>आपकी ओर से इस ऐप के सहायक का उपयोग करना।</value>
+  </data>
+  <!--#endif -->
 </root>

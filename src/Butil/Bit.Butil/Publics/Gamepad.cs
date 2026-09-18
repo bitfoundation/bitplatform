@@ -179,7 +179,7 @@ public class Gamepad(IJSRuntime js) : IAsyncDisposable
         {
             _connectionHandlers.Clear();
             _changeHandlers.Clear();
-            await js.InvokeVoid("BitButil.gamepad.disposeAll");
+            await js.InvokeTeardown("BitButil.gamepad.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

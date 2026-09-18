@@ -1332,7 +1332,122 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
   </data>
+    <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>No application on this device can open {0} links.</value>
+  </data>
     <!--#if (signalR == true) -->
+    <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Voice call</value>
+  </data>
+    <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Start voice call</value>
+  </data>
+    <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>End voice call</value>
+  </data>
+    <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Back to the voice call</value>
+  </data>
+    <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Voice call time left</value>
+  </data>
+    <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>The voice call ended.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>The message could not be sent to the call.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>The assistant is busy. Try again in {0} seconds.</value>
+  </data>
+    <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>The assistant couldn't answer. Try again.</value>
+  </data>
+    <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Leave your contact details and a human operator will follow up with you.</value>
+  </data>
+    <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Conversation summary</value>
+  </data>
+    <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Signed in as</value>
+  </data>
+    <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Your request was sent successfully. A human operator will follow up with you soon.</value>
+  </data>
+    <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>What happens</value>
+  </data>
+    <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Waiting for your answer</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>Clear the app's files on this device?</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Starting fresh fixes most problems caused by broken local data.</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>You'll be signed out</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>This conversation will be deleted</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>The app will restart</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>The voice call will end</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Clear files</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Not now</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Clearing the app's files</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>You kept the app's files.</value>
+  </data>
+    <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>Nothing was cleared: the request went unanswered.</value>
+  </data>
+    <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>Approve this?</value>
+  </data>
+    <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+    <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+    <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Approved</value>
+  </data>
+    <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Declined.</value>
+  </data>
+    <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>The request went unanswered.</value>
+  </data>
+    <!--#if (module == "Sales") -->
+    <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+    <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Best match</value>
+  </data>
+    <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>Also a good fit</value>
+  </data>
+    <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Ask</value>
+  </data>
+    <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Tell me more about the {0}</value>
+  </data>
+    <!--#endif -->
+    <!--#endif -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI chat panel</value>
   </data>
@@ -1493,11 +1608,20 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SendRoleNotification" xml:space="preserve">
     <value>Send notification</value>
   </data>
-    <data name="EnableNotifications" xml:space="preserve">
-    <value>Enable notifications</value>
+    <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Notifications are enabled on this session.</value>
   </data>
-    <data name="DisableNotifications" xml:space="preserve">
-    <value>Disable notifications</value>
+    <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Notifications are muted on this session.</value>
+  </data>
+    <data name="Notifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+    <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Turn notifications on</value>
+  </data>
+    <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Turn notifications off</value>
   </data>
     <data name="TestPushNotificationTitle" xml:space="preserve">
     <value>Push notifications are on</value>
@@ -1699,9 +1823,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>Read user session logs</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
@@ -1823,15 +1944,6 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>No time zone matches your search.</value>
   </data>
   <!--#if (notification == true) -->
-    <data name="PushNotifications" xml:space="preserve">
-    <value>Push notifications</value>
-  </data>
-    <data name="TurnPushNotificationsOn" xml:space="preserve">
-    <value>Turn push notifications on</value>
-  </data>
-    <data name="TurnPushNotificationsOff" xml:space="preserve">
-    <value>Turn push notifications off</value>
-  </data>
     <data name="PushNotificationsBlockedMessage" xml:space="preserve">
     <value>Push notifications are blocked for this app. Allow notifications in your browser or OS settings and try again.</value>
   </data>
@@ -1905,4 +2017,137 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="AdsConsentAgree" xml:space="preserve">
     <value>Agree and continue</value>
   </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Authorize application</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Checking this request...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>This request cannot be authorized</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>Nothing has been shared. You can close this page and try again from the application.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Go to the home page</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>You can go back to the application</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>The result was handed to {0}. If it did not come to the front by itself, switch to it.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>Authorize {0}?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>It is asking to act on your behalf. Only continue if you started this from an application you trust.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Application</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Can access</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Sends you back to</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>It will be able to:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Your account cannot grant everything this application asked for, so the following will be left out: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>This application described itself; nobody at {0} has vouched for it.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Authorize</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>The application making this request could not be identified.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>The address this application wants to be sent back to is not one it has registered.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>This authorization request is not valid.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Read diagnostic information about this deployment - configuration, database schema, background jobs. It cannot change anything.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Read diagnostic information about this deployment.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Authorized application</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Applications</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Authorized applications</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Operations</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>External applications your users have authorized over OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>No application has been authorized yet.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Applications appear here once someone authorizes one; nothing needs registering in advance.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>active grants</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Sends users back to:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Revoke access</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} currently holds {1} grant(s). Revoking signs it out for everyone who authorized it; they can authorize it again.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>Revoked {0} grant(s).</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Pre-configured</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Self-described</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>This application could not be identified, so there is nothing to return to.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>This authorization request is not valid ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Your account does not have the permissions this application is asking for.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>This application requires two-factor authentication. Turn it on in your account settings, sign in again, then start over from the application.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Workspace</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>You are not a member of the workspace this application is asking for.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Use this app's assistant on your behalf - ask it questions and search what it can search. It cannot act on your device.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Use this app's assistant on your behalf.</value>
+  </data>
+  <!--#endif -->
 </root>

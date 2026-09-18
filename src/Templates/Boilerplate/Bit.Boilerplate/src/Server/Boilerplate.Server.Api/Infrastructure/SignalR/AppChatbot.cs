@@ -13,8 +13,11 @@ namespace Boilerplate.Server.Api.Infrastructure.SignalR;
 /// Service responsible for managing chatbot conversations, maintaining chat history,
 /// and handling AI interactions including getting user feedbacks, describing app's features and pages etc.
 /// This service is exposed over SignalR's AppHub.Chat.cs, so it can accept stream of user messages and return stream of AI responses using AiChatPanel.razor
-/// Every tool method is decorated with [McpServerTool] attribute, so it can be also be used by other external MCP-Client if needed (Checkout AppChatbot.Tools.cs)
-/// 
+/// Only the tools that stay on the server carry [McpServerTool], so an external MCP client can use them too (checkout
+/// AppChatbot.Tools.cs). The rest reach into the user's live app over this SignalR connection - navigating it, showing
+/// a sign-in modal, clearing its files - which is the agent's to do and nobody else's, so they are AIFunctions only
+/// and signalRConnectionId is always the connection StartChat was given.
+///
 /// Microsoft.Agents.AI:
 /// Workflows are not implemented in this project, but with AIAgent, achieving them is now easier compared to using IChatClient directly.
 /// For example, it would be better to have separate Agents: one for product search, one for support, and one for app guidance.
@@ -27,8 +30,8 @@ public partial class AppChatbot
 
     [AutoInject] private IStore blobStorage = default!;
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
-    [AutoInject] private IFusionCache cache = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
+    [AutoInject] private ChatbotAnswerSigner answerSigner = default!;
     [AutoInject] private ServerApiSettings appSettings = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IServiceProvider serviceProvider = default!;
@@ -38,7 +41,14 @@ public partial class AppChatbot
 
     private string? variablesDefault;
     private string? signalRConnectionId;
+
+    /// <summary>A voice call's cards stay unsigned, like its answers (See SignCard).</summary>
+    private bool isVoiceCall;
+
     private List<ChatMessage> chatMessages = [];
+
+    /// <summary>Guards <see cref="chatMessages"/>: a tool of a turn being cancelled can still be adding a card to it (See RememberCard).</summary>
+    private readonly Lock historyLock = new();
 
     /// <summary>
     /// This is a heart of streaming AI responses back to the client.
@@ -55,12 +65,7 @@ public partial class AppChatbot
     {
         chatMessages = [];
 
-        var history = request.ChatMessagesHistory
-            .Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
-            .TakeLast(MaxMessagesInHistory)
-            .ToArray();
-
-        foreach (var message in history)
+        foreach (var message in BelievableHistory(request.ChatMessagesHistory))
         {
             chatMessages.Add(await ToChatMessage(message, cancellationToken));
         }
@@ -77,11 +82,50 @@ public partial class AppChatbot
         // For example, the user's culture won't change unless they restart the app.
         variablesDefault = @$"
 {{{{UserCulture}}}}: ""{culture?.NativeName ?? "English"}""
-{{{{DeviceInfo}}}}: ""{request.DeviceInfo ?? "Generic Device"}""
-{{{{UserTimeZoneId}}}}: ""{request.TimeZoneId ?? "Unknown"}""
+{{{{DeviceInfo}}}}: ""{SystemPromptProvider.SanitizeVariable(request.DeviceInfo) ?? "Generic Device"}""
+{{{{UserTimeZoneId}}}}: ""{SystemPromptProvider.KnownTimeZoneId(request.TimeZoneId) ?? "Unknown"}""
 ";
 
         this.signalRConnectionId = signalRConnectionId;
+    }
+
+    /// <summary>For voice calls, which don't go through <see cref="StartChat"/> (See VoiceCallRunner).</summary>
+    public void UseSignalRConnection(string? signalRConnectionId)
+    {
+        this.signalRConnectionId = signalRConnectionId;
+        isVoiceCall = true;
+    }
+
+    /// <summary>
+    /// What of a resent history the model is shown: finished, non-empty messages, newest <see cref="MaxMessagesInHistory"/>
+    /// only, each as said by whoever provably said it (See <see cref="AsProvablySaid"/>). Voice calls take the same
+    /// (See VoiceCallRunner).
+    /// </summary>
+    public AiChatMessage[] BelievableHistory(IEnumerable<AiChatMessage> history)
+    {
+        return [.. history.Where(c => c.Successful && (string.IsNullOrWhiteSpace(c.Content) is false || c.AttachmentId is not null))
+                          .TakeLast(MaxMessagesInHistory)
+                          .Select(AsProvablySaid)];
+    }
+
+    /// <summary>
+    /// A resent assistant turn is the assistant's only with the signature this app wrote it with. Anything else - a
+    /// spoken answer from a voice call, or words the caller made up - is replayed as the user's: no more than the user
+    /// could type anyway, and never the assistant's own rules, prices or promises.
+    /// </summary>
+    private AiChatMessage AsProvablySaid(AiChatMessage message)
+    {
+        if (message.Role is not AiChatMessageRole.Assistant || answerSigner.Verify(message.Content, message.Signature))
+            return message;
+
+        return new()
+        {
+            Role = AiChatMessageRole.User,
+            Content = message.Content,
+            SentAt = message.SentAt,
+            AttachmentId = message.AttachmentId,
+            Successful = message.Successful
+        };
     }
 
     /// <summary>
@@ -90,19 +134,18 @@ public partial class AppChatbot
     public ChannelReader<string> GetStreamingChannel() => responseChannel.Reader;
 
     /// <summary>
-    /// Stops streaming
-    /// </summary>
-    public void Stop() => responseChannel.Writer.TryComplete();
-
-    /// <summary>
     /// Process an incoming message and stream the AI response
     /// </summary>
     public async Task ProcessNewMessage(
-        AiChatMessageRequest incomingMessage,
+        AiChatMessage incomingMessage,
         ClaimsPrincipal? user,
         CancellationToken cancellationToken)
     {
-        StringBuilder assistantResponse = new();
+        // Everything sent for this turn is one json document (See AssistantTurn): the opening goes out with the answer's
+        // first piece, the rest follows as the model writes it, and CloseTurn writes the closing.
+        StringBuilder answer = new();
+        var opened = false;
+
         try
         {
             if (string.IsNullOrWhiteSpace(variablesDefault))
@@ -110,9 +153,20 @@ public partial class AppChatbot
 
             supportAgent ??= serviceProvider.GetRequiredKeyedService<AIAgent>("SupportAgent");
 
-            chatMessages.Add(await ToChatMessage(incomingMessage, cancellationToken));
+            // ChatRole.User rather than the role on the payload: whatever it claims, everything arriving on this
+            // stream is the user speaking.
+            var userMessage = await ToChatMessage(ChatRole.User, incomingMessage.Content, incomingMessage.AttachmentId, cancellationToken);
 
-            TrimChatHistory();
+            ChatMessage[] conversation;
+
+            lock (historyLock)
+            {
+                chatMessages.Add(userMessage);
+
+                TrimChatHistory();
+
+                conversation = [.. chatMessages];
+            }
 
             var chatOptions = CreateChatOptions();
 
@@ -125,57 +179,103 @@ public partial class AppChatbot
 ### Variables:
 {variablesDefault}
 {{{{IsAuthenticated}}}}: ""{user.IsAuthenticated()}"",
-{{{{UserEmail}}}}: ""{(user.IsAuthenticated() ? user!.GetEmail()?.ToString() : "null")}"",
-{{{{WebAppUrl}}}}: ""{(httpContextAccessor.HttpContext!.Request.GetWebAppUrl())}"",
+{{{{WebAppUrl}}}}: ""{SystemPromptProvider.EscapeVariable(httpContextAccessor.HttpContext!.Request.GetWebAppUrl().ToString())}"",
 ";
+
+            var toolRan = false;
+            var answered = false;
 
             await foreach (var response in supportAgent.RunStreamingAsync([
                 new (ChatRole.System, variablesPrompt),
-                .. chatMessages,
+                .. conversation,
                 ], options: new ChatClientAgentRunOptions(chatOptions), cancellationToken: cancellationToken))
             {
+                foreach (var usage in response.Contents.OfType<UsageContent>())
+                {
+                    ChatbotMetrics.RecordChatUsage(usage.Details, supportAgent.Name, appSettings.AI?.OpenAI?.ChatModel);
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+                    await CloseTurn(answer, opened, successful: false);
                     return;
                 }
 
-                var result = response.Text;
-                assistantResponse.Append(result);
-                await responseChannel.Writer.WriteAsync(result, cancellationToken);
+                // A model that calls a tool often says so first, then writes on once the tool is done.
+                toolRan |= response.Contents.Any(content => content is FunctionCallContent or FunctionResultContent);
+
+                if (response.Text is not { Length: > 0 } chunk) continue;
+
+                if (toolRan && answered)
+                {
+                    chunk = $"\n\n{chunk}";
+                }
+
+                toolRan = false;
+                answered |= string.IsNullOrWhiteSpace(chunk) is false;
+                answer.Append(chunk);
+
+                var escaped = JsonEncodedText.Encode(chunk, System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping).Value;
+
+                // The opening goes with the first piece, so the panel is never handed an answer that is still empty.
+                await responseChannel.Writer.WriteAsync(opened ? escaped : $"{OpenTurn()}\"{escaped}", cancellationToken);
+                opened = true;
             }
 
-            if (assistantResponse.Length > 0)
+            if (answered)
             {
-                chatMessages.Add(new(ChatRole.Assistant, assistantResponse.ToString()));
-
-                await ChatbotController.RememberAnswer(cache, assistantResponse.ToString(), cancellationToken);
+                lock (historyLock)
+                {
+                    chatMessages.Add(new(ChatRole.Assistant, answer.ToString()));
+                }
             }
 
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_SUCCESS);
+            await CloseTurn(answer, opened, successful: true);
         }
         catch (Exception exp) when (exp is OperationCanceledException or ChannelClosedException)
         {
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+            await CloseTurn(answer, opened, successful: false);
         }
         catch (Exception exp)
         {
             exceptionHandler.Handle(exp, new() { { "SignalRConnectionId", signalRConnectionId } });
-            await SendTerminalMarkerToClient(SharedAppMessages.MESSAGE_PROCESS_ERROR);
+            await CloseTurn(answer, opened, successful: false);
         }
     }
 
-    private Task<ChatMessage> ToChatMessage(AiChatMessageResponse message, CancellationToken cancellationToken)
+    /// <summary>Everything of the turn's document that comes before the answer.</summary>
+    private string OpenTurn() => $$"""{"sentAt":"{{timeProvider.GetUtcNow():O}}","answer":""";
+
+    /// <summary>
+    /// Finishes the turn's document with the fields only the server can fill in, over the answer the user was actually
+    /// shown.
+    /// <para>
+    /// Never sent with the message's own token: the client ends a turn when the document closes, and on an unbounded
+    /// channel WriteAsync drops what it is given once that token is cancelled - which is the case here.
+    /// </para>
+    /// </summary>
+    private Task CloseTurn(StringBuilder answer, bool opened, bool successful)
+    {
+        // The answer's string is still open, or nothing was written at all and the opening goes out with the closing.
+        var rest = opened ? "\"" : $"{OpenTurn()}null";
+
+        var signature = successful && string.IsNullOrWhiteSpace(answer.ToString()) is false
+            ? $"\"{JsonEncodedText.Encode(answerSigner.Sign(answer.ToString()))}\""
+            : "null";
+
+        return SendStringToClient($$"""{{rest}},"signature":{{signature}},"successful":{{(successful ? "true" : "false")}}}""",
+                                  CancellationToken.None);
+    }
+
+    /// <summary>
+    /// A message of the resent history, as the role it claims. Only messages that went through
+    /// <see cref="AsProvablySaid"/> reach here, so an assistant turn is one this app signed.
+    /// </summary>
+    private Task<ChatMessage> ToChatMessage(AiChatMessage message, CancellationToken cancellationToken)
         => ToChatMessage(message.Role is AiChatMessageRole.Assistant ? ChatRole.Assistant : ChatRole.User,
                          message.Content,
                          message.AttachmentId,
                          cancellationToken);
-
-    /// <summary>
-    /// The role is not taken from the payload: everything arriving on this stream is the user speaking.
-    /// </summary>
-    private Task<ChatMessage> ToChatMessage(AiChatMessageRequest message, CancellationToken cancellationToken)
-        => ToChatMessage(ChatRole.User, message.Content, message.AttachmentId, cancellationToken);
 
     /// <summary>
     /// The text of a message, plus the image the user attached to it, if any.
@@ -234,8 +334,8 @@ public partial class AppChatbot
     /// </summary>
     private const int MaxImagesInHistory = 3;
 
-    /// <summary>How many of the newest messages the model is shown.</summary>
-    private const int MaxMessagesInHistory = 40;
+    /// <inheritdoc cref="StartChatRequest.MaxChatMessagesHistory"/>
+    private const int MaxMessagesInHistory = StartChatRequest.MaxChatMessagesHistory;
 
     /// <summary>
     /// The conversation is resent in full on every message, so an unbounded history grows the prompt (and its
@@ -275,13 +375,6 @@ public partial class AppChatbot
     }
 
     /// <summary>
-    /// Terminal markers must never be sent with the per-message token: the client advances its response counter
-    /// only when a marker arrives, and on an unbounded channel WriteAsync short-circuits on an already-cancelled
-    /// token without enqueuing anything - which is exactly the case a cancelled message is in.
-    /// </summary>
-    private Task SendTerminalMarkerToClient(string marker) => SendStringToClient(marker, CancellationToken.None);
-
-    /// <summary>
     /// Create chat options with AI tools
     /// </summary>
     public List<AIFunction> GetAIFunctions()
@@ -289,7 +382,8 @@ public partial class AppChatbot
         var aiFunctions = new List<AIFunction>
         {
             AIFunctionFactory.Create(GetCurrentDateTime),
-            AIFunctionFactory.Create(SaveUserEmailAndConversationHistory),
+            AIFunctionFactory.Create(RequestHumanFollowUp),
+            AIFunctionFactory.Create(ShowFollowUpSuggestions),
             AIFunctionFactory.Create(GetAppPages),
             AIFunctionFactory.Create(NavigateToPage),
             AIFunctionFactory.Create(ShowSignInModal),
@@ -297,10 +391,10 @@ public partial class AppChatbot
             AIFunctionFactory.Create(SetApplicationTheme),
             AIFunctionFactory.Create(CheckLastError),
             AIFunctionFactory.Create(ClearAppFiles),
-            AIFunctionFactory.Create(SendFollowUpSuggestions),
             //#if (module == "Sales")
             //#if (database == "PostgreSQL" || database == "SqlServer")
-            AIFunctionFactory.Create(GetProductRecommendations)
+            AIFunctionFactory.Create(GetProductRecommendations),
+            AIFunctionFactory.Create(ShowProducts)
             //#endif
             //#endif
         };
@@ -316,38 +410,6 @@ public partial class AppChatbot
         var chatOptions = new ChatOptions { };
         configuration.GetRequiredSection("AI:ChatOptions").Bind(chatOptions);
         return chatOptions;
-    }
-
-    private async Task EnsureSignalRConnectionIdIsPresent()
-    {
-        // If the AIFunction tool is getting called by the AIAgent, the signalRConnectionId is already set in the AppChatbot instance using
-        // StartChat method, so we can return it directly without querying the database again.
-
-        // The SignalRConnectionId gives access to the currently exposed SignalR Client methods (e.g., NavigateToPage, ShowSignInModal)
-        // that are essential for some of the AI tools to work properly, so it's important to ensure that we have it available when processing AI tool calls.
-
-        // If the AIFunction tool is getting called by an external MCP client, then the signalRConnectionId won't be set,
-        // so we need to query the database to get the active SignalR connection id for the current user session, assuming that the external MCP client is using authentication headers.
-
-        if (string.IsNullOrWhiteSpace(signalRConnectionId) is false)
-            return;
-
-        await using var scope = serviceProvider.CreateAsyncScope();
-        var httpContextAccessor = scope.ServiceProvider.GetService<IHttpContextAccessor>();
-
-        if (httpContextAccessor?.HttpContext?.User?.IsAuthenticated() is false)
-            throw new UnauthorizedException("User must be authenticated to use this tool when calling from an external MCP client.");
-        // While these tools can be called internally even for unauthenticated users,
-        // we require authentication for external MCP clients to ensure we can associate the request with a user session and retrieve the correct SignalR connection id.
-        // accepting SignalR connection id from external MCP clients would not be secure as it can be easily manipulated using prompt injection in external LLM that's calling the MCP tool.
-
-        var userSessionId = httpContextAccessor?.HttpContext?.User.GetSessionId();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        signalRConnectionId = await dbContext.UserSessions
-            .Where(s => s.Id == userSessionId)
-            .Select(s => s.SignalRConnectionId)
-            .FirstOrDefaultAsync() ?? throw new InvalidOperationException("There's no access to your app on your device.");
     }
 
     private async Task SendStringToClient(string message, CancellationToken ct)

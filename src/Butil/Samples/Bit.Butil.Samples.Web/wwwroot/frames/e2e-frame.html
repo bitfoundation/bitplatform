@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Butil e2e frame</title>
+
+<script>
+    // The document the /e2e harness posts to. Deterministic: every reply is derived from what was
+    // sent, so an assertion can name the exact answer.
+    addEventListener('message', e => {
+        if (e.origin !== location.origin) return;
+
+        if (e.data instanceof ArrayBuffer) {
+            const bytes = new Uint8Array(e.data);
+            let sum = 0;
+            for (const b of bytes) sum += b;
+            e.source.postMessage({ op: 'sum', length: bytes.length, sum }, e.origin);
+            return;
+        }
+
+        if (e.ports && e.ports.length > 0) {
+            const port = e.ports[0];
+            port.addEventListener('message', m => port.postMessage({ op: 'fromFrame', echoOf: m.data }));
+            port.start();
+            e.source.postMessage({ op: 'tookPort' }, e.origin);
+            return;
+        }
+
+        e.source.postMessage({ op: 'echo', payload: e.data }, e.origin);
+    });
+
+    // The harness waits for this before posting: a message sent to a frame that has not loaded goes
+    // nowhere rather than being queued, which would make every test a race.
+    if (parent !== window) parent.postMessage({ op: 'frameReady' }, location.origin);
+</script>

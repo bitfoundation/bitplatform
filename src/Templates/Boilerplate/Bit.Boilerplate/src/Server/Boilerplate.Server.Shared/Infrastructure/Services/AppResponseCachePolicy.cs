@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.OutputCaching;
@@ -10,7 +11,7 @@ namespace Boilerplate.Server.Shared.Infrastructure.Services;
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings settings) : IOutputCachePolicy
+public partial class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings settings) : IOutputCachePolicy
 {
     /// <summary>
     /// The header a CDN reads the cache-tags of a response from. Cloudflare associates them with the cached object
@@ -33,6 +34,32 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
 
         return path.ToLowerInvariant().Replace(",", "%2c");
     }
+
+    /// <summary>
+    /// Fills <see cref="AppResponseCacheAttribute.CacheTagTemplate"/>'s <c>{routeValue}</c> placeholders from
+    /// <paramref name="httpContext"/>. Usable here because the output cache middleware runs after routing, so this tag
+    /// reaches the output cache as well as the CDN. A placeholder naming a route value the request does not carry
+    /// leaves the template unusable, and the caller falls back to the path.
+    /// </summary>
+    public static string? CreateCacheTagFromTemplate(HttpContext httpContext, string template)
+    {
+        var routeValues = httpContext.Request.RouteValues;
+        var unresolved = false;
+
+        var tag = CacheTagPlaceholder().Replace(template, match =>
+        {
+            if (routeValues.TryGetValue(match.Groups["name"].Value, out var value) && value is not null)
+                return Convert.ToString(value, CultureInfo.InvariantCulture) ?? "";
+
+            unresolved = true;
+            return "";
+        });
+
+        return unresolved ? null : tag.ToLowerInvariant().Replace(",", "%2c");
+    }
+
+    [GeneratedRegex(@"\{(?<name>[^{}]+)\}")]
+    private static partial Regex CacheTagPlaceholder();
 
     /// <summary>
     /// Only there to let <see cref="CreateCacheTag"/> canonicalize a relative path through <see cref="Uri"/>; the host
@@ -88,7 +115,8 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // different path from /en-US/product/5 to begin with. Tagging an entry with any of that would leave
         // /product/5?utm_source=x - or the whole Persian half of the site - unpurgeable for the rest of its lifetime.
         // One tag for all of them means one purge clears every variant of the page, which is the point.
-        var cacheTag = CreateCacheTag(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
+        var cacheTag = (responseCacheAtt.CacheTagTemplate is not null ? CreateCacheTagFromTemplate(context.HttpContext, responseCacheAtt.CacheTagTemplate) : null)
+                       ?? CreateCacheTag(new Uri(context.HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
 
         var sharedMaxAge = responseCacheAtt.SharedMaxAge == -1 ? responseCacheAtt.MaxAge : responseCacheAtt.SharedMaxAge;
 

@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- In-process HTTP tests: the real harness host (and the FullSample host) booted with
+         WebApplicationFactory, asserting what only a server response can show - that every file a service
+         worker is told to precache is actually served, byte for byte what its manifest hash describes; that
+         the host document starts Blazor through Bswup; what BswupProgress renders. No browser, so this runs
+         on every target framework in the regular CI job. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.4.1" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness.Web\Bit.Bswup.Tests.Harness.Web.csproj" />
+    </ItemGroup>
+
+    <!-- The FullSample only targets net10.0. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <ProjectReference Include="..\..\Samples\FullSample\Server\Bit.Bswup.FullSample.Server.csproj" />
+    </ItemGroup>
+
+</Project>

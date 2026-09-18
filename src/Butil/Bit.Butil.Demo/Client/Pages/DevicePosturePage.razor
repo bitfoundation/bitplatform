@@ -1,0 +1,211 @@
+@page "/device-posture"
+@implements IAsyncDisposable
+@inject Bit.Butil.DevicePosture devicePosture
+
+<PageTitle>DevicePosture - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="DevicePosture"
+            Lead="Whether a foldable device is currently flat or folded across its hinge - and a change event for when the user opens or closes it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Device_Posture_API"
+            InjectAs="DevicePosture devicePosture" />
+
+<Callout Type="warning" Title="Chromium only">
+    The Device Posture API ships in Chromium-based browsers. Everything that is not a foldable
+    reports <code>Continuous</code>, so a layout can branch on the posture without special-casing
+    ordinary hardware - which is also why this demo will report <code>Continuous</code> on a normal
+    machine rather than failing.
+</Callout>
+
+<Callout Type="info" Title="Posture, not geometry">
+    The posture says <em>that</em> the device is folded, not where the fold is. The fold's position
+    comes from CSS - <code>env(viewport-segment-width 0 0)</code> and friends - so a two-pane layout
+    reads both: this API to decide whether to split, CSS to decide where.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Read the posture"
+                 Api="IsSupported / GetPosture"
+                 Description="GetPosture returns Continuous or Folded. On an unsupported browser it returns Continuous rather than throwing, which is the honest answer for hardware that cannot fold."
+                 Code=@("""
+@inject Bit.Butil.DevicePosture devicePosture
+
+var supported = await devicePosture.IsSupported();
+var posture = await devicePosture.GetPosture();   // Continuous | Folded
+""")>
+        <div class="controls">
+            <button @onclick="Read">Read</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="posture output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch it change"
+                 Api="SubscribeChange / RemoveChange / RemoveAllChanges"
+                 Description="Fires when the device is folded or unfolded. Dispose the subscription - or call RemoveChange with its id - to detach; RemoveAllChanges detaches every listener this service registered."
+                 Code=@("""
+await using var subscription = await devicePosture.SubscribeChange(posture =>
+{
+    // posture is DevicePostureType.Continuous or .Folded
+});
+
+// or, by id:
+await devicePosture.RemoveChange(subscription.Id);
+await devicePosture.RemoveAllChanges();
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe">SubscribeChange</button>
+            <button class="secondary" @onclick="RemoveOne">RemoveChange (by id)</button>
+            <button class="danger" @onclick="RemoveAll">RemoveAllChanges</button>
+        </div>
+        @if (_current is not null)
+        {
+            <div class="field">
+                <span class="field-label">Current posture</span>
+                <span>@_current</span>
+            </div>
+        }
+        <DemoConsole @ref="changeOutput" Title="change output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.devicePosture. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetPosture"
+               Signature="ValueTask<DevicePostureType> GetPosture()"
+               Description="The current posture; Continuous on an unsupported browser." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription> SubscribeChange(Action<DevicePostureType> handler)"
+               Description="Runs the handler whenever the device is folded or unfolded." />
+    <ApiMember Name="RemoveChange"
+               Signature="ValueTask RemoveChange(Guid id)"
+               Description="Detaches one listener by the id its subscription carries." />
+    <ApiMember Name="RemoveAllChanges"
+               Signature="ValueTask RemoveAllChanges()"
+               Description="Detaches every posture listener registered through this instance." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener and releases the JS callback reference." />
+    <ApiMember Name="InvokeDevicePostureChange"
+               Signature="void InvokeDevicePostureChange(Guid id, string type)"
+               Description="JSInvokable interop plumbing for the change event - not intended for app code." />
+    <ApiMember Name="DevicePostureType"
+               Signature="enum DevicePostureType { Continuous, Folded }"
+               Description="A flat screen, or one folded across a hinge." />
+</ApiTable>
+
+@code {
+    private DemoConsole readOutput = default!;
+    private DemoConsole changeOutput = default!;
+
+    private ButilSubscription? _subscription;
+    private DevicePostureType? _current;
+
+    // Every transition of _subscription runs alone. Subscribing is a round-trip, so two clicks
+    // landing during it would each see a null field, attach a listener, and leave the first one
+    // with nothing holding its handle - and a removal racing a subscribe would drop the wrong one.
+    private readonly System.Threading.SemaphoreSlim _gate = new(1, 1);
+
+    private async Task Read()
+    {
+        try
+        {
+            await readOutput.Success("IsSupported →", await devicePosture.IsSupported());
+            var posture = await devicePosture.GetPosture();
+            _current = posture;
+            await readOutput.Success("GetPosture →", posture);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (!await devicePosture.IsSupported())
+            {
+                await changeOutput.Warn("The Device Posture API is not supported in this browser.");
+                return;
+            }
+
+            // Subscribing twice would overwrite the field and strand the first listener, which
+            // nothing could then detach.
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+
+            _subscription = await devicePosture.SubscribeChange(posture => _ = InvokeAsync(() =>
+            {
+                _current = posture;
+                StateHasChanged();
+                return changeOutput.Success("Posture changed →", posture);
+            }));
+
+            await changeOutput.Log($"Subscribed (id {_subscription.Id}) - fold or unfold the device.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("SubscribeChange failed →", ex.Message);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task RemoveOne()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is null)
+            {
+                await changeOutput.Warn("Subscribe first.");
+                return;
+            }
+
+            var id = _subscription.Id;
+            await devicePosture.RemoveChange(id);
+            _subscription = null;
+            await changeOutput.Log($"RemoveChange({id}) - listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task RemoveAll()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            _subscription = null;
+            await devicePosture.RemoveAllChanges();
+            await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+        }
+        finally
+        {
+            _gate.Release();
+            _gate.Dispose();
+        }
+    }
+}

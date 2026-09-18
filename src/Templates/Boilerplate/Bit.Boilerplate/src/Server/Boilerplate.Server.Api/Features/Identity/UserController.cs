@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using System.Text.Encodings.Web;
 using QRCoder;
-using Microsoft.AspNetCore.Cors;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -56,7 +55,7 @@ public partial class UserController : AppControllerBase, IUserController
             .OrderByDescending(us => us.RenewedOn);
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Delete */)]
+    [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
         var currentSessionId = User.GetSessionId();
@@ -101,17 +100,23 @@ public partial class UserController : AppControllerBase, IUserController
         //#endif
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Append */)]
+    [HttpPost]
     public async Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken)
     {
         // UpdateSession gets called after SignIn, Refresh and client app initialization to update user session info,
         // example scenario would be when user restarts the app after an update or after changing device settings like language.
         // so in server side, we always have the latest info about the user session.
 
+        // The client sends the version as text; anything unrepresentable becomes null.
+        var appVersionCode = AppVersionCodes.TryEncode(request.AppVersion);
+
         var affectedRows = await DbContext.UserSessions.Where(us => us.Id == User.GetSessionId()).ExecuteUpdateAsync(us =>
-            us.SetProperty(x => x.AppVersion, request.AppVersion)
+            us.SetProperty(x => x.AppVersionCode, appVersionCode)
                 .SetProperty(x => x.DeviceInfo, request.DeviceInfo)
                 .SetProperty(x => x.PlatformType, request.PlatformType)
+                //#if (signalR == true || notification == true)
+                .SetProperty(x => x.NotificationStatus, request.NotificationStatus)
+                //#endif
                 .SetProperty(x => x.CultureName, request.CultureName), cancellationToken);
 
         if (affectedRows == 0)
@@ -510,21 +515,19 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}/{enabled}")]
-    public async Task<UserSessionNotificationStatus> SetNotificationEnabled(Guid userSessionId, bool enabled, CancellationToken cancellationToken)
+    [HttpPost("{enabled}")]
+    public async Task SetNotificationEnabled(bool enabled, CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
+        var userSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
+            .FirstOrDefaultAsync(us => us.Id == userSessionId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        // NotConfigured is the server's own "never asked" state, so it is only ever left behind, never stored.
         var status = enabled ? UserSessionNotificationStatus.Allowed : UserSessionNotificationStatus.Muted;
 
-        // The test notification below follows the change, not the call: AppMenu's toggle stores the state the switch
-        // ends up on, and re-storing Allowed is not worth another push.
+        // The welcome notification below follows the change, not the call, so re-storing Allowed sends nothing.
         if (userSession.NotificationStatus == status)
-            return status;
+            return;
 
         userSession.NotificationStatus = status;
 
@@ -549,8 +552,6 @@ public partial class UserController : AppControllerBase, IUserController
             }
             //#endif
         }
-
-        return status;
     }
     //#endif
 
@@ -665,15 +666,6 @@ public partial class UserController : AppControllerBase, IUserController
     /// PRE-RENDERING happens before any of that exists, so a cookie the browser attaches on its own is the only way
     /// <c>ServerSideAuthTokenProvider</c> can tell who the user is on the first response.
     /// <para>
-    /// That is also why the Domain is the WEB APP's host and not the api's - pre-rendering runs on the web app. Under
-    /// <c>api == Standalone</c> the two are different hosts, and a host-only cookie (no Domain) would stay on the api.
-    /// </para>
-    /// <para>
-    /// The constraint this puts on a deployment: the api host must domain-match the web app host, or the browser
-    /// DISCARDS the cookie (RFC 6265 5.3) and every page silently pre-renders as anonymous. Web <c>myapp.com</c> +
-    /// api <c>api.myapp.com</c> works; web <c>app.myapp.com</c> + api <c>app-api.myapp.com</c> does not, because those
-    /// two are siblings rather than parent and child. The accepted cost is that a cookie carrying a Domain also
-    /// reaches every OTHER subdomain of that host - there is no way to scope a cookie to two named hosts.
     /// </para>
     /// </remarks>
     private CookieOptions BuildAccessTokenCookieOptions()
@@ -684,7 +676,6 @@ public partial class UserController : AppControllerBase, IUserController
             SameSite = SameSiteMode.Strict,
             Secure = hostEnvironment.IsDevelopment() is false || Request.IsHttps,
             Path = "/",
-            Domain = HttpContext.Request.GetWebAppUrl().Host,
             IsEssential = true
         };
     }

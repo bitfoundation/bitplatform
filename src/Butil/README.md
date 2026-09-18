@@ -79,17 +79,21 @@ registering everything.
 | `History` | Session history: back/forward, `pushState`/`replaceState`, `popstate` |
 | `Navigation` | The Navigation API: read the history entry list, traverse to a key, and know whether you can go back |
 | `Location` | Read and mutate the current URL, reload, navigate |
-| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory |
-| `UserAgent` | Parsed user-agent brands, platform and mobile-ness (UA Client Hints) |
+| `Navigator` | Identity, languages, `share`, `vibrate`, badges, `sendBeacon`, device memory, `isInputPending`, protocol handlers, installed related apps |
+| `UserAgent` | Parse any user-agent string into browser, engine, OS and device - plus the UA Client Hints brands, platform and mobile-ness |
+| `TextFragment` | Scroll-to-text URLs (`#:~:text=`): deep-link to a phrase rather than an anchor |
+| `Url` | `URL`, `URLSearchParams` and `URLPattern`: parse and edit URLs as the browser does, and match routes |
+| `Speculation` | Speculation rules (prefetch/prerender), `document.prerendering` and the activation event |
 
 ### Screen & diagnostics
 
 | Service | What it wraps |
 | --- | --- |
 | `Screen` | Physical screen metrics, colour depth, availability |
+| `WindowManagement` | Every attached screen, and placing windows or fullscreen content on a chosen one |
 | `ScreenOrientation` | Read, lock and observe the screen orientation |
 | `VisualViewport` | The visual viewport: scale, offsets, resize and scroll events |
-| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver` |
+| `Performance` | High-resolution timing, marks, measures, `PerformanceObserver`, typed navigation / resource / long-task entries, Web Vitals |
 | `Reporting` | `ReportingObserver`: deprecation, intervention and crash reports |
 | `Console` | The full browser console API: log, table, group, time, count, profile |
 
@@ -97,15 +101,31 @@ registering everything.
 
 | Service | What it wraps |
 | --- | --- |
-| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
-| Animation extensions | The Web Animations API on any element |
+| `ElementReference` extensions | Attributes (namespaced too), ARIA and `role`, classes, `data-*`, inline style, content insertion, `moveBefore`, scrolling, layout metrics, fullscreen, popovers, pointer capture, per-element events |
+| Animation extensions | The Web Animations API on any element, including scroll-driven timelines, `getAnimations`, `commitStyles` and `persist` |
 | `Keyboard` | App-wide keyboard shortcuts with modifier support |
+| `KeyboardLock` | Capture keys the browser would swallow, while fullscreen |
+| `KeyboardLayout` | What each physical key actually prints on the user's layout |
+| `VirtualKeyboard` | Show, hide and lay out around the on-screen keyboard |
 | `IntersectionObserver` | Element visibility inside the viewport or a scroll container |
 | `MutationObserver` | DOM tree, attribute and character-data mutations |
 | `ResizeObserver` | Element size changes with box-model detail |
+| `Css` + style-map extensions | `getComputedStyle`, `CSS.supports`/`escape`/`registerProperty`, stylesheet rules, the CSS Custom Highlight API, the CSS Typed OM and Houdini worklets |
+| `Dom` | `querySelector`, `getElementById`, `createElement` and node traversal for elements Blazor did not render - with a bridge back to `ElementReference` |
+| `ShadowDom` | `attachShadow`, scoped styles, and querying into any open shadow root - a closed one is closed to you too |
+| `Canvas` | `drawImage` from a video/image/canvas, then `toDataURL`/`toBlob` - screenshots and thumbnails as `byte[]` |
 | `PictureInPicture` | Float a `<video>` in an always-on-top window |
-| `ViewTransition` | Animate between two states of the page, the browser doing the work |
+| `DocumentPictureInPicture` | Put arbitrary DOM in an always-on-top window - not just a video |
+| `ViewTransition` | Animate between two states of the page - within a document, and across a navigation |
+| `CloseWatcher` | One event for Escape, the Android back gesture and every other close affordance |
+| `InvokerCommands` | The `command` / `commandfor` attributes and `CommandEvent` |
+| `TextEditContext` | The EditContext API: text input and IME composition decoupled from the surface |
+| `PointerTracker` | Coalesced and predicted pointer samples, for drawing and annotation |
+| `CustomElements` | `ElementInternals` and `CustomStateSet`: component state exposed to CSS as `:state()` |
 | Media element extensions | Play, pause, seek, volume and rate on any `<audio>`/`<video>` |
+| `Selection` | The user's selection and the `Range` operations on it: highlight, replace, measure, restore a caret |
+| `Ink` | Delegated ink trails - the compositor draws ahead of your rendering |
+| `HandwritingRecognition` | Strokes to text, using a model already on the device |
 
 ### Storage
 
@@ -117,7 +137,9 @@ registering everything.
 | `IndexedDb` | Structured, transactional client-side database |
 | `CacheStorage` | The service-worker Cache API |
 | `StorageManager` | Quota, usage estimates and persistence |
+| `StorageBuckets` | Named compartments of the origin's storage, each with its own quota, persistence, durability and expiry |
 | `StorageAccess` | Ask for unpartitioned storage from inside a third-party iframe |
+| `SharedStorage` | Cross-site storage a page can write but never read (Privacy Sandbox) |
 
 ### Files & data
 
@@ -125,23 +147,44 @@ registering everything.
 | --- | --- |
 | `FileReader` | Read user-selected files as text, data URLs or bytes |
 | `FileSystem` | The File System Access API: pick real files/folders and write back to them |
+| `OriginPrivateFileSystem` | The origin private file system: private, permissionless storage, with byte-offset reads and writes through a worker |
 | `ObjectUrls` | Create and revoke `blob:` object URLs from C# data |
 | `Clipboard` | Read and write text and typed items on the system clipboard |
-| `Crypto` | SubtleCrypto: encryption, decryption, hashing, key generation, random values |
-| `Fetch` | The fetch API with full request/response control and progress |
+| `Crypto` | SubtleCrypto: encryption, hashing, signatures, key generation, import/export (raw / PKCS#8 / SPKI / JWK), ECDH, HKDF, key wrapping, random values |
+| `Fetch` | The fetch API: a `Request` / `Response` / `Headers` object model, download progress, streamed uploads |
 | `Compression` | Gzip and deflate through the browser's native codec |
+| `TextEncoding` | `TextDecoder`/`TextEncoder`: the legacy code pages .NET on WebAssembly doesn't carry |
+| `StructuredClone` | Deep-copy a value, and test whether `postMessage`/IndexedDB/`pushState` will take it |
+| `DataTransfer` | Drag-and-drop payloads: dropped files, `getData`/`setData` items, `dropEffect`, `setDragImage` |
+| `LocalFonts` | List installed fonts, and read one's raw font file |
 
 ### Network & workers
 
 | Service | What it wraps |
 | --- | --- |
-| `ServiceWorker` | Register and inspect service workers, and message them |
+| `ServiceWorker` | Register and inspect service workers, message them, navigation preload, `skipWaiting`/`claim` and the Clients API |
 | `BackgroundSync` | Defer work until the user has connectivity (one-shot and periodic) |
+| `BackgroundFetch` | Downloads the browser owns: they survive the tab closing, with their own progress UI |
+| `ContentIndex` | Register offline-available content with the browser |
+| `WebTransport` | HTTP/3 streams and unreliable datagrams |
 | `Push` | Web push subscriptions |
 | `NetworkInformation` | Connection type, speed, save-data and change events |
 | `BroadcastChannel` | Message other tabs and windows of the same origin |
 | `WebLocks` | Cross-tab cooperative resource locking |
 | `EventSource` | Server-sent events, with reconnection built into the browser |
+| `WebRtc` | `RTCPeerConnection`, `RTCDataChannel` and `getStats`: media and data straight between two browsers |
+| `WebSocket` | A two-way connection that stays open: binary frames, close codes, sub-protocol negotiation, `bufferedAmount` |
+| `Worker` | Dedicated and shared workers running a script you supply, with transferable binary payloads |
+| `MessageChannel` | `MessageChannel`/`MessagePort`: a private two-ended pipe, transferable to a worker or an iframe |
+| `WindowMessaging` | `window.postMessage`: cross-document messaging with an embedded iframe, the parent, the opener or a popup |
+
+### Async & scheduling
+
+| Service | What it wraps |
+| --- | --- |
+| `AbortController` | `AbortController`/`AbortSignal`: one signal shared by many operations, plus `AbortSignal.timeout` and `AbortSignal.any` |
+| `Scheduler` | `requestAnimationFrame` (single and looping), `requestIdleCallback`, `scheduler.postTask`/`yield`, `isInputPending` |
+| `Streams` | The Streams API: a fetch body read as it arrives, `tee`, `pipeThrough` the native codecs, and `pipeTo` a C# sink |
 
 ### Device & hardware
 
@@ -153,19 +196,49 @@ registering everything.
 | `Gamepad` | Game controllers: buttons, sticks, triggers and rumble |
 | `DeviceOrientation` | Tilt, acceleration and rotation from the device's own sensors |
 | `Nfc` | Read and write NDEF messages on NFC tags |
+| `Sensors` | The Generic Sensor API: accelerometer, gyroscope, magnetometer, orientation, gravity, linear acceleration, ambient light |
+| `Bluetooth` | Web Bluetooth: pick a BLE device, then read, write or subscribe to its GATT characteristics |
+| `Usb` | WebUSB: claim an interface and run control, bulk or interrupt transfers |
+| `Serial` | Web Serial: open a port with the device's line settings, then read and write bytes |
+| `Hid` | WebHID: input, output and feature reports |
+| `Midi` | Web MIDI: inputs, outputs, incoming messages and note sending |
+| `ComputePressure` | CPU and thermal pressure, for shedding work before the machine stutters |
+| `DevicePosture` | Whether a foldable device is flat or folded across its hinge |
 | `WakeLock` | Keep the screen awake, with an auto-reacquiring persistent mode |
 | `IdleDetector` | User and screen idle-state changes |
 | `ContactPicker` | Let users pick contacts to share with your app |
 | `EyeDropper` | Sample any pixel colour on the screen |
 | `BarcodeDetector` | Find QR codes and barcodes in a camera frame or an image |
+| `FaceDetector` | Where faces are in an image or a frame - detection, never recognition |
+| `TextDetector` | Read printed text out of an image or a frame |
 
 ### Identity & permissions
 
 | Service | What it wraps |
 | --- | --- |
 | `WebAuthn` | Passkeys: create credentials and verify assertions |
+| `Credentials` | The password and federated credential store behind `navigator.credentials` |
+| `FedCm` | Federated sign-in the browser mediates, without third-party cookies |
+| `WebOtp` | Autofill the one-time code out of an incoming SMS |
+| `DigitalCredentials` | Present a verifiable credential from the user's wallet |
 | `Permissions` | Query the state of any browser permission |
 | `Notification` | Request permission and show system notifications |
+
+### Security & privacy
+
+| Service | What it wraps |
+| --- | --- |
+| `Sanitizer` | The HTML Sanitizer API standalone: sanitize to a string, or with a configuration you reuse |
+| `TrustedTypes` | Policies for the dangerous sinks, and the violations a report-only CSP surfaces |
+| `PrivacySandbox` | Topics, Attribution Reporting, Private State Tokens and fenced frames |
+
+### Commerce
+
+| Service | What it wraps |
+| --- | --- |
+| `PaymentRequest` | The browser's own payment sheet: show it, complete it, abort it |
+| `PaymentHandler` | Registering an installed app as a payment method other sites can pay through |
+| `DigitalGoods` | An app store's catalogue, purchases and entitlements inside an installed PWA |
 
 ### Media & speech
 
@@ -173,9 +246,49 @@ registering everything.
 | --- | --- |
 | `SpeechSynthesis` | Text-to-speech with voices, pitch and rate |
 | `SpeechRecognition` | Speech-to-text with interim results and events |
-| `WebAudio` | Play and control audio buffers |
+| `WebAudio` | The Web Audio graph: buffers, oscillators, filters, analysers, reverb, spatial panning and worklets |
 | `MediaRecorder` | Record a camera, microphone or screen share to a file |
 | `MediaSession` | Lock-screen metadata and hardware media-key handlers |
+| `RegionCapture` / `ElementCapture` | Narrow a screen share of this tab to one element - by rectangle, or by its own content |
+| `MediaSource` | Media Source Extensions: feed a media element with segments you fetched yourself |
+| `MediaCapabilities` | Whether a codec will decode smoothly and power-efficiently, before you commit to it |
+| `EncryptedMedia` | DRM playback: key systems, key sessions and licence exchange |
+| `WebCodecs` | The browser's own codecs, frame by frame - no element, no container |
+| `RemotePlayback` | Hand a media element to a TV, a speaker or a cast receiver |
+| `Presentation` | Open one of your own pages on a second display, with a message channel to it |
+| `WebXr` | VR and AR sessions: lifecycle, poses, controllers and input |
+| `AudioOutput` | Route a media element's sound to a chosen speaker or headset |
+| `AudioSession` | Declare playback intent so the OS ducks, mixes or interrupts correctly |
+
+### PWA & installation
+
+| Service | What it wraps |
+| --- | --- |
+| `InstallPrompt` | `beforeinstallprompt`, the deferred install dialog, and `appinstalled` |
+| `LaunchQueue` | The files and target URL an installed app was launched with |
+| `WindowControlsOverlay` | Title-bar geometry for a desktop PWA that draws its own |
+
+The rest of the family is declared in the manifest rather than called: `share_target` for receiving a
+share, `file_handlers` and `protocol_handlers` for what the OS routes to the app, and
+`launch_handler` for how a second launch is routed. `Navigator.RegisterProtocolHandler` and
+`Navigator.GetInstalledRelatedApps` are the two scripted pieces that go with them.
+
+### Built-in AI
+
+| Service | What it wraps |
+| --- | --- |
+| `LanguageModel` | The Prompt API: a general-purpose model running on the device |
+| `Summarizer` | Key points, a TL;DR, a teaser or a headline |
+| `Translator` | On-device translation, one session per language pair |
+| `LanguageDetector` | What language a piece of text is in |
+| `Writer` | New text from a short prompt |
+| `Rewriter` | Text you already have, moved shorter / longer / more formal |
+| `Proofreader` | Corrections, each positioned in the original text |
+| `WebNN` | The Web Neural Network API's entry point: contexts and operator support |
+
+All of these are Chromium-only, need a capable device, and download a model on first use. Each has
+the same shape: an `Availability()` probe, a `Create()` that takes a download-progress handler, and a
+session you must dispose.
 
 ---
 
@@ -218,6 +331,40 @@ await _subscription.DisposeAsync();
 If you forget, the owning service detaches everything it registered when its scope is torn down.
 That's a safety net, not a plan.
 
+### Rate-limit the high-frequency ones
+
+`mousemove`, `pointermove`, `scroll`, `resize`, `wheel` and `touchmove` fire about once a frame, and
+a `ResizeObserver` on a dragged element does the same. Every one of those is an interop round trip -
+a JSON serialization plus, on Blazor Server, a SignalR message and a network hop. Cap it:
+
+```csharp
+// window and document events
+await window.SubscribeEvent<ButilMouseEventArgs>(ButilEvents.MouseMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// element events
+await _element.SubscribeEvent<ButilPointerEventArgs>(js, ButilEvents.PointerMove, OnMove,
+    new ButilEventListenerOptions { Passive = true, MinInterval = TimeSpan.FromMilliseconds(50) });
+
+// observers
+await _element.ObserveResize(js, OnResize, minInterval: TimeSpan.FromMilliseconds(50));
+await _element.ObserveIntersection(js, OnIntersect, new IntersectionObserverOptions { MinInterval = TimeSpan.FromMilliseconds(200) });
+await _element.ObserveMutations(js, OnMutate, new MutationObserverOptions { Subtree = true, MinInterval = TimeSpan.FromMilliseconds(250) });
+
+// visual viewport
+await visualViewport.SubscribeScroll(OnScroll, minInterval: TimeSpan.FromMilliseconds(100));
+```
+
+The gate runs in JavaScript, before the round trip, so a suppressed event costs nothing. It is
+leading-edge with a trailing send: the first event after an idle gap goes through immediately, and
+the newest event suppressed during an interval is delivered when that interval elapses - so the
+handler always ends up holding the size the element settled at, or where the pointer stopped, rather
+than a value one sample out of date. `preventDefault` and `stopPropagation` still run on every
+event; the gate changes how often .NET hears, not what the page does.
+
+The one case to leave ungated is a handler that must see *every* change - a mutation change log, an
+undo stack - because what a gate drops is whole batches, not individual records.
+
 ### Handles own hardware
 
 `MediaStreamHandle`, `MediaRecordingHandle`, `WakeLock`'s persistent handle and the File System
@@ -238,7 +385,8 @@ refuses come back as `false`/`null` rather than as exceptions where dismissal is
 ### Optional fast invoke
 
 On Blazor WebAssembly, the handful of APIs backed by genuinely synchronous JS functions -
-`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location` - can skip the async marshalling:
+`LocalStorage`, `SessionStorage`, `Cookie`, `Console`, `Location`, `History` - can skip the async
+marshalling:
 
 ```csharp
 BitButil.UseFastInvoke();
@@ -263,14 +411,31 @@ published app (see `AddBitButilServices` above); the JavaScript side can be tree
 ways of tree-shaking it, both set in the app's csproj, and both working from the same per-module build of
 the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
 
+A module is kept or dropped whole, so how finely the JavaScript is divided is what decides how little an
+app can get away with. That is why a bigger API is split across several modules rather than served from
+one: `Crypto` is six (randomness and hashing, signing, key material, derivation, ciphers, and the key
+import both of the last two share), `WebAudio` six, the `ElementReference` extensions six - one per
+extension class - and `Window` four. A service calling more than one module is nothing a consumer has to
+know about: the class-to-module map behind `BitButilScriptModule` and the scan resolves a class to every
+module it needs. What it means in practice is that reading `element.ClientWidth()` no longer downloads the
+aria surface, `Crypto.RandomUuid()` no longer downloads key wrapping, and a page that reads
+`Window.GetInnerWidth()` downloads neither the selection API nor the popup registry.
+
+That granularity is per *member*, not per service, because the trimmer works from method bodies: a service
+is only as trimmable as the methods an app actually calls. The one thing that would undo it is handing
+JavaScript a callback object, since `DotNetObjectReference` preserves every public method of what it is
+given - so the services that take callbacks hand over a small internal relay instead of themselves. Nothing
+to do on your side; it is why subscribing to a media query costs the media-query module and reading a
+window property does not.
+
 **Publish-time bundle trimming - the default, nothing to add.** Keep the script tag. When the app is
 published trimmed - a Blazor WebAssembly publish is - the package's build logic reads the trimmed
 `Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
 Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
-that injects `Clipboard`, `LocalStorage` and `Window` ships about 8 KB of JavaScript instead of the
-110 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
+that injects `Clipboard`, `LocalStorage` and `Window` ships about 6 KB of JavaScript instead of the
+321 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts
 a WebAssembly client keeps its own, full copy of the bundle (use lazy scripts there). The same property
 trims the other shape too: wherever the module files are published - a lazy-scripts app, or an app keeping
@@ -330,6 +495,12 @@ that is neither a module nor a Bit.Butil class fails the build rather than being
 </ItemGroup>
 ```
 
+A module name keeps that one module; a class name keeps every module the class can call, which for a
+class whose JavaScript is split across a family (`Crypto`, `Css`, `Window`, `WebAudio`, `IndexedDb`) is
+several. Naming the family's root module alone - `crypto` - is allowed, since it is the finer control the
+split offers, and the publish says at normal verbosity what the class would have added, so an app that
+meant the class finds out in the build output rather than in a browser.
+
 With none of the three in play - no `PublishTrimmed`, `BitButilScriptScan` set to `None`, no
 `BitButilScriptModule` - there is nothing to trim against, and the full bundle is published.
 
@@ -369,7 +540,9 @@ live check that reads back which modules the app you are looking at actually dow
 **Lazy scripts.** No script tag at all: the first call into an API `import()`s that API's module
 (`_content/Bit.Butil/modules/clipboard.js` for `Clipboard`), so only the JavaScript for the APIs the
 app actually calls is ever downloaded - in every hosting model, trimmed or not. Each module file is
-self-contained and safe to load more than once. Set the property in every project that uses Butil
+self-contained and safe to load more than once: an API costs one request, never one per dependency,
+which is why two modules of the same family (`webAudio` and `webAudioNodes`, say) each carry the shared
+base again rather than fetching it separately. Set the property in every project that uses Butil
 (a Blazor Web App's server and client both) and drop the script tag from the host page:
 
 ```xml

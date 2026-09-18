@@ -21,7 +21,7 @@ export class WebInteropApp {
                     break;
             }
         }
-        catch (err: any) {
+        catch (err) {
             // Report the failure back to the app. This is the ONLY path that faults the TaskCompletionSource the
             // Hybrid app is awaiting, so it must run for the WebAuthn actions too - it used to bail out whenever
             // `localHttpPort` was absent, and the WebAuthn interop URLs never carried it, so cancelling a biometric
@@ -40,7 +40,14 @@ export class WebInteropApp {
                 : `http://localhost:${localHttpPort}/api/LogError`;
 
             // Blazor Hybrid:
-            const errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${err.toString()}`;
+            // A promise can be rejected with null/undefined (or an unserializable value), and a throw here would
+            // skip the fetch below and leave the TaskCompletionSource pending, so never let building the message fail.
+            let errMsg = String(err);
+            if (err != null) {
+                try {
+                    errMsg = `${JSON.stringify(err, Object.getOwnPropertyNames(err))} ${errMsg}`;
+                } catch { }
+            }
             await fetch(logErrorUrl, {
                 method: 'POST',
                 credentials: 'omit',

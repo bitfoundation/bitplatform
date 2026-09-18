@@ -25,7 +25,7 @@ public static class ButilCapabilityCatalog
     /// there is no public surface to reflect over; the README's "Optional fast invoke" section is
     /// the same list, written for a human.
     /// </summary>
-    private static readonly string[] _fastInvokeServices = ["LocalStorage", "SessionStorage", "Cookie", "Console", "Location"];
+    private static readonly string[] _fastInvokeServices = ["LocalStorage", "SessionStorage", "Cookie", "Console", "Location", "History"];
 
     /// <summary>
     /// How many names one plan will inspect. Every name costs a reflection lookup and a walk of the

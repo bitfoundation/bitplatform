@@ -115,6 +115,10 @@ public partial class MainLayout
         var (manageRoles, manageUsers) = await (authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Roles_Manage),
             authorizationService.IsAuthorized(authUser!, AppFeatures.Management.Users_Manage));
 
+        var manageOAuthClients = await authorizationService.IsAuthorized(authUser!, AppFeatures.System.OAuthClients_Manage);
+
+        var viewOperations = await authorizationService.IsAuthorized(authUser!, AppFeatures.System.Operations_View);
+
         //#if (signalR == true)
         var manageAiPrompt = await authorizationService.IsAuthorized(authUser!, AppFeatures.Management.SystemPrompts_Write);
         //#endif
@@ -132,7 +136,7 @@ public partial class MainLayout
         //#endif
 
         // Every flag in this condition has to be able to contribute a child item below, or the group renders empty.
-        if (manageRoles || manageUsers
+        if (manageRoles || manageUsers || manageOAuthClients || viewOperations
             //#if (signalR == true)
             || manageAiPrompt
             //#endif
@@ -167,6 +171,26 @@ public partial class MainLayout
                     Text = localizer[nameof(AppStrings.Users)],
                     IconName = BitIconName.SecurityGroup,
                     Url = PageUrls.Users,
+                });
+            }
+
+            if (manageOAuthClients)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.OAuthClients)],
+                    IconName = BitIconName.PlugConnected,
+                    Url = PageUrls.OAuthClients,
+                });
+            }
+
+            if (viewOperations)
+            {
+                managementItem.ChildItems.Add(new()
+                {
+                    Text = localizer[nameof(AppStrings.Operations)],
+                    IconName = BitIconName.ServerProcesses,
+                    Url = PageUrls.Operations,
                 });
             }
 

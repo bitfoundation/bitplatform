@@ -40,16 +40,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
         => RequestPermissionInternal();
 
     private async ValueTask<PermissionState> RequestPermissionInternal()
-    {
-        var raw = await js.Invoke<string>("BitButil.idleDetector.requestPermission");
-        return raw switch
-        {
-            "granted" => PermissionState.Granted,
-            "denied" => PermissionState.Denied,
-            "prompt" => PermissionState.Prompt,
-            _ => PermissionState.Unknown,
-        };
-    }
+        => Permissions.ToState(await js.Invoke<string>("BitButil.idleDetector.requestPermission"));
 
     /// <summary>
     /// Invoked from JS on each idle state change. Public + <see cref="JSInvokableAttribute"/> so it

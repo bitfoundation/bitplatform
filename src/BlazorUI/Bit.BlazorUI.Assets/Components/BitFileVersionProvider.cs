@@ -2,13 +2,20 @@
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.FileProviders;
 
 namespace Bit.BlazorUI;
 
 public static class BitFileVersionProvider
 {
-    private static readonly ConcurrentDictionary<string, string> PathCache = new();
+    // Keyed on everything the answer depends on: the file provider the file is read from, the path as
+    // written, the query key, and the request path base - but the base only when the path is under it,
+    // which is the only case in which it takes part in the lookup. That keeps the table bounded by the
+    // paths an app renders, however many bases it is asked to render them under.
+    // An entry carries the file's change token, so a file rewritten in place - dotnet watch, a deploy that
+    // swaps the web root - gets a fresh hash, and a file that appears after the first request gets one at all.
+    private static readonly ConcurrentDictionary<CacheKey, CacheEntry> PathCache = new();
 
 
 
@@ -31,28 +38,57 @@ public static class BitFileVersionProvider
             return path;
         }
 
-        return PathCache.GetOrAdd(path, _ => GenerateVersionedPath(fileProvider, requestPathBase, path, versionKey, resolvedPath));
+        var pathBase = GetMatchingPathBase(resolvedPath, requestPathBase);
+
+        var key = new CacheKey(fileProvider, pathBase, path, versionKey);
+
+        if (PathCache.TryGetValue(key, out var entry) && entry.Token.HasChanged is false) return entry.Value;
+
+        entry = GenerateVersionedPath(fileProvider, pathBase, path, versionKey, resolvedPath);
+
+        PathCache[key] = entry;
+
+        return entry.Value;
     }
 
 
 
-    private static string GenerateVersionedPath(IFileProvider fileProvider, PathString requestPathBase, string path, string versionKey, string resolvedPath)
+    /// <summary>
+    /// The part of the path the base accounts for, or nothing where the path is not under it. Matched by whole
+    /// segments, so an app served from /app never reads /appsettings.css as one of its files and goes looking
+    /// for a settings.css in the web root. The trailing slash a base may be written with is not part of the
+    /// answer, so /app/ and /app take the same path to the same file and to the same cache entry.
+    /// </summary>
+    private static string GetMatchingPathBase(string resolvedPath, PathString requestPathBase)
     {
+        if (requestPathBase.HasValue is false) return string.Empty;
+
+        var pathBase = requestPathBase.Value!.TrimEnd('/');
+
+        if (pathBase.Length == 0) return string.Empty;
+
+        if (resolvedPath.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase) is false) return string.Empty;
+
+        return resolvedPath.Length == pathBase.Length || resolvedPath[pathBase.Length] == '/' ? pathBase : string.Empty;
+    }
+
+    private static CacheEntry GenerateVersionedPath(IFileProvider fileProvider, string pathBase, string path, string versionKey, string resolvedPath)
+    {
+        // Watched before it is read, so a change between the two is not missed.
+        var token = fileProvider.Watch(resolvedPath);
         var fileInfo = fileProvider.GetFileInfo(resolvedPath);
 
-        if (fileInfo.Exists is false &&
-            requestPathBase.HasValue &&
-            resolvedPath.StartsWith(requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+        if (fileInfo.Exists is false && pathBase.Length > 0)
         {
-            var requestPathBaseRelativePath = resolvedPath[requestPathBase.Value.Length..];
+            var requestPathBaseRelativePath = resolvedPath[pathBase.Length..];
+
+            token = new CompositeChangeToken([token, fileProvider.Watch(requestPathBaseRelativePath)]);
             fileInfo = fileProvider.GetFileInfo(requestPathBaseRelativePath);
         }
 
-        if (fileInfo.Exists is false) return path;
+        var value = fileInfo.Exists ? AddQueryString(path, versionKey, GenerateFileHash(fileInfo)) : path;
 
-        var hash = GenerateFileHash(fileInfo);
-
-        return AddQueryString(path, versionKey, hash);
+        return new CacheEntry(value, token);
     }
 
     private static string AddQueryString(string uri, string key, string value)
@@ -99,4 +135,10 @@ public static class BitFileVersionProvider
 
         return $"sha256-{Uri.EscapeDataString(hash)}";
     }
+
+
+
+    private readonly record struct CacheKey(IFileProvider FileProvider, string PathBase, string Path, string VersionKey);
+
+    private sealed record CacheEntry(string Value, IChangeToken Token);
 }

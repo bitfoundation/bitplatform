@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!-- One ASP.NET Core host for every browser scenario: the Blazor Web App harness in the render mode
+         picked with BswupHarness:Mode, plus the standalone WebAssembly harness mounted under
+         /standalone/. It also plays the server side of a deployment the suites need to control - a new
+         version going live, the network going away, an asset failing or being tampered with - per test,
+         through the /_harness/ endpoints (see HarnessMiddleware). Multi-targeted because the library is:
+         the suites can run the harness on every runtime Bit.Bswup ships for. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness\Bit.Bswup.Tests.Harness.csproj" />
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness.Web.Client\Bit.Bswup.Tests.Harness.Web.Client.csproj" />
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness.Wasm\Bit.Bswup.Tests.Harness.Wasm.csproj" />
+    </ItemGroup>
+
+</Project>

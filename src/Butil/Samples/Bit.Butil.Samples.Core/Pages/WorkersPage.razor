@@ -1,0 +1,148 @@
+@page "/workers"
+@implements IAsyncDisposable
+@inject Bit.Butil.Worker worker
+@inject Bit.Butil.MessageChannel messageChannel
+
+<PageTitle>Butil - Worker Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="Worker &amp; MessageChannel"
+            Lead="JavaScript on a thread of its own, and the ports that carry the conversation. A worker runs a script you supply - there is no second .NET runtime behind this."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Worker" />
+
+<pre>
+@@inject Bit.Butil.Worker worker
+
+var w = await worker.Create("/workers/sample-worker.js", onMessage: m => { /* m.Json */ });
+await w!.PostMessage(new { op = "fib", n = 38 });
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Offload the work" Api="Create / PostMessage"
+              Description="The worker computes fib(n) with the naive recursion, blocking its own thread for seconds. Keep clicking the counter while it runs - the page never stops responding.">
+        <div class="controls">
+            <button @onclick="StartWorker">Create</button>
+            <button @onclick="() => RunFib(38)" disabled="@(_worker is null)">fib(38)</button>
+            <button @onclick="() => RunFib(42)" disabled="@(_worker is null)">fib(42)</button>
+            <button class="secondary" @onclick="() => _clicks++">The page is still alive: @_clicks</button>
+            <button class="danger" @onclick="TerminateWorker" disabled="@(_worker is null)">Terminate</button>
+        </div>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_state</span></p>
+    </DemoCard>
+
+    <DemoCard Title="Bytes without a copy" Api="PostBytes"
+              Description="Transferring moves the ArrayBuffer to the worker instead of copying it, which is why bytes rather than JSON is the right shape for anything large.">
+        <button @onclick="SendBytes" disabled="@(_worker is null)">Send 1,000 bytes</button>
+    </DemoCard>
+
+    <DemoCard Title="A private line" Api="MessageChannel.Create / PostWithPorts"
+              Description="A channel has two ends. Give one to the worker and keep the other, and the two talk directly. Ports are transferred rather than copied: once sent, the handle on this side stops working.">
+        <button @onclick="HandOverAPort" disabled="@(_worker is null)">Hand a port to the worker</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="worker output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private WorkerHandle? _worker;
+    private MessageChannelHandle? _channel;
+    // Which Create the page is still waiting for. Creating a worker is asynchronous, so a second
+    // Create - or a Terminate - can land while one is still being made, and a worker nobody is
+    // waiting for any more has to be terminated rather than dropped: it keeps its thread otherwise.
+    private int _generation;
+    private string _state = "Not started.";
+    private int _clicks;
+
+    private async Task StartWorker()
+    {
+        await TerminateWorker();
+
+        var generation = ++_generation;
+
+        var created = await worker.Create("/workers/sample-worker.js",
+            onMessage: m => InvokeAsync(async () =>
+            {
+                await output.Success("Worker →", m.IsBinary ? $"binary [{m.Data?.Length} bytes]" : m.Json);
+            }),
+            options: new WorkerOptions { Name = "butil-sample" },
+            onError: e => InvokeAsync(() => output.Error("onError →", $"{e.Message} ({e.FileName}:{e.LineNumber})")));
+
+        if (created is null)
+        {
+            _state = "Could not start - Worker is unavailable, or the script URL was refused.";
+            await output.Warn(_state);
+            return;
+        }
+
+        if (generation != _generation)
+        {
+            await created.Terminate();
+            await output.Warn("A worker that was created and then abandoned - terminated it rather than leaving it running.");
+            return;
+        }
+
+        _worker = created;
+        _state = "Running.";
+    }
+
+    private async Task RunFib(int n)
+    {
+        if (_worker is null) return;
+        await output.Log($"Asked the worker for fib({n}).");
+        await _worker.PostMessage(new { op = "fib", n });
+    }
+
+    private async Task SendBytes()
+    {
+        if (_worker is null) return;
+        var payload = new byte[1000];
+        Random.Shared.NextBytes(payload);
+        await _worker.PostBytes(payload);
+    }
+
+    private async Task HandOverAPort()
+    {
+        if (_worker is null) return;
+
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+
+        _channel = await messageChannel.Create();
+        if (_channel is null)
+        {
+            await output.Warn("Create returned null - the runtime has no MessageChannel.");
+            return;
+        }
+
+        await _channel.Port2.OnMessage(m => InvokeAsync(() => output.Success("Over the port →", m.Json)));
+        await _channel.Port2.Start();
+
+        // The sample worker does not answer on ports, so this shows the transfer itself: Port1 is
+        // the worker's now, and posting to it here is reported rather than thrown.
+        var sent = await _worker.PostWithPorts(new { op = "takePort" }, [_channel.Port1]);
+        var stillUsable = await _channel.Port1.PostMessage(new { late = true });
+
+        await output.Success("PostWithPorts →", $"sent {sent}, still usable here: {stillUsable}");
+    }
+
+    private async Task TerminateWorker()
+    {
+        // Bumped before the null check, so this also invalidates a worker still being created: on
+        // teardown there is nothing else that would ever terminate it.
+        _generation++;
+
+        if (_channel is not null) { await _channel.DisposeAsync(); _channel = null; }
+        if (_worker is null) return;
+
+        await _worker.Terminate();
+        _worker = null;
+        _state = "Terminated.";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await TerminateWorker(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

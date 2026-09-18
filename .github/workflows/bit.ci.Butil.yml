@@ -81,3 +81,21 @@ jobs:
         name: butil-mcp-results
         path: '**/butil-mcp.trx'
         if-no-files-found: ignore
+
+    # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0: the prerendered
+    # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
+    # and trimmed/AOT publish coverage runs in bit.ci.Butil.e2e.yml.
+    - name: Hosting tests
+      run: >
+        cd src/Butil &&
+        dotnet test tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj
+        --no-build
+        --report-trx --report-trx-filename butil-hosting.trx
+
+    - name: Upload hosting test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: butil-hosting-results
+        path: '**/butil-hosting*.trx'
+        if-no-files-found: ignore

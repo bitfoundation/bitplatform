@@ -2713,7 +2713,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     <DescriptionTemplate>
         <div class=""custom-drp custom-drp-des"">
             <BitIcon IconName=""@BitIconName.Info"" />
-            <span>Nothing here is final &mdash; you can change it later.</span>
+            <span>Nothing here is final - you can change it later.</span>
         </div>
     </DescriptionTemplate>
 </BitDropdown>";

@@ -90,11 +90,40 @@ namespace BitBlazorUI {
             TextField.resize(inputElement, maxRows ?? null);
         }
 
+        // Measuring collapses the input, which makes every scroll container around it shorter for a moment.
+        // Firefox and WebKit clamp the scroll position of those containers to the shorter content and never
+        // give it back once the input grows again, so everything below the field moves - a click that is in
+        // progress (the one whose blur re-rendered the field) then lands on whatever took its place. The
+        // positions are recorded before the collapse and put back once the final height is set.
+        private static resize(inputElement: HTMLInputElement, maxRows: number | null) {
+            const scrolled: [Element, number][] = [];
+
+            // A container scrolled to its very top has nothing a shorter content could clamp.
+            for (let el = inputElement.parentElement; el; el = el.parentElement) {
+                if (el.scrollTop > 0) scrolled.push([el, el.scrollTop]);
+            }
+
+            TextField.setHeight(inputElement, maxRows);
+
+            for (const [el, top] of scrolled) {
+                if (el.scrollTop === top) continue;
+
+                // A plain assignment is animated by a container with scroll-behavior: smooth, and the content
+                // would stay displaced while it runs. Safari before 16.4 rejects 'instant' with a TypeError, so
+                // it falls back to the assignment rather than leave the remaining containers unrestored.
+                try {
+                    el.scrollTo({ top, behavior: 'instant' });
+                } catch {
+                    el.scrollTop = top;
+                }
+            }
+        }
+
         // Collapses the input first so scrollHeight reports the height the content actually needs, then
         // grows it back to that height. The rows attribute is the floor of that growth and a row ceiling,
         // when one is set, is its top: beyond it the content scrolls inside the input instead of pushing
         // the rest of the page down.
-        private static resize(inputElement: HTMLInputElement, maxRows: number | null) {
+        private static setHeight(inputElement: HTMLInputElement, maxRows: number | null) {
             inputElement.style.height = 'auto';
 
             const styles = getComputedStyle(inputElement);

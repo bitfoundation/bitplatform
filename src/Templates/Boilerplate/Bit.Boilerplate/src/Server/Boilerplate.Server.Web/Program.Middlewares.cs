@@ -8,7 +8,17 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Hangfire;
 using Scalar.AspNetCore;
 using Boilerplate.Server.Api;
+using Boilerplate.Server.Api.Features.Identity.OAuth;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
+//#else
+//#if (IsInsideProjectTemplate)
+/*
+//#endif
+using Yarp.ReverseProxy.Transforms;
+//#if (IsInsideProjectTemplate)
+*/
+//#endif
 //#endif
 
 namespace Boilerplate.Server.Web;
@@ -88,6 +98,19 @@ public static partial class Program
             // https://yurl.chayev.com/
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/.well-known"), wellKnownApp =>
             {
+                // iOS asks for the extension-less path, but the file on disk is the .json one - Azure Static Web Apps
+                // decides Content-Type from the extension and would serve an extension-less file as octet-stream,
+                // which Apple rejects, so staticwebapp.config.json rewrites the same way. One file, two hosts.
+                wellKnownApp.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.Equals("/.well-known/apple-app-site-association", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Request.Path = "/.well-known/apple-app-site-association.json";
+                    }
+
+                    await next.Invoke();
+                });
+
                 wellKnownApp.UseStaticFiles(new StaticFileOptions()
                 {
                     FileProvider = env.WebRootFileProvider,
@@ -107,6 +130,16 @@ public static partial class Program
             //#endif
             app.UseAuthorization();
 
+            //#if (api == "Integrated")
+            app.UseHangfireDashboard(options: new()
+            {
+                DarkModeEnabled = true,
+                Authorization = [new HangfireDashboardAuthorizationFilter()]
+            });
+
+            app.ScheduleAppRecurringJobs();
+            //#endif
+
             app.UseCultureUrlRedirection();
 
             app.UseOutputCache();
@@ -119,12 +152,6 @@ public static partial class Program
             app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
             app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");
             app.MapGet("/swagger", () => Results.Redirect("/scalar")).ExcludeFromDescription();
-
-            app.UseHangfireDashboard(options: new()
-            {
-                DarkModeEnabled = true,
-                Authorization = [new HangfireDashboardAuthorizationFilter()]
-            });
 
             app.MapGet("/api/minimal-api-sample/{routeParameter}", [AppResponseCache(MaxAge = 3600 * 24)] (string routeParameter, [FromQuery] string queryStringParameter) => new
             {
@@ -148,14 +175,42 @@ public static partial class Program
                 throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
             }
             app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-            app.MapMcp("/mcp").RequireAuthorization(); // Map MCP endpoints for chatbot tool
-                                                       //#endif
+            app.MapMcp(OAuthResources.McpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.McpPath)); // Chatbot tools. Isolated from /dev-mcp.
+            //#endif
+
+            // The feature AND two factor, for the app's own bearer scheme or a token issued for this resource; every
+            // requirement is read off OAuthResources (OAuthEndpoints.AuthorizationFor).
+            app.MapMcp(OAuthResources.DevMcpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.DevMcpPath));
 
             app.MapOpenIdConfiguration();
+
+            app.MapOAuthEndpoints();
 
             app.MapControllers()
                .RequireAuthorization()
                .CacheOutput("AppResponseCachePolicy");
+            //#else
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            // Pre-rendering reads the access_token cookie, so the api calls that write it and the Hangfire dashboard that
+            // reads it can go through this host (See RequestHeadersDelegatingHandler).
+            var serverApiAddress = string.IsNullOrWhiteSpace(settings.ServerSideHttpClientBaseAddress) is false
+                ? settings.ServerSideHttpClientBaseAddress
+                : configuration.GetServerAddress();
+
+            if (Uri.TryCreate(serverApiAddress, UriKind.Absolute, out _) is false)
+                throw new InvalidOperationException($"'{serverApiAddress}' is not an absolute address. Set ServerAddress (or ServerSideHttpClientBaseAddress) in appsettings.json.");
+
+            foreach (var pattern in new[] { "/api/{**catch-all}", "/hangfire/{**catch-all}" })
+            {
+                // The api trusts this host's X-Forwarded-* headers: drop whatever the caller sent and set the client's ip alone,
+                // as the pre-rendering HttpClient does, so the api keeps seeing its own host.
+                app.MapForwarder(pattern, serverApiAddress, transform => transform.AddXForwarded(ForwardedTransformActions.Remove).AddXForwardedFor());
+            }
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
             //#endif
 
             app.UseSiteMap();
@@ -188,16 +243,33 @@ public static partial class Program
         {
             app.Use(async (context, next) =>
             {
+                int? statusCode = null;
+
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        statusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        context.Response.StatusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
+                        statusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
                     }
+                }
+
+                if (statusCode is not null)
+                {
+                    // Applied as the response starts, not before the endpoint runs: a 404 already set by then makes
+                    // RazorComponentEndpointInvoker drop the rendered page and leave an empty body for status code pages.
+                    // Only over a 200 - the page itself; a redirect (the culture one, for instance) must stay a redirect.
+                    context.Response.OnStarting(() =>
+                    {
+                        if (context.Response.StatusCode is StatusCodes.Status200OK)
+                        {
+                            context.Response.StatusCode = statusCode.Value;
+                        }
+                        return Task.CompletedTask;
+                    });
                 }
 
                 await next.Invoke(context);

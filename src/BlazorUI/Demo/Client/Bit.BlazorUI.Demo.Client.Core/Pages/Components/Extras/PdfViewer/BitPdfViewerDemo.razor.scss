@@ -1,0 +1,31 @@
+﻿::deep {
+    /* The keyboard-shortcut cheat sheet of the shortcuts example. */
+    .pdf-shortcuts {
+        gap: 0.35rem;
+        display: flex;
+        font-size: 0.85rem;
+        flex-direction: column;
+    }
+
+    .pdf-shortcuts kbd {
+        padding: 0 0.35rem;
+        font-size: 0.8em;
+        line-height: 1.6;
+        white-space: nowrap;
+        display: inline-block;
+        border-radius: 0.25rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        border: 1px solid var(--bit-clr-brd-pri);
+        background: var(--bit-clr-bg-sec);
+    }
+
+    /* The document-info readout: a compact, monospaced block so the values line
+       up under one another instead of reading as prose. */
+    .pdf-info {
+        gap: 0.2rem;
+        display: flex;
+        font-size: 0.85rem;
+        flex-direction: column;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+}

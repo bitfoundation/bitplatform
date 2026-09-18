@@ -4,7 +4,6 @@
         <TargetFramework>net10.0</TargetFramework>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
         <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
-        <BitButilScriptScan>TypeReferences</BitButilScriptScan>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">
@@ -28,6 +27,8 @@
     <ItemGroup>
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
         <PackageReference Condition=" '$(api)' == 'Standalone' " Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+        <PackageReference Condition=" '$(api)' == 'Standalone' " Include="Yarp.ReverseProxy" />
+        <PackageReference Condition=" '$(api)' == 'Standalone' " Include="AspNetCore.HealthChecks.Uris" />
         <ProjectReference Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />

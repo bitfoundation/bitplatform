@@ -99,6 +99,19 @@ public class ElementTests : ButilPageTest
     }
 
     [TestMethod]
+    public async Task ScrollTo_With_One_Offset_Leaves_The_Other_Axis_Alone()
+    {
+        // An unset Left must be left out of the options: the browser reads a null one as 0.
+        await ClickAndExpectAsync("el-scroll-axis", "el:scroll-axis:50/100");
+    }
+
+    [TestMethod]
+    public async Task Hidden_Round_Trips_All_Three_States()
+    {
+        await ClickAndExpectAsync("el-hidden-states", "el:hidden:True/UntilFound/False");
+    }
+
+    [TestMethod]
     public async Task GetClientRects_Reports_At_Least_One_Laid_Out_Box()
     {
         await ClickAndExpectAsync("el-rects", "el:rects:True/True");

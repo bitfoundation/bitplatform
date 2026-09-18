@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The WebAssembly half of Bit.Butil.Tests.Harness.Web: what the wasm and auto render modes run in the
+         browser. It carries no pages of its own - they come from Samples.Core - only the client's startup. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- See the same property in Bit.Butil.Tests.Harness.Web: one framework for a publish. -->
+        <TargetFrameworks Condition="'$(ButilHarnessFramework)' != ''">$(ButilHarnessFramework)</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <RootNamespace>ButilTests.Harness.Web.Client</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+    </ItemGroup>
+
+</Project>

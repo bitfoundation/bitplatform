@@ -1,0 +1,44 @@
+@page "/regression/callout-keyboard"
+
+<PageTitle>Callout Virtual Keyboard Regression</PageTitle>
+
+@* Opening a callout whose search box takes the focus raises the on-screen keyboard, which shrinks the visible
+   band to the top of the screen. The anchors here are deliberately pushed below where that band ends, which is
+   the state that used to hide the callout as "detached" and place it behind the keyboard: the callout itself is
+   still perfectly visible above the keyboard, so it has to be laid out inside the band rather than taken away
+   with its anchor.
+   The second one has no search box, so the focus lands on a button instead of an editable and no keyboard is
+   raised: that is the control for the detached hide, which must go on behaving exactly as it always has. *@
+<div id="test-controls" style="padding: 8px; background: #f0f0f0;">
+    <p style="font-family: monospace; margin: 0;">Status: <span id="status">@_status</span></p>
+</div>
+
+@* Enough to put the anchors below the halfway line of an 800px viewport, which is where a keyboard leaves them. *@
+<div style="height: 460px; background: #eee;"></div>
+
+<div id="with-search" style="padding: 8px;">
+    <BitPhoneInput @bind-Value="_searchValue" Style="width: 300px;" />
+</div>
+
+<div id="without-search" style="padding: 8px;">
+    <BitPhoneInput @bind-Value="_noSearchValue" NoSearchBox Style="width: 300px;" />
+</div>
+
+@* The page has to be taller than the viewport, or there is nothing for the anchors to sit low in. *@
+<div style="height: 800px;"></div>
+
+@code {
+    private string? _searchValue;
+    private string? _noSearchValue;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

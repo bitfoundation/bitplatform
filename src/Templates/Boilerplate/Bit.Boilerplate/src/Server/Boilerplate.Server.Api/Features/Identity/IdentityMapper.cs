@@ -1,3 +1,6 @@
+//+:cnd:noEmit
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
+
 namespace Boilerplate.Server.Api.Features.Identity;
 
 /// <summary>
@@ -20,6 +23,10 @@ public static partial class IdentityMapper
 
 
 
+    // The OAuth half lives in its own table, so the dto's flat shape is assembled here rather than on the entity.
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.ClientId)], [nameof(@UserSessionDto.OAuthClientId)])]
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.ClientName)], [nameof(@UserSessionDto.OAuthClientName)])]
+    [MapProperty([nameof(@UserSession.OAuthGrant), nameof(@OAuthGrant.Scope)], [nameof(@UserSessionDto.OAuthScope)])]
     [MapPropertyFromSource(nameof(@UserSessionDto.RenewedOn), Use = nameof(MapRenewedOn))]
     public static partial UserSessionDto Map(this UserSession source);
     public static partial IQueryable<UserSessionDto> Project(this IQueryable<UserSession> source);

@@ -25,6 +25,7 @@ public static partial class Program
             services.AddClientCoreProjectServices(configuration);
 
             services.AddScoped<IWebAuthnService, WindowsWebAuthnService>();
+            services.AddScoped<IExternalNavigationService, WindowsExternalNavigationService>();
             services.AddScoped<ClientExceptionHandlerBase, WindowsExceptionHandler>();
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
