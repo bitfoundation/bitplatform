@@ -37,8 +37,6 @@ BitBlazorUI.Theme.init({
 // Paints the browser chrome (an installed PWA's status bar, the mobile address bar) with the page's
 // own background, read back from the live styles rather than hardcoded per scheme: Styles/app.scss,
 // which declares --bit-clr-bg-pri for both palettes, stays the one place those colors are written.
-// The library does this itself from the bit-theme-color-meta attribute on <html>, which replaces
-// everything below - but only from the release AFTER 10.6.0, the version this site references.
 //
 // It cannot be read inside Theme's onChange either - with bit-theme-view-transition the bit-theme
 // attribute is only written a frame after the callback runs, so the callback would still see the
