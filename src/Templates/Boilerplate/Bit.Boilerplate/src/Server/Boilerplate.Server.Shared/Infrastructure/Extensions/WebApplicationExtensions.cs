@@ -1,10 +1,12 @@
 //+:cnd:noEmit
 using System.Net;
+using System.Reflection;
 using System.Globalization;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -20,7 +22,11 @@ public static class WebApplicationExtensions
 {
     extension(WebApplication app)
     {
-        public WebApplication MapAppHealthChecks()
+        /// <param name="healthzAuthorization">
+        /// What <c>/healthz</c> requires where this app issues OAuth tokens for it (see <c>OAuthResources</c>, which
+        /// this project cannot reference). Defaults to the feature alone.
+        /// </param>
+        public WebApplication MapAppHealthChecks(IAuthorizeData[]? healthzAuthorization = null)
         {
             var healthChecks = app.MapGroup("");
 
@@ -48,7 +54,22 @@ public static class WebApplicationExtensions
                 Predicate = _ => true,
                 ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
                 ResponseWriter = WriteHealthReport
-            }).RequireAuthorization(AppFeatures.System.Operations_View);
+            }).RequireAuthorization(healthzAuthorization ?? [new AuthorizeAttribute(AppFeatures.System.Operations_View)]);
+
+            return app;
+        }
+
+        /// <summary>
+        /// Server.Web's own settings, for the operations page of a deployment whose api is standalone: the two are
+        /// separate processes. The api serves the same shape through <c>IDiagnosticController.GetDeploymentConfiguration</c>.
+        /// </summary>
+        public WebApplication MapDeploymentConfiguration()
+        {
+            app.MapGet("/deployment-configuration", (IConfiguration configuration, ServerSharedSettings settings, IHostEnvironment environment)
+                => Results.Json(DeploymentConfigurationReader.ReadShared(configuration, settings, environment, Assembly.GetEntryAssembly()!),
+                                AppJsonContext.Default.DeploymentConfigurationDto))
+            .RequireAuthorization(AppFeatures.System.Operations_View)
+            .ExcludeFromDescription();
 
             return app;
         }

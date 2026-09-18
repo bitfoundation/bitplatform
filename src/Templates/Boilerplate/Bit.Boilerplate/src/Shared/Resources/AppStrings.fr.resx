@@ -2080,6 +2080,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>Lire les informations de diagnostic de ce déploiement.</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Lire le rapport de santé détaillé de ce déploiement, y compris les détails d'erreur de tout ce qui est en échec.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Lire le rapport de santé.</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Application autorisée</value>
   </data>

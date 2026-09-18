@@ -61,7 +61,7 @@ public static partial class Program
 
         app.UseAntiforgery();
 
-        app.MapAppHealthChecks();
+        app.MapAppHealthChecks(OAuthEndpoints.AuthorizationFor(OAuthResources.HealthzPath));
 
         app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
         app.MapScalarApiReference().CacheOutput("AppResponseCachePolicy");

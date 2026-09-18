@@ -90,8 +90,9 @@ public partial class OAuthController : AppControllerBase, IOAuthController
             throw new BadRequestException(Localizer[nameof(AppStrings.OAuthErrorInsufficientPermissions)]);
 
         // The resource endpoint's own policies, against the consenting session: a grant carries only what that session
-        // has - its amr, for one - so failing them here would otherwise mean a token the resource silently 403s.
-        foreach (var policy in OAuthResources.PoliciesFor(validated.Resource))
+        // has - its amr, for one - so failing them here would otherwise mean a token the resource silently 403s. Plus
+        // what the resource asks of a grant alone: /healthz takes two factor here, but not from the page.
+        foreach (var policy in OAuthResources.GrantPoliciesFor(validated.Resource))
         {
             if ((await authorizationService.AuthorizeAsync(User, policy)).Succeeded)
                 continue;

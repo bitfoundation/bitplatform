@@ -2080,6 +2080,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>Leer información de diagnóstico de este despliegue.</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Leer el informe detallado de estado de este despliegue, incluidos los detalles de error de todo lo que esté fallando.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Leer el informe de estado.</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Aplicación autorizada</value>
   </data>

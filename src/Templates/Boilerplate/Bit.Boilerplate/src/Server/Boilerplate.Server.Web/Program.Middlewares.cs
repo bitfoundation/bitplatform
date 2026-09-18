@@ -146,7 +146,23 @@ public static partial class Program
 
             app.UseAntiforgery();
 
+            // A standalone api keeps the feature alone: OAuth lives there, and so does the resource table.
+            //#if (api == "Integrated")
+            app.MapAppHealthChecks(OAuthEndpoints.AuthorizationFor(OAuthResources.HealthzPath));
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             app.MapAppHealthChecks();
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
+
+            //#if (api == "Standalone")
+            // Server.Web's own settings, which the standalone api's answer cannot speak for.
+            app.MapDeploymentConfiguration();
+            //#endif
 
             //#if (api == "Integrated")
             app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
