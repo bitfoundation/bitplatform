@@ -71,6 +71,36 @@
             </BitMessage>
         }
 
+        @if (deploymentConfiguration is not null)
+        {
+            <BitAccordion NoBorder
+                          LazyContent
+                          Title="Configuration"
+                          IconName="@BitIconName.Settings"
+                          Description="What this deployment is set to do, which no health check reports">
+                <div class="check-grid config-grid">
+                    @foreach (var group in ConfigurationGroups())
+                    {
+                        <BitCard @key="group.Name" NoShadow FullWidth Class="check-card config">
+                            <BitStack Gap="0.75rem">
+                                <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Center" Gap="0.75rem">
+                                    <BitIcon IconName="@group.IconName" Class="check-icon" />
+                                    <BitText Typography="BitTypography.Subtitle1">@group.Name</BitText>
+                                </BitStack>
+                                <dl class="data-list config-list">
+                                    @foreach (var (label, value) in group.Rows)
+                                    {
+                                        <BitText Element="dt" Typography="BitTypography.Caption1" Weight="BitFontWeight.Semibold" Color="BitColor.SecondaryForeground">@label</BitText>
+                                        <BitText Element="dd" Typography="BitTypography.Caption1" BreakWord>@value</BitText>
+                                    }
+                                </dl>
+                            </BitStack>
+                        </BitCard>
+                    }
+                </div>
+            </BitAccordion>
+        }
+
         @if (report is null)
         {
             @if (loadError is null)

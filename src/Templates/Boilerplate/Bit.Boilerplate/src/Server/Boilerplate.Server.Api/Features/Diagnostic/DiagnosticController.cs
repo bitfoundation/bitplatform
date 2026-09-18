@@ -3,6 +3,8 @@ using FluentEmail.Core;
 using System.Runtime.CompilerServices;
 using Twilio.Rest.Api.V2010.Account;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Server.Api.Features.Attachments;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 //#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
@@ -21,6 +23,8 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
     [AutoInject] private ServerDiagnosticService diagnostic = default!;
+    [AutoInject] private IConfiguration Configuration = default!;
+    [AutoInject] private IHostEnvironment HostEnvironment = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IFluentEmail fluentEmail = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
@@ -151,6 +155,45 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         }, s => s.DeviceId == deviceId, cancellationToken);
     }
     //#endif
+
+    /// <summary>Only what no health check reports, and never a secret: a credential is a boolean.</summary>
+    [HttpGet, Authorize(Policy = AppFeatures.System.Operations_View)]
+    public DeploymentConfigurationDto GetDeploymentConfiguration()
+    {
+        var identity = AppSettings.Identity;
+
+        // Shared reader, so a standalone Server.Web answers the same shape for itself (See MapDeploymentConfiguration).
+        var configuration = DeploymentConfigurationReader.ReadShared(Configuration, AppSettings, HostEnvironment, typeof(Program).Assembly);
+
+        configuration.RequireConfirmedAccount = identity.SignIn.RequireConfirmedAccount;
+        configuration.MaxPrivilegedSessionsCount = identity.MaxPrivilegedSessionsCount;
+        configuration.AccessTokenLifetime = identity.BearerTokenExpiration;
+        configuration.RefreshTokenLifetime = identity.RefreshTokenExpiration;
+
+        configuration.BackgroundJobsUseIsolatedStorage = AppSettings.Hangfire?.UseIsolatedStorage is true;
+        configuration.BackgroundJobExpiration = AppSettings.Hangfire?.JobExpiration ?? TimeSpan.Zero;
+
+        //#if (notification == true)
+        configuration.WebPushConfigured = string.IsNullOrWhiteSpace(AppSettings.AdsPushVapid?.PrivateKey) is false;
+        //#endif
+
+        configuration.AttachmentUploadSizeLimitBytes = AttachmentController.MaxUploadSizeBytes;
+        //#if (signalR == true)
+        configuration.HubMaximumReceiveMessageSize = Configuration.GetValue<long?>("HubOptions:MaximumReceiveMessageSize");
+        configuration.AiChatImagesRetention = AppSettings.AiChatImagesRetention;
+        //#endif
+
+        configuration.MinimumSupportedAndroidAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedAndroidAppVersion?.ToString();
+        configuration.MinimumSupportedIosAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedIosAppVersion?.ToString();
+        configuration.MinimumSupportedMacOSAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedMacOSAppVersion?.ToString();
+        configuration.MinimumSupportedWindowsAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedWindowsAppVersion?.ToString();
+        configuration.MinimumSupportedWebAppVersion = AppSettings.SupportedAppVersions?.MinimumSupportedWebAppVersion?.ToString();
+
+        return configuration;
+    }
+
+    Task<DeploymentConfigurationDto> IDiagnosticController.GetDeploymentConfiguration(CancellationToken cancellationToken)
+        => Task.FromResult(GetDeploymentConfiguration());
 
     // The two below are for the operations page, and send right away rather than through a background job, so a
     // failure reaches the caller.

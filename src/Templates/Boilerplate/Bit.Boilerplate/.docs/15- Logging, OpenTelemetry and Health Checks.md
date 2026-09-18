@@ -308,7 +308,11 @@ The project includes **health check endpoints** to monitor application health.
 
 `/health` and `/alive` are mapped in **every** environment and are **anonymous**, and they answer with one word.
 `/healthz`, which names every dependency and carries each failure's exception (possibly a connection string), is
-mapped everywhere too, but behind its feature and never cached. Adding health check endpoints to a non-development
+mapped everywhere too, but behind its feature and never cached. It is also an **OAuth resource** (`OAuthResources`), so
+an external monitor can read it with a token of its own instead of a user's session, minted through the same consent
+page as `/dev-mcp`. Granting one takes more than reading the page does: the feature **and** a session that signed in
+with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended, exceptions and
+connection strings and all. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
 expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a
@@ -328,7 +332,12 @@ instance out of rotation when they fail, when a cached check really ran, and eac
 what no check can prove (push notification, email and SMS delivery, social sign in, ...) and how to verify each. Push,
 email and SMS have a button that sends a test message through `IDiagnosticController`: the push to the current device's
 subscription, the email and the SMS, which need `Operations_View` too, to the signed-in user's own address and phone number, if the
-account has them. Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
+account has them. A last section, **Configuration**, reads `IDiagnosticController.GetDeploymentConfiguration` - also
+`Operations_View` - and shows the settings no check reports: a check proves a dependency answers, not that output
+caching, prerendering, forwarded headers, the telemetry exporters or a force-update floor are switched on. Whatever a
+check already covers is deliberately absent from it, and no credential is ever in it - each one is a boolean saying
+whether it is set, which `DeploymentConfigurationTests` asserts against the deployment's own connection strings.
+Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
 a new check there to give it the same treatment.
 
 With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks

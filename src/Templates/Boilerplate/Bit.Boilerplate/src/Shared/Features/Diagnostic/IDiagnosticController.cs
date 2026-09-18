@@ -13,6 +13,10 @@ public interface IDiagnosticController : IAppController
     Task<bool> SendTestPushNotification(string deviceId, CancellationToken cancellationToken);
     //#endif
 
+    /// <summary>What this deployment is configured to do, for the operations page.</summary>
+    [HttpGet, AuthorizedApi]
+    Task<DeploymentConfigurationDto> GetDeploymentConfiguration(CancellationToken cancellationToken);
+
     /// <summary>Emails the signed-in user. False when the account has no email.</summary>
     [HttpPost, AuthorizedApi, NoRetryPolicy]
     Task<bool> SendTestEmail(CancellationToken cancellationToken);

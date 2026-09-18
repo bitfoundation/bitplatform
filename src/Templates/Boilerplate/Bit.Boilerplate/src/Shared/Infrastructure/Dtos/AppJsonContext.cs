@@ -59,6 +59,7 @@ namespace Boilerplate.Shared.Infrastructure.Dtos;
 [JsonSerializable(typeof(NugetStatsDto))]
 [JsonSerializable(typeof(AppProblemDetails))]
 [JsonSerializable(typeof(HealthReportDto))]
+[JsonSerializable(typeof(DeploymentConfigurationDto))]
 [JsonSerializable(typeof(OAuthAuthorizeRequestDto))]
 [JsonSerializable(typeof(OAuthConsentDto))]
 [JsonSerializable(typeof(OAuthApprovalDto))]
