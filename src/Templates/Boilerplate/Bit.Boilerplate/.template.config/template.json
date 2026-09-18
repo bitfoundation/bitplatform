@@ -781,6 +781,7 @@
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/PubSub/SoftRestartTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
+                        "src/Tests/Features/Diagnostics/DeploymentConfigurationTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckRulesTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticTestMessagesTests.cs",
                         "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",

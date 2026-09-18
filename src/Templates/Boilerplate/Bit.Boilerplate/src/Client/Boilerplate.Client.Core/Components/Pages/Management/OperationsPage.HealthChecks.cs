@@ -25,7 +25,7 @@ public partial class OperationsPage
     /// </summary>
     private static readonly Dictionary<string, (string Title, string Category, string IconName, string About)> catalog = new()
     {
-        ["binStorage"] = ("Disk space", "Platform", BitIconName.HardDrive, "At least 2 GB free where the app runs. The only liveness check."),
+        ["binStorage"] = ("Disk space", "Platform", BitIconName.HardDrive, "At least 2 GB free on the instance that answered this report. The only liveness check."),
         ["AppDbContext"] = ("Database", "Platform", BitIconName.Database, "Opens a connection to the app's database."),
         ["hangfire"] = ("Background jobs", "Platform", BitIconName.Processing, "At least one Hangfire server is running."),
         ["appCertificate"] = ("App certificate", "Platform", BitIconName.Certificate, "The certificate that signs tokens and protects data is within its validity period."),

@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Boilerplate.Server.Api.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -29,24 +30,38 @@ public partial class DevMcpDiagnosticTools
     }
 
     [McpServerTool(Name = nameof(GetDeploymentInfo))]
-    [Description("Returns how this process is actually running: its effective configuration, not the contents of a file on disk. Secrets are never returned: identity-provider, SMS, push, recaptcha, AI, SMTP, Cloudflare, Application Insights and Sentry values are booleans or names only. Nothing about the current request is here - the client ip, the headers it arrived with and the per-request WebAppUrl belong to GetDiagnosticReport. Query filters, Hangfire job arguments and database rows are not part of this tool either. Rendering is absent unless the API is integrated with the web app: a standalone API serves no Blazor.")]
+    [Description("Returns how this process is actually running: its effective configuration, not the contents of a file on disk. Under scale-out one instance answers, so what is read from the process itself - its machine, version, uptime, memory, clock and time zone - is grouped under Instance and holds for that one alone, while the settings around it have to match across the deployment. Secrets are never returned: identity-provider, SMS, push, recaptcha, AI, SMTP, Cloudflare, Application Insights and Sentry values are booleans or names only. Nothing about the current request is here - the client ip, the headers it arrived with and the per-request WebAppUrl belong to GetDiagnosticReport. Query filters, Hangfire job arguments and database rows are not part of this tool either. Rendering is absent unless the API is integrated with the web app: a standalone API serves no Blazor.")]
     public string GetDeploymentInfo()
     {
         var identity = settings.Identity;
 
         return DevMcpJson.Serialize(new
         {
-            Hosting = new
+            // Read from the process that answered this call, which under scale-out is one instance of several.
+            Instance = new
             {
+                MachineName = Environment.MachineName,
                 environment.EnvironmentName,
                 ApplicationVersion = typeof(Program).Assembly.GetName().Version?.ToString(),
+                Runtime = RuntimeInformation.FrameworkDescription,
+                OperatingSystem = $"{RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture})",
+                Environment.ProcessorCount,
+                // The container's limit rather than the host's memory, where there is one.
+                AvailableMemoryBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes,
+                UsedMemoryBytes = Environment.WorkingSet,
+                Uptime = (DateTimeOffset.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime()).ToString(),
+                UtcNow = timeProvider.GetUtcNow(),
+                TimeZone = TimeZoneInfo.Local.Id
+            },
+            Hosting = new
+            {
                 settings.TrustedOrigins,
+                // Trusted on top of the list above, so an empty list is not the whole answer.
+                TrustedOriginsRegex = settings.TrustedOriginsRegex().ToString(),
                 ForwardedHeaders = ReadForwardedHeaders(),
                 SupportedCultures = CultureInfoManager.InvariantGlobalization
                     ? []
-                    : CultureInfoManager.SupportedCultures.Select(c => c.Culture.Name).ToArray(),
-                UtcNow = timeProvider.GetUtcNow(),
-                TimeZone = TimeZoneInfo.Local.Id
+                    : CultureInfoManager.SupportedCultures.Select(c => c.Culture.Name).ToArray()
             },
             //#if (api == "Integrated")
             Rendering = ReadRendering(),

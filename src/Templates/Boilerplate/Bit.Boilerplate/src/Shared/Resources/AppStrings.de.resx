@@ -2080,6 +2080,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>Diagnoseinformationen dieser Bereitstellung lesen.</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Den ausführlichen Zustandsbericht dieser Bereitstellung lesen, samt Fehlerdetails von allem, was gerade ausfällt.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Den Zustandsbericht lesen.</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Autorisierte Anwendung</value>
   </data>
