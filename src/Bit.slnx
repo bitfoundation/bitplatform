@@ -182,6 +182,7 @@
   <Folder Name="/Minifier/">
     <File Path="Minifier/README.md" />
     <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+    <Project Path="Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj" />
   </Folder>
   <Folder Name="/Minifier/Tests/">
     <Project Path="Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />

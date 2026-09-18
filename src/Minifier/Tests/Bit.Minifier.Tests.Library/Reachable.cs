@@ -89,7 +89,7 @@ namespace Bit.Minifier.Tests.Shelf
         public int Count(int rows, int columns) => new Pallet().Stack(rows, columns);
     }
 
-    // renamed at every aggressive level; only super aggressive may take its namespace
+    // renamed at both levels; only aggressive may take its namespace
     internal sealed class Pallet
     {
         public int Stack(int rows, int columns) => rows * columns;

@@ -11,24 +11,13 @@ Install it in the Blazor WebAssembly project and publish in Release. There is no
 ## What it does
 
 ILLink removes the code an app doesn't use. Right after it, Bit.Minifier rewrites every trimmed
-assembly (the app's, the libraries' and the framework's) and its pdb:
+assembly (the app's, the libraries' and the framework's) and its pdb. Everything that can go, goes:
+every non-public type, method and field name, non-public parameter names and properties, compiler-generated
+names, and the attributes only the compiler, debuggers and analyzers read (`[CompilerGenerated]`,
+`[Nullable]`, `[NotNullWhen]`, `[DebuggerDisplay]`, ...).
 
-- It removes the attributes only the compiler reads (`[CompilerGenerated]`, `[Nullable]`,
-  `[NotNullWhen]`, ...).
-- It shortens compiler-generated names: `<BuildRenderTree>b__12_0` becomes `<a>b__12_0`.
-
-Public and hand-written names stay, the pdb keeps breakpoints and line numbers working, and
-`dotnet build`, `dotnet run` and `dotnet watch` are never touched.
-
-## Aggressive
-
-```xml
-<BitMinifyAggressive>true</BitMinifyAggressive>
-```
-
-At this level everything that can go, goes: every non-public type, method and field name,
-non-public parameter names and properties, and the attributes only debuggers and analyzers read.
-Public names stay, so a logged stack trace still names its public frames.
+Public names stay, so a logged stack trace still names its public frames, the pdb keeps breakpoints and
+line numbers working, and `dotnet build`, `dotnet run` and `dotnet watch` are never touched.
 
 These stay too, because something reads them by name at runtime:
 
@@ -37,25 +26,32 @@ These stay too, because something reads them by name at runtime:
 - Blazor component types;
 - members with runtime attributes (`[Parameter]`, `[JSInvokable]`, ...).
 
-When the app publishes EF Core, which may map the types of any assembly, the nullable metadata and
-the backing field names it reads are kept everywhere but in the bit libraries, so the model still
-matches its migrations. Other libraries that find private members by a name no string spells out
-may not work at this level.
+Libraries that find private members by a name no string spells out may not work.
 
-## Super aggressive (experimental)
+## Your own code keeps its names
+
+Whatever the level, the assemblies your own projects produce are left with every name they have: the
+project being published and every project it references, which the build already tells apart from the
+packages it uses (`ReferenceSourceTarget`, not a list anyone maintains). Their attributes still go, and
+the calls they make into the libraries still follow those libraries' new names - only their own types and
+methods are untouched, so an exception your app logs reads as your source does and points at the code to
+open. The libraries and the framework, where a stack trace only says which one it passed through, are
+minified as the level says.
+
+## Aggressive (experimental)
 
 ```xml
-<BitMinifySuperAggressive>true</BitMinifySuperAggressive>
+<BitMinifyAggressive>true</BitMinifyAggressive>
 ```
 
-Everything aggressive does, and public names go too: public types and their namespaces, public
+Everything above, and public names go too: public types and their namespaces, public
 non-virtual methods and property accessors, public fields and parameter names, generic parameter
 names and event metadata,
 along with the attributes only the compiler and the trimmer read. It is for apps whose names nothing
 reads from outside the WebAssembly client, published by someone who tests the result. Stack traces
 lose their public names as well; [reading a stack trace](#reading-a-stack-trace) is the way back.
 
-On top of what aggressive keeps, these stay:
+On top of what the default level keeps, these stay:
 
 - names any assembly of the app mentions in a string, namespaces included (`Type.GetType("My.App.Plugin")`);
 - virtual and interface members, properties, constructor parameters and enum members;
@@ -77,22 +73,13 @@ It breaks what finds a public name some other way, so don't use it when:
 
 ## Numbers
 
-bitplatform.dev's WebAssembly client, published in Release (managed `.wasm` files, brotli):
+An app picked at random, its WebAssembly client published in Release (managed `.wasm` files, brotli):
 
-| | size |
-|---|---:|
-| without Bit.Minifier | 2,043 KB |
-| default | 1,979 KB (-3.1%) |
-| aggressive | 1,869 KB (-8.5%) |
-
-The BlazorUI demo's WebAssembly client, measured the same way:
-
-| | size |
-|---|---:|
-| without Bit.Minifier | 6,445 KB |
-| default | 6,345 KB (-1.6%) |
-| aggressive | 6,038 KB (-6.3%) |
-| super aggressive | 5,987 KB (-7.1%) |
+| | size | saved |
+|---|---:|---:|
+| without Bit.Minifier | 6,223 KB | |
+| default | 5,827 KB | 396 KB (-6.4%) |
+| aggressive | 5,756 KB | 467 KB (-7.5%) |
 
 ## Reading a stack trace
 
@@ -127,11 +114,17 @@ into the one its source wrote:
 
 Without `BitMinifyTrace` it reads the trace from standard input, so a trace can be pasted in or piped from
 anywhere. `-p:BitMinifyMap=<path>` reads a map kept somewhere else - the one archived with the release the
-stack trace came from. The tool can also be run on its own, wherever NuGet put the package:
+stack trace came from.
+
+Whoever reads the trace usually has neither the project nor the publish: a map kept with a release and a text
+file are enough, and the same tool is a package of its own, run without installing anything:
 
 ```
-dotnet ~/.nuget/packages/bit.minifier/<version>/tools/Bit.Minifier.dll --decode bit-minifier.map trace.txt
+dnx Bit.Minifier.Cli --decode bit-minifier.map trace.txt
 ```
+
+Leaving the trace out reads it from standard input there too. `Bit.Minifier` is what an app installs to be
+minified; `Bit.Minifier.Cli` is the same program for whoever holds a map.
 
 - **Keep the map with the release it belongs to.** It is written to `obj`, so a clean takes it away, and a
   CI job that publishes from a fresh checkout leaves nothing behind unless it collects the map as an
@@ -142,15 +135,15 @@ dotnet ~/.nuget/packages/bit.minifier/<version>/tools/Bit.Minifier.dll --decode 
   `Type.FullName`, a serialized type name.
 - Files and line numbers never needed it - the pdbs are rewritten along with the assemblies, so they are
   in the trace already.
-- What no map holds: parameter names, which aggressive clears rather than renames, and the names of local
+- What no map holds: parameter names, which are cleared rather than renamed, and the names of local
   variables, which are the pdb's. A short name that several assemblies ended up with is read as the first
   of them, and the other readings are named in brackets at the end of the line, with the assembly each
   belongs to - a stack trace says which assembly a frame is in no more than it says what its names were.
 
 ## Good to know
 
-- **Nullable metadata:** it is kept when the app sets `NullabilityInfoContextSupport` to `true`, and
-  outside the bit libraries when the app publishes EF Core.
+- **Nullable metadata:** it is kept when the app sets `NullabilityInfoContextSupport` to `true`, the
+  switch .NET already has for the one thing that reads it at runtime.
 - **Nothing ships broken:** if any reference would stop resolving, or anything else fails, nothing
   is written, and the publish shows warning `BITMIN001` and ships the trimmed assemblies as they were.
   With warnings as errors, add `BITMIN001` to `MSBuildWarningsNotAsErrors` to keep it a warning. The next

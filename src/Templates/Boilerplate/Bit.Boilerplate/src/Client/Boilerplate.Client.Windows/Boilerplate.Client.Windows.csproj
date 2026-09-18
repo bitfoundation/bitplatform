@@ -55,7 +55,6 @@
         <Content Include="..\Boilerplate.Client.Web\wwwroot\web-interop-app.html" Link="wwwroot\web-interop-app.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>

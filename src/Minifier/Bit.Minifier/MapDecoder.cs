@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.Minifier;
 
@@ -233,7 +233,7 @@ internal sealed partial class MapDecoder
     /// <summary>
     /// A qualified name of a stack trace: <c>Namespace.Type+Nested.Method</c>, with the arity and the generated
     /// names metadata spells (<c>&lt;Main&gt;$</c>, <c>&lt;a&gt;d__3</c>), followed by the generic arguments when
-    /// those are parameter names rather than types. A short name on its own is one too: super aggressive leaves a
+    /// those are parameter names rather than types. A short name on its own is one too: aggressive leaves a
     /// type whose namespace went with nothing but an <c>_a</c> to be named by.
     /// </summary>
     [GeneratedRegex(@"(?<![\w`<>$.+])(?<name>[\w`<>$]+(?:[.+][\w`<>$]+)+|_[A-Za-z]+(?:`\d+)?)(?![\w`<>$])(?<arguments>\[[A-Za-z_][\w`]*(?:, ?[A-Za-z_][\w`]*)*\])?")]

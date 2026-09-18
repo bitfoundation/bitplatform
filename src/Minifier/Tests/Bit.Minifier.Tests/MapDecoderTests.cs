@@ -1,4 +1,4 @@
-namespace Bit.Minifier.Tests;
+﻿namespace Bit.Minifier.Tests;
 
 [TestClass]
 public class MapDecoderTests

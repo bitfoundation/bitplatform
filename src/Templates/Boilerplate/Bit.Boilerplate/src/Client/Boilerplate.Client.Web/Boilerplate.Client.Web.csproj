@@ -32,6 +32,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
+        <!-- <PackageReference Condition=" '$(offlineDb)' != 'true' " Include="Bit.Minifier" PrivateAssets="all" /> -->
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>
@@ -94,10 +95,12 @@
         </PropertyGroup>
     -->
 
-    <!-- Bit.Minifier from source (src/Minifier/README.md); inert wherever that source isn't around -->
+    <!-- Bit.Minifier from source (src/Minifier/README.md) until the package is published; inert wherever that source
+         isn't around, and wherever this is an offline app, which keeps every name it has -->
     <PropertyGroup>
-        <BitMinifierSourceDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'src/Minifier/Bit.Minifier/Bit.Minifier.csproj'))/src/Minifier/Bit.Minifier/</BitMinifierSourceDir>
-        <BitMinifyAggressive>true</BitMinifyAggressive>
+        <!--/+:msbuild-conditional:noEmit -->
+        <BitMinifierSourceDir Condition=" '$(offlineDb)' != 'true' ">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'src/Minifier/Bit.Minifier/Bit.Minifier.csproj'))/src/Minifier/Bit.Minifier/</BitMinifierSourceDir>
+        <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
     <ItemGroup Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')">
         <ProjectReference Include="$(BitMinifierSourceDir)Bit.Minifier.csproj" ReferenceOutputAssembly="false" Private="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />

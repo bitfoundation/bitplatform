@@ -66,7 +66,7 @@ public class Calculator
 
     public int HistoryCount => _history.Count;
 
-    // EF Core finds a read-only property's backing field by its name
+    // a read-only property's backing field, named by convention rather than by the compiler
     private readonly int _limit = 10;
 
     public int Limit => _limit;
@@ -110,7 +110,7 @@ public class Calculator
     }
 }
 
-/// <summary>How EF Core's compiled model reaches backing fields: by their names, in strings.</summary>
+/// <summary>How a generated accessor reaches a backing field: by its name, in a string.</summary>
 public static class NoteAccess
 {
     public static string? ReadThroughAccessor(Calculator calculator) => NoteField(calculator);

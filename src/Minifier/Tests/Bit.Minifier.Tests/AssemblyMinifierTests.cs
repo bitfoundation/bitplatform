@@ -15,7 +15,6 @@ public enum Level
 {
     Default,
     Aggressive,
-    SuperAggressive,
 }
 
 [TestClass]
@@ -72,19 +71,17 @@ public class AssemblyMinifierTests
         Assert.IsFalse(module.GetTypes().Cast<ICustomAttributeProvider>().Concat(members).Any(m => HasAttribute(m, "NullableAttribute") || HasAttribute(m, "NullableContextAttribute")));
         Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "NotNullWhenAttribute")));
 
-        var generatedTypes = module.GetTypes().Where(t => t.Name.StartsWith('<') && t.IsNested).ToList();
-        Assert.IsNotEmpty(generatedTypes);
-        Assert.IsTrue(generatedTypes.All(t => HasAttribute(t, "CompilerGeneratedAttribute")));
+        // types keep it, whatever they are called by now: debuggers tell closures and state machines apart by it
+        Assert.IsTrue(module.GetTypes().Any(t => t.IsNested && HasAttribute(t, "CompilerGeneratedAttribute")));
     }
 
     [TestMethod]
-    [DataRow(Level.Default)]
-    [DataRow(Level.Aggressive)]
-    public void KeepNullableKeepsWhatNullabilityInfoContextReads(Level level)
+    public void KeepNullableKeepsWhatNullabilityInfoContextReads()
     {
+        // reflection reads the properties by their public names, which aggressive takes away as well
         var expected = Nullability(original);
 
-        Minify(level, keepNullable: true);
+        Minify(keepNullable: true);
 
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
@@ -102,24 +99,23 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void ShortensGeneratedNamesAndKeepsHandWrittenOnes()
+    public void ShortensGeneratedNamesAndKeepsThePublicOnesTheyBelongTo()
     {
         Minify();
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
 
-        string[] handWritten = ["AddAsync", "Doubles", "CountAsync", "Multiplier", "SumWhere", "Record", "ShiftAmount", "ThrowFromHelper", "_history", "InternalCounter", "InternalSquare", "Label", "Total"];
+        // the public names stay, and the generated members around them lose theirs
+        string[] handWritten = ["AddAsync", "Doubles", "CountAsync", "Multiplier", "SumWhere", "Label", "Total"];
         foreach (var name in handWritten)
         {
             CollectionAssert.Contains(names, name);
             Assert.IsFalse(names.Any(n => n.StartsWith($"<{name}>", StringComparison.Ordinal)), $"<{name}> was not shortened");
         }
 
-        // the kind marker stays, so debuggers still recognize what each generated member is
-        Assert.IsTrue(names.Any(n => n.StartsWith("<a>d__", StringComparison.Ordinal)));
+        // where a generated name survives, the kind marker survives with it, so debuggers still recognize it
         Assert.IsTrue(names.Any(n => n.EndsWith(">k__BackingField", StringComparison.Ordinal)));
-        Assert.IsTrue(names.Any(n => n.Contains(">g__Twice|", StringComparison.Ordinal)));
 
         // hoisted locals and captured variables keep the names the debugger shows
         Assert.IsTrue(names.Contains("offset") || names.Any(n => n.StartsWith("<offset>", StringComparison.Ordinal)));
@@ -130,12 +126,11 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public async Task MinifiedCodeBehavesLikeTheOriginal(Level level)
     {
         var expected = await Drive(original);
-        // reflection by public names, which only the lower levels keep
-        var exercised = level == Level.SuperAggressive ? null : await Exercise(original);
+        // reflection by public names, which only the default level keeps
+        var exercised = level == Level.Aggressive ? null : await Exercise(original);
 
         Minify(level);
 
@@ -146,7 +141,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void StackTracesKeepFilesAndLineNumbers(Level level)
     {
         var expected = FailureStackTrace(original);
@@ -160,13 +154,49 @@ public class AssemblyMinifierTests
         {
             Assert.AreEqual(LineOf(expected[i]), LineOf(actual[i]));
         }
-        if (level == Level.Default) CollectionAssert.AreEqual(expected, actual);
     }
 
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
+    public async Task OwnAssembliesKeepTheirNamesAndTheirStackTraces(Level level)
+    {
+        var expected = FailureStackTrace(original);
+        var exercised = level == Level.Aggressive ? null : await Exercise(original);
+
+        var results = Minify(level, own: [Library], full: [Friend]);
+
+        using (var library = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
+        {
+            var names = AllNames(library);
+            foreach (var name in new[] { "Calculator", "AddAsync", "Record", "ShiftAmount", "_history", "_limit" }) CollectionAssert.Contains(names, name);
+            // the generated ones too: an async frame is named after the method it belongs to
+            Assert.IsTrue(names.Any(n => n.StartsWith("<AddAsync>d__", StringComparison.Ordinal)));
+            // what no stack trace shows still goes
+            Assert.IsFalse(HasNullableMetadata(library));
+        }
+        Assert.AreEqual(0, results.Single(r => r.Name == Library).RenamedMembers);
+        Assert.IsTrue(results.Single(r => r.Name == Library).RemovedAttributes > 0);
+        Assert.IsTrue(results.Single(r => r.Name == Friend).RenamedMembers > 0);
+
+        // the frames of the app's own code read as its source wrote them, and it all still runs
+        CollectionAssert.AreEqual(expected, FailureStackTrace(minified));
+        if (exercised is not null) CollectionAssert.AreEqual(exercised, await Exercise(minified));
+    }
+
+    [TestMethod]
+    public void AFullyMinifiedLibraryIsMinifiedEvenWhenItIsBuiltFromSource()
+    {
+        // it is a package wherever it isn't built alongside the app, and safe for every rule either way
+        var results = Minify(Level.Default, own: [Library, Friend], full: [Library]);
+
+        Assert.IsTrue(results.Single(r => r.Name == Library).RenamedMembers > 0);
+        Assert.AreEqual(0, results.Single(r => r.Name == Friend).RenamedMembers);
+    }
+
+    [TestMethod]
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
     public void TheMapReadsAMinifiedStackTraceBack(Level level)
     {
         var mapFile = Path.Combine(root, "bit-minifier.map");
@@ -183,7 +213,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void PdbStillDescribesTheMinifiedAssembly(Level level)
     {
         var before = ReadDebugInfo(original, Library);
@@ -202,9 +231,9 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void AggressiveRenamesInternalsOnlyWhenEveryFriendIsMinified()
+    public void RenamesInternalsOnlyWhenEveryFriendIsMinified()
     {
-        Minify(Level.Aggressive, assemblies: [Library, Friend]);
+        Minify(Level.Default, assemblies: [Library, Friend]);
 
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
@@ -221,9 +250,9 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public async Task AggressiveKeepsInternalsWhenAFriendIsNotMinified()
+    public async Task KeepsInternalsWhenAFriendIsNotMinified()
     {
-        Minify(Level.Aggressive, assemblies: [Library]);
+        Minify(Level.Default, assemblies: [Library]);
 
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
@@ -251,7 +280,7 @@ public class AssemblyMinifierTests
         }
         var before = Snapshot(minified);
 
-        var error = Assert.ThrowsExactly<MinifierException>(() => Minify(Level.Aggressive, assemblies: [Library]));
+        var error = Assert.ThrowsExactly<MinifierException>(() => Minify(Level.Default, assemblies: [Library]));
 
         StringAssert.Contains(error.Message, Friend);
         CollectionAssert.AreEqual(before, Snapshot(minified));
@@ -260,7 +289,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void PutsTheOriginalsBackWhenReplacingThemFails(Level level)
     {
         // only Windows refuses to move a file that is open
@@ -308,66 +336,21 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void MinifiesAsOftenAsItIsRun()
-    {
-        Minify();
-        var once = Snapshot(minified);
-
-        Minify();
-
-        // a second pass finds nothing left to strip, and the short names map onto themselves
-        CollectionAssert.AreEqual(once, Snapshot(minified));
-    }
-
-    [TestMethod]
-    public async Task OtherLibrariesKeepWhatTheyMayReadAtRuntime()
+    public async Task MinifiesAsOftenAsItIsRun()
     {
         var expected = await Exercise(original);
 
-        Minify(full: []);
+        Minify();
+        Minify();
 
-        using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
-        {
-            var names = AllNames(module);
-            // EF Core finds backing fields by name, Newtonsoft.Json skips fields by [CompilerGenerated]
-            CollectionAssert.Contains(names, "<Label>k__BackingField");
-            Assert.IsTrue(module.GetTypes().SelectMany(t => t.Fields).Where(f => f.Name.EndsWith("k__BackingField", StringComparison.Ordinal)).All(f => HasAttribute(f, "CompilerGeneratedAttribute")));
-            // the rest still goes
-            Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Any(m => HasAttribute(m, "CompilerGeneratedAttribute")));
-            Assert.IsFalse(names.Any(n => n.StartsWith("<AddAsync>", StringComparison.Ordinal)));
-            Assert.IsFalse(HasNullableMetadata(module));
-        }
-
+        // a folder that is minified again is minified, not broken: the second pass reads what the first left
         CollectionAssert.AreEqual(expected, await Exercise(minified));
     }
 
     [TestMethod]
-    [DataRow(Level.Default)]
-    [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
-    public void KeepsWhatEfCoreReadsInOtherLibrariesWhenItIsPublished(Level level)
+    public void RenamesWhatOnlyNullableMetadataIsLeftOn()
     {
-        File.WriteAllBytes(Path.Combine(minified, "Microsoft.EntityFrameworkCore.dll"), []);
-
-        Minify(level, full: [Friend]);
-
-        // EF Core tells required columns apart by the nullable metadata, and finds backing fields by name
-        using (var library = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
-        {
-            Assert.IsTrue(HasNullableMetadata(library));
-            CollectionAssert.Contains(AllNames(library), "<Label>k__BackingField");
-            CollectionAssert.Contains(AllNames(library), "_limit");
-            // what EF Core doesn't read still goes
-            if (level != Level.Default) CollectionAssert.DoesNotContain(AllNames(library), "_history");
-        }
-        using var friend = ModuleDefinition.ReadModule(Path.Combine(minified, Friend + ".dll"));
-        Assert.IsFalse(friend.GetTypes().Cast<ICustomAttributeProvider>().Concat(friend.GetTypes().SelectMany(t => t.Methods)).Any(p => HasAttribute(p, "NullableContextAttribute")));
-    }
-
-    [TestMethod]
-    public void AggressiveRenamesWhatOnlyNullableMetadataIsLeftOn()
-    {
-        Minify(Level.Aggressive, keepNullable: true);
+        Minify(keepNullable: true);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         Assert.IsTrue(HasNullableMetadata(module));
@@ -378,10 +361,10 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    [DataRow(Level.Aggressive, false)]
+    [DataRow(Level.Default, false)]
+    [DataRow(Level.Default, true)]
     [DataRow(Level.Aggressive, true)]
-    [DataRow(Level.SuperAggressive, true)]
-    public async Task AggressiveKeepsWhatTheDynamicBinderReads(Level level, bool dynamicPublished)
+    public async Task KeepsWhatTheDynamicBinderReads(Level level, bool dynamicPublished)
     {
         var expected = await Drive(original);
         if (dynamicPublished is false) File.Delete(Path.Combine(minified, "Microsoft.CSharp.dll"));
@@ -401,7 +384,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void KeepsAnEmbeddedPdb(Level level)
     {
         var libraryPath = Path.Combine(minified, Library + ".dll");
@@ -441,26 +423,24 @@ public class AssemblyMinifierTests
     public async Task MinifiesEveryAssemblyInTheFolderWhenNoneIsNamed()
     {
         var expected = await Exercise(original);
-        var facade = Snapshot(minified).Single(f => f.StartsWith("System.Runtime.dll:", StringComparison.Ordinal));
 
         var results = new AssemblyMinifier(new MinifierOptions { Directory = minified }).Run();
 
         CollectionAssert.IsSubsetOf(new[] { Library, Friend }, results.Select(r => r.Name).ToList());
         // the runtime's ReadyToRun images can't be written back, so they are skipped
         CollectionAssert.DoesNotContain(results.Select(r => r.Name).ToList(), "System.Private.CoreLib");
-        // nothing to change in a type-forwarding facade, so it is not rewritten
-        CollectionAssert.DoesNotContain(results.Select(r => r.Name).ToList(), "System.Runtime");
-        CollectionAssert.Contains(Snapshot(minified), facade);
+        // a type-forwarding facade has no names of its own, but its assembly attributes go like everything else
+        CollectionAssert.Contains(results.Select(r => r.Name).ToList(), "System.Runtime");
         CollectionAssert.AreEqual(expected, await Exercise(minified));
     }
 
     [TestMethod]
-    public async Task AggressiveKeepsBehaviourAndPublicNames()
+    public async Task KeepsBehaviourAndPublicNames()
     {
         var expected = await Exercise(original);
         var stackTrace = FailureStackTrace(original);
 
-        new AssemblyMinifier(new MinifierOptions { Directory = minified, Assemblies = [Library, Friend], FullyMinified = [], Aggressive = true }).Run();
+        new AssemblyMinifier(new MinifierOptions { Directory = minified, Assemblies = [Library, Friend], FullyMinified = [] }).Run();
 
         CollectionAssert.AreEqual(expected, await Exercise(minified));
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
@@ -484,15 +464,15 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void AggressiveKeepsNamesStringLiteralsMention()
+    public void KeepsNamesStringLiteralsMention()
     {
-        new AssemblyMinifier(new MinifierOptions { Directory = minified, Assemblies = [Library, Friend], FullyMinified = [], Aggressive = true }).Run();
+        new AssemblyMinifier(new MinifierOptions { Directory = minified, Assemblies = [Library, Friend], FullyMinified = [] }).Run();
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         // "total is {0}" in Calculator.ThrowFromHelper names nothing, but GetMethod(nameof(ShiftAmount)) would: see Reflected
         CollectionAssert.Contains(AllNames(module), "ReflectedByName");
         CollectionAssert.Contains(AllNames(module), "_reflectedField");
-        // EF Core's compiled model reaches backing fields this way
+        // a compiled model, say, reaches backing fields this way
         CollectionAssert.Contains(AllNames(module), "<Note>k__BackingField");
     }
 
@@ -508,13 +488,11 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    [DataRow(Level.Default)]
-    [DataRow(Level.Aggressive)]
-    public void OnlySuperAggressiveTouchesPublicNames(Level level)
+    public void OnlyAggressiveTouchesPublicNames()
     {
         var map = Path.Combine(root, "bit-minifier.map");
 
-        Minify(level, mapFile: map);
+        Minify(mapFile: map);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
@@ -527,7 +505,7 @@ public class AssemblyMinifierTests
         CollectionAssert.AreEquivalent(new[] { "Added", "Recorded" }, module.GetType("Bit.Minifier.Tests.Library.Calculator").Events.Select(e => e.Name).ToArray());
         CollectionAssert.AreEqual(new[] { "T" }, module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters.Select(p => p.Name).ToArray());
         Assert.IsTrue(module.GetTypes().SelectMany(t => t.GenericParameters).Any(p => p.Name == "TSelf"));
-        // and so do public parameter names and the attributes only super aggressive removes
+        // and so do public parameter names and the attributes only aggressive removes
         var count = module.GetType("Bit.Minifier.Tests.Shelf.Crate").Methods.Single(m => m.Name == "Count");
         CollectionAssert.AreEqual(new[] { "rows", "columns" }, count.Parameters.Select(p => p.Name).ToArray());
         Assert.IsTrue(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "EnumeratorCancellationAttribute")));
@@ -539,8 +517,6 @@ public class AssemblyMinifierTests
         {
             Assert.AreEqual(NamespaceOf(line[2]), NamespaceOf(line[3]));
         }
-        // the default level renames generated names only
-        if (level == Level.Default) Assert.IsTrue(lines.All(l => l[2].Split(["::", "/"], StringSplitOptions.None).Last().StartsWith('<')), string.Join(Environment.NewLine, lines.Select(l => l[2])));
 
         static string NamespaceOf(string name) => name.Contains('.') ? name[..name.LastIndexOf('.')] : "";
     }
@@ -548,7 +524,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void KeepsWhatResourceManagerReads(Level level)
     {
         Minify(level);
@@ -563,7 +538,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(null, Level.Default)]
     [DataRow("--aggressive", Level.Aggressive)]
-    [DataRow("--super-aggressive", Level.SuperAggressive)]
     public async Task CommandLinePicksTheLevel(string? option, Level level)
     {
         var expected = await Drive(original);
@@ -576,8 +550,9 @@ public class AssemblyMinifierTests
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
-            Assert.AreEqual(level == Level.Default, names.Contains("Record"));
-            Assert.AreEqual(level != Level.SuperAggressive, names.Contains("Calculator"));
+            // both levels take the internal names; only aggressive takes the public ones
+            CollectionAssert.DoesNotContain(names, "Record");
+            Assert.AreEqual(level == Level.Default, names.Contains("Calculator"));
         }
         CollectionAssert.AreEqual(expected, await Drive(minified));
     }
@@ -585,7 +560,6 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(null)]
     [DataRow("--aggressive")]
-    [DataRow("--super-aggressive")]
     public void MinifiesAFileThatIsNotNamedAfterTheAssemblyInIt(string? option)
     {
         // the folder holds files; nothing says a file carries the name of the assembly inside it
@@ -616,6 +590,8 @@ public class AssemblyMinifierTests
 
     [TestMethod]
     [DataRow("--agressive")]
+    // the level it named is the default now, and the switch is gone with it
+    [DataRow("--super-aggressive")]
     [DataRow("--map")]
     [DataRow("--map --aggressive")]
     public void CommandLineRejectsWhatItDoesNotKnow(string options)
@@ -644,11 +620,10 @@ public class AssemblyMinifierTests
     [TestMethod]
     [DataRow(null)]
     [DataRow("--aggressive")]
-    [DataRow("--super-aggressive")]
     public void CommandLineReportsAFailureAsAWarning(string? option)
     {
         var map = Path.Combine(root, "bit-minifier.map");
-        // the default level renames nothing another assembly can see, so only a file that can't be read fails it
+        // a pdb that can't be read fails the run whatever the level
         File.WriteAllBytes(Path.Combine(minified, Library + ".pdb"), [1, 2, 3]);
         var before = Snapshot(minified);
         string[] args = option is null ? [minified, "--map", map, Library, Friend] : [minified, "--map", map, option, Library, Friend];
@@ -664,11 +639,11 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void SuperAggressiveRenamesPublicNamesToo()
+    public void AggressiveRenamesPublicNamesToo()
     {
         var map = Path.Combine(root, "bit-minifier.map");
 
-        Minify(Level.SuperAggressive, mapFile: map);
+        Minify(Level.Aggressive, mapFile: map);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
@@ -702,9 +677,9 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void SuperAggressiveKeepsWhatIsReachedByName()
+    public void AggressiveKeepsWhatIsReachedByName()
     {
-        Minify(Level.SuperAggressive);
+        Minify(Level.Aggressive);
 
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
@@ -734,18 +709,18 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void SuperAggressiveKeepsPublicFieldsWhenNewtonsoftJsonIsPublished()
+    public void AggressiveKeepsPublicFieldsWhenNewtonsoftJsonIsPublished()
     {
         File.WriteAllBytes(Path.Combine(minified, "Newtonsoft.Json.dll"), []);
 
-        Minify(Level.SuperAggressive);
+        Minify(Level.Aggressive);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         CollectionAssert.Contains(AllNames(module), "Tally");
     }
 
     [TestMethod]
-    public void SuperAggressiveKeepsTheMethodAnAsyncEntryPointLeadsTo()
+    public void AggressiveKeepsTheMethodAnAsyncEntryPointLeadsTo()
     {
         // an exe's entry point is the generated <Main>, which the WebAssembly host follows to Main by name
         var libraryPath = Path.Combine(minified, Library + ".dll");
@@ -757,7 +732,7 @@ public class AssemblyMinifierTests
             assembly.Write(libraryPath, new WriterParameters { WriteSymbols = true });
         }
 
-        Minify(Level.SuperAggressive);
+        Minify(Level.Aggressive);
 
         using var module = ModuleDefinition.ReadModule(libraryPath);
         var startup = module.EntryPoint.DeclaringType;
@@ -766,12 +741,12 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public async Task SuperAggressiveKeepsThePublicNamesAnUnminifiedAssemblyUses()
+    public async Task AggressiveKeepsThePublicNamesAnUnminifiedAssemblyUses()
     {
         var expected = await Exercise(original);
         var driven = await Drive(original);
 
-        Minify(Level.SuperAggressive, assemblies: [Library]);
+        Minify(Level.Aggressive, assemblies: [Library]);
 
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
@@ -784,8 +759,8 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
-    [DataRow(Level.SuperAggressive)]
     public void RenamedMembersNeverTakeANameOfTheirOwnType(Level level)
     {
         Minify(level);
@@ -820,10 +795,10 @@ public class AssemblyMinifierTests
     [TestMethod]
     // in both orders, since the assemblies are minified one after the other: a base type may well be renamed
     // after the type that derives from it, and its assembly's references still spell the names it had
+    [DataRow(Level.Default, false)]
+    [DataRow(Level.Default, true)]
     [DataRow(Level.Aggressive, false)]
     [DataRow(Level.Aggressive, true)]
-    [DataRow(Level.SuperAggressive, false)]
-    [DataRow(Level.SuperAggressive, true)]
     public void RenamedMembersNeverTakeANameOfABaseTypeOfAnotherAssembly(Level level, bool friendFirst)
     {
         Minify(level, assemblies: friendFirst ? [Friend, Library] : [Library, Friend]);
@@ -865,7 +840,7 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void SuperAggressiveKeepsWhatASatelliteAssemblyNames()
+    public void AggressiveKeepsWhatASatelliteAssemblyNames()
     {
         // the resources of a culture live in a folder of their own, and are named after the type they belong to
         var satellite = Path.Combine(Directory.CreateDirectory(Path.Combine(minified, "fa")).FullName, Library + ".resources.dll");
@@ -875,14 +850,14 @@ public class AssemblyMinifierTests
             resources.Write(satellite);
         }
 
-        Minify(Level.SuperAggressive);
+        Minify(Level.Aggressive);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         CollectionAssert.Contains(AllNames(module), "Ledger");
     }
 
     [TestMethod]
-    public void SuperAggressiveKeepsThePublicNamesAnUnminifiedAssemblyReachesThroughAForwarder()
+    public void AggressiveKeepsThePublicNamesAnUnminifiedAssemblyReachesThroughAForwarder()
     {
         const string Facade = "Bit.Minifier.Tests.Facade";
         const string Reader = "Bit.Minifier.Tests.Reader";
@@ -904,7 +879,7 @@ public class AssemblyMinifierTests
             reader.Write(Path.Combine(minified, Reader + ".dll"));
         }
 
-        var results = Minify(Level.SuperAggressive, assemblies: [Library, Friend, Facade]);
+        var results = Minify(Level.Aggressive, assemblies: [Library, Friend, Facade]);
 
         Assert.IsNotEmpty(results);
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
@@ -914,14 +889,14 @@ public class AssemblyMinifierTests
         Assert.AreEqual("Bit.Minifier.Tests.Library.Ledger", forwarded.ExportedTypes.Single().FullName);
     }
 
-    private IReadOnlyList<MinifiedAssembly> Minify(Level level = Level.Default, bool keepNullable = false, string[]? assemblies = null, string? mapFile = null, string[]? full = null)
+    private IReadOnlyList<MinifiedAssembly> Minify(Level level = Level.Default, bool keepNullable = false, string[]? assemblies = null, string? mapFile = null, string[]? full = null, string[]? own = null)
         => new AssemblyMinifier(new MinifierOptions
         {
             Directory = minified,
             Assemblies = assemblies ?? [Library, Friend],
             FullyMinified = full ?? [Library, Friend],
+            OwnAssemblies = own ?? [],
             Aggressive = level == Level.Aggressive,
-            SuperAggressive = level == Level.SuperAggressive,
             KeepNullable = keepNullable,
             MapFile = mapFile,
         }).Run();
@@ -985,7 +960,7 @@ public class AssemblyMinifierTests
         }
     }
 
-    // through the driver, the one entry the super aggressive level leaves the tests
+    // through the driver, the one entry the aggressive level leaves the tests
     private async Task<List<string>> Drive(string directory)
         => await (Task<List<string>>)Driver(directory).GetMethod("RunAsync")!.Invoke(null, null)!;
 

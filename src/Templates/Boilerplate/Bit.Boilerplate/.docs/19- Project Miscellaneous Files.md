@@ -336,11 +336,8 @@ chmod +x Clean.sh  # Make it executable (first time only)
 **Installation and Usage**:
 
 ```bash
-# Install the bit-resx CLI tool globally
-dotnet tool install --global Bit.ResxTranslator
-
-# Run the translator (from the project root directory)
-bit-resx
+# Run the translator (from the project root directory); dnx fetches it, nothing is installed
+dnx Bit.ResxTranslator
 ```
 
 **To add a new language**:

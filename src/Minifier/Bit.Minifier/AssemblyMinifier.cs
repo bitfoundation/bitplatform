@@ -6,8 +6,8 @@ namespace Bit.Minifier;
 /// <summary>
 /// Shrinks trimmed assemblies without changing what they do or how they debug: drops attributes only the
 /// compiler reads, shortens compiler-generated names (keeping the shape debuggers parse) and rewrites the
-/// portable pdb to match. Hand-written names are kept unless <see cref="MinifierOptions.Aggressive"/>, public
-/// ones unless <see cref="MinifierOptions.SuperAggressive"/>.
+/// portable pdb to match. Every non-public name goes; public ones only with
+/// <see cref="MinifierOptions.Aggressive"/>.
 /// </summary>
 internal sealed class AssemblyMinifier(MinifierOptions options)
 {
@@ -18,7 +18,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     // the dynamic binder (Microsoft.CSharp) reads it to tell dynamic members apart
     private const string Dynamic = "System.Runtime.CompilerServices.DynamicAttribute";
 
-    // what NullabilityInfoContext reads at runtime, by name, and EF Core through it
+    // what NullabilityInfoContext reads at runtime, by name
     private static readonly HashSet<string> NullableAttributes =
     [
         "System.Diagnostics.CodeAnalysis.AllowNullAttribute",
@@ -93,37 +93,42 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var types = others.Concat(modules).SelectMany(m => ReferenceIndex.ResolvableTypes(m, modules)).ToList();
 
         var fully = options.FullyMinified.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        // EF Core tells required columns apart by the nullable metadata and finds backing fields by name, in whatever
-        // assembly declares the entities; a model that no longer matches its migrations fails MigrateAsync
-        var efCore = File.Exists(Path.Combine(options.Directory, "Microsoft.EntityFrameworkCore.dll"));
         var dynamicBinder = File.Exists(Path.Combine(options.Directory, "Microsoft.CSharp.dll"));
 
         // every rename keeps the names string literals mention: nameof(...), GetField("..."), [UnsafeAccessor(Name = "...")]
         // Newtonsoft.Json serializes public fields by name
         var keepPublicFields = File.Exists(Path.Combine(options.Directory, "Newtonsoft.Json.dll"));
-        literals = new AggressiveMinifier(Map, options.SuperAggressive, keepPublicFields);
+        literals = new AggressiveMinifier(Map, options.Aggressive, keepPublicFields);
         // every assembly of the folder may name what it reads by name, whether this tool rewrites it or not
-        literals.Collect(modules, others, wordsOnly: options.Aggressive is false);
+        literals.Collect(modules, others);
         // a satellite assembly is not in the folder itself, and its resource names name the types they belong to
         literals.CollectWords(SatelliteResourceNames());
 
         // decided before the first rename: a forwarder stops leading to its type once that type is renamed
         var reachable = ReachableFromOthers(modules, others);
 
+        // the app's own code: renaming it would only make its own stack traces harder to read. A fully minified
+        // library is a package wherever it isn't built from source, and safe for every rule either way.
+        var own = options.OwnAssemblies.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        own.ExceptWith(fully);
+
+        // what the level and the folder say may go, the same for every assembly of the publish
+        var removable = new HashSet<string>(CompileTimeAttributes);
+        removable.UnionWith(AggressiveMinifier.MoreAttributes);
+        if (options.KeepNullable is false) removable.UnionWith(NullableAttributes);
+        if (dynamicBinder is false) removable.Add(Dynamic);
+        if (options.Aggressive) removable.UnionWith(AggressiveMinifier.AggressiveAttributes);
+
         var stats = new Dictionary<ModuleDefinition, (int attributes, int names)>();
         foreach (var module in modules)
         {
-            // aggressive: no library gets the benefit of the doubt, unless EF Core may map its types
-            var full = fully.Contains(module.Assembly.Name.Name) || (options.Aggressive && efCore is false);
-            var removable = new HashSet<string>(CompileTimeAttributes);
-            if (options.KeepNullable is false && (full || efCore is false)) removable.UnionWith(NullableAttributes);
-            if (options.Aggressive) removable.UnionWith(AggressiveMinifier.MoreAttributes);
-            if (options.Aggressive && dynamicBinder is false) removable.Add(Dynamic);
-            if (options.SuperAggressive) removable.UnionWith(AggressiveMinifier.SuperAttributes);
-
-            var attributes = StripAttributes(module, removable, full);
-            var names = ShortenGeneratedNames(module, full);
-            if (options.Aggressive) names += literals.Run(module, Scope(module, modules, reachable), full);
+            var attributes = StripAttributes(module, removable);
+            // an assembly of the app's own keeps every name it has: the attributes go, the names stay
+            var names = 0;
+            if (own.Contains(module.Assembly.Name.Name) is false)
+            {
+                names = ShortenGeneratedNames(module) + literals.Run(module, Scope(module, modules, reachable));
+            }
             stats[module] = (attributes, names);
         }
 
@@ -202,7 +207,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         return others;
     }
 
-    private static int StripAttributes(ModuleDefinition module, HashSet<string> removable, bool full)
+    private static int StripAttributes(ModuleDefinition module, HashSet<string> removable)
     {
         int removed = 0;
         foreach (var provider in Providers(module))
@@ -213,9 +218,8 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             {
                 var name = attributes[i].AttributeType.FullName;
                 if (removable.Contains(name) is false) continue;
-                // debuggers use it to tell closures and state machines apart from user types, and
-                // serializers such as Newtonsoft.Json use it to skip backing fields
-                if (name == CompilerGenerated && (provider is TypeDefinition || (full is false && provider is FieldDefinition))) continue;
+                // debuggers use it to tell closures and state machines apart from user types
+                if (name == CompilerGenerated && provider is TypeDefinition) continue;
                 // a trimmed app's DI checks that an open generic implementation asks no more of its type arguments
                 // than its service does, so both keep what they ask
                 if (name == DynamicallyAccessedMembers && provider is GenericParameter) continue;
@@ -230,10 +234,9 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     /// <c>&lt;BuildRenderTree&gt;b__12_0</c> -> <c>&lt;a&gt;b__12_0</c>. Only the member name inside the brackets
     /// changes; the kind marker and ordinals stay, so debuggers still recognize lambdas, local functions,
     /// state machines and backing fields. Fields of generated types (hoisted locals, captured variables) keep
-    /// their names because the debugger shows them as the locals they are. Backing fields are renamed in
-    /// fully minified assemblies only: EF Core, for one, finds them by name.
+    /// their names because the debugger shows them as the locals they are.
     /// </summary>
-    private int ShortenGeneratedNames(ModuleDefinition module, bool full)
+    private int ShortenGeneratedNames(ModuleDefinition module)
     {
         // one name map per outermost type keeps every new name unique where the old one was
         var scopes = new Dictionary<TypeDefinition, Dictionary<string, string>>();
@@ -265,7 +268,6 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 var name = Shorten(type, method.Name);
                 if (name != method.Name && Clashes(type.Methods, name) is false) { Map(module, "M", $"{type.FullName}::{method.Name}", name); method.Name = name; renamed++; }
             }
-            if (full is false) continue;
             foreach (var field in type.Fields)
             {
                 if (field.IsPublic || IsNameNeutral(field) is false || literals.IsMentioned(field.Name)) continue;
@@ -284,7 +286,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     private RenameScope Scope(ModuleDefinition module, HashSet<ModuleDefinition> modules, HashSet<string> reachable)
     {
         if (CanRenameInternals(module, modules) is false) return RenameScope.Private;
-        if (options.SuperAggressive is false) return RenameScope.Internal;
+        if (options.Aggressive is false) return RenameScope.Internal;
         return reachable.Contains(module.Assembly.Name.Name) ? RenameScope.Internal : RenameScope.Public;
     }
 

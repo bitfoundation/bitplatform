@@ -1,11 +1,12 @@
 ﻿using Bit.Minifier;
 
-// usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]
+// usage: Bit.Minifier <directory> [--map <file>] [--own <a;b>] [--keep-nullable] [--aggressive] [<assembly name>...]
 //        Bit.Minifier --decode <map file> [<stack trace file>]
-// Without assembly names, every managed assembly in the directory is minified. --decode reads a stack trace (from
+// Without assembly names, every managed assembly in the directory is minified. --own names the app's own
+// assemblies, which keep their names. --aggressive renames public names too. --decode reads a stack trace (from
 // the file, or from standard input) and writes it back with the names the source has.
 const string Usage = """
-    usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]
+    usage: Bit.Minifier <directory> [--map <file>] [--own <a;b>] [--keep-nullable] [--aggressive] [<assembly name>...]
            Bit.Minifier --decode <map file> [<stack trace file>]
     """;
 
@@ -41,16 +42,19 @@ if (args.Length < 1 || args[0].StartsWith("--", StringComparison.Ordinal))
 }
 
 string? map = null;
-bool keepNullable = false, aggressive = false, superAggressive = false;
-List<string> names = [];
+bool keepNullable = false, aggressive = false;
+List<string> names = [], own = [];
 for (int i = 1; i < args.Length; i++)
 {
     switch (args[i])
     {
         case "--map" when i + 1 < args.Length && args[i + 1].StartsWith("--", StringComparison.Ordinal) is false: map = args[++i]; break;
+        // semicolon-separated, the way MSBuild writes an item list
+        case "--own" when i + 1 < args.Length && args[i + 1].StartsWith("--", StringComparison.Ordinal) is false:
+            own.AddRange(args[++i].Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+            break;
         case "--keep-nullable": keepNullable = true; break;
         case "--aggressive": aggressive = true; break;
-        case "--super-aggressive": superAggressive = true; break;
         // a mistyped switch would otherwise be taken for an assembly name, and nothing would be minified
         case var unknown when unknown.StartsWith("--", StringComparison.Ordinal):
             Console.Error.WriteLine(Usage);
@@ -63,10 +67,10 @@ var options = new MinifierOptions
 {
     Directory = Path.GetFullPath(args[0]),
     Assemblies = names.Count > 0 ? names : null,
+    OwnAssemblies = own,
     MapFile = map,
     KeepNullable = keepNullable,
     Aggressive = aggressive,
-    SuperAggressive = superAggressive,
 };
 
 try

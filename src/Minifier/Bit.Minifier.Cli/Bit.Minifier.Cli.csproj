@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <!-- The same program the Bit.Minifier package carries under tools/, packaged the way a person runs it: with
+         dnx, given a map and a stack trace (see src/Minifier/README.md).
+
+         Bit.Minifier is what an app installs to be minified on publish. This is what whoever holds a map and a
+         stack trace runs, with no checkout, no project and nothing installed, to read that trace back into the
+         names its source has. One program, compiled twice, so the two can never drift apart. -->
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RollForward>Major</RollForward>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+        <IsAotCompatible>false</IsAotCompatible>
+        <SignAssembly>false</SignAssembly>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <DocumentationFile></DocumentationFile>
+
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>bit-minifier</ToolCommandName>
+        <PackageDescription>Reads a stack trace of a Blazor WebAssembly app minified by Bit.Minifier back into the names its source has, through the map that publish wrote.</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;WebAssembly;minify;stack trace</PackageTags>
+        <!-- the release pipelines pack it explicitly; everything else installs it from nuget.org -->
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="../Bit.Minifier/**/*.cs" Exclude="../Bit.Minifier/bin/**;../Bit.Minifier/obj/**" LinkBase="Bit.Minifier" />
+    </ItemGroup>
+
+</Project>

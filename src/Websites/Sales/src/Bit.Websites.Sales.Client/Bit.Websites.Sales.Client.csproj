@@ -16,6 +16,7 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <WasmEnableSIMD>false</WasmEnableSIMD>
+        <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,6 +34,7 @@
         <PackageReference Include="Bit.BlazorUI" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.1-pre-01" />
+        <!-- <PackageReference Include="Bit.Minifier" Version="10.6.1-pre-01" PrivateAssets="all" /> -->
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.1-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -118,10 +120,9 @@
         <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
-    <!-- Bit.Minifier from source (src/Minifier/README.md); inert wherever that source isn't around -->
+    <!-- Bit.Minifier from source (src/Minifier/README.md) until the package is published; inert wherever that source isn't around -->
     <PropertyGroup>
         <BitMinifierSourceDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', 'src/Minifier/Bit.Minifier/Bit.Minifier.csproj'))/src/Minifier/Bit.Minifier/</BitMinifierSourceDir>
-        <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
     <ItemGroup Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')">
         <ProjectReference Include="$(BitMinifierSourceDir)Bit.Minifier.csproj" ReferenceOutputAssembly="false" Private="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />

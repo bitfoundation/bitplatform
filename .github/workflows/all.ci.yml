@@ -138,8 +138,7 @@ jobs:
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Trust dotnet cert
       continue-on-error: true
@@ -248,8 +247,7 @@ jobs:
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Install sql server
       uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
@@ -561,6 +559,8 @@ jobs:
       run: |
         dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
+        dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output ./packages --configuration Release
 
     - name: Build and pack ResxTranslator
       run: |

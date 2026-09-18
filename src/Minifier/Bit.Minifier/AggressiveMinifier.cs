@@ -13,19 +13,19 @@ internal enum RenameScope
     /// <summary>Every non-public name changes, and public ones of types nobody outside can see.</summary>
     Internal,
 
-    /// <summary>Super aggressive, and only minified assemblies reference this one: public names change too.</summary>
+    /// <summary>Aggressive, and only minified assemblies reference this one: public names change too.</summary>
     Public,
 }
 
 /// <summary>
-/// Opt-in passes that trade debuggability and some compatibility for size: every non-public name in every
+/// The passes that trade debuggability and some compatibility for size: every non-public name in every
 /// assembly is shortened. Public API names stay, so stack traces still say where things happened. A name that
 /// appears as a word in any string literal of the app is kept - that is what nameof(...) and GetMethod("...")
 /// compile to - and the assemblies the runtime binds to by name from native code are left out of renaming.
-/// Super aggressive (<see cref="RenameScope.Public"/>) renames public names too, and clears namespaces,
+/// Aggressive (<see cref="RenameScope.Public"/>) renames public names too, and clears namespaces,
 /// generic parameter names and event metadata.
 /// </summary>
-internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string, string, string> map, bool super, bool keepPublicFields = false)
+internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string, string, string> map, bool aggressive, bool keepPublicFields = false)
 {
     // the Mono runtime and the JS interop layer look members of these up by name, from native code
     private static readonly HashSet<string> RuntimeBound = new(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib", "System.Runtime.InteropServices.JavaScript" };
@@ -80,8 +80,8 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         "System.Reflection.AssemblyTrademarkAttribute",
     ];
 
-    // super aggressive: read by the compiler, analyzers, the trimmer or a debugger only
-    public static readonly HashSet<string> SuperAttributes =
+    // aggressive: read by the compiler, analyzers, the trimmer or a debugger only
+    public static readonly HashSet<string> AggressiveAttributes =
     [
         "Microsoft.CodeAnalysis.EmbeddedAttribute",
         "System.Diagnostics.DebuggableAttribute",
@@ -138,9 +138,9 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     /// Everything the passes need to know before the first rename: every identifier-like word of every string
     /// literal, attribute string and resource name of <paramref name="modules"/> and <paramref name="readers"/>
     /// (assemblies that are not rewritten but may reach the rewritten ones by name), the methods loaded by
-    /// token, and the Blazor components. Only the words when nothing but generated names is renamed.
+    /// token, and the Blazor components.
     /// </summary>
-    public void Collect(IReadOnlyCollection<ModuleDefinition> modules, IEnumerable<ModuleDefinition> readers, bool wordsOnly)
+    public void Collect(IReadOnlyCollection<ModuleDefinition> modules, IEnumerable<ModuleDefinition> readers)
     {
         foreach (var module in modules.Concat(readers))
         {
@@ -178,17 +178,16 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             }
         }
 
-        if (wordsOnly) return;
         CollectNamePools(modules);
         foreach (var type in modules.SelectMany(m => m.GetTypes()))
         {
             originalNames[type] = type.FullName;
             CollectStaticImplementations(type);
             // a server reports its exceptions by type name, and clients map them back by it
-            if (super && IsException(type)) Keep(type);
+            if (aggressive && IsException(type)) Keep(type);
             if (IsComponent(type) is false) continue;
             components.Add(type);
-            if (super is false) continue;
+            if (aggressive is false) continue;
             // a server that prerenders the component sends the types of its parameters by name
             foreach (var property in type.Properties)
             {
@@ -278,7 +277,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     {
         literalWords.Add(text);
         foreach (Match word in Words().Matches(text)) literalWords.Add(word.Value);
-        if (super is false) return;
+        if (aggressive is false) return;
         foreach (Match dotted in DottedWords().Matches(text))
         {
             for (int dot = dotted.Value.IndexOf('.'); dot > 0; dot = dotted.Value.IndexOf('.', dot + 1)) literalNamespaces.Add(dotted.Value[..dot]);
@@ -300,17 +299,16 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         => type.Namespace.StartsWith("System.Runtime.InteropServices.JavaScript", StringComparison.Ordinal) || type.Name.StartsWith("__", StringComparison.Ordinal)
             || (type.DeclaringType is not null && IsNativeBound(type.DeclaringType));
 
-    /// <param name="full">Whether the assembly gets every rule; otherwise EF Core may map its types, and find their backing fields by name.</param>
-    public int Run(ModuleDefinition module, RenameScope scope, bool full)
+    public int Run(ModuleDefinition module, RenameScope scope)
     {
         if (RuntimeBound.Contains(module.Assembly.Name.Name)) return ClearParameterNames(module, scope == RenameScope.Public ? RenameScope.Internal : scope);
 
         return RemovePrivateProperties(module, scope)
-            + (super ? RemoveEvents(module, scope) : 0)
-            + RenameMembers(module, scope, full)
+            + (aggressive ? RemoveEvents(module, scope) : 0)
+            + RenameMembers(module, scope)
             + ClearParameterNames(module, scope)
             + RenameTypes(module, scope)
-            + (super ? RenameGenericParameters(module, scope) : 0);
+            + (aggressive ? RenameGenericParameters(module, scope) : 0);
     }
 
     private int RemovePrivateProperties(ModuleDefinition module, RenameScope scope)
@@ -355,7 +353,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         return removed;
     }
 
-    private int RenameMembers(ModuleDefinition module, RenameScope scope, bool full)
+    private int RenameMembers(ModuleDefinition module, RenameScope scope)
     {
         int renamed = 0;
         foreach (var type in module.GetTypes())
@@ -371,8 +369,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                 foreach (var field in type.Fields)
                 {
                     if (field.IsSpecialName || field.IsRuntimeSpecialName || IsBound(field) || literalWords.Contains(field.Name) || field.Name.StartsWith('<')) continue;
-                    if (full is false && IsBackingFieldConvention(type, field)) continue;
-                    // public fields stay below super aggressive, whoever declares them: serializers may see them. Above,
+                    // public fields stay below aggressive, whoever declares them: serializers may see them. Above,
                     // constants stay (code lists them by reflection), and all of them when Newtonsoft.Json may serialize them
                     if (field.IsPublic && (scope != RenameScope.Public || field.IsLiteral || keepPublicFields)) continue;
                     if (IsRenamable(type, field.IsPrivate, field.IsPublic, field.IsFamily || field.IsFamilyOrAssembly, scope) is false) continue;
@@ -406,12 +403,12 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     }
 
     /// <summary>
-    /// Super aggressive: a property's or an event's accessors are tied to it by metadata (MethodSemantics), not by
+    /// Aggressive: a property's or an event's accessors are tied to it by metadata (MethodSemantics), not by
     /// name, which is how reflection, serializers and Blazor find them. Operators stay: Expression and dynamic look
     /// them up by name.
     /// </summary>
     private bool IsRenamableAccessor(MethodDefinition method)
-        => super && method.SemanticsAttributes != MethodSemanticsAttributes.None && method.Name.StartsWith("op_", StringComparison.Ordinal) is false;
+        => aggressive && method.SemanticsAttributes != MethodSemanticsAttributes.None && method.Name.StartsWith("op_", StringComparison.Ordinal) is false;
 
     /// <summary>
     /// The WebAssembly host starts an async Main through the method the entry point's name points at:
@@ -433,7 +430,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                 // constructor parameters are what serializers bind by name; overrides don't care about names
                 if (method.IsConstructor || IsBound(method)) continue;
                 if (IsRenamable(type, method, scope) is false && type.Name.StartsWith('<') is false) continue;
-                // public parameters (super aggressive) keep the names a string mentions: a generated client may build requests
+                // public parameters (aggressive) keep the names a string mentions: a generated client may build requests
                 // from them, and a reflection-based one (Refit) from any interface method's
                 var exposed = IsRenamable(type, method, RenameScope.Internal) is false;
                 if (exposed && type.IsInterface) continue;
@@ -476,8 +473,8 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             }
             else
             {
-                // super aggressive: the namespace goes too, unless a string names it
-                var @namespace = super && literalWords.Contains(type.Namespace) is false && literalNamespaces.Contains(type.Namespace) is false ? "" : type.Namespace;
+                // aggressive: the namespace goes too, unless a string names it
+                var @namespace = aggressive && literalWords.Contains(type.Namespace) is false && literalNamespaces.Contains(type.Namespace) is false ? "" : type.Namespace;
                 do name = "_" + ShortName.Get(topLevelNames++) + arity; while (topLevel.Contains(FullName(@namespace, name)) || literalWords.Contains(name));
                 topLevel.Add(FullName(@namespace, name));
                 // the module looks top-level types up through a name cache that only Add/Remove maintain
@@ -549,14 +546,6 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             if (t.FullName == "System.Exception") return true;
         }
         return false;
-    }
-
-    // EF Core finds the backing field of property Name by these names, besides <Name>k__BackingField
-    private static bool IsBackingFieldConvention(TypeDefinition type, FieldDefinition field)
-    {
-        var name = field.Name.StartsWith("m_", StringComparison.Ordinal) ? field.Name[2..] : field.Name.StartsWith('_') ? field.Name[1..] : field.Name;
-        return name.Length > 0 && type.Properties.Any(p => p.Name.Length == name.Length && char.ToUpperInvariant(p.Name[0]) == char.ToUpperInvariant(name[0])
-            && p.Name.AsSpan(1).SequenceEqual(name.AsSpan(1)));
     }
 
     // Newtonsoft.Json and component models find ShouldSerializeX() and ResetX() by the name of property X

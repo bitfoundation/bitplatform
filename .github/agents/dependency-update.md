@@ -17,7 +17,7 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 3. GitHub Actions (`.github/workflows/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`, `src/Butil/tests/Bit.Butil.Tests.E2E/ci/`)
 4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
 5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
-6. `.config/dotnet-tools.json` (4 files), `global.json` (3 files)
+6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
 7. Container image tags in the Aspire AppHost
 
 ## The hold-back rules
@@ -186,11 +186,13 @@ The `image` follows the newest .NET SDK: `curl -s
 https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json` → `.latest-sdk`. Both
 devcontainers must agree.
 
-### dotnet-tools and global.json
+### dnx tool versions and global.json
 
-`vpk` must equal the `Velopack` PackageReference version in the same project — Velopack requires the
-CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the EF Core
-package version.
+There are no `.config/dotnet-tools.json` manifests any more: every tool is run with `dnx
+<package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
+.*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
+requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
+EF Core package version.
 
 `src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
 `global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a

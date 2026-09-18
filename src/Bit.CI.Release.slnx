@@ -95,6 +95,7 @@
   </Folder>
   <Folder Name="/Minifier/">
     <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+    <Project Path="Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj" />
   </Folder>
   <Folder Name="/ResxTranslator/">
     <Project Path="ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj" />
