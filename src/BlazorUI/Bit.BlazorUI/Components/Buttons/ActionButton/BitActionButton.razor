@@ -2,16 +2,33 @@
 @inherits BitComponentBase
 
 @{
-    RenderFragment b = @<div style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</div>;
+    RenderFragment b = @<span style="@Styles?.Content" class="bit-acb-con @Classes?.Content">@(Body ?? ChildContent)</span>;
     var body = ((Body ?? ChildContent) is not null && IconOnly is false) ? b : null;
     var icon = BitIconInfo.From(Icon, IconName);
     var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
-    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so the two
-    // attributes a page can also write by hand are resolved against what it wrote (see BitComponentBase.GetSplattedAttribute).
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so every
+    // attribute a page can also write by hand is resolved against what it wrote (see BitComponentBase.GetSplattedAttribute)
+    // instead of being overwritten with the parameter's null. The hyphenated aria-* names cannot reach the parameters
+    // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
+    // by hand is a real thing to do, and losing it would take a control's name or state with it.
     var formId = FormId ?? GetSplattedAttribute("form");
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
+    var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
+    var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
+    // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put
+    // back - unless the page gave the button a role of its own (a menuitem, a tab), which is the one it should keep.
+    var anchorRole = GetSplattedAttribute("role") ?? (IsEnabled && IsLoading is false ? null : "link");
+    var tabIndex = GetTabIndex(ariaHidden);
     // Autofocus follows the same rule as the tab order: a control hidden from assistive technologies, or a disabled one
     // that is not kept focusable, must not pull the focus on the first render - a hand-written autofocus included.
-    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && AriaHidden is false && (IsEnabled || AllowDisabledFocus);
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (IsEnabled || AllowDisabledFocus);
+    // The two states whose click is ignored are also the two whose native default has to be suppressed: a disabled
+    // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one is
+    // only kept from the pointer by pointer-events - both would still submit their form on Enter without this.
+    var suppressDefault = IsEnabled is false || (IsLoading && Reclickable is false);
 
     RenderFragment inner =
         @<text>
@@ -23,11 +40,11 @@
                 }
                 else
                 {
-                    <div style="@Styles?.Spinner" class="bit-acb-spn @Classes?.Spinner" aria-hidden="true"></div>
+                    <span style="@Styles?.Spinner" class="bit-acb-spn @Classes?.Spinner" aria-hidden="true"></span>
 
                     @if (LoadingLabel.HasValue() && IconOnly is false)
                     {
-                        <div style="@Styles?.LoadingLabel" class="bit-acb-lbl @Classes?.LoadingLabel">@LoadingLabel</div>
+                        <span style="@Styles?.LoadingLabel" class="bit-acb-lbl @Classes?.LoadingLabel">@LoadingLabel</span>
                     }
                     else
                     {
@@ -54,6 +71,7 @@
 @if (Href.HasNoValue())
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
+            @onclick:preventDefault="suppressDefault"
             id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
@@ -63,46 +81,54 @@
             disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
             autofocus="@autoFocus"
             title="@Title"
-            tabindex="@GetTabIndex()"
-            aria-label="@AriaLabel"
-            aria-hidden="@(AriaHidden ? "true" : null)"
-            aria-disabled="@(IsEnabled ? null : "true")"
-            aria-describedby="@descriptionId"
-            aria-busy="@(IsLoading ? "true" : null)">
-        <div class="bit-acb-inn">
+            tabindex="@tabIndex"
+            aria-label="@ariaLabel"
+            aria-hidden="@(ariaHidden ? "true" : null)"
+            aria-disabled="@ariaDisabled"
+            aria-describedby="@(describedBy.HasValue() ? describedBy : null)"
+            aria-busy="@ariaBusy">
+        <span class="bit-acb-inn">
             @inner
-        </div>
-        <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
+        </span>
     </button>
 }
 else
 {
     <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
+       @onclick:preventDefault="suppressDefault"
        id="@_Id"
        rel="@_rel"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        dir="@Dir?.ToString().ToLower()"
        href="@(IsEnabled && IsLoading is false ? Href : null)"
-       role="@(IsEnabled && IsLoading is false ? null : "link")"
+       role="@anchorRole"
        autofocus="@autoFocus"
        title="@Title"
        target="@Target"
        download="@Download"
-       tabindex="@GetTabIndex()"
-       aria-label="@AriaLabel"
-       aria-hidden="@(AriaHidden ? "true" : null)"
-       aria-disabled="@(IsEnabled ? null : "true")"
-       aria-describedby="@descriptionId"
-       aria-busy="@(IsLoading ? "true" : null)">
+       tabindex="@tabIndex"
+       aria-label="@ariaLabel"
+       aria-hidden="@(ariaHidden ? "true" : null)"
+       aria-disabled="@ariaDisabled"
+       aria-describedby="@(describedBy.HasValue() ? describedBy : null)"
+       aria-busy="@ariaBusy">
         <span class="bit-acb-inn">
             @inner
         </span>
-        <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
     </a>
 }
 
-@* Rendered as a sibling of the button/anchor so the description drives aria-describedby without leaking into the accessible name. *@
+@* Both of the screen-reader-only pieces are rendered as siblings of the button/anchor rather than inside it, so that
+   neither joins its accessible name: the description is read after the name through aria-describedby, and the live
+   region would otherwise repeat the loading label the button is already showing.
+   The region is rendered from the first render rather than when the loading starts - a live region only announces
+   what changes inside one already in the document - but a button given no loading label has nothing to announce. *@
+@if (LoadingLabel.HasValue())
+{
+    <span class="bit-acb-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
+}
+
 @if (descriptionId is not null)
 {
     <span id="@descriptionId" class="bit-acb-dsc">@AriaDescription</span>

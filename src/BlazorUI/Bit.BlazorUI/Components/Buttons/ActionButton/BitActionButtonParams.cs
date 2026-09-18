@@ -150,6 +150,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? LoadingLabel { get; set; }
 
     /// <summary>
+    /// Keeps the content of the action button on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    public bool? NoWrap { get; set; }
+
+    /// <summary>
     /// Enables re-clicking the action button while it is in the loading state.
     /// </summary>
     public bool? Reclickable { get; set; }
@@ -311,6 +316,8 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (IconOnly.HasValue && bitActionButton.HasNotBeenSet(nameof(IconOnly)))
         {
             bitActionButton.IconOnly = IconOnly.Value;
+
+            bitActionButton.ClassBuilder.Reset();
         }
 
         if (IconPosition.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPosition)))
@@ -340,6 +347,13 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (LoadingLabel.HasValue() && bitActionButton.HasNotBeenSet(nameof(LoadingLabel)))
         {
             bitActionButton.LoadingLabel = LoadingLabel;
+        }
+
+        if (NoWrap.HasValue && bitActionButton.HasNotBeenSet(nameof(NoWrap)))
+        {
+            bitActionButton.NoWrap = NoWrap.Value;
+
+            bitActionButton.ClassBuilder.Reset();
         }
 
         if (Reclickable.HasValue && bitActionButton.HasNotBeenSet(nameof(Reclickable)))

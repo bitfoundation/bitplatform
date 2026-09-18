@@ -44,6 +44,11 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -154,8 +159,12 @@ public partial class BitActionButton : BitComponentBase
     /// <remarks>
     /// Set this property to <see langword="true"/> to render the component with only its icon visible.
     /// When <see langword="false"/>, both icon and text are shown if available.
+    /// <br />
+    /// The button then takes the square shape of an icon button, so give it an <see cref="BitComponentBase.AriaLabel"/>:
+    /// with the content dropped it has no text left to name it with.
     /// </remarks>
-    [Parameter] public bool IconOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
@@ -190,6 +199,18 @@ public partial class BitActionButton : BitComponentBase
     /// The custom template used to replace the default loading indicator inside the action button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps the content of the action button on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    /// <remarks>
+    /// The content wraps onto as many lines as it needs by default, which is what keeps a long label readable.
+    /// Turn this on where the layout has a width of its own to protect - a stretched row in a settings list, a
+    /// toolbar, a cell of a grid - and pair it with a <see cref="Title"/> so the part that was cut off is still
+    /// reachable. It has no effect on a button left to hug its content, which is never narrower than its text.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
 
     /// <summary>
     /// Gets or sets the callback that is invoked when the component is clicked.
@@ -272,6 +293,13 @@ public partial class BitActionButton : BitComponentBase
 
 
 
+    /// <summary>
+    /// Gives focus to the root element of the action button.
+    /// </summary>
+    public ValueTask FocusAsync() => RootElement.FocusAsync();
+
+
+
     protected override string RootElementClass => "bit-acb";
 
     protected override void RegisterCssClasses()
@@ -302,7 +330,11 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
+        ClassBuilder.Register(() => IconOnly ? "bit-acb-ion" : string.Empty);
+
         ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
+
+        ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -385,11 +417,11 @@ public partial class BitActionButton : BitComponentBase
 
 
 
-    private string? GetTabIndex()
+    private string? GetTabIndex(bool ariaHidden)
     {
         // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
         // user lands on something a screen reader has nothing to say about.
-        if (AriaHidden) return "-1";
+        if (ariaHidden) return "-1";
 
         if (IsEnabled is false)
         {

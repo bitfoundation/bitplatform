@@ -208,6 +208,7 @@
         margin-bottom: $doc-space-sm;
 
         code {
+            white-space: nowrap;
             font-family: var(--demo-font-mono);
         }
     }

@@ -130,6 +130,18 @@ private void HandleInvalidSubmit()
     <BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
         Privacy
     </BitActionButton>
+</div>
+
+
+<div style=""max-width: 18rem; display: flex; flex-direction: column;"">
+    <BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+        Notifications, sounds and background activity
+    </BitActionButton>
+
+    <BitActionButton FullWidth NoWrap IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight""
+                     Title=""Notifications, sounds and background activity"">
+        Notifications, sounds and background activity
+    </BitActionButton>
 </div>";
 
     private readonly string example6RazorCode = @"
@@ -212,7 +224,16 @@ private async Task HandleReclickableClick()
 
 <BitActionButton Underlined Color=""BitColor.Info"" IconName=""@BitIconName.Info"">
     More info
-</BitActionButton>";
+</BitActionButton>
+
+
+<p>
+    Everything here is covered by the
+    <BitActionButton Underlined Color=""BitColor.Info"" Href=""https://bitplatform.dev"" Target=""_blank""
+                     Style=""--bit-ActionButton-min-height: 0; --bit-ActionButton-padding: 0;"">
+        terms of service
+    </BitActionButton>, which you accept by continuing.
+</p>";
 
     private readonly string example8RazorCode = @"
 <BitActionButton OnClick=""() => clickCounter++"" IconName=""@BitIconName.TouchPointer"">
@@ -258,7 +279,19 @@ private int innerClickCount;";
 
 <BitActionButton IsEnabled=""false"" AllowDisabledFocus IconName=""@BitIconName.Blocked"">
     Disabled (still focusable)
+</BitActionButton>
+
+
+<BitActionButton IconName=""@BitIconName.CaretRightSolid8"" OnClick=""() => focusTargetRef.FocusAsync()"">
+    Focus the next button
+</BitActionButton>
+
+<BitActionButton @ref=""focusTargetRef"" IconName=""@BitIconName.Flag"" Color=""BitColor.Success"">
+    Focus lands here
 </BitActionButton>";
+
+    private readonly string example9CsharpCode = @"
+private BitActionButton focusTargetRef = default!;";
 
     private readonly string example10RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">

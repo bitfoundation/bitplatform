@@ -16,7 +16,7 @@ public partial class BitActionButtonDemo
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the button for the benefit of screen readers (rendered into aria-describedby).",
+            Description = "Detailed description of the button for the benefit of screen readers, rendered as visually hidden text beside the button and read after its name. An aria-describedby written on the component by hand is kept and this description is added to it.",
         },
         new()
         {
@@ -138,7 +138,7 @@ public partial class BitActionButtonDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gets or sets a value indicating whether only the icon is displayed, without accompanying text.",
+            Description = "Gets or sets a value indicating whether only the icon is displayed, without accompanying text. The button then takes the square shape of an icon button, so give it an AriaLabel: with the content dropped it has no text left to name it with.",
         },
         new()
         {
@@ -183,6 +183,13 @@ public partial class BitActionButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template used to replace the default loading indicator inside the action button in the loading state.",
+        },
+        new()
+        {
+            Name = "NoWrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the content of the action button on a single line and ends it with an ellipsis where it does not fit. It has no effect on a button left to hug its content, which is never narrower than its text.",
         },
         new()
         {
@@ -254,6 +261,16 @@ public partial class BitActionButtonDemo
         }
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the root element of the action button.",
+        },
+    ];
+
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()
@@ -315,6 +332,12 @@ public partial class BitActionButtonDemo
             Name = "--bit-ActionButton-radius",
             DefaultValue = "--bit-shp-radius-button",
             Description = "Corner radius of the box, which the backgrounds and the focus ring follow.",
+        },
+        new()
+        {
+            Name = "--bit-ActionButton-min-height",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Smallest height of the box, which is what lines an action button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. Set it to 0 for a button that has to sit on the line of the running text around it.",
         },
         new()
         {
@@ -736,6 +759,8 @@ public partial class BitActionButtonDemo
 
     private bool isLoading;
     private bool templateIsLoading;
+
+    private BitActionButton focusTargetRef = default!;
 
     private int clickCounter;
     private int guardedClickCount;

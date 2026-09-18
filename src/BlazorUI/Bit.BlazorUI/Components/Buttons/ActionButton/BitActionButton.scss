@@ -12,6 +12,8 @@
 //   --bit-ActionButton-hover-background    background on hover                           (default: the rest background)
 //   --bit-ActionButton-active-background   background while pressed                      (default: the hover background)
 //   --bit-ActionButton-radius              corner radius of the box and its focus ring   (default: $shp-radius-button)
+//   --bit-ActionButton-min-height          smallest height of the box, and the smallest
+//                                          width of an icon-only one                     (default: per size, $siz-ctrl-*)
 //   --bit-ActionButton-padding             padding of the box                            (default: per size)
 //   --bit-ActionButton-gap                 room between the icon and the content         (default: spacing(1))
 //   --bit-ActionButton-font-size           text size                                     (default: per size, from the type ramp)
@@ -32,6 +34,12 @@
     -webkit-tap-highlight-color: transparent;
     color: var(--bit-ActionButton-color, #{$clr-fg-pri});
     padding: var(--bit-ActionButton-padding, var(--bit-acb-padding));
+    // The control height of the size class, as a floor rather than a height: the box still grows with a wrapped
+    // label or a taller icon. It is what lines an action button up with the other controls of its size in a
+    // toolbar, and what keeps the smallest one above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8) -
+    // an icon-only Small is a 12px glyph in 4px of padding without it. Set it to 0 for a button that has to sit
+    // on the line of the running text around it.
+    min-height: var(--bit-ActionButton-min-height, var(--bit-acb-min-height));
     font-size: var(--bit-ActionButton-font-size, var(--bit-acb-fontsize));
     border-radius: var(--bit-ActionButton-radius, #{$shp-radius-button});
     background-color: var(--bit-ActionButton-background, transparent);
@@ -161,9 +169,36 @@
     }
 }
 
+// An icon-only button is a square, the way every icon button in the library is: the side padding drops to the
+// vertical one and the box takes its own minimum height as a minimum width. That is what lines a row of them up
+// with the icon buttons beside them, and what clears the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8) on
+// the narrow axis too - a 12px glyph in 8px of side padding at the Small size would not.
+.bit-acb-ion {
+    justify-content: center;
+    min-width: var(--bit-ActionButton-min-height, var(--bit-acb-min-height));
+    padding: var(--bit-ActionButton-padding, var(--bit-acb-pad-y));
+}
+
 .bit-acb-lod {
     cursor: default;
     pointer-events: none;
+}
+
+// A button that has a width of its own to protect keeps its content on one line and ends it with an ellipsis.
+// Every box between the root and the text has to be allowed to shrink for the ellipsis to ever appear, which is
+// why the inner wrapper gives up its automatic minimum here as well as the content.
+.bit-acb-nwr {
+    .bit-acb-inn {
+        min-width: 0;
+    }
+
+    .bit-acb-con,
+    .bit-acb-lbl {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 // A real text underline rather than a painted bar: it follows the text through wrapping and survives a
@@ -205,18 +240,24 @@
 // than a filled button), so the token still drives it. The glyph is one step above the text on
 // the icon scale, the way every control in the library sizes the icon it carries.
 .bit-acb-sm {
+    --bit-acb-pad-y: #{$siz-ctrl-pad-y-sm};
+    --bit-acb-min-height: #{$siz-ctrl-sm};
     --bit-acb-fontsize: #{$tg-fs-xs};
     --bit-acb-ico-size: #{$siz-icon-sm};
     --bit-acb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-acb-md {
+    --bit-acb-pad-y: #{$siz-ctrl-pad-y-md};
+    --bit-acb-min-height: #{$siz-ctrl-md};
     --bit-acb-fontsize: #{$tg-fs-sm};
     --bit-acb-ico-size: #{$siz-icon-md};
     --bit-acb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-acb-lg {
+    --bit-acb-pad-y: #{$siz-ctrl-pad-y-lg};
+    --bit-acb-min-height: #{$siz-ctrl-lg};
     --bit-acb-fontsize: #{$tg-fs-md};
     --bit-acb-ico-size: #{$siz-icon-lg};
     --bit-acb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};

@@ -8,6 +8,7 @@
 <DemoPage Name="ActionButton"
           Description="ActionButton is the lightweight, icon-first flavor of button: a transparent box with a colorized icon and plain text, made for inline commands like New, Edit, or Share. It renders as a native button or, given an Href, as a link with hardened navigation attributes, and ships with a full loading state (AutoLoading with double-click protection, loading label, delayed spinner) and accessible disabled and loading semantics."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -17,7 +18,8 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             A native <b>button</b> with the icon first and the content beside it. The icon is optional, and the content is any markup, not just text.
-            <b>IsEnabled</b> false dims the button and suppresses its click. <b>IconOnly</b> drops the content, so give it an <b>AriaLabel</b> to keep a name for screen readers.
+            <b>IsEnabled</b> false dims the button and suppresses its click. <b>IconOnly</b> drops the content and squares the box off into an icon button,
+            so give it an <b>AriaLabel</b> to keep a name for screen readers.
         </div>
         <br />
         <div class="example-content">
@@ -157,7 +159,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="FullWidth" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="FullWidth & NoWrap" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>FullWidth</b> stretches the button across its container and lets the content fill the room, so an end-positioned icon lands on the far edge:
             the familiar navigation row with the label on one side and a chevron on the other.
@@ -174,6 +176,22 @@
 
             <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
                 Privacy
+            </BitActionButton>
+        </div>
+        <br /><br />
+        <div>
+            A label longer than the room it has been given wraps onto a second line, which keeps it readable but changes the height of the row.
+            <b>NoWrap</b> keeps it on one line and ends it with an ellipsis instead; pair it with a <b>Title</b> so the cut-off part stays reachable.
+        </div>
+        <br />
+        <div class="full-width-container">
+            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+                Notifications, sounds and background activity
+            </BitActionButton>
+
+            <BitActionButton FullWidth NoWrap IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight"
+                             Title="Notifications, sounds and background activity">
+                Notifications, sounds and background activity
             </BitActionButton>
         </div>
     </DemoExample>
@@ -249,7 +267,7 @@
 
     <DemoExample Title="Underlined" RazorCode="@example7RazorCode" Id="example7">
         <div>
-            <b>Underlined</b> draws a hyperlink-style underline under the text that thickens on hover, for a button that sits inside running text where color alone is not enough of a cue.
+            <b>Underlined</b> draws a hyperlink-style underline under the text that thickens on hover, where color alone is not enough of a cue.
         </div>
         <br />
         <div class="example-content">
@@ -265,6 +283,20 @@
                 More info
             </BitActionButton>
         </div>
+        <br /><br />
+        <div>
+            A standalone button keeps the control height and padding of its size, so it lines up with the other controls beside it.
+            To put one on the line of a sentence instead, drop both:
+            <code>--bit-ActionButton-min-height: 0; --bit-ActionButton-padding: 0</code>.
+        </div>
+        <br />
+        <p class="running-text">
+            Everything here is covered by the
+            <BitActionButton Underlined Color="BitColor.Info" Href="https://bitplatform.dev" Target="_blank"
+                             Style="--bit-ActionButton-min-height: 0; --bit-ActionButton-padding: 0;">
+                terms of service
+            </BitActionButton>, which you accept by continuing.
+        </p>
     </DemoExample>
 
     <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
@@ -294,7 +326,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Accessibility" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>Title</b> is a native tooltip the browser shows on hover only, so it never replaces an accessible name: an icon-only button also needs an <b>AriaLabel</b>, kept consistent with it.
         </div>
@@ -334,6 +366,23 @@
 
             <BitActionButton IsEnabled="false" AllowDisabledFocus IconName="@BitIconName.Blocked">
                 Disabled (still focusable)
+            </BitActionButton>
+        </div>
+        <br /><br />
+        <div>
+            <b>FocusAsync</b> moves the keyboard focus onto the button from code, for the moment a dialog opens, a step
+            finishes, or an error sends the user back to the action that failed. <b>AutoFocus</b> does the same on the
+            first render, and neither steals the focus from a button that is hidden with <b>AriaHidden</b> or disabled
+            without <b>AllowDisabledFocus</b>.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitActionButton IconName="@BitIconName.CaretRightSolid8" OnClick="() => focusTargetRef.FocusAsync()">
+                Focus the next button
+            </BitActionButton>
+
+            <BitActionButton @ref="focusTargetRef" IconName="@BitIconName.Flag" Color="BitColor.Success">
+                Focus lands here
             </BitActionButton>
         </div>
     </DemoExample>
