@@ -550,6 +550,7 @@ namespace BitBlazorUI {
         private static _observer: MutationObserver | null = null;
         private static _pending = false;
         private static _loadListenerAttached = false;
+        private static _linkListeners: { link: HTMLLinkElement, handler: () => void }[] = [];
 
         /**
          * Starts (or retargets) the sync. `variable` names the custom property to read and defaults
@@ -584,6 +585,37 @@ namespace BitBlazorUI {
             ThemeColorMeta._variable = null;
             ThemeColorMeta._observer?.disconnect();
             ThemeColorMeta._observer = null;
+            ThemeColorMeta._linkListeners.forEach(entry => entry.link.removeEventListener('load', entry.handler));
+            ThemeColorMeta._linkListeners = [];
+        }
+
+        /**
+         * Re-reads once the given stylesheet has loaded. A `<link>` appended by ExternalTheme.attach()
+         * is a `<head>` childList change, so the observer does schedule a read - but it runs while the
+         * stylesheet is still in flight, on the outgoing palette, and a `<link>` REUSED by attach()
+         * only has its href rewritten, which changes no node the observer watches at all. Either way
+         * the arriving stylesheet moves nothing afterwards, so its load event is the only signal that
+         * the new colors are readable. A no-op while the sync is off, so an app that never opted in
+         * keeps no listener.
+         */
+        public static watchStylesheet(link: HTMLLinkElement) {
+            if (!ThemeColorMeta._variable || !link?.addEventListener) return;
+            // attach() can be called repeatedly on the same <link>; one listener per element is enough,
+            // since the handler reads the live color rather than the href it was registered for.
+            if (ThemeColorMeta._linkListeners.some(entry => entry.link === link)) return;
+
+            const handler = () => ThemeColorMeta.schedule();
+            link.addEventListener('load', handler);
+            ThemeColorMeta._linkListeners.push({ link, handler });
+        }
+
+        /** Drops the listener of a stylesheet that is going away, so the detached node is not held. */
+        public static unwatchStylesheet(link: Element) {
+            ThemeColorMeta._linkListeners = ThemeColorMeta._linkListeners.filter(entry => {
+                if (entry.link !== link) return true;
+                entry.link.removeEventListener('load', entry.handler);
+                return false;
+            });
         }
 
         /**
@@ -723,6 +755,10 @@ namespace BitBlazorUI {
             // different rel is corrected before we point it at the stylesheet href.
             link.rel = 'stylesheet';
             link.href = href;
+
+            // The swapped-in stylesheet is what repaints the surfaces, so the theme-color tags have to
+            // wait for it; registering after href is set is safe, load fires on a later task.
+            ThemeColorMeta.watchStylesheet(link);
         }
 
         public static detach(linkId: string) {
@@ -730,6 +766,7 @@ namespace BitBlazorUI {
             // Only remove the element if it's actually a <link>; we should not garbage-collect
             // unrelated nodes that happen to share the id.
             if (el && el.tagName === 'LINK') {
+                ThemeColorMeta.unwatchStylesheet(el);
                 el.remove();
             }
         }
