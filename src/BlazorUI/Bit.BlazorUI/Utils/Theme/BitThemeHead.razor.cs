@@ -185,7 +185,17 @@ public partial class BitThemeHead : ComponentBase
     /// </summary>
     private string BuildThemeColorLookup(string light, string dark)
     {
-        var scheme = "c=/dark$/.test(t)?'" + JsString(dark) + "':'" + JsString(light) + "';";
+        // The configured dark preset by name, ahead of the suffix rule: an app whose dark theme is
+        // not named "...dark" (a "midnight", say) has that name in bit-theme, and the suffix test
+        // alone would hand it the light surface. Normalized, because the attribute the script reads
+        // back carries the normalized form. Only emitted when the suffix rule does not already cover
+        // the name, so the default pair keeps the short test it had.
+        var darkName = BitThemeName.NormalizeToken(DarkTheme, out _);
+        var isDark = darkName is null || IsDarkName(darkName)
+            ? "/dark$/.test(t)"
+            : "(t==='" + JsString(darkName) + "'||/dark$/.test(t))";
+
+        var scheme = "c=" + isDark + "?'" + JsString(dark) + "':'" + JsString(light) + "';";
 
         var overrides = Colors.Where(entry => entry.Value != (IsDarkName(entry.Key) ? dark : light))
                               .OrderBy(entry => entry.Key, StringComparer.Ordinal)

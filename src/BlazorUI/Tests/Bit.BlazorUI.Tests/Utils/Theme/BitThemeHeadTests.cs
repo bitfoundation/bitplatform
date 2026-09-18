@@ -161,6 +161,36 @@ public class BitThemeHeadTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitThemeHeadShouldRecognizeADarkThemeWhoseNameDoesNotEndInDark()
+    {
+        // The suffix rule is what classifies a name everywhere else, but an app is free to call its
+        // dark preset anything - and bit-theme then carries that name. Left to the suffix alone the
+        // correction script would take the else branch and paint a dark document's chrome with the
+        // light surface, which is the one case the whole script exists to prevent.
+        var colors = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["daylight"] = "#FFFFFF",
+        };
+
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.LightTheme, "daylight")
+            .Add(p => p.DarkTheme, "midnight")
+            .Add(p => p.ThemeColors, colors));
+
+        var script = component.Markup[component.Markup.IndexOf("querySelector", StringComparison.Ordinal)..];
+
+        // By name, since the map carries no 'midnight' entry for the lookup table to name it with.
+        StringAssert.Contains(script, "t==='midnight'", StringComparison.Ordinal,
+            "The configured dark preset has to be recognized by name, not only by the suffix.");
+        // And the suffix stays: the name check covers the configured preset, not every dark name a
+        // client may resolve to (an app's own 'acme-dark', a design system's preset).
+        StringAssert.Contains(script, "/dark$/.test(t)", StringComparison.Ordinal,
+            "The suffix rule is the fallback for every OTHER dark name, so it has to survive.");
+        StringAssert.Contains(script, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], StringComparison.OrdinalIgnoreCase,
+            "'midnight' resolves to the dark side, so the dark surface is what that branch paints.");
+    }
+
+    [TestMethod]
     public void BitThemeHeadShouldResolveTheSameThemeAsTheRootAttributes()
     {
         // The two halves are handed the same preference and must agree: a tag painted for one theme

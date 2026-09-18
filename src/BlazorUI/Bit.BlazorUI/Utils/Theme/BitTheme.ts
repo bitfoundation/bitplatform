@@ -560,6 +560,12 @@ namespace BitBlazorUI {
             ThemeColorMeta._variable = name.indexOf('--') === 0 ? name : `--${name}`;
 
             ThemeColorMeta.whenBodyReady(() => {
+                // disable() may have run while this callback was still waiting on DOMContentLoaded.
+                // It disconnected nothing (there was no observer yet) and has already let go of the
+                // handle it would disconnect later, so an observer installed now would outlive the
+                // sync it belongs to and watch the document for the rest of the page's life.
+                if (!ThemeColorMeta._variable) return;
+
                 ThemeColorMeta.observe();
                 ThemeColorMeta.sync();
             });
