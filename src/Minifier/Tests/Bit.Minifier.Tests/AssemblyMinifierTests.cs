@@ -167,6 +167,23 @@ public class AssemblyMinifierTests
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
     [DataRow(Level.SuperAggressive)]
+    public void TheMapReadsAMinifiedStackTraceBack(Level level)
+    {
+        var mapFile = Path.Combine(root, "bit-minifier.map");
+        var expected = FailureStackTrace(original);
+
+        Minify(level, mapFile: mapFile);
+        var decoded = MapDecoder.Load(mapFile).Decode(string.Join(Environment.NewLine, FailureStackTrace(minified)));
+
+        // only the names come back: a parameter name aggressive cleared is in no map
+        static string Frame(string line) => line[..line.IndexOf('(', StringComparison.Ordinal)] + line[line.LastIndexOf(" in ", StringComparison.Ordinal)..];
+        CollectionAssert.AreEqual(expected.Select(Frame).ToList(), decoded.Split(Environment.NewLine).Select(Frame).ToList());
+    }
+
+    [TestMethod]
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
     public void PdbStillDescribesTheMinifiedAssembly(Level level)
     {
         var before = ReadDebugInfo(original, Library);

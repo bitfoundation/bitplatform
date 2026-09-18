@@ -1,8 +1,39 @@
 ﻿using Bit.Minifier;
 
 // usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]
-// Without assembly names, every managed assembly in the directory is minified.
-const string Usage = "usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]";
+//        Bit.Minifier --decode <map file> [<stack trace file>]
+// Without assembly names, every managed assembly in the directory is minified. --decode reads a stack trace (from
+// the file, or from standard input) and writes it back with the names the source has.
+const string Usage = """
+    usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]
+           Bit.Minifier --decode <map file> [<stack trace file>]
+    """;
+
+if (args is ["--decode", var mapFile, ..])
+{
+    if (args.Length > 3)
+    {
+        Console.Error.WriteLine(Usage);
+        return 2;
+    }
+    if (File.Exists(mapFile) is false)
+    {
+        Console.Error.WriteLine($"Bit.Minifier: no map at {Path.GetFullPath(mapFile)}. It is written next to the assemblies a publish minifies, as obj/<configuration>/<tfm>/bit-minifier.map, and only kept until the next clean.");
+        return 2;
+    }
+    if (args.Length == 3 && File.Exists(args[2]) is false)
+    {
+        Console.Error.WriteLine($"Bit.Minifier: no stack trace at {Path.GetFullPath(args[2])}.");
+        return 2;
+    }
+    var trace = args.Length == 3 ? File.ReadAllText(args[2]) : Console.In.ReadToEnd();
+    // the trace is written back the way it came in, with whatever ends its lines
+    var decoded = MapDecoder.Load(mapFile).Decode(trace);
+    Console.Out.Write(decoded);
+    if (decoded.EndsWith('\n') is false) Console.Out.WriteLine();
+    return 0;
+}
+
 if (args.Length < 1 || args[0].StartsWith("--", StringComparison.Ordinal))
 {
     Console.Error.WriteLine(Usage);

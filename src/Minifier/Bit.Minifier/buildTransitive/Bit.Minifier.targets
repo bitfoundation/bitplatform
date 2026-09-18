@@ -19,11 +19,11 @@
 
     Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true), and outside the bit
     libraries when EF Core is published.
-    obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed.
+    obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed; the BitMinifierDecode target below
+    reads a stack trace back through it.
     -->
 
-    <Target Name="_BitMinifierComputeArguments"
-            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+    <Target Name="_BitMinifierLocate">
         <PropertyGroup>
             <_BitMinifierPath>$(MSBuildThisFileDirectory)..\tools\Bit.Minifier.dll</_BitMinifierPath>
             <!-- imported straight from this repository's source tree, the tool is in its own build output -->
@@ -32,6 +32,13 @@
             <_BitMinifyDotNetHost>$(DOTNET_HOST_PATH)</_BitMinifyDotNetHost>
             <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == '' and $([MSBuild]::IsOSPlatform(`Windows`))">$(NetCoreRoot)dotnet.exe</_BitMinifyDotNetHost>
             <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == ''">$(NetCoreRoot)dotnet</_BitMinifyDotNetHost>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="_BitMinifierComputeArguments"
+            DependsOnTargets="_BitMinifierLocate"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+        <PropertyGroup>
             <_BitMinifyArgs>&quot;$(IntermediateLinkDir.TrimEnd('\').TrimEnd('/'))&quot; --map &quot;$(IntermediateOutputPath)bit-minifier.map&quot;</_BitMinifyArgs>
             <_BitMinifyArgs Condition="'$(NullabilityInfoContextSupport)' == 'true'">$(_BitMinifyArgs) --keep-nullable</_BitMinifyArgs>
             <_BitMinifyArgs Condition="'$(BitMinifyAggressive)' == 'true' and '$(BitMinifySuperAggressive)' != 'true'">$(_BitMinifyArgs) --aggressive</_BitMinifyArgs>
@@ -74,6 +81,26 @@
         <ItemGroup>
             <FileWrites Include="$(IntermediateOutputPath)bit-minifier.stamp;$(IntermediateOutputPath)bit-minifier.map" />
         </ItemGroup>
+    </Target>
+
+    <!--
+    Reads a stack trace the published app logged back into the names the source has, through the map of the publish
+    that produced it:
+
+      dotnet msbuild MyApp.Client.csproj -t:BitMinifierDecode -p:Configuration=Release -p:BitMinifyTrace=trace.txt
+
+    BitMinifyMap points at another map (one kept with an earlier release, say); it defaults to the one the last
+    publish of this configuration wrote. Leaving BitMinifyTrace out reads the trace from standard input.
+    -->
+    <Target Name="BitMinifierDecode" DependsOnTargets="_BitMinifierLocate">
+        <PropertyGroup>
+            <BitMinifyMap Condition="'$(BitMinifyMap)' == ''">$(IntermediateOutputPath)bit-minifier.map</BitMinifyMap>
+            <_BitMinifyTraceArg Condition="'$(BitMinifyTrace)' != ''"> &quot;$(BitMinifyTrace)&quot;</_BitMinifyTraceArg>
+        </PropertyGroup>
+        <Error Condition="!Exists('$(BitMinifyMap)')"
+               Text="Bit.Minifier: no map at $(BitMinifyMap). A publish writes it next to the assemblies it minifies, and a clean takes it away with them - pass -p:Configuration=Release, or -p:BitMinifyMap=&lt;path&gt; for a map kept with the release the stack trace came from." />
+        <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; --decode &quot;$(BitMinifyMap)&quot;$(_BitMinifyTraceArg)"
+              StandardOutputImportance="high" />
     </Target>
 
 </Project>

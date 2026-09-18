@@ -53,7 +53,7 @@ non-virtual methods and property accessors, public fields and parameter names, g
 names and event metadata,
 along with the attributes only the compiler and the trimmer read. It is for apps whose names nothing
 reads from outside the WebAssembly client, published by someone who tests the result. Stack traces
-lose their public names as well; `bit-minifier.map` is the way back.
+lose their public names as well; [reading a stack trace](#reading-a-stack-trace) is the way back.
 
 On top of what aggressive keeps, these stay:
 
@@ -94,11 +94,63 @@ The BlazorUI demo's WebAssembly client, measured the same way:
 | aggressive | 6,038 KB (-6.3%) |
 | super aggressive | 5,987 KB (-7.1%) |
 
+## Reading a stack trace
+
+Every publish writes `obj/<configuration>/<tfm>/bit-minifier.map`, one tab-separated line per name that
+changed - the assembly, the kind (`T` type, `M` method, `F` field, `G` generic parameter), the name the
+source has and the name it was given:
+
+```
+Bit.BlazorUI.Demo.Client.Core	T	...Services.HttpMessageHandlers.ExceptionDelegatingHandler	_aN
+Bit.BlazorUI.Demo.Client.Core	M	Microsoft.Extensions.DependencyInjection.IServiceCollectionExtensions::AddSessioned	ah
+```
+
+The tool that wrote it reads it back. It is in the package, and the package's targets run it:
+
+```
+dotnet msbuild MyApp.Client.csproj -t:BitMinifierDecode -p:Configuration=Release -p:BitMinifyTrace=trace.txt
+```
+
+turns the stack trace a published client logged
+
+```
+   at _aN+_a.MoveNext()
+   at Microsoft.Extensions.DependencyInjection._aD.ah[a,b](IServiceCollection services)
+```
+
+into the one its source wrote:
+
+```
+   at ...Services.HttpMessageHandlers.ExceptionDelegatingHandler+<SendAsync>d__1.MoveNext()
+   at Microsoft.Extensions.DependencyInjection.IServiceCollectionExtensions.AddSessioned[TService,TImplementation](IServiceCollection services)
+```
+
+Without `BitMinifyTrace` it reads the trace from standard input, so a trace can be pasted in or piped from
+anywhere. `-p:BitMinifyMap=<path>` reads a map kept somewhere else - the one archived with the release the
+stack trace came from. The tool can also be run on its own, wherever NuGet put the package:
+
+```
+dotnet ~/.nuget/packages/bit.minifier/<version>/tools/Bit.Minifier.dll --decode bit-minifier.map trace.txt
+```
+
+- **Keep the map with the release it belongs to.** It is written to `obj`, so a clean takes it away, and a
+  CI job that publishes from a fresh checkout leaves nothing behind unless it collects the map as an
+  artifact. Every publish renames afresh, so a map reads the stack traces of its own publish and of no
+  other. Where the releases are kept is where it belongs, not with the app: served next to the client, it
+  hands the names back to everyone who downloads it.
+- Any text that holds these names is decoded, not only a stack trace: a log line, a message quoting a
+  `Type.FullName`, a serialized type name.
+- Files and line numbers never needed it - the pdbs are rewritten along with the assemblies, so they are
+  in the trace already.
+- What no map holds: parameter names, which aggressive clears rather than renames, and the names of local
+  variables, which are the pdb's. A short name that several assemblies ended up with is read as the first
+  of them, and the other readings are named in brackets at the end of the line, with the assembly each
+  belongs to - a stack trace says which assembly a frame is in no more than it says what its names were.
+
 ## Good to know
 
 - **Nullable metadata:** it is kept when the app sets `NullabilityInfoContextSupport` to `true`, and
   outside the bit libraries when the app publishes EF Core.
-- **Reading stack traces:** `obj/<configuration>/<tfm>/bit-minifier.map` lists every renamed member.
 - **Nothing ships broken:** if any reference would stop resolving, or anything else fails, nothing
   is written, and the publish shows warning `BITMIN001` and ships the trimmed assemblies as they were.
   With warnings as errors, add `BITMIN001` to `MSBuildWarningsNotAsErrors` to keep it a warning. The next
