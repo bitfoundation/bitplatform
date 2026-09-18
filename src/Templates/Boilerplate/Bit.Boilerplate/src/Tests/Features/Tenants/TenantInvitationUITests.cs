@@ -140,7 +140,9 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GoToInApp(PageUrls.Users);
 
         // The list only holds users of the current tenant that have accepted their invitation (See UserManagementController.GetAllUsers).
-        await page.GetByPlaceholder(AppStrings.SearchUsersPlaceholder).FillAsync(email);
+        // The page loads its users on init, and that re-render wipes a search text filled too eagerly - which then leaves
+        // the whole tenant listed and the filtered assertions below looking at the wrong list.
+        await page.GetByPlaceholder(AppStrings.SearchUsersPlaceholder).FillEnsuringStable(email);
 
         // A repeat visit changes neither the route nor the search text, so nothing would re-query on its own.
         // Exact, or it also matches the grid's "Refresh the selected user".
