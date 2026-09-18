@@ -138,11 +138,13 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 **When to use it**: For non-trivial features where you want requirements pinned down and a plan approved before implementation starts.
 
 **Key capabilities**:
+- Phase 0 - One-time prerequisites (git and branches, EF Core migrations, persistent containers); each one is deleted from the skill file once satisfied
 - Phase 1 - Requirements elaboration, with clarifying questions until requirements are unambiguous
 - Phase 2 - Planning and task decomposition, presented for approval
 - Phase 3 - Design of affected files, components, APIs and data models
 - Phase 4 - Implementation, one task at a time
 - Phase 5 - Validation via build, tests and the `review` skill
+- Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
 
 **Example usage**: `/ai-dlc add a customer feedback feature`

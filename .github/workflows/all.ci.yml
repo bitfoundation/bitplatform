@@ -2,6 +2,55 @@ name: All CI
 
 on:
   workflow_dispatch:
+    inputs:
+      boilerplate:
+        description: Boilerplate solution
+        type: boolean
+        default: true
+      boilerplate_postgres:
+        description: Boilerplate tests with PostgreSQL
+        type: boolean
+        default: true
+      boilerplate_mssql:
+        description: Boilerplate tests with SQL Server
+        type: boolean
+        default: true
+      boilerplate_configurations:
+        description: Boilerplate configurations
+        type: boolean
+        default: true
+      blazorempty:
+        description: BlazorEmpty configurations
+        type: boolean
+        default: true
+      nuget_packages:
+        description: NuGet packages
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup solution
+        type: boolean
+        default: true
+      butil:
+        description: Butil solution
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter solution
+        type: boolean
+        default: true
+      bmotion:
+        description: Bmotion solution
+        type: boolean
+        default: true
+      tooling:
+        description: CodeAnalyzers, ResxTranslator and SourceGenerators solutions
+        type: boolean
+        default: true
+      websites:
+        description: Website solutions
+        type: boolean
+        default: true
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -16,6 +65,7 @@ jobs:
 
   build_boilerplate:
     name: build boilerplate itself
+    if: ${{ inputs.boilerplate }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -46,6 +96,7 @@ jobs:
 
   test_boilerplate_postgres:
     name: create project from template with postgresql and test it
+    if: ${{ inputs.boilerplate_postgres }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -155,6 +206,7 @@ jobs:
 
   test_boilerplate_mssql:
     name: create project from template with sql server and test it
+    if: ${{ inputs.boilerplate_mssql }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -259,6 +311,7 @@ jobs:
 
   build_boilerplate_configurations:
     name: create several projects from template and build them
+    if: ${{ inputs.boilerplate_configurations }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -327,6 +380,7 @@ jobs:
 
   build_blazorempty_configurations:
     name: build blazorempty based projects
+    if: ${{ inputs.blazorempty }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -367,6 +421,7 @@ jobs:
 
   build_nuget_packages:
     name: build nuget packages locally
+    if: ${{ inputs.nuget_packages }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -527,6 +582,7 @@ jobs:
 
   build_bswup_solution:
     name: build bswup solution
+    if: ${{ inputs.bswup }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -557,6 +613,7 @@ jobs:
 
   build_butil_solution:
     name: build butil solution
+    if: ${{ inputs.butil }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -587,6 +644,7 @@ jobs:
 
   build_brouter_solution:
     name: build brouter solution
+    if: ${{ inputs.brouter }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -617,6 +675,7 @@ jobs:
 
   build_bmotion_solution:
     name: build bmotion solution
+    if: ${{ inputs.bmotion }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -647,6 +706,7 @@ jobs:
 
   build_tooling_solutions:
     name: build tooling solutions
+    if: ${{ inputs.tooling }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -673,6 +733,7 @@ jobs:
 
   build_websites:
     name: build website solutions
+    if: ${{ inputs.websites }}
     runs-on: ubuntu-24.04
 
     steps:
