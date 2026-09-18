@@ -483,8 +483,9 @@ declare namespace BitBlazorUI {
 }
 
 // Theme-dependent styling in the app keys off the bit-theme attribute the library script keeps on
-// the document element, so this callback only has to maintain what CSS cannot reach: the browser
-// chrome color.
+// the document element, and the browser chrome color - the one thing CSS cannot reach - is kept with
+// it by the library too: see bit-theme-color-meta on <html> in App.razor / the MAUI index.html,
+// pointed at the secondary surface the site is drawn on.
 BitBlazorUI.Theme.init({
     system: true,
     persist: true,
@@ -492,9 +493,4 @@ BitBlazorUI.Theme.init({
     // right theme into the prerendered markup (see App.razor). Without it the server would fall back
     // to following the OS and the app would flash the wrong theme for visitors who picked one.
     persistCookie: true,
-    onChange: (newTheme: string, oldTheme: string) => {
-        const name = (newTheme ?? '').toLowerCase();
-        const isDark = name === 'dark' || name.endsWith('-dark');
-        document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
-    }
 });
