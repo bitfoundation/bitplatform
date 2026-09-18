@@ -13,30 +13,36 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
 {
     private const string CompilerGenerated = "System.Runtime.CompilerServices.CompilerGeneratedAttribute";
 
+    private const string DynamicallyAccessedMembers = "System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute";
+
+    // the dynamic binder (Microsoft.CSharp) reads it to tell dynamic members apart
+    private const string Dynamic = "System.Runtime.CompilerServices.DynamicAttribute";
+
+    // what NullabilityInfoContext reads at runtime, by name, and EF Core through it
     private static readonly HashSet<string> NullableAttributes =
     [
+        "System.Diagnostics.CodeAnalysis.AllowNullAttribute",
+        "System.Diagnostics.CodeAnalysis.DisallowNullAttribute",
+        "System.Diagnostics.CodeAnalysis.MaybeNullAttribute",
+        "System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute",
+        "System.Diagnostics.CodeAnalysis.NotNullAttribute",
         "System.Runtime.CompilerServices.NullableAttribute",
         "System.Runtime.CompilerServices.NullableContextAttribute",
         "System.Runtime.CompilerServices.NullablePublicOnlyAttribute",
     ];
 
-    // read by the compiler or analyzers only; nothing at runtime asks for them
+    // read by the compiler or analyzers only; nothing at runtime asks for them. SetsRequiredMembers is not one of
+    // them: System.Text.Json reads it to tell whether a constructor sets the required members.
     private static readonly HashSet<string> CompileTimeAttributes =
     [
         CompilerGenerated,
-        "System.Diagnostics.CodeAnalysis.AllowNullAttribute",
-        "System.Diagnostics.CodeAnalysis.DisallowNullAttribute",
         "System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute",
         "System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute",
         "System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute",
-        "System.Diagnostics.CodeAnalysis.MaybeNullAttribute",
-        "System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute",
         "System.Diagnostics.CodeAnalysis.MemberNotNullAttribute",
         "System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute",
-        "System.Diagnostics.CodeAnalysis.NotNullAttribute",
         "System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute",
         "System.Diagnostics.CodeAnalysis.NotNullWhenAttribute",
-        "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
         "System.Runtime.CompilerServices.RefSafetyRulesAttribute",
         "System.Runtime.CompilerServices.ScopedRefAttribute",
         // Bit.BlazorUI's source generator markers
@@ -51,11 +57,16 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     [
         .. CompileTimeAttributes,
         .. NullableAttributes,
+        Dynamic,
+        DynamicallyAccessedMembers,
+        "System.ParamArrayAttribute",
+        "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
         "System.Diagnostics.DebuggerBrowsableAttribute",
         "System.Diagnostics.DebuggerHiddenAttribute",
         "System.Diagnostics.DebuggerStepThroughAttribute",
         "System.Runtime.CompilerServices.AsyncIteratorStateMachineAttribute",
         "System.Runtime.CompilerServices.AsyncStateMachineAttribute",
+        "System.Runtime.CompilerServices.EnumeratorCancellationAttribute",
         "System.Runtime.CompilerServices.ExtensionAttribute",
         "System.Runtime.CompilerServices.IsReadOnlyAttribute",
         "System.Runtime.CompilerServices.IteratorStateMachineAttribute",
@@ -68,6 +79,9 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
 
     public IReadOnlyList<MinifiedAssembly> Run()
     {
+        // a map is only ever there along with the assemblies it describes
+        if (options.MapFile is not null) TryDelete(options.MapFile);
+
         using var resolver = new DirectoryResolver(options.Directory);
         var assemblies = Load(resolver);
         if (assemblies.Count == 0) return [];
@@ -75,38 +89,46 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var modules = assemblies.Select(a => a.MainModule).ToHashSet();
         // the other assemblies of the folder: not rewritten, but they may reference or name the rewritten ones
         var others = OtherModules(resolver, modules);
-        var references = ReferenceIndex.Collect(modules);
+        var references = ReferenceIndex.Collect(modules, others);
         var types = others.Concat(modules).SelectMany(m => ReferenceIndex.ResolvableTypes(m, modules)).ToList();
 
         var fully = options.FullyMinified.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        // EF Core reads [Nullable] itself to tell required columns apart, whatever NullabilityInfoContext says
-        var keepNullable = options.KeepNullable || File.Exists(Path.Combine(options.Directory, "Microsoft.EntityFrameworkCore.dll"));
+        // EF Core tells required columns apart by the nullable metadata and finds backing fields by name, in whatever
+        // assembly declares the entities; a model that no longer matches its migrations fails MigrateAsync
+        var efCore = File.Exists(Path.Combine(options.Directory, "Microsoft.EntityFrameworkCore.dll"));
+        var dynamicBinder = File.Exists(Path.Combine(options.Directory, "Microsoft.CSharp.dll"));
 
         // every rename keeps the names string literals mention: nameof(...), GetField("..."), [UnsafeAccessor(Name = "...")]
         // Newtonsoft.Json serializes public fields by name
         var keepPublicFields = File.Exists(Path.Combine(options.Directory, "Newtonsoft.Json.dll"));
         literals = new AggressiveMinifier(Map, options.SuperAggressive, keepPublicFields);
-        // super aggressive renames what any assembly may name, so every assembly's strings count
-        literals.Collect(modules, options.SuperAggressive ? others : [], wordsOnly: options.Aggressive is false);
+        // every assembly of the folder may name what it reads by name, whether this tool rewrites it or not
+        literals.Collect(modules, others, wordsOnly: options.Aggressive is false);
+        // a satellite assembly is not in the folder itself, and its resource names name the types they belong to
+        literals.CollectWords(SatelliteResourceNames());
+
+        // decided before the first rename: a forwarder stops leading to its type once that type is renamed
+        var reachable = ReachableFromOthers(modules, others);
 
         var stats = new Dictionary<ModuleDefinition, (int attributes, int names)>();
         foreach (var module in modules)
         {
-            // aggressive: no library gets the benefit of the doubt
-            var full = options.Aggressive || fully.Contains(module.Assembly.Name.Name);
+            // aggressive: no library gets the benefit of the doubt, unless EF Core may map its types
+            var full = fully.Contains(module.Assembly.Name.Name) || (options.Aggressive && efCore is false);
             var removable = new HashSet<string>(CompileTimeAttributes);
-            if (options.KeepNullable is false && (full || keepNullable is false)) removable.UnionWith(NullableAttributes);
+            if (options.KeepNullable is false && (full || efCore is false)) removable.UnionWith(NullableAttributes);
             if (options.Aggressive) removable.UnionWith(AggressiveMinifier.MoreAttributes);
+            if (options.Aggressive && dynamicBinder is false) removable.Add(Dynamic);
             if (options.SuperAggressive) removable.UnionWith(AggressiveMinifier.SuperAttributes);
 
             var attributes = StripAttributes(module, removable, full);
             var names = ShortenGeneratedNames(module, full);
-            if (options.Aggressive) names += literals.Run(module, Scope(module, modules, others));
+            if (options.Aggressive) names += literals.Run(module, Scope(module, modules, reachable), full);
             stats[module] = (attributes, names);
         }
 
         var retargeted = references.Apply();
-        Verify(modules, others, types);
+        Verify(references, types);
 
         // an assembly nothing changed in is left as ILLink wrote it
         var changed = assemblies.Where(a => stats[a.MainModule] != (0, 0) || retargeted.Contains(a.MainModule)).ToList();
@@ -123,7 +145,6 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             var path = Path.Combine(options.Directory, name + ".dll");
             if (File.Exists(path) is false) continue;
 
-            var withSymbols = File.Exists(Path.ChangeExtension(path, ".pdb"));
             AssemblyDefinition assembly;
             try
             {
@@ -132,9 +153,16 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                     AssemblyResolver = resolver,
                     InMemory = true,
                     ReadingMode = ReadingMode.Immediate,
-                    ReadSymbols = withSymbols,
-                    SymbolReaderProvider = withSymbols ? new PortablePdbReaderProvider() : null,
+                    // the pdb next to it, or the one embedded in it
+                    ReadSymbols = true,
+                    SymbolReaderProvider = new DefaultSymbolReaderProvider(throwIfNoSymbol: false),
                 });
+                // a Windows pdb, which only a reader this tool doesn't ship understands
+                if (assembly.MainModule.HasSymbols is false && File.Exists(Path.ChangeExtension(path, ".pdb")))
+                {
+                    assembly.Dispose();
+                    throw new InvalidOperationException($"{name}.pdb is not a portable pdb.");
+                }
             }
             catch (Exception e) when (options.Assemblies is null && e is BadImageFormatException or SymbolsNotMatchingException or InvalidOperationException)
             {
@@ -180,6 +208,9 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 // debuggers use it to tell closures and state machines apart from user types, and
                 // serializers such as Newtonsoft.Json use it to skip backing fields
                 if (name == CompilerGenerated && (provider is TypeDefinition || (full is false && provider is FieldDefinition))) continue;
+                // a trimmed app's DI checks that an open generic implementation asks no more of its type arguments
+                // than its service does, so both keep what they ask
+                if (name == DynamicallyAccessedMembers && provider is GenericParameter) continue;
                 attributes.RemoveAt(i);
                 removed++;
             }
@@ -242,12 +273,53 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     /// InternalsVisibleTo friend that is published but not minified would keep the old internal names, and an
     /// assembly that references this one but is not minified would keep the old public ones.
     /// </summary>
-    private RenameScope Scope(ModuleDefinition module, HashSet<ModuleDefinition> modules, List<ModuleDefinition> others)
+    private RenameScope Scope(ModuleDefinition module, HashSet<ModuleDefinition> modules, HashSet<string> reachable)
     {
         if (CanRenameInternals(module, modules) is false) return RenameScope.Private;
         if (options.SuperAggressive is false) return RenameScope.Internal;
-        var name = module.Assembly.Name.Name;
-        return others.Any(o => o.AssemblyReferences.Any(r => string.Equals(r.Name, name, StringComparison.OrdinalIgnoreCase))) ? RenameScope.Internal : RenameScope.Public;
+        return reachable.Contains(module.Assembly.Name.Name) ? RenameScope.Internal : RenameScope.Public;
+    }
+
+    /// <summary>
+    /// The assemblies an assembly this tool doesn't rewrite may name: the ones it references, and the ones a
+    /// forwarder of those leads it to, which is how an assembly reaches a type through a facade.
+    /// </summary>
+    private static HashSet<string> ReachableFromOthers(HashSet<ModuleDefinition> modules, List<ModuleDefinition> others)
+    {
+        var forwarded = modules.ToDictionary(m => m.Assembly.Name.Name, m => m.ExportedTypes
+            .Select(e => e.Scope).OfType<AssemblyNameReference>().Select(r => r.Name).ToHashSet(StringComparer.OrdinalIgnoreCase),
+            StringComparer.OrdinalIgnoreCase);
+
+        var reachable = others.SelectMany(o => o.AssemblyReferences.Select(r => r.Name)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var queue = new Queue<string>(reachable);
+        while (queue.Count > 0)
+        {
+            if (forwarded.TryGetValue(queue.Dequeue(), out var targets) is false) continue;
+            foreach (var target in targets)
+            {
+                if (reachable.Add(target)) queue.Enqueue(target);
+            }
+        }
+        return reachable;
+    }
+
+    /// <summary>The resource names of the satellite assemblies, which sit in a folder per culture.</summary>
+    private List<string> SatelliteResourceNames()
+    {
+        var names = new List<string>();
+        foreach (var path in Directory.EnumerateFiles(options.Directory, "*.resources.dll", SearchOption.AllDirectories))
+        {
+            try
+            {
+                using var satellite = AssemblyDefinition.ReadAssembly(path, new ReaderParameters { InMemory = true });
+                names.AddRange(satellite.MainModule.Resources.Select(r => r.Name));
+            }
+            catch (Exception e) when (e is BadImageFormatException or IOException)
+            {
+                // not a managed assembly, or not readable: nothing to learn from it
+            }
+        }
+        return names;
     }
 
     private bool CanRenameInternals(ModuleDefinition module, HashSet<ModuleDefinition> modules)
@@ -264,26 +336,14 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
 
     /// <summary>
     /// Every reference into the rewritten assemblies - from each other and from every other assembly in the
-    /// folder - must still resolve: the member references, and the type references and forwarders that resolved
-    /// before (<paramref name="types"/>). Nothing is written otherwise.
+    /// folder - must still reach the definition it reached before: the member references (<paramref name="references"/>),
+    /// and the type references, forwarders and attribute arguments that resolved before (<paramref name="types"/>).
+    /// Nothing is written otherwise.
     /// </summary>
-    private static void Verify(HashSet<ModuleDefinition> modules, List<ModuleDefinition> others, List<(ModuleDefinition module, string name, Func<bool> resolves)> types)
+    private static void Verify(ReferenceIndex references, List<(ModuleDefinition module, string name, Func<bool> resolves)> types)
     {
-        var names = modules.Select(m => m.Assembly.Name.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var toCheck = new List<ModuleDefinition>(modules);
-        toCheck.AddRange(others.Where(o => o.AssemblyReferences.Any(r => names.Contains(r.Name))));
-
         var broken = types.Where(t => t.resolves() is false).Select(t => $"{t.module.Assembly.Name.Name}: {t.name}").ToList();
-        foreach (var module in toCheck)
-        {
-            foreach (var reference in ReferenceIndex.MemberReferences(module))
-            {
-                if (reference.DeclaringType is ArrayType) continue; // runtime-provided Get/Set/Address
-                if (reference.DeclaringType.Scope is AssemblyNameReference scope && names.Contains(scope.Name) is false) continue;
-                if (ReferenceIndex.Resolve(reference.DeclaringType.GetElementType()) is { } declaring && modules.Contains(declaring.Module) is false) continue;
-                if (ReferenceIndex.Resolve(reference) is null) broken.Add($"{module.Assembly.Name.Name}: {reference.FullName}");
-            }
-        }
+        broken.AddRange(references.Broken());
         if (broken.Count > 0)
             throw new MinifierException($"{broken.Count} reference(s) would no longer resolve, e.g. {string.Join("; ", broken.Take(5))}.");
     }
@@ -294,6 +354,8 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var staging = Path.Combine(options.Directory, ".bit-minifier");
         if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
         Directory.CreateDirectory(staging);
+        // decided before anything is written: an embedded pdb goes back into the dll, and nothing next to it
+        var withPdbFile = assemblies.Where(a => a.MainModule.HasSymbols && a.MainModule.SymbolReader is not EmbeddedPortablePdbReader).ToHashSet();
         var results = new List<MinifiedAssembly>();
         try
         {
@@ -302,13 +364,13 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 var module = assembly.MainModule;
                 // the signature no longer matches; .NET doesn't validate it, so say so instead of lying
                 module.Attributes &= ~ModuleAttributes.StrongNameSigned;
-                // through streams, so the pdb path the dll records is the pdb's final one, not the staging folder's
+                // through streams, so the dll names its pdb by file name rather than by its path in the staging folder
                 using var dll = File.Create(Path.Combine(staging, assembly.Name.Name + ".dll"));
-                using var pdb = module.HasSymbols ? File.Create(Path.Combine(staging, assembly.Name.Name + ".pdb")) : null;
+                using var pdb = withPdbFile.Contains(assembly) ? File.Create(Path.Combine(staging, assembly.Name.Name + ".pdb")) : null;
                 assembly.Write(dll, new WriterParameters
                 {
                     WriteSymbols = module.HasSymbols,
-                    SymbolWriterProvider = module.HasSymbols ? new PortablePdbWriterProvider() : null,
+                    SymbolWriterProvider = pdb is not null ? new PortablePdbWriterProvider() : module.HasSymbols ? new EmbeddedPortablePdbWriterProvider() : null,
                     SymbolStream = pdb,
                     DeterministicMvid = true,
                 });
@@ -320,7 +382,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 File.WriteAllLines(options.MapFile, map);
             }
 
-            Swap(assemblies, staging, stats, results);
+            Swap(assemblies, withPdbFile, staging, stats, results);
         }
         finally
         {
@@ -335,7 +397,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     /// Moves the originals aside rather than overwriting them, so a failure halfway can put them all back. If one
     /// can't be, the folder is half minified: ILLink's semaphore goes, so the next publish trims it afresh.
     /// </summary>
-    private void Swap(List<AssemblyDefinition> assemblies, string staging, Dictionary<ModuleDefinition, (int attributes, int names)> stats, List<MinifiedAssembly> results)
+    private void Swap(List<AssemblyDefinition> assemblies, HashSet<AssemblyDefinition> withPdbFile, string staging, Dictionary<ModuleDefinition, (int attributes, int names)> stats, List<MinifiedAssembly> results)
     {
         var replaced = new List<(string original, string target)>();
         var added = new List<string>();
@@ -346,7 +408,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 var name = assembly.Name.Name;
                 var target = Path.Combine(options.Directory, name + ".dll");
                 var originalSize = new FileInfo(target).Length;
-                foreach (var extension in assembly.MainModule.HasSymbols ? new[] { ".dll", ".pdb" } : [".dll"])
+                foreach (var extension in withPdbFile.Contains(assembly) ? new[] { ".dll", ".pdb" } : [".dll"])
                 {
                     var file = Path.ChangeExtension(target, extension);
                     if (File.Exists(file))
@@ -383,19 +445,20 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 $"Replacing the assemblies failed ({e.Message}) and {string.Join(", ", failed)} could not be restored, so the folder is partly minified. Publish again: the assemblies will be trimmed afresh.",
                 folderUntouched: false);
         }
+    }
 
-        static void TryDelete(string file)
-        {
-            try { File.Delete(file); }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        }
+    private static void TryDelete(string file)
+    {
+        try { File.Delete(file); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     private void Map(ModuleDefinition module, string kind, string original, string name)
         => map.Add($"{module.Assembly.Name.Name}\t{kind}\t{original}\t{name}");
 
-    private static bool IsNameNeutral(ICustomAttributeProvider provider)
-        => provider.CustomAttributes.All(a => NameNeutralAttributes.Contains(a.AttributeType.FullName));
+    /// <summary>Whether no attribute on it is one that something may find it by.</summary>
+    internal static bool IsNameNeutral(ICustomAttributeProvider provider)
+        => provider.CustomAttributes.All(a => NameNeutralAttributes.Contains(a.AttributeType.FullName) || a.AttributeType.Name.EndsWith("StateMachineAttribute", StringComparison.Ordinal));
 
     internal static IEnumerable<ICustomAttributeProvider> Providers(ModuleDefinition module)
     {

@@ -27,6 +27,8 @@
         <PackageTags>$(PackageTags);Blazor;WebAssembly;minify;ILLink;trimming</PackageTags>
         <!-- a build-time tool: nothing to reference, nothing that flows to the app -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
+        <!-- apps in this repository build it from source on every publish; the release pipelines pack it explicitly -->
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <DevelopmentDependency>true</DevelopmentDependency>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <!-- NU5100: the tool's assemblies sit under tools/ on purpose -->

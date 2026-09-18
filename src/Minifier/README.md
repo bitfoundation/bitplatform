@@ -37,8 +37,10 @@ These stay too, because something reads them by name at runtime:
 - Blazor component types;
 - members with runtime attributes (`[Parameter]`, `[JSInvokable]`, ...).
 
-Libraries that read backing fields or nullable metadata by themselves, such as EF Core without a
-compiled model, may not work at this level.
+When the app publishes EF Core, which may map the types of any assembly, the nullable metadata and
+the backing field names it reads are kept everywhere but in the bit libraries, so the model still
+matches its migrations. Other libraries that find private members by a name no string spells out
+may not work at this level.
 
 ## Super aggressive (experimental)
 
@@ -68,8 +70,8 @@ It breaks what finds a public name some other way, so don't use it when:
 
 - a server passes a component parameter whose runtime type isn't the declared one (a derived type, or `object`);
 - code builds a name at runtime (`"On" + name`), or lists types or fields and shows or stores their names;
-- a serializer reads public fields (System.Text.Json with `IncludeFields`) or type names (`TypeNameHandling`,
-  `DataContractSerializer` namespaces);
+- a serializer reads public fields (`XmlSerializer`, System.Text.Json with `IncludeFields`) or type names
+  (`TypeNameHandling`, `DataContractSerializer` namespaces);
 - configuration names framework types, like `Logging:LogLevel` categories in `appsettings.json`;
 - the app stores a type name across releases: the short names change from one build to the next.
 
@@ -79,23 +81,26 @@ bitplatform.dev's WebAssembly client, published in Release (managed `.wasm` file
 
 | | size |
 |---|---:|
-| without Bit.Minifier | 2,094 KB |
-| default | 2,026 KB (-3.2%) |
-| aggressive | 1,909 KB (-8.8%) |
+| without Bit.Minifier | 2,043 KB |
+| default | 1,979 KB (-3.1%) |
+| aggressive | 1,869 KB (-8.5%) |
 
 The BlazorUI demo's WebAssembly client, measured the same way:
 
 | | size |
 |---|---:|
-| default | 6,344 KB |
-| aggressive | 6,026 KB (-5.0%) |
-| super aggressive | 5,973 KB (-5.8%) |
+| without Bit.Minifier | 6,445 KB |
+| default | 6,345 KB (-1.6%) |
+| aggressive | 6,038 KB (-6.3%) |
+| super aggressive | 5,987 KB (-7.1%) |
 
 ## Good to know
 
-- **Nullable metadata:** it is kept when the app sets `NullabilityInfoContextSupport` to `true`.
+- **Nullable metadata:** it is kept when the app sets `NullabilityInfoContextSupport` to `true`, and
+  outside the bit libraries when the app publishes EF Core.
 - **Reading stack traces:** `obj/<configuration>/<tfm>/bit-minifier.map` lists every renamed member.
 - **Nothing ships broken:** if any reference would stop resolving, or anything else fails, nothing
   is written, and the publish shows warning `BITMIN001` and ships the trimmed assemblies as they were.
-  With warnings as errors, add `BITMIN001` to `MSBuildWarningsNotAsErrors` to keep it a warning.
+  With warnings as errors, add `BITMIN001` to `MSBuildWarningsNotAsErrors` to keep it a warning. The next
+  publish tries again.
 - **Switching levels:** the next publish trims afresh, so nothing is minified twice.

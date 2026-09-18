@@ -14,14 +14,25 @@ namespace Bit.Minifier;
 internal sealed class ReferenceIndex
 {
     private readonly List<(MemberReference reference, MemberReference definition)> members = [];
+    // references of the assemblies that are not rewritten: their rows keep the old names, so they are only checked
+    private readonly List<(MemberReference reference, MemberReference definition)> foreign = [];
     private readonly List<(TypeReference reference, TypeDefinition definition)> types = [];
     private readonly List<(ModuleDefinition module, ExportedType forwarder, TypeDefinition definition)> forwarders = [];
     private readonly List<(ModuleDefinition module, TypeDefinition definition, string name, Action fix)> attributeFixes = [];
 
-    public static ReferenceIndex Collect(HashSet<ModuleDefinition> modules)
+    public static ReferenceIndex Collect(HashSet<ModuleDefinition> modules, IEnumerable<ModuleDefinition> others)
     {
         var index = new ReferenceIndex();
         var seen = new HashSet<MemberReference>(ReferenceEqualityComparer.Instance);
+
+        foreach (var module in others)
+        {
+            foreach (var reference in MemberReferences(module))
+            {
+                if (seen.Add(reference) is false) continue;
+                if (Resolve(reference) is { } definition && modules.Contains(definition.Module)) index.foreign.Add((reference, definition));
+            }
+        }
 
         foreach (var module in modules)
         {
@@ -64,12 +75,12 @@ internal sealed class ReferenceIndex
         foreach (var reference in module.GetTypeReferences())
         {
             if (Resolve(reference) is { } definition && modules.Contains(definition.Module))
-                result.Add((module, reference.FullName, () => Resolve(reference) is not null));
+                result.Add((module, reference.FullName, () => ReferenceEquals(Resolve(reference), definition)));
         }
         foreach (var forwarder in module.ExportedTypes)
         {
             if (Resolve(forwarder) is { } definition && modules.Contains(definition.Module))
-                result.Add((module, forwarder.FullName, () => Resolve(forwarder) is not null));
+                result.Add((module, forwarder.FullName, () => ReferenceEquals(Resolve(forwarder), definition)));
         }
         // attribute blobs name types by string; the argument is read again when checked, since fixes replace it
         foreach (var provider in AssemblyMinifier.Providers(module))
@@ -98,9 +109,17 @@ internal sealed class ReferenceIndex
         {
             var types = NamedTypes(argument()).Select(t => Resolve(t)).ToList();
             if (types.Any(t => t is not null && modules.Contains(t.Module)) && types.All(t => t is not null))
-                result.Add((module, $"[{name}] argument", () => NamedTypes(argument()).All(t => Resolve(t) is not null)));
+                result.Add((module, $"[{name}] argument", () => NamedTypes(argument()).Select(t => Resolve(t)).SequenceEqual(types)));
         }
     }
+
+    /// <summary>
+    /// Every reference that pointed into the rewritten assemblies and no longer reaches the very definition it
+    /// did: one whose row could not be re-pointed, or a rename that hid it behind another member.
+    /// </summary>
+    public IEnumerable<string> Broken()
+        => members.Concat(foreign).Where(p => ReferenceEquals(Resolve(p.reference), p.definition) is false)
+            .Select(p => $"{p.reference.Module.Assembly.Name.Name}: {p.reference.FullName}");
 
     /// <summary>Re-points the references; returns the modules in which one of them actually changed.</summary>
     public HashSet<ModuleDefinition> Apply()

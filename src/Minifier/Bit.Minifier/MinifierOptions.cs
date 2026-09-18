@@ -22,14 +22,15 @@ internal sealed class MinifierOptions
     public string? MapFile { get; init; }
 
     /// <summary>
-    /// Keeps the nullable metadata, which only NullabilityInfoContext and EF Core read at runtime. Kept
-    /// in every assembly but the fully minified ones anyway when EF Core is part of the app.
+    /// Keeps the nullable metadata, which only NullabilityInfoContext (and EF Core through it) reads at runtime.
+    /// Kept in every assembly but the fully minified ones anyway when EF Core is part of the app.
     /// </summary>
     public bool KeepNullable { get; init; }
 
     /// <summary>
     /// Everything that can go, goes (see <see cref="AggressiveMinifier"/>). Implies the full treatment for
-    /// every assembly, whatever <see cref="FullyMinified"/> says.
+    /// every assembly, whatever <see cref="FullyMinified"/> says - unless EF Core is part of the app, which may
+    /// map the types of any of them.
     /// </summary>
     public bool Aggressive { get => aggressive || SuperAggressive; init => aggressive = value; }
 

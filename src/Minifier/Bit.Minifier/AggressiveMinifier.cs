@@ -34,7 +34,6 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     [
         "System.CLSCompliantAttribute",
         "System.ObsoleteAttribute",
-        "System.ParamArrayAttribute",
         "System.ComponentModel.EditorBrowsableAttribute",
         "System.CodeDom.Compiler.GeneratedCodeAttribute",
         "System.Diagnostics.DebuggerBrowsableAttribute",
@@ -60,7 +59,6 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         "System.Runtime.CompilerServices.CallerMemberNameAttribute",
         "System.Runtime.CompilerServices.CollectionBuilderAttribute",
         "System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute",
-        "System.Runtime.CompilerServices.DynamicAttribute",
         "System.Runtime.CompilerServices.ExtensionAttribute",
         "System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
         "System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
@@ -121,9 +119,17 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     private readonly HashSet<TypeDefinition> keptTypes = [];
     private readonly HashSet<MethodDefinition> staticImplementations = [];
     private readonly Dictionary<TypeDefinition, string> originalNames = [];
+    // top-level names run across the whole set: a cleared namespace leaves nothing else to tell two assemblies' apart
+    private int topLevelNames;
 
     /// <summary>Whether a string literal of the app mentions the name, the way nameof(...) and GetMethod("...") do.</summary>
     public bool IsMentioned(string name) => literalWords.Contains(name);
+
+    /// <summary>Keeps the names these strings mention, for what is read from outside the assemblies themselves.</summary>
+    public void CollectWords(IEnumerable<string> texts)
+    {
+        foreach (var text in texts) AddWords(text);
+    }
 
     /// <summary>
     /// Everything the passes need to know before the first rename: every identifier-like word of every string
@@ -163,6 +169,8 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                     {
                         if (argument.Value is string text) AddWords(text);
                     }
+                    // a named argument names the field it sets (properties keep their names anyway)
+                    foreach (var named in attribute.Fields) literalWords.Add(named.Name);
                 }
             }
         }
@@ -173,7 +181,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             originalNames[type] = type.FullName;
             CollectStaticImplementations(type);
             // a server reports its exceptions by type name, and clients map them back by it
-            if (super && IsException(type)) keptTypes.Add(type);
+            if (super && IsException(type)) Keep(type);
             if (IsComponent(type) is false) continue;
             components.Add(type);
             if (super is false) continue;
@@ -243,10 +251,13 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         }
     }
 
-    [GeneratedRegex(@"[A-Za-z_][A-Za-z0-9_]*")]
+    // C# identifiers: letters of any script, then letters, digits, combining and connecting marks
+    private const string Identifier = @"[\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Mn}\p{Mc}\p{Pc}\p{Cf}]*";
+
+    [GeneratedRegex(Identifier)]
     private static partial Regex Words();
 
-    [GeneratedRegex(@"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+")]
+    [GeneratedRegex(Identifier + @"(?:\." + Identifier + ")+")]
     private static partial Regex DottedWords();
 
     // the JS interop source generator's registration (__GeneratedInitializer.__Register_, __Wrapper_*) is bound from native code
@@ -254,13 +265,14 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         => type.Namespace.StartsWith("System.Runtime.InteropServices.JavaScript", StringComparison.Ordinal) || type.Name.StartsWith("__", StringComparison.Ordinal)
             || (type.DeclaringType is not null && IsNativeBound(type.DeclaringType));
 
-    public int Run(ModuleDefinition module, RenameScope scope)
+    /// <param name="full">Whether the assembly gets every rule; otherwise EF Core may map its types, and find their backing fields by name.</param>
+    public int Run(ModuleDefinition module, RenameScope scope, bool full)
     {
         if (RuntimeBound.Contains(module.Assembly.Name.Name)) return ClearParameterNames(module, scope == RenameScope.Public ? RenameScope.Internal : scope);
 
         return RemovePrivateProperties(module, scope)
             + (super ? RemoveEvents(module, scope) : 0)
-            + RenameMembers(module, scope)
+            + RenameMembers(module, scope, full)
             + ClearParameterNames(module, scope)
             + RenameTypes(module, scope)
             + (super ? RenameGenericParameters(module, scope) : 0);
@@ -308,32 +320,33 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         return removed;
     }
 
-    private int RenameMembers(ModuleDefinition module, RenameScope scope)
+    private int RenameMembers(ModuleDefinition module, RenameScope scope, bool full)
     {
         int renamed = 0;
         foreach (var type in module.GetTypes())
         {
             if (type.IsInterface || IsNativeBound(type)) continue;
+            // one set of new names per type: a field, a method and a nested type of one type never share a name,
+            // and none takes the name of a member of a base type, which reflection finds through the derived one
+            var taken = TakenNames(type);
+            int next = 0;
             if (type.IsEnum is false && type.IsExplicitLayout is false)
             {
-                var taken = type.Fields.Select(f => f.Name).ToHashSet();
-                int next = 0;
                 foreach (var field in type.Fields)
                 {
                     if (field.IsSpecialName || field.IsRuntimeSpecialName || IsBound(field) || literalWords.Contains(field.Name) || field.Name.StartsWith('<')) continue;
+                    if (full is false && IsBackingFieldConvention(type, field)) continue;
                     // public fields stay below super aggressive, whoever declares them: serializers may see them. Above,
                     // constants stay (code lists them by reflection), and all of them when Newtonsoft.Json may serialize them
                     if (field.IsPublic && (scope != RenameScope.Public || field.IsLiteral || keepPublicFields)) continue;
                     if (IsRenamable(type, field.IsPrivate, field.IsPublic, field.IsFamily || field.IsFamilyOrAssembly, scope) is false) continue;
-                    var name = ShortName.Next(taken, ref next);
+                    var name = ShortName.Next(taken, ref next, literalWords);
                     map(module, "F", $"{type.FullName}::{field.Name}", name);
                     field.Name = name;
                     renamed++;
                 }
             }
 
-            var takenMethods = type.Methods.Select(m => m.Name).ToHashSet();
-            int nextMethod = 0;
             foreach (var method in type.Methods)
             {
                 if (method.IsConstructor || (method.IsSpecialName && IsRenamableAccessor(method) is false) || method.IsRuntimeSpecialName || method.IsVirtual || method.HasOverrides
@@ -345,7 +358,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                     || IsPropertyConvention(type, method)
                     || staticImplementations.Contains(method)) continue;
                 if (IsRenamable(type, method, scope) is false) continue;
-                var name = ShortName.Next(takenMethods, ref nextMethod);
+                var name = ShortName.Next(taken, ref next, literalWords);
                 map(module, "M", $"{type.FullName}::{method.Name}", name);
                 method.Name = name;
                 renamed++;
@@ -388,7 +401,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                 if (exposed && type.IsInterface) continue;
                 foreach (var parameter in method.Parameters)
                 {
-                    if (parameter.Name.Length == 0 || parameter.HasCustomAttributes || (exposed && literalWords.Contains(parameter.Name))) continue;
+                    if (parameter.Name.Length == 0 || IsBound(parameter) || (exposed && literalWords.Contains(parameter.Name))) continue;
                     parameter.Name = "";
                     cleared++;
                 }
@@ -402,12 +415,11 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         int renamed = 0;
         var resources = module.Resources.Select(r => r.Name).ToList();
         var topLevel = module.Types.Select(t => t.FullName).ToHashSet();
-        int nextTop = 0;
         foreach (var type in module.GetTypes().ToList())
         {
             if (type.Name == "<Module>" || type.Name.StartsWith("<PrivateImplementationDetails>", StringComparison.Ordinal)) continue;
             if ((IsVisibleOutside(type) && scope != RenameScope.Public) || IsBound(type) || IsNativeBound(type)) continue;
-            if (type.IsNested is false && scope == RenameScope.Private) continue;
+            if (scope == RenameScope.Private && IsHiddenFromFriends(type) is false) continue;
             var plain = type.Name.Split('`')[0];
             if (literalWords.Contains(plain) || components.Contains(type) || keptTypes.Contains(type)) continue;
             // a type's FullName is cached, and stale once the type it is nested in is renamed
@@ -418,16 +430,16 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             string name;
             if (type.IsNested)
             {
-                var taken = type.DeclaringType.NestedTypes.Select(t => t.Name).ToHashSet();
+                var taken = TakenNames(type.DeclaringType);
                 int next = 0;
-                do name = "_" + ShortName.Get(next++) + arity; while (taken.Contains(name));
+                do name = "_" + ShortName.Get(next++) + arity; while (taken.Contains(name) || literalWords.Contains(name));
                 type.Name = name;
             }
             else
             {
                 // super aggressive: the namespace goes too, unless a string names it
                 var @namespace = super && literalWords.Contains(type.Namespace) is false && literalNamespaces.Contains(type.Namespace) is false ? "" : type.Namespace;
-                do name = "_" + ShortName.Get(nextTop++) + arity; while (topLevel.Contains(FullName(@namespace, name)));
+                do name = "_" + ShortName.Get(topLevelNames++) + arity; while (topLevel.Contains(FullName(@namespace, name)) || literalWords.Contains(name));
                 topLevel.Add(FullName(@namespace, name));
                 // the module looks top-level types up through a name cache that only Add/Remove maintain
                 var index = module.Types.IndexOf(type);
@@ -467,7 +479,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             {
                 var parameter = parameters[i];
                 var name = ShortName.Get(i);
-                if (parameter.Name == name || parameter.HasCustomAttributes || literalWords.Contains(parameter.Name) || parameters.Any(p => p.Name == name)) continue;
+                if (parameter.Name == name || IsBound(parameter) || literalWords.Contains(parameter.Name) || parameters.Any(p => p.Name == name)) continue;
                 map(module, "G", $"{owner}<{parameter.Name}>", name);
                 parameter.Name = name;
                 count++;
@@ -476,10 +488,9 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         }
     }
 
-    // an attribute left after stripping is one something reads at runtime, except the state machine markers
-    private static bool IsBound(ICustomAttributeProvider provider)
-        => provider.CustomAttributes.Any(a => a.AttributeType.Name.EndsWith("StateMachineAttribute", StringComparison.Ordinal) is false
-            && a.AttributeType.FullName != "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
+    // an attribute left after stripping is one something reads at runtime, except those kept for what they say
+    // about the member rather than to find it: state machine markers, nullable metadata, [ParamArray], ...
+    private static bool IsBound(ICustomAttributeProvider provider) => AssemblyMinifier.IsNameNeutral(provider) is false;
 
     // Blazor sends component type names from the (unminified) server to the client
     private static bool IsComponent(TypeDefinition type)
@@ -500,6 +511,14 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             if (t.FullName == "System.Exception") return true;
         }
         return false;
+    }
+
+    // EF Core finds the backing field of property Name by these names, besides <Name>k__BackingField
+    private static bool IsBackingFieldConvention(TypeDefinition type, FieldDefinition field)
+    {
+        var name = field.Name.StartsWith("m_", StringComparison.Ordinal) ? field.Name[2..] : field.Name.StartsWith('_') ? field.Name[1..] : field.Name;
+        return name.Length > 0 && type.Properties.Any(p => p.Name.Length == name.Length && char.ToUpperInvariant(p.Name[0]) == char.ToUpperInvariant(name[0])
+            && p.Name.AsSpan(1).SequenceEqual(name.AsSpan(1)));
     }
 
     // Newtonsoft.Json and component models find ShouldSerializeX() and ResetX() by the name of property X
@@ -525,6 +544,28 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
             // a public member of a type nobody outside can see is as internal as the type
             _ => (isPublic || isProtected) is false || IsVisibleOutside(type) is false,
         };
+    }
+
+    // every name that is already taken for a member of the type: of any kind, and of any type it inherits from,
+    // since reflection finds a base member through the derived type
+    private static HashSet<string> TakenNames(TypeDefinition type)
+    {
+        var taken = new HashSet<string>();
+        for (var t = type; t is not null; t = t.BaseType is null ? null : ReferenceIndex.Resolve(t.BaseType))
+        {
+            foreach (var member in t.Fields.Cast<IMemberDefinition>().Concat(t.Methods).Concat(t.Properties).Concat(t.Events).Concat(t.NestedTypes)) taken.Add(member.Name);
+        }
+        return taken;
+    }
+
+    // a friend assembly sees every type but those nested in private ones
+    private static bool IsHiddenFromFriends(TypeDefinition type)
+    {
+        for (var t = type; t.IsNested; t = t.DeclaringType)
+        {
+            if (t.IsNestedPrivate) return true;
+        }
+        return false;
     }
 
     private static bool IsVisibleOutside(TypeDefinition type)

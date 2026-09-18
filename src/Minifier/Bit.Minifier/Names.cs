@@ -16,12 +16,16 @@ internal static class ShortName
         return name;
     }
 
-    /// <summary>The next short name not in <paramref name="taken"/>, which it is then added to.</summary>
-    public static string Next(HashSet<string> taken, ref int counter)
+    /// <summary>
+    /// The next short name that is neither in <paramref name="taken"/>, which it is then added to, nor one
+    /// <paramref name="avoid"/> holds - a name some string mentions is a name something may look up.
+    /// </summary>
+    public static string Next(HashSet<string> taken, ref int counter, IReadOnlySet<string>? avoid = null)
     {
         while (true)
         {
             var name = Get(counter++);
+            if (avoid?.Contains(name) is true) continue;
             if (taken.Add(name)) return name;
         }
     }

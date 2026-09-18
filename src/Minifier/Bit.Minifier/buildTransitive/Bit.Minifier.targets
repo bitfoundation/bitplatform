@@ -17,7 +17,8 @@
                              reference. For apps nothing reaches by a public name from outside the WebAssembly
                              client, or through reflection no string spells out. See the package README.
 
-    Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true).
+    Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true), and outside the bit
+    libraries when EF Core is published.
     obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed.
     -->
 
@@ -63,11 +64,13 @@
             Outputs="$(IntermediateOutputPath)bit-minifier.stamp">
         <!-- A failure is a warning, never a broken publish: the tool writes nothing unless every reference into the
              rewritten assemblies still resolves, so the app then ships what ILLink produced. -->
+        <Delete Files="$(IntermediateOutputPath)bit-minifier.map" />
         <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; $(_BitMinifyArgs)"
               ContinueOnError="WarnAndContinue"
               StandardOutputImportance="normal" />
-        <!-- runs again only when ILLink rewrote the folder, so nothing is minified twice -->
-        <Touch Files="$(IntermediateOutputPath)bit-minifier.stamp" AlwaysCreate="true" />
+        <!-- runs again only when ILLink rewrote the folder, so nothing is minified twice. The tool writes the map only
+             along with the assemblies, so a folder it left as it was is tried again (and warned about) next time. -->
+        <Touch Files="$(IntermediateOutputPath)bit-minifier.stamp" AlwaysCreate="true" Condition="Exists('$(IntermediateOutputPath)bit-minifier.map')" />
         <ItemGroup>
             <FileWrites Include="$(IntermediateOutputPath)bit-minifier.stamp;$(IntermediateOutputPath)bit-minifier.map" />
         </ItemGroup>

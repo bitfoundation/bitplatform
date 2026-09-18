@@ -26,7 +26,18 @@ namespace Bit.Minifier.Tests.Library
 
     public class Palette
     {
-        public string Name { get; set; } = "";
+        // NullabilityInfoContext reads [AllowNull]: the setter takes null, the getter never returns it
+        [System.Diagnostics.CodeAnalysis.AllowNull]
+        public string Name { get; set => field = value ?? ""; } = "";
+    }
+
+    /// <summary>System.Text.Json reads [SetsRequiredMembers] to tell that this constructor sets Code.</summary>
+    public class Ticket
+    {
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+        public Ticket() => Code = "none";
+
+        public required string Code { get; set; }
     }
 
     /// <summary>An app's entry point: the WebAssembly host finds the async Main through the wrapper's name.</summary>

@@ -66,6 +66,11 @@ public class Calculator
 
     public int HistoryCount => _history.Count;
 
+    // EF Core finds a read-only property's backing field by its name
+    private readonly int _limit = 10;
+
+    public int Limit => _limit;
+
     private int _reflectedField = 2;
 
     public int CallByReflection()
@@ -97,6 +102,12 @@ public class Calculator
     {
         throw new InvalidOperationException($"total is {total}");
     }
+
+    // a friend reaches it by name, so it keeps that name for as long as the friend is not minified
+    internal static class Rounding
+    {
+        internal static int Half(int value) => value / 2;
+    }
 }
 
 /// <summary>How EF Core's compiled model reaches backing fields: by their names, in strings.</summary>
@@ -116,7 +127,8 @@ public record Point(int X, int Y)
     public double Length => Math.Sqrt((X * X) + (Y * Y));
 }
 
-public sealed class Box<T>
+// DI compares what an open generic implementation and its service ask of their type arguments
+public sealed class Box<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>
 {
     public T? Value { get; set; }
 
@@ -149,6 +161,9 @@ internal sealed class FlavoredAttribute : Attribute
     public object? Boxed { get; set; }
 
     public Flavor[]? Many { get; set; }
+
+    // a named argument names the field by string
+    public int Heat;
 }
 
 [AttributeUsage(AttributeTargets.All)]
@@ -177,12 +192,20 @@ internal sealed class Lattice
 /// <summary>Attributes whose named arguments carry an internal enum: the blob names the enum type by string.</summary>
 public static class Flavors
 {
-    [Flavored(Flavor = Flavor.Spicy, Boxed = Flavor.Plain, Many = [Flavor.Spicy, Flavor.Plain])]
+    [Flavored(Flavor = Flavor.Spicy, Boxed = Flavor.Plain, Many = [Flavor.Spicy, Flavor.Plain], Heat = 3)]
     public static string Describe()
     {
         var attribute = (FlavoredAttribute)typeof(Flavors).GetMethod("Describe")!.GetCustomAttributes(false).Single(a => a is FlavoredAttribute);
-        return $"{attribute.Flavor} {attribute.Boxed} {string.Join("+", attribute.Many!)}";
+        return $"{attribute.Flavor} {attribute.Boxed} {string.Join("+", attribute.Many!)} {attribute.Heat}";
     }
+}
+
+/// <summary>What the dynamic binder reads: a params array, and dynamic values.</summary>
+public static class Adder
+{
+    public static int Sum(params int[] values) => values.Sum();
+
+    public static dynamic Twice(dynamic value) => value * 2;
 }
 
 /// <summary>A private property reached through an expression tree: the tree holds its getter by token.</summary>
@@ -195,6 +218,14 @@ public class Shapes
         System.Linq.Expressions.Expression<Func<Shapes, int>> read = s => s.Hidden;
         return read.Compile()(this);
     }
+
+    // identifiers aren't ASCII only, and a string may name several of them
+    private int Περίμετρος() => 4;
+
+    private int Εμβαδόν() => 1;
+
+    public int ReadThroughNames() => "Περίμετρος Εμβαδόν".Split(' ')
+        .Sum(name => (int)typeof(Shapes).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(this, null)!);
 }
 
 internal interface IParsable2<TSelf> where TSelf : IParsable2<TSelf>
@@ -212,7 +243,7 @@ internal readonly struct Meters : IParsable2<Meters>
 }
 
 /// <summary>Static abstract interface members, implemented implicitly by a plain static method.</summary>
-public static class Generic
+public static class Mensuration
 {
     public static int MakeMeters(int value) => Create<Meters>(value).Value;
 

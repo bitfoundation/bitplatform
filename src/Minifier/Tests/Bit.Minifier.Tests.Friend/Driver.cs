@@ -39,16 +39,21 @@ public static class Driver
         results.Add($"box {await new Box<string> { Value = "boxed" }.GetAsync()}");
         results.Add($"shade {Enum.Parse<Shade>("Dark")}");
         results.Add($"flavors {Flavors.Describe()} {DescribeFlavor()} {DescribeTypes()}");
-        results.Add($"expression {new Shapes().ReadThroughExpression()}");
-        results.Add($"generic math {Generic.MakeMeters(7)}");
+        results.Add($"expression {new Shapes().ReadThroughExpression()} {new Shapes().ReadThroughNames()}");
+        results.Add($"generic math {Mensuration.MakeMeters(7)}");
         results.Add($"friend square {calculator.SquareThroughInternals(3)}");
         results.Add($"friend add {await calculator.AddTwiceAsync(2)}");
+        results.Add($"friend half {calculator.HalfThroughInternals(9)}");
+        // the binder picks the overload at runtime, from the params and dynamic metadata
+        dynamic two = 2;
+        results.Add($"dynamic {Adder.Sum(two, 3)} {Adder.Twice(two)}");
 
         var plugin = Type.GetType("Bit.Minifier.Tests.Library.Plugin, Bit.Minifier.Tests.Library", throwOnError: true)!;
         results.Add($"plugin {plugin.GetMethod("Hello")!.Invoke(Activator.CreateInstance(plugin), ["hi"])}");
         results.Add($"widget {new Widget { Colors = new Palette { Name = "dark" } }.Colors!.Name}");
         results.Add($"crate {new Bit.Minifier.Tests.Shelf.Crate().Count(2, 3)}");
         results.Add($"startup {await Startup.Main(["a"])}");
+        results.Add($"ticket {System.Text.Json.JsonSerializer.Deserialize<Ticket>("{}")!.Code}");
         return results;
     }
 

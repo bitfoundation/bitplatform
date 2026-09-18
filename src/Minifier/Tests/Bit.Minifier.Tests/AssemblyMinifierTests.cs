@@ -45,7 +45,7 @@ public class AssemblyMinifierTests
         }
         // an ILLink output folder holds the framework too; the minifier resolves from nowhere else
         var runtime = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-        foreach (var name in new[] { "System.Private.CoreLib", "System.Runtime", "System.Collections", "System.Linq", "System.Runtime.InteropServices" })
+        foreach (var name in new[] { "System.Private.CoreLib", "System.Runtime", "System.Collections", "System.Linq", "System.Runtime.InteropServices", "Microsoft.CSharp" })
         {
             File.Copy(Path.Combine(runtime, name + ".dll"), Path.Combine(minified, name + ".dll"));
         }
@@ -78,12 +78,27 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void KeepNullableKeepsTheNullableMetadata()
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    public void KeepNullableKeepsWhatNullabilityInfoContextReads(Level level)
     {
-        Minify(keepNullable: true);
+        var expected = Nullability(original);
 
-        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
-        Assert.IsTrue(HasNullableMetadata(module));
+        Minify(level, keepNullable: true);
+
+        using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
+        {
+            Assert.IsTrue(HasNullableMetadata(module));
+        }
+        CollectionAssert.AreEqual(expected, Nullability(minified));
+
+        List<string> Nullability(string directory)
+        {
+            var context = new NullabilityInfoContext();
+            var (library, _) = Load(directory);
+            return library.GetTypes().Where(t => t.IsPublic).OrderBy(t => t.FullName).SelectMany(t => t.GetProperties())
+                .Select(p => $"{p.DeclaringType!.Name}.{p.Name}: {context.Create(p).ReadState}/{context.Create(p).WriteState}").ToList();
+        }
     }
 
     [TestMethod]
@@ -160,6 +175,8 @@ public class AssemblyMinifierTests
         var after = ReadDebugInfo(minified, Library);
 
         Assert.IsTrue(after.IdMatches);
+        // the dll names its pdb by file name, never by the folder it was written to first
+        Assert.AreEqual(Library + ".pdb", after.PdbPath);
         Assert.AreEqual(before.SequencePoints, after.SequencePoints);
         Assert.AreEqual(before.MethodsWithSequencePoints, after.MethodsWithSequencePoints);
         Assert.AreEqual(0, after.SequencePointsOutsideBody);
@@ -179,6 +196,7 @@ public class AssemblyMinifierTests
             CollectionAssert.DoesNotContain(names, "_history");
             CollectionAssert.DoesNotContain(names, "InternalSquare");
             CollectionAssert.DoesNotContain(names, "InternalCounter");
+            CollectionAssert.DoesNotContain(names, "Rounding");
             // protected and public members are API
             CollectionAssert.Contains(names, "Shift");
             CollectionAssert.Contains(names, "AddAsync");
@@ -196,6 +214,8 @@ public class AssemblyMinifierTests
             CollectionAssert.DoesNotContain(names, "Record");
             CollectionAssert.Contains(names, "InternalSquare");
             CollectionAssert.Contains(names, "InternalCounter");
+            // and the friend's nested internal type
+            CollectionAssert.Contains(names, "Rounding");
         }
 
         CollectionAssert.AreEqual(await Exercise(original), await Exercise(minified));
@@ -305,18 +325,99 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void KeepsNullableMetadataOfOtherLibrariesWhenEfCoreIsPublished()
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
+    public void KeepsWhatEfCoreReadsInOtherLibrariesWhenItIsPublished(Level level)
     {
         File.WriteAllBytes(Path.Combine(minified, "Microsoft.EntityFrameworkCore.dll"), []);
 
-        Minify(full: [Friend]);
+        Minify(level, full: [Friend]);
 
+        // EF Core tells required columns apart by the nullable metadata, and finds backing fields by name
         using (var library = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             Assert.IsTrue(HasNullableMetadata(library));
+            CollectionAssert.Contains(AllNames(library), "<Label>k__BackingField");
+            CollectionAssert.Contains(AllNames(library), "_limit");
+            // what EF Core doesn't read still goes
+            if (level != Level.Default) CollectionAssert.DoesNotContain(AllNames(library), "_history");
         }
         using var friend = ModuleDefinition.ReadModule(Path.Combine(minified, Friend + ".dll"));
         Assert.IsFalse(friend.GetTypes().Cast<ICustomAttributeProvider>().Concat(friend.GetTypes().SelectMany(t => t.Methods)).Any(p => HasAttribute(p, "NullableContextAttribute")));
+    }
+
+    [TestMethod]
+    public void AggressiveRenamesWhatOnlyNullableMetadataIsLeftOn()
+    {
+        Minify(Level.Aggressive, keepNullable: true);
+
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
+        Assert.IsTrue(HasNullableMetadata(module));
+        // nullable metadata doesn't make a name observable: these go just as they do without it
+        foreach (var name in new[] { "Record", "Select", "_history", "Satchel`1", "Pallet" }) CollectionAssert.DoesNotContain(AllNames(module), name);
+        var select = module.GetType("Bit.Minifier.Tests.Library.Box`1").Methods.Single(m => m.IsPrivate && m.Parameters.Count == 1 && m.Parameters[0].ParameterType.Name.StartsWith("Func", StringComparison.Ordinal));
+        Assert.AreEqual("", select.Parameters[0].Name);
+    }
+
+    [TestMethod]
+    [DataRow(Level.Aggressive, false)]
+    [DataRow(Level.Aggressive, true)]
+    [DataRow(Level.SuperAggressive, true)]
+    public async Task AggressiveKeepsWhatTheDynamicBinderReads(Level level, bool dynamicPublished)
+    {
+        var expected = await Drive(original);
+        if (dynamicPublished is false) File.Delete(Path.Combine(minified, "Microsoft.CSharp.dll"));
+
+        Minify(level);
+
+        using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
+        {
+            var parameters = module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters.Cast<ICustomAttributeProvider>().Append(m.MethodReturnType)).ToList();
+            // reflection's own binder reads [ParamArray] too (Type.InvokeMember, Activator.CreateInstance)
+            Assert.IsTrue(parameters.Any(p => HasAttribute(p, "ParamArrayAttribute")));
+            Assert.AreEqual(dynamicPublished, parameters.Any(p => HasAttribute(p, "DynamicAttribute")));
+        }
+        if (dynamicPublished) CollectionAssert.AreEqual(expected, await Drive(minified));
+    }
+
+    [TestMethod]
+    [DataRow(Level.Default)]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
+    public void KeepsAnEmbeddedPdb(Level level)
+    {
+        var libraryPath = Path.Combine(minified, Library + ".dll");
+        using (var assembly = AssemblyDefinition.ReadAssembly(libraryPath, new ReaderParameters { InMemory = true, ReadSymbols = true }))
+        {
+            assembly.Write(libraryPath, new WriterParameters { WriteSymbols = true, SymbolWriterProvider = new Mono.Cecil.Cil.EmbeddedPortablePdbWriterProvider() });
+        }
+        File.Delete(Path.ChangeExtension(libraryPath, ".pdb"));
+        var expected = FailureStackTrace(original);
+
+        var results = Minify(level);
+
+        Assert.IsTrue(results.Any(r => r.Name == Library));
+        Assert.IsFalse(File.Exists(Path.ChangeExtension(libraryPath, ".pdb")));
+        using (var pe = new PEReader(File.OpenRead(libraryPath)))
+        {
+            Assert.IsTrue(pe.ReadDebugDirectory().Any(e => e.Type == DebugDirectoryEntryType.EmbeddedPortablePdb));
+        }
+        var actual = FailureStackTrace(minified);
+        Assert.HasCount(expected.Length, actual);
+        for (int i = 0; i < expected.Length; i++) Assert.AreEqual(LineOf(expected[i]), LineOf(actual[i]));
+    }
+
+    [TestMethod]
+    public void RemovesTheMapOfAnEarlierRun()
+    {
+        var map = Path.Combine(root, "bit-minifier.map");
+        File.WriteAllText(map, "stale");
+
+        var results = Minify(assemblies: ["Not.There"], mapFile: map);
+
+        Assert.IsEmpty(results);
+        Assert.IsFalse(File.Exists(map));
     }
 
     [TestMethod]
@@ -351,9 +452,12 @@ public class AssemblyMinifierTests
             // public API, and what serializers see
             foreach (var name in new[] { "Calculator", "AddAsync", "Fail", "Label", "Total", "Point", "Length", "Box`1", "Shade" }) CollectionAssert.Contains(names, name);
             // everything else is short
-            foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "Select" }) CollectionAssert.DoesNotContain(names, name);
+            foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "_limit", "Select" }) CollectionAssert.DoesNotContain(names, name);
             Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Any(p => p.Name.Length > 0));
             Assert.IsFalse(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyCompanyAttribute"));
+            // only on generic parameters, where DI compares them
+            Assert.IsTrue(HasAttribute(module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters[0], "DynamicallyAccessedMembersAttribute"));
+            Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "DynamicallyAccessedMembersAttribute")));
         }
         // the public frame keeps its name, and every frame its line
         var actual = FailureStackTrace(minified);
@@ -397,7 +501,7 @@ public class AssemblyMinifierTests
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
-        foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Generic", "Crate", "Count", "IComponent", "get_HistoryCount", "add_Added" })
+        foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Mensuration", "Crate", "Count", "IComponent", "get_HistoryCount", "add_Added" })
         {
             CollectionAssert.Contains(names, name);
         }
@@ -477,6 +581,18 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    public void CommandLineWantsTheDirectoryFirst()
+    {
+        var before = Snapshot(minified);
+
+        var (exitCode, output) = RunCommandLine(["--aggressive", minified]);
+
+        Assert.AreEqual(2, exitCode);
+        StringAssert.StartsWith(output, "usage: ");
+        CollectionAssert.AreEqual(before, Snapshot(minified));
+    }
+
+    [TestMethod]
     [DataRow(null)]
     [DataRow("--aggressive")]
     [DataRow("--super-aggressive")]
@@ -507,9 +623,9 @@ public class AssemblyMinifierTests
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
-        foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Multiplier", "SumWhere", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Generic", "Record", "_history", "InternalSquare", "IComponent" })
+        foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Multiplier", "SumWhere", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Mensuration", "Record", "_history", "InternalSquare", "IComponent" })
         {
-            CollectionAssert.DoesNotContain(names, name);
+            CollectionAssert.DoesNotContain(names, name, name);
         }
         // types that attribute blobs name by string, too
         Assert.IsFalse(module.GetTypes().Any(t => t.Name is "Flavor" or "Satchel`1" or "Lattice"));
@@ -556,6 +672,10 @@ public class AssemblyMinifierTests
             Assert.AreEqual("Bit.Minifier.Tests.Library", module.GetTypes().Single(t => t.Name == "Palette").Namespace);
             // reached by reflection conventions no string spells out
             foreach (var name in new[] { "Florin", "AbacusException", "ShouldSerializeMemo" }) CollectionAssert.Contains(names, name);
+            // a public field an attribute's named argument sets: the blob names it
+            CollectionAssert.Contains(names, "Heat");
+            // a name a longer string mentions, in any script
+            CollectionAssert.Contains(names, "Περίμετρος");
             Assert.AreEqual("multiplicand", module.GetTypes().SelectMany(t => t.Methods).Single(m => m.DeclaringType.IsInterface && m.Parameters.Count == 1 && m.ReturnType.MetadataType == MetadataType.Int32).Parameters[0].Name);
             // public instance fields go when nothing serializes fields by default
             CollectionAssert.DoesNotContain(names, "Tally");
@@ -614,6 +734,90 @@ public class AssemblyMinifierTests
         CollectionAssert.AreEqual(driven, await Drive(minified));
     }
 
+    [TestMethod]
+    [DataRow(Level.Aggressive)]
+    [DataRow(Level.SuperAggressive)]
+    public void RenamedMembersNeverTakeANameOfTheirOwnType(Level level)
+    {
+        Minify(level);
+
+        foreach (var name in new[] { Library, Friend })
+        {
+            using var module = ModuleDefinition.ReadModule(Path.Combine(minified, name + ".dll"));
+            foreach (var type in module.GetTypes())
+            {
+                // no two members of one type share a name, whatever their kind: reflection looks a name up, not a
+                // kind. Overloads are the exception, and so is the field the compiler backs an event with.
+                var events = type.Events.Select(e => e.Name).ToList();
+                var own = type.Fields.Select(f => f.Name).Where(f => events.Contains(f) is false)
+                    .Concat(events).Concat(type.Properties.Select(p => p.Name)).Concat(type.NestedTypes.Select(n => n.Name))
+                    .Concat(type.Methods.Select(m => m.Name).Distinct()).ToList();
+                var duplicates = own.GroupBy(m => m).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+                Assert.IsEmpty(duplicates, $"{type.FullName}: {string.Join(", ", duplicates)}");
+
+                // and none takes the name of a field, property or nested type of a type it inherits from, which
+                // reflection finds through the derived type as well
+                var data = type.Fields.Select(f => f.Name).Where(f => events.Contains(f) is false)
+                    .Concat(type.Properties.Select(p => p.Name)).Concat(type.NestedTypes.Select(n => n.Name)).ToHashSet();
+                for (var t = type.BaseType is null ? null : type.BaseType.Resolve(); t is not null; t = t.BaseType is null ? null : t.BaseType.Resolve())
+                {
+                    var inherited = t.Fields.Select(f => f.Name).Concat(t.Properties.Select(p => p.Name)).Concat(t.NestedTypes.Select(n => n.Name)).Where(data.Contains).ToList();
+                    Assert.IsEmpty(inherited, $"{type.FullName} vs {t.FullName}: {string.Join(", ", inherited)}");
+                }
+            }
+        }
+    }
+
+    [TestMethod]
+    public void SuperAggressiveKeepsWhatASatelliteAssemblyNames()
+    {
+        // the resources of a culture live in a folder of their own, and are named after the type they belong to
+        var satellite = Path.Combine(Directory.CreateDirectory(Path.Combine(minified, "fa")).FullName, Library + ".resources.dll");
+        using (var resources = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(Library + ".resources", new Version(1, 0)), Library, ModuleKind.Dll))
+        {
+            resources.MainModule.Resources.Add(new EmbeddedResource("Bit.Minifier.Tests.Library.Ledger.resources", Mono.Cecil.ManifestResourceAttributes.Public, new byte[] { 1 }));
+            resources.Write(satellite);
+        }
+
+        Minify(Level.SuperAggressive);
+
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
+        CollectionAssert.Contains(AllNames(module), "Ledger");
+    }
+
+    [TestMethod]
+    public void SuperAggressiveKeepsThePublicNamesAnUnminifiedAssemblyReachesThroughAForwarder()
+    {
+        const string Facade = "Bit.Minifier.Tests.Facade";
+        const string Reader = "Bit.Minifier.Tests.Reader";
+        // the facade forwards a type of the library, and the reader only ever names the facade
+        using (var facade = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(Facade, new Version(1, 0)), Facade, ModuleKind.Dll))
+        {
+            var library = new AssemblyNameReference(Library, new Version(1, 0));
+            facade.MainModule.AssemblyReferences.Add(library);
+            facade.MainModule.ExportedTypes.Add(new Mono.Cecil.ExportedType("Bit.Minifier.Tests.Library", "Ledger", facade.MainModule, library) { IsForwarder = true });
+            facade.Write(Path.Combine(minified, Facade + ".dll"));
+        }
+        using (var reader = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(Reader, new Version(1, 0)), Reader, ModuleKind.Dll))
+        {
+            var scope = new AssemblyNameReference(Facade, new Version(1, 0));
+            reader.MainModule.AssemblyReferences.Add(scope);
+            var holder = new Mono.Cecil.TypeDefinition("", "Holder", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, reader.MainModule.TypeSystem.Object);
+            holder.Fields.Add(new Mono.Cecil.FieldDefinition("ledger", Mono.Cecil.FieldAttributes.Public, new Mono.Cecil.TypeReference("Bit.Minifier.Tests.Library", "Ledger", reader.MainModule, scope)));
+            reader.MainModule.Types.Add(holder);
+            reader.Write(Path.Combine(minified, Reader + ".dll"));
+        }
+
+        var results = Minify(Level.SuperAggressive, assemblies: [Library, Friend, Facade]);
+
+        Assert.IsNotEmpty(results);
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
+        // the reader reaches Ledger by name, so it keeps it, and the forwarder keeps leading there
+        CollectionAssert.Contains(AllNames(module), "Ledger");
+        using var forwarded = ModuleDefinition.ReadModule(Path.Combine(minified, Facade + ".dll"));
+        Assert.AreEqual("Bit.Minifier.Tests.Library.Ledger", forwarded.ExportedTypes.Single().FullName);
+    }
+
     private IReadOnlyList<MinifiedAssembly> Minify(Level level = Level.Default, bool keepNullable = false, string[]? assemblies = null, string? mapFile = null, string[]? full = null)
         => new AssemblyMinifier(new MinifierOptions
         {
@@ -656,12 +860,13 @@ public class AssemblyMinifierTests
         results.Add($"shade {Enum.Parse(library.GetType("Bit.Minifier.Tests.Library.Shade")!, "Dark")}");
         results.Add($"flavors {library.GetType("Bit.Minifier.Tests.Library.Flavors")!.GetMethod("Describe")!.Invoke(null, null)}");
         results.Add($"expression {Invoke(Activator.CreateInstance(library.GetType("Bit.Minifier.Tests.Library.Shapes")!)!, "ReadThroughExpression")}");
-        results.Add($"generic math {library.GetType("Bit.Minifier.Tests.Library.Generic")!.GetMethod("MakeMeters")!.Invoke(null, [7])}");
+        results.Add($"generic math {library.GetType("Bit.Minifier.Tests.Library.Mensuration")!.GetMethod("MakeMeters")!.Invoke(null, [7])}");
 
         var friendCalculator = Activator.CreateInstance(friend.GetType("Bit.Minifier.Tests.Friend.FriendCalculator")!)!;
         results.Add($"friend square {Invoke(friendCalculator, "SquareThroughInternals", 3)}");
         results.Add($"friend add {await Call<int>(friendCalculator, "AddTwiceAsync", 2)}");
         results.Add($"friend sum {Invoke(friendCalculator, "SumWhere", new[] { 1, 2, 3 }, 2)}");
+        results.Add($"friend half {Invoke(friendCalculator, "HalfThroughInternals", 9)}");
         return results;
     }
 
@@ -712,8 +917,10 @@ public class AssemblyMinifierTests
         {
             if (name.Name is not (Library or Friend)) return null;
             var path = Path.Combine(directory, name.Name + ".dll");
+            var pdb = Path.ChangeExtension(path, ".pdb");
             using var assembly = new MemoryStream(File.ReadAllBytes(path));
-            using var symbols = new MemoryStream(File.ReadAllBytes(Path.ChangeExtension(path, ".pdb")));
+            // an embedded pdb comes with the assembly
+            using var symbols = File.Exists(pdb) ? new MemoryStream(File.ReadAllBytes(pdb)) : null;
             return LoadFromStream(assembly, symbols);
         }
     }
@@ -778,8 +985,8 @@ public class AssemblyMinifierTests
         }
 
         var locals = pdb.LocalVariables.Select(h => pdb.GetString(pdb.GetLocalVariable(h).Name)).Order().ToList();
-        return new DebugInfo(id.Guid == codeViewData.Guid && id.Stamp == codeView.Stamp, methods, points, outside, locals, pdb.GetTableRowCount(TableIndex.StateMachineMethod));
+        return new DebugInfo(id.Guid == codeViewData.Guid && id.Stamp == codeView.Stamp, codeViewData.Path, methods, points, outside, locals, pdb.GetTableRowCount(TableIndex.StateMachineMethod));
     }
 
-    private sealed record DebugInfo(bool IdMatches, int MethodsWithSequencePoints, int SequencePoints, int SequencePointsOutsideBody, List<string> LocalNames, int StateMachineMethods);
+    private sealed record DebugInfo(bool IdMatches, string PdbPath, int MethodsWithSequencePoints, int SequencePoints, int SequencePointsOutsideBody, List<string> LocalNames, int StateMachineMethods);
 }

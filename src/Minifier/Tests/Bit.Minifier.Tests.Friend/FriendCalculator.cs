@@ -10,6 +10,8 @@ public class FriendCalculator : Calculator
         return result + InternalCounter;
     }
 
+    public int HalfThroughInternals(int value) => Rounding.Half(value);
+
     public async Task<int> AddTwiceAsync(int value)
     {
         await AddAsync(value);

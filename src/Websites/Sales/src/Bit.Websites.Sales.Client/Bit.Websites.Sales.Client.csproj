@@ -124,7 +124,7 @@
         <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
     <ItemGroup Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')">
-        <ProjectReference Include="$(BitMinifierSourceDir)Bit.Minifier.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />
+        <ProjectReference Include="$(BitMinifierSourceDir)Bit.Minifier.csproj" ReferenceOutputAssembly="false" Private="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" GlobalPropertiesToRemove="TargetFramework;RuntimeIdentifier" />
     </ItemGroup>
     <Import Project="$(BitMinifierSourceDir)buildTransitive/Bit.Minifier.targets" Condition="Exists('$(BitMinifierSourceDir)Bit.Minifier.csproj')" />
 

@@ -3,7 +3,7 @@
 // usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]
 // Without assembly names, every managed assembly in the directory is minified.
 const string Usage = "usage: Bit.Minifier <directory> [--map <file>] [--keep-nullable] [--aggressive | --super-aggressive] [<assembly name>...]";
-if (args.Length < 1)
+if (args.Length < 1 || args[0].StartsWith("--", StringComparison.Ordinal))
 {
     Console.Error.WriteLine(Usage);
     return 2;
