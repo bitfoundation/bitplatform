@@ -21,46 +21,59 @@
         ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
         : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
 
-    // The theme the visitor picked, mirrored into a cookie by the client (bit-theme-persist-cookie
-    // below) because localStorage - where the client script keeps the same value - cannot be read
-    // from here. Without it every prerendered response painted a hardcoded dark, and anyone on light
-    // watched the whole page flip once the client came up.
+    // The theme the visitor picked, mirrored into a cookie by the client (see PersistCookie below)
+    // because localStorage - where the client script keeps the same value - cannot be read from here.
+    // Without it every prerendered response painted a hardcoded dark, and anyone on light watched the
+    // whole page flip once the client came up.
     var themePreference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
-    // Emits bit-theme="<name>" for a concrete choice, or the bit-theme-system marker when nothing is
-    // stored (or the visitor follows the OS), which the inline head script below resolves. Tampered
-    // values are rejected and treated as "nothing stored".
-    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference);
-    // Browser chrome color. "Ends with dark" is the same rule app.ts and the app's own stylesheets
-    // use, so presets like fluent-dark are classified the same way everywhere.
-    const string darkThemeColor = "#0d1117";
-    const string lightThemeColor = "#ffffff";
-    // Null while the visitor follows the OS, which the server cannot read. The tag then has to guess,
-    // and the script under it carries the client's answer back - see there.
-    var resolvedTheme = rootThemeAttributes.TryGetValue(BitThemeAttributeNames.Theme, out var themeName)
-                        ? themeName as string
-                        : null;
-    var themeColor = resolvedTheme?.EndsWith("dark", StringComparison.Ordinal) is false ? lightThemeColor : darkThemeColor;
+    // Everything the document declares about its theme, in one call: bit-theme="<name>" for a
+    // concrete choice (tampered values are rejected and treated as "nothing stored"), or the
+    // bit-theme-system marker, which the inline script <BitThemeHead> emits resolves before first
+    // paint - plus the setup below. The same options object is what <BitThemeHead> is handed, so the
+    // two halves cannot disagree about which theme this response paints.
+    var themeOptions = new BitThemeSsrOptions
+    {
+        // The client keeps the chosen theme in localStorage AND in the cookie read above, which is
+        // what lets the server render the right theme in the first place.
+        Persist = true,
+        PersistCookie = true,
+        // Theme toggles cross-fade via the View Transitions API (skipped automatically on
+        // unsupported browsers / prefers-reduced-motion).
+        ViewTransition = true,
+        // Keep the browser chrome (an installed PWA's status bar) on the surface the site is drawn
+        // on, re-read from the live page - which is also what brings a picked accent, since it
+        // re-derives the surfaces too, into the chrome.
+        ThemeColorMeta = BitCss.Var.Color.Background.Primary.Main,
+        // The site dresses in Fluent 2 by default, so the two names the OS-following resolution picks
+        // between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who
+        // has already picked a design system in the header is painted from their cookie instead and
+        // never reaches this.
+        LightTheme = BitExtraThemePresets.Fluent2Light,
+        DarkTheme = BitExtraThemePresets.Fluent2Dark,
+    };
+    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions);
 }
 
 <!DOCTYPE html>
-@* bit-theme-persist / bit-theme-persist-cookie: the client keeps the chosen theme in localStorage AND
-   in the cookie read above, which is what lets the server render the right theme in the first place.
-   bit-theme-view-transition: theme toggles cross-fade via the View Transitions API (skipped
-   automatically on unsupported browsers / prefers-reduced-motion).
-   bit-theme-light / bit-theme-dark: the site dresses in Fluent 2 by default, so the two names the
-   OS-following resolution (bit-theme-system, emitted above whenever nothing is persisted) picks
-   between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who has
-   already picked a design system in the header is painted from their cookie instead and never
-   reaches this. *@
-<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
-      bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
+<html lang="en" @attributes="rootThemeAttributes">
 
 <head>
-    @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie
-       before anything is painted. The attributes above are already correct for a visitor whose cookie
-       reached us, so this is what covers the rest - following the OS (which the server cannot read),
-       and a localStorage value newer than the cookie. *@
-    @((MarkupString)BitThemeSsr.InlineHeadScript)
+    @* Ahead of the theme and accent scripts below, which together run to well over a kilobyte: the
+       encoding declaration is only honored inside the document's first 1024 bytes, and a page that
+       falls out of that window is sniffed instead. *@
+    <meta charset="utf-8" />
+    @* First script in the document, and the whole of the theme's first paint: the inline script that
+       re-resolves bit-theme from localStorage / the preference cookie before anything is painted (the
+       attributes above are already correct for a visitor whose cookie reached us, so this is what
+       covers the rest - following the OS, which the server cannot read, and a localStorage value
+       newer than the cookie), and the theme-color meta tag the browser paints its chrome from, in the
+       surface color of the theme this response renders. Handed the same preference and options as the
+       attributes above; BitExtraThemeSurfaces is what carries the Fluent 2 / Material / Cupertino
+       colors, which the core table (Fluent only) does not know. *@
+    <BitThemeHead PersistedPreference="@themePreference"
+                  LightTheme="@themeOptions.LightTheme"
+                  DarkTheme="@themeOptions.DarkTheme"
+                  ThemeColors="@BitExtraThemeSurfaces.BackgroundPrimary" />
     @* The accent counterpart of the script above, as one component: emits the inline script that,
        before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
        injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what
@@ -79,24 +92,6 @@
     <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
     <ResourcePreloader />
     <base href="/" />
-    <meta charset="utf-8" />
-    <meta name="theme-color" content="@themeColor" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
-    @if (resolvedTheme is null)
-    {
-        @* The tag above had to guess (the dark default), because this visitor follows the OS and only
-           the client can resolve that - which the inline script at the top of <head> has already done,
-           onto <html>. Read it back and correct the tag here, while the browser is still parsing
-           <head>. app.ts does this same job on every later toggle, but it cannot cover the first paint:
-           app.js loads at the end of <body>, long after the address bar has been painted. Rewrites the
-           one tag rather than adding a media-qualified second one, which would shadow it for the
-           querySelector both this and app.ts rely on. *@
-        <Script>
-            document.querySelector('meta[name="theme-color"]').content =
-                (document.documentElement.getAttribute('@BitThemeAttributeNames.Theme') || '').endsWith('dark')
-                    ? '@darkThemeColor'
-                    : '@lightThemeColor';
-        </Script>
-    }
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),

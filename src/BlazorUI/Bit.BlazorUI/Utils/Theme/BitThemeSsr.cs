@@ -81,9 +81,78 @@ public static class BitThemeSsr
     /// </remarks>
     public static string BuildRootThemeAttributes(string? persistedPreference, string? defaultTheme = null)
     {
-        return string.Join(' ', BuildRootThemeAttributePairs(persistedPreference, defaultTheme).Select(pair =>
+        return BuildRootThemeAttributes(persistedPreference, new BitThemeSsrOptions { DefaultTheme = defaultTheme });
+    }
+
+    /// <summary>
+    /// <see cref="BuildRootThemeAttributes(string?, string?)"/> with the document-level setup in
+    /// <paramref name="options"/> - the string form of
+    /// <see cref="BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/>, for a host page that
+    /// interpolates its <c>&lt;html&gt;</c> attributes into raw markup.
+    /// </summary>
+    public static string BuildRootThemeAttributes(string? persistedPreference, BitThemeSsrOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var pairs = BuildRootThemeAttributePairs(persistedPreference, options.DefaultTheme);
+        AppendOptionAttributes(pairs, options);
+
+        return string.Join(' ', pairs.Select(pair =>
             // A bool marker carries no value (bit-theme-system), a token is emitted as name="value".
-            pair.Value is bool ? pair.Key : $"{pair.Key}=\"{pair.Value}\""));
+            pair.Value is bool ? pair.Key : $"{pair.Key}=\"{HtmlEncodeAttribute(pair.Value.ToString() ?? string.Empty)}\""));
+    }
+
+    /// <summary>
+    /// Appends the attributes that describe the document's setup rather than the theme it resolved
+    /// to. Markers carry <see langword="true"/> (Blazor renders those valueless); a value-carrying
+    /// one is only appended when it has a value, so the client falls back to its own default. The
+    /// theme names are normalized and validated like every other name here, and a blank
+    /// <see cref="BitThemeSsrOptions.ThemeColorMeta"/> string is treated as the bare marker - which is
+    /// how the client reads a valueless attribute anyway.
+    /// </summary>
+    private static void AppendOptionAttributes(List<KeyValuePair<string, object>> pairs, BitThemeSsrOptions options)
+    {
+        if (options.Persist)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemePersist, true));
+        }
+
+        if (options.PersistCookie)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemePersistCookie, true));
+        }
+
+        if (options.ViewTransition)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemeViewTransition, true));
+        }
+
+        switch (options.ThemeColorMeta)
+        {
+            case true:
+                pairs.Add(new(BitThemeAttributeNames.ThemeColorMeta, true));
+                break;
+            // A custom property name: emitted as the attribute's value, which is what the client
+            // reads instead of its default. Anything else (false, or a non-string) omits it.
+            case string variable when !string.IsNullOrWhiteSpace(variable):
+                pairs.Add(new(BitThemeAttributeNames.ThemeColorMeta, variable.Trim()));
+                break;
+            case string:
+                pairs.Add(new(BitThemeAttributeNames.ThemeColorMeta, true));
+                break;
+        }
+
+        var light = NormalizeThemeToken(options.LightTheme);
+        if (light is not null)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemeLight, light));
+        }
+
+        var dark = NormalizeThemeToken(options.DarkTheme);
+        if (dark is not null)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemeDark, dark));
+        }
     }
 
     /// <summary>
@@ -104,7 +173,23 @@ public static class BitThemeSsr
     /// </remarks>
     public static IReadOnlyDictionary<string, object> BuildRootThemeAttributeMap(string? persistedPreference, string? defaultTheme = null)
     {
-        var pairs = BuildRootThemeAttributePairs(persistedPreference, defaultTheme);
+        return BuildRootThemeAttributeMap(persistedPreference, new BitThemeSsrOptions { DefaultTheme = defaultTheme });
+    }
+
+    /// <summary>
+    /// <see cref="BuildRootThemeAttributeMap(string?, string?)"/> plus the document-level setup in
+    /// <paramref name="options"/>, so the whole <c>bit-theme*</c> attribute set of the
+    /// <c>&lt;html&gt;</c> element - persistence, the cookie mirror, view transitions, the
+    /// theme-color sync and the light / dark pair - comes out of this one call rather than being
+    /// spelled beside it. Names come from <see cref="BitThemeAttributeNames"/>, so a rename reaches
+    /// every host page that uses this.
+    /// </summary>
+    public static IReadOnlyDictionary<string, object> BuildRootThemeAttributeMap(string? persistedPreference, BitThemeSsrOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var pairs = BuildRootThemeAttributePairs(persistedPreference, options.DefaultTheme);
+        AppendOptionAttributes(pairs, options);
 
         var map = new Dictionary<string, object>(pairs.Count, StringComparer.Ordinal);
         foreach (var (key, value) in pairs)
