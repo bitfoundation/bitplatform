@@ -119,6 +119,9 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     private readonly HashSet<TypeDefinition> keptTypes = [];
     private readonly HashSet<MethodDefinition> staticImplementations = [];
     private readonly Dictionary<TypeDefinition, string> originalNames = [];
+    // the names a type's members already occupy, and the types it shares that pool with: see CollectNamePools
+    private readonly Dictionary<TypeDefinition, HashSet<string>> namePools = [];
+    private readonly Dictionary<TypeDefinition, HashSet<TypeDefinition>> relatives = [];
     // top-level names run across the whole set: a cleared namespace leaves nothing else to tell two assemblies' apart
     private int topLevelNames;
 
@@ -176,6 +179,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         }
 
         if (wordsOnly) return;
+        CollectNamePools(modules);
         foreach (var type in modules.SelectMany(m => m.GetTypes()))
         {
             originalNames[type] = type.FullName;
@@ -194,6 +198,37 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     }
 
     /// <summary>
+    /// The pool of names each type's members take up: its own, those of every type it inherits from, and those
+    /// of every type that inherits from it - reflection finds a base member through the derived type, so neither
+    /// side may take a name of the other. The pools are built here, before the first rename, and shared from
+    /// then on for two reasons: a base type in another assembly stops resolving once that assembly has been
+    /// renamed (its TypeRef rows are only re-pointed at the very end), and the module a base type lives in may
+    /// be renamed after the one that derives from it, so a name taken later still has to be kept clear.
+    /// </summary>
+    private void CollectNamePools(IReadOnlyCollection<ModuleDefinition> modules)
+    {
+        var types = modules.SelectMany(m => m.GetTypes()).ToList();
+        foreach (var type in types)
+        {
+            namePools[type] = MemberNames(type);
+            relatives[type] = [];
+        }
+        foreach (var type in types)
+        {
+            var seen = new HashSet<TypeDefinition>();
+            for (var t = Base(type); t is not null && seen.Add(t); t = Base(t))
+            {
+                namePools[type].UnionWith(MemberNames(t));
+                // a type of an assembly that isn't rewritten has no pool to keep in step: its names only count
+                if (relatives.TryGetValue(t, out var theirs) is false) continue;
+                theirs.Add(type);
+                relatives[type].Add(t);
+                namePools[t].UnionWith(MemberNames(type));
+            }
+        }
+    }
+
+    /// <summary>
     /// A static method may implement a static abstract interface member implicitly, by name alone. Roslyn writes a
     /// MethodImpl either way, which keeps the name already; IL from elsewhere need not.
     /// </summary>
@@ -201,7 +236,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
     {
         if (type.IsInterface || type.Methods.Any(m => m.IsStatic && m.IsConstructor is false) is false) return;
         var names = new HashSet<string>();
-        for (var t = type; t is not null; t = t.BaseType is null ? null : ReferenceIndex.Resolve(t.BaseType))
+        for (var t = type; t is not null; t = Base(t))
         {
             // the type lists every interface it implements, the inherited ones included
             foreach (var implementation in t.Interfaces)
@@ -326,8 +361,9 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         foreach (var type in module.GetTypes())
         {
             if (type.IsInterface || IsNativeBound(type)) continue;
-            // one set of new names per type: a field, a method and a nested type of one type never share a name,
-            // and none takes the name of a member of a base type, which reflection finds through the derived one
+            // one pool of names per type: a field, a method and a nested type of one type never share a name, and
+            // none takes the name of a member of a type it inherits from or of one that inherits from it, which
+            // reflection finds through the derived type alike
             var taken = TakenNames(type);
             int next = 0;
             if (type.IsEnum is false && type.IsExplicitLayout is false)
@@ -341,6 +377,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                     if (field.IsPublic && (scope != RenameScope.Public || field.IsLiteral || keepPublicFields)) continue;
                     if (IsRenamable(type, field.IsPrivate, field.IsPublic, field.IsFamily || field.IsFamilyOrAssembly, scope) is false) continue;
                     var name = ShortName.Next(taken, ref next, literalWords);
+                    Take(type, name);
                     map(module, "F", $"{type.FullName}::{field.Name}", name);
                     field.Name = name;
                     renamed++;
@@ -359,6 +396,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                     || staticImplementations.Contains(method)) continue;
                 if (IsRenamable(type, method, scope) is false) continue;
                 var name = ShortName.Next(taken, ref next, literalWords);
+                Take(type, name);
                 map(module, "M", $"{type.FullName}::{method.Name}", name);
                 method.Name = name;
                 renamed++;
@@ -433,6 +471,7 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
                 var taken = TakenNames(type.DeclaringType);
                 int next = 0;
                 do name = "_" + ShortName.Get(next++) + arity; while (taken.Contains(name) || literalWords.Contains(name));
+                Take(type.DeclaringType, name);
                 type.Name = name;
             }
             else
@@ -498,15 +537,14 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         for (var t = type; t is not null;)
         {
             if (t.Interfaces.Any(i => i.InterfaceType.FullName == Component)) return true;
-            if (t.BaseType is null) return false;
-            t = ReferenceIndex.Resolve(t.BaseType);
+            t = Base(t);
         }
         return false;
     }
 
     private static bool IsException(TypeDefinition type)
     {
-        for (var t = type; t is not null; t = t.BaseType is null ? null : ReferenceIndex.Resolve(t.BaseType))
+        for (var t = type; t is not null; t = Base(t))
         {
             if (t.FullName == "System.Exception") return true;
         }
@@ -546,17 +584,29 @@ internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string
         };
     }
 
-    // every name that is already taken for a member of the type: of any kind, and of any type it inherits from,
-    // since reflection finds a base member through the derived type
-    private static HashSet<string> TakenNames(TypeDefinition type)
+    /// <summary>Every name that is already taken for a member of the type, of any kind (see <see cref="CollectNamePools"/>).</summary>
+    private HashSet<string> TakenNames(TypeDefinition type)
     {
-        var taken = new HashSet<string>();
-        for (var t = type; t is not null; t = t.BaseType is null ? null : ReferenceIndex.Resolve(t.BaseType))
-        {
-            foreach (var member in t.Fields.Cast<IMemberDefinition>().Concat(t.Methods).Concat(t.Properties).Concat(t.Events).Concat(t.NestedTypes)) taken.Add(member.Name);
-        }
-        return taken;
+        if (namePools.TryGetValue(type, out var pool)) return pool;
+        // nothing collected a pool for it: a type of an assembly this tool only reads, whose names nothing changes
+        namePools[type] = pool = MemberNames(type);
+        var seen = new HashSet<TypeDefinition>();
+        for (var t = Base(type); t is not null && seen.Add(t); t = Base(t)) pool.UnionWith(MemberNames(t));
+        return pool;
     }
+
+    /// <summary>Marks a new name as taken - for the type, and for every type it shares its pool with.</summary>
+    private void Take(TypeDefinition type, string name)
+    {
+        TakenNames(type).Add(name);
+        if (relatives.TryGetValue(type, out var related) is false) return;
+        foreach (var relative in related) namePools[relative].Add(name);
+    }
+
+    private static HashSet<string> MemberNames(TypeDefinition type)
+        => type.Fields.Cast<IMemberDefinition>().Concat(type.Methods).Concat(type.Properties).Concat(type.Events).Concat(type.NestedTypes).Select(m => m.Name).ToHashSet();
+
+    private static TypeDefinition? Base(TypeDefinition type) => type.BaseType is null ? null : ReferenceIndex.Resolve(type.BaseType);
 
     // a friend assembly sees every type but those nested in private ones
     private static bool IsHiddenFromFriends(TypeDefinition type)

@@ -583,6 +583,38 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("--aggressive")]
+    [DataRow("--super-aggressive")]
+    public void MinifiesAFileThatIsNotNamedAfterTheAssemblyInIt(string? option)
+    {
+        // the folder holds files; nothing says a file carries the name of the assembly inside it
+        const string file = "Renamed.Library";
+        foreach (var extension in new[] { ".dll", ".pdb" })
+        {
+            File.Move(Path.Combine(minified, Library + extension), Path.Combine(minified, file + extension));
+        }
+        var before = new FileInfo(Path.Combine(minified, file + ".dll")).Length;
+        string[] args = option is null ? [minified, file, Friend] : [minified, option, file, Friend];
+
+        var (exitCode, output) = RunCommandLine(args);
+
+        Assert.AreEqual(0, exitCode, output);
+        // the file is the one replaced, so it is the one the tool writes and reports - and reading it a second
+        // time as an assembly of its own would have left every reference into it pointing at that other copy
+        StringAssert.Contains(output, $"Bit.Minifier: {file} ");
+        StringAssert.Contains(output, "Bit.Minifier: 2 assemblies");
+        Assert.DoesNotContain("BITMIN001", output);
+        Assert.IsLessThan(before, new FileInfo(Path.Combine(minified, file + ".dll")).Length);
+
+        using var module = ModuleDefinition.ReadModule(Path.Combine(minified, file + ".dll"));
+        Assert.AreEqual(Library, module.Assembly.Name.Name);
+        // the friend still reaches it: its reference names the assembly, which the file name never was
+        using var friend = ModuleDefinition.ReadModule(Path.Combine(minified, Friend + ".dll"));
+        CollectionAssert.Contains(friend.AssemblyReferences.Select(r => r.Name).ToList(), Library);
+    }
+
+    [TestMethod]
     [DataRow("--agressive")]
     [DataRow("--map")]
     [DataRow("--map --aggressive")]
@@ -786,6 +818,53 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    // in both orders, since the assemblies are minified one after the other: a base type may well be renamed
+    // after the type that derives from it, and its assembly's references still spell the names it had
+    [DataRow(Level.Aggressive, false)]
+    [DataRow(Level.Aggressive, true)]
+    [DataRow(Level.SuperAggressive, false)]
+    [DataRow(Level.SuperAggressive, true)]
+    public void RenamedMembersNeverTakeANameOfABaseTypeOfAnotherAssembly(Level level, bool friendFirst)
+    {
+        Minify(level, assemblies: friendFirst ? [Friend, Library] : [Library, Friend]);
+
+        using var after = new Fixtures(minified);
+        using var before = new Fixtures(original);
+        // renaming adds and reorders nothing, so the fields, methods and nested types of the minified assemblies
+        // line up with the originals one by one - which is what says whether a name is a rename's doing
+        var was = new Dictionary<IMemberDefinition, string>();
+        foreach (var (type, source) in after.Types.Zip(before.Types))
+        {
+            foreach (var (member, earlier) in Renamable(type).Zip(Renamable(source))) was[member] = earlier.Name;
+        }
+
+        foreach (var type in after.Types)
+        {
+            for (var t = type.BaseType?.Resolve(); t is not null; t = t.BaseType?.Resolve())
+            {
+                var inherited = Members(t).ToLookup(m => m.Name);
+                foreach (var member in Members(type))
+                {
+                    var shared = inherited[member.Name].ToList();
+                    // a name both sides had all along - an override, an overload, a constructor - is nobody's rename
+                    if (shared.Count == 0 || shared.Any(b => Was(b) == Was(member))) continue;
+                    Assert.Fail($"{type.FullName}.{member.Name} (was {Was(member)}) takes a name of {t.FullName} (was {string.Join(", ", shared.Select(Was))})");
+                }
+            }
+        }
+
+        string Was(IMemberDefinition member) => was.GetValueOrDefault(member, member.Name);
+
+        // properties and events are only ever removed, never renamed, so they need no counterpart to line up with
+        static IEnumerable<IMemberDefinition> Renamable(Mono.Cecil.TypeDefinition type)
+            => type.Fields.Cast<IMemberDefinition>().Concat(type.Methods).Concat(type.NestedTypes);
+
+        // generated names are a world of their own: they hold a '<', so no shortened name ever lands on one
+        static IEnumerable<IMemberDefinition> Members(Mono.Cecil.TypeDefinition type)
+            => Renamable(type).Concat(type.Properties).Concat(type.Events).Where(m => m.Name.StartsWith('<') is false);
+    }
+
+    [TestMethod]
     public void SuperAggressiveKeepsWhatASatelliteAssemblyNames()
     {
         // the resources of a culture live in a folder of their own, and are named after the type they belong to
@@ -925,6 +1004,41 @@ public class AssemblyMinifierTests
         var context = new DirectoryLoadContext(directory);
         contexts.Add(context);
         return (context.LoadFromAssemblyName(new AssemblyName(Library)), context.LoadFromAssemblyName(new AssemblyName(Friend)));
+    }
+
+    /// <summary>
+    /// Both fixture assemblies of a folder, resolved against one another so that a base type in the other one
+    /// is the very type definition this reads rather than a second copy of it.
+    /// </summary>
+    private sealed class Fixtures : IDisposable
+    {
+        private sealed class Resolver : DefaultAssemblyResolver
+        {
+            public void Register(AssemblyDefinition assembly) => RegisterAssembly(assembly);
+        }
+
+        private readonly Resolver resolver = new();
+        private readonly List<AssemblyDefinition> assemblies = [];
+
+        public Fixtures(string directory)
+        {
+            foreach (var path in resolver.GetSearchDirectories()) resolver.RemoveSearchDirectory(path);
+            resolver.AddSearchDirectory(directory);
+            foreach (var name in new[] { Library, Friend })
+            {
+                var assembly = AssemblyDefinition.ReadAssembly(Path.Combine(directory, name + ".dll"), new ReaderParameters { InMemory = true, AssemblyResolver = resolver });
+                resolver.Register(assembly);
+                assemblies.Add(assembly);
+            }
+        }
+
+        public List<Mono.Cecil.TypeDefinition> Types => assemblies.SelectMany(a => a.MainModule.GetTypes()).ToList();
+
+        public void Dispose()
+        {
+            foreach (var assembly in assemblies) assembly.Dispose();
+            resolver.Dispose();
+        }
     }
 
     // the fixtures also sit next to the tests, so the default context must never be asked for them

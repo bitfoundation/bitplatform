@@ -86,9 +86,9 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         var assemblies = Load(resolver);
         if (assemblies.Count == 0) return [];
 
-        var modules = assemblies.Select(a => a.MainModule).ToHashSet();
+        var modules = assemblies.Select(a => a.Assembly.MainModule).ToHashSet();
         // the other assemblies of the folder: not rewritten, but they may reference or name the rewritten ones
-        var others = OtherModules(resolver, modules);
+        var others = OtherModules(resolver, assemblies);
         var references = ReferenceIndex.Collect(modules, others);
         var types = others.Concat(modules).SelectMany(m => ReferenceIndex.ResolvableTypes(m, modules)).ToList();
 
@@ -131,15 +131,21 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
         Verify(references, types);
 
         // an assembly nothing changed in is left as ILLink wrote it
-        var changed = assemblies.Where(a => stats[a.MainModule] != (0, 0) || retargeted.Contains(a.MainModule)).ToList();
+        var changed = assemblies.Where(a => stats[a.Assembly.MainModule] != (0, 0) || retargeted.Contains(a.Assembly.MainModule)).ToList();
         return Write(changed, stats);
     }
 
-    private List<AssemblyDefinition> Load(DirectoryResolver resolver)
+    /// <summary>
+    /// An assembly and the file it was read from. The two are told apart throughout: a file need not be named
+    /// after the assembly inside it, and it is the file the folder holds and this tool replaces.
+    /// </summary>
+    private sealed record Loaded(AssemblyDefinition Assembly, string File);
+
+    private List<Loaded> Load(DirectoryResolver resolver)
     {
         var names = options.Assemblies ?? Directory.EnumerateFiles(options.Directory, "*.dll").Select(Path.GetFileNameWithoutExtension).ToList()!;
 
-        var result = new List<AssemblyDefinition>();
+        var result = new List<Loaded>();
         foreach (var name in names.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var path = Path.Combine(options.Directory, name + ".dll");
@@ -176,20 +182,22 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                 continue;
             }
             resolver.Register(assembly);
-            result.Add(assembly);
+            result.Add(new Loaded(assembly, name));
         }
         return result;
     }
 
     /// <summary>The other managed assemblies of the folder, as the resolver hands them out.</summary>
-    private List<ModuleDefinition> OtherModules(DirectoryResolver resolver, HashSet<ModuleDefinition> modules)
+    private List<ModuleDefinition> OtherModules(DirectoryResolver resolver, List<Loaded> assemblies)
     {
-        var names = modules.Select(m => m.Assembly.Name.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // by file name rather than by assembly name: a file holding an assembly of another name is still one
+        // of the files just loaded, and reading it a second time would leave two copies of the same assembly
+        var files = assemblies.Select(a => a.File).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var others = new List<ModuleDefinition>();
         foreach (var path in Directory.EnumerateFiles(options.Directory, "*.dll"))
         {
             var name = Path.GetFileNameWithoutExtension(path);
-            if (names.Contains(name) is false && resolver.TryLoad(name) is { } other) others.Add(other.MainModule);
+            if (files.Contains(name) is false && resolver.TryLoad(name) is { } other) others.Add(other.MainModule);
         }
         return others;
     }
@@ -348,26 +356,26 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
             throw new MinifierException($"{broken.Count} reference(s) would no longer resolve, e.g. {string.Join("; ", broken.Take(5))}.");
     }
 
-    private List<MinifiedAssembly> Write(List<AssemblyDefinition> assemblies, Dictionary<ModuleDefinition, (int attributes, int names)> stats)
+    private List<MinifiedAssembly> Write(List<Loaded> assemblies, Dictionary<ModuleDefinition, (int attributes, int names)> stats)
     {
         // everything is written aside first, so a failure leaves the folder as ILLink produced it
         var staging = Path.Combine(options.Directory, ".bit-minifier");
         if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
         Directory.CreateDirectory(staging);
         // decided before anything is written: an embedded pdb goes back into the dll, and nothing next to it
-        var withPdbFile = assemblies.Where(a => a.MainModule.HasSymbols && a.MainModule.SymbolReader is not EmbeddedPortablePdbReader).ToHashSet();
+        var withPdbFile = assemblies.Where(a => a.Assembly.MainModule.HasSymbols && a.Assembly.MainModule.SymbolReader is not EmbeddedPortablePdbReader).ToHashSet();
         var results = new List<MinifiedAssembly>();
         try
         {
-            foreach (var assembly in assemblies)
+            foreach (var loaded in assemblies)
             {
-                var module = assembly.MainModule;
+                var module = loaded.Assembly.MainModule;
                 // the signature no longer matches; .NET doesn't validate it, so say so instead of lying
                 module.Attributes &= ~ModuleAttributes.StrongNameSigned;
                 // through streams, so the dll names its pdb by file name rather than by its path in the staging folder
-                using var dll = File.Create(Path.Combine(staging, assembly.Name.Name + ".dll"));
-                using var pdb = withPdbFile.Contains(assembly) ? File.Create(Path.Combine(staging, assembly.Name.Name + ".pdb")) : null;
-                assembly.Write(dll, new WriterParameters
+                using var dll = File.Create(Path.Combine(staging, loaded.File + ".dll"));
+                using var pdb = withPdbFile.Contains(loaded) ? File.Create(Path.Combine(staging, loaded.File + ".pdb")) : null;
+                loaded.Assembly.Write(dll, new WriterParameters
                 {
                     WriteSymbols = module.HasSymbols,
                     SymbolWriterProvider = pdb is not null ? new PortablePdbWriterProvider() : module.HasSymbols ? new EmbeddedPortablePdbWriterProvider() : null,
@@ -397,18 +405,18 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
     /// Moves the originals aside rather than overwriting them, so a failure halfway can put them all back. If one
     /// can't be, the folder is half minified: ILLink's semaphore goes, so the next publish trims it afresh.
     /// </summary>
-    private void Swap(List<AssemblyDefinition> assemblies, HashSet<AssemblyDefinition> withPdbFile, string staging, Dictionary<ModuleDefinition, (int attributes, int names)> stats, List<MinifiedAssembly> results)
+    private void Swap(List<Loaded> assemblies, HashSet<Loaded> withPdbFile, string staging, Dictionary<ModuleDefinition, (int attributes, int names)> stats, List<MinifiedAssembly> results)
     {
         var replaced = new List<(string original, string target)>();
         var added = new List<string>();
         try
         {
-            foreach (var assembly in assemblies)
+            foreach (var loaded in assemblies)
             {
-                var name = assembly.Name.Name;
+                var name = loaded.File;
                 var target = Path.Combine(options.Directory, name + ".dll");
                 var originalSize = new FileInfo(target).Length;
-                foreach (var extension in withPdbFile.Contains(assembly) ? new[] { ".dll", ".pdb" } : [".dll"])
+                foreach (var extension in withPdbFile.Contains(loaded) ? new[] { ".dll", ".pdb" } : [".dll"])
                 {
                     var file = Path.ChangeExtension(target, extension);
                     if (File.Exists(file))
@@ -423,7 +431,7 @@ internal sealed class AssemblyMinifier(MinifierOptions options)
                     }
                     File.Move(Path.Combine(staging, name + extension), file);
                 }
-                var (attributes, names) = stats[assembly.MainModule];
+                var (attributes, names) = stats[loaded.Assembly.MainModule];
                 results.Add(new MinifiedAssembly(name, originalSize, new FileInfo(target).Length, attributes, names));
             }
         }

@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 
 namespace Bit.Minifier;
 
@@ -10,6 +10,8 @@ internal sealed class DirectoryResolver : BaseAssemblyResolver
 {
     private readonly string directory;
     private readonly Dictionary<string, AssemblyDefinition?> cache = new(StringComparer.OrdinalIgnoreCase);
+    // the cache may hold one assembly under two names, so what is disposed is kept apart from what is looked up
+    private readonly List<AssemblyDefinition> loaded = [];
 
     public DirectoryResolver(string directory)
     {
@@ -18,7 +20,11 @@ internal sealed class DirectoryResolver : BaseAssemblyResolver
         AddSearchDirectory(directory);
     }
 
-    public void Register(AssemblyDefinition assembly) => cache[assembly.Name.Name] = assembly;
+    public void Register(AssemblyDefinition assembly)
+    {
+        cache[assembly.Name.Name] = assembly;
+        loaded.Add(assembly);
+    }
 
     public AssemblyDefinition? TryLoad(string name)
     {
@@ -36,7 +42,15 @@ internal sealed class DirectoryResolver : BaseAssemblyResolver
                 // not a managed assembly
             }
         }
-        return cache[name] = assembly;
+        cache[name] = assembly;
+        if (assembly is not null)
+        {
+            loaded.Add(assembly);
+            // a file need not be named after the assembly in it: whoever asks for that assembly by name gets this
+            // very instance rather than a second copy, which would resolve into definitions nothing rewrites
+            cache.TryAdd(assembly.Name.Name, assembly);
+        }
+        return assembly;
     }
 
     public override AssemblyDefinition Resolve(AssemblyNameReference name)
@@ -44,7 +58,8 @@ internal sealed class DirectoryResolver : BaseAssemblyResolver
 
     protected override void Dispose(bool disposing)
     {
-        foreach (var assembly in cache.Values) assembly?.Dispose();
+        foreach (var assembly in loaded) assembly.Dispose();
+        loaded.Clear();
         cache.Clear();
         base.Dispose(disposing);
     }
