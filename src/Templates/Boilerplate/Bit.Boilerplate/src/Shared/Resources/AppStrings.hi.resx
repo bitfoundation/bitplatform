@@ -2080,6 +2080,12 @@
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की विस्तृत हेल्थ रिपोर्ट पढ़ना, जिसमें विफल हो रही हर चीज़ के एरर विवरण शामिल हैं।</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>हेल्थ रिपोर्ट पढ़ना।</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
   </data>

@@ -13,6 +13,9 @@ public static class OAuthScopes
     /// <summary>Read-only inspection of a running deployment through <c>/dev-mcp</c>.</summary>
     public const string DevMcp = "dev-mcp";
 
+    /// <summary>The detailed health report at <c>/healthz</c>: every check's status, and each failure's exception.</summary>
+    public const string Healthz = "healthz";
+
     //#if (signalR == true)
     /// <summary>
     /// The chatbot's own tools at <c>/mcp</c>. Only the server-side ones are exposed there, so this scope cannot reach
@@ -28,7 +31,8 @@ public static class OAuthScopes
         // all held - which an empty set vacuously is. Consent is then the only thing standing in front of it.
         [Chat] = [],
         //#endif
-        [DevMcp] = [AppFeatures.System.DevMcp]
+        [DevMcp] = [AppFeatures.System.DevMcp],
+        [Healthz] = [AppFeatures.System.Operations_View]
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>Published as <c>scopes_supported</c> in the authorization server metadata.</summary>

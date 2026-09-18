@@ -113,6 +113,10 @@ section {
         --tone: #{$bit-color-primary};
     }
 
+    .config {
+        --tone: #{$bit-color-foreground-secondary};
+    }
+
     .how-to {
         padding: 0.625rem 0.75rem;
         border-radius: 0.5rem;
@@ -191,6 +195,24 @@ section {
 
         dd {
             margin: 0;
+        }
+    }
+
+    // On a phone the value takes its own line instead of a squeezed column. After .data-list and .check-grid, whose
+    // rules these override at the same specificity.
+    @media (max-width: 30rem) {
+        .config-list {
+            gap: 0;
+            grid-template-columns: 1fr;
+
+            dd {
+                padding-bottom: 0.5rem;
+            }
+        }
+
+        // One column, so equal heights would only pad the short cards out.
+        .config-grid {
+            grid-auto-rows: auto;
         }
     }
 

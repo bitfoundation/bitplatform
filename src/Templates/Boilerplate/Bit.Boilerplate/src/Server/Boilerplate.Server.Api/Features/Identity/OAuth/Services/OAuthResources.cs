@@ -11,6 +11,9 @@ public static class OAuthResources
 {
     public const string DevMcpPath = "/dev-mcp";
 
+    /// <summary>The detailed health report. Not <c>/health</c> or <c>/alive</c>, which stay anonymous and say one word.</summary>
+    public const string HealthzPath = "/healthz";
+
     //#if (signalR == true)
     /// <summary>
     /// The chatbot's tools. Only the server-side ones are exposed there; the rest drive the user's live browser over
@@ -20,18 +23,27 @@ public static class OAuthResources
     //#endif
 
     /// <summary>
-    /// One row per resource: its path, the scopes worth asking for, and the policies its endpoint requires on top of a
-    /// signed-in user. The endpoint mapping, the metadata, the 401 challenge and consent all read the same row, so a
-    /// requirement cannot be added to an endpoint without consent refusing the users who fail it.
+    /// One row per resource. The endpoint mapping, the metadata, the 401 challenge and consent all read the same row,
+    /// so a requirement cannot be added to an endpoint without consent refusing the users who fail it.
     /// </summary>
-    public sealed record OAuthResource(string Path, string[] Scopes, string[] Policies);
+    /// <param name="Path">Where the resource is served.</param>
+    /// <param name="Scopes">The scopes worth asking for.</param>
+    /// <param name="Policies">What the resource's endpoint requires of any caller, on top of a signed-in user.</param>
+    /// <param name="GrantPolicies">
+    /// Asked of the session granting a token and of nobody else: what handing the capability to an external application
+    /// is worth demanding, on top of <paramref name="Policies"/>.
+    /// </param>
+    public sealed record OAuthResource(string Path, string[] Scopes, string[] Policies, string[] GrantPolicies);
 
     private static readonly OAuthResource[] resources = [
         //#if (signalR == true)
         // The chatbot asks nothing of the caller but a signed-in user, which every policy set implies.
-        new(McpPath, [OAuthScopes.Chat], []),
+        new(McpPath, [OAuthScopes.Chat], [], []),
         //#endif
-        new(DevMcpPath, [OAuthScopes.DevMcp], [AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED])
+        new(DevMcpPath, [OAuthScopes.DevMcp], [AppFeatures.System.DevMcp, AuthPolicies.TFA_ENABLED], []),
+        // The feature alone at the endpoint, which the Operations page reads with the session it already has; minting
+        // a token that reads it unattended takes two factor.
+        new(HealthzPath, [OAuthScopes.Healthz], [AppFeatures.System.Operations_View], [AuthPolicies.TFA_ENABLED])
     ];
 
     /// <summary>
@@ -51,11 +63,19 @@ public static class OAuthResources
     /// </summary>
     public static string[] ScopesFor(string resourceOrPath) => Find(resourceOrPath)?.Scopes ?? [];
 
-    /// <summary>
-    /// The policies the resource's endpoint requires. Consent evaluates them against the granting session, because a
-    /// grant can only carry what that session has - its <c>amr</c>, for one.
-    /// </summary>
+    /// <summary>The policies the resource's endpoint requires of every caller.</summary>
     public static string[] PoliciesFor(string resourceOrPath) => Find(resourceOrPath)?.Policies ?? [];
+
+    /// <summary>
+    /// What consent asks of the granting session: the endpoint's own policies, because a grant carries only what that
+    /// session has - its <c>amr</c>, for one - plus whatever the resource asks of a grant alone.
+    /// </summary>
+    public static string[] GrantPoliciesFor(string resourceOrPath)
+    {
+        var resource = Find(resourceOrPath);
+
+        return resource is null ? [] : [.. resource.Policies, .. resource.GrantPolicies];
+    }
 
     /// <summary>
     /// Whether a token minted for <paramref name="canonicalResource"/> may be spent on <paramref name="requestPath"/>.

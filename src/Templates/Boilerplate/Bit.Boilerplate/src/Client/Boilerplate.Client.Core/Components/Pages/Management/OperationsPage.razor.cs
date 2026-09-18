@@ -25,6 +25,10 @@ public partial class OperationsPage
     //#endif
 
     private HealthReportDto? report;
+    private DeploymentConfigurationDto? deploymentConfiguration;
+    //#if (api == "Standalone")
+    private DeploymentConfigurationDto? webAppConfiguration;
+    //#endif
     private List<CheckView> checks = [];
     private string? loadError;
     private bool isLoading;
@@ -118,11 +122,16 @@ public partial class OperationsPage
 
         try
         {
+            // Started first: the report waits on every dependency, while reading a setting waits on nothing.
+            var reportTask = GetReport("healthz");
+
             //#if (api == "Standalone")
             var webAppReport = WebAppHealthReportUrl() is { } webAppHealthReportUrl ? GetReport(webAppHealthReportUrl) : null;
             //#endif
 
-            var newReport = await GetReport("healthz") ?? throw new InvalidOperationException("/healthz returned no report.");
+            await LoadDeploymentConfiguration();
+
+            var newReport = await reportTask ?? throw new InvalidOperationException("/healthz returned no report.");
 
             //#if (api == "Standalone")
             if (webAppReport is not null)
@@ -154,6 +163,34 @@ public partial class OperationsPage
         }
     }
 
+    /// <summary>Read on every refresh, since memory and uptime are live. Its own try, so a failure keeps the report on screen.</summary>
+    private async Task LoadDeploymentConfiguration()
+    {
+        try
+        {
+            deploymentConfiguration = await diagnosticController.GetDeploymentConfiguration(CurrentCancellationToken);
+
+            //#if (api == "Standalone")
+            // Two processes, two configurations: the api cannot answer for the one rendering these pages.
+            if (WebAppUrl("deployment-configuration") is { } webAppConfigurationUrl)
+            {
+                webAppConfiguration = await httpClient.GetFromJsonAsync(webAppConfigurationUrl,
+                    JsonSerializerOptions.GetTypeInfo<DeploymentConfigurationDto>(), CurrentCancellationToken);
+            }
+            //#endif
+
+            StateHasChanged();
+        }
+        catch (Exception exp) when (exp is not OperationCanceledException)
+        {
+            // Only the first failure is worth a word: an auto refresh that keeps failing would report itself endlessly.
+            if (deploymentConfiguration is null)
+            {
+                ExceptionHandler.Handle(exp);
+            }
+        }
+    }
+
     private Task<HealthReportDto?> GetReport(string url) =>
         httpClient.GetFromJsonAsync(url, JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
 
@@ -163,7 +200,10 @@ public partial class OperationsPage
     /// a separate Server.Web: a standalone WASM app is served by a static host, and a hybrid app without WebAppUrl only
     /// knows the api.
     /// </summary>
-    private string? WebAppHealthReportUrl()
+    private string? WebAppHealthReportUrl() => WebAppUrl("healthz");
+
+    /// <summary>One of Server.Web's own endpoints, or null where there is no separate Server.Web to ask.</summary>
+    private string? WebAppUrl(string path)
     {
         if (AppPlatform.IsWasmStandalone) return null;
 
@@ -171,7 +211,7 @@ public partial class OperationsPage
 
         return Uri.Compare(webAppUrl, httpClient.BaseAddress, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is 0
             ? null
-            : new Uri(webAppUrl, "healthz").ToString();
+            : new Uri(webAppUrl, path).ToString();
     }
 
     /// <summary>
@@ -244,14 +284,6 @@ public partial class OperationsPage
                 }
             ]
         };
-        gaugeChart.Options!.Plugins!.Custom =
-        [
-            new BitChartCenterTextPlugin($"{HealthyPercent:F0}%", "healthy")
-            {
-                Color = $"var({BitCss.Var.Color.Foreground.Primary.Main})",
-                SubtextColor = $"var({BitCss.Var.Color.Foreground.Secondary.Main})"
-            }
-        ];
     }
 
     /// <summary>
@@ -492,6 +524,142 @@ public partial class OperationsPage
     };
 
     private static string ToneClass(Tone tone) => tone.ToString().ToLowerInvariant();
+
+    /// <summary>The configuration section's cards: only settings no health check reports.</summary>
+    private IEnumerable<(string Name, string IconName, (string Label, string Value)[] Rows)> ConfigurationGroups()
+    {
+        if (deploymentConfiguration is not { } config) yield break;
+
+        foreach (var group in SharedGroups(config, null))
+        {
+            yield return group;
+        }
+
+        yield return ("Identity", BitIconName.Permissions,
+        [
+            ("Confirmed account required", OnOff(config.RequireConfirmedAccount)),
+            ("Privileged sessions per user", config.MaxPrivilegedSessionsCount.ToString()),
+            ("Access token lifetime", FormatLifetime(config.AccessTokenLifetime)),
+            ("Refresh token lifetime", FormatLifetime(config.RefreshTokenLifetime))
+        ]);
+
+        yield return ("Background jobs", BitIconName.Processing,
+        [
+            ("Storage", config.BackgroundJobsUseIsolatedStorage ? "In-memory - jobs are lost on restart" : "Shared with the database"),
+            ("Job expiration", FormatLifetime(config.BackgroundJobExpiration))
+        ]);
+
+        yield return ("Limits", BitIconName.Upload,
+        [
+            ("Attachment upload", FormatBytes(config.AttachmentUploadSizeLimitBytes)),
+            //#if (signalR == true)
+            ("SignalR message", config.HubMaximumReceiveMessageSize is { } size ? FormatBytes(size) : "Default"),
+            ("AI chat images kept for", FormatLifetime(config.AiChatImagesRetention)),
+            //#endif
+            //#if (notification == true)
+            ("Web push", OnOff(config.WebPushConfigured, "Configured", "Not configured"))
+            //#endif
+        ]);
+
+        yield return ("Force update", BitIconName.UpdateRestore,
+        [
+            ("Android", config.MinimumSupportedAndroidAppVersion ?? "Not enforced"),
+            ("iOS", config.MinimumSupportedIosAppVersion ?? "Not enforced"),
+            ("macOS", config.MinimumSupportedMacOSAppVersion ?? "Not enforced"),
+            ("Windows", config.MinimumSupportedWindowsAppVersion ?? "Not enforced"),
+            ("Web", config.MinimumSupportedWebAppVersion ?? "Not enforced")
+        ]);
+
+        //#if (api == "Standalone")
+        // Server.Web is a second process with its own configuration, so its cards are named after it - like the "web:"
+        // prefix on its health checks.
+        foreach (var group in SharedGroups(webAppConfiguration, "Web server"))
+        {
+            yield return group;
+        }
+        //#endif
+    }
+
+    /// <summary>
+    /// What both server projects have (See DeploymentConfigurationReader). <paramref name="owner"/> names the process a
+    /// card belongs to, and is left out where there is only one.
+    /// </summary>
+    private static IEnumerable<(string Name, string IconName, (string Label, string Value)[] Rows)> SharedGroups(DeploymentConfigurationDto? config, string? owner)
+    {
+        if (config is null) yield break;
+
+        // Read from the process that answered, which under scale-out is one instance of several; everything else has
+        // to match across the deployment.
+        yield return (owner is null ? "This instance" : $"{owner} instance", BitIconName.ServerEnvironment,
+        [
+            ("Machine", config.InstanceName ?? "-"),
+            ("Environment", config.Environment ?? "-"),
+            ("Version", config.ApplicationVersion ?? "-"),
+            ("Uptime", FormatLifetime(config.Uptime)),
+            ("Memory", $"{FormatBytes(config.UsedMemoryBytes)} of {FormatBytes(config.AvailableMemoryBytes)}"),
+            ("CPU", $"{config.ProcessorCount} cores"),
+            ("Runtime", config.Runtime ?? "-"),
+            ("OS", config.OperatingSystem ?? "-"),
+            ("Time zone", config.TimeZone ?? "-")
+        ]);
+
+        yield return (Named(owner, "Runtime"), BitIconName.Server,
+        [
+            ("Cultures", config.SupportedCultures.Length is 0 ? "Invariant globalization" : string.Join(", ", config.SupportedCultures)),
+            ("Trusted origins", config.TrustedOrigins.Length is 0 ? "None configured" : string.Join(", ", config.TrustedOrigins)),
+            // An empty list is not the whole answer: the regex trusts localhost and the tunnels on top of it.
+            ("Trusted origins regex", config.TrustedOriginsRegex ?? "-"),
+            ("Forwarded headers", config.ForwardedHeadersConfigured ? "Configured" : "Not configured - behind a proxy, every client ip is the proxy's")
+        ]);
+
+        yield return (Named(owner, "Caching"), BitIconName.Cloud,
+        [
+            ("Output caching", OnOff(config.OutputCachingEnabled)),
+            ("CDN edge caching", OnOff(config.CdnEdgeCachingEnabled))
+        ]);
+
+        // A standalone api renders nothing.
+        if (config.BlazorMode is { } blazorMode)
+        {
+            yield return (Named(owner, "Rendering"), BitIconName.Design,
+            [
+                ("Blazor mode", blazorMode),
+                ("Prerendering", OnOff(config.PrerenderEnabled))
+            ]);
+        }
+
+        yield return (Named(owner, "Telemetry"), BitIconName.Insights,
+        [
+            //#if (sentry == true)
+            ("Sentry", OnOff(config.SentryConfigured, "Configured", "Not configured")),
+            //#endif
+            //#if (appInsights == true)
+            ("Azure Monitor", OnOff(config.AzureMonitorConfigured, "Configured", "Not configured")),
+            //#endif
+            ("OTLP exporter", OnOff(config.OtlpExporterConfigured, "Configured", "Not configured"))
+        ]);
+    }
+
+    private static string Named(string? owner, string group) => owner is null ? group : $"{owner} {group.ToLowerInvariant()}";
+
+    private static string OnOff(bool value, string on = "Enabled", string off = "Disabled") => value ? on : off;
+
+    /// <summary>A configured span, minutes to days - unlike a check's duration, which is milliseconds.</summary>
+    private static string FormatLifetime(TimeSpan duration) => duration switch
+    {
+        { TotalDays: >= 1 } => $"{duration.TotalDays:0.#} d",
+        { TotalHours: >= 1 } => $"{duration.TotalHours:0.#} h",
+        { TotalMinutes: >= 1 } => $"{duration.TotalMinutes:0.#} min",
+        _ => $"{duration.TotalSeconds:0} s"
+    };
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        >= 1024L * 1024 * 1024 => $"{bytes / (1024d * 1024 * 1024):0.#} GB",
+        >= 1024 * 1024 => $"{bytes / (1024d * 1024):0.#} MB",
+        >= 1024 => $"{bytes / 1024d:0.#} KB",
+        _ => $"{bytes:N0} B"
+    };
 
     private enum StatusFilter { All, Attention, Unhealthy, Degraded, NotConfigured, Healthy }
 
