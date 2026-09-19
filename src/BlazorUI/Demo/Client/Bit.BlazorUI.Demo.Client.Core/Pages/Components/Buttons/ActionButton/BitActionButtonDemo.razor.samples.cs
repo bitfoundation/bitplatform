@@ -138,10 +138,11 @@ private void HandleInvalidSubmit()
         Notifications, sounds and background activity
     </BitActionButton>
 
-    <BitActionButton FullWidth NoWrap IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight""
-                     Title=""Notifications, sounds and background activity"">
-        Notifications, sounds and background activity
-    </BitActionButton>
+    <BitTooltip Relationship=""BitTooltipRelationship.None"" Text=""Notifications, sounds and background activity"">
+        <BitActionButton FullWidth NoWrap IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+            Notifications, sounds and background activity
+        </BitActionButton>
+    </BitTooltip>
 </div>";
 
     private readonly string example6RazorCode = @"

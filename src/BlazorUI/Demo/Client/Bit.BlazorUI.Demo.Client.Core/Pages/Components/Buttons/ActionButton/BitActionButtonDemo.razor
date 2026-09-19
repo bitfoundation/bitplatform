@@ -181,7 +181,11 @@
         <br /><br />
         <div>
             A label longer than the room it has been given wraps onto a second line, which keeps it readable but changes the height of the row.
-            <b>NoWrap</b> keeps it on one line and ends it with an ellipsis instead; pair it with a <b>Title</b> so the cut-off part stays reachable.
+            <b>NoWrap</b> keeps it on one line and ends it with an ellipsis instead. Only the drawing of the label is cut short - the button is still
+            named by the whole of it, so a screen reader reads it out in full - but a sighted user is left with the ellipsis, so wrap the button in a
+            <b>BitTooltip</b>, which shows the full label to the pointer and to the keyboard alike and is dismissed with Escape. A <b>Title</b> is shown
+            to the pointer only, so it cannot be the disclosure on its own. The tooltip declares no relationship of its own here, since the button already
+            carries the same text as its accessible name.
         </div>
         <br />
         <div class="full-width-container">
@@ -189,10 +193,11 @@
                 Notifications, sounds and background activity
             </BitActionButton>
 
-            <BitActionButton FullWidth NoWrap IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight"
-                             Title="Notifications, sounds and background activity">
-                Notifications, sounds and background activity
-            </BitActionButton>
+            <BitTooltip Relationship="BitTooltipRelationship.None" Text="Notifications, sounds and background activity">
+                <BitActionButton FullWidth NoWrap IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+                    Notifications, sounds and background activity
+                </BitActionButton>
+            </BitTooltip>
         </div>
     </DemoExample>
 
