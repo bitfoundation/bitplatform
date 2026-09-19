@@ -112,5 +112,9 @@ public partial class TimeZoneSelectionUITests : AppPageTest
         await callout.GetByRole(AriaRole.Button, new() { Name = AppStrings.TimeZone }).ClickAsync();
         await Expect(callout.GetByPlaceholder(AppStrings.FindTimeZone)).ToBeVisibleAsync();
         await Expect(callout.Locator(".time-zone-item").First).ToBeVisibleAsync();
+
+        // The current zone is what the panel is opened for, and reading it a tick too early gets nothing, so wait for
+        // the row that carries it rather than for any row.
+        await Expect(callout.Locator(".time-zone-item[aria-checked='true']").First).ToBeVisibleAsync();
     }
 }

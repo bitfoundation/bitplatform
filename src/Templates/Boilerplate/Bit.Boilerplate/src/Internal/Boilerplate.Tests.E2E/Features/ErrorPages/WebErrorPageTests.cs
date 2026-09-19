@@ -78,7 +78,9 @@ public partial class WebErrorPageTests : AppTestBase
     /// global admin session to switch tenant and elevate first.
     /// </para>
     /// </summary>
-    [TestMethod]
+    // Every row grants the same shared store-user the same permission, so two of them running at once means one sees
+    // the other's grant where it expects to be turned away. MethodLevel parallelization schedules data rows too.
+    [TestMethod, DoNotParallelize]
     [DataRow(App.Todo, DisplayName = "Todo (Blazor Router, not multitenant)")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
     [DataRow(App.Sales, DisplayName = "Sales (Blazor Router, integrated API)")]

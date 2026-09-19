@@ -150,6 +150,16 @@ jobs:
     - name: dotnet pack CodeAnalyzer
       run: dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output . --configuration Release
 
+    - name: dotnet build Minifier
+      run: dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Minifier
+      run: dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
+
+    - name: dotnet build Minifier.Cli
+      run: dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Minifier.Cli
+      run: dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output . --configuration Release
+
     - name: dotnet build ResxTranslator
       run: dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack ResxTranslator

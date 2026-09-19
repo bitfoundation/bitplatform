@@ -58,7 +58,12 @@ public partial class TenantProvider
                 return subDomainTenantId;
         }
 
-        // 4. The default tenant as fallback. You've to implement your custom business here depending on your requirements.
+        // 4. The default tenant as fallback. Whether a fallback means anything at all depends on how your domains are
+        // laid out: it fits an apex domain that serves a tenant's own data (the sales module's main store), but plenty
+        // of products are the other way around - tenant1.app.com and tenant2.app.com carry the tenant data while
+        // app.com is the product's own marketing site, and there a request to the apex has no tenant, so answering it
+        // with one serves the wrong data. The template does not implement that layout yet, and this is only one
+        // possible scenario: implement what your own requirements need here.
         return TenantConfiguration.FallbackTenantId;
     }
 

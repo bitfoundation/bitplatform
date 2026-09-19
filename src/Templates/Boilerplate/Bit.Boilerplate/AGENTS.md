@@ -88,7 +88,7 @@ Before implementing any changes, you **MUST** complete the following:
     -   **Android**: the WebView is debuggable, and its CDP endpoint is a local abstract socket on the device. Expose it with `adb shell pidof <applicationId>` then `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` (pick another local port if the Windows app already holds 9222), and attach with Playwright exactly like Windows.
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
--   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
+-   **Add new migrations**: Run `dnx dotnet-ef@10.0.12 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
 
 ## 5. Coding Conventions & Best Practices

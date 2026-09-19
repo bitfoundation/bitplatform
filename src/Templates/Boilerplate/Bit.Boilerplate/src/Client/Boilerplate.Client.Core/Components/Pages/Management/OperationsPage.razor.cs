@@ -554,12 +554,22 @@ public partial class OperationsPage
             ("Attachment upload", FormatBytes(config.AttachmentUploadSizeLimitBytes)),
             //#if (signalR == true)
             ("SignalR message", config.HubMaximumReceiveMessageSize is { } size ? FormatBytes(size) : "Default"),
-            ("AI chat images kept for", FormatLifetime(config.AiChatImagesRetention)),
-            //#endif
-            //#if (notification == true)
-            ("Web push", OnOff(config.WebPushConfigured, "Configured", "Not configured"))
             //#endif
         ]);
+
+        //#if (signalR == true)
+        yield return ("AI chat", BitIconName.ChatBot,
+        [
+            ("Images kept for", FormatLifetime(config.AiChatImagesRetention))
+        ]);
+        //#endif
+
+        //#if (notification == true)
+        yield return ("Notifications", BitIconName.Ringer,
+        [
+            ("Web push", OnOff(config.WebPushConfigured, "Configured", "Not configured"))
+        ]);
+        //#endif
 
         yield return ("Force update", BitIconName.UpdateRestore,
         [

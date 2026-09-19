@@ -77,7 +77,8 @@ public class BlazorSetParametersSourceGenerator : IIncrementalGenerator
             ClassNamespace: containingType.ContainingNamespace.ToDisplayString(),
             IsBaseTypeComponentBase: isBaseTypeComponentBase,
             PropertyName: prop.Name,
-            PropertyType: prop.Type.ToDisplayString());
+            PropertyType: prop.Type.ToDisplayString(),
+            NeedsNullGuard: prop.Type.IsReferenceType is false && prop.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T);
     }
 
     private static void Execute(SourceProductionContext spc, ImmutableArray<BitProperty> properties)
@@ -120,8 +121,13 @@ namespace {namespaceName}
 
         foreach (var bitProperty in properties)
         {
+            // the null check is only there for the types a null cast would throw on, so a reference type is
+            // assigned in one step - a branch fewer per parameter, and less IL, which the wasm interpreter walks
+            var value = bitProperty.NeedsNullGuard
+                ? $"parameter.Value is null ? default! : ({bitProperty.PropertyType})parameter.Value"
+                : $"({bitProperty.PropertyType})parameter.Value!";
             source.AppendLine($"                    case nameof({bitProperty.PropertyName}):");
-            source.AppendLine($"                       {bitProperty.PropertyName} = parameter.Value is null ? default! : ({bitProperty.PropertyType})parameter.Value;");
+            source.AppendLine($"                       {bitProperty.PropertyName} = {value};");
             source.AppendLine("                       break;");
         }
 

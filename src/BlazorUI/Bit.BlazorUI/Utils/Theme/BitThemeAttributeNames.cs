@@ -41,6 +41,22 @@ public static class BitThemeAttributeNames
     /// </summary>
     public const string ThemeViewTransition = "bit-theme-view-transition";
 
+    /// <summary>
+    /// Marker attribute that opts the document into keeping every <c>&lt;meta name="theme-color"&gt;</c>
+    /// tag equal to a palette color of the live page, so the browser chrome CSS cannot reach - an
+    /// installed PWA's status bar, the address bar on mobile - follows the theme, the design system
+    /// and any accent overlay. Its value names the custom property to read
+    /// (<c>bit-theme-color-meta="--bit-clr-bg-sec"</c>); an empty value means
+    /// <see cref="ThemeColorVariable"/>. The tag is created when the document has none.
+    /// </summary>
+    public const string ThemeColorMeta = "bit-theme-color-meta";
+
+    /// <summary>
+    /// The custom property <see cref="ThemeColorMeta"/> reads when it carries no value: the page
+    /// background, which is what a status bar sits above in nearly every app.
+    /// </summary>
+    public const string ThemeColorVariable = "--bit-clr-bg-pri";
+
     /// <summary><c>localStorage</c> key used by the client script when persistence is enabled.</summary>
     public const string ThemeStorageKey = "bit-current-theme";
 }

@@ -34,8 +34,6 @@ public partial class Program
         AppPlatform.IsBlazorHybrid = true;
         ITelemetryContext.Current = new WindowsTelemetryContext();
 
-        Application.SetColorMode(SystemColorMode.System);
-
         var configuration = new ConfigurationBuilder()
             .AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Windows")
             .AddEnvironmentVariables()
@@ -58,6 +56,14 @@ public partial class Program
                 CultureInfo.CurrentUICulture.Name); // 2- OS Settings
         }
 
+        // SetColorMode has to run before the first window is created.
+        var isDarkTheme = IsDarkTheme();
+        Application.SetColorMode(isDarkTheme ? SystemColorMode.Dark : SystemColorMode.Classic);
+
+        // The caption, the window behind the WebView and what WebView2 shows before the page has painted are all the
+        // theme's own background, so the app does not open on one color and turn another once the page arrives.
+        var backgroundColor = WindowsDeviceCoordinator.GetBackgroundColor(isDarkTheme);
+
         var form = new Form()
         {
             Text = "Boilerplate",
@@ -65,7 +71,8 @@ public partial class Program
             Width = 1024,
             MinimumSize = new Size(375, 667),
             WindowState = FormWindowState.Maximized,
-            BackColor = ColorTranslator.FromHtml("#0D2960"),
+            BackColor = backgroundColor,
+            FormCaptionBackColor = backgroundColor,
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath)
         };
         var pubSubService = Services.GetRequiredService<PubSubService>();
@@ -97,10 +104,10 @@ public partial class Program
             Dock = DockStyle.Fill,
             Services = Services,
             HostPage = @"wwwroot\index.html",
-            BackColor = ColorTranslator.FromHtml("#0D2960")
+            BackColor = backgroundColor
         };
 
-        blazorWebView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#0D2960");
+        blazorWebView.WebView.DefaultBackgroundColor = backgroundColor;
 
         blazorWebView.RootComponents.Add(new RootComponent("head::after", typeof(HeadOutlet), null));
         blazorWebView.RootComponents.Add(new RootComponent("#app-container", typeof(Routes), null));
@@ -122,6 +129,19 @@ public partial class Program
         form.Controls.Add(blazorWebView);
 
         Application.Run(form);
+    }
+
+    /// <summary>The theme to launch with: the user's own pick, which ThemeService mirrors into IStorageService.</summary>
+    private static bool IsDarkTheme()
+    {
+        var theme = Services!.GetRequiredService<IStorageService>()
+            .GetItem(ThemeService.THEME_STORAGE_KEY)
+            .GetAwaiter()
+            .GetResult();
+
+        return theme is not null
+            ? theme == nameof(AppThemeType.Dark) // 1- User settings
+            : Application.SystemColorMode is SystemColorMode.Dark; // 2- OS Settings
     }
 
     static async Task StartBlazor(BlazorWebView blazorWebView)

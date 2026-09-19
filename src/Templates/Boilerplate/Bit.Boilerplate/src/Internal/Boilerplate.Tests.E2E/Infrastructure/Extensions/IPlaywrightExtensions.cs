@@ -178,6 +178,32 @@ public static class IPlaywrightExtensions
             await RunAdb("shell input keyevent KEYCODE_BACK");
         }
 
+        /// <summary>
+        /// The device's screen as PNG bytes, for what a hybrid app paints OUTSIDE its WebView - the status bar, whose
+        /// color no dumpsys reports. Through a file on the device, since screencap's own stdout is binary.
+        /// </summary>
+        public async Task<byte[]> TakeAndroidScreenshot()
+        {
+            await EnsureAndroidDeviceOnline();
+
+            const string devicePath = "/data/local/tmp/e2e-screenshot.png";
+            var localPath = Path.Combine(Path.GetTempPath(), $"e2e-screenshot-{Guid.NewGuid():N}.png");
+
+            await RunAdb($"shell screencap -p {devicePath}");
+
+            try
+            {
+                await RunAdb($"pull {devicePath} \"{localPath}\"");
+
+                return await File.ReadAllBytesAsync(localPath);
+            }
+            finally
+            {
+                await RunAdb($"shell rm -f {devicePath}", allowNonZeroExit: true);
+                File.Delete(localPath);
+            }
+        }
+
         /// <summary>The pid of the running <paramref name="applicationId"/>; empty when it is not running.</summary>
         public async Task<string> GetAndroidAppProcessId(string applicationId)
         {
