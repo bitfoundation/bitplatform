@@ -10,15 +10,53 @@
             style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemSeparator"
             class="bit-mnb-isp @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemSeparator"></li>
     }
+    else if (MenuButton.GetIsHeader(Item))
+    {
+        @* A group label names the run of items under it and does nothing else, so it stays out of the menu's
+           own semantics: a presentational row is skipped by the keyboard navigation and by the reader's
+           item-by-item reading, instead of being announced as a menu item that cannot be activated. *@
+        <li role="presentation"
+            title="@MenuButton.GetTitle(Item)"
+            style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemHeader"
+            class="bit-mnb-ihd @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemHeader">
+            @{
+                var headerTemplate = MenuButton.GetTemplate(Item);
+            }
+            @if (headerTemplate is not null)
+            {
+                @headerTemplate(Item)
+            }
+            else
+            {
+                @MenuButton.GetText(Item)
+            }
+        </li>
+    }
     else
     {
         var template = MenuButton.GetTemplate(Item);
         var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
         var href = MenuButton.GetHref(Item);
         var target = MenuButton.GetTarget(Item);
+        var checkable = MenuButton.GetCheckable(Item);
+        var isChecked = checkable && MenuButton.GetIsChecked(Item);
+        var secondaryText = MenuButton.GetSecondaryText(Item);
+        // Once any item of the menu is checkable every item reserves the check column, so the labels line up
+        // instead of shifting by the width of a glyph from one row to the next.
+        var hasCheckColumn = MenuButton.ShowCheckColumn;
+        // A checkable item is a checkbox that happens to live in a menu, so it is announced with its own role
+        // and its state - and the state is what changes on activation, which a plain menuitem cannot say.
+        var role = checkable ? "menuitemcheckbox" : "menuitem";
 
         RenderFragment content =
             @<text>
+                @if (hasCheckColumn)
+                {
+                    <i aria-hidden="true"
+                       style="@MenuButton.Styles?.ItemCheckIcon"
+                       class="bit-mnb-ick @MenuButton.GetCheckIconCss() @MenuButton.Classes?.ItemCheckIcon" />
+                }
+
                 @if (template is not null)
                 {
                     @template(Item)
@@ -32,11 +70,19 @@
                     var itemIcon = MenuButton.GetIcon(Item);
                     @if (itemIcon is not null)
                     {
-                        <i style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
+                        <i aria-hidden="true" style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
                     }
                     <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
                         @MenuButton.GetText(Item)
                     </span>
+                    @if (secondaryText.HasValue())
+                    {
+                        @* Part of the item's accessible name rather than a decoration: a shortcut or a count
+                           is read after the label, which is the order it is written in. *@
+                        <span style="@MenuButton.Styles?.ItemSecondaryText" class="bit-mnb-isc @MenuButton.Classes?.ItemSecondaryText">
+                            @secondaryText
+                        </span>
+                    }
                 }
             </text>;
 
@@ -44,28 +90,35 @@
             @if (isEnabled && href.HasValue())
             {
                 <a @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
-                   role="menuitem"
+                   role="@role"
                    href="@href"
-                   tabindex="0"
+                   tabindex="-1"
                    target="@target"
                    rel="@(target is "_blank" ? "noopener noreferrer" : null)"
                    title="@MenuButton.GetTitle(Item)"
+                   aria-label="@MenuButton.GetAriaLabel(Item)"
+                   aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                    style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                   class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                   class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                 </a>
             }
             else
             {
+                @* The items are never in the tab sequence: the menu is entered by opening it, and the focus is
+                   moved between the items with the arrow keys from there (the APG menu button pattern), so a
+                   tabindex of 0 would put every row of an open menu into the page's tab order. *@
                 <button @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
-                        role="menuitem"
+                        role="@role"
                         type="@MenuButton._buttonType.GetValue()"
                         title="@MenuButton.GetTitle(Item)"
-                        tabindex="@(isEnabled ? 0 : -1)"
-                        disabled="@(isEnabled is false)"
-                        aria-disabled="@(isEnabled is false)"
+                        tabindex="-1"
+                        disabled="@(isEnabled is false && MenuButton.DisabledInteractive is false)"
+                        aria-disabled="@(isEnabled is false ? "true" : null)"
+                        aria-label="@MenuButton.GetAriaLabel(Item)"
+                        aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                         style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                        class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                        class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                 </button>
             }

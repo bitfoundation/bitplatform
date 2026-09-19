@@ -4,6 +4,26 @@
 
 @{
     var _selectedItem = Sticky ? SelectedItem : null;
+    var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so
+    // every attribute a page can also write by hand is resolved against what it wrote (see
+    // BitComponentBase.GetSplattedAttribute) instead of being overwritten with the parameter's null. The
+    // hyphenated aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a
+    // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
+    // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced.
+    var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
+    var describedByValue = describedBy.HasValue() ? describedBy : null;
+    // The chevron of a split button carries no text of its own, so without a name it reaches a screen reader
+    // as an unlabelled button (WCAG 4.1.2). The fallback is what keeps that from being the default.
+    var chevronLabel = ChevronDownAriaLabel ?? "More options";
+    var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
+    // The main half of a split button is a command of its own, so it can be the submit button of the form it
+    // sits in - but only where the page asked for that. The type is left at "button" unless ButtonType was set,
+    // since the EditContext default belongs to the items (see _buttonType), and the only job of the header of a
+    // plain menu button is opening the menu, which a submit button would do while also submitting the form.
+    var headerButtonType = (Split && ButtonType.HasValue) ? ButtonType.Value.GetValue() : "button";
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -13,13 +33,16 @@
     <button @ref="_operatorButtonRef"
             @onclick="() => HandleOnHeaderClick(_selectedItem)"
             @onkeydown="e => HandleOnTriggerKeyDown(e, Split is false)"
-            type="button"
             id="@(_Id + "-opb")"
             title="@Title"
-            tabindex="@(IsEnabled ? 0 : -1)"
-            aria-label="@AriaLabel"
-            aria-hidden="@AriaHidden"
-            aria-describedby="@AriaDescription"
+            type="@headerButtonType"
+            tabindex="@(IsEnabled || DisabledInteractive ? 0 : -1)"
+            disabled="@(IsEnabled is false && DisabledInteractive is false)"
+            aria-label="@ariaLabel"
+            aria-hidden="@(ariaHidden ? "true" : null)"
+            aria-disabled="@(IsEnabled ? null : "true")"
+            aria-busy="@(IsLoading ? "true" : null)"
+            aria-describedby="@describedByValue"
             aria-haspopup="@(Split ? null : "menu")"
             aria-controls="@(Split ? null : _calloutId)"
             aria-expanded="@(Split ? null : IsOpen.ToString().ToLower())"
@@ -42,14 +65,14 @@
                 var icon = GetIcon(_selectedItem);
                 @if (IsLoading)
                 {
-                    <div style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
+                    <div aria-hidden="true" style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
                 }
                 else if (NoIcon is false && icon is not null)
                 {
-                    <i style="@Styles?.OperatorButtonIcon" class="@icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
+                    <i aria-hidden="true" style="@Styles?.OperatorButtonIcon" class="bit-mnb-ico @icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
                 <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                    @GetText(_selectedItem)
+                    @(IsLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
                 </span>
             }
         }
@@ -64,62 +87,81 @@
             {
                 @if (IsLoading)
                 {
-                    <div style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
+                    <div aria-hidden="true" style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
                 }
                 else if (NoIcon is false && headerIcon is not null)
                 {
-                    <i style="@Styles?.Icon" class="@headerIcon.GetCssClasses() @Classes?.Icon" />
+                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-mnb-ico @headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
 
-                @if (Text.HasValue())
+                @if (Text.HasValue() || (IsLoading && LoadingLabel.HasValue()))
                 {
-                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@Text</span>
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(IsLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
                 }
             }
         }
 
         @if (Split is false)
         {
-            var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
-            <i style="@Styles?.ChevronDown" class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
+            <i aria-hidden="true" style="@Styles?.ChevronDown" class="bit-mnb-chv @chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         }
     </button>
 
     @if (Split)
     {
-        <span style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
+        <span aria-hidden="true" style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
 
         <button @ref="_chevronButtonRef"
                 @onclick="async () => await OpenCallout()"
                 @onkeydown="e => HandleOnTriggerKeyDown(e, true)"
                 type="button"
                 id="@(_Id + "-chb")"
-                tabindex="@(IsEnabled ? 0 : -1)"
+                title="@ChevronDownTitle"
+                tabindex="@(IsEnabled || DisabledInteractive ? 0 : -1)"
+                disabled="@(IsEnabled is false && DisabledInteractive is false)"
                 aria-haspopup="menu"
                 aria-controls="@_calloutId"
-                aria-label="@ChevronDownAriaLabel"
+                aria-label="@chevronLabel"
+                aria-hidden="@(ariaHidden ? "true" : null)"
+                aria-disabled="@(IsEnabled ? null : "true")"
+                aria-describedby="@describedByValue"
                 aria-expanded="@IsOpen.ToString().ToLower()"
                 style="@Styles?.ChevronDownButton"
                 class="bit-mnb-chb @Classes?.ChevronDownButton">
-            @{
-                var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
-            }
-            <i style="@Styles?.ChevronDown" class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
+            <i aria-hidden="true" style="@Styles?.ChevronDown" class="bit-mnb-chv @chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         </button>
     }
 </div>
 
+@* The two screen-reader-only pieces are rendered as siblings of the button rather than inside it, so that
+   neither joins its accessible name: the description is read after the name through aria-describedby, and the
+   live region would otherwise repeat the loading label the button is already showing.
+   The region is rendered from the first render rather than when the loading starts - a live region only
+   announces what changes inside one already in the document - but a button given no loading label has
+   nothing to announce. *@
+@if (LoadingLabel.HasValue())
+{
+    <span role="status" class="bit-mnb-sts">@(IsLoading ? LoadingLabel : null)</span>
+}
+
+@if (descriptionId is not null)
+{
+    <span id="@descriptionId" class="bit-mnb-dsc">@AriaDescription</span>
+}
+
 <div @onclick="CloseCallout" @onclick:stopPropagation
+     aria-hidden="true"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-mnb-ovl @Classes?.Overlay"></div>
 
 <div @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
-     style="@Styles?.Callout"
+     dir="@Dir?.ToString().ToLower()"
+     style="@GetCalloutStyle()"
      class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="menu"
-        aria-labelledby="@(_Id + (Split && ChevronDownAriaLabel.HasValue() ? "-chb" : "-opb"))"
+        aria-labelledby="@(_Id + (Split ? "-chb" : "-opb"))"
         style="@Styles?.CalloutContainer"
         class="bit-mnb-cul @Classes?.CalloutContainer">
         @if (Options is not null || ChildContent is not null)

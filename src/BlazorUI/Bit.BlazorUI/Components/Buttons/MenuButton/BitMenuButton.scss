@@ -1,5 +1,54 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
+// menu button and one set on the Style of an instance (or on Styles.Callout for the callout half) re-skins that
+// one alone. The callout is rendered outside the root element, so the callout and item groups are read there.
+//   --bit-MenuButton-color                     text and icon color at rest                     (default: per variant, from the role)
+//   --bit-MenuButton-background                background of the button at rest                (default: per variant, from the role)
+//   --bit-MenuButton-border-color              border color of the button                      (default: the background, or transparent)
+//   --bit-MenuButton-border-width              border thickness of the button                  (default: $shp-border-width)
+//   --bit-MenuButton-radius                    corner radius of the button and its focus ring  (default: $shp-radius-button)
+//   --bit-MenuButton-hover-color               text and icon color on hover                    (default: the role's on-color)
+//   --bit-MenuButton-hover-background          background of the hovered half                  (default: the role's hover color)
+//   --bit-MenuButton-active-color              text and icon color while pressed, toggled or
+//                                              with the menu open                              (default: the role's on-color)
+//   --bit-MenuButton-active-background         background while pressed, toggled or with the
+//                                              menu open                                       (default: the role's active color)
+//   --bit-MenuButton-disabled-color            text and icon color when disabled               (default: the role's disabled text color)
+//   --bit-MenuButton-disabled-background       background when disabled                        (default: per variant, the role's dis color)
+//   --bit-MenuButton-disabled-border-color     border color when disabled                      (default: the disabled background)
+//   --bit-MenuButton-focus-color               focus ring color                                (default: the role's focus color)
+//   --bit-MenuButton-min-height                smallest height of the button                   (default: per size, $siz-ctrl-*)
+//   --bit-MenuButton-padding                   padding of each half of the button              (default: per size)
+//   --bit-MenuButton-gap                       room between the icon, the text and the chevron (default: spacing(1))
+//   --bit-MenuButton-font-size                 text size of the button and of the items        (default: per size, from the type ramp)
+//   --bit-MenuButton-icon-size                 glyph and spinner size                          (default: per size, $siz-icon-*)
+//   --bit-MenuButton-chevron-width             width of the chevron half of a split button     (default: per size, $siz-ctrl-*)
+//   --bit-MenuButton-divider-color             the hairline between the two halves             (default: per variant)
+//   --bit-MenuButton-callout-background        background of the callout                       (default: $clr-bg-pri, or the Background kind)
+//   --bit-MenuButton-callout-radius            corner radius of the callout, on the corners
+//                                              away from the button                           (default: $shp-radius-popup)
+//   --bit-MenuButton-callout-shadow            elevation of the callout                       (default: $box-shadow-popup)
+//   --bit-MenuButton-callout-max-height        tallest the callout grows before it scrolls
+//                                              (only read when MaxHeight is set)              (default: the room the viewport leaves)
+//   --bit-MenuButton-callout-min-width         narrowest the callout gets                     (default: the width of the button, set by
+//                                                                                              the positioning code)
+//   --bit-MenuButton-callout-max-width         widest the callout gets before its labels are
+//                                              ellipsized                                     (default: the width of the viewport)
+//   --bit-MenuButton-item-color                text and icon color of an item                 (default: $clr-fg-pri)
+//   --bit-MenuButton-item-min-height           smallest height of an item                     (default: per size, $siz-item-*)
+//   --bit-MenuButton-item-padding              padding of an item                             (default: per size)
+//   --bit-MenuButton-item-gap                  room between an item's icon, text and trailings(default: spacing(1))
+//   --bit-MenuButton-item-hover-background     background of a hovered item                   (default: $clr-bg-pri-hover)
+//   --bit-MenuButton-item-active-background    background of a pressed item                   (default: $clr-bg-pri-active)
+//   --bit-MenuButton-item-checked-background   background of a checked item                   (default: $clr-bg-sec)
+//   --bit-MenuButton-item-checked-color        the check glyph of a checked item              (default: the role's main color)
+//   --bit-MenuButton-item-disabled-color       text and icon color of a disabled item         (default: $clr-fg-dis)
+//   --bit-MenuButton-item-focus-color          focus ring color of the focused item           (default: the role's focus color)
+//   --bit-MenuButton-item-separator-color      the hairline of a separator item                (default: $clr-brd-sec)
+//   --bit-MenuButton-item-secondary-color      the secondary text of an item (a shortcut)     (default: $clr-fg-sec)
+//   --bit-MenuButton-item-header-color         the label of a group header item               (default: $clr-fg-sec)
+
 .bit-mnb {
     display: flex;
     overflow: hidden;
@@ -9,27 +58,42 @@
     box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-radius-button;
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
+    font-size: var(--bit-MenuButton-font-size, var(--bit-mnb-font-size));
+    border-width: var(--bit-MenuButton-border-width, #{$shp-border-width});
+    border-radius: var(--bit-MenuButton-radius, #{$shp-radius-button});
+    // The one name every state resolves the disabled foreground through, so the public variable is read once.
+    --bit-mnb-dis-clr: var(--bit-MenuButton-disabled-color, var(--bit-mnb-clr-dis-text));
+    // The control height of the size class, as a floor rather than a height, so the button still grows with a
+    // taller icon or a wrapped label. It is what lines a menu button up with the other controls of its size in
+    // a toolbar, and what keeps the smallest one clear of the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8).
+    min-height: var(--bit-MenuButton-min-height, var(--bit-mnb-min-height));
     // The variants below repaint all three on hover/active, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible,
     &:has(:focus-visible) {
-        @include focus-ring(var(--bit-mnb-clr-focus));
+        @include focus-ring(var(--bit-MenuButton-focus-color, var(--bit-mnb-clr-focus)));
     }
 
     &.bit-dis {
         cursor: default;
         pointer-events: none;
-        color: var(--bit-mnb-clr-dis-text);
-        --bit-mnb-clr-spb: var(--bit-mnb-clr-dis-text);
-        --bit-mnb-clr-txt: var(--bit-mnb-clr-dis-text);
-        --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-dis-text);
-        --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-dis-text);
+        color: var(--bit-mnb-dis-clr);
+        --bit-mnb-clr-spb: var(--bit-mnb-dis-clr);
+        --bit-mnb-clr-txt: var(--bit-mnb-dis-clr);
+        --bit-mnb-clr-opb-txt: var(--bit-mnb-dis-clr);
+        --bit-mnb-clr-chb-txt: var(--bit-mnb-dis-clr);
+
+        // DisabledInteractive keeps a disabled menu button in the tab order, so the indicator has to stay
+        // visible - but drawn in the disabled color, since the vivid ring of the enabled state contradicts
+        // the inert look and reads as actionable.
+        &:focus-visible,
+        &:has(:focus-visible) {
+            @include focus-ring(var(--bit-mnb-dis-clr));
+        }
     }
 
     @keyframes bit-mnb-spinner-animation {
@@ -47,23 +111,38 @@
     width: 100%;
 }
 
+// The header button ignores its click while the operation it started is running, so it stops inviting one.
+// The chevron half is left alone: the menu is still worth opening while the main action is busy.
+.bit-mnb-lod > .bit-mnb-opb {
+    cursor: default;
+}
+
+// The spinner takes the header icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-mnb-spn {
-    width: 1em;
-    height: 1em;
+    flex-shrink: 0;
     border-radius: 50%;
     box-sizing: border-box;
     border-color: $clr-brd-sec;
     border-top-color: currentColor;
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
+    width: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    height: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
     animation: bit-mnb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+.bit-mnb-ico,
+.bit-mnb-chv {
+    line-height: 1;
+    flex-shrink: 0;
+    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
 }
 
 .bit-mnb-opb,
 .bit-mnb-chb {
     display: flex;
+    min-width: 0;
     color: inherit;
-    gap: spacing(1);
     cursor: pointer;
     font-size: inherit;
     align-items: center;
@@ -71,19 +150,21 @@
     box-sizing: border-box;
     justify-content: center;
     background-color: inherit;
-    padding: var(--bit-mnb-padding);
+    -webkit-tap-highlight-color: transparent;
+    gap: var(--bit-MenuButton-gap, #{spacing(1)});
+    padding: var(--bit-MenuButton-padding, var(--bit-mnb-padding));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-mnb-clr-txt);
-            background-color: var(--bit-mnb-clr-hover);
+            color: var(--bit-MenuButton-hover-color, var(--bit-mnb-clr-txt));
+            background-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
         }
     }
 
     &:active {
-        color: var(--bit-mnb-clr-txt);
-        background-color: var(--bit-mnb-clr-active);
+        color: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
+        background-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
     }
 }
 
@@ -94,44 +175,68 @@
 }
 
 .bit-mnb-chb {
-    width: $siz-ctrl-md;
-    font-size: $siz-icon-sm;
+    flex-shrink: 0;
     color: var(--bit-mnb-clr-chb-txt);
     background-color: var(--bit-mnb-clr-chb-bg);
+    // The chevron half is a square of the control's own height, the way every icon button in the library is,
+    // so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
+    width: var(--bit-MenuButton-chevron-width, var(--bit-mnb-min-height));
+    padding: var(--bit-MenuButton-padding, var(--bit-mnb-pad-y));
 }
 
 .bit-mnb-spb {
     margin: auto 0;
+    flex-shrink: 0;
     height: spacing(2);
     width: $siz-divider;
-    background-color: var(--bit-mnb-clr-spb);
+    background-color: var(--bit-MenuButton-divider-color, var(--bit-mnb-clr-spb));
 }
 
 .bit-mnb-omn {
     --bit-mnb-clr-opb-txt: var(--bit-mnb-clr-opb-txt-nsp);
     --bit-mnb-clr-opb-bg: var(--bit-mnb-clr-opb-bg-nsp);
-    --bit-mnb-clr-chb-txt: var(--bit-mnb-clr-txt);
-    --bit-mnb-clr-chb-bg: var(--bit-mnb-clr-active);
+    --bit-mnb-clr-chb-txt: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
+    --bit-mnb-clr-chb-bg: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
 }
 
 .bit-mnb-tgl {
     .bit-mnb-opb {
-        color: var(--bit-mnb-clr-txt);
-        background-color: var(--bit-mnb-clr-active);
+        color: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
+        background-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
     }
 }
 
 .bit-mnb-nsp {
-    --bit-mnb-clr-opb-txt-nsp: var(--bit-mnb-clr-txt);
-    --bit-mnb-clr-opb-bg-nsp: var(--bit-mnb-clr-active);
+    --bit-mnb-clr-opb-txt-nsp: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
+    --bit-mnb-clr-opb-bg-nsp: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
 }
 
+// The label of either half of the button, and of an item. min-width lets it shrink below its own text so that
+// the ellipsis can ever appear - without it a long label widens the button instead of being clamped.
 .bit-mnb-btx {
+    min-width: 0;
     flex-grow: 1;
+    overflow: hidden;
     white-space: nowrap;
     display: inline-block;
     vertical-align: middle;
     text-overflow: ellipsis;
+}
+
+// The two pieces of text the button carries for a screen reader and for nobody else: the description it is
+// pointed at through aria-describedby, and the live region that announces the loading label. Both are taken
+// out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
+.bit-mnb-dsc,
+.bit-mnb-sts {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-mnb-ovl {
@@ -155,18 +260,39 @@
     display: none;
     position: fixed;
     overflow: hidden auto;
-    min-width: max-content;
     box-sizing: border-box;
     z-index: $zindex-callout;
+    font-family: $tg-font-family;
+    overscroll-behavior: contain;
     opacity: var(--bit-mnb-cal-opa);
-    box-shadow: $box-shadow-popup;
     transform: var(--bit-mnb-cal-tra);
+    // The callout is as wide as its widest item, up to the room the screen leaves - without the cap one long
+    // label would push it off the side, and with it that label is ellipsized instead. The intrinsic size is the
+    // preferred WIDTH rather than a min-width on purpose: a min-width outranks a max-width, so an intrinsic
+    // minimum here would be the one thing the cap could never hold back.
+    width: max-content;
+    min-width: var(--bit-MenuButton-callout-min-width, 0);
+    max-width: var(--bit-MenuButton-callout-max-width, calc(100vw - #{spacing(2)}));
+    max-width: var(--bit-MenuButton-callout-max-width, calc(100dvw - #{spacing(2)}));
+    box-shadow: var(--bit-MenuButton-callout-shadow, #{$box-shadow-popup});
+    font-size: var(--bit-MenuButton-font-size, var(--bit-mnb-font-size));
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
-    border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
-    background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
+    border-radius: 0 0 var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) var(--bit-MenuButton-callout-radius, #{$shp-radius-popup});
+    background-color: var(--bit-MenuButton-callout-background, var(--bit-mnb-cal-bg, #{$clr-bg-pri}));
 
+    // A callout that had to open above the button is tucked against its top edge, so the square corners are
+    // the bottom ones instead - the rounding always sits on the corners away from the button.
     &[data-bit-cal-pos="above"] {
         --bit-mnb-cal-tra-ent: translateY(#{spacing(0.5)});
+        border-radius: var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) var(--bit-MenuButton-callout-radius, #{$shp-radius-popup}) 0 0;
+    }
+
+    // Placed beside the button rather than under it (DropDirection.All with no vertical room), the callout
+    // meets it on a side the rounding does not run along, so it keeps all four corners.
+    &[data-bit-cal-pos="left"],
+    &[data-bit-cal-pos="right"] {
+        --bit-mnb-cal-tra-ent: none;
+        border-radius: var(--bit-MenuButton-callout-radius, #{$shp-radius-popup});
     }
 
     &.bit-mnb-ocl {
@@ -186,6 +312,14 @@
     }
 }
 
+// An author-set cap. The positioning code clears the callout's inline sizing on every layout pass, so the cap
+// travels as a custom property the stylesheet reads instead of as a declaration of its own, and it is declared
+// with two classes so it outranks the height the viewport-fitting pass would otherwise write.
+.bit-mnb-cal.bit-mnb-mxh {
+    max-height: min(var(--bit-MenuButton-callout-max-height), calc(100vh - #{spacing(2)}));
+    max-height: min(var(--bit-MenuButton-callout-max-height), calc(100dvh - #{spacing(2)}));
+}
+
 .bit-mnb-cul {
     margin: 0;
     padding: 0;
@@ -197,110 +331,169 @@
     list-style: none;
     height: $siz-divider;
     margin: spacing(0.5) 0;
-    background-color: $clr-brd-sec;
+    background-color: var(--bit-MenuButton-item-separator-color, #{$clr-brd-sec});
+}
+
+// A group label: a name for the run of items under it and nothing to interact with, so the keyboard
+// navigation (which only ever visits .bit-mnb-itm) steps straight over it.
+.bit-mnb-ihd {
+    list-style: none;
+    font-weight: $tg-fw-semibold;
+    font-size: max(#{$tg-fs-2xs}, 0.85em);
+    color: var(--bit-MenuButton-item-header-color, #{$clr-fg-sec});
+    padding: var(--bit-MenuButton-item-padding, var(--bit-mnb-item-padding));
 }
 
 .bit-mnb-itm {
     width: 100%;
     border: none;
     display: flex;
-    gap: spacing(1);
     cursor: pointer;
     text-align: start;
-    color: $clr-fg-pri;
     font-size: inherit;
-    padding: spacing(1);
-    min-height: $siz-item-md;
     align-items: center;
     line-height: inherit;
     box-sizing: border-box;
     text-decoration: none;
     background-color: transparent;
+    -webkit-tap-highlight-color: transparent;
+    color: var(--bit-MenuButton-item-color, #{$clr-fg-pri});
+    gap: var(--bit-MenuButton-item-gap, #{spacing(1)});
+    padding: var(--bit-MenuButton-item-padding, var(--bit-mnb-item-padding));
+    min-height: var(--bit-MenuButton-item-min-height, var(--bit-mnb-item-height));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
-    &[disabled] {
+    &[disabled],
+    &[aria-disabled="true"] {
         cursor: default;
-        color: var(--bit-mnb-clr-dis-text);
+        color: var(--bit-MenuButton-item-disabled-color, #{$clr-fg-dis});
+    }
+
+    &[disabled] {
         pointer-events: none;
     }
 
+    // The keyboard moves the focus between the items with script, so this ring is the only thing that says
+    // where the navigation is (WCAG 2.4.7). It is drawn inside the item: the callout clips what overflows it,
+    // and an outset ring would be cut off on both sides of a row that spans the full width of one.
+    &:focus-visible {
+        outline: $shp-border-width-thick $shp-border-style var(--bit-MenuButton-item-focus-color, var(--bit-mnb-clr-focus));
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+
+    // The items are neutral surfaces rather than accents: the row lights up and the label keeps the
+    // foreground it already had, so the contrast of an item never depends on the color role of the button.
     @media (hover: hover) {
-        &:hover {
-            color: var(--bit-mnb-clr-txt);
-            background-color: var(--bit-mnb-clr-hover);
+        &:hover:not([disabled]):not([aria-disabled="true"]) {
+            background-color: var(--bit-MenuButton-item-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
-    &:active {
-        color: var(--bit-mnb-clr-txt);
-        background-color: var(--bit-mnb-clr-active);
+    &:active:not([disabled]):not([aria-disabled="true"]) {
+        background-color: var(--bit-MenuButton-item-active-background, #{$clr-bg-pri-active});
     }
+}
+
+// A checked item keeps a tinted row even while the pointer is elsewhere, so the state can be read without
+// hovering every row to compare them.
+.bit-mnb-chk {
+    background-color: var(--bit-MenuButton-item-checked-background, #{$clr-bg-sec});
 }
 
 .bit-mnb-iic {
+    line-height: 1;
+    flex-shrink: 0;
     color: inherit;
+    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+}
+
+// The check column of a checkable item. It is reserved on every item of a menu that has one, so the labels of
+// the checked and the unchecked items line up with each other instead of shifting as the state changes.
+.bit-mnb-ick {
+    flex-shrink: 0;
+    line-height: 1;
+    visibility: hidden;
+    color: var(--bit-MenuButton-item-checked-color, var(--bit-mnb-clr));
+    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+    width: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+}
+
+.bit-mnb-chk > .bit-mnb-ick {
+    visibility: visible;
+}
+
+// The trailing text of an item - a keyboard shortcut, a count. It is pushed to the far end and never gives
+// up room to the label it follows.
+.bit-mnb-isc {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    padding-inline-start: spacing(2);
+    font-size: max(#{$tg-fs-2xs}, 0.85em);
+    color: var(--bit-MenuButton-item-secondary-color, #{$clr-fg-sec});
 }
 
 .bit-mnb-fil {
-    color: var(--bit-mnb-clr-txt);
-    border-color: var(--bit-mnb-clr);
-    background-color: var(--bit-mnb-clr);
-    --bit-mnb-clr-spb: var(--bit-mnb-clr-txt);
+    color: var(--bit-MenuButton-color, var(--bit-mnb-clr-txt));
+    border-color: var(--bit-MenuButton-border-color, var(--bit-MenuButton-background, var(--bit-mnb-clr)));
+    background-color: var(--bit-MenuButton-background, var(--bit-mnb-clr));
+    --bit-mnb-clr-spb: var(--bit-MenuButton-color, var(--bit-mnb-clr-txt));
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-mnb-clr-hover);
+            border-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
         }
     }
 
     &:active {
-        border-color: var(--bit-mnb-clr-active);
+        border-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
     }
 
     &.bit-dis {
-        color: var(--bit-mnb-clr-dis-text);
-        border-color: var(--bit-mnb-clr-dis);
-        background-color: var(--bit-mnb-clr-dis);
+        color: var(--bit-mnb-dis-clr);
+        border-color: var(--bit-MenuButton-disabled-border-color, var(--bit-MenuButton-disabled-background, var(--bit-mnb-clr-dis)));
+        background-color: var(--bit-MenuButton-disabled-background, var(--bit-mnb-clr-dis));
     }
 }
 
 .bit-mnb-otl {
-    color: var(--bit-mnb-clr);
-    border-color: var(--bit-mnb-clr);
-    background-color: transparent;
-    --bit-mnb-clr-spb: var(--bit-mnb-clr);
+    color: var(--bit-MenuButton-color, var(--bit-mnb-clr));
+    border-color: var(--bit-MenuButton-border-color, var(--bit-mnb-clr));
+    background-color: var(--bit-MenuButton-background, transparent);
+    --bit-mnb-clr-spb: var(--bit-MenuButton-border-color, var(--bit-mnb-clr));
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-mnb-clr-hover);
+            border-color: var(--bit-MenuButton-hover-background, var(--bit-mnb-clr-hover));
         }
     }
 
     &:active {
-        border-color: var(--bit-mnb-clr-active);
+        border-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
     }
 
     &.bit-dis {
-        color: var(--bit-mnb-clr-dis-text);
-        border-color: var(--bit-mnb-clr-dis);
-        background-color: transparent;
+        color: var(--bit-mnb-dis-clr);
+        border-color: var(--bit-MenuButton-disabled-border-color, var(--bit-mnb-clr-dis));
+        background-color: var(--bit-MenuButton-disabled-background, transparent);
     }
 }
 
 .bit-mnb-txt {
-    color: var(--bit-mnb-clr);
-    border-color: transparent;
-    background-color: transparent;
-    --bit-mnb-clr-spb: var(--bit-mnb-clr);
+    color: var(--bit-MenuButton-color, var(--bit-mnb-clr));
+    border-color: var(--bit-MenuButton-border-color, transparent);
+    background-color: var(--bit-MenuButton-background, transparent);
+    --bit-mnb-clr-spb: var(--bit-MenuButton-divider-color, var(--bit-mnb-clr));
 
     &.bit-dis {
-        color: var(--bit-mnb-clr-dis-text);
-        border-color: transparent;
-        background-color: transparent;
+        color: var(--bit-mnb-dis-clr);
+        border-color: var(--bit-MenuButton-disabled-border-color, transparent);
+        background-color: var(--bit-MenuButton-disabled-background, transparent);
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They are
+// rendered on the callout as well as on the root, which is a sibling of it rather than an ancestor: the focus
+// ring of an item and the glyph of a checked one are what follows the color the menu button was given inside it.
 @each $role, $tokens in $bit-color-roles {
     .bit-mnb-#{$role} {
         --bit-mnb-clr: #{role($tokens, main)};
@@ -314,21 +507,37 @@
 }
 
 
-// The x padding sits one ramp step below the standalone button's (a split button is a compact
-// control), so the token still drives it and a preset that widens the ramp widens these too.
+// The x padding sits one ramp step below the standalone button's (a split button is a compact control), so the
+// token still drives it and a preset that widens the ramp widens these too. The size class is rendered on the
+// callout as well as on the root, so the same block is also what sizes the items.
 .bit-mnb-sm {
-    font-size: $tg-fs-xs;
+    --bit-mnb-font-size: #{$tg-fs-xs};
+    --bit-mnb-min-height: #{$siz-ctrl-sm};
+    --bit-mnb-icon-size: #{$siz-icon-sm};
+    --bit-mnb-item-height: #{$siz-item-sm};
+    --bit-mnb-pad-y: #{$siz-ctrl-pad-y-sm};
     --bit-mnb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
+    --bit-mnb-item-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-mnb-md {
-    font-size: $tg-fs-sm;
+    --bit-mnb-font-size: #{$tg-fs-sm};
+    --bit-mnb-min-height: #{$siz-ctrl-md};
+    --bit-mnb-icon-size: #{$siz-icon-md};
+    --bit-mnb-item-height: #{$siz-item-md};
+    --bit-mnb-pad-y: #{$siz-ctrl-pad-y-md};
     --bit-mnb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
+    --bit-mnb-item-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-mnb-lg {
-    font-size: $tg-fs-md;
+    --bit-mnb-font-size: #{$tg-fs-md};
+    --bit-mnb-min-height: #{$siz-ctrl-lg};
+    --bit-mnb-icon-size: #{$siz-icon-lg};
+    --bit-mnb-item-height: #{$siz-item-lg};
+    --bit-mnb-pad-y: #{$siz-ctrl-pad-y-lg};
     --bit-mnb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
+    --bit-mnb-item-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
 }
 
 
@@ -346,4 +555,76 @@
 
 .bit-mnb-brg {
     --bit-mnb-cal-bg: transparent;
+}
+
+
+// Windows High Contrast / forced-colors: the palette is reduced to the system pair, so the backgrounds that
+// carry the hovered, the pressed, the open and the checked states are all stripped, and the spinner's track
+// and arc would be painted the same color and stop reading as motion. Each is re-established in system colors.
+@media (forced-colors: active) {
+    .bit-mnb {
+        border-color: CanvasText;
+
+        &.bit-dis {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+
+    .bit-mnb-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
+
+    .bit-mnb-spb,
+    .bit-mnb-isp {
+        background-color: CanvasText;
+    }
+
+    .bit-mnb-cal {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // A state carried by a background alone would be invisible here, so the forced pair is asked for
+    // explicitly - which is what lets the hovered, the pressed, the open and the checked states keep showing.
+    .bit-mnb-opb,
+    .bit-mnb-chb,
+    .bit-mnb-itm {
+        forced-color-adjust: none;
+        color: CanvasText;
+        background-color: Canvas;
+
+        @media (hover: hover) {
+            &:hover {
+                color: HighlightText;
+                background-color: Highlight;
+            }
+        }
+    }
+
+    .bit-mnb-omn .bit-mnb-chb,
+    .bit-mnb-tgl .bit-mnb-opb,
+    .bit-mnb-itm.bit-mnb-chk {
+        color: HighlightText;
+        background-color: Highlight;
+    }
+
+    .bit-mnb-itm[disabled],
+    .bit-mnb-itm[aria-disabled="true"] {
+        color: GrayText;
+        background-color: Canvas;
+    }
+
+    // The glyph keeps a role color of its own, which the forced pair of the row it sits on does not include.
+    .bit-mnb-ick {
+        color: currentColor;
+    }
+
+    .bit-mnb.bit-dis {
+        .bit-mnb-opb,
+        .bit-mnb-chb {
+            color: GrayText;
+            background-color: Canvas;
+        }
+    }
 }

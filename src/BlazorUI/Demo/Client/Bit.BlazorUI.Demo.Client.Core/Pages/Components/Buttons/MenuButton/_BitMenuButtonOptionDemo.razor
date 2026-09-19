@@ -154,8 +154,8 @@
 
 <DemoExample Title="Icons" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        Customize the icons of the menu button: IconName sets the header icon, ChevronDownIconName replaces the default
-        chevron icon, and each option can render its own icon next to its text.
+        IconName sets the header icon, ChevronDownIconName replaces the chevron, and each option carries its own icon.
+        NoIcon drops the header icon, including the icon of the selected option in Sticky mode.
     </div>
     <br />
     <div class="example-content">
@@ -172,10 +172,28 @@
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
         </BitMenuButton>
     </div>
+    <br /><br />
+    <div>NoIcon:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="No icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit" NoIcon>
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitMenuButton Sticky TItem="BitMenuButtonOption" NoIcon>
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+    </div>
 </DemoExample>
 
-<DemoExample Title="Background" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
-    <div>Use the Background parameter to control the background color of the callout using BitColorKind values.</div>
+<DemoExample Title="Callout" RazorCode="@example6RazorCode" Id="example6" PreventRenderForMcpClient>
+    <div>
+        Background picks the callout surface from the BitColorKind kinds. MaxHeight caps the list and scrolls the rest;
+        without one the callout is still capped to the room the viewport leaves, so a long menu never runs off screen.
+    </div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="Primary" TItem="BitMenuButtonOption" Background="BitColorKind.Primary">
@@ -197,6 +215,18 @@
             <BitMenuButtonOption Text="Option A" Key="A" />
             <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br /><br />
+    <div>MaxHeight:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Scrolling menu" TItem="BitMenuButtonOption" MaxHeight="10rem">
+            @for (var i = 1; i <= 20; i++)
+            {
+                var index = i;
+                <BitMenuButtonOption Text="@($"Option {index}")" Key="@index.ToString()" />
+            }
         </BitMenuButton>
     </div>
 </DemoExample>
@@ -248,37 +278,33 @@
     </BitMenuButton>
 </DemoExample>
 
-<DemoExample Title="NoIcon" RazorCode="@example8RazorCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="Checkable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
+             PreventRenderForMcpClient>
     <div>
-        Use the NoIcon parameter to hide the header icon of the menu button, including the selected option's icon in
-        Sticky mode.
+        A Checkable option carries its IsChecked state as a check mark and flips it when clicked, announced to screen
+        readers as a checkbox inside the menu; IsChecked supports two-way binding. Pair it with
+        CloseOnItemClick="false" so that several options can be toggled without reopening the menu, and use
+        CheckIconName to replace the check mark.
     </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="With icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit">
-            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        <BitMenuButton Text="Columns" TItem="BitMenuButtonOption" CloseOnItemClick="false"
+                       IconName="@BitIconName.ColumnVerticalSection">
+            <BitMenuButtonOption Text="Name" Key="name" Checkable @bind-IsChecked="optionShowName" />
+            <BitMenuButtonOption Text="Status" Key="status" Checkable @bind-IsChecked="optionShowStatus" />
+            <BitMenuButtonOption Text="Owner" Key="owner" Checkable @bind-IsChecked="optionShowOwner" />
+            <BitMenuButtonOption Text="Reset to defaults" Key="reset" IconName="@BitIconName.Refresh"
+                                 OnClick="_ => ResetColumns()" />
         </BitMenuButton>
-        <BitMenuButton Text="No icon" TItem="BitMenuButtonOption" IconName="@BitIconName.Edit" NoIcon>
-            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+
+        <BitMenuButton Text="Closes on click" TItem="BitMenuButtonOption" Variant="BitVariant.Outline"
+                       CheckIconName="@BitIconName.CheckboxCompositeReversed">
+            <BitMenuButtonOption Text="Wrap lines" Key="wrap" Checkable IsChecked="true" />
+            <BitMenuButtonOption Text="Show whitespace" Key="whitespace" Checkable />
         </BitMenuButton>
     </div>
     <br />
-    <div class="example-content">
-        <BitMenuButton Sticky TItem="BitMenuButtonOption">
-            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-        </BitMenuButton>
-        <BitMenuButton Sticky TItem="BitMenuButtonOption" NoIcon>
-            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
-            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
-        </BitMenuButton>
-    </div>
+    <div>Visible columns: @VisibleColumns</div>
 </DemoExample>
 
 <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9" PreventRenderForMcpClient>
@@ -453,30 +479,36 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Separators" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
+<DemoExample Title="Grouping" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
     <div>
-        Use the IsSeparator parameter of the options to group related options using separator lines.
+        IsSeparator draws a divider between two runs of options, IsHeader labels the run that follows it, and
+        SecondaryText adds trailing text - a keyboard shortcut, a count - read after the label of the option.
+        Separators and headers are presentational, so the arrow keys step over them.
     </div>
     <br />
     <div class="example-content">
         <BitMenuButton Text="File" TItem="BitMenuButtonOption" IconName="@BitIconName.OpenFile">
-            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" />
-            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" />
+            <BitMenuButtonOption Text="Document" IsHeader />
+            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" SecondaryText="Ctrl+N" />
+            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" SecondaryText="Ctrl+O" />
             <BitMenuButtonOption IsSeparator />
-            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" />
+            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" SecondaryText="Ctrl+S" />
             <BitMenuButtonOption Text="Save as" Key="save-as" IconName="@BitIconName.SaveAs" />
             <BitMenuButtonOption IsSeparator />
-            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" />
+            <BitMenuButtonOption Text="Danger zone" IsHeader />
+            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" SecondaryText="Del" />
         </BitMenuButton>
 
         <BitMenuButton Split Sticky TItem="BitMenuButtonOption">
-            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" />
-            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" />
+            <BitMenuButtonOption Text="Document" IsHeader />
+            <BitMenuButtonOption Text="New" Key="new" IconName="@BitIconName.Add" SecondaryText="Ctrl+N" />
+            <BitMenuButtonOption Text="Open" Key="open" IconName="@BitIconName.OpenFile" SecondaryText="Ctrl+O" />
             <BitMenuButtonOption IsSeparator />
-            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" />
+            <BitMenuButtonOption Text="Save" Key="save" IconName="@BitIconName.Save" SecondaryText="Ctrl+S" />
             <BitMenuButtonOption Text="Save as" Key="save-as" IconName="@BitIconName.SaveAs" />
             <BitMenuButtonOption IsSeparator />
-            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" />
+            <BitMenuButtonOption Text="Danger zone" IsHeader />
+            <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete" SecondaryText="Del" />
         </BitMenuButton>
     </div>
 </DemoExample>
@@ -521,13 +553,14 @@
 <DemoExample Title="Loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15"
              PreventRenderForMcpClient>
     <div>
-        Use the IsLoading parameter to show a spinner in the header button while a long running operation is in
-        progress.
-        In Split mode, the chevron button still opens the callout during the loading state.
+        IsLoading replaces the header icon with a spinner and ignores the click of the header button; in Split mode the
+        chevron still opens the menu. LoadingLabel replaces the text beside the spinner and is announced by screen
+        readers through a status live region, which is what tells a user who cannot see the spinner that it started.
     </div>
     <br />
     <div class="example-content">
         <BitMenuButton Split Text="Save" IconName="@BitIconName.Save" IsLoading="optionAutoIsLoading"
+                       LoadingLabel="Saving..."
                        OnClick="(BitMenuButtonOption option) => HandleOnLoadingClick()" TItem="BitMenuButtonOption">
             <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
             <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
@@ -543,22 +576,37 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Title" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Accessibility" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
     <div>
-        Use the Title parameter to show a tooltip on hover over the header button.
-        In Split mode, the ChevronDownAriaLabel parameter provides an accessible name for the chevron button for the
-        benefit of screen readers.
+        Title and ChevronDownTitle are the tooltips of the two halves. AriaLabel names an icon-only header and
+        ChevronDownAriaLabel the chevron, which already defaults to <b>More options</b>. AriaDescription is read after
+        the name, the AriaLabel of an option replaces its own label, and DisabledInteractive keeps the disabled options
+        reachable by the arrow keys so they are announced as unavailable instead of silently skipped.
     </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="Hover over me" Title="The menu button tooltip" TItem="BitMenuButtonOption">
+        <BitMenuButton Text="Hover over me" Title="The menu button tooltip" TItem="BitMenuButtonOption"
+                       AriaDescription="Opens a menu of three commands.">
             <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
             <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
         </BitMenuButton>
 
-        <BitMenuButton Split Text="Split" Title="The main button tooltip" ChevronDownAriaLabel="Open the menu"
+        <BitMenuButton Split Text="Save" Title="Save the document" ChevronDownTitle="More save options"
+                       ChevronDownAriaLabel="More save options" TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+
+        <BitMenuButton AriaLabel="More actions" IconName="@BitIconName.More" Variant="BitVariant.Text"
                        TItem="BitMenuButtonOption">
+            <BitMenuButtonOption Key="share" IconName="@BitIconName.Share" AriaLabel="Share this page" />
+            <BitMenuButtonOption Key="print" IconName="@BitIconName.Print" AriaLabel="Print this page" />
+        </BitMenuButton>
+
+        <BitMenuButton Text="Disabled options" TItem="BitMenuButtonOption" DisabledInteractive
+                       Variant="BitVariant.Outline">
             <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
             <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
@@ -2210,8 +2258,9 @@
 <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
-        Style and Class of each option, and the Styles and Classes parameters targeting the internal parts of the
-        component.
+        Style and Class of each option, the Styles and Classes parameters targeting the internal parts of the
+        component, and the public CSS variables - set on the Style for the button and on Styles.Callout for the menu,
+        which is rendered outside the root element.
     </div>
     <br />
     <div><b>Component's Style & Class</b>:</div>
@@ -2279,6 +2328,24 @@
             <BitMenuButtonOption Text="Option C" Key="C" />
         </BitMenuButton>
     </div>
+
+    <br /><br /><br />
+    <div><b>CSS variables</b>:</div>
+    <br />
+    <BitMenuButton Text="Branded" IconName="@BitIconName.Brush" TItem="BitMenuButtonOption"
+                   Style="--bit-MenuButton-background: #6d28d9;
+                          --bit-MenuButton-hover-background: #5b21b6;
+                          --bit-MenuButton-active-background: #4c1d95;
+                          --bit-MenuButton-radius: 2rem;
+                          --bit-MenuButton-padding: 0.5rem 1.25rem;"
+                   Styles="@(new() { Callout = "--bit-MenuButton-callout-radius: 0.75rem;" +
+                                               "--bit-MenuButton-item-min-height: 2.5rem;" +
+                                               "--bit-MenuButton-item-hover-background: #ede9fe;" +
+                                               "--bit-MenuButton-item-focus-color: #6d28d9;" })">
+        <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+        <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
+        <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+    </BitMenuButton>
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>

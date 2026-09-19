@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -65,16 +65,41 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Delete", Icon = BitIconInfo.Fa("solid trash") }
     ];
 
-    private static List<BitMenuButtonItem> separatorItems =
+    private static List<BitMenuButtonItem> groupedItems =
     [
-        new() { Text = "New", Key = "new", IconName = BitIconName.Add },
-        new() { Text = "Open", Key = "open", IconName = BitIconName.OpenFile },
+        new() { Text = "Document", IsHeader = true },
+        new() { Text = "New", Key = "new", IconName = BitIconName.Add, SecondaryText = "Ctrl+N" },
+        new() { Text = "Open", Key = "open", IconName = BitIconName.OpenFile, SecondaryText = "Ctrl+O" },
         new() { IsSeparator = true },
-        new() { Text = "Save", Key = "save", IconName = BitIconName.Save },
+        new() { Text = "Save", Key = "save", IconName = BitIconName.Save, SecondaryText = "Ctrl+S" },
         new() { Text = "Save as", Key = "save-as", IconName = BitIconName.SaveAs },
         new() { IsSeparator = true },
-        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete }
+        new() { Text = "Danger zone", IsHeader = true },
+        new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete, SecondaryText = "Del" }
     ];
+
+    private static List<BitMenuButtonItem> checkableItems =
+    [
+        new() { Text = "Name", Key = "name", Checkable = true, IsChecked = true },
+        new() { Text = "Status", Key = "status", Checkable = true, IsChecked = true },
+        new() { Text = "Owner", Key = "owner", Checkable = true },
+        new() { Text = "Reset to defaults", Key = "reset", IconName = BitIconName.Refresh }
+    ];
+
+    private static List<BitMenuButtonItem> checkableItems2 =
+    [
+        new() { Text = "Wrap lines", Key = "wrap", Checkable = true, IsChecked = true },
+        new() { Text = "Show whitespace", Key = "whitespace", Checkable = true }
+    ];
+
+    private static List<BitMenuButtonItem> ariaLabelItems =
+    [
+        new() { Key = "share", IconName = BitIconName.Share, AriaLabel = "Share this page" },
+        new() { Key = "print", IconName = BitIconName.Print, AriaLabel = "Print this page" }
+    ];
+
+    private static List<BitMenuButtonItem> longItems =
+        Enumerable.Range(1, 20).Select(i => new BitMenuButtonItem { Text = $"Item {i}", Key = i.ToString() }).ToList();
 
     private static List<BitMenuButtonItem> linkItems =
     [
@@ -108,6 +133,13 @@ public partial class _BitMenuButtonItemDemo
         };
 
         basicItemsOnClick.ForEach(i => i.OnClick = onClick);
+
+        checkableItems[^1].OnClick = _ =>
+        {
+            checkableItems[0].IsChecked = true;
+            checkableItems[1].IsChecked = true;
+            checkableItems[2].IsChecked = false;
+        };
     }
 
     private async Task HandleOnLoadingClick()

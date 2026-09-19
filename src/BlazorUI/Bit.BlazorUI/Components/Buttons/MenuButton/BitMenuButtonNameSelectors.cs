@@ -1,7 +1,17 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitMenuButtonNameSelectors<TItem>
 {
+    /// <summary>
+    /// AriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitMenuButtonItem.AriaLabel));
+
+    /// <summary>
+    /// Checkable field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> Checkable { get; set; } = new(nameof(BitMenuButtonItem.Checkable));
+
     /// <summary>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
@@ -23,9 +33,20 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> IconName { get; set; } = new(nameof(BitMenuButtonItem.IconName));
 
     /// <summary>
+    /// IsChecked field name and selector of the custom input class. The menu button writes the new state back
+    /// to the named property as a check item is clicked, so a selector alone leaves the toggling to the page.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsChecked { get; set; } = new(nameof(BitMenuButtonItem.IsChecked));
+
+    /// <summary>
     /// IsEnabled field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, bool> IsEnabled { get; set; } = new(nameof(BitMenuButtonItem.IsEnabled));
+
+    /// <summary>
+    /// IsHeader field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, bool> IsHeader { get; set; } = new(nameof(BitMenuButtonItem.IsHeader));
 
     /// <summary>
     /// IsSelected field name and selector of the custom input class.
@@ -46,6 +67,11 @@ public class BitMenuButtonNameSelectors<TItem>
     /// OnClick field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, Action<TItem>?> OnClick { get; set; } = new(nameof(BitMenuButtonItem.OnClick));
+
+    /// <summary>
+    /// SecondaryText field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> SecondaryText { get; set; } = new(nameof(BitMenuButtonItem.SecondaryText));
 
     /// <summary>
     /// The CSS Style field name and selector of the custom input class.

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitMenuButtonClassStyles
 {
@@ -76,6 +76,21 @@ public class BitMenuButtonClassStyles
     /// Custom CSS classes/styles for each item icon of the BitMenuButton.
     /// </summary>
     public string? ItemIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the check mark icon of each checkable item of the BitMenuButton.
+    /// </summary>
+    public string? ItemCheckIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each group header item of the BitMenuButton.
+    /// </summary>
+    public string? ItemHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the secondary text of each item of the BitMenuButton.
+    /// </summary>
+    public string? ItemSecondaryText { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each item separator of the BitMenuButton.

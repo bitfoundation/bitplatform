@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// A menu button combines a button with a callout menu of related actions or links.
-/// It supports split and sticky modes, toggle behavior, separator and link items, a loading state,
-/// and full keyboard navigation with proper ARIA menu semantics.
+/// It supports split and sticky modes, toggle behavior, checkable items, group headers, separators,
+/// links, keyboard shortcuts, a loading state, and full keyboard navigation with proper ARIA menu semantics.
 /// </summary>
 public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
@@ -33,8 +33,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
-    /// Detailed description of the menu button for the benefit of screen readers.
+    /// Detailed description of the menu button for the benefit of screen readers (rendered into
+    /// <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -54,7 +60,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
     /// <summary>
+    /// The icon of the check mark shown on a checked item, using custom CSS classes for external icon libraries.
+    /// Takes precedence over <see cref="CheckIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? CheckIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the check mark shown on a checked item.
+    /// </summary>
+    [Parameter] public string? CheckIconName { get; set; }
+
+    /// <summary>
     /// The aria-label of the chevron down button of the split menu button for the benefit of screen readers.
+    /// Defaults to <c>More options</c>: the chevron carries no text of its own, so without a name it reaches
+    /// a screen reader as an unlabelled button.
     /// </summary>
     [Parameter] public string? ChevronDownAriaLabel { get; set; }
 
@@ -69,6 +88,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? ChevronDownIconName { get; set; }
 
     /// <summary>
+    /// The tooltip to show when the mouse is placed on the chevron down button of the split menu button.
+    /// </summary>
+    [Parameter] public string? ChevronDownTitle { get; set; }
+
+    /// <summary>
     /// The content of the menu button, that are BitMenuButtonOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -77,6 +101,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Custom CSS classes for different parts of the menu button.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Closes the callout when an item is clicked, which is what a menu of one-off commands wants.
+    /// </summary>
+    /// <remarks>
+    /// Turn it off for a menu the user works inside of - a set of checkable items such as a column picker -
+    /// so that several items can be toggled without reopening the menu between them.
+    /// </remarks>
+    [Parameter] public bool CloseOnItemClick { get; set; } = true;
 
     /// <summary>
     /// The general color of the menu button.
@@ -93,6 +126,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Default value of the SelectedItem.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// Keeps a disabled menu button, and the disabled items of any menu button, focusable: the disabled state is
+    /// conveyed with the <c>aria-disabled</c> attribute instead of the native <c>disabled</c> one, so the button
+    /// stays in the tab order, the arrow keys still reach the items, and a screen reader announces both that they
+    /// exist and that they are unavailable. Their actions stay suppressed either way.
+    /// </summary>
+    [Parameter] public bool DisabledInteractive { get; set; }
 
     /// <summary>
     /// Determines the allowed drop directions of the callout.
@@ -132,9 +173,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// Determines whether the menu button is in the loading state.
-    /// It replaces the default icon of the header button with a spinner and disables its click.
+    /// It replaces the default icon of the header button with a spinner and ignores its click.
+    /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
     /// </summary>
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool IsLoading { get; set; }
 
     /// <summary>
     /// Determines the opening state of the callout.
@@ -159,6 +202,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The custom template content to render each item.
     /// </summary>
     [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// The text to show beside the spinner while the menu button is in the loading state, replacing the text of
+    /// the header button. It is also announced by screen readers through a status live region when the loading
+    /// state starts, which is what tells a user who cannot see the spinner that the operation is running.
+    /// </summary>
+    [Parameter] public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// The tallest the callout grows before its items start to scroll, as a CSS length (e.g. <c>12rem</c>).
+    /// Without one the callout is capped to the room the viewport leaves below or above the button.
+    /// </summary>
+    [Parameter] public string? MaxHeight { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -264,7 +320,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
             if (SelectedItem is null)
             {
-                _ = AssignSelectedItem(_items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false));
+                _ = AssignSelectedItem(_items.FirstOrDefault(IsSelectable));
             }
         }
 
@@ -319,6 +375,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         });
 
         ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading ? "bit-mnb-lod" : string.Empty);
 
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
@@ -387,7 +445,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
         else
         {
-            item = _items.FirstOrDefault(i => GetIsEnabled(i) && GetIsSeparator(i) is false);
+            item = _items.FirstOrDefault(IsSelectable);
             await AssignSelectedItem(item);
         }
     }
@@ -419,6 +477,144 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     }
 
 
+
+    // Whether any item of the menu is checkable, which is what decides that every item reserves the check
+    // column: the labels of the checked and the unchecked rows have to line up with each other, and a column
+    // that appears only on the checked ones would shift the label of a row as its state changes. It is read
+    // once per item render rather than cached, since an option is free to turn Checkable on at any time.
+    internal bool ShowCheckColumn => _items.Exists(GetCheckable);
+
+    // The items a sticky menu button can promote to its header: the ones that are commands in their own right,
+    // which leaves out the separators and the group labels that only structure the list around them.
+    private bool IsSelectable(TItem item)
+    {
+        return GetIsEnabled(item) && GetIsSeparator(item) is false && GetIsHeader(item) is false;
+    }
+
+    internal string? GetCheckIconCss()
+    {
+        return BitIconInfo.From(CheckIcon, CheckIconName ?? "Accept")?.GetCssClasses();
+    }
+
+    internal string? GetAriaLabel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.AriaLabel;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
+    internal bool GetCheckable(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Checkable;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Checkable;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.Checkable.Selector is not null)
+        {
+            return NameSelectors.Checkable.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.Checkable.Name, false);
+    }
+
+    internal bool GetIsChecked(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsChecked;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsChecked;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsChecked.Selector is not null)
+        {
+            return NameSelectors.IsChecked.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsChecked.Name, false);
+    }
+
+    internal bool GetIsHeader(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.IsHeader;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.IsHeader;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.IsHeader.Selector is not null)
+        {
+            return NameSelectors.IsHeader.Selector!(item);
+        }
+
+        return item.GetValueFromProperty(NameSelectors.IsHeader.Name, false);
+    }
+
+    internal string? GetSecondaryText(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.SecondaryText;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.SecondaryText;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SecondaryText.Selector is not null)
+        {
+            return NameSelectors.SecondaryText.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.SecondaryText.Name);
+    }
 
     internal string? GetClass(TItem? item)
     {
@@ -727,6 +923,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (Split is false)
         {
+            // The trigger of a plain menu button toggles its menu. With the pointer the overlay takes the
+            // click that would close it, but from the keyboard the trigger keeps the focus after it was
+            // opened, so Enter and Space arrive here with the menu already open - and have to close it.
+            if (IsOpen)
+            {
+                _focusFirstItemOnOpen = false;
+                await CloseCallout();
+                StateHasChanged();
+                return;
+            }
+
             await OpenCallout();
         }
 
@@ -755,7 +962,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
-        await CloseCallout();
+        // A checkable item's state changes on activation, so it is flipped before anything is told about the
+        // click: a handler that reads the item back sees the state its own click produced.
+        if (GetCheckable(item))
+        {
+            await SetIsChecked(item, GetIsChecked(item) is false);
+        }
+
+        if (CloseOnItemClick)
+        {
+            await CloseCallout();
+        }
 
         // CloseCallout changes IsOpen but does not re-render the root itself, so refresh now to update
         // the open-state classes even when the Sticky branch below returns early.
@@ -778,8 +995,30 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         // classes) needs an explicit re-render here.
         StateHasChanged();
 
-        // The focused item is hidden along with the callout, so return the focus to the trigger button.
-        await FocusTrigger();
+        // The focused item is hidden along with the callout, so return the focus to the trigger button. A menu
+        // that stays open keeps the focus where the user left it, which is what lets the next arrow key
+        // continue from the item just toggled instead of starting over.
+        if (CloseOnItemClick)
+        {
+            await FocusTrigger();
+        }
+    }
+
+    private async Task SetIsChecked(TItem item, bool value)
+    {
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            menuButtonItem.IsChecked = value;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            await menuButtonOption.SetIsChecked(value);
+        }
+
+        if (NameSelectors is null) return;
+
+        item.SetValueToProperty(NameSelectors.IsChecked.Name, value);
     }
 
     private async Task InvokeItemClick(TItem item)
@@ -821,6 +1060,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
 
         if (opener is false) return;
+
+        // The header of a plain menu button is the only way into the menu, and the loading state is what takes
+        // its click away - so it takes the keys that stand in for that click with it, rather than leaving the
+        // keyboard a way past a guard the pointer answers to.
+        if (Split is false && IsLoading) return;
 
         if (e.Key is "ArrowDown" or "ArrowUp")
         {
@@ -871,7 +1115,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private ValueTask FocusItem(string mode, string? character = null)
     {
-        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character);
+        // A disabled item is normally stepped over, but DisabledInteractive is the page asking for it to be
+        // reachable - which is the whole point of keeping it focusable rather than natively disabled.
+        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character, DisabledInteractive);
     }
 
     private async Task FocusTrigger()
@@ -892,7 +1138,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// </summary>
     private async Task<bool> OpenCallout()
     {
-        if (IsLoading) return false;
+        // The loading state belongs to the header button alone: in split mode the chevron still opens the menu,
+        // so the operation running under the main half never takes the rest of the commands away with it.
+        if (IsEnabled is false) return false;
 
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
@@ -931,7 +1179,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             responsiveMode: BitResponsiveMode.None,
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
-            scrollContainerId: "",
+            // With nothing else named as the scrollable part, the callout itself takes that role, so that a menu
+            // taller than the screen scrolls inside the callout instead of running off the bottom of it - where a
+            // fixed-positioned element leaves it out of reach of the page's own scrolling. An author-set MaxHeight
+            // is a cap of its own (a CSS custom property the stylesheet reads), so the fitting pass steps aside.
+            scrollContainerId: MaxHeight.HasValue() ? "" : _calloutId,
             scrollOffset: 0,
             headerId: "",
             footerId: "",
@@ -971,12 +1223,33 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private string? GetCalloutCss()
     {
-        var openClass = IsOpen ? "bit-mnb-ocl" : null;
+        List<string> classes = [];
+
+        if (IsOpen)
+        {
+            classes.Add("bit-mnb-ocl");
+        }
 
         // While open the callout is reparented to the body, which takes it out of the subtree that
         // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
         // itself for its opening animation to opt out of reduced motion.
-        var famClass = ForceAnimation ? "bit-fam" : null;
+        if (ForceAnimation)
+        {
+            classes.Add("bit-fam");
+        }
+
+        if (MaxHeight.HasValue())
+        {
+            classes.Add("bit-mnb-mxh");
+        }
+
+        // The callout is rendered outside the root element - and moved to the body while it is open - so it is
+        // a sibling of the root rather than a descendant of it, and nothing the root declares reaches it. The
+        // two classes that carry what the items need are repeated here: the size class sizes their text, their
+        // height and their padding, and the color class paints the focus ring of the focused one and the glyph
+        // of a checked one in the color the menu button was given.
+        classes.Add(BitCssClasses.Color(Color, "bit-mnb"));
+        classes.Add(BitCssClasses.Size(Size ?? BitSize.Medium, "bit-mnb"));
 
         var bgClass = Background switch
         {
@@ -986,7 +1259,23 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             BitColorKind.Transparent => "bit-mnb-brg",
             _ => null
         };
-        var result = $"{openClass} {famClass} {bgClass}".Trim();
+
+        if (bgClass is not null)
+        {
+            classes.Add(bgClass);
+        }
+
+        var result = string.Join(' ', classes).Trim();
+        return result.HasValue() ? result : null;
+    }
+
+    private string? GetCalloutStyle()
+    {
+        // The positioning code clears the callout's inline sizing on every layout pass, so the cap travels as a
+        // custom property the stylesheet reads instead of as a max-height of its own.
+        var maxHeight = MaxHeight.HasValue() ? $"--bit-MenuButton-callout-max-height:{MaxHeight};" : null;
+
+        var result = $"{maxHeight}{Styles?.Callout}";
         return result.HasValue() ? result : null;
     }
 

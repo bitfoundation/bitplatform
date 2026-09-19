@@ -69,7 +69,10 @@ private List<BitMenuButtonItem> basicItems =
 
     private readonly string example5RazorCode = @"
 <BitMenuButton Text=""IconName"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" />
-<BitMenuButton Text=""ChevronDownIconName"" Items=""basicItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
+<BitMenuButton Text=""ChevronDownIconName"" Items=""basicItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />
+
+<BitMenuButton Text=""No icon"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" NoIcon />
+<BitMenuButton Sticky Items=""basicItemsIcon"" NoIcon />";
 
     private readonly string example5CsharpCode = @"
 private List<BitMenuButtonItem> basicItemsIcon =
@@ -83,7 +86,9 @@ private List<BitMenuButtonItem> basicItemsIcon =
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Background=""BitColorKind.Primary"" />
 <BitMenuButton Text=""Secondary"" Items=""basicItems"" Background=""BitColorKind.Secondary"" />
 <BitMenuButton Text=""Tertiary"" Items=""basicItems"" Background=""BitColorKind.Tertiary"" />
-<BitMenuButton Text=""Transparent"" Items=""basicItems"" Background=""BitColorKind.Transparent"" />";
+<BitMenuButton Text=""Transparent"" Items=""basicItems"" Background=""BitColorKind.Transparent"" />
+
+<BitMenuButton Text=""Scrolling menu"" Items=""longItems"" MaxHeight=""10rem"" />";
 
     private readonly string example6CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
@@ -91,7 +96,10 @@ private List<BitMenuButtonItem> basicItems =
     new() { Text = ""Item A"", Key = ""A"" },
     new() { Text = ""Item B"", Key = ""B"", IsEnabled = false },
     new() { Text = ""Item C"", Key = ""C"" }
-];";
+];
+
+private List<BitMenuButtonItem> longItems =
+    Enumerable.Range(1, 20).Select(i => new BitMenuButtonItem { Text = $""Item {i}"", Key = i.ToString() }).ToList();";
 
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" Items=""basicItems"" Split Toggle />
@@ -116,19 +124,38 @@ private List<BitMenuButtonItem> basicItems =
 ];";
 
     private readonly string example8RazorCode = @"
-<BitMenuButton Text=""With icon"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" />
-<BitMenuButton Text=""No icon"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" NoIcon />
+<BitMenuButton Text=""Columns"" Items=""checkableItems"" IconName=""@BitIconName.ColumnVerticalSection""
+               CloseOnItemClick=""false"" OnClick=""(BitMenuButtonItem _) => StateHasChanged()"" />
 
-<BitMenuButton Sticky Items=""basicItemsIcon"" />
-<BitMenuButton Sticky Items=""basicItemsIcon"" NoIcon />";
+<BitMenuButton Text=""Closes on click"" Items=""checkableItems2"" Variant=""BitVariant.Outline""
+               CheckIconName=""@BitIconName.CheckboxCompositeReversed"" />
+
+<div>Visible columns: @string.Join("", "", checkableItems.Where(i => i.IsChecked).Select(i => i.Text))</div>";
 
     private readonly string example8CsharpCode = @"
-private List<BitMenuButtonItem> basicItemsIcon =
+private List<BitMenuButtonItem> checkableItems =
 [
-    new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji },
-    new() { Text = ""Item B"", Key = ""B"", IconName = BitIconName.Emoji, IsEnabled = false },
-    new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2 }
-];";
+    new() { Text = ""Name"", Key = ""name"", Checkable = true, IsChecked = true },
+    new() { Text = ""Status"", Key = ""status"", Checkable = true, IsChecked = true },
+    new() { Text = ""Owner"", Key = ""owner"", Checkable = true },
+    new() { Text = ""Reset to defaults"", Key = ""reset"", IconName = BitIconName.Refresh }
+];
+
+private List<BitMenuButtonItem> checkableItems2 =
+[
+    new() { Text = ""Wrap lines"", Key = ""wrap"", Checkable = true, IsChecked = true },
+    new() { Text = ""Show whitespace"", Key = ""whitespace"", Checkable = true }
+];
+
+protected override void OnInitialized()
+{
+    checkableItems[^1].OnClick = _ =>
+    {
+        checkableItems[0].IsChecked = true;
+        checkableItems[1].IsChecked = true;
+        checkableItems[2].IsChecked = false;
+    };
+}";
 
     private readonly string example9RazorCode = @"
 <style>
@@ -284,19 +311,21 @@ protected override void OnInitialized()
 }";
 
     private readonly string example12RazorCode = @"
-<BitMenuButton Text=""File"" Items=""separatorItems"" IconName=""@BitIconName.OpenFile"" />
-<BitMenuButton Split Sticky Items=""separatorItems"" />";
+<BitMenuButton Text=""File"" Items=""groupedItems"" IconName=""@BitIconName.OpenFile"" />
+<BitMenuButton Split Sticky Items=""groupedItems"" />";
 
     private readonly string example12CsharpCode = @"
-private static List<BitMenuButtonItem> separatorItems =
+private List<BitMenuButtonItem> groupedItems =
 [
-    new() { Text = ""New"", Key = ""new"", IconName = BitIconName.Add },
-    new() { Text = ""Open"", Key = ""open"", IconName = BitIconName.OpenFile },
+    new() { Text = ""Document"", IsHeader = true },
+    new() { Text = ""New"", Key = ""new"", IconName = BitIconName.Add, SecondaryText = ""Ctrl+N"" },
+    new() { Text = ""Open"", Key = ""open"", IconName = BitIconName.OpenFile, SecondaryText = ""Ctrl+O"" },
     new() { IsSeparator = true },
-    new() { Text = ""Save"", Key = ""save"", IconName = BitIconName.Save },
+    new() { Text = ""Save"", Key = ""save"", IconName = BitIconName.Save, SecondaryText = ""Ctrl+S"" },
     new() { Text = ""Save as"", Key = ""save-as"", IconName = BitIconName.SaveAs },
     new() { IsSeparator = true },
-    new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete }
+    new() { Text = ""Danger zone"", IsHeader = true },
+    new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete, SecondaryText = ""Del"" }
 ];";
 
     private readonly string example13RazorCode = @"
@@ -324,7 +353,8 @@ private static List<BitMenuButtonItem> basicItemsIcon =
 ];";
 
     private readonly string example15RazorCode = @"
-<BitMenuButton Split Text=""Save"" Items=""basicItemsIcon"" IconName=""@BitIconName.Save"" IsLoading=""itemAutoIsLoading"" OnClick=""(BitMenuButtonItem item) => HandleOnLoadingClick()"" />
+<BitMenuButton Split Text=""Save"" Items=""basicItemsIcon"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving...""
+               IsLoading=""itemAutoIsLoading"" OnClick=""(BitMenuButtonItem item) => HandleOnLoadingClick()"" />
 <BitMenuButton Text=""Loading"" Items=""basicItemsIcon"" IsLoading=""itemIsLoading"" />
 <BitCheckbox Label=""IsLoading"" @bind-Value=""itemIsLoading"" />";
 
@@ -347,15 +377,28 @@ private async Task HandleOnLoadingClick()
 }";
 
     private readonly string example16RazorCode = @"
-<BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicItemsIcon"" />
-<BitMenuButton Split Text=""Split"" Title=""The main button tooltip"" ChevronDownAriaLabel=""Open the menu"" Items=""basicItemsIcon"" />";
+<BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicItemsIcon""
+               AriaDescription=""Opens a menu of three commands."" />
+
+<BitMenuButton Split Text=""Save"" Title=""Save the document"" ChevronDownTitle=""More save options""
+               ChevronDownAriaLabel=""More save options"" Items=""basicItemsIcon"" />
+
+<BitMenuButton AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""ariaLabelItems"" Variant=""BitVariant.Text"" />
+
+<BitMenuButton Text=""Disabled items"" Items=""basicItemsIcon"" DisabledInteractive Variant=""BitVariant.Outline"" />";
 
     private readonly string example16CsharpCode = @"
-private static List<BitMenuButtonItem> basicItemsIcon =
+private List<BitMenuButtonItem> basicItemsIcon =
 [
     new() { Text = ""Item A"", Key = ""A"", IconName = BitIconName.Emoji },
     new() { Text = ""Item B"", Key = ""B"", IconName = BitIconName.Emoji, IsEnabled = false },
     new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2 }
+];
+
+private List<BitMenuButtonItem> ariaLabelItems =
+[
+    new() { Key = ""share"", IconName = BitIconName.Share, AriaLabel = ""Share this page"" },
+    new() { Key = ""print"", IconName = BitIconName.Print, AriaLabel = ""Print this page"" }
 ];";
 
     private readonly string example17RazorCode = @"
@@ -830,7 +873,18 @@ private List<BitMenuButtonItem> basicItems =
                                  Opened = ""--button-background: orangered;"",
                                  OperatorButton = ""background: var(--button-background);"",
                                  ItemButton = ""background: lightcoral;"",
-                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />";
+                                 Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"" />
+
+<BitMenuButton Text=""Branded"" IconName=""@BitIconName.Brush"" Items=""basicItemsIcon""
+               Style=""--bit-MenuButton-background: #6d28d9;
+                      --bit-MenuButton-hover-background: #5b21b6;
+                      --bit-MenuButton-active-background: #4c1d95;
+                      --bit-MenuButton-radius: 2rem;
+                      --bit-MenuButton-padding: 0.5rem 1.25rem;""
+               Styles=""@(new() { Callout = ""--bit-MenuButton-callout-radius: 0.75rem;"" +
+                                           ""--bit-MenuButton-item-min-height: 2.5rem;"" +
+                                           ""--bit-MenuButton-item-hover-background: #ede9fe;"" +
+                                           ""--bit-MenuButton-item-focus-color: #6d28d9;"" })"" />";
 
     private readonly string example21CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()

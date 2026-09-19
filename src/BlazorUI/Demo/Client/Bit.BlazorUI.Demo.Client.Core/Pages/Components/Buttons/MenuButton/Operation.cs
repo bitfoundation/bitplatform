@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public class Operation
 {
@@ -14,6 +14,11 @@ public class Operation
     public string? Url { get; set; }
     public string? UrlTarget { get; set; }
     public string? Tooltip { get; set; }
+    public string? Label { get; set; }
+    public string? Shortcut { get; set; }
+    public bool IsGroupLabel { get; set; }
+    public bool Checkable { get; set; }
+    public bool Checked { get; set; }
 
     public RenderFragment<Operation>? Fragment { get; set; }
 

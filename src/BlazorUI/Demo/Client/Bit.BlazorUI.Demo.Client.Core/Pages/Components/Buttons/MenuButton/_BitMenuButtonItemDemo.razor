@@ -79,8 +79,8 @@
 <DemoExample Title="Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5"
              PreventRenderForMcpClient>
     <div>
-        Customize the icons of the menu button: IconName sets the header icon, ChevronDownIconName replaces the default
-        chevron icon, and each item can render its own icon next to its text.
+        IconName sets the header icon, ChevronDownIconName replaces the chevron, and each item carries its own icon.
+        NoIcon drops the header icon, including the icon of the selected item in Sticky mode.
     </div>
     <br />
     <div class="example-content">
@@ -88,12 +88,20 @@
         <BitMenuButton Text="ChevronDownIconName" Items="basicItemsIcon"
                        ChevronDownIconName="@BitIconName.DoubleChevronDown" Split />
     </div>
+    <br /><br />
+    <div>NoIcon:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="No icon" Items="basicItemsIcon" IconName="@BitIconName.Edit" NoIcon />
+        <BitMenuButton Sticky Items="basicItemsIcon" NoIcon />
+    </div>
 </DemoExample>
 
-<DemoExample Title="Background" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6"
+<DemoExample Title="Callout" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6"
              PreventRenderForMcpClient>
     <div>
-        Use the Background parameter to control the background color of the callout using BitColorKind values.
+        Background picks the callout surface from the BitColorKind kinds. MaxHeight caps the list and scrolls the rest;
+        without one the callout is still capped to the room the viewport leaves, so a long menu never runs off screen.
     </div>
     <br />
     <div class="example-content">
@@ -101,6 +109,12 @@
         <BitMenuButton Text="Secondary" Items="basicItems" Background="BitColorKind.Secondary" />
         <BitMenuButton Text="Tertiary" Items="basicItems" Background="BitColorKind.Tertiary" />
         <BitMenuButton Text="Transparent" Items="basicItems" Background="BitColorKind.Transparent" />
+    </div>
+    <br /><br />
+    <div>MaxHeight:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Scrolling menu" Items="longItems" MaxHeight="10rem" />
     </div>
 </DemoExample>
 
@@ -135,22 +149,22 @@
     <BitMenuButton Text="OnToggleChange" Items="basicItems" Split Toggle OnToggleChange="v => itemToggledValue = v" />
 </DemoExample>
 
-<DemoExample Title="NoIcon" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
+<DemoExample Title="Checkable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
              PreventRenderForMcpClient>
     <div>
-        Use the NoIcon parameter to hide the header icon of the menu button, including the selected item's icon in
-        Sticky mode.
+        A Checkable item carries its IsChecked state as a check mark and flips it when clicked, announced to screen
+        readers as a checkbox inside the menu. Pair it with CloseOnItemClick="false" so that several items can be
+        toggled without reopening the menu, and use CheckIconName to replace the check mark.
     </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="With icon" Items="basicItemsIcon" IconName="@BitIconName.Edit" />
-        <BitMenuButton Text="No icon" Items="basicItemsIcon" IconName="@BitIconName.Edit" NoIcon />
+        <BitMenuButton Text="Columns" Items="checkableItems" IconName="@BitIconName.ColumnVerticalSection"
+                       CloseOnItemClick="false" OnClick="(BitMenuButtonItem _) => StateHasChanged()" />
+        <BitMenuButton Text="Closes on click" Items="checkableItems2" Variant="BitVariant.Outline"
+                       CheckIconName="@BitIconName.CheckboxCompositeReversed" />
     </div>
     <br />
-    <div class="example-content">
-        <BitMenuButton Sticky Items="basicItemsIcon" />
-        <BitMenuButton Sticky Items="basicItemsIcon" NoIcon />
-    </div>
+    <div>Visible columns: @string.Join(", ", checkableItems.Where(i => i.IsChecked).Select(i => i.Text))</div>
 </DemoExample>
 
 <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -260,13 +274,17 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Separators" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12"
+<DemoExample Title="Grouping" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12"
              PreventRenderForMcpClient>
-    <div>Use the IsSeparator property of the items to group related items using separator lines.</div>
+    <div>
+        IsSeparator draws a divider between two runs of items, IsHeader labels the run that follows it, and
+        SecondaryText adds trailing text - a keyboard shortcut, a count - read after the label of the item.
+        Separators and headers are presentational, so the arrow keys step over them.
+    </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="File" Items="separatorItems" IconName="@BitIconName.OpenFile" />
-        <BitMenuButton Split Sticky Items="separatorItems" />
+        <BitMenuButton Text="File" Items="groupedItems" IconName="@BitIconName.OpenFile" />
+        <BitMenuButton Split Sticky Items="groupedItems" />
     </div>
 </DemoExample>
 
@@ -294,31 +312,37 @@
 <DemoExample Title="Loading" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15"
              PreventRenderForMcpClient>
     <div>
-        Use the IsLoading parameter to show a spinner in the header button while a long running operation is in
-        progress.
-        In Split mode, the chevron button still opens the callout during the loading state.
+        IsLoading replaces the header icon with a spinner and ignores the click of the header button; in Split mode the
+        chevron still opens the menu. LoadingLabel replaces the text beside the spinner and is announced by screen
+        readers through a status live region, which is what tells a user who cannot see the spinner that it started.
     </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Split Text="Save" Items="basicItemsIcon" IconName="@BitIconName.Save"
+        <BitMenuButton Split Text="Save" Items="basicItemsIcon" IconName="@BitIconName.Save" LoadingLabel="Saving..."
                        IsLoading="itemAutoIsLoading" OnClick="(BitMenuButtonItem item) => HandleOnLoadingClick()" />
         <BitMenuButton Text="Loading" Items="basicItemsIcon" IsLoading="itemIsLoading" />
         <BitCheckbox Label="IsLoading" @bind-Value="itemIsLoading" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Title" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16"
+<DemoExample Title="Accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16"
              PreventRenderForMcpClient>
     <div>
-        Use the Title parameter to show a tooltip on hover over the header button.
-        In Split mode, the ChevronDownAriaLabel parameter provides an accessible name for the chevron button for the
-        benefit of screen readers.
+        Title and ChevronDownTitle are the tooltips of the two halves. AriaLabel names an icon-only header and
+        ChevronDownAriaLabel the chevron, which already defaults to <b>More options</b>. AriaDescription is read after
+        the name, the AriaLabel of an item replaces its own label, and DisabledInteractive keeps the disabled items
+        reachable by the arrow keys so they are announced as unavailable instead of silently skipped.
     </div>
     <br />
     <div class="example-content">
-        <BitMenuButton Text="Hover over me" Title="The menu button tooltip" Items="basicItemsIcon" />
-        <BitMenuButton Split Text="Split" Title="The main button tooltip" ChevronDownAriaLabel="Open the menu"
-                       Items="basicItemsIcon" />
+        <BitMenuButton Text="Hover over me" Title="The menu button tooltip" Items="basicItemsIcon"
+                       AriaDescription="Opens a menu of three commands." />
+        <BitMenuButton Split Text="Save" Title="Save the document" ChevronDownTitle="More save options"
+                       ChevronDownAriaLabel="More save options" Items="basicItemsIcon" />
+        <BitMenuButton AriaLabel="More actions" IconName="@BitIconName.More" Items="ariaLabelItems"
+                       Variant="BitVariant.Text" />
+        <BitMenuButton Text="Disabled items" Items="basicItemsIcon" DisabledInteractive
+                       Variant="BitVariant.Outline" />
     </div>
 </DemoExample>
 
@@ -987,8 +1011,9 @@
 <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
-        Style and Class of each item, and the Styles and Classes parameters targeting the internal parts of the
-        component.
+        Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the component,
+        and the public CSS variables - set on the Style for the button and on Styles.Callout for the menu, which is
+        rendered outside the root element.
     </div>
     <br />
     <div><b>Component's Style & Class</b>:</div>
@@ -1026,6 +1051,20 @@
                        ItemButton = "background: lightcoral;",
                        Callout = "border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"
                    })" />
+
+    <br /><br /><br />
+    <div><b>CSS variables</b>:</div>
+    <br />
+    <BitMenuButton Text="Branded" IconName="@BitIconName.Brush" Items="basicItemsIcon"
+                   Style="--bit-MenuButton-background: #6d28d9;
+                          --bit-MenuButton-hover-background: #5b21b6;
+                          --bit-MenuButton-active-background: #4c1d95;
+                          --bit-MenuButton-radius: 2rem;
+                          --bit-MenuButton-padding: 0.5rem 1.25rem;"
+                   Styles="@(new() { Callout = "--bit-MenuButton-callout-radius: 0.75rem;" +
+                                               "--bit-MenuButton-item-min-height: 2.5rem;" +
+                                               "--bit-MenuButton-item-hover-background: #ede9fe;" +
+                                               "--bit-MenuButton-item-focus-color: #6d28d9;" })" />
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"

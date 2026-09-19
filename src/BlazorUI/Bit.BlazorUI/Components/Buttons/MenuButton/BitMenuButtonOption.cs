@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitMenuButtonOption : ComponentBase, IDisposable
 {
@@ -6,6 +6,22 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
 
     [CascadingParameter] protected BitMenuButton<BitMenuButtonOption> Parent { get; set; } = default!;
 
+
+    /// <summary>
+    /// The accessible name of the option, for the benefit of screen readers.
+    /// Set it on an option whose visible label is an icon alone, or is too terse to stand on its own.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Turns the option into a check item: it is announced as a checkbox inside the menu, carries its
+    /// <see cref="IsChecked"/> state as a check mark, and flips that state when it is clicked.
+    /// </summary>
+    /// <remarks>
+    /// A menu of check items is usually one the user works inside of, so pair it with
+    /// <c>CloseOnItemClick="false"</c> on the menu button to keep the callout open between the toggles.
+    /// </remarks>
+    [Parameter] public bool Checkable { get; set; }
 
     /// <summary>
     /// The custom CSS classes of the option.
@@ -38,9 +54,27 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
+    /// The checked state of a <see cref="Checkable"/> option, which supports two-way binding
+    /// (<c>@bind-IsChecked</c>). The menu button flips it as the option is clicked.
+    /// </summary>
+    [Parameter] public bool IsChecked { get; set; }
+
+    /// <summary>
+    /// The callback that is called when the <see cref="IsChecked"/> value changes, which is what makes
+    /// <c>@bind-IsChecked</c> work.
+    /// </summary>
+    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+
+    /// <summary>
     /// Whether or not the option is enabled.
     /// </summary>
     [Parameter] public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// If true, the option renders as the label of the group of options that follow it, instead of as a
+    /// clickable item. It is presentational: the keyboard navigation steps over it.
+    /// </summary>
+    [Parameter] public bool IsHeader { get; set; }
 
     /// <summary>
     /// Determines the selection state of the item.
@@ -61,6 +95,12 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     /// Click event handler of the option.
     /// </summary>
     [Parameter] public EventCallback<BitMenuButtonOption> OnClick { get; set; }
+
+    /// <summary>
+    /// The trailing text of the option, shown at its far end and read after its label - a keyboard shortcut,
+    /// a count, a short hint.
+    /// </summary>
+    [Parameter] public string? SecondaryText { get; set; }
 
     /// <summary>
     /// The custom value for the style attribute of the option.
@@ -90,6 +130,21 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
 
     internal void InternalStateHasChanged()
     {
+        StateHasChanged();
+    }
+
+    // The checked state is written back through here rather than assigned from the outside, so that an option
+    // bound with @bind-IsChecked reports the change to the page and one left unbound still keeps it: the
+    // parameter holds the value until the page's next render, which only overwrites it if the page has a value
+    // of its own to write.
+    internal async Task SetIsChecked(bool value)
+    {
+        if (IsChecked == value) return;
+
+        IsChecked = value;
+
+        await IsCheckedChanged.InvokeAsync(value);
+
         StateHasChanged();
     }
 

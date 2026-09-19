@@ -26,6 +26,20 @@ namespace BitBlazorUI {
                 const handler = (e: KeyboardEvent) => {
                     if (['ArrowDown', 'ArrowUp', 'Home', 'End', 'Tab'].indexOf(e.key) !== -1) {
                         e.preventDefault();
+                        return;
+                    }
+
+                    // Space activates the focused menu item (the APG menu pattern). A button item already does
+                    // that natively, but an anchor one does not - it only answers to Enter - so the key is
+                    // turned into the click the anchor would have got from the pointer, which is also what
+                    // carries out the navigation its href asks for. Prevented either way so the callout does
+                    // not scroll underneath the item that was just activated.
+                    if (e.key === ' ') {
+                        const anchor = (e.target as HTMLElement)?.closest?.('a.bit-mnb-itm') as HTMLElement | null;
+                        if (anchor) {
+                            e.preventDefault();
+                            anchor.click();
+                        }
                     }
                 };
                 callout.addEventListener('keydown', handler);
@@ -43,8 +57,8 @@ namespace BitBlazorUI {
             MenuButtons._handlers.delete(id);
         }
 
-        public static focusItem(calloutId: string, mode: string, char: string | null) {
-            Utils.focusItem(calloutId, '.bit-mnb-itm', mode, char);
+        public static focusItem(calloutId: string, mode: string, char: string | null, includeDisabled?: boolean) {
+            Utils.focusItem(calloutId, '.bit-mnb-itm', mode, char, includeDisabled === true);
         }
     }
 }
