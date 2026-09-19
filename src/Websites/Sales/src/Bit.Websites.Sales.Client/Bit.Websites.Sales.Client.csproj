@@ -16,6 +16,7 @@
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <WasmEnableSIMD>false</WasmEnableSIMD>
+        <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,6 +34,7 @@
         <PackageReference Include="Bit.BlazorUI" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Icons" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.1-pre-01" />
+        <PackageReference Include="Bit.Minifier" Version="10.6.1-pre-01" PrivateAssets="all" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.1-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -700,7 +700,6 @@
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/.config/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",

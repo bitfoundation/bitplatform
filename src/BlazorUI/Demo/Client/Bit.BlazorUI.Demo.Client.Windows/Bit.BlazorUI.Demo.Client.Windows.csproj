@@ -47,7 +47,6 @@
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>

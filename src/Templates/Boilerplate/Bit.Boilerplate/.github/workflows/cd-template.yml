@@ -40,8 +40,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dotnet tool install --global Bit.ResxTranslator
-          bit-resx-translate
+          dnx Bit.ResxTranslator
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -187,8 +186,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dotnet tool install --global Bit.ResxTranslator
-          bit-resx-translate
+          dnx Bit.ResxTranslator
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -205,8 +203,7 @@ jobs:
         run: |
           cd src\Client\Boilerplate.Client.Windows\
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dotnet tool restore
-          dotnet vpk pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
+          dnx vpk@1.2.0 -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -246,8 +243,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dotnet tool install --global Bit.ResxTranslator
-          bit-resx-translate
+          dnx Bit.ResxTranslator
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -306,8 +302,7 @@ jobs:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
           OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
         run: |
-          dotnet tool install --global Bit.ResxTranslator
-          bit-resx-translate
+          dnx Bit.ResxTranslator
 
       - name: Update core appsettings.json
         uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

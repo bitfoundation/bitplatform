@@ -113,7 +113,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include=".config\dotnet-tools.json" />
         <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Features\Identity\Resources\Bit.ResxTranslator.json" />
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
     </ItemGroup>

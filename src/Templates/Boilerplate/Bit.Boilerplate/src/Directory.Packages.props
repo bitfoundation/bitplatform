@@ -10,6 +10,7 @@
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="10.6.1-pre-01" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="10.6.1-pre-01" />
         <PackageVersion Include="Bit.Bswup" Version="10.6.1-pre-01" />
+        <PackageVersion Include="Bit.Minifier" Version="10.6.1-pre-01" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="10.6.1-pre-01" />
         <PackageVersion Include="Bit.SourceGenerators" Version="10.6.1-pre-01" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />

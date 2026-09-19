@@ -22,6 +22,7 @@
              (ManagedToNativeGenerator & co) into every incremental build (~3s each). Only
              production needs the SIMD-less runtime for old-browser support, so scope it to Release. -->
         <WasmEnableSIMD Condition="'$(Configuration)' == 'Release'">false</WasmEnableSIMD>
+        <BitMinifyAggressive>true</BitMinifyAggressive>
     </PropertyGroup>
 
     <ItemGroup>
@@ -40,6 +41,7 @@
         <PackageReference Include="Bit.BlazorUI" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Extras" Version="10.6.1-pre-01" />
         <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.1-pre-01" />
+        <PackageReference Include="Bit.Minifier" Version="10.6.1-pre-01" PrivateAssets="all" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.1-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
