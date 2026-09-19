@@ -5,15 +5,40 @@
     var hasPrimary = (PrimaryTemplate ?? ChildContent) is not null;
     var hasSecondary = SecondaryText.HasValue() || SecondaryTemplate is not null;
     var icon = BitIconInfo.From(Icon, IconName);
+    var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so every
+    // attribute a page can also write by hand is resolved against what it wrote (see BitComponentBase.GetSplattedAttribute)
+    // instead of being overwritten with the parameter's null. The hyphenated aria-* names cannot reach the parameters
+    // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
+    // by hand is a real thing to do, and losing it would take a control's name or state with it.
+    var formId = FormId ?? GetSplattedAttribute("form");
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
+    var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
+    var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
+    // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put
+    // back - unless the page gave the button a role of its own (a menuitem, a tab), which is the one it should keep.
+    var anchorRole = GetSplattedAttribute("role") ?? (IsEnabled && IsLoading is false ? null : "link");
+    var tabIndex = GetTabIndex(ariaHidden);
+    // Autofocus follows the same rule as the tab order: a control hidden from assistive technologies, or a disabled one
+    // that is not kept focusable, must not pull the focus on the first render - a hand-written autofocus included.
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (IsEnabled || AllowDisabledFocus);
+    // The two states whose click is ignored are also the two whose native default has to be suppressed: a disabled
+    // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one is
+    // only kept from the pointer by pointer-events - both would still submit their form on Enter without this.
+    var suppressDefault = IsEnabled is false || (IsLoading && Reclickable is false);
 
     RenderFragment content = @<text>
         @if (icon is not null)
         {
-            <i style="@Styles?.Icon" class="bit-btn-icn @icon.GetCssClasses() @Classes?.Icon" />
+            <i style="@Styles?.Icon" class="bit-btn-icn @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
         }
         else if (IconUrl.HasValue())
         {
-            <img src="@IconUrl" style="@Styles?.Icon" class="bit-btn-icnu @Classes?.Icon" />
+            <img src="@IconUrl" alt="" style="@Styles?.Icon" class="bit-btn-icnu @Classes?.Icon" aria-hidden="true" />
         }
 
         @if (IconOnly is false && (hasPrimary || hasSecondary))
@@ -44,19 +69,24 @@
     </text>;
 
     RenderFragment body = @<text>
-        @if (IsLoading is false)
+        @if (_showLoading is false)
         {
             @content
         }
         else
         {
+            @* Kept in the flow rather than removed so the box holds the size it had before the click, and kept
+               visible to assistive technologies so the button's accessible name does not change while it works. *@
             <div style="@Styles?.HiddenContent" class="bit-btn-hcn @Classes?.HiddenContent">
                 @content
             </div>
 
             @if (LoadingTemplate is null)
             {
-                <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer">
+                @* The spinner and its label are the visual half of the loading state; the label is announced from the
+                   live region below instead, so that it is heard as a change of state rather than read as part of the
+                   name of the button it is sitting inside. *@
+                <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer" aria-hidden="true">
                     <div style="@Styles?.Spinner" class="bit-btn-spn @Classes?.Spinner"></div>
                     @if (LoadingLabel.HasValue())
                     {
@@ -78,22 +108,22 @@
 {
     <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
             @onclick:stopPropagation="StopPropagation"
-            @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
+            @onclick:preventDefault="suppressDefault"
             id="@_Id"
             style="@StyleBuilder.Value"
             class="@ClassBuilder.Value"
             type="@_buttonType.GetValue()"
-            form="@FormId"
+            form="@formId"
             dir="@Dir?.ToString().ToLower()"
             disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
-            autofocus="@AutoFocus"
+            autofocus="@autoFocus"
             title="@Title"
-            tabindex="@_tabIndex"
-            aria-label="@AriaLabel"
-            aria-hidden="@(AriaHidden ? "true" : null)"
-            aria-busy="@(IsLoading ? "true" : null)"
-            aria-disabled="@(IsEnabled ? null : "true")"
-            aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
+            tabindex="@tabIndex"
+            aria-label="@ariaLabel"
+            aria-hidden="@(ariaHidden ? "true" : null)"
+            aria-busy="@ariaBusy"
+            aria-disabled="@ariaDisabled"
+            aria-describedby="@(describedBy.HasValue() ? describedBy : null)">
         @body
     </button>
 }
@@ -101,29 +131,39 @@ else
 {
     <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
        @onclick:stopPropagation="StopPropagation"
-       @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
+       @onclick:preventDefault="suppressDefault"
        id="@_Id"
        rel="@_rel"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
        dir="@Dir?.ToString().ToLower()"
        href="@(IsEnabled && IsLoading is false ? Href : null)"
-       autofocus="@AutoFocus"
+       role="@anchorRole"
+       autofocus="@autoFocus"
        title="@Title"
        target="@Target"
        download="@Download"
-       tabindex="@_tabIndex"
-       aria-label="@AriaLabel"
-       aria-hidden="@(AriaHidden ? "true" : null)"
-       aria-busy="@(IsLoading ? "true" : null)"
-       aria-disabled="@(IsEnabled ? null : "true")"
-       aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
+       tabindex="@tabIndex"
+       aria-label="@ariaLabel"
+       aria-hidden="@(ariaHidden ? "true" : null)"
+       aria-busy="@ariaBusy"
+       aria-disabled="@ariaDisabled"
+       aria-describedby="@(describedBy.HasValue() ? describedBy : null)">
         @body
     </a>
 }
 
-@* rendered as a sibling of the button/anchor so the description drives aria-describedby without leaking into the accessible name *@
-@if (AriaDescription.HasValue())
+@* Both of the screen-reader-only pieces are rendered as siblings of the button/anchor rather than inside it, so that
+   neither joins its accessible name: the description is read after the name through aria-describedby, and the live
+   region would otherwise be read as part of the name of the button it announces.
+   The region is rendered from the first render rather than when the loading starts - a live region only announces
+   what changes inside one already in the document - but a button given no loading label has nothing to announce. *@
+@if (LoadingLabel.HasValue())
 {
-    <span id="@($"{_Id}-dsc")" class="bit-btn-dsc">@AriaDescription</span>
+    <span class="bit-btn-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
+}
+
+@if (descriptionId is not null)
+{
+    <span id="@descriptionId" class="bit-btn-dsc">@AriaDescription</span>
 }

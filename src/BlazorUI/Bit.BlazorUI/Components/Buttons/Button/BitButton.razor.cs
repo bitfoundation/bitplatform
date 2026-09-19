@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -8,9 +9,10 @@ namespace Bit.BlazorUI;
 public partial class BitButton : BitComponentBase
 {
     private string? _rel;
-    private string? _tabIndex;
     private bool _dragging;
+    private bool _showLoading;
     private BitButtonType _buttonType;
+    private CancellationTokenSource? _loadingDelayCts;
     private DotNetObjectReference<BitButton>? _dotnetObj;
 
 
@@ -25,6 +27,17 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitButtonParams.ParamName)]
+    public BitButtonParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
@@ -37,6 +50,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -133,7 +151,7 @@ public partial class BitButton : BitComponentBase
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public string? Href { get; set; }
 
     /// <summary>
@@ -157,7 +175,7 @@ public partial class BitButton : BitComponentBase
     /// <remarks>
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Emoji</c>).
     /// <br />
-    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
     /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
     /// <br />
     /// For external icon libraries, use <see cref="Icon"/> instead.
@@ -188,8 +206,22 @@ public partial class BitButton : BitComponentBase
     public bool IsLoading { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the spinner appears after the button enters the loading state.
+    /// </summary>
+    /// <remarks>
+    /// An operation that finishes inside the delay never shows a spinner at all, which is what keeps a fast
+    /// action from flashing one. The state itself is not delayed: the click is blocked and <c>aria-busy</c> is
+    /// rendered as soon as the loading starts, whatever this is set to.
+    /// </remarks>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
     /// The loading label text to show next to the spinner icon.
     /// </summary>
+    /// <remarks>
+    /// It is also announced by assistive technologies when the loading starts, from a live region beside the
+    /// button, so that it is heard as a change of state instead of changing the name of the button itself.
+    /// </remarks>
     [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
@@ -201,6 +233,12 @@ public partial class BitButton : BitComponentBase
     /// The custom template used to replace the default loading text inside the button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps each line of the button's text on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
 
     /// <summary>
     /// Raised when the button is clicked; receives a bool indicating the current loading state.
@@ -216,14 +254,15 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Enables re-clicking while the button is in the loading state.
     /// </summary>
-    [Parameter] public bool Reclickable { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
     /// The <c>rel</c> attribute specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public BitLinkRels? Rel { get; set; }
 
     /// <summary>
@@ -259,7 +298,7 @@ public partial class BitButton : BitComponentBase
     /// When set to <c>_blank</c> and no <see cref="Rel"/> is provided, <c>rel="noopener"</c> gets added automatically for security.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public string? Target { get; set; }
 
     /// <summary>
@@ -283,21 +322,25 @@ public partial class BitButton : BitComponentBase
 
 
     [JSInvokable("OnDragStart")]
-    public async ValueTask _OnDragStart()
+    public ValueTask _OnDragStart()
     {
-        //_dragging = true;
+        return ValueTask.CompletedTask;
     }
 
     [JSInvokable("OnDragging")]
-    public async ValueTask _OnDragging()
+    public ValueTask _OnDragging()
     {
         _dragging = true;
+
+        return ValueTask.CompletedTask;
     }
 
     [JSInvokable("OnDragEnd")]
     public async ValueTask _OnDragEnd()
     {
+        // The click that ends a drag arrives after the drag does, so the flag that swallows it has to outlive it.
         await Task.Delay(100);
+
         _dragging = false;
     }
 
@@ -317,7 +360,9 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => SecondaryText.HasValue() || SecondaryTemplate is not null ? "bit-btn-hsc" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-btn-lda" : string.Empty);
+        ClassBuilder.Register(() => _showLoading ? "bit-btn-lda" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-btn-lnc" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -363,6 +408,8 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
 
+        ClassBuilder.Register(() => NoWrap ? "bit-btn-nwr" : string.Empty);
+
         ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
                                   : Float ? "bit-btn-ffx" : string.Empty);
 
@@ -391,28 +438,17 @@ public partial class BitButton : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-btn-float-offset:{FloatOffset}" : string.Empty);
+        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{FloatOffset}" : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonParams))]
     protected override void OnParametersSet()
     {
-        if (IsEnabled is false)
-        {
-            // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
-            _tabIndex = AllowDisabledFocus ? (Href.HasValue() ? "0" : null) : "-1";
-        }
-        else if (Href.HasValue() && IsLoading)
-        {
-            // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
-            _tabIndex = TabIndex ?? "0";
-        }
-        else
-        {
-            // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
-            _tabIndex = TabIndex;
-        }
+        CascadingParameters?.UpdateParameters(this);
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
+
+        UpdateLoadingVisuals();
 
         base.OnParametersSet();
     }
@@ -440,6 +476,49 @@ public partial class BitButton : BitComponentBase
 
 
 
+    internal void OnSetHrefRelAndTarget()
+    {
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
+
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
+        // author already asked for one of the two rels that close that hole.
+        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
+        {
+            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
+        }
+
+        _rel = rel;
+    }
+
+
+
+    private string? GetTabIndex(bool ariaHidden)
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
+        // user lands on something a screen reader has nothing to say about.
+        if (ariaHidden) return "-1";
+
+        if (IsEnabled is false)
+        {
+            if (AllowDisabledFocus is false) return "-1";
+
+            // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
+            return Href.HasValue() ? TabIndex ?? "0" : TabIndex;
+        }
+
+        // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
+        if (IsLoading && Href.HasValue()) return TabIndex ?? "0";
+
+        // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
+        return TabIndex;
+    }
+
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
         {
@@ -455,44 +534,100 @@ public partial class BitButton : BitComponentBase
         if (IsEnabled is false) return;
         if (IsLoading && Reclickable is false) return;
 
+        // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed
+        // before anything else happens - including the loading state, which would otherwise flash on
+        // every drag of a Draggable floating button.
+        if (_dragging)
+        {
+            _dragging = false;
+            return;
+        }
+
         var isLoading = IsLoading;
 
         if (AutoLoading)
         {
             if (await AssignIsLoading(true) is false) return;
+
+            UpdateLoadingVisuals();
         }
 
-        if (_dragging)
-        {
-            _dragging = false;
-        }
-        else
+        try
         {
             await OnClick.InvokeAsync(isLoading);
         }
-
-        if (AutoLoading)
+        finally
         {
-            await AssignIsLoading(false);
+            // in a finally so that a handler that throws leaves the button clickable again instead of
+            // stranding it in a loading state that nothing will ever clear.
+            if (AutoLoading)
+            {
+                await AssignIsLoading(false);
+
+                UpdateLoadingVisuals();
+            }
         }
     }
 
-    private void OnSetHrefAndRel()
+    private void UpdateLoadingVisuals()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        if (IsLoading)
         {
-            _rel = null;
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                SetShowLoading(true);
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            SetShowLoading(false);
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
             return;
         }
 
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
 
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        SetShowLoading(true);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // The loading state changes the layout of the root element (the spinner is stacked over the content that
+    // holds the size), so the class list has to be rebuilt whenever it flips - including the flip that comes
+    // from the delay timer rather than from a parameter, which no [ResetClassBuilder] can see.
+    private void SetShowLoading(bool value)
+    {
+        if (_showLoading == value) return;
+
+        _showLoading = value;
+
+        ClassBuilder.Reset();
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
     }
 
 
@@ -500,6 +635,8 @@ public partial class BitButton : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
 
         await base.DisposeAsync(disposing);
 

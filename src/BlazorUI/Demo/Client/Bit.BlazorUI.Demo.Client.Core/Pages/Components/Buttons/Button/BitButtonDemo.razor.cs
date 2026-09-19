@@ -16,7 +16,7 @@ public partial class BitButtonDemo
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the button for the benefit of screen readers (rendered into aria-describedby).",
+            Description = "Detailed description of the button for the benefit of screen readers, rendered as visually hidden text beside the button and read after its name, not as part of it. An aria-describedby written on the component by hand is kept and this description is added to it, since the attribute is a list of ids.",
         },
         new()
         {
@@ -37,7 +37,7 @@ public partial class BitButtonDemo
             Name = "AutoLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.",
+            Description = "If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default. The state is left even when the handler throws.",
         },
         new()
         {
@@ -195,10 +195,17 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "LoadingDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the spinner appears after the button enters the loading state, so an operation that finishes inside the delay never flashes one. Only the visuals wait: the click is blocked and aria-busy is rendered as soon as the loading starts.",
+        },
+        new()
+        {
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The loading label text to show next to the spinner icon."
+            Description = "The loading label text to show next to the spinner icon. It is also announced by assistive technologies from a live region beside the button, so that it is heard as a change of state instead of changing the name of the button itself."
         },
         new()
         {
@@ -215,6 +222,13 @@ public partial class BitButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template used to replace the default loading text inside the button in the loading state.",
+        },
+        new()
+        {
+            Name = "NoWrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps each line of the button's text on a single line and ends it with an ellipsis where it does not fit.",
         },
         new()
         {
@@ -872,6 +886,174 @@ public partial class BitButtonDemo
         },
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Button-color",
+            DefaultValue = "Per variant: the role's on-color when filled, its main color otherwise",
+            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well.",
+        },
+        new()
+        {
+            Name = "--bit-Button-background",
+            DefaultValue = "The role's main color when filled, transparent otherwise",
+            Description = "Background in the rest state.",
+        },
+        new()
+        {
+            Name = "--bit-Button-border-color",
+            DefaultValue = "The role's main color when filled or outlined, transparent otherwise",
+            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size.",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-color",
+            DefaultValue = "The role's on-color, and the rest color for the Fill variant",
+            Description = "Foreground while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-background",
+            DefaultValue = "The role's hover color",
+            Description = "Background while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-border-color",
+            DefaultValue = "The rest border color, and the hover background for the Fill variant",
+            Description = "Border color while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Button-active-color",
+            DefaultValue = "As the hover foreground",
+            Description = "Foreground while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Button-active-background",
+            DefaultValue = "The role's active color",
+            Description = "Background while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Button-active-border-color",
+            DefaultValue = "As the hover border color",
+            Description = "Border color while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Button-disabled-color",
+            DefaultValue = "The role's disabled text color",
+            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order.",
+        },
+        new()
+        {
+            Name = "--bit-Button-disabled-background",
+            DefaultValue = "The role's disabled color when filled, transparent otherwise",
+            Description = "Background when disabled.",
+        },
+        new()
+        {
+            Name = "--bit-Button-disabled-border-color",
+            DefaultValue = "As the disabled background",
+            Description = "Border color when disabled.",
+        },
+        new()
+        {
+            Name = "--bit-Button-focus-color",
+            DefaultValue = "The role's focus color",
+            Description = "Color of the focus ring drawn around the button on keyboard focus.",
+        },
+        new()
+        {
+            Name = "--bit-Button-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the box, which the focus ring follows.",
+        },
+        new()
+        {
+            Name = "--bit-Button-border-width",
+            DefaultValue = "--bit-shp-border-width",
+            Description = "Thickness of the border on every variant.",
+        },
+        new()
+        {
+            Name = "--bit-Button-padding",
+            DefaultValue = "Per size, from --bit-siz-ctrl-pad-*",
+            Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead.",
+        },
+        new()
+        {
+            Name = "--bit-Button-min-width",
+            DefaultValue = "--bit-siz-ctrl-min-width",
+            Description = "Smallest width of a labeled button, for lining up a row of buttons whose labels differ in length.",
+        },
+        new()
+        {
+            Name = "--bit-Button-min-height",
+            DefaultValue = "Per size, from --bit-siz-ctrl-*",
+            Description = "Smallest height of the box, and the smallest width of an icon-only one. It is a floor, not a height: the box still grows with a wrapped label or a secondary line.",
+        },
+        new()
+        {
+            Name = "--bit-Button-gap",
+            DefaultValue = "0.25rem",
+            Description = "Room between the icon and the text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "Size of the primary text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-secondary-font-size",
+            DefaultValue = "One ramp step below the primary text",
+            Description = "Size of the secondary text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-font-weight",
+            DefaultValue = "--bit-tg-font-weight",
+            Description = "Weight of both lines of text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-icon-size",
+            DefaultValue = "Per size, from --bit-siz-icon-*",
+            Description = "Size of the icon, for a glyph and an IconUrl image alike.",
+        },
+        new()
+        {
+            Name = "--bit-Button-spinner-size",
+            DefaultValue = "As the icon size",
+            Description = "Diameter of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-Button-spinner-color",
+            DefaultValue = "The button's own foreground",
+            Description = "The spinner's moving arc. Reading the foreground by default is what keeps it legible over the filled background of one variant and the transparent one of the others.",
+        },
+        new()
+        {
+            Name = "--bit-Button-spinner-track-color",
+            DefaultValue = "The button's own foreground at 25%",
+            Description = "The ring the arc travels on.",
+        },
+        new()
+        {
+            Name = "--bit-Button-float-offset",
+            DefaultValue = "1rem",
+            Description = "Inset of a Float or FloatAbsolute button from the edge it is pinned to. The FloatOffset parameter writes this variable on the instance.",
+        },
+    ];
+
+    private bool noWrap = true;
+
     private bool fillIsLoading;
     private bool outlineIsLoading;
     private bool textIsLoading;
@@ -912,6 +1094,9 @@ public partial class BitButtonDemo
         await Task.Delay(3000);
         textIsLoading = false;
     }
+
+    // Finishes inside the 500ms delay of the second button, so only the first one ever shows a spinner.
+    private async Task FastOperation() => await Task.Delay(250);
 
     private int autoLoadCount;
     private async Task AutoLoadingClick()
@@ -1012,5 +1197,5 @@ public partial class BitButtonDemo
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
-    private async Task ScrollToFloat() => await _js.ScrollToElement("example12");
+    private async Task ScrollToFloat() => await _js.ScrollToElement("example11");
 }
