@@ -80,9 +80,9 @@
              PreventRenderForMcpClient>
     <div>
         The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
-        toolbars
-        and tight spaces. Because such a button has no visible label, map the <strong>AriaLabel</strong> selector (or at
-        least <strong>Title</strong>) so it stays understandable to screen reader users.
+        toolbars and tight spaces. The hidden text stays the button's accessible name, so a screen reader still reads
+        it; map the <strong>AriaLabel</strong> selector where the name should read differently, and
+        <strong>Title</strong> to explain the icon on hover.
     </div>
     <br /><br />
     <div class="example-content">
@@ -119,7 +119,8 @@
         <BitButtonGroup Variant="BitVariant.Fill" Items="onlyIconCustoms" NameSelectors="@(new()
                         {
                             Text = { Selector = i => i.Name },
-                            IconName = { Selector = i => i.Image }
+                            IconName = { Selector = i => i.Image },
+                            AriaLabel = { Selector = i => i.Label }
                         })" />
     </div>
     <br /><br />
@@ -128,7 +129,8 @@
         <BitButtonGroup Variant="BitVariant.Outline" Items="onlyIconCustoms" NameSelectors="@(new()
                         {
                             Text = { Selector = i => i.Name },
-                            IconName = { Selector = i => i.Image }
+                            IconName = { Selector = i => i.Image },
+                            AriaLabel = { Selector = i => i.Label }
                         })" />
     </div>
     <br /><br />
@@ -137,7 +139,8 @@
         <BitButtonGroup Variant="BitVariant.Text" Items="onlyIconCustoms" NameSelectors="@(new()
                         {
                             Text = { Selector = i => i.Name },
-                            IconName = { Selector = i => i.Image }
+                            IconName = { Selector = i => i.Image },
+                            AriaLabel = { Selector = i => i.Label }
                         })" />
     </div>
 </DemoExample>
@@ -481,8 +484,9 @@
              PreventRenderForMcpClient>
     <div>
         Mapping the <strong>Href</strong> selector renders that button as an anchor tag instead, optionally opened
-        elsewhere
-        through the <strong>Target</strong> selector.
+        elsewhere through the <strong>Target</strong> selector. A link opened in a new tab is given
+        <code>rel="noopener"</code> automatically, and the <strong>Rel</strong> selector sets the relationship
+        itself. A disabled or loading link drops its href and keeps its link role.
     </div>
     <br /><br />
     <div class="example-content">
@@ -545,11 +549,12 @@
 <DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
              PreventRenderForMcpClient>
     <div>
-        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in
-        the
-        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a
-        single
-        tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the group an AriaLabel.
+        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons
+        in the Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole
+        group is a single tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the
+        group an AriaLabel. Every button clears the 24px minimum pointer target at every size, and in Windows High
+        Contrast the toggled state is redrawn in the system highlight colors, since the background that marks it
+        everywhere else is discarded there.
     </div>
     <br /><br />
     <div class="example-content">
@@ -560,7 +565,12 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
+        <div>
+            <strong>SelectOnFocus</strong> makes the selection follow the keyboard focus, which is what the
+            WAI-ARIA radiogroup pattern expects of the arrow keys. It is off by default so that arrowing
+            through a group whose selection does work - a filter, a fetch - does not fire it on every keystroke;
+            turn it on for a group that only records an answer.
+        </div>
         <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
                         SelectionMode="BitButtonGroupSelectionMode.Single" Items="selectOnFocusCustoms"
                         NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
@@ -979,9 +989,9 @@
 <DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
              PreventRenderForMcpClient>
     <div>
-        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which scale the font
-        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text
-        size.
+        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which set the
+        height, padding, text size, and icon size of every button from the theme's control tokens, so a group lines
+        up with the other controls of its size and even the smallest one stays above the 24px minimum pointer target.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1022,7 +1032,11 @@
         <strong>Style</strong> and <strong>Class</strong> selectors target a single button through fields on the class,
         and
         <strong>Styles</strong> and <strong>Classes</strong> reach every part of the component - Root, Button,
-        ToggledButton, Icon, Text, Badge, Spinner, and SelectionIndicator.
+        ToggledButton, Icon, Text, Badge,
+        Spinner, and SelectionIndicator. For a change that should reach every group at once - a corner radius, a
+        selected background, a border width - set one of the
+        <BitLink Href="#css-variables-section"><strong>CSS variables</strong></BitLink> instead, on
+        <code>:root</code> or on the Style of a single group.
     </div>
     <br /><br />
     <div class="example-content">

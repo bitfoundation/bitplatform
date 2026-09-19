@@ -90,20 +90,24 @@ private List<Operation> iconCustoms =
 
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Image } })"" />
+                                         IconName = { Selector = i => i.Image },
+                                         AriaLabel = { Selector = i => i.Label } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Outline"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Image } })"" />
+                                         IconName = { Selector = i => i.Image },
+                                         AriaLabel = { Selector = i => i.Label } })"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Items=""onlyIconCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
-                                         IconName = { Selector = i => i.Image } })"" />";
+                                         IconName = { Selector = i => i.Image },
+                                         AriaLabel = { Selector = i => i.Label } })"" />";
     private readonly string example4CsharpCode = @"
 public class Operation
 {
     public string? Name { get; set; }
     public string? Image { get; set; }
+    public string? Label { get; set; }
 }
 
 private List<Operation> iconCustoms =
@@ -116,7 +120,7 @@ private List<Operation> iconCustoms =
 private List<Operation> onlyIconCustoms =
 [
     new() { Name = ""Add"", Image = BitIconName.Add },
-    new() { Image = BitIconName.Edit },
+    new() { Image = BitIconName.Edit, Label = ""Edit"" },
     new() { Name = ""Delete"", Image = BitIconName.Delete }
 ];";
 

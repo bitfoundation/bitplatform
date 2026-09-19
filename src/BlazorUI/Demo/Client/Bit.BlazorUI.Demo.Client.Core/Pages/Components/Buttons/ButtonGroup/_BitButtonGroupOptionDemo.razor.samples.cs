@@ -82,19 +82,19 @@ public partial class _BitButtonGroupOptionDemo
 
 <BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
-    <BitButtonGroupOption IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption IconName=""@BitIconName.Edit"" AriaLabel=""Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
 <BitButtonGroup Variant=""BitVariant.Outline"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
-    <BitButtonGroupOption IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption IconName=""@BitIconName.Edit"" AriaLabel=""Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>
 
 <BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
-    <BitButtonGroupOption IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption IconName=""@BitIconName.Edit"" AriaLabel=""Edit"" />
     <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete"" />
 </BitButtonGroup>";
 

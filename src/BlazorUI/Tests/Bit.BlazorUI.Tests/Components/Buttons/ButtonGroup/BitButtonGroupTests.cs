@@ -449,7 +449,7 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-btg-dtc"));
         Assert.IsTrue(root.ClassList.Contains("bit-btg-scr"));
         Assert.IsFalse(root.ClassList.Contains("bit-btg-scb"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-btg-gap:1rem"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-ButtonGroup-gap:1rem"));
     }
 
     [TestMethod]
@@ -588,6 +588,157 @@ public class BitButtonGroupTests : BunitTestContext
         comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
 
         Assert.AreEqual(0, comp.FindAll(".bit-btg-chk").Count);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupNavigableShouldMarkTheRootForTheKeyGuard()
+    {
+        // The capture-phase guard in BitButtonGroup.ts cancels the page scroll of the keys the group
+        // navigates with, and reads this class to know whether the group navigates at all.
+        var items = new List<BitButtonGroupItem> { new() { Text = "A" }, new() { Text = "B" } };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.IsTrue(comp.Find(".bit-btg").ClassList.Contains("bit-btg-nav"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Navigable, false);
+        });
+
+        Assert.IsFalse(comp.Find(".bit-btg").ClassList.Contains("bit-btg-nav"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupIconOnlyShouldFallBackToTheItemTextForTheAccessibleName()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Bold", IconName = "Bold" },
+            new() { Text = "Italic", IconName = "Italic", AriaLabel = "Make it italic" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        var buttons = comp.FindAll("button");
+
+        // The text IconOnly hides is what names the button, unless an AriaLabel says otherwise.
+        Assert.AreEqual("Bold", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Make it italic", buttons[1].GetAttribute("aria-label"));
+
+        // A button that shows its text is named by it, so no aria-label is rendered over it.
+        var labeled = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.IsNull(labeled.FindAll("button")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupIconOnlyShouldFollowTheToggleStateInTheAccessibleName()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Key = "mute", OffText = "Mute", OnText = "Unmute", IconName = "Volume3" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+        });
+
+        Assert.AreEqual("Mute", comp.Find("button").GetAttribute("aria-label"));
+
+        comp.Find("button").Click();
+
+        Assert.AreEqual("Unmute", comp.Find("button").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldHideTheDecorativePartsOfAButtonFromAssistiveTechnologies()
+    {
+        // The icon, the spinner and the check mark say nothing the button's own name does not, and a
+        // screen reader reading them out would only lengthen it.
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Key = "a", Text = "A", IconName = "Accept" },
+            new() { Key = "b", Text = "B", IsLoading = true }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ShowSelectionIndicator, true);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        Assert.AreEqual("true", comp.Find(".bit-btg-ico").GetAttribute("aria-hidden"));
+        Assert.AreEqual("true", comp.Find(".bit-btg-spn").GetAttribute("aria-hidden"));
+        Assert.IsTrue(comp.FindAll(".bit-btg-sin").All(s => s.GetAttribute("aria-hidden") == "true"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupLinkItemShouldBeHardenedAgainstReverseTabnabbing()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "New tab", Href = "https://bitplatform.dev", Target = "_blank" },
+            new() { Text = "Tagged", Href = "https://bitplatform.dev", Target = "_blank", Rel = BitLinkRels.NoFollow },
+            new() { Text = "Opener", Href = "https://bitplatform.dev", Target = "_blank", Rel = BitLinkRels.Opener },
+            new() { Text = "Same tab", Href = "/components" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var links = comp.FindAll("a");
+
+        // A link opened in a new browsing context must not hand it a reachable window.opener.
+        Assert.AreEqual("noopener", links[0].GetAttribute("rel"));
+        Assert.AreEqual("nofollow noopener", links[1].GetAttribute("rel"));
+
+        // ... unless the item asks for the opposite on purpose.
+        Assert.AreEqual("opener", links[2].GetAttribute("rel"));
+
+        // A link staying in this tab has nothing to harden.
+        Assert.IsNull(links[3].GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupDisabledLinkItemShouldDropItsHrefAndKeepItsRole()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Gone", Href = "/components", IsEnabled = false }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.DisabledInteractive, true);
+        });
+
+        var link = comp.Find("a");
+
+        // Without an href the anchor loses its implicit link role, which is put back explicitly.
+        Assert.IsNull(link.GetAttribute("href"));
+        Assert.IsNull(link.GetAttribute("rel"));
+        Assert.AreEqual("link", link.GetAttribute("role"));
+        Assert.AreEqual("true", link.GetAttribute("aria-disabled"));
     }
 
     public class KeylessButtonGroupItem

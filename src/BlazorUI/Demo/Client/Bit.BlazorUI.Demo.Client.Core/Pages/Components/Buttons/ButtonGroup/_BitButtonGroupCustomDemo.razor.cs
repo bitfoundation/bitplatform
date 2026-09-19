@@ -27,7 +27,7 @@ public partial class _BitButtonGroupCustomDemo
     private List<Operation> onlyIconCustoms =
     [
         new() { Name = "Add", Image = BitIconName.Add },
-        new() { Image = BitIconName.Edit },
+        new() { Image = BitIconName.Edit, Label = "Edit" },
         new() { Name = "Delete", Image = BitIconName.Delete }
     ];
 

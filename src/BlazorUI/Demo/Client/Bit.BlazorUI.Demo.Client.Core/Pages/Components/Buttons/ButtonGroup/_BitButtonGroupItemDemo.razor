@@ -64,10 +64,9 @@
 <DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
     <div>
         The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
-        toolbars
-        and tight spaces. Because such a button has no visible label, give each item an <strong>AriaLabel</strong> (or
-        at
-        least a <strong>Title</strong>) so it stays understandable to screen reader users.
+        toolbars and tight spaces. The hidden <strong>Text</strong> stays the button's accessible name, so a screen
+        reader still reads it; set an <strong>AriaLabel</strong> where the name should read differently, and a
+        <strong>Title</strong> to explain the icon on hover. An item with no text at all needs one of the two.
     </div>
     <br /><br />
     <div class="example-content">
@@ -405,8 +404,9 @@
 <DemoExample Title="Links" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>
         Giving an item an <strong>Href</strong> renders that button as an anchor tag instead, optionally opened
-        elsewhere
-        through <strong>Target</strong>.
+        elsewhere through <strong>Target</strong>. A link opened in a new tab is given
+        <code>rel="noopener"</code> automatically, and <strong>Rel</strong> sets the relationship itself
+        (nofollow, external, ...). A disabled or loading link drops its href and keeps its link role.
     </div>
     <br /><br />
     <div class="example-content">
@@ -446,9 +446,8 @@
         an
         icon-only button on hover. In a toggle group, <strong>OnTitle</strong> and <strong>OffTitle</strong> let the
         tooltip
-        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name, so
-        keep
-        setting <strong>AriaLabel</strong> for icon-only buttons.
+        follow the toggle state and fall back to Title when they are not set. A tooltip is not an accessible name:
+        an icon-only button is named by its own text, or by <strong>AriaLabel</strong> when one is set.
     </div>
     <br /><br />
     <div class="example-content">
@@ -464,11 +463,12 @@
 
 <DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
     <div>
-        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons in
-        the
-        Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole group is a
-        single
-        tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the group an AriaLabel.
+        The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons
+        in the Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole
+        group is a single tab stop that the arrow, Home, and End keys navigate (a roving tabindex). Always give the
+        group an AriaLabel. Every button clears the 24px minimum pointer target at every size, and in Windows High
+        Contrast the toggled state is redrawn in the system highlight colors, since the background that marks it
+        everywhere else is discarded there.
     </div>
     <br /><br />
     <div class="example-content">
@@ -478,7 +478,12 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>SelectOnFocus</strong> makes the selection follow the keyboard focus:</div>
+        <div>
+            <strong>SelectOnFocus</strong> makes the selection follow the keyboard focus, which is what the
+            WAI-ARIA radiogroup pattern expects of the arrow keys. It is off by default so that arrowing
+            through a group whose selection does work - a filter, a fetch - does not fire it on every keystroke;
+            turn it on for a group that only records an answer.
+        </div>
         <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
                         SelectionMode="BitButtonGroupSelectionMode.Single" Items="selectOnFocusItems" DefaultToggleKey="start" />
     </div>
@@ -804,9 +809,9 @@
 
 <DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>
-        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which scale the font
-        size and padding of every button, along with the spinner, badge, and selection indicator that follow the text
-        size.
+        The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which set the
+        height, padding, text size, and icon size of every button from the theme's control tokens, so a group lines
+        up with the other controls of its size and even the smallest one stays above the 24px minimum pointer target.
     </div>
     <br /><br />
     <div class="example-content">
@@ -837,7 +842,10 @@
         item's
         own <strong>Style</strong> and <strong>Class</strong> target a single button, and <strong>Styles</strong> and
         <strong>Classes</strong> reach every part of the component - Root, Button, ToggledButton, Icon, Text, Badge,
-        Spinner, and SelectionIndicator.
+        Spinner, and SelectionIndicator. For a change that should reach every group at once - a corner radius, a
+        selected background, a border width - set one of the
+        <BitLink Href="#css-variables-section"><strong>CSS variables</strong></BitLink> instead, on
+        <code>:root</code> or on the Style of a single group.
     </div>
     <br /><br />
     <div class="example-content">

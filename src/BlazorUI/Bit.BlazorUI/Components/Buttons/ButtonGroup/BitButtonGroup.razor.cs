@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The ButtonGroup joins related buttons into a single unit: a plain action toolbar, or a single-select or
@@ -19,20 +17,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private int _optionKeySeed;
     private TItem? _toggleItem;
     private string? _focusedKey;
-    private bool _preventKeyDownDefault;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
     private List<TItem> _toggledItems = [];
     private IEnumerable<TItem> _oldItems = default!;
     private IEnumerable<string>? _internalToggleKeys;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
-
-
-    /// <summary>
-    /// The EditContext, which is set if the button is inside an <see cref="EditForm"/>
-    /// </summary>
-    [CascadingParameter] private EditContext? _editContext { get; set; }
-
 
 
     /// <summary>
@@ -87,13 +77,16 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// The gap between the buttons of the ButtonGroup in the detached mode.
+    /// The gap between the buttons of the ButtonGroup in the detached mode, as any CSS length.
+    /// It sets the public --bit-ButtonGroup-gap custom property on this group, which can also be set
+    /// on :root to space every detached group out at once.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
 
     /// <summary>
-    /// Determines that only the icon should be rendered.
+    /// Determines that only the icon should be rendered. The hidden text stays the accessible name of the
+    /// button, so an icon-only group is still readable without an AriaLabel being set on every item.
     /// </summary>
     [Parameter] public bool IconOnly { get; set; }
 
@@ -127,7 +120,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Enables the roving tabindex behavior, which turns the whole ButtonGroup into a single tab stop
     /// that is navigable using the arrow, Home, and End keys.
     /// </summary>
-    [Parameter] public bool Navigable { get; set; } = true;
+    [Parameter, ResetClassBuilder]
+    public bool Navigable { get; set; } = true;
 
     /// <summary>
     /// The callback that is called when a button is clicked.
@@ -157,8 +151,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     public bool Rounded { get; set; }
 
     /// <summary>
-    /// Toggles the focused item while navigating the ButtonGroup using the keyboard,
-    /// so that the selection follows the focus.
+    /// Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection
+    /// follows the focus - which is what the WAI-ARIA radiogroup pattern expects of the arrow keys in the
+    /// Single selection mode. It is off by default so that arrowing through a group whose selection does work
+    /// does not fire it on every keystroke.
     /// </summary>
     [Parameter] public bool SelectOnFocus { get; set; }
 
@@ -349,6 +345,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         ClassBuilder.Register(() => Vertical ? "bit-btg-vrt" : string.Empty);
 
+        // Read by the capture-phase key guard in BitButtonGroup.ts, which cancels the page scroll of the
+        // keys this group navigates with and has to know, before the event reaches the handler below,
+        // whether this group navigates at all.
+        ClassBuilder.Register(() => Navigable ? "bit-btg-nav" : string.Empty);
+
         ClassBuilder.Register(() => FullWidth ? "bit-btg-flw" : string.Empty);
 
         ClassBuilder.Register(() => Justified ? "bit-btg-jst" : string.Empty);
@@ -370,7 +371,9 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-btg-gap:{Gap}" : string.Empty);
+        // The same public custom property a consumer can set on :root to space every detached group out
+        // at once, so the parameter is that variable for one instance rather than a second knob beside it.
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-ButtonGroup-gap:{Gap}" : string.Empty);
     }
 
     protected override async Task OnInitializedAsync()
@@ -436,6 +439,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
                 AssignItemKeys();
                 RemapToggledItems();
+                PruneItemElements();
             }
         }
 
@@ -506,6 +510,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
     }
 
+    // The element references are keyed by the item they belong to, and the Items API replaces that list
+    // rather than removing from it - a page handing over a fresh list on every render would otherwise grow
+    // the map forever, holding on to every item it has ever been given.
+    private void PruneItemElements()
+    {
+        if (_itemElements.Count == 0) return;
+
+        foreach (var item in _itemElements.Keys.Where(i => _items.Contains(i) is false).ToArray())
+        {
+            _itemElements.Remove(item);
+        }
+    }
+
     private void AssignItemKeys()
     {
         // Collect the explicit keys first so the auto-generated keys never collide with them.
@@ -572,15 +589,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // The whole group is a single tab stop: the toggled item (or the first focusable one) holds the
     // tabindex and the arrow keys move the focus between the items, as described by the WAI-ARIA
     // radiogroup and toolbar patterns.
+    // The arrow keys, Home and End scroll the page by default. That default is cancelled by the
+    // capture-phase guard installed in BitButtonGroup.ts, which (unlike @onkeydown:preventDefault,
+    // evaluated at render time) can decide on the key actually pressed instead of lagging a keystroke
+    // behind and swallowing the Tab that follows an arrow key.
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        // ArrowUp, ArrowDown, Home and End scroll the page by default, so their default action is
-        // suppressed while the group navigates with them. Kept key-scoped so Space, Enter, Tab and
-        // the horizontal arrows outside of a vertical group still behave normally.
-        _preventKeyDownDefault = Navigable && IsEnabled && e.Key is "ArrowUp" or "ArrowDown" or "Home" or "End";
-
         if (Navigable is false) return;
         if (IsEnabled is false) return;
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         var focusables = _items.Where(IsItemFocusable).ToList();
         if (focusables.Count == 0) return;
@@ -785,7 +802,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (IsItemToggled(item) && (Styles?.ToggledButton.HasValue() ?? false))
         {
-            styles.Add(Styles.ToggledButton!);
+            styles.Add(Styles.ToggledButton!.Trim(';'));
         }
 
         return string.Join(';', styles);
@@ -793,8 +810,29 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemText(TItem item)
     {
-        if (IconOnly) return null;
+        return IconOnly ? null : GetStatefulText(item);
+    }
 
+    /// <summary>
+    /// The accessible name of a button. A button rendering nothing but an icon has no readable content of
+    /// its own, so the text that <see cref="IconOnly"/> hides is what names it when no AriaLabel is given -
+    /// which is what keeps an icon-only toolbar usable without one being set on every item.
+    /// </summary>
+    internal string? GetItemAriaLabel(TItem item)
+    {
+        var ariaLabel = GetAriaLabel(item);
+        if (ariaLabel.HasValue()) return ariaLabel;
+
+        // A template renders content of its own, and a button showing its text is named by it already.
+        if (GetTemplate(item) is not null || ItemTemplate is not null) return null;
+        if (GetItemText(item).HasValue()) return null;
+
+        return GetStatefulText(item);
+    }
+
+    // The text of an item, following the toggle state through OnText/OffText, before IconOnly has a say.
+    private string? GetStatefulText(TItem item)
+    {
         if (_Mode is not BitButtonGroupSelectionMode.None)
         {
             if (IsItemToggled(item))
@@ -1209,7 +1247,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return item.GetValueFromProperty<string?>(NameSelectors.OffIconName.Name);
     }
 
-    internal string? GetAriaLabel(TItem? item)
+    private string? GetAriaLabel(TItem? item)
     {
         if (item is null) return null;
 
@@ -1279,6 +1317,49 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Href.Name);
+    }
+
+    /// <summary>
+    /// The rel attribute of a link item. A link opened in a new browsing context is given noopener unless the
+    /// item asks for the opposite, so the page it opens cannot reach back through window.opener - the same
+    /// hardening BitButton and BitActionButton apply to their own links.
+    /// </summary>
+    internal string? GetItemRel(TItem item)
+    {
+        var rels = GetRel(item);
+        var rel = rels.HasValue ? BitLinkRelUtils.GetRels(rels.Value) : null;
+
+        if (GetTarget(item) is "_blank" &&
+            (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false && rel.Contains("opener") is false)))
+        {
+            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
+        }
+
+        return rel.HasValue() ? rel : null;
+    }
+
+    private BitLinkRels? GetRel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitButtonGroupItem buttonGroupItem)
+        {
+            return buttonGroupItem.Rel;
+        }
+
+        if (item is BitButtonGroupOption buttonGroupOption)
+        {
+            return buttonGroupOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
     }
 
     internal string? GetTarget(TItem? item)

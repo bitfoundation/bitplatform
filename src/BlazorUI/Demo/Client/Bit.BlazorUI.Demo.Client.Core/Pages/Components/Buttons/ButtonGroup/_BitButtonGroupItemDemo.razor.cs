@@ -26,7 +26,7 @@ public partial class _BitButtonGroupItemDemo
     private List<BitButtonGroupItem> onlyIconItems =
     [
         new() { Text = "Add", IconName = BitIconName.Add },
-        new() { IconName = BitIconName.Edit },
+        new() { IconName = BitIconName.Edit, AriaLabel = "Edit" },
         new() { Text = "Delete", IconName = BitIconName.Delete }
     ];
 

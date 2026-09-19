@@ -98,6 +98,11 @@ public class BitButtonGroupNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> ReversedIcon { get; set; } = new(nameof(BitButtonGroupItem.ReversedIcon));
 
     /// <summary>
+    /// Rel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitLinkRels?> Rel { get; set; } = new(nameof(BitButtonGroupItem.Rel));
+
+    /// <summary>
     /// The CSS Style field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitButtonGroupItem.Style));

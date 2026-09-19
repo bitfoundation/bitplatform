@@ -134,6 +134,12 @@ public class BitButtonGroupItem
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
+    /// The rel attribute of the link when the item renders as an anchor (by providing the Href property).
+    /// When <see cref="Target"/> is _blank and no opener-related rel is given, noopener is added automatically.
+    /// </summary>
+    public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
     /// The custom value for the style attribute of the item.
     /// </summary>
     public string? Style { get; set; }
