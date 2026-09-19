@@ -111,7 +111,7 @@ private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAs
     </div>
 </BitToggleButton>
 
-<BitToggleButton>
+<BitToggleButton AriaLabel=""Subscribe to this channel"">
     <OnTemplate>
         <div class=""custom-template"">
             <BitIcon IconName=""@BitIconName.CheckMark"" Color=""BitColor.Success"" />
@@ -173,6 +173,9 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange""
                  OnText=""Muted"" OffText=""Unmuted"" />
 
+<BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange"" Text=""No delay"" />
+<BitToggleButton AutoLoading LoadingDelay=""700"" OnChange=""HandleAutoLoadingChange"" Text=""700ms delay"" />
+
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.End"" Text=""End"" />
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Start"" Text=""Start"" />
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
@@ -198,8 +201,31 @@ private async Task HandleAutoLoadingChange()
 }";
 
     private readonly string example11RazorCode = @"
-<BitToggleButton FullWidth OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
-                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
+<style>
+    .narrow-column {
+        gap: 0.5rem;
+        display: flex;
+        max-width: 16rem;
+        flex-flow: column nowrap;
+    }
+</style>
+
+
+<div class=""narrow-column"">
+    <BitToggleButton FullWidth OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
+                     OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
+</div>
+
+
+<div class=""narrow-column"">
+    <BitToggleButton FullWidth
+                     OnText=""Syncing every folder on this device""
+                     OffText=""Sync every folder on this device"" />
+
+    <BitToggleButton FullWidth NoWrap Title=""Sync every folder on this device""
+                     OnText=""Syncing every folder on this device""
+                     OffText=""Sync every folder on this device"" />
+</div>";
 
     private readonly string example12RazorCode = @"
 <BitToggleButton Color=""BitColor.TertiaryBackground"" FixedColor
@@ -233,7 +259,10 @@ private async Task HandleAutoLoadingChange()
                  AriaDescription=""Expands the details panel below the button.""
                  @bind-IsChecked=""detailsVisible""
                  Text=""Details"" />
-<div id=""accessibility-details"">@(detailsVisible ? ""The details panel is visible."" : ""The details panel is hidden."")</div>";
+<div id=""accessibility-details"">@(detailsVisible ? ""The details panel is visible."" : ""The details panel is hidden."")</div>
+
+<BitToggleButton role=""menuitemcheckbox"" Variant=""BitVariant.Text""
+                 AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 
     private readonly string example14RazorCode = @"
 <BitToggleButton Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">Primary</BitToggleButton>
@@ -397,43 +426,14 @@ private async Task HandleAutoLoadingChange()
                  Variant=""BitVariant.Outline"" Text=""Bold"" />";
 
     private readonly string example16RazorCode = @"
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
+<BitToggleButton Size=""BitSize.Small"" Text=""Small"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton Size=""BitSize.Medium"" Text=""Medium"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton Size=""BitSize.Large"" Text=""Large"" IconName=""@BitIconName.Microphone"" />
 
 
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Text"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Medium"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Fill"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Outline"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Text"" Text=""Microphone"" />
-<BitToggleButton Size=""BitSize.Large"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />";
+<BitToggleButton Size=""BitSize.Small"" IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton Size=""BitSize.Medium"" IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton Size=""BitSize.Large"" IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />";
 
     private readonly string example17RazorCode = @"
 <style>
@@ -524,7 +524,27 @@ private async Task HandleAutoLoadingChange()
 
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" Text=""Loading parts""
                  Styles=""@(new() { Spinner = ""border-top-color: gold;"",
-                                   LoadingLabel = ""color: gold; font-style: italic;"" })"" />";
+                                   LoadingLabel = ""color: gold; font-style: italic;"" })"" />
+
+
+<BitToggleButton Text=""Pill"" IconName=""@BitIconName.Tag""
+                 Style=""--bit-ToggleButton-radius: 999px;"" />
+
+<BitToggleButton Variant=""BitVariant.Outline"" Text=""Tinted while checked""
+                 Style=""--bit-ToggleButton-checked-background: color-mix(in srgb, var(--bit-clr-pri) 15%, transparent);
+                        --bit-ToggleButton-checked-hover-background: color-mix(in srgb, var(--bit-clr-pri) 25%, transparent);
+                        --bit-ToggleButton-checked-color: var(--bit-clr-pri);
+                        --bit-ToggleButton-checked-border-color: var(--bit-clr-pri);"" />
+
+<BitToggleButton Text=""Big glyph, wide gap"" IconName=""@BitIconName.Zoom""
+                 Style=""--bit-ToggleButton-icon-size: 1.5rem; --bit-ToggleButton-gap: 1rem;"" />
+
+
+<div style=""--bit-ToggleButton-radius: 0; --bit-ToggleButton-min-height: 2.5rem; --bit-ToggleButton-font-weight: 600;"">
+    <BitToggleButton Variant=""BitVariant.Outline"" ShowCheckMark FixedCheckMark Text=""Bold"" />
+    <BitToggleButton Variant=""BitVariant.Outline"" ShowCheckMark FixedCheckMark Text=""Italic"" />
+    <BitToggleButton Variant=""BitVariant.Outline"" ShowCheckMark FixedCheckMark Text=""Underline"" />
+</div>";
 
     private readonly string example18RazorCode = @"
 <div dir=""rtl"">

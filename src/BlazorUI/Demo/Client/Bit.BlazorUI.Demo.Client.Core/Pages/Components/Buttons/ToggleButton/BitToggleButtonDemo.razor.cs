@@ -171,14 +171,21 @@ public partial class BitToggleButtonDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the toggle button is in the loading state, which replaces its content with a spinner and prevents subsequent clicks unless Reclickable is enabled.",
+            Description = "Determines whether the toggle button is in the loading state, which covers its content with a spinner and prevents subsequent clicks unless Reclickable is enabled. The content stays in place behind the spinner, so the accessible name does not disappear while the toggle button is busy.",
+        },
+        new()
+        {
+            Name = "LoadingDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the spinner appears after the toggle button enters the loading state, which keeps a fast toggle from flashing one. The click guard of the loading state applies immediately regardless of the delay.",
         },
         new()
         {
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The loading label text to show next to the spinner icon.",
+            Description = "The loading label text to show next to the spinner icon. It is also announced by a live region beside the toggle button when the loading state begins.",
         },
         new()
         {
@@ -195,6 +202,13 @@ public partial class BitToggleButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template used to replace the default content of the toggle button in the loading state.",
+        },
+        new()
+        {
+            Name = "NoWrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the text of the toggle button on a single line and ends it with an ellipsis where it does not fit.",
         },
         new()
         {
@@ -231,7 +245,7 @@ public partial class BitToggleButtonDemo
             Name = "OffTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the toggle button when it is not checked.",
+            Description = "The custom content of the toggle button when it is not checked. A template that differs from the one of the other state usually changes the accessible name with it, which the automatic AriaMode cannot detect the way it detects a changing text; set AriaLabel or AriaMode to settle it.",
         },
         new()
         {
@@ -311,7 +325,7 @@ public partial class BitToggleButtonDemo
             Name = "OnTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the toggle button when it is checked.",
+            Description = "The custom content of the toggle button when it is checked. A template that differs from the one of the other state usually changes the accessible name with it, which the automatic AriaMode cannot detect the way it detects a changing text; set AriaLabel or AriaMode to settle it.",
         },
         new()
         {
@@ -348,7 +362,7 @@ public partial class BitToggleButtonDemo
             Name = "ShowCheckMark",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a check mark in the checked state so the state is not conveyed by color alone.",
+            Description = "Renders a check mark in the checked state so the state is not conveyed by color alone, which is also what keeps the state readable in Windows High Contrast. It is part of the default body, so a toggle button given a template renders none.",
         },
         new()
         {
@@ -413,6 +427,190 @@ public partial class BitToggleButtonDemo
             Name = "ToggleAsync",
             Type = "Task",
             Description = "Toggles the checked state of the toggle button, going through the same cancellation and change notification path a click does.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ToggleButton-color",
+            DefaultValue = "Per Variant: the role's on color (Fill), its main color (Outline, Text)",
+            Description = "Foreground of the unchecked toggle button at rest. The checked state paints its own, so setting this one alone never changes how the state reads.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-background",
+            DefaultValue = "Per Variant: the role's main color (Fill), transparent (Outline, Text)",
+            Description = "Background of the unchecked toggle button at rest, and the fallback of its resting border color.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-border-color",
+            DefaultValue = "--bit-ToggleButton-background, then per Variant",
+            Description = "Border color of the unchecked toggle button at rest. The Outline variant is the one that draws it in the role color while the background stays transparent.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-hover-color",
+            DefaultValue = "Per Variant: the resting foreground (Fill), the role's on color (Outline, Text)",
+            Description = "Foreground while hovered, on pointer devices only.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Background while hovered, and the fallback of the hovered border color.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-hover-border-color",
+            DefaultValue = "--bit-ToggleButton-hover-background",
+            Description = "Border color while hovered. Set it on its own to keep an outline steady under a changing background.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-active-color",
+            DefaultValue = "--bit-ToggleButton-hover-color",
+            Description = "Foreground while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-active-background",
+            DefaultValue = "The Color role's active color",
+            Description = "Background while pressed, and the fallback of the pressed border color.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-active-border-color",
+            DefaultValue = "--bit-ToggleButton-active-background",
+            Description = "Border color while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Foreground while checked, in every variant.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-background",
+            DefaultValue = "The Color role's dark color",
+            Description = "Background while checked, and the fallback of the checked border color. It is what separates the two states visually, so it stays worth keeping distinct from the resting background.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-border-color",
+            DefaultValue = "--bit-ToggleButton-checked-background",
+            Description = "Border color while checked.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-hover-background",
+            DefaultValue = "The Color role's dark hover color",
+            Description = "Background while checked and hovered.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-hover-border-color",
+            DefaultValue = "--bit-ToggleButton-checked-hover-background",
+            Description = "Border color while checked and hovered.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-active-background",
+            DefaultValue = "The Color role's dark active color",
+            Description = "Background while checked and pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-active-border-color",
+            DefaultValue = "--bit-ToggleButton-checked-active-background",
+            Description = "Border color while checked and pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-disabled-color",
+            DefaultValue = "The Color role's disabled text color",
+            Description = "Foreground when IsEnabled is false; also the focus ring color of a disabled toggle button kept focusable with AllowDisabledFocus.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-disabled-background",
+            DefaultValue = "Per Variant: the role's disabled color (Fill), transparent (Outline, Text)",
+            Description = "Background when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-disabled-border-color",
+            DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
+            Description = "Border color when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the box, which the background and the focus ring follow. Set it to 999px for the pill-shaped toggle buttons of a filter row.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the border. The Fill and Text variants draw theirs in the background color, so thickening it only shows on Outline unless a border color is set with it.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-min-width",
+            DefaultValue = "--bit-siz-ctrl-min-width",
+            Description = "Smallest width of the box. An icon-only toggle button falls back to its minimum height rather than to the control minimum, which is what keeps it square.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-min-height",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Smallest height of the box, which is what lines a toggle button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. It is also the minimum width of an icon-only toggle button.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-padding",
+            DefaultValue = "Per Size: the control's y and x padding, square when icon-only",
+            Description = "Padding of the box.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-gap",
+            DefaultValue = "spacing(0.5), 0 when there is no text",
+            Description = "Room between the check mark, the icon and the text.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Font size of the text.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Font weight of the text. Raising it on the checked state alone is not possible from here, since one box carries both states; use Styles.Checked for that.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-icon-size",
+            DefaultValue = "The text size, or per Size the glyph size when icon-only",
+            Description = "Size of the icon and the check mark. With a label beside it the glyph rides the text by default, which is what keeps the two lined up at any font scale.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-spinner-size",
+            DefaultValue = "Per Size: spacing(2) / spacing(2.35) / spacing(2.75)",
+            Description = "Diameter of the spinner shown in the loading state.",
         },
     ];
 

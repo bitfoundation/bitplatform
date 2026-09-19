@@ -3,6 +3,33 @@
 
 @{
     var template = GetTemplate();
+    var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone, so every
+    // attribute a page can also write by hand is resolved against what it wrote (see BitComponentBase.GetSplattedAttribute)
+    // instead of being overwritten with the parameter's null. The hyphenated aria-* names cannot reach the parameters
+    // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
+    // by hand is a real thing to do, and losing it would take a control's name or state with it.
+    var title = GetTitle() ?? GetSplattedAttribute("title");
+    var ariaLabel = GetAriaLabel() ?? GetSplattedAttribute("aria-label");
+    var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
+    var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
+    var ariaLabelledBy = AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby");
+    // The state attribute is the component's own, so it wins where it has one to write; where AriaMode leaves it out
+    // altogether, a value the page wrote by hand is what is left and is kept.
+    var ariaPressed = GetAriaPressed() ?? GetSplattedAttribute("aria-pressed");
+    var ariaChecked = GetAriaChecked() ?? GetSplattedAttribute("aria-checked");
+    // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
+    var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
+    // The toggle button pattern is a button unless AriaMode asks for a switch, but a page that gave it a role of its
+    // own - a menuitemcheckbox in a menu, an option in a listbox - means that one and keeps it.
+    var role = GetSplattedAttribute("role") ?? GetRole();
+    // Autofocus follows the same rule as the tab order below: a control hidden from assistive technologies, or a
+    // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
+    // autofocus included.
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (IsEnabled || AllowDisabledFocus);
 
     RenderFragment content = @<text>
         @if (template is not null)
@@ -43,33 +70,37 @@
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()"
         type="button"
-        role="@GetRole()"
-        title="@GetTitle()"
+        role="@role"
+        title="@title"
         disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
-        autofocus="@AutoFocus"
-        tabindex="@_tabIndex"
-        aria-label="@GetAriaLabel()"
-        aria-hidden="@(AriaHidden ? "true" : null)"
-        aria-controls="@AriaControls"
-        aria-pressed="@GetAriaPressed()"
-        aria-checked="@GetAriaChecked()"
-        aria-busy="@(IsLoading ? "true" : null)"
-        aria-disabled="@(IsEnabled ? null : "true")"
-        aria-labelledby="@AriaLabelledBy"
-        aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)">
-    @if (IsLoading is false)
+        autofocus="@autoFocus"
+        tabindex="@GetTabIndex(ariaHidden)"
+        aria-label="@ariaLabel"
+        aria-hidden="@(ariaHidden ? "true" : null)"
+        aria-controls="@ariaControls"
+        aria-pressed="@ariaPressed"
+        aria-checked="@ariaChecked"
+        aria-busy="@ariaBusy"
+        aria-disabled="@ariaDisabled"
+        aria-labelledby="@ariaLabelledBy"
+        aria-describedby="@(describedBy.HasValue() ? describedBy : null)">
+    @if (_showLoading is false)
     {
         @content
     }
     else
     {
-        <div aria-hidden="true" style="@Styles?.HiddenContent" class="bit-tgb-hcn @Classes?.HiddenContent">
+        @* Faded out rather than hidden, and deliberately not aria-hidden: the content is what names the button, and
+           a name that disappears while it is busy leaves a screen reader with nothing to announce it as. The loading
+           visuals stacked over it carry the aria-hidden instead - the spinner says nothing, and the label is
+           announced once by the live region below rather than folded into the name on every re-render. *@
+        <div style="@Styles?.HiddenContent" class="bit-tgb-hcn @Classes?.HiddenContent">
             @content
         </div>
 
-        @if (LoadingTemplate is null)
-        {
-            <div style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
+        <div aria-hidden="true" style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
+            @if (LoadingTemplate is null)
+            {
                 <div style="@Styles?.Spinner" class="bit-tgb-spn @Classes?.Spinner"></div>
                 @if (LoadingLabel.HasValue())
                 {
@@ -77,17 +108,27 @@
                         @LoadingLabel
                     </div>
                 }
-            </div>
-        }
-        else
-        {
-            @LoadingTemplate
-        }
+            }
+            else
+            {
+                @LoadingTemplate
+            }
+        </div>
     }
 </button>
 
-@* rendered as a sibling of the button so the description drives aria-describedby without leaking into the accessible name *@
-@if (AriaDescription.HasValue())
+@* Both of the screen-reader-only pieces are rendered as siblings of the button rather than inside it, so that neither
+   joins its accessible name: the description is read after the name through aria-describedby, and the live region
+   would otherwise repeat the loading label the button is already showing.
+   The region is rendered from the first render rather than when the loading starts - a live region only announces
+   what changes inside one already in the document - but a button given no loading label has nothing to announce,
+   and one the readers have been told to ignore has nobody to announce it to. *@
+@if (LoadingLabel.HasValue() && ariaHidden is false)
 {
-    <span id="@($"{_Id}-dsc")" class="bit-tgb-dsc">@AriaDescription</span>
+    <span class="bit-tgb-sts" role="status">@(_showLoading ? LoadingLabel : null)</span>
+}
+
+@if (descriptionId is not null)
+{
+    <span id="@descriptionId" class="bit-tgb-dsc">@AriaDescription</span>
 }

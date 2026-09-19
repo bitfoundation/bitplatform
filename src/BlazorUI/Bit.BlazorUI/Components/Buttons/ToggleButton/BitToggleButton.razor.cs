@@ -7,8 +7,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitToggleButton : BitComponentBase
 {
-    private string? _tabIndex;
+    private bool _showLoading;
     private int _pendingChanges;
+    private CancellationTokenSource? _loadingDelayCts;
 
 
 
@@ -27,6 +28,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Detailed description of the toggle button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the toggle button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -149,15 +155,31 @@ public partial class BitToggleButton : BitComponentBase
     public bool IsChecked { get; set; }
 
     /// <summary>
-    /// Determines whether the toggle button is in the loading state, which replaces its content
+    /// Determines whether the toggle button is in the loading state, which covers its content
     /// with a spinner and prevents subsequent clicks unless <see cref="Reclickable"/> is enabled.
     /// </summary>
+    /// <remarks>
+    /// The content stays in place behind the spinner rather than being removed, so the accessible name of the
+    /// toggle button does not disappear while it is busy. <see cref="LoadingDelay"/> holds the spinner back for
+    /// a fast toggle without lifting the click guard.
+    /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the spinner appears after the toggle button enters the loading state,
+    /// which keeps a fast toggle from flashing one. The click guard of the loading state applies immediately
+    /// regardless of the delay.
+    /// </summary>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
     /// The loading label text to show next to the spinner icon.
     /// </summary>
+    /// <remarks>
+    /// It is also announced by a live region beside the toggle button when the loading state begins, since the
+    /// spinner itself conveys nothing to a screen reader.
+    /// </remarks>
     [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
@@ -169,6 +191,13 @@ public partial class BitToggleButton : BitComponentBase
     /// The custom template used to replace the default content of the toggle button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps the text of the toggle button on a single line and ends it with an ellipsis where it does not fit,
+    /// for a toggle button whose width is decided by its container rather than by its content.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
 
     /// <summary>
     /// Callback for when the IsChecked value has changed.
@@ -223,6 +252,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The custom content of the toggle button when it is not checked.
     /// </summary>
+    /// <remarks>
+    /// A template that differs from the one of the other state usually changes the accessible name with it, which
+    /// the automatic <see cref="AriaMode"/> cannot detect the way it detects a changing text. Set
+    /// <see cref="BitComponentBase.AriaLabel"/> to pin the name down, or set <see cref="AriaMode"/> explicitly.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public RenderFragment? OffTemplate { get; set; }
 
@@ -282,6 +316,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The custom content of the toggle button when it is checked.
     /// </summary>
+    /// <remarks>
+    /// A template that differs from the one of the other state usually changes the accessible name with it, which
+    /// the automatic <see cref="AriaMode"/> cannot detect the way it detects a changing text. Set
+    /// <see cref="BitComponentBase.AriaLabel"/> to pin the name down, or set <see cref="AriaMode"/> explicitly.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public RenderFragment? OnTemplate { get; set; }
 
@@ -313,8 +352,12 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
-    /// Renders a check mark in the checked state so the state is not conveyed by color alone.
+    /// Renders a check mark in the checked state so the state is not conveyed by color alone, which is also what
+    /// keeps the state readable in Windows High Contrast, where the background carrying it is discarded.
     /// </summary>
+    /// <remarks>
+    /// The check mark is part of the default body, so a toggle button given a template renders none.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool ShowCheckMark { get; set; }
 
@@ -388,7 +431,11 @@ public partial class BitToggleButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-tgb-flw" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-tgb-lda" : string.Empty);
+        // The grid that stacks the loading visuals over the content follows what is actually shown rather than
+        // the parameter, so a toggle button inside its LoadingDelay keeps laying out as a plain one.
+        ClassBuilder.Register(() => _showLoading ? "bit-tgb-lda" : string.Empty);
+
+        ClassBuilder.Register(() => NoWrap ? "bit-tgb-nwr" : string.Empty);
 
         ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-tgb-eni" : string.Empty);
 
@@ -450,10 +497,95 @@ public partial class BitToggleButton : BitComponentBase
 
     protected override void OnParametersSet()
     {
-        // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
-        _tabIndex = (IsEnabled is false && AllowDisabledFocus is false) ? "-1" : TabIndex;
+        UpdateLoadingVisuals();
 
         base.OnParametersSet();
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
+
+        await base.DisposeAsync(disposing);
+    }
+
+
+
+    /// <summary>
+    /// The tab order of the toggle button, falling back to the browser default so the disabled state's
+    /// tabindex does not stick around after re-enabling.
+    /// </summary>
+    private string? GetTabIndex(bool ariaHidden)
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
+        // user lands on something a screen reader has nothing to say about.
+        if (ariaHidden) return "-1";
+
+        if (IsEnabled is false && AllowDisabledFocus is false) return "-1";
+
+        return TabIndex;
+    }
+
+    private void UpdateLoadingVisuals()
+    {
+        if (IsLoading)
+        {
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                SetShowLoading(true);
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            SetShowLoading(false);
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+
+        SetShowLoading(true);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // The stacking grid is a registered class, so the builder has to be told when the value behind it moves -
+    // nothing else does, since the field is not a parameter.
+    private void SetShowLoading(bool value)
+    {
+        if (_showLoading == value) return;
+
+        _showLoading = value;
+
+        ClassBuilder.Reset();
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
     }
 
 

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -544,5 +546,258 @@ public class BitToggleButtonTests : BunitTestContext
         var bitToggleButton = component.Find(".bit-tgb");
 
         Assert.AreEqual(isChecked ? "Unmute" : "Mute", bitToggleButton.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldKeepItsAccessibleNameWhileLoading()
+    {
+        // The content is faded out rather than hidden from assistive technologies: a name that disappears while the
+        // toggle button is busy leaves a screen reader with nothing to announce it as.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Text, "Microphone");
+        });
+
+        var hiddenContent = component.Find(".bit-tgb-hcn");
+
+        Assert.IsFalse(hiddenContent.HasAttribute("aria-hidden"));
+        Assert.AreEqual("Microphone", hiddenContent.TextContent.Trim());
+
+        // while the spinner and the loading label, which say nothing a reader needs, are the ones taken out
+        Assert.AreEqual("true", component.Find(".bit-tgb-ldg").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldAnnounceTheLoadingLabelThroughALiveRegion()
+    {
+        const string loadingLabel = "Saving...";
+
+        // A live region only announces what changes inside one already in the document, so the region is rendered
+        // from the first render - and left out altogether for a toggle button whose loading has nothing to announce.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.LoadingLabel, loadingLabel);
+            parameters.Add(p => p.Text, "Microphone");
+        });
+
+        var status = component.Find(".bit-tgb-sts");
+
+        Assert.AreEqual("status", status.GetAttribute("role"));
+        Assert.AreEqual(string.Empty, status.TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingLabel, loadingLabel);
+            parameters.Add(p => p.Text, "Microphone");
+        });
+
+        Assert.AreEqual(loadingLabel, component.Find(".bit-tgb-sts").TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.LoadingLabel, null);
+            parameters.Add(p => p.Text, "Microphone");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-tgb-sts"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonLoadingDelayShouldDeferTheSpinnerButGuardImmediately()
+    {
+        var isChecked = false;
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 200);
+            parameters.Bind(p => p.IsChecked, isChecked, v => isChecked = v);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        // The click guard and the busy state apply immediately; only the spinner waits out the delay.
+        Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-busy"));
+        Assert.IsFalse(bitToggleButton.ClassList.Contains("bit-tgb-lda"));
+        Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+
+        bitToggleButton.Click();
+        Assert.IsFalse(isChecked);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.HasCount(1, component.FindAll(".bit-tgb-spn"));
+            Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonLoadingDelayShouldNeverShowTheSpinnerForAFastLoad()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 5000);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.LoadingDelay, 5000);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+        Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("aria-busy"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonNoWrapTest(bool noWrap)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, noWrap);
+            parameters.Add(p => p.Text, "A rather long toggle button label");
+        });
+
+        Assert.AreEqual(noWrap, component.Find(".bit-tgb").ClassList.Contains("bit-tgb-nwr"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldLeaveTheTabOrderWhenItIsHiddenFromAssistiveTechnologies()
+    {
+        // A control a screen reader is told to ignore must not be reachable by Tab either, or a keyboard user
+        // lands on something the reader has nothing to say about. The same holds for an aria-hidden written by
+        // hand, which is what the splatted test below covers.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AriaHidden, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("-1", bitToggleButton.GetAttribute("tabindex"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldNotAutoFocusADisabledButtonThatIsOutOfTheTabOrder()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("autofocus"));
+    }
+
+    /// <summary>
+    /// Renders a toggle button with the given attributes splatted onto it, the way real markup does.
+    /// The builder rejects unmatched parameters on a component without [Parameter(CaptureUnmatchedValues)],
+    /// so an attribute BitComponentBase captures has to arrive as a raw component attribute.
+    /// </summary>
+    private IRenderedComponent<BitToggleButton> RenderSplatted(Dictionary<string, object> attributes)
+    {
+        return Context.Render<BitToggleButton>(builder =>
+        {
+            builder.OpenComponent<BitToggleButton>(0);
+            builder.AddMultipleAttributes(1, attributes);
+            builder.CloseComponent();
+        });
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldKeepTheAttributesWrittenByHandBesideItsOwn()
+    {
+        // A hyphenated aria-* name never reaches the parameter that mirrors it, so it arrives as a splatted
+        // attribute - which the null of the component would silently remove rather than leave alone, taking the
+        // name or the state of the control with it.
+        var component = RenderSplatted(new()
+        {
+            ["AriaDescription"] = "Turns the microphone off.",
+            ["aria-label"] = "Mute",
+            ["aria-describedby"] = "external-help",
+            ["aria-controls"] = "microphone-panel",
+            ["role"] = "menuitemcheckbox"
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("Mute", bitToggleButton.GetAttribute("aria-label"));
+        Assert.AreEqual("menuitemcheckbox", bitToggleButton.GetAttribute("role"));
+        Assert.AreEqual("microphone-panel", bitToggleButton.GetAttribute("aria-controls"));
+
+        // aria-describedby is a list of ids, so the one written by hand keeps its place beside the description
+        Assert.AreEqual($"external-help {component.Find(".bit-tgb-dsc").Id}", bitToggleButton.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonOwnParametersShouldWinOverTheAttributesWrittenByHand()
+    {
+        var component = RenderSplatted(new()
+        {
+            ["AriaLabel"] = "Mute",
+            ["OnAriaLabel"] = "Unmute",
+            ["IsChecked"] = true,
+            ["aria-label"] = "Something else",
+            ["aria-pressed"] = "false",
+            ["role"] = "button"
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("Unmute", bitToggleButton.GetAttribute("aria-label"));
+
+        // the two a page is left in charge of: the role, which places the toggle button in a pattern of its own,
+        // and a state attribute for the states where AriaMode has the component render none. Here the name changes
+        // with the state, so the component writes no aria-pressed and the one written by hand is what is left.
+        Assert.AreEqual("button", bitToggleButton.GetAttribute("role"));
+        Assert.AreEqual("false", bitToggleButton.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonSplattedAriaHiddenShouldRemoveItFromTheTabOrder()
+    {
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["AutoFocus"] = true,
+            ["aria-hidden"] = "true"
+        }).Find(".bit-tgb");
+
+        Assert.AreEqual("-1", bitToggleButton.GetAttribute("tabindex"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("autofocus"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonIconOnlyShouldTakeTheNoTextClassOfItsSizeClass(bool iconOnly)
+    {
+        // The size class carries the control height of its size as a floor, which is what lines a toggle button up
+        // with the other controls beside it and keeps the smallest one above the 24px pointer target of WCAG 2.2.
+        // An icon-only one takes that same height as a minimum width through the no-text class, so it stays square.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.IconOnly, iconOnly);
+            parameters.Add(p => p.IconName, "Microphone");
+            parameters.Add(p => p.Text, "Microphone");
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-sm"));
+        Assert.AreEqual(iconOnly, bitToggleButton.ClassList.Contains("bit-tgb-ntx"));
     }
 }

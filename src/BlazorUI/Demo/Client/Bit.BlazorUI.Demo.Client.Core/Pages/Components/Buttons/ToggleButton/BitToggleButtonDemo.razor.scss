@@ -13,6 +13,13 @@
     align-items: center;
 }
 
+.narrow-column {
+    gap: 0.5rem;
+    display: flex;
+    max-width: 16rem;
+    flex-flow: column nowrap;
+}
+
 .clickable-box {
     cursor: pointer;
     padding: 1rem;
