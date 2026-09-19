@@ -610,7 +610,8 @@ public class BitDropMenuTests : BunitTestContext
     [DataRow(BitPlacement.End, "end", BitSwipeOrientation.Horizontal)]
     [DataRow(BitPlacement.Top, "top", BitSwipeOrientation.Vertical)]
     [DataRow(BitPlacement.Bottom, "bottom", BitSwipeOrientation.Vertical)]
-    [DataRow(BitPlacement.Left, "end", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Left, "start", BitSwipeOrientation.Horizontal)]
+    [DataRow(BitPlacement.Right, "end", BitSwipeOrientation.Horizontal)]
     [DataRow(BitPlacement.Center, "end", BitSwipeOrientation.Horizontal)]
     public void BitDropMenuShouldLockTheSwipeToTheAxisThePanelSlidesOn(BitPlacement position, string edge, BitSwipeOrientation expected)
     {
@@ -624,8 +625,9 @@ public class BitDropMenuTests : BunitTestContext
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
 
         // The arguments of Swipes.setup, in order: id, trigger, position, isRtl, orientationLock,
-        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name, and a side a panel cannot slide
-        // in from is resolved to the default end before it does.
+        // dotnetObj, isResponsive, scrollContainerId. The position crosses by name; a physical side is read against
+        // the direction (left is start in this left-to-right menu), and a side that names no edge is resolved to the
+        // default end before it does.
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
         Assert.AreEqual(edge, setup.Arguments[2]);
         Assert.AreEqual(expected, setup.Arguments[4]);

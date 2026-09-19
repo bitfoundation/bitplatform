@@ -596,6 +596,11 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
         .bc-legend-dot { display: inline-block; border-radius: 50%; flex: 0 0 auto; }
         .bc-legend-marker { flex: 0 0 auto; overflow: visible; }
         .bc-legend-title { font-weight: bold; width: 100%; text-align: center; }
+        .bc-align-start { justify-content: flex-start; }
+        .bc-align-end { justify-content: flex-end; }
+        .bc-align-left { justify-content: flex-start; justify-content: left; }
+        .bc-align-right { justify-content: flex-end; justify-content: right; }
+        .bc-align-center { justify-content: center; }
         .bc-tooltip { position: absolute; transform: translate(-50%, calc(-100% - 10px)); pointer-events: none; white-space: nowrap; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.25); transition: left .08s linear, top .08s linear; }
         .bc-tt-title { margin-bottom: 3px; }
         .bc-tt-footer { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.25); }
@@ -750,16 +755,17 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     private bool HasPointData => _config.Data.Datasets.Any(d => d.Points is { Count: > 0 });
 
     // Each value is written as the CSS keyword that means what it says: the logical pair as the flex and text keywords
-    // that follow the reading direction, the physical pair as the ones that never move. The physical justify-content
-    // keywords are the newer ones in a flex box, so each is preceded by the logical keyword naming the same edge in a
-    // left-to-right layout, which a browser that drops it falls back to. Every value without an edge centers.
-    private static string AlignToFlex(BitPlacement a) => a switch
+    // that follow the reading direction, the physical pair as the ones that never move. Every value without an edge
+    // centers. The alignment along the edge is a class rather than an inline value (see AnimationStyles) because the
+    // physical justify-content keywords are the newer ones in a flex box: each rule names the logical keyword for the
+    // same edge in a left-to-right layout first, for a browser that drops the physical one to fall back to.
+    private static string AlignClass(BitPlacement a) => a switch
     {
-        BitPlacement.Start => "flex-start",
-        BitPlacement.End => "flex-end",
-        BitPlacement.Left => "flex-start;justify-content:left",
-        BitPlacement.Right => "flex-end;justify-content:right",
-        _ => "center"
+        BitPlacement.Start => "bc-align-start",
+        BitPlacement.End => "bc-align-end",
+        BitPlacement.Left => "bc-align-left",
+        BitPlacement.Right => "bc-align-right",
+        _ => "bc-align-center"
     };
 
     private static string TextAlign(BitPlacement a) => a switch

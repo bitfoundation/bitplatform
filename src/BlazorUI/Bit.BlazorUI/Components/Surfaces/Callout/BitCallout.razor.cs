@@ -364,8 +364,8 @@ public partial class BitCallout : BitComponentBase
     /// Panel. It defaults to End.
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
-    /// fall back to the default.
+    /// Left and Right are read against the direction of the panel, so they land on Start or End; Center and
+    /// the two combined values name no edge and fall back to the default.
     /// </remarks>
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
@@ -1004,14 +1004,7 @@ public partial class BitCallout : BitComponentBase
                 arrowId: ShowArrow ? _arrowId : "",
                 gap: Gap,
                 noDismiss: NoDismissOnOutsideClick,
-                preferredSide: Placement switch
-                {
-                    BitPlacement.Top => "top",
-                    BitPlacement.Bottom => "bottom",
-                    BitPlacement.Start => "start",
-                    BitPlacement.End => "end",
-                    _ => ""
-                },
+                preferredSide: Placement.ToEdgeName(fallback: ""),
                 alignment: Alignment switch
                 {
                     BitPlacement.Center => "center",
@@ -1328,7 +1321,7 @@ public partial class BitCallout : BitComponentBase
     {
         BitResponsiveMode.Top => BitPlacement.Top,
         BitResponsiveMode.Bottom => BitPlacement.Bottom,
-        _ => PanelPlacement.ToPanelSide()
+        _ => PanelPlacement.ToPanelSide(Dir is BitDir.Rtl)
     };
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.

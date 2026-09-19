@@ -199,7 +199,7 @@
     private RenderFragment RenderTitle(BitChartTitleModel title, string cls) => __builder =>
     {
         var lines = title.Text.Split('\n');
-        <div class="@cls" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight;justify-content:@AlignToFlex(title.Align)">
+        <div class="@cls @AlignClass(title.Align)" style="color:@title.Color;font-family:@title.Font.Family;font-size:@(BitChartSvg.N(title.Font.Size))px;font-weight:@title.Font.Weight">
             <div style="text-align:@TextAlign(title.Align)">
                 @for (int i = 0; i < lines.Length; i++)
                 {
@@ -252,8 +252,7 @@
     private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
     {
         bool vertical = legend.Placement is BitPlacement.Left or BitPlacement.Right;
-        <div class="bc-legend @(vertical ? "bc-legend-v" : "bc-legend-h")"
-             style="justify-content:@AlignToFlex(legend.Align)">
+        <div class="bc-legend @(vertical ? "bc-legend-v" : "bc-legend-h") @AlignClass(legend.Align)">
             @if (!string.IsNullOrEmpty(legend.Title))
             {
                 <div class="bc-legend-title">@legend.Title</div>

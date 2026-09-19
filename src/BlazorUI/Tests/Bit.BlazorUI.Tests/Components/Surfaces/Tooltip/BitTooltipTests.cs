@@ -103,7 +103,8 @@ public class BitTooltipTests : BunitTestContext
 
     // Every side crossed with every alignment, in a left-to-right tooltip: the logical sides land on the
     // physical ones a left-to-right reader sees, and the alignment of a tooltip beside its anchor runs top
-    // to bottom rather than along the text.
+    // to bottom rather than along the text. A physical alignment only means anything on its own axis, so
+    // off it - like Center and the two combined values, which name no edge - it centers the tooltip.
     [DataTestMethod]
     [DataRow(BitPlacement.Top, BitPlacement.Center, "bit-ttp-top")]
     [DataRow(BitPlacement.Top, BitPlacement.Start, "bit-ttp-tlf")]
@@ -123,6 +124,24 @@ public class BitTooltipTests : BunitTestContext
     [DataRow(BitPlacement.Right, BitPlacement.Center, "bit-ttp-rgt")]
     [DataRow(BitPlacement.Right, BitPlacement.Start, "bit-ttp-rtp")]
     [DataRow(BitPlacement.Right, BitPlacement.End, "bit-ttp-rbm")]
+    [DataRow(BitPlacement.Top, BitPlacement.Left, "bit-ttp-tlf")]
+    [DataRow(BitPlacement.Top, BitPlacement.Right, "bit-ttp-trg")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Left, "bit-ttp-blf")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Right, "bit-ttp-brg")]
+    [DataRow(BitPlacement.Left, BitPlacement.Top, "bit-ttp-ltp")]
+    [DataRow(BitPlacement.Left, BitPlacement.Bottom, "bit-ttp-lbm")]
+    [DataRow(BitPlacement.Right, BitPlacement.Top, "bit-ttp-rtp")]
+    [DataRow(BitPlacement.Right, BitPlacement.Bottom, "bit-ttp-rbm")]
+    [DataRow(BitPlacement.Top, BitPlacement.Top, "bit-ttp-top")]
+    [DataRow(BitPlacement.Top, BitPlacement.Bottom, "bit-ttp-top")]
+    [DataRow(BitPlacement.Bottom, BitPlacement.Bottom, "bit-ttp-btm")]
+    [DataRow(BitPlacement.Left, BitPlacement.Left, "bit-ttp-lft")]
+    [DataRow(BitPlacement.Left, BitPlacement.Right, "bit-ttp-lft")]
+    [DataRow(BitPlacement.Right, BitPlacement.Right, "bit-ttp-rgt")]
+    [DataRow(BitPlacement.Top, BitPlacement.TopAndBottom, "bit-ttp-top")]
+    [DataRow(BitPlacement.Top, BitPlacement.StartAndEnd, "bit-ttp-top")]
+    [DataRow(BitPlacement.Start, BitPlacement.StartAndEnd, "bit-ttp-lft")]
+    [DataRow(BitPlacement.Start, BitPlacement.TopAndBottom, "bit-ttp-lft")]
     public void BitTooltipShouldRespectSideAndAlignment(BitPlacement side, BitPlacement alignment, string expectedClass)
     {
         var component = RenderComponent<BitTooltip>(parameters =>

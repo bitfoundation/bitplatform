@@ -190,6 +190,31 @@ public class BitPanelTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains(positionClass));
     }
 
+    // The panel draws its inline edges logically, so a physical side is read against the direction: Left is the
+    // start edge of a left-to-right panel and the end edge of a right-to-left one. The swipe is registered with the
+    // same edge, so the class the panel draws and the edge the gesture returns it to never disagree.
+    [TestMethod,
+        DataRow(BitPlacement.Left, BitDir.Ltr, "bit-pnl-start", "start"),
+        DataRow(BitPlacement.Right, BitDir.Ltr, "bit-pnl-end", "end"),
+        DataRow(BitPlacement.Left, BitDir.Rtl, "bit-pnl-end", "end"),
+        DataRow(BitPlacement.Right, BitDir.Rtl, "bit-pnl-start", "start"),
+        DataRow(BitPlacement.Center, BitDir.Ltr, "bit-pnl-end", "end")
+    ]
+    public void BitPanelShouldReadAPhysicalSideAgainstTheDirection(BitPlacement position, BitDir dir, string expectedClass, string expectedEdge)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Placement, position);
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains(expectedClass));
+
+        var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
+        Assert.AreEqual(expectedEdge, setup.Arguments[2]);
+    }
+
     [TestMethod,
         DataRow(BitPlacement.Start, "width"),
         DataRow(BitPlacement.End, "width"),

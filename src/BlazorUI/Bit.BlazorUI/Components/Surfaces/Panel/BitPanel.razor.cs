@@ -414,8 +414,8 @@ public partial class BitPanel : BitComponentBase
     /// the direction of the panel. It defaults to End.
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
-    /// fall back to the default.
+    /// Left and Right are read against the direction of the panel, so they land on Start or End; Center and
+    /// the two combined values name no edge and fall back to the default.
     /// </remarks>
     [Parameter] public BitPlacement? Placement { get; set; }
 
@@ -908,7 +908,7 @@ public partial class BitPanel : BitComponentBase
                                         && (ScrollerElementTarget.HasValue || ScrollerSelector.HasValue());
 
     // The edge the panel actually slides in from; every consumer of Placement goes through it (see ToPanelSide).
-    private BitPlacement EffectivePosition => Placement.ToPanelSide();
+    private BitPlacement EffectivePosition => Placement.ToPanelSide(Dir is BitDir.Rtl);
 
     private bool IsHorizontal => EffectivePosition.IsInlineSide();
 

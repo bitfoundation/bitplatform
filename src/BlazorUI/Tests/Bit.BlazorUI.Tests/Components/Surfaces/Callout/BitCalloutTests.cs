@@ -1441,6 +1441,9 @@ public class BitCalloutTests : BunitTestContext
     [DataRow(BitResponsiveMode.Panel, null, "bit-clo-end")]
     [DataRow(BitResponsiveMode.Panel, BitPlacement.Start, "bit-clo-sta")]
     [DataRow(BitResponsiveMode.Panel, BitPlacement.End, "bit-clo-end")]
+    [DataRow(BitResponsiveMode.Panel, BitPlacement.Left, "bit-clo-sta")]
+    [DataRow(BitResponsiveMode.Panel, BitPlacement.Right, "bit-clo-end")]
+    [DataRow(BitResponsiveMode.Panel, BitPlacement.Center, "bit-clo-end")]
     [DataRow(BitResponsiveMode.Top, null, "bit-clo-top")]
     [DataRow(BitResponsiveMode.Bottom, null, "bit-clo-btm")]
     public void BitCalloutShouldRenderTheResponsivePanelClasses(BitResponsiveMode mode, BitPlacement? position, string expectedClass)

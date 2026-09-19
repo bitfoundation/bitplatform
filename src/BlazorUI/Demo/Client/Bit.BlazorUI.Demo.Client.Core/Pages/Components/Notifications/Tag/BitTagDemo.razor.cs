@@ -266,7 +266,7 @@ public partial class BitTagDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the tag. Only Rounded, Pill and Square are honoured: a tag takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
+            Description = "The corner shape of the tag. A tag takes its box from its own content, so Circle has no proportions to impose and rounds the ends fully, the same as Pill.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },

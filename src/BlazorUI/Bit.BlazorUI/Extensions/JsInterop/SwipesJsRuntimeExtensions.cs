@@ -14,15 +14,9 @@ internal static class SwipesJsRuntimeExtensions
              bool isResponsive = true,
              string scrollContainerId = "") where T : class
     {
-        // Handed over by name rather than as its ordinal, so the order of BitPlacement is no contract with Swipes.ts.
-        // A caller resolves its placement to one of the four edges a swipe can be set up for first (ToPanelSide).
-        var edge = position switch
-        {
-            BitPlacement.Top => "top",
-            BitPlacement.Bottom => "bottom",
-            BitPlacement.Start => "start",
-            _ => "end"
-        };
+        // A caller resolves its placement to one of the four edges a swipe can be set up for first (ToPanelSide),
+        // so the fallback is only ever the default edge that resolution would have produced anyway.
+        var edge = position.ToEdgeName(fallback: "end");
 
         return js.InvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, edge, isRtl, orientationLock, dotnetObj, isResponsive, scrollContainerId);
     }

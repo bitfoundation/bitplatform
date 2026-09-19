@@ -243,8 +243,8 @@ public partial class BitDropMenu : BitComponentBase
     /// The position of the responsive panel to show on the screen.
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Start and End are meaningful here; the physical pair and the two combined values
-    /// fall back to the default.
+    /// Left and Right are read against the direction of the panel, so they land on Start or End; Center and
+    /// the two combined values name no edge and fall back to the default.
     /// </remarks>
     [Parameter] public BitPlacement? PanelPlacement { get; set; }
 
@@ -989,7 +989,7 @@ public partial class BitDropMenu : BitComponentBase
     }
 
     // The edge the responsive panel slides in from; every consumer of PanelPlacement goes through it (see ToPanelSide).
-    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide();
+    private BitPlacement EffectivePanelPosition => PanelPlacement.ToPanelSide(Dir is BitDir.Rtl);
 
     // The geometry the swipe gestures were registered with, or null when there are none to register.
     private string? GetSwipesKey()

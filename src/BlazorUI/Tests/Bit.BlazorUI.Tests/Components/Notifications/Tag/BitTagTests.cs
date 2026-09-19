@@ -324,6 +324,7 @@ public class BitTagTests : BunitTestContext
     [TestMethod]
     [DataRow(BitShape.Rounded, "bit-tag-rnd")]
     [DataRow(BitShape.Pill, "bit-tag-cir")]
+    [DataRow(BitShape.Circle, "bit-tag-cir")]
     [DataRow(BitShape.Square, "bit-tag-sqr")]
     [DataRow(null, "bit-tag-rnd")]
     public void BitTagShouldRespectShape(BitShape? shape, string expectedClass)

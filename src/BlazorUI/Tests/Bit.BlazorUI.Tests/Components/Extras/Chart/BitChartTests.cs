@@ -57,15 +57,15 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(BitPlacement.Start, "flex-start", "start")]
-    [DataRow(BitPlacement.Left, "left", "left")]
-    [DataRow(BitPlacement.End, "flex-end", "end")]
-    [DataRow(BitPlacement.Right, "right", "right")]
-    [DataRow(BitPlacement.Center, "center", "center")]
-    [DataRow(BitPlacement.Top, "center", "center")]
-    // Start and End follow the reading direction and Left and Right do not, so each is written as the keyword that
+    [DataRow(BitPlacement.Start, "bc-align-start", "start")]
+    [DataRow(BitPlacement.Left, "bc-align-left", "left")]
+    [DataRow(BitPlacement.End, "bc-align-end", "end")]
+    [DataRow(BitPlacement.Right, "bc-align-right", "right")]
+    [DataRow(BitPlacement.Center, "bc-align-center", "center")]
+    [DataRow(BitPlacement.Top, "bc-align-center", "center")]
+    // Start and End follow the reading direction and Left and Right do not, so each is written as the class that
     // says so rather than the four collapsing onto two physical edges.
-    public void TitleAndLegendAlignAlongTheirEdge(BitPlacement align, string justify, string textAlign)
+    public void TitleAndLegendAlignAlongTheirEdge(BitPlacement align, string alignClass, string textAlign)
     {
         var config = new BitChartConfig(
             BitChartType.Bar,
@@ -87,8 +87,19 @@ public class BitChartTests : BunitTestContext
 
         var title = component.Find(".bc-title");
 
-        Assert.Contains($"justify-content:{justify}", title.GetAttribute("style")!);
+        Assert.IsTrue(title.ClassList.Contains(alignClass));
         Assert.Contains($"text-align:{textAlign}", title.FirstElementChild!.GetAttribute("style")!);
-        Assert.Contains($"justify-content:{justify}", component.Find(".bc-legend").GetAttribute("style")!);
+        Assert.IsTrue(component.Find(".bc-legend").ClassList.Contains(alignClass));
+    }
+
+    // The physical justify-content keywords are the newer ones in a flex box, so each physical class names the
+    // logical keyword for the same edge in a left-to-right layout first, for a browser that drops the physical one.
+    [TestMethod]
+    public void PhysicalAlignmentClassesCarryALogicalFallback()
+    {
+        var markup = RenderChart(BitPlacement.Top).Markup;
+
+        Assert.Contains(".bc-align-left { justify-content: flex-start; justify-content: left; }", markup);
+        Assert.Contains(".bc-align-right { justify-content: flex-end; justify-content: right; }", markup);
     }
 }
