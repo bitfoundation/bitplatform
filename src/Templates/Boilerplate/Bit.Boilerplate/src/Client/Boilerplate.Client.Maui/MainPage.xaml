@@ -5,8 +5,6 @@
     xmlns:b="clr-namespace:Microsoft.AspNetCore.Components.WebView.Maui;assembly=Microsoft.AspNetCore.Components.WebView.Maui"
     xmlns:core="clr-namespace:Boilerplate.Client.Core.Components;assembly=Boilerplate.Client.Core"
     xmlns:asp="clr-namespace:Microsoft.AspNetCore.Components.Web;assembly=Microsoft.AspNetCore.Components.Web">
-    <!-- The page and the WebView are painted the theme's own background in the code behind: the colors come from
-         BitExtraThemeSurfaces.BackgroundPrimary, which x:Static cannot index. -->
     <b:BlazorWebView
         x:Name="AppWebView"
         HostPage="wwwroot/index.html">

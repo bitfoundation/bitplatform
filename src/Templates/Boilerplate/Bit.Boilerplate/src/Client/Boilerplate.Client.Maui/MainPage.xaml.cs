@@ -12,8 +12,7 @@ public partial class MainPage
     {
         InitializeComponent();
 
-        // What shows before the WebView has painted anything, so it is the theme's own page background - the same
-        // color MauiDeviceCoordinator gives the status bar.
+        // What shows before the WebView has painted anything, and on iOS through it, so it is the theme's background.
         var light = Color.FromArgb(BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.Fluent2Light]);
         var dark = Color.FromArgb(BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.Fluent2Dark]);
         this.SetAppThemeColor(BackgroundColorProperty, light, dark);
