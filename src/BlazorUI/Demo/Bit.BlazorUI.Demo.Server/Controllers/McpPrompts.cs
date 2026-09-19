@@ -128,7 +128,10 @@ public static class McpPrompts
             4. Whatever is left is token overrides. Change --bit-* custom properties; do not write rules that
                select .bit-<component> classes. A rule that targets a component's internals is a rule that
                breaks on the next release, and it is the signal that a token is missing rather than that CSS
-               was needed.
+               was needed. When the change is one component rather than the app, call `GetBitBlazorUIComponent`
+               for it first: the variables it reads off its own root are answered there with their defaults,
+               and they inherit, so one of them set on :root, on an ancestor or on that instance's Style is
+               the whole change.
             5. If the app renders on the server, handle the first frame - "Server-side rendering" - or the app
                flashes the wrong theme before any JavaScript has run.
             6. Show me the diff, and say which layer each change landed in and why.

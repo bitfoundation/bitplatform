@@ -90,6 +90,13 @@ public partial class DemoPage
     [Parameter] public List<ComponentSubClass> SubClasses { get; set; } = [];
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
+
+    /// <summary>
+    /// The public CSS custom properties the component reads off its root. Rendered as its own section
+    /// between the examples and the API tables, since they are the theming surface a stylesheet reaches
+    /// rather than a parameter markup sets.
+    /// </summary>
+    [Parameter] public List<ComponentCssVariable> CssVariables { get; set; } = [];
     [Parameter] public string? GitHubUrl { get; set; }
     [Parameter] public string? GitHubExtrasUrl { get; set; }
     [Parameter] public string? GitHubLegacyUrl { get; set; }

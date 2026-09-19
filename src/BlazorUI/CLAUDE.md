@@ -143,7 +143,11 @@ all it takes for it to appear in the catalog, the search index and the completio
   invisible in them, and one this server does not name is one an agent will not use. So each answer is
   the table plus every `[Parameter]` on the compiled type it does not name, its default read off a
   constructed instance; likewise the public members, less what is public only to be called from
-  elsewhere (`[JSInvokable]` callbacks, generated `Assign*` setters).
+  elsewhere (`[JSInvokable]` callbacks, generated `Assign*` setters). The one part of an API with no
+  type behind it is the public `--bit-<Component>-*` custom properties: the demo page's
+  `componentCssVariables` table is their whole source, and the answer carries it with the one thing
+  the names do not say - that they inherit, so `:root`, an ancestor and an instance's `Style` are all
+  places to set one.
 - **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
   (an `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
   type arguments, and whether a type named beside a component is a class it takes or a component that
