@@ -1,10 +1,12 @@
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
 
-// [mirror] Uncomment to override the theme's dark background. If you do, ThemeColors.cs's PrimaryDarkBgColor must
-// change with it - it paints the native chrome around the WebView, which would otherwise meet the page in a seam.
-// Keep in sync with: Styles/ThemeColors.cs.
-:root[bit-theme="dark"] {
+// [mirror] Uncomment to override the theme's dark background. If you do, everything that paints the native chrome from
+// BitExtraThemeSurfaces.BackgroundPrimary - the status bar, the window caption, the WebView background and the
+// theme-color tags - has to carry your value instead, or it meets the page in a visible seam. Keep in sync with:
+// src/Server/Boilerplate.Server.Web/Components/App.razor, src/Client/Boilerplate.Client.Maui/wwwroot/index.html,
+// src/Client/Boilerplate.Client.Web/wwwroot/index.html.
+:root[bit-theme="fluent2-dark"] {
     //--bit-clr-bg-pri: #1A1A1A;
 }
 

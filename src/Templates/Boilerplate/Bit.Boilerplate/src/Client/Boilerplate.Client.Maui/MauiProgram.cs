@@ -1,8 +1,8 @@
 //+:cnd:noEmit
+using Bit.BlazorUI;
 using Microsoft.Maui.Platform;
 using Microsoft.Extensions.Options;
 using Microsoft.Maui.LifecycleEvents;
-using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Maui.AppStores;
 //-:cnd:noEmit
@@ -125,8 +125,8 @@ public static partial class MauiProgram
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", static (handler, view) =>
         {
             var webView = handler.PlatformView;
-            var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
-                ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor;
+            var webViewBackgroundColor = BitExtraThemeSurfaces.BackgroundPrimary[AppInfo.Current.RequestedTheme == AppTheme.Dark ?
+                BitExtraThemePresets.Fluent2Dark : BitExtraThemePresets.Fluent2Light];
 #if Windows
             webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
 
