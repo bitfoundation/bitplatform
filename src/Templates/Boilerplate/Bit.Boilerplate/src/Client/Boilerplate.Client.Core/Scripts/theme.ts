@@ -3,20 +3,47 @@
 // The following code gives you ideas on how to handle bit theme changes in your application.
 
 (function () {
-    if (typeof BitTheme === 'undefined')
+    if (typeof BitBlazorUI === 'undefined')
         return;
-    BitTheme.init({
+    BitBlazorUI.Theme.init({
         system: true,
         persist: true,
         onChange: (newTheme, oldTheme) => {
             document.body.classList.add('theme-' + newTheme);
             document.body.classList.remove('theme-' + oldTheme);
-
-            const primaryBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bit-clr-bg-pri');
-            if (!primaryBgColor) return;
-
-            document.querySelectorAll('meta[name=theme-color]')
-                .forEach(meta => meta.setAttribute('content', primaryBgColor));
         }
     });
+
+    // Keeps the browser chrome (the status bar of an installed PWA, the mobile address bar) painted
+    // with the page's own background.
+    //
+    // The color cannot be read inside onChange: with bit-theme-view-transition the bit-theme
+    // attribute is only written a frame after the callback, and a picked accent re-derives the whole
+    // palette - backgrounds included - as inline --bit-* variables on <body>, applied later still
+    // from .NET, or from the style#bit-accent-css snapshot. So it is re-read from <body> (where
+    // those overrides live) whenever any of these inputs change.
+    let pending = false;
+    const sync = () => {
+        pending = false;
+        const color = getComputedStyle(document.body).getPropertyValue('--bit-clr-bg-pri').trim();
+        if (!color) return;
+        document.querySelectorAll('meta[name=theme-color]')
+            .forEach(meta => meta.getAttribute('content') !== color && meta.setAttribute('content', color));
+    };
+    const schedule = () => {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(sync);
+    };
+
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['bit-theme', 'bit-accent'] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+    observer.observe(document.head, { childList: true });
+    // A stylesheet still in flight leaves --bit-clr-bg-pri empty, and sync() then keeps whatever the
+    // tags carry rather than blanking them. The <head> observation above catches one linked by a
+    // script; a stylesheet that was already in the markup changes no node when it finally applies, so
+    // it takes this one-shot catch-up.
+    window.addEventListener('load', schedule, { once: true });
+    schedule();
 }());

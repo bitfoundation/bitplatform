@@ -23,7 +23,7 @@
                    below, and keep "Who else receives your data" in step with what you switch on. *@
 
                 <BitText Typography="BitTypography.H3">Privacy Notice and Terms of Use</BitText>
-                <BitText Typography="BitTypography.Body2">Last updated: 31 August 2026</BitText>
+                <BitText Typography="BitTypography.Body2">Last updated: 14 September 2026</BitText>
 
                 <BitText Typography="BitTypography.H5">Who is responsible for your data</BitText>
                 <BitText Typography="BitTypography.Body1">
@@ -115,11 +115,24 @@
                     @*#if (signalR == true)*@
                     <li>
                         <BitText Typography="BitTypography.Body1">
-                            <b>Your conversations with the AI assistant</b>, including anything you type or attach to
-                            them, which are sent to the AI provider named below to produce a reply (legitimate
-                            interests in offering the feature). Do not put anything in a chat that you would not want
-                            leaving our systems. What that provider keeps, and for how long, is governed by its own
-                            terms.
+                            <b>Your conversations with the AI assistant</b>, including anything you type, attach or say
+                            to it, which are sent to the AI provider named below to produce a reply (legitimate
+                            interests in offering the feature). A message you dictate and an answer you have read aloud
+                            pass through our servers to that provider and are not stored by us. In a voice call your
+                            device connects to the provider directly, so it also sees your device's IP address, and we
+                            give it a pseudonymous identifier derived from your account so it can detect abuse. Your
+                            voice is used only to understand what you say, never to identify you. Do not put anything in
+                            a chat that you would not want leaving our systems. What that provider keeps, and for how
+                            long, is governed by its own terms.
+                        </BitText>
+                    </li>
+                    <li>
+                        <BitText Typography="BitTypography.Body1">
+                            <b>A request for a human to follow up</b>, if the assistant cannot resolve your issue and you
+                            send one - the e-mail address or phone number you enter, or your account's if you are signed
+                            in, and a summary of the conversation, which you can edit before sending. We hold this to
+                            answer your request (steps taken at your request) and delete it once your request has been
+                            dealt with.
                         </BitText>
                     </li>
                     @*#endif*@
@@ -146,7 +159,8 @@
                     <li><BitText Typography="BitTypography.Body1"><b>Firebase Cloud Messaging (Google) and Apple Push Notification service</b> - carry push notifications to your device.</BitText></li>
                     @*#endif*@
                     @*#if (signalR == true)*@
-                    <li><BitText Typography="BitTypography.Body1"><b>The AI provider configured for this deployment</b> - receives the content of your conversations with the assistant, and any audio or images you send it.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>The AI provider configured for this deployment</b> - receives the content of your conversations with the assistant, and any audio or images you send it. During a voice call your device connects to it directly.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>Our support tool</b> - receives the follow-up requests you send from the assistant.</BitText></li>
                     @*#endif*@
                     @*#if (sentry == true)*@
                     <li><BitText Typography="BitTypography.Body1"><b>Sentry</b> - receives error and crash reports.</BitText></li>
@@ -171,7 +185,7 @@
                     <li><BitText Typography="BitTypography.Body1"><b>Sign-in</b> - keeps you signed in. Strictly necessary; cleared when you sign out.</BitText></li>
                     <li><BitText Typography="BitTypography.Body1"><b>Language and appearance</b> - remembers the language, theme and accent colour you chose, so the app looks the same next time. Strictly necessary for the preference you asked us to remember.</BitText></li>
                     @*#if (signalR == true)*@
-                    <li><BitText Typography="BitTypography.Body1"><b>Your conversation with the AI assistant</b> - kept on your device so it is still there next time you open the app, and never sent anywhere it was not already going. Only the most recent messages are kept, only for whoever was signed in when they were written, and they are erased when you sign out or clear the chat. Strictly necessary for the conversation you asked us to keep going.</BitText></li>
+                    <li><BitText Typography="BitTypography.Body1"><b>Your conversation with the AI assistant</b>, including the transcript of your voice calls - kept on your device so it is still there next time you open the app, and never sent anywhere it was not already going. Only the most recent messages are kept, only for whoever was signed in when they were written, and they are erased when you sign out or clear the chat. Strictly necessary for the conversation you asked us to keep going.</BitText></li>
                     @*#endif*@
                     @*#if (appInsights == true)*@
                     <li><BitText Typography="BitTypography.Body1"><b>Usage analytics</b> - lets us recognise your device between visits so we can see which pages are used. Only after you agree, and you can withdraw at any time. Error reporting does not depend on it and does not identify your device.</BitText></li>

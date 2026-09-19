@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- A standalone Blazor WebAssembly app (index.html, blazor.webassembly.js, a hand-written
+         bitBswupHandler) - the shape of the BasicSample and of the standalone template. The web host
+         serves it under /standalone/, which makes it a sub-path app as well: the service worker lives
+         in /standalone/, its default scope is /standalone/, and its caches have to coexist with the
+         root app's on the same origin. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <StaticWebAssetBasePath>standalone</StaticWebAssetBasePath>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <!-- See Bit.Bswup.Tests.Harness.Web.Client.csproj: with two clients in one host, each Debug client's hot
+             reload initializer would be loaded by the other app too. -->
+        <WasmEnableHotReload>false</WasmEnableHotReload>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness\Bit.Bswup.Tests.Harness.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
+    </ItemGroup>
+
+</Project>

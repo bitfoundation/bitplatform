@@ -34,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.10.3" />
-        <PackageReference Include="MSTest" Version="4.4.0" />
+        <PackageReference Include="bunit" Version="2.11.3" />
+        <PackageReference Include="MSTest" Version="4.4.1" />
     </ItemGroup>
 
     <!-- IsRuntimeInvalid probes framework-internal members of these assemblies reflectively and
@@ -100,6 +100,36 @@
         <None Include="..\..\Bit.BlazorUI\Components\Utilities\MediaQuery\BitMediaQuery.ts" Link="ts-sources\BitMediaQuery.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- The rich text editor's C# half and its JS bridge are wired together by nothing but
+             strings: the setup option names, the JSInvokable callback names, and the
+             BitBlazorUI.RichTextEditor.* function names the interop extensions call. A rename on
+             either side compiles and then silently does nothing at runtime, so
+             BitRichTextEditorBridgeContractTests reads this source to fail on the drift. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditor.ts" Link="ts-sources\BitRichTextEditor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The two C# halves of that same contract. They are internal types, so the test reads
+             them as source rather than referencing them. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorSetupOptions.cs" Link="cs-sources\BitRichTextEditorSetupOptions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorPolicyPayload.cs" Link="cs-sources\BitRichTextEditorPolicyPayload.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorJsRuntimeExtensions.cs" Link="cs-sources\BitRichTextEditorJsRuntimeExtensions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+
+    <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the
+         component by nothing but their file names. Rather than copying the 2390 images beside the tests,
+         their names are written out there, and BitFlagTests checks that every image a flag offers the
+         browser is one the package ships. -->
+    <Target Name="WriteAssetsFlagNames" AfterTargets="Build">
+        <ItemGroup>
+            <_AssetsFlagImage Include="..\..\Bit.BlazorUI.Assets\wwwroot\flags\*.webp" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(OutDir)assets-flags.txt" Lines="@(_AssetsFlagImage->'%(Filename)%(Extension)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    </Target>
 
 </Project>

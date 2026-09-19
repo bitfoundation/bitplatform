@@ -1,6 +1,6 @@
 # Bit.ResxTranslator
 
-**Bit.ResxTranslator** is a .NET global tool that automates the translation of `.resx` resource files into multiple languages using OpenAI or Azure OpenAI Large Language Models (LLMs).
+**Bit.ResxTranslator** is a .NET tool that automates the translation of `.resx` resource files into multiple languages using OpenAI or Azure OpenAI Large Language Models (LLMs).
 
 It efficiently identifies missing translations in your target language files and generates them using the configured LLM, while preserving any existing manual translations.
 
@@ -11,17 +11,11 @@ It efficiently identifies missing translations in your target language files and
 *   **Automatic File Generation:** Creates target language `.resx` files (e.g., `AppStrings.fr.resx`) if they don't exist based on your default language file (e.g., `AppStrings.fr.resx`).
 *   **Flexible Configuration:** Configure languages, `.resx` file paths (using glob patterns), and LLM provider details via `Bit.ResxTranslator.json`.
 *   **.NET Configuration:** Supports API keys via JSON or standard environment variable `OpenAI__ApiKey`.
-*   **Easy Installation:** Installs as a .NET global tool.
-
-## Installation
-
-```bash
-dotnet tool install --global Bit.ResxTranslator
-```
+*   **Nothing to Install:** `dnx` runs it straight from NuGet.
 
 ## Configuration
 
-**Bit.ResxTranslator** requires a configuration file named `Bit.ResxTranslator.json` located in the directory where you execute the `bit-resx-translate` command.
+**Bit.ResxTranslator** requires a configuration file named `Bit.ResxTranslator.json` located in the directory where you run it.
 
 This JSON file defines the source and target languages, the location of your resource files, and the connection details for the LLM service (OpenAI or Azure OpenAI).
 
@@ -55,5 +49,5 @@ especially if this file is checked into version control. The tool uses standard 
 ## Usage
 
 ```bash
-bit-resx-translate
+dnx Bit.ResxTranslator
 ```

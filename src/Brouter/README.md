@@ -964,6 +964,17 @@ A single route overrides either default:
 </Broute>
 ```
 
+An attribute-routed page opts in (or out) on itself, next to its `@page`:
+
+```razor
+@page "/item/{id:int}"
+@attribute [BrouterRemountOnParameterChange]        @* or [BrouterRemountOnParameterChange(false)] *@
+```
+
+The attribute applies wherever the page is rendered as a route `Component` - discovered or
+`<Broute Component="typeof(ItemPage)">`. An explicit `RemountOnParameterChange` on the `Broute`
+beats the attribute, and the attribute beats the global option.
+
 Notes:
 
 - Only **template parameters** count - every parameter of the route's full template, so a child

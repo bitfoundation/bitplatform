@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The WebAssembly client of the Blazor Web App harness. It is also what generates the
+         service-worker-assets.js the root app's service worker precaches, exactly like the client
+         project of an app built from the Blazor Web App template. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <!-- A Debug build of a .NET 10 WebAssembly client adds the hot reload agent as a JS initializer, and a
+             host with two clients lists both clients' initializers for both apps: the root app would then load
+             /standalone/_framework/...lib.module.js, which its own worker neither caches nor should. Off, as it
+             is in Release. -->
+        <WasmEnableHotReload>false</WasmEnableHotReload>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bswup.Tests.Harness\Bit.Bswup.Tests.Harness.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.js" />
+    </ItemGroup>
+
+</Project>

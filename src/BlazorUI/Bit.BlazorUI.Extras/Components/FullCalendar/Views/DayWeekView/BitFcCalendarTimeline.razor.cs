@@ -4,7 +4,7 @@ public partial class BitFcCalendarTimeline
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
 
-    private double _positionPx;
+    private double _offsetHours;
     private Timer? _timer;
     private bool _isDisposed;
 
@@ -26,7 +26,7 @@ public partial class BitFcCalendarTimeline
                 return;
 
             // Run both the state mutation and the re-render on the renderer's dispatcher so
-            // _positionPx is never modified outside the synchronization context.
+            // _offsetHours is never modified outside the synchronization context.
             InvokeAsync(() =>
             {
                 if (_isDisposed)
@@ -40,7 +40,9 @@ public partial class BitFcCalendarTimeline
 
     private void UpdatePosition()
     {
-        _positionPx = BitFullCalendarHelpers.GetCurrentTimeLineTopPx();
+        // Measured from the grid's first rendered hour, so a grid that starts at 08:00 puts the
+        // marker where the clock time actually falls instead of an hour-height per skipped hour off.
+        _offsetHours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(State.VisibleStartHour);
     }
 
     public void Dispose()

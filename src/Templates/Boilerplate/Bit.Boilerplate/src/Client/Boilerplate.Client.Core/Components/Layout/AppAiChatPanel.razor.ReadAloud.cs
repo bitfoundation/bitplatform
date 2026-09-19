@@ -10,6 +10,9 @@ public partial class AppAiChatPanel
 {
     [AutoInject] private ObjectUrls objectUrls = default!;
 
+    /// <summary>The voice reads slowly at 1; browsers keep its pitch.</summary>
+    private const double ReadAloudPlaybackRate = 1.25;
+
 
     // Read aloud follows the conversation once it is switched on: the answer it was started on, and then every answer
     // that arrives after it, until the user presses stop. An answer is read once it is complete rather than as it
@@ -42,6 +45,7 @@ public partial class AppAiChatPanel
 
         // Asking to be read to while the microphone is open is a change of mind about which of the two is wanted.
         await StopDictation();
+        await EndVoiceCall();
 
         readAloudEnabled = true;
 
@@ -120,6 +124,8 @@ public partial class AppAiChatPanel
 
             await readAloudAudioRef.SetMediaSource(readAloudObjectUrl);
             await readAloudAudioRef.Load();
+            // After Load, which resets it.
+            await readAloudAudioRef.SetPlaybackRate(ReadAloudPlaybackRate);
             await readAloudAudioRef.Play();
         }
         catch (Exception exp)

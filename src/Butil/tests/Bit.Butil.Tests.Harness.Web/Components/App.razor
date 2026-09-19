@@ -1,0 +1,50 @@
+@inject IConfiguration Configuration
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* An empty icon: the default /favicon.ico request would 404 into the console of every page under test. *@
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Butil.Samples.Core/app.css" />
+    <HeadOutlet @rendermode="RenderMode" />
+</head>
+
+@* data-scripts is how the WebAssembly client learns the script-loading mode this host was started in. *@
+<body data-mode="@Mode" data-scripts="@Scripts">
+    @if (IsPrerenderSweep)
+    {
+        <PrerenderSweepPage />
+    }
+    else
+    {
+        <Routes @rendermode="RenderMode" />
+    }
+
+    @* In lazy mode the bundle must not be on the page at all: every BitButil.* namespace present then got there
+       through the per-module import() the library performs. *@
+    @if (Scripts is not HarnessScripts.Lazy)
+    {
+        <script src="_content/Bit.Butil/bit-butil.js"></script>
+    }
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private string Mode => Configuration[HarnessRenderModes.ConfigurationKey] ?? HarnessRenderModes.Auto;
+
+    private string Scripts => HarnessScripts.Resolve(Configuration[HarnessScripts.ConfigurationKey]);
+
+    private IComponentRenderMode? RenderMode => HarnessRenderModes.Resolve(Mode);
+
+    // Rendered here, outside Routes, so it is always static whatever the mode: the sweep is about the runtime a
+    // static render hands out, and Samples.Core's router does not know the page anyway.
+    private bool IsPrerenderSweep => HttpContext?.Request.Path.StartsWithSegments(PrerenderSweepPage.Route) is true;
+}

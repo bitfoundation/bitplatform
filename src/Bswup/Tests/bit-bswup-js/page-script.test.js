@@ -411,15 +411,36 @@ describe('reload determinism', () => {
             active: fakeWorker('activated'), waiting: null, installing: null,
             addEventListener() { }, update: async () => { },
         };
-        const ctx = page({}, { swOptions: { registration, controller: {} } });
+        const ctx = page({}, { swOptions: { registration, controller: fakeWorker('activated') } });
         ctx.load('bit-bswup.js');
         await ctx.settle();
 
+        // The accepted update's claim hands this document to the new worker before its broadcast lands.
+        ctx.window.navigator.serviceWorker.controller = fakeWorker('activated');
         ctx.message('WAITING_SKIPPED');
         ctx.message('WAITING_SKIPPED'); // a second signal must not reload again
         await ctx.settle();
 
         expect(ctx.reloads.count).toBe(1);
+    });
+
+    it('WAITING_SKIPPED does not reload a document that started under the worker it announces', async () => {
+        // The tab that reloaded on its controllerchange is routinely up (straight from the cache)
+        // before the worker broadcasts WAITING_SKIPPED. That document already runs the new version;
+        // reloading it again was a second reload of every accepted update - the browser suite caught it.
+        const newWorker = fakeWorker('activated');
+        const registration = {
+            active: newWorker, waiting: null, installing: null,
+            addEventListener() { }, update: async () => { },
+        };
+        const ctx = page({}, { swOptions: { registration, controller: newWorker } });
+        ctx.load('bit-bswup.js');
+        await ctx.settle();
+
+        ctx.message('WAITING_SKIPPED');
+        await ctx.settle();
+
+        expect(ctx.reloads.count).toBe(0);
     });
 
     it('WAITING_SKIPPED never reloads an uncontrolled page - it boots it instead', async () => {

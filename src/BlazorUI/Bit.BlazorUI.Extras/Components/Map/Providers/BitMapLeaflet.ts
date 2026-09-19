@@ -19,6 +19,10 @@ namespace BitBlazorUI {
         _tileOptions: LeafletTileOptions;
         _scaleControlImperial: boolean;
         _scaleControlEnabled: boolean;
+        _zoomControl: any;
+        _zoomControlEnabled: boolean;
+        _viewTimer: any;
+        isDisposed: boolean;
     };
 
     let leafletDefaultIconPatched = false;
@@ -51,17 +55,20 @@ namespace BitBlazorUI {
             const center: [number, number] = [o.center?.lat ?? 51.505, o.center?.lng ?? -0.09];
             const zoom: number = o.zoom ?? 13;
 
+            const zoomControlEnabled = o.zoomControl !== false;
             const map = L.map(element, {
                 center, zoom,
                 minZoom: o.minZoom ?? undefined,
                 maxZoom: o.maxZoom ?? undefined,
-                zoomControl: o.zoomControl !== false,
+                zoomControl: zoomControlEnabled,
                 attributionControl: o.attributionControl !== false,
                 scrollWheelZoom: o.scrollWheelZoom !== false,
                 doubleClickZoom: o.doubleClickZoom !== false,
                 boxZoom: o.boxZoom !== false,
                 dragging: o.dragging !== false,
                 keyboard: o.keyboardNavigation !== false,
+                // Spread last so an escape-hatch entry wins over what the component models.
+                ...(o.additionalOptions || {}),
             });
 
             // The default tileUrl is OpenStreetMap, which contractually requires the
@@ -96,15 +103,47 @@ namespace BitBlazorUI {
                 _tileOptions: tileOptions,
                 _scaleControlImperial: !!o.scaleControlImperial,
                 _scaleControlEnabled: !!o.showScaleControl,
+                _zoomControl: (map as any).zoomControl ?? null,
+                _zoomControlEnabled: zoomControlEnabled,
+                _viewTimer: null,
+                isDisposed: false,
             };
 
             if (o.maxBounds !== undefined) BitMapLeaflet._applyMaxBounds(state, o.maxBounds);
             BitMapLeaflet._ensureScaleControl(state, state._scaleControlEnabled, state._scaleControlImperial);
 
             if (dotnetObj) {
-                map.on('click', (e: any) => dotnetObj.invokeMethodAsync('OnClick', { lat: e.latlng.lat, lng: e.latlng.lng }));
-                map.on('dblclick', (e: any) => dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.latlng.lat, lng: e.latlng.lng }));
-                const notify = () => queueMicrotask(() => dotnetObj.invokeMethodAsync('OnViewChanged', BitMapLeaflet._readView(map)));
+                // Every handler reads state.dotnetObj rather than closing over the
+                // `dotnetObj` argument: dispose() nulls the field, so a listener that
+                // is still in flight (or a debounced view notification that has already
+                // been scheduled) can bail out instead of invoking a released .NET
+                // reference - which surfaces as an unhandled JS error in the browser.
+                map.on('click', (e: any) => {
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnClick', { lat: e.latlng.lat, lng: e.latlng.lng });
+                });
+                map.on('dblclick', (e: any) => {
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.latlng.lat, lng: e.latlng.lng });
+                });
+                map.on('contextmenu', (e: any) => {
+                    if (o.suppressBrowserContextMenu) e.originalEvent?.preventDefault?.();
+                    if (state.isDisposed || !state.dotnetObj) return;
+                    state.dotnetObj.invokeMethodAsync('OnContextMenu', { lat: e.latlng.lat, lng: e.latlng.lng });
+                });
+                // Coalesce move/zoom notifications on a short timer. A pan fires
+                // `moveend` and `zoomend` back to back, and each notification is a
+                // separate interop round-trip (a SignalR message under Blazor Server),
+                // so debouncing keeps a drag from flooding the circuit. Matches the
+                // 80ms window the ArcGIS / Azure Maps / Cesium providers already use.
+                const notify = () => {
+                    if (state.isDisposed) return;
+                    clearTimeout(state._viewTimer);
+                    state._viewTimer = setTimeout(() => {
+                        if (state.isDisposed || !state.dotnetObj) return;
+                        state.dotnetObj.invokeMethodAsync('OnViewChanged', BitMapLeaflet._readView(state.map));
+                    }, BitMapHelpers.viewNotifyDebounceMs);
+                };
                 map.on('moveend', notify);
                 map.on('zoomend', notify);
             }
@@ -184,6 +223,28 @@ namespace BitBlazorUI {
             if (o.dragging !== undefined) o.dragging ? s.map.dragging.enable() : s.map.dragging.disable();
             if (o.keyboardNavigation !== undefined) o.keyboardNavigation ? s.map.keyboard.enable() : s.map.keyboard.disable();
 
+            // Zoom limits are constructor options in Leaflet, so a provider that changes
+            // MinZoom/MaxZoom after init has to be pushed through the setters or the new
+            // bounds are silently ignored. Apply min before max so an ordered pair never
+            // passes through a transient state where min > max.
+            const hasMinZoom = Object.prototype.hasOwnProperty.call(o, 'minZoom');
+            const hasMaxZoom = Object.prototype.hasOwnProperty.call(o, 'maxZoom');
+            if (hasMinZoom) {
+                try { s.map.setMinZoom(o.minZoom ?? 0); } catch { /* ignore */ }
+            }
+            if (hasMaxZoom) {
+                try { s.map.setMaxZoom(o.maxZoom ?? Infinity); } catch { /* ignore */ }
+            }
+
+            // zoomControl / attributionControl are also constructor-only in Leaflet.
+            // Add or remove the control instances so toggling them on a live map works.
+            if (Object.prototype.hasOwnProperty.call(o, 'zoomControl')) {
+                BitMapLeaflet._ensureZoomControl(s, o.zoomControl !== false);
+            }
+            if (Object.prototype.hasOwnProperty.call(o, 'attributionControl')) {
+                BitMapLeaflet._ensureAttributionControl(s, o.attributionControl !== false);
+            }
+
             // Only touch maxBounds when explicitly provided to avoid clearing existing settings on partial updates.
             if (o.maxBounds !== undefined) BitMapLeaflet._applyMaxBounds(s, o.maxBounds);
             // Only touch scale control when caller actually supplied either flag; preserve existing state otherwise.
@@ -199,12 +260,17 @@ namespace BitBlazorUI {
         public static dispose(id: string) {
             const s = BitMapLeaflet._maps[id];
             if (!s) return;
+            // Mark disposed and drop the .NET handle before tearing the map down so a
+            // debounced view notification that is already queued short-circuits instead
+            // of invoking a released DotNetObjectReference.
+            s.isDisposed = true;
+            s.dotnetObj = null;
+            if (s._viewTimer) { clearTimeout(s._viewTimer); s._viewTimer = null; }
             try {
                 for (const key in s.tileOverlays) s.map.removeLayer(s.tileOverlays[key]);
                 if (s.scaleControl) s.map.removeControl(s.scaleControl);
                 s.map.remove();
             } catch { /* ignore */ }
-            s.dotnetObj = null;
             delete BitMapLeaflet._maps[id];
         }
 
@@ -227,15 +293,43 @@ namespace BitBlazorUI {
             s.map.flyTo([lat, lng], zoom ?? s.map.getZoom(), { duration: 1.2 });
         }
 
-        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number) {
+        /**
+         * Projects a geographic coordinate to a pixel offset inside the map container.
+         *
+         * This is what lets BitMap anchor its own DOM - a Blazor-rendered popup, say - to a place
+         * on the map without handing that DOM to the mapping library, which would take it out of
+         * Blazor's hands. Returns null when the coordinate is not currently on screen.
+         */
+        public static project(id: string, lat: number, lng: number): { x: number, y: number } | null {
+            const s = BitMapLeaflet._maps[id];
+            if (!s) return null;
+            try {
+                const point = s.map.latLngToContainerPoint([lat, lng]);
+                return { x: point.x, y: point.y };
+            } catch {
+                return null;
+            }
+        }
+
+        public static zoomBy(id: string, delta: number, animate: boolean) {
+            const s = BitMapLeaflet._require(id);
+            s.map.setZoom(s.map.getZoom() + delta, { animate: animate !== false });
+        }
+
+        public static panBy(id: string, dx: number, dy: number, animate: boolean) {
+            const s = BitMapLeaflet._require(id);
+            s.map.panBy([dx, dy], { animate: animate !== false });
+        }
+
+        public static fitBounds(id: string, swLat: number, swLng: number, neLat: number, neLng: number, paddingPx: number, maxZoom?: number) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const pad = paddingPx ?? 48;
             s.map.fitBounds(L.latLngBounds(L.latLng(swLat, swLng), L.latLng(neLat, neLng)),
-                { padding: [pad, pad], maxZoom: 18 });
+                { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
         }
 
-        public static fitBoundsToMarkers(id: string, paddingPx: number) {
+        public static fitBoundsToMarkers(id: string, paddingPx: number, maxZoom?: number) {
             const s = BitMapLeaflet._require(id);
             const L = s.L;
             const layers = Object.values(s.markers);
@@ -243,7 +337,7 @@ namespace BitBlazorUI {
             const b = L.featureGroup(layers).getBounds();
             if (!b.isValid()) return;
             const pad = paddingPx ?? 48;
-            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: 18 });
+            s.map.fitBounds(b, { padding: [pad, pad], maxZoom: maxZoom ?? 18 });
         }
 
         public static addMarker(id: string, markerId: string, opts: any) {
@@ -253,16 +347,26 @@ namespace BitBlazorUI {
             if (opts.iconUrl) {
                 const w = opts.iconWidth ?? 32;
                 const h = opts.iconHeight ?? 32;
+                // The point of the image that sits on the coordinate. Bottom-centre by default,
+                // which is where a pin's tip is; a dot-shaped icon passes its own centre instead.
+                const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
                 icon = L.icon({
                     iconUrl: opts.iconUrl,
                     iconSize: [w, h],
-                    iconAnchor: [Math.floor(w / 2), h],
-                    popupAnchor: [0, -h],
+                    iconAnchor: [ax, ay],
+                    popupAnchor: [Math.round(w / 2) - ax, -ay],
                 });
             }
             const markerOpts: any = {
                 draggable: !!opts.draggable,
                 title: opts.title || undefined,
+                // Leaflet renders a marker as an <img>, so `alt` is its accessible name.
+                // Falling back to title keeps a marker that only set a hover label from
+                // announcing as an unlabelled image.
+                alt: opts.alt || opts.title || undefined,
+                keyboard: opts.focusable !== false,
+                opacity: opts.opacity ?? 1,
+                riseOnHover: !!opts.riseOnHover,
                 zIndexOffset: opts.zIndexOffset ?? 0,
             };
             if (icon) markerOpts.icon = icon;
@@ -290,15 +394,34 @@ namespace BitBlazorUI {
             }
             m.addTo(s.map);
 
-            if (s.dotnetObj) {
-                const dn = s.dotnetObj;
-                m.on('click', () => dn.invokeMethodAsync('OnMarkerClick', markerId));
-                if (opts.draggable) {
-                    m.on('dragend', (e: any) => {
-                        const p = e.target.getLatLng();
-                        dn.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+            // Read s.dotnetObj at dispatch time; capturing it here would keep invoking a
+            // DotNetObjectReference that dispose() has already released.
+            m.on('click', () => {
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+            });
+
+            if (opts.focusable !== false) {
+                // Leaflet gives a marker a tabindex but renders it as an <img>, which no browser
+                // activates on Enter or Space - so a keyboard user can focus the marker and then
+                // do nothing with it. Synthesize the activation the element should already have.
+                const element = m.getElement?.();
+                if (element) {
+                    element.setAttribute('role', 'button');
+                    element.addEventListener('keydown', (ev: KeyboardEvent) => {
+                        if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                        ev.preventDefault();
+                        m.fire('click');
+                        if (m.getPopup()) m.openPopup();
                     });
                 }
+            }
+            if (opts.draggable) {
+                m.on('dragend', (e: any) => {
+                    if (s.isDisposed) return;
+                    const p = e.target.getLatLng();
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+                });
             }
             const existing = s.markers[markerId];
             if (existing) s.map.removeLayer(existing);
@@ -381,7 +504,6 @@ namespace BitBlazorUI {
             let gj: any;
             try { gj = JSON.parse(geoJsonString); }
             catch { throw new Error("BitMapLeaflet.addGeoJson: invalid GeoJSON string."); }
-            const dn = s.dotnetObj;
             const layer = L.geoJSON(gj, {
                 style: () => BitMapLeaflet._pathStyle(style),
                 // Default L.geoJSON renders Point/MultiPoint features as a vanilla
@@ -393,12 +515,11 @@ namespace BitBlazorUI {
                     return L.circleMarker(latlng, BitMapLeaflet._pathStyle(style));
                 },
                 onEachFeature(feature: any, lyr: any) {
-                    if (dn) {
-                        lyr.on('click', (e: any) => {
-                            L.DomEvent.stopPropagation(e);
-                            dn.invokeMethodAsync('OnGeoJsonFeatureClick', layerId, feature?.properties || {});
-                        });
-                    }
+                    lyr.on('click', (e: any) => {
+                        L.DomEvent.stopPropagation(e);
+                        if (s.isDisposed) return;
+                        s.dotnetObj?.invokeMethodAsync('OnGeoJsonFeatureClick', layerId, feature?.properties || {});
+                    });
                 },
             }).addTo(s.map);
             BitMapLeaflet._setLayer(s, layerId, layer);
@@ -429,7 +550,11 @@ namespace BitBlazorUI {
             const tl = L.tileLayer(opts.urlTemplate, {
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
+                minZoom: opts.minZoom ?? 0,
                 maxZoom: opts.maxZoom ?? 19,
+                // Leaflet is the only backend that rotates through subdomains itself, so it keeps
+                // the {s} placeholder rather than being handed pre-expanded URLs.
+                subdomains: BitMapHelpers.readSubdomains(opts.subdomains),
                 attribution: opts.attribution || "",
             });
             tl.addTo(s.map);
@@ -458,12 +583,11 @@ namespace BitBlazorUI {
         }
 
         private static _wireVectorClick(s: LeafletState, layer: any, layerId: string, kind: string) {
-            if (!s.dotnetObj) return;
-            const dn = s.dotnetObj;
             const L = s.L;
             layer.on('click', (e: any) => {
                 L.DomEvent.stopPropagation(e);
-                dn.invokeMethodAsync('OnVectorClick', layerId, kind, { lat: e.latlng.lat, lng: e.latlng.lng });
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnVectorClick', layerId, kind, { lat: e.latlng.lat, lng: e.latlng.lng });
             });
         }
 
@@ -473,9 +597,15 @@ namespace BitBlazorUI {
                 color: style.color ?? '#3388ff',
                 weight: style.weight ?? 3,
                 opacity: style.opacity ?? 1,
+                // `fill: false` is not the same as a zero fill opacity: an invisible fill is
+                // still rendered and still hit-tested, so an outline-only shape needs the flag.
+                fill: style.fill !== false,
                 fillColor: style.fillColor ?? style.color ?? '#3388ff',
                 fillOpacity: style.fillOpacity ?? 0.2,
                 dashArray: style.dashArray ?? undefined,
+                dashOffset: style.dashOffset ?? undefined,
+                lineCap: style.lineCap ?? 'round',
+                lineJoin: style.lineJoin ?? 'round',
             };
         }
 
@@ -502,6 +632,29 @@ namespace BitBlazorUI {
                 L.latLng(mb.southWest.lat, mb.southWest.lng),
                 L.latLng(mb.northEast.lat, mb.northEast.lng),
             ));
+        }
+
+        private static _ensureZoomControl(s: LeafletState, show: boolean) {
+            if (s._zoomControlEnabled === show) return;
+            const L = s.L;
+            if (show) {
+                s._zoomControl = L.control.zoom().addTo(s.map);
+            } else if (s._zoomControl) {
+                try { s.map.removeControl(s._zoomControl); } catch { /* ignore */ }
+                s._zoomControl = null;
+            }
+            s._zoomControlEnabled = show;
+        }
+
+        private static _ensureAttributionControl(s: LeafletState, show: boolean) {
+            const L = s.L;
+            const current = s.map.attributionControl;
+            if (show && !current) {
+                s.map.attributionControl = L.control.attribution().addTo(s.map);
+            } else if (!show && current) {
+                try { s.map.removeControl(current); } catch { /* ignore */ }
+                s.map.attributionControl = null;
+            }
         }
 
         private static _ensureScaleControl(s: LeafletState, show: boolean, imperial: boolean) {

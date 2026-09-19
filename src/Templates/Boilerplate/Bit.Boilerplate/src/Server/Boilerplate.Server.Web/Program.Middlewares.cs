@@ -11,6 +11,14 @@ using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
 using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Infrastructure.RequestPipeline;
+//#else
+//#if (IsInsideProjectTemplate)
+/*
+//#endif
+using Yarp.ReverseProxy.Transforms;
+//#if (IsInsideProjectTemplate)
+*/
+//#endif
 //#endif
 
 namespace Boilerplate.Server.Web;
@@ -138,7 +146,23 @@ public static partial class Program
 
             app.UseAntiforgery();
 
+            // A standalone api keeps the feature alone: OAuth lives there, and so does the resource table.
+            //#if (api == "Integrated")
+            app.MapAppHealthChecks(OAuthEndpoints.AuthorizationFor(OAuthResources.HealthzPath));
+            //#else
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             app.MapAppHealthChecks();
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
+
+            //#if (api == "Standalone")
+            // Server.Web's own settings, which the standalone api's answer cannot speak for.
+            app.MapDeploymentConfiguration();
+            //#endif
 
             //#if (api == "Integrated")
             app.MapOpenApi().CacheOutput("AppResponseCachePolicy");
@@ -181,6 +205,28 @@ public static partial class Program
             app.MapControllers()
                .RequireAuthorization()
                .CacheOutput("AppResponseCachePolicy");
+            //#else
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
+            // Pre-rendering reads the access_token cookie, so the api calls that write it and the Hangfire dashboard that
+            // reads it can go through this host (See RequestHeadersDelegatingHandler).
+            var serverApiAddress = string.IsNullOrWhiteSpace(settings.ServerSideHttpClientBaseAddress) is false
+                ? settings.ServerSideHttpClientBaseAddress
+                : configuration.GetServerAddress();
+
+            if (Uri.TryCreate(serverApiAddress, UriKind.Absolute, out _) is false)
+                throw new InvalidOperationException($"'{serverApiAddress}' is not an absolute address. Set ServerAddress (or ServerSideHttpClientBaseAddress) in appsettings.json.");
+
+            foreach (var pattern in new[] { "/api/{**catch-all}", "/hangfire/{**catch-all}" })
+            {
+                // The api trusts this host's X-Forwarded-* headers: drop whatever the caller sent and set the client's ip alone,
+                // as the pre-rendering HttpClient does, so the api keeps seeing its own host.
+                app.MapForwarder(pattern, serverApiAddress, transform => transform.AddXForwarded(ForwardedTransformActions.Remove).AddXForwardedFor());
+            }
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
             //#endif
 
             app.UseSiteMap();

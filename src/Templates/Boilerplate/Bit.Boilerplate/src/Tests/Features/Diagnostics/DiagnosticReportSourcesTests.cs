@@ -38,7 +38,8 @@ public class DiagnosticReportSourcesTests
         // The typed client goes over http, which is the same call the /diagnostic page makes. Both ids are null, so
         // none of the endpoint's side effects run.
         var http = string.Join(Environment.NewLine, await scope.ServiceProvider.GetRequiredService<IDiagnosticController>()
-            .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken));
+            .PerformDiagnostic(signalRConnectionId: null, pushNotificationSubscriptionDeviceId: null, TestContext.CancellationToken)
+            .ToArrayAsync(TestContext.CancellationToken));
 
         await using var hubConnection = new HubConnectionBuilder()
             .WithUrl(new Uri(server.WebAppServerAddress, "app-hub"), options =>

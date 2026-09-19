@@ -5,6 +5,13 @@
     color: $bit-color-primary;
 }
 
+/* Example 35: RowClass returns this class, and the grid puts it on a row element this page never
+   wrote - so the page's scope attribute never lands on it. ::deep off the wrapper the page does own
+   is what crosses that boundary. */
+.styled-rows ::deep .row-out-of-stock .bit-dtg-cell {
+    color: $bit-color-error;
+}
+
 .muted {
     color: $bit-color-foreground-secondary;
     font-size: 0.75rem;

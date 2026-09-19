@@ -11,6 +11,11 @@ namespace BitBlazorUI {
     const ATTR_THEME_LIGHT = 'bit-theme-light';
     // Opt-in marker: animate theme swaps with the View Transitions API (see swapThemeAttribute).
     const ATTR_THEME_VIEW_TRANSITION = 'bit-theme-view-transition';
+    // Opt-in marker: keep <meta name="theme-color"> equal to a palette color of the live page (see
+    // ThemeColorMeta). Its value names the custom property to read; empty means the default below.
+    const ATTR_THEME_COLOR_META = 'bit-theme-color-meta';
+    // The page's own background - what a status bar sits above in nearly every app.
+    const THEME_COLOR_VARIABLE = '--bit-clr-bg-pri';
     const STORAGE_KEY = 'bit-current-theme';
     // Kept aligned with BitThemeCookie.PreferenceCookieName in C#. When cookie persistence is
     // enabled, the client mirrors the persisted preference into this cookie so the server can read
@@ -33,6 +38,13 @@ namespace BitBlazorUI {
         darkTheme?: string | null;
         lightTheme?: string | null;
         onChange?: onThemeChangeType;
+        /**
+         * Keep `<meta name="theme-color">` equal to a palette color of the live page: `true` (or the
+         * empty string) for the default custom property, a `--bit-*` name to read another one,
+         * `false` / `null` to turn it off again, omitted to leave it as it is. Same feature as the
+         * bit-theme-color-meta attribute (see ThemeColorMeta).
+         */
+        themeColorMeta?: boolean | string | null;
     }
 
     interface ThemeSetOptions {
@@ -190,6 +202,19 @@ namespace BitBlazorUI {
 
             if (deferPersistCookie) {
                 Theme._persistCookie = true;
+            }
+
+            // After the first set(), so the tag is read from the theme this init resolved rather than
+            // the one being replaced. An omitted key leaves the feature as it is (the self-init below
+            // may already have turned it on from the attribute); false / null turns it back off.
+            // Anything else turns it on - including the empty string, which enable() reads as "the
+            // default custom property", the same as the valueless bit-theme-color-meta attribute the
+            // self-init below maps to true. One value, one meaning.
+            const themeColorMeta = Theme._initOptions.themeColorMeta;
+            if (themeColorMeta === false || themeColorMeta === null) {
+                ThemeColorMeta.disable();
+            } else if (themeColorMeta !== undefined) {
+                ThemeColorMeta.enable(typeof themeColorMeta === 'string' ? themeColorMeta : null);
             }
 
             Theme.attachStorageSyncListener();
@@ -503,6 +528,185 @@ namespace BitBlazorUI {
         }
     }
 
+    /**
+     * Keeps every `<meta name="theme-color">` tag equal to a palette color of the live page, so the
+     * browser chrome an app cannot reach from CSS - an installed PWA's status bar, the address bar
+     * on mobile - stays with the theme. Opted into with the bit-theme-color-meta attribute on
+     * `<html>` (or `themeColorMeta` on init); off by default, since an app that hardcodes its tag
+     * must keep the tag it wrote.
+     *
+     * The color is READ BACK from the page rather than mapped from the theme name, because a name
+     * does not carry a color: the packaged design systems (Fluent 2, Material, Cupertino) each paint
+     * their own surfaces, an app's stylesheet may re-declare the tokens, and an accent (see
+     * BitAccentColor in Bit.BlazorUI.Extras) re-derives the whole palette - surfaces included - into
+     * an applyTheme overlay on `<body>`. It is read off `<body>` for that last reason, and on a
+     * schedule of its own rather than from the theme-change notification: with
+     * bit-theme-view-transition the bit-theme attribute is only written a frame AFTER the change is
+     * announced, so a listener would still see the outgoing palette. What it watches instead is the
+     * DOM the color actually comes from.
+     */
+    export class ThemeColorMeta {
+        private static _variable: string | null = null;
+        private static _observer: MutationObserver | null = null;
+        private static _pending = false;
+        private static _loadListenerAttached = false;
+        private static _linkListeners: { link: HTMLLinkElement, handler: () => void }[] = [];
+
+        /**
+         * Starts (or retargets) the sync. `variable` names the custom property to read and defaults
+         * to THEME_COLOR_VARIABLE; a name without the leading `--` is accepted.
+         */
+        public static enable(variable?: string | null) {
+            const name = (variable || '').trim() || THEME_COLOR_VARIABLE;
+            ThemeColorMeta._variable = name.indexOf('--') === 0 ? name : `--${name}`;
+
+            ThemeColorMeta.whenBodyReady(() => {
+                // disable() may have run while this callback was still waiting on DOMContentLoaded.
+                // It disconnected nothing (there was no observer yet) and has already let go of the
+                // handle it would disconnect later, so an observer installed now would outlive the
+                // sync it belongs to and watch the document for the rest of the page's life.
+                if (!ThemeColorMeta._variable) return;
+
+                ThemeColorMeta.observe();
+                ThemeColorMeta.sync();
+            });
+
+            // A stylesheet still in flight leaves the custom property empty, and a pending stylesheet
+            // changes no node, so nothing the observer watches would fire once it lands. One catch-up
+            // after load covers the app that links its stylesheets with a script already running.
+            if (!ThemeColorMeta._loadListenerAttached && typeof window !== 'undefined' && window.addEventListener) {
+                ThemeColorMeta._loadListenerAttached = true;
+                window.addEventListener('load', () => ThemeColorMeta.schedule(), { once: true } as any);
+            }
+        }
+
+        /** Stops the sync and leaves the tags on whatever color they currently carry. */
+        public static disable() {
+            ThemeColorMeta._variable = null;
+            ThemeColorMeta._observer?.disconnect();
+            ThemeColorMeta._observer = null;
+            ThemeColorMeta._linkListeners.forEach(entry => entry.link.removeEventListener('load', entry.handler));
+            ThemeColorMeta._linkListeners = [];
+        }
+
+        /**
+         * Re-reads once the given stylesheet has loaded. A `<link>` appended by ExternalTheme.attach()
+         * is a `<head>` childList change, so the observer does schedule a read - but it runs while the
+         * stylesheet is still in flight, on the outgoing palette, and a `<link>` REUSED by attach()
+         * only has its href rewritten, which changes no node the observer watches at all. Either way
+         * the arriving stylesheet moves nothing afterwards, so its load event is the only signal that
+         * the new colors are readable. A no-op while the sync is off, so an app that never opted in
+         * keeps no listener.
+         */
+        public static watchStylesheet(link: HTMLLinkElement) {
+            if (!ThemeColorMeta._variable || !link?.addEventListener) return;
+            // attach() can be called repeatedly on the same <link>; one listener per element is enough,
+            // since the handler reads the live color rather than the href it was registered for.
+            if (ThemeColorMeta._linkListeners.some(entry => entry.link === link)) return;
+
+            const handler = () => ThemeColorMeta.schedule();
+            link.addEventListener('load', handler);
+            ThemeColorMeta._linkListeners.push({ link, handler });
+        }
+
+        /** Drops the listener of a stylesheet that is going away, so the detached node is not held. */
+        public static unwatchStylesheet(link: Element) {
+            ThemeColorMeta._linkListeners = ThemeColorMeta._linkListeners.filter(entry => {
+                if (entry.link !== link) return true;
+                entry.link.removeEventListener('load', entry.handler);
+                return false;
+            });
+        }
+
+        /**
+         * Re-reads the color and rewrites the tags now. Public so an app can force a refresh after a
+         * change none of the watched nodes shows - e.g. a stylesheet swapped through ExternalTheme.
+         */
+        public static sync() {
+            ThemeColorMeta._pending = false;
+
+            const variable = ThemeColorMeta._variable;
+            if (!variable) return;
+
+            // The overlay applyTheme writes lands on <body> (custom properties inherit, so a :root
+            // declaration is read here just the same); before the body exists, nothing is painted yet.
+            const source = document.body;
+            if (!source) return;
+
+            let color = '';
+            try {
+                color = getComputedStyle(source).getPropertyValue(variable).trim();
+            } catch { return; /* computed styles unavailable (detached / hidden document) */ }
+
+            // Empty means the stylesheet declaring it has not arrived (or the name is a typo): keep
+            // whatever the document already carries rather than blanking a tag the app hand-wrote.
+            if (!color) return;
+
+            const tags = document.querySelectorAll('meta[name=theme-color]');
+
+            // Nothing to keep in sync yet - an app that opted in without writing a tag gets one.
+            if (tags.length === 0) {
+                const meta = document.createElement('meta');
+                meta.setAttribute('name', 'theme-color');
+                meta.setAttribute('content', color);
+                document.head.appendChild(meta);
+                return;
+            }
+
+            // Every tag, so a document that splits them by media (a light one and a dark one, the
+            // usual first-paint trick) has the pinned theme win over the OS on both. Writing only
+            // what changed keeps this off the browser's chrome-repaint path on unrelated mutations.
+            tags.forEach(tag => {
+                if (tag.getAttribute('content') !== color) {
+                    tag.setAttribute('content', color);
+                }
+            });
+        }
+
+        private static schedule = () => {
+            if (ThemeColorMeta._pending || !ThemeColorMeta._variable) return;
+            ThemeColorMeta._pending = true;
+
+            // One read per frame at most: a theme swap moves an attribute, an accent moves the body
+            // overlay and a <head> style within the same tick, and all of them want the same read.
+            const run = () => ThemeColorMeta.sync();
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(run);
+            } else {
+                setTimeout(run, 16);
+            }
+        };
+
+        private static observe() {
+            if (ThemeColorMeta._observer || typeof MutationObserver !== 'function') return;
+
+            const observer = new MutationObserver(ThemeColorMeta.schedule);
+            // <html> unfiltered: bit-theme and the accent's bit-accent are the two that matter here,
+            // but an app's own attribute may select a palette too, and a coalesced read is cheap
+            // enough that guessing the list would cost more than it saves.
+            observer.observe(document.documentElement, { attributes: true });
+            // The applyTheme overlay (an accent, or an app applying a theme object) as inline
+            // custom properties, and a class that switches palettes.
+            observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+            // The accent's first-paint <style> snapshot being injected or replaced. Also catches an
+            // app's own late stylesheet. Appending the tag above is a childList change too, but the
+            // read it schedules then finds the color unchanged and stops there.
+            observer.observe(document.head, { childList: true });
+
+            ThemeColorMeta._observer = observer;
+        }
+
+        private static whenBodyReady(action: () => void) {
+            if (document.body) {
+                action();
+                return;
+            }
+
+            // The library script can be loaded from <head>; everything here needs the body element.
+            document.addEventListener('DOMContentLoaded', action, { once: true } as any);
+        }
+    }
+
     /** Attach or swap alternate theme stylesheets at runtime (prefer same-origin / trusted URLs). */
     export class ExternalTheme {
         private static validateHref(href: string) {
@@ -551,6 +755,10 @@ namespace BitBlazorUI {
             // different rel is corrected before we point it at the stylesheet href.
             link.rel = 'stylesheet';
             link.href = href;
+
+            // The swapped-in stylesheet is what repaints the surfaces, so the theme-color tags have to
+            // wait for it; registering after href is set is safe, load fires on a later task.
+            ThemeColorMeta.watchStylesheet(link);
         }
 
         public static detach(linkId: string) {
@@ -558,6 +766,7 @@ namespace BitBlazorUI {
             // Only remove the element if it's actually a <link>; we should not garbage-collect
             // unrelated nodes that happen to share the id.
             if (el && el.tagName === 'LINK') {
+                ThemeColorMeta.unwatchStylesheet(el);
                 el.remove();
             }
         }
@@ -572,5 +781,10 @@ namespace BitBlazorUI {
         default: document.documentElement.getAttribute(ATTR_THEME_DEFAULT),
         darkTheme: document.documentElement.getAttribute(ATTR_THEME_DARK),
         lightTheme: document.documentElement.getAttribute(ATTR_THEME_LIGHT),
+        // Absent stays undefined rather than false: an app that turns the sync on through init()
+        // instead of the attribute must not have it turned back off by this call.
+        themeColorMeta: document.documentElement.hasAttribute(ATTR_THEME_COLOR_META)
+            ? (document.documentElement.getAttribute(ATTR_THEME_COLOR_META) || true)
+            : undefined,
     });
 }

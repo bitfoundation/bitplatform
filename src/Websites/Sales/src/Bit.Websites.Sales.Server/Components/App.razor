@@ -5,7 +5,10 @@
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color">
+    @* No theme-color meta tag: this site paints one fixed light theme (see bit-theme="light" above),
+       so there is nothing for a tag to follow - manifest.json's theme_color carries the same color
+       for the installed PWA. A theme switcher here would need the tag back, kept in step with the
+       page the way Bit.BlazorUI.Demo.Client.Core/Scripts/app.ts does it. *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="bit is a digital innovation company with software development at its core. We help out our customers innovate with designing and building their digital products efficiently with our Agile mindset and lean processes." />
     <Link rel="icon" Href="/favicon.ico" type="image/x-icon" />

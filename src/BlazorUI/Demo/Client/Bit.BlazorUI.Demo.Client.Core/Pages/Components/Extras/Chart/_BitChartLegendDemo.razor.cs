@@ -125,4 +125,49 @@ private BitChartData Markers() => new()
             PointBackgroundColor = ""#9966ff"", PointStyle = BitChartPointStyle.Triangle, PointRadius = 6, Tension = 0.3 }
     }
 };";
+
+    private readonly BitChartOptions _capped = new()
+    {
+        Plugins = new BitChartPluginOptions
+        {
+            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right, MaxHeight = 120 }
+        }
+    };
+
+    private BitChartData ManySeries()
+    {
+        var data = new BitChartData { Labels = BitChartSampleData.Months.ToList() };
+        for (int i = 0; i < 12; i++)
+        {
+            var values = BitChartSampleData.Months
+                .Select((_, x) => (double?)Math.Round(30 + i * 4 + Math.Sin((x + i) / 1.4) * 12, 1))
+                .ToList();
+            data.Datasets.Add(new BitChartDataset { Label = $"Region {i + 1}", Data = values, PointRadius = 0 });
+        }
+        return data;
+    }
+
+    private readonly string maxHeightRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""ManySeries()"" Options=""_capped"" />";
+    private readonly string maxHeightCsharpCode = @"
+private readonly BitChartOptions _capped = new()
+{
+    Plugins = new BitChartPluginOptions
+    {
+        // Past 120px the legend scrolls instead of pushing the plot out of the way.
+        Legend = new BitChartLegendOptions { Position = BitChartPosition.Right, MaxHeight = 120 }
+    }
+};
+
+private BitChartData ManySeries()
+{
+    var data = new BitChartData { Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" } };
+    for (int i = 0; i < 12; i++)
+    {
+        var values = Enumerable.Range(0, 7)
+            .Select(x => (double?)Math.Round(30 + i * 4 + Math.Sin((x + i) / 1.4) * 12, 1))
+            .ToList();
+        data.Datasets.Add(new BitChartDataset { Label = $""Region {i + 1}"", Data = values, PointRadius = 0 });
+    }
+    return data;
+}";
 }

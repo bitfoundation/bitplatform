@@ -43,8 +43,8 @@ public partial class DiagnosticReport
 
         BuildContext();
 
-        // On init rather than after first render, so a prerendered visit carries the answer in its html. The typed
-        // controller caches it through the prerender state, so the interactive pass does not ask again.
+        // On init rather than after first render, so a prerendered visit carries the answer in its html. The report
+        // streams, and a stream is not kept in the prerender state, so the interactive pass asks again.
         if (AutoRun)
         {
             await Run();
@@ -100,7 +100,13 @@ public partial class DiagnosticReport
         }
         //#endif
 
-        serverLines.AddRange(await diagnosticController.PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken));
+        // Each section as the server finishes it: the test push and the test SignalR message can take a while, and the
+        // rest of the report should not wait on them.
+        await foreach (var line in diagnosticController.PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken))
+        {
+            serverLines.Add(line);
+            StateHasChanged();
+        }
     }
 
     //#if (signalR == true)

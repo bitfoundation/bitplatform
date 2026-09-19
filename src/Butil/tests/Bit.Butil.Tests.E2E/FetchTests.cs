@@ -58,16 +58,20 @@ public class FetchTests : ButilPageTest
     {
         // A pending abort is a note about one single-use id. An abort that missed its request - the
         // token firing just after it completed - must not follow the id into anything else.
-        var ok = await Page.EvaluateAsync<bool>(
+        var outcome = await Page.EvaluateAsync<string>(
             """
             async () => {
-                const first = await BitButil.fetch.send('e2e-abort-late-a', { url: location.href, method: 'GET' }, null, false);
+                // A static file rather than the page's own URL: a BlazorWebView answers only navigations with
+                // its host page, so a fetch of a route there is a 404 - on every host this file is a 200.
+                const url = new URL('/data/stream-sample.txt', location.href).href;
+                const first = await BitButil.fetch.send('e2e-abort-late-a', { url, method: 'GET' }, null, false);
                 BitButil.fetch.abort('e2e-abort-late-a');
-                const second = await BitButil.fetch.send('e2e-abort-late-b', { url: location.href, method: 'GET' }, null, false);
-                return first.aborted === false && second.aborted === false && second.ok === true;
+                const second = await BitButil.fetch.send('e2e-abort-late-b', { url, method: 'GET' }, null, false);
+                const ok = first.aborted === false && second.aborted === false && second.ok === true;
+                return ok ? 'ok' : JSON.stringify({ first, second });
             }
             """);
 
-        Assert.IsTrue(ok, "an abort that arrived after its request finished must not affect another request");
+        Assert.AreEqual("ok", outcome, "an abort that arrived after its request finished must not affect another request");
     }
 }

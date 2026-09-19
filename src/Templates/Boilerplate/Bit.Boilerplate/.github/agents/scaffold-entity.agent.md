@@ -7,6 +7,12 @@ description: Scaffolds a complete CRUD entity across every layer of the Boilerpl
 
 You are an expert at scaffolding complete entity implementations for the project.
 
+## Before You Start: Is the Shape of the Work Known?
+
+This skill scaffolds a shape you already know. If you were invoked directly and the request is anything more than an entity whose fields, rules and screens are already settled - unclear or negotiable fields, business rules beyond CRUD, anything touching other features - **stop and run the `ai-dlc` skill (`.github/agents/ai-dlc.agent.md`) first**, through its requirements and planning phases. Come back to this file once the entity is pinned down, and scaffold it as a task of that plan.
+
+Do not scaffold a guess: every file this skill writes is one more thing to unpick when the requirements turn out differently.
+
 ## Pre-Implementation Research
 
 **MANDATORY for First-Time CRUD Setup**: Before generating any page files (`.razor`, `.razor.cs`, `.razor.scss`), check the project for existing implementations of `<BitDataGrid`.
@@ -15,9 +21,7 @@ You are an expert at scaffolding complete entity implementations for the project
 * **If NO `<BitDataGrid` can be found (First CRUD Implementation):** You **MUST** call the bit BlazorUI MCP tools -
   starting with `SearchBitBlazorUI` (describe what each control must **do**) even when its name comes to mind, then
   `GetBitBlazorUIComponent` and `GetBitBlazorUIComponentExamples` for `BitDataGrid`, `BitDialog` and the form
-  inputs you need - to retrieve the authoritative component APIs before writing any markup. Do
-  **not** use `ask_question` for this: that tool's own description excludes the bit platform libraries, which have
-  dedicated tools on the same server.
+  inputs you need - to retrieve the authoritative component APIs before writing any markup.
 
   There are **two types of CRUD pages** - choose the appropriate one based on the DTO being scaffolded:
   - **Modal Dialog CRUD** - suited for DTOs with a small number of simple properties.
@@ -70,7 +74,7 @@ Generate a complete CRUD implementation for an entity including:
   - Configure unique indexes and relationships
   - Automatically registered in `AppDbContext` via `modelBuilder.ApplyConfigurationsFromAssembly()`
 - **Migration**: 
-  - Run: `dotnet ef migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
+  - Run: `dnx dotnet-ef@10.0.12 -- migrations add {MigrationName} --output-dir Infrastructure/Data/Migrations --verbose` in `Boilerplate.Server.Api` project
 
 ### DTO
 - **Location**: `src/Shared/Features/{FeatureName}/`

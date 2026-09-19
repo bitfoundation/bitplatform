@@ -20,8 +20,14 @@
   <Folder Name="/Tests/">
     <Project Path="tests/Bit.Butil.Tests.Benchmarks/Bit.Butil.Tests.Benchmarks.csproj" />
     <Project Path="tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
     <Project Path="tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
     <Project Path="tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Harness/">
+    <Project Path="tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
   <Project Path="Bit.Butil.Build/Bit.Butil.Build.csproj" />

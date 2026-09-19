@@ -1,4 +1,4 @@
-using Boilerplate.Client.Core.Styles;
+using Bit.BlazorUI;
 
 namespace Boilerplate.Client.Maui.Infrastructure.Services;
 
@@ -13,7 +13,7 @@ public partial class MauiExternalNavigationService : IExternalNavigationService
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is not ("http" or "https"))
         {
             if (await Launcher.OpenAsync(uri) is false)
-                throw new DomainLogicException(localizer["No application on this device can open {0} links.", uri.Scheme]);
+                throw new DomainLogicException(localizer[nameof(AppStrings.NoAppCanOpenLinksOfScheme), uri.Scheme]);
 
             return;
         }
@@ -23,7 +23,7 @@ public partial class MauiExternalNavigationService : IExternalNavigationService
         await Browser.OpenAsync(url, options: new()
         {
             TitleMode = BrowserTitleMode.Hide,
-            PreferredToolbarColor = Color.Parse(isDark ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor),
+            PreferredToolbarColor = Color.Parse(BitExtraThemeSurfaces.BackgroundPrimary[isDark ? BitExtraThemePresets.Fluent2Dark : BitExtraThemePresets.Fluent2Light]),
             LaunchMode = AppPlatform.IsWindows || AppPlatform.IsMacOS ? BrowserLaunchMode.External : BrowserLaunchMode.SystemPreferred /* in app browser */
         });
     }

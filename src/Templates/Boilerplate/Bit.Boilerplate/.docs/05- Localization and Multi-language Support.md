@@ -535,11 +535,7 @@ The tool performs the following tasks automatically:
 
 ### Installation
 
-Install `bit-resx` as a .NET global tool:
-
-```bash
-dotnet tool install --global Bit.ResxTranslator
-```
+Nothing to install: `dnx` runs it straight from NuGet (see [Usage](#usage) below).
 
 #### `Bit.ResxTranslator.json` Configuration Options Explained
 
@@ -607,7 +603,7 @@ export OpenAI__ApiKey="your-api-key-here"
 Run the translation command from your project root (where `Bit.ResxTranslator.json` is located):
 
 ```bash
-bit-resx-translate
+dnx Bit.ResxTranslator
 ```
 
 ## Philosophy of bit-resx Translator in CD Pipelines
@@ -630,8 +626,7 @@ That's why `bit-resx` tool is added to the project CD pipelines. Here's how it's
     OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
     OpenAI__Endpoint: ${{ vars.OPENAI_ENDPOINT }}
   run: |
-    dotnet tool install --global Bit.ResxTranslator
-    bit-resx-translate
+    dnx Bit.ResxTranslator
 ```
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from

@@ -78,6 +78,13 @@
     transform: rotate(-90deg);
 }
 
+// The reversed chevron of a group header is moved rather than the row it sits in: the text between them
+// grows into whatever is left, so the chevron ends up at the far end of the header either way - and the
+// icon of the item stays at the start of the row, beside the text it names.
+.bit-nav-rch {
+    order: 1;
+}
+
 .bit-nav-gcb {
     width: 100%;
     display: flex;
@@ -225,6 +232,21 @@
 
     .bit-nav-itx {
         display: none;
+    }
+
+    // A group header in the rail is the icon that stands for the group and nothing else: the name it
+    // groups by has no room to be read in, and the chevron it expands with is not rendered at all. What
+    // is left of the row is centered over the rail and drawn at the size the rail draws its icons in.
+    .bit-nav-ghd {
+        display: none;
+    }
+
+    .bit-nav-iit {
+        justify-content: center;
+    }
+
+    .bit-nav-gcb .bit-nav-iic {
+        font-size: $tg-fs-md;
     }
 }
 

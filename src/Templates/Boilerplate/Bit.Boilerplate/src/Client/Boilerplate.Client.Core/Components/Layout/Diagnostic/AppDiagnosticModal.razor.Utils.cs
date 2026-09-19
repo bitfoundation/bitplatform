@@ -12,16 +12,7 @@ public partial class AppDiagnosticModal
     [AutoInject] private IndexedDb indexedDb = default!;
     //#endif
     [AutoInject] private SessionStorage sessionStorage = default!;
-    //#if (api == "Integrated")
-    [AutoInject] private IUserController userController = default!;
-    //#if (signalR == true || notification == true)
-    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
-    //#endif
-    //#endif
     [AutoInject] private IStorageService storageService = default!;
-    //#if (api == "Integrated")
-    [AutoInject] private IExternalNavigationService externalNavigationService = default!;
-    //#endif
     [AutoInject] private IAppUpdateService appUpdateService = default!;
     [AutoInject] private ILogger<AppDiagnosticModal> logger = default!;
     //#if (offlineDb == true)
@@ -44,31 +35,6 @@ public partial class AppDiagnosticModal
     {
         await JSRuntime.InvokeVoidAsync("App.openDevTools");
     }
-
-    //#if (api == "Integrated")
-    /// <summary>
-    /// Opens Hangfire's dashboard on the api, already signed in as this user. A plain browser navigation carries only
-    /// a cookie, which <see cref="IUserController.UpdateSession"/> writes with the token's own expiry - so the token
-    /// is refreshed first to buy a full lifetime rather than whatever is left of the current one.
-    /// </summary>
-    private async Task OpenHangfireDashboard()
-    {
-        await AuthManager.RefreshToken(requestedBy: nameof(OpenHangfireDashboard));
-
-        await userController.UpdateSession(new()
-        {
-            AppVersion = TelemetryContext.AppVersion,
-            DeviceInfo = TelemetryContext.Platform,
-            CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
-            //#if (signalR == true || notification == true)
-            NotificationStatus = await notificationPreferenceService.GetSessionStatus(), // Left out, it would mute the session.
-            //#endif
-            PlatformType = AppPlatform.Type
-        }, CurrentCancellationToken);
-
-        await externalNavigationService.NavigateTo(new Uri(AbsoluteServerAddress, "hangfire").ToString());
-    }
-    //#endif
 
     private async Task CallGC()
     {

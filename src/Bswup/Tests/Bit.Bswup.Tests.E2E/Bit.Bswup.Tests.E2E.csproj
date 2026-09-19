@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+             builds that test host into the assembly itself, and it only generates the entry point for
+             an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Playwright itself, without a per-framework integration package: the suite manages the browser,
+             its contexts and the harness host from its own base classes. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.62.0" />
+        <PackageReference Include="MSTest" Version="4.4.1" />
+    </ItemGroup>
+
+    <!-- Deliberately no ProjectReference to the harness host. It is a separate process the suite boots
+         once per render mode, on the target framework under test; a reference would pin it to this
+         project's single target framework. Infrastructure/HarnessBuild builds it before the first test. -->
+
+</Project>

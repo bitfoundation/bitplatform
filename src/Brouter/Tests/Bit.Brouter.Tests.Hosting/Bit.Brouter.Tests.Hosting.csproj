@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- In-process HTTP tests: the real harness host (and the real hosting samples) booted with
+         WebApplicationFactory, asserting what only a server response can show - status codes,
+         redirects, what the first response already contains, the persisted prerender state, which
+         static assets are served, and what the server logged while rendering. No browser, so this
+         runs on every target framework in the regular CI job. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.4.1" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Brouter.Tests.Harness.Web\Bit.Brouter.Tests.Harness.Web.csproj" />
+    </ItemGroup>
+
+    <!-- The hosting samples only target net10.0. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <ProjectReference Include="..\..\Samples\Server\Bit.Brouter.Samples.Server.csproj" />
+        <ProjectReference Include="..\..\Samples\Wasm\Bit.Brouter.Samples.Wasm\Bit.Brouter.Samples.Wasm.csproj" />
+        <ProjectReference Include="..\..\Samples\Auto\Bit.Brouter.Samples.Auto\Bit.Brouter.Samples.Auto.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -50,6 +50,10 @@ public partial class ThemeTogglePersistenceUITests : AppPageTest
         var persistedTheme = await Page.EvaluateAsync<string?>("() => localStorage.getItem('bit-current-theme')");
         Assert.AreEqual(toggledTheme, persistedTheme, "The toggled theme should be persisted in localStorage.");
 
+        // ThemeService's own copy of it is for the hybrid heads only, whose startup code runs before this WebView does.
+        var mirroredTheme = await Page.EvaluateAsync<string?>($"() => localStorage.getItem('{ThemeService.THEME_STORAGE_KEY}')");
+        Assert.IsNull(mirroredTheme, $"Only a Blazor Hybrid head should store '{ThemeService.THEME_STORAGE_KEY}'.");
+
         // A full page refresh must keep the toggled theme.
         await Page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
         await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", toggledTheme);

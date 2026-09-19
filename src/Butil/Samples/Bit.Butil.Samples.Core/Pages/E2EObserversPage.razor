@@ -199,7 +199,8 @@
 </section>
 
 @code {
-    private string _status = "ready";
+    // "ready" only after the first interactive render - see the same field on /e2e.
+    private string _status = "starting";
     private ElementReference _target;
     private ElementReference _mediaTarget;
 
@@ -213,6 +214,11 @@
     private int _resizeWidth = 120;
 
     private void Set(string value) { _status = value; StateHasChanged(); }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) Set("ready");
+    }
 
     // ─── Performance ─────────────────────────────────────────────────────────────
     private async Task PerfMarkMeasure()
@@ -303,8 +309,9 @@
         // very first read of the type. That read is what starts the observer behind it, so it can
         // only see the long task if the module drains the fresh observer's records rather than
         // waiting for the callback a later task would have run.
-        var until = DateTime.UtcNow.AddMilliseconds(120);
-        while (DateTime.UtcNow < until) { }
+        // The loop runs in the page, not in .NET: only the browser's main thread produces a long task,
+        // and .NET is on that thread under WebAssembly alone - not in a Server circuit or a BlazorWebView.
+        await js.InvokeVoidAsync("eval", "(() => { const until = performance.now() + 120; while (performance.now() < until) { } })()");
         await Task.Delay(50);
 
         var tasks = await performance.GetLongTasks();

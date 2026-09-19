@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using System.Text.Encodings.Web;
 using QRCoder;
-using Microsoft.AspNetCore.Cors;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -56,7 +55,7 @@ public partial class UserController : AppControllerBase, IUserController
             .OrderByDescending(us => us.RenewedOn);
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Delete */)]
+    [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
         var currentSessionId = User.GetSessionId();
@@ -101,7 +100,7 @@ public partial class UserController : AppControllerBase, IUserController
         //#endif
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Append */)]
+    [HttpPost]
     public async Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken)
     {
         // UpdateSession gets called after SignIn, Refresh and client app initialization to update user session info,
@@ -667,15 +666,6 @@ public partial class UserController : AppControllerBase, IUserController
     /// PRE-RENDERING happens before any of that exists, so a cookie the browser attaches on its own is the only way
     /// <c>ServerSideAuthTokenProvider</c> can tell who the user is on the first response.
     /// <para>
-    /// That is also why the Domain is the WEB APP's host and not the api's - pre-rendering runs on the web app. Under
-    /// <c>api == Standalone</c> the two are different hosts, and a host-only cookie (no Domain) would stay on the api.
-    /// </para>
-    /// <para>
-    /// The constraint this puts on a deployment: the api host must domain-match the web app host, or the browser
-    /// DISCARDS the cookie (RFC 6265 5.3) and every page silently pre-renders as anonymous. Web <c>myapp.com</c> +
-    /// api <c>api.myapp.com</c> works; web <c>app.myapp.com</c> + api <c>app-api.myapp.com</c> does not, because those
-    /// two are siblings rather than parent and child. The accepted cost is that a cookie carrying a Domain also
-    /// reaches every OTHER subdomain of that host - there is no way to scope a cookie to two named hosts.
     /// </para>
     /// </remarks>
     private CookieOptions BuildAccessTokenCookieOptions()
@@ -686,7 +676,6 @@ public partial class UserController : AppControllerBase, IUserController
             SameSite = SameSiteMode.Strict,
             Secure = hostEnvironment.IsDevelopment() is false || Request.IsHttps,
             Path = "/",
-            Domain = HttpContext.Request.GetWebAppUrl().Host,
             IsEssential = true
         };
     }

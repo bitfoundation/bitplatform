@@ -325,7 +325,8 @@ self.assetsExclude = [
     /pdfjs-4\.7\.76-worker\.js$/,
 
     // country flags (large files)
-    /_content\/Bit\.BlazorUI\.Extras\/flags/
+    /_content\/Bit\.BlazorUI\.Extras\/flags/,
+    /_content\/Bit\.BlazorUI\.Assets\/flags/
 ];
 ```
 
@@ -333,7 +334,7 @@ self.assetsExclude = [
 - `assetsExclude`: Prevents caching of large files you don't need offline
 - Themes: Only the active theme is cached, not all variants
 - PDF.js: Excluded by default (remove if you need PDF reader offline)
-- Country flags: Excluded due to size (hundreds of flag images)
+- Country flags: Excluded due to size (hundreds of flag images in Bit.BlazorUI.Extras, and thousands more in the image sets of Bit.BlazorUI.Assets)
 
 **Customization tip:** Review your app's offline requirements and adjust exclusions accordingly.
 

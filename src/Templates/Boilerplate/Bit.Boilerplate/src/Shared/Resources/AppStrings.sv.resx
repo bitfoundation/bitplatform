@@ -1332,7 +1332,122 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Canceled" xml:space="preserve">
     <value>Avbrutet</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Ingen app på den här enheten kan öppna {0}-länkar.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Röstsamtal</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Starta röstsamtal</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Avsluta röstsamtal</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Tillbaka till röstsamtalet</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Återstående tid för röstsamtalet</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>Röstsamtalet har avslutats.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>Meddelandet kunde inte skickas till samtalet.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>Assistenten är upptagen. Försök igen om {0} sekunder.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>Assistenten kunde inte svara. Försök igen.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Lämna dina kontaktuppgifter så hör en handläggare av sig till dig.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Sammanfattning av konversationen</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Inloggad som</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Din begäran har skickats. En handläggare hör snart av sig till dig.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Vad som händer</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Väntar på ditt svar</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>Rensa appens filer på den här enheten?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>En nystart löser de flesta problem som orsakas av skadade lokala data.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>Du loggas ut</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Den här konversationen raderas</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>Appen startas om</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>Röstsamtalet avslutas</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Rensa filer</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Inte nu</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Rensar appens filer</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>Du behöll appens filer.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>Inget rensades: begäran besvarades inte.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>Godkänna detta?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Godkänn</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Avböj</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Godkänt</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Avböjt.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>Begäran besvarades inte.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Bästa matchning</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>Passar också bra</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Fråga</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Berätta mer om {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chattpanel</value>
   </data>
@@ -1965,6 +2080,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>Läsa diagnostikinformation om den här driftsättningen.</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Läsa den detaljerade hälsorapporten för den här driftsättningen, inklusive feldetaljer för allt som inte fungerar.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Läsa hälsorapporten.</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Auktoriserad applikation</value>
   </data>
@@ -1973,6 +2094,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Auktoriserade applikationer</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Drift</value>
   </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Externa applikationer som dina användare har auktoriserat via OAuth.</value>

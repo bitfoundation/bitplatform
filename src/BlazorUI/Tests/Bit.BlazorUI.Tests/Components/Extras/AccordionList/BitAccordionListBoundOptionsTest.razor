@@ -1,0 +1,24 @@
+@using Bit.BlazorUI
+
+@* The bound value already holds the key of an option, so the option opening itself on registration must not
+   be reported back to the page as a change - the page would otherwise be re-rendered for a value it holds. *@
+<BitAccordionList TItem="BitAccordionListOption" Multiple="true" @bind-ExpandedKeys="ExpandedKeys">
+    <BitAccordionListOption Key="first" Title="First">Body of the first</BitAccordionListOption>
+    <BitAccordionListOption Key="second" Title="Second">Body of the second</BitAccordionListOption>
+</BitAccordionList>
+
+@code {
+    public IEnumerable<string> ExpandedKeys
+    {
+        get => _expandedKeys;
+        set
+        {
+            _expandedKeys = value;
+            ChangeCount++;
+        }
+    }
+
+    public int ChangeCount { get; private set; }
+
+    private IEnumerable<string> _expandedKeys = ["second"];
+}

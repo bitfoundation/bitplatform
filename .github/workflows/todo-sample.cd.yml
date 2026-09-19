@@ -88,8 +88,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -149,8 +148,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -177,7 +175,15 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish Server Web
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
+    # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: Todo-minifier-map
+        path: bit-minifier.map
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
@@ -293,7 +299,14 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: TodoAot-minifier-map
+        path: bit-minifier.map
 
     - name: Upload to asw
       run: |
@@ -347,7 +360,7 @@ jobs:
 
     - name: Optimize DbContext
       run: |
-          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet tool restore && dotnet build -c Release && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
+          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.12 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
     - name: Publish
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
@@ -399,9 +412,16 @@ jobs:
 
     - name: Generate CSS/JS files
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
-      
+
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: TodoSmall-minifier-map
+        path: bit-minifier.map
 
     - name: Upload to asw
       run: |
@@ -439,8 +459,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -461,21 +480,19 @@ jobs:
       continue-on-error: true
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dotnet tool restore
-          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dnx vpk@1.2.0 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
           dotnet publish TodoSample.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION}}"
-          dotnet tool restore
-          dotnet vpk pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
+          dnx vpk@1.2.0 -- pack -u TodoSample.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e TodoSample.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle TodoSample
 
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd TodoSample\src\Client\TodoSample.Client.Windows\
-          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dnx vpk@1.2.0 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
 
 
   build_blazor_hybrid_android:
@@ -523,8 +540,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -623,8 +639,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd TodoSample
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -687,7 +702,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@5e75ff58276689011512ba87a381d93dc67dbcf8 # v5.3.0
+      uses: apple-actions/upload-testflight-build@1fc69ca369a60b813eaaa2d936eda22794b52e17 # v5.4.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

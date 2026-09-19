@@ -37,7 +37,6 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Twilio;
 using Ganss.Xss;
 using Fido2NetLib;
@@ -227,7 +226,7 @@ public static partial class Program
 
         services.AddCors(builder =>
         {
-            CorsPolicyBuilder ApplyPolicyDefaults(CorsPolicyBuilder policy)
+            builder.AddDefaultPolicy(policy =>
             {
                 if (env.IsDevelopment() is false)
                 {
@@ -242,20 +241,6 @@ public static partial class Program
                       .AllowAnyMethod()
                       .WithExposedHeaders(HeaderNames.RequestId,
                             HeaderNames.Age, "App-Cache-Response", "X-App-Platform", "X-App-Version", "X-Origin");
-
-                return policy;
-            }
-
-            builder.AddDefaultPolicy(policy =>
-            {
-                ApplyPolicyDefaults(policy);
-            });
-
-            // Required for Cookies.Delete & Cookies.Append to work.
-            builder.AddPolicy("CorsWithCredentials", policy =>
-            {
-                ApplyPolicyDefaults(policy)
-                    .AllowCredentials();
             });
         });
 
@@ -501,23 +486,16 @@ public static partial class Program
         var fluentEmailServiceBuilder = services.AddFluentEmail(emailSettings.DefaultFromEmail);
         fluentEmailServiceBuilder.AddSmtpSender(() =>
         {
-            var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
-            var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"));
-            var host = endpoint.Host;
-            var port = endpoint.Port is -1 ? 25 : endpoint.Port;
-            var userName = GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty);
-            var password = GetConnectionStringValue(smtpConnectionString, "Password", string.Empty);
-            var enableSsl = GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false;
+            var smtpSettings = GetSmtpSettings(configuration);
 
-            SmtpClient smtpClient = new(host, port)
+            SmtpClient smtpClient = new(smtpSettings.Host, smtpSettings.Port)
             {
-                EnableSsl = enableSsl
+                EnableSsl = smtpSettings.EnableSsl
             };
 
-            if (string.IsNullOrEmpty(userName) is false
-                && string.IsNullOrEmpty(password) is false)
+            if (smtpSettings.HasCredentials)
             {
-                smtpClient.Credentials = new NetworkCredential(userName.ToString(), password.ToString());
+                smtpClient.Credentials = new NetworkCredential(smtpSettings.UserName, smtpSettings.Password);
             }
 
             return smtpClient;
@@ -648,6 +626,13 @@ public static partial class Program
             .UseLogging()
             .UseOpenTelemetry(configure: c => c.EnableSensitiveData = env.IsDevelopment());
         }
+
+        // Voice calls (See ChatbotController.StartVoiceCall).
+        if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.RealtimeApiKey) is false)
+        {
+            services.AddSingleton<Features.Chatbot.VoiceCall.VoiceCallRunner>();
+            services.AddSingleton<Features.Chatbot.VoiceCall.OpenAIRealtimeCallClient>();
+        }
 #pragma warning restore MEAI001
         //#endif
         //#endif
@@ -712,35 +697,8 @@ public static partial class Program
     //#if (signalR == true)
     private static void AddAppAIAgents(this WebApplicationBuilder builder)
     {
-        static string GetSystemPrompt(PromptKind promptKind, IServiceProvider sp)
-        {
-            var cache = sp.GetRequiredService<IFusionCache>();
-            var dbContext = sp.GetRequiredService<AppDbContext>();
-            //#if (multitenant == true)
-            var tenantId = sp.GetRequiredService<TenantProvider>().GetCurrentTenantId();
-            var cacheKey = $"SystemPrompt_{tenantId}_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            /*
-            //#endif
-            //#if (multitenant != true)
-            var cacheKey = $"SystemPrompt_{promptKind}";
-            //#endif
-            //#if (IsInsideProjectTemplate == true)
-            */
-            //#endif
-            var result = cache.GetOrSet(
-                cacheKey, _ =>
-                {
-                    var prompt = dbContext.SystemPrompts.FirstOrDefault(p => p.PromptKind == promptKind);
-                    return prompt?.Markdown ?? throw new ResourceNotFoundException().WithData("Reason", $"System prompt for '{promptKind}' not found.");
-                },
-                options => options.SetDuration(TimeSpan.FromHours(1)).SetPriority(CacheItemPriority.High));
-            return result;
-        }
-
         //#if (module == "Sales" || module == "Admin")
-        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
+        builder.AddAIAgent("AnalyzeProductImageAgent", (sp, _) => sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.AnalyzeProductImage, sp),
                     name: "AnalyzeProductImageAgent",
                     description: "Analyzes product images to ensure they meet catalog standards for car products"), lifetime: ServiceLifetime.Scoped);
         //#endif
@@ -749,7 +707,7 @@ public static partial class Program
         {
             var aiFunctions = sp.GetRequiredService<AppChatbot>().GetAIFunctions();
 
-            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: GetSystemPrompt(PromptKind.Support, sp),
+            return sp.GetRequiredService<IChatClient>().AsAIAgent(instructions: Features.Chatbot.SystemPromptProvider.GetSystemPrompt(PromptKind.Support, sp),
                     name: "SupportAgent",
                     description: "Provides support and assistance to users", tools: [.. aiFunctions]);
         }, lifetime: ServiceLifetime.Scoped);
@@ -925,6 +883,22 @@ public static partial class Program
     }
 
     /// <summary>
+    /// The `smtp` connection string, shared by the mail sender and <see cref="SmtpHealthCheck"/>.
+    /// </summary>
+    private static SmtpSettings GetSmtpSettings(IConfiguration configuration)
+    {
+        var smtpConnectionString = configuration.GetRequiredConnectionString("smtp")!;
+        var endpoint = new Uri(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"));
+        var port = endpoint.Port is -1 ? 25 : endpoint.Port;
+
+        return new(Host: endpoint.Host,
+            Port: port,
+            UserName: GetConnectionStringValue(smtpConnectionString, "UserName", string.Empty),
+            Password: GetConnectionStringValue(smtpConnectionString, "Password", string.Empty),
+            EnableSsl: GetConnectionStringValue(smtpConnectionString, "EnableSsl", port == 465 || port == 587 ? "true" : "false").Equals("false", StringComparison.OrdinalIgnoreCase) is false);
+    }
+
+    /// <summary>
     /// A feature that holds personal data registers its source here: what is missing from this list is missing from
     /// every export and every erasure. See <see cref="Features.PersonalData.IPersonalDataSource"/>.
     /// </summary>
@@ -958,40 +932,97 @@ public static partial class Program
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
             .AddDbContextCheck<AppDbContext>()
             .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            // These two reach a remote dependency, so they are bounded and they report Degraded rather than Unhealthy.
-            // `/health` is the readiness contract (See MapAppHealthChecks), and Degraded keeps it at 200: an object
-            // storage hiccup or an SMS provider outage must not pull every otherwise healthy instance out of the load
-            // balancer rotation. The status is still visible in `/healthz`.
+            .AddCheck<AppCertificateHealthCheck>("appCertificate")
+            // Remote dependencies from here on are bounded and report Degraded, which keeps `/health` at 200 (See
+            // MapAppHealthChecks): a provider outage must not drain an otherwise healthy instance.
             .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
-            .AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5));
+            // Cached, as signing in on every probe can trip the mail provider's brute force protection.
+            .AddCachedCheck("smtp", _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
+        // A project that doesn't use a dependency should remove its code.
+        var reportNotConfigured = builder.Environment.IsDevelopment() is false;
+        void AddCheckIfConfigured(string name, bool configured, string settings, Action addCheck)
+        {
+            if (configured)
+            {
+                addCheck();
+            }
+            else if (reportNotConfigured)
+            {
+                healthChecksBuilder.AddNotConfiguredCheck(name, settings);
+            }
+        }
+
+        // For checks whose request costs money, a token or a sign in: once per cache period rather than per probe.
+        void AddCachedCheckIfConfigured(string name, bool configured, string settings, Func<IServiceProvider, IHealthCheck> factory, TimeSpan cacheDuration, TimeSpan timeout)
+            => AddCheckIfConfigured(name, configured, settings, () => healthChecksBuilder.AddCachedCheck(name, factory, cacheDuration, timeout));
+
+        AddCheckIfConfigured("sms", appSettings.Sms?.Configured is true, "Sms", () =>
+            healthChecksBuilder.AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5)));
 
         //#if (cloudflare == true)
-        // Cloudflare Cache Purge API
-        if (appSettings.Cloudflare?.Configured is true)
-        {
-            var cloudflareApiToken = appSettings.Cloudflare.ApiToken;
-            healthChecksBuilder.AddUrlGroup(
-                appSettings.Cloudflare.ZoneIds.Select(zoneId => new Uri($"https://api.cloudflare.com/client/v4/zones/{zoneId}")),
-                name: "cloudflare",
-                tags: [],
-                configureClient: (_, client) =>
-                {
-                    client.Timeout = TimeSpan.FromSeconds(10);
-                    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {cloudflareApiToken}");
-                });
-        }
+        AddCachedCheckIfConfigured("cloudflare", appSettings.Cloudflare?.Configured is true, "Cloudflare",
+            sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        if (string.IsNullOrWhiteSpace(keycloakBaseUrl) is false)
+        AddCheckIfConfigured("keycloakIdentity", string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", () =>
         {
             var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
             healthChecksBuilder.AddUrlGroup(
-                new Uri($"{keycloakBaseUrl.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
+                new Uri($"{keycloakBaseUrl!.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
                 name: "keycloakIdentity",
+                failureStatus: HealthStatus.Degraded,
                 tags: [],
+                timeout: TimeSpan.FromSeconds(10),
                 configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
-        }
+        });
+
+        // These can't be verified without a user signing in, so they only report a missing configuration.
+        AddCheckIfConfigured("googleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", () => { });
+        AddCheckIfConfigured("gitHubSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", () => { });
+        AddCheckIfConfigured("twitterSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", () => { });
+        AddCheckIfConfigured("facebookSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", () => { });
+
+        AddCachedCheckIfConfigured("entraId", string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
+            sp => ActivatorUtilities.CreateInstance<EntraIdHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        AddCachedCheckIfConfigured("appleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false, "Authentication:Apple",
+            sp => ActivatorUtilities.CreateInstance<AppleSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        //#if (captcha == "reCaptcha")
+        healthChecksBuilder.AddCachedCheck("reCaptcha", sp => ActivatorUtilities.CreateInstance<GoogleRecaptchaHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        //#if (signalR == true)
+        AddCachedCheckIfConfigured("azureSignalR", string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
+            sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        //#if (notification == true)
+        // Web Push (VAPID) signs locally, so it has nothing to check.
+        AddCachedCheckIfConfigured("firebase", string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
+            sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        AddCachedCheckIfConfigured("apns", string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
+            sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Ios), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        //#endif
+
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+        // Each sends a real, minimal request through the client its feature uses.
+        var ai = appSettings.AI;
+        void AddAICheck<THealthCheck>(string name, bool configured, string settings) where THealthCheck : IHealthCheck
+            => AddCachedCheckIfConfigured(name, configured, settings, sp => ActivatorUtilities.CreateInstance<THealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(20));
+
+        AddAICheck<AIChatAgentHealthCheck>("aiChat", string.IsNullOrWhiteSpace(ai?.OpenAI?.ChatApiKey) is false, "AI:OpenAI:ChatApiKey");
+        AddAICheck<AIEmbeddingHealthCheck>("aiEmbedding", string.IsNullOrWhiteSpace(ai?.OpenAI?.EmbeddingApiKey) is false || string.IsNullOrWhiteSpace(ai?.HuggingFace?.EmbeddingEndpoint) is false, "AI:OpenAI:EmbeddingApiKey or AI:HuggingFace:EmbeddingEndpoint");
+        //#if (signalR == true)
+        AddAICheck<SpeechToTextHealthCheck>("aiSpeechToText", string.IsNullOrWhiteSpace(ai?.OpenAI?.SpeechToTextApiKey) is false, "AI:OpenAI:SpeechToTextApiKey");
+        AddAICheck<TextToSpeechHealthCheck>("aiTextToSpeech", string.IsNullOrWhiteSpace(ai?.OpenAI?.TextToSpeechApiKey) is false, "AI:OpenAI:TextToSpeechApiKey");
+        AddAICheck<Features.Chatbot.VoiceCall.RealtimeHealthCheck>("aiRealtime", string.IsNullOrWhiteSpace(ai?.OpenAI?.RealtimeApiKey) is false, "AI:OpenAI:RealtimeApiKey");
+        //#endif
+        //#endif
 
         return builder;
     }

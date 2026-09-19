@@ -29,12 +29,12 @@
         <Using Include="Bit.BlazorUI.Demo.Client.Core.Services" />
         <Using Include="Bit.BlazorUI.Demo.Shared" />
         <Watch Remove="*.scss" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.6.0" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0">
+        <PackageReference Include="Bit.BlazorES2019" Version="10.6.1" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -47,7 +47,6 @@
         <Content Include="..\Bit.BlazorUI.Demo.Client.Maui\wwwroot\index.html" Link="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include=".config\dotnet-tools.json" />
     </ItemGroup>
 
     <ItemGroup>

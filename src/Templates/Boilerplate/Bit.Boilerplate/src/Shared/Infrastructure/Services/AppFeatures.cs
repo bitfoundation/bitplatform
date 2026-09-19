@@ -52,6 +52,11 @@ public class AppFeatures
         /// it global-admin only, see <see cref="GetTenantAdminFeatures"/>.
         /// </summary>
         public const string OAuthClients_Manage = "2.3";
+
+        /// <summary>
+        /// Open the operations page, and see every health check's status and failure details through /healthz.
+        /// </summary>
+        public const string Operations_View = "2.4";
     }
 
     public class AdminPanel

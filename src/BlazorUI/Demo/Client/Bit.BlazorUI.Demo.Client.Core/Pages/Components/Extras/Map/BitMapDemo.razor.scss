@@ -1,0 +1,13 @@
+.map-container{
+    height: 360px;
+    isolation: isolate;
+}
+
+::deep {
+    .custom-map {
+        height: 260px;
+        border: 2px dashed tomato;
+        border-radius: 0.5rem;
+        filter: saturate(0.4);
+    }
+}

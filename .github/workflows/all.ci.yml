@@ -2,6 +2,55 @@ name: All CI
 
 on:
   workflow_dispatch:
+    inputs:
+      boilerplate:
+        description: Boilerplate solution
+        type: boolean
+        default: true
+      boilerplate_postgres:
+        description: Boilerplate tests with PostgreSQL
+        type: boolean
+        default: true
+      boilerplate_mssql:
+        description: Boilerplate tests with SQL Server
+        type: boolean
+        default: true
+      boilerplate_configurations:
+        description: Boilerplate configurations
+        type: boolean
+        default: true
+      blazorempty:
+        description: BlazorEmpty configurations
+        type: boolean
+        default: true
+      nuget_packages:
+        description: NuGet packages
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup solution
+        type: boolean
+        default: true
+      butil:
+        description: Butil solution
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter solution
+        type: boolean
+        default: true
+      bmotion:
+        description: Bmotion solution
+        type: boolean
+        default: true
+      tooling:
+        description: CodeAnalyzers, ResxTranslator and SourceGenerators solutions
+        type: boolean
+        default: true
+      websites:
+        description: Website solutions
+        type: boolean
+        default: true
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -16,6 +65,7 @@ jobs:
 
   build_boilerplate:
     name: build boilerplate itself
+    if: ${{ inputs.boilerplate }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -46,6 +96,7 @@ jobs:
 
   test_boilerplate_postgres:
     name: create project from template with postgresql and test it
+    if: ${{ inputs.boilerplate_postgres }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -87,8 +138,7 @@ jobs:
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Trust dotnet cert
       continue-on-error: true
@@ -155,6 +205,7 @@ jobs:
 
   test_boilerplate_mssql:
     name: create project from template with sql server and test it
+    if: ${{ inputs.boilerplate_mssql }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -196,8 +247,7 @@ jobs:
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Install sql server
       uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
@@ -259,6 +309,7 @@ jobs:
 
   build_boilerplate_configurations:
     name: create several projects from template and build them
+    if: ${{ inputs.boilerplate_configurations }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -327,6 +378,7 @@ jobs:
 
   build_blazorempty_configurations:
     name: build blazorempty based projects
+    if: ${{ inputs.blazorempty }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -367,6 +419,7 @@ jobs:
 
   build_nuget_packages:
     name: build nuget packages locally
+    if: ${{ inputs.nuget_packages }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -502,6 +555,13 @@ jobs:
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Minifier
+      run: |
+        dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
+        dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output ./packages --configuration Release
+
     - name: Build and pack ResxTranslator
       run: |
         dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -527,6 +587,7 @@ jobs:
 
   build_bswup_solution:
     name: build bswup solution
+    if: ${{ inputs.bswup }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -557,6 +618,7 @@ jobs:
 
   build_butil_solution:
     name: build butil solution
+    if: ${{ inputs.butil }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -587,6 +649,7 @@ jobs:
 
   build_brouter_solution:
     name: build brouter solution
+    if: ${{ inputs.brouter }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -617,6 +680,7 @@ jobs:
 
   build_bmotion_solution:
     name: build bmotion solution
+    if: ${{ inputs.bmotion }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -647,6 +711,7 @@ jobs:
 
   build_tooling_solutions:
     name: build tooling solutions
+    if: ${{ inputs.tooling }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -663,6 +728,12 @@ jobs:
     - name: Build CodeAnalyzers solution in Release mode
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
 
+    - name: Build Minifier solution in Release mode
+      run: dotnet build src/Minifier/Bit.Minifier.slnx -c Release
+
+    - name: Test Minifier
+      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj -c Release --no-build
+
     - name: Build ResxTranslator solution in Release mode
       run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release
 
@@ -673,6 +744,7 @@ jobs:
 
   build_websites:
     name: build website solutions
+    if: ${{ inputs.websites }}
     runs-on: ubuntu-24.04
 
     steps:

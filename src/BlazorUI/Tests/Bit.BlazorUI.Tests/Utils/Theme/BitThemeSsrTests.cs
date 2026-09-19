@@ -208,4 +208,68 @@ public sealed class BitThemeSsrTests
 
         CollectionAssert.AreEqual(expected.ToArray(), rendered.ToArray());
     }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapWithOptionsEmitsTheWholeDocumentSetup()
+    {
+        // The point of the options overload: a host page states its setup once, and every attribute
+        // name stays owned by BitThemeAttributeNames rather than being spelled beside the call.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions
+        {
+            Persist = true,
+            PersistCookie = true,
+            ViewTransition = true,
+            ThemeColorMeta = "--bit-clr-bg-sec",
+            LightTheme = BitExtraThemePresets.Fluent2Light,
+            DarkTheme = BitExtraThemePresets.Fluent2Dark,
+        });
+
+        Assert.AreEqual("dark", map[BitThemeAttributeNames.Theme]);
+        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersist]);
+        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersistCookie]);
+        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeViewTransition]);
+        Assert.AreEqual("--bit-clr-bg-sec", map[BitThemeAttributeNames.ThemeColorMeta]);
+        Assert.AreEqual(BitExtraThemePresets.Fluent2Light, map[BitThemeAttributeNames.ThemeLight]);
+        Assert.AreEqual(BitExtraThemePresets.Fluent2Dark, map[BitThemeAttributeNames.ThemeDark]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapWithDefaultOptionsEmitsNothingExtra()
+    {
+        // Every option is opt-in: a default options object must render exactly what the old overload
+        // renders, or upgrading a host page to it would silently turn features on.
+        var withOptions = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions());
+        var withoutOptions = BitThemeSsr.BuildRootThemeAttributeMap("dark");
+
+        CollectionAssert.AreEqual(withoutOptions.ToArray(), withOptions.ToArray());
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapEmitsThemeColorMetaAsAMarkerWhenAskedForTheDefaultVariable()
+    {
+        // true is the "just use the default custom property" spelling, and a valueless attribute is
+        // exactly how the client reads that.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions { ThemeColorMeta = true });
+
+        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeColorMeta]);
+
+        var off = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions { ThemeColorMeta = false });
+
+        Assert.IsFalse(off.ContainsKey(BitThemeAttributeNames.ThemeColorMeta));
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributesWithOptionsEncodesValuesIntoTheDocument()
+    {
+        // The string overload is interpolated into raw markup, so anything carrying a value has to be
+        // attribute-encoded - the theme names are validated tokens, but the custom property name is
+        // whatever the app passed.
+        var attributes = BitThemeSsr.BuildRootThemeAttributes(null, new BitThemeSsrOptions
+        {
+            ThemeColorMeta = "--x\"><script>alert(1)</script>",
+        });
+
+        Assert.IsFalse(attributes.Contains("<script>", StringComparison.Ordinal));
+        StringAssert.Contains(attributes, "&quot;&gt;&lt;script&gt;", StringComparison.Ordinal);
+    }
 }

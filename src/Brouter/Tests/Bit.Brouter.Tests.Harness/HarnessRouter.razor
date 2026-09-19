@@ -1,0 +1,77 @@
+﻿@inject HarnessScope Scope
+
+<Brouter>
+    <Routes>
+        <Broute Path="/" Component="@typeof(HomePage)" />
+        <Broute Path="/about" Component="@typeof(AboutPage)" />
+        <Broute Path="/old-about" RedirectTo="/about" />
+        <Broute Path="/items/{id:int}" Component="@typeof(ItemPage)" />
+        <Broute Path="/deep/a/b/c/{leaf}" Component="@typeof(DeepPage)" />
+
+        <Broute Path="/guarded" Guard="RedirectToDenied">
+            <Content>
+                <h1 id="page-guarded">guarded</h1>
+            </Content>
+        </Broute>
+        <Broute Path="/denied">
+            <Content>
+                <h1 id="page-denied">denied</h1>
+            </Content>
+        </Broute>
+
+        <Broute Path="/data" Loader="LoadData" Component="@typeof(DataPage)" />
+
+        <Broute Path="/broken" Loader="LoadBroken">
+            <Content>
+                <h1 id="page-broken">unreachable</h1>
+            </Content>
+            <ErrorContent Context="err">
+                <h1 id="route-error">@err.Exception.Message</h1>
+            </ErrorContent>
+        </Broute>
+
+        <Broute Path="/missing/{id:int}" Component="@typeof(MissingPage)" />
+
+        <Broute Path="/long" Component="@typeof(LongPage)" />
+        <Broute Path="/other" Component="@typeof(OtherPage)" />
+
+        <Broute Path="/preload" Component="@typeof(PreloadPage)" />
+        <Broute Path="/preload/intent-target" Loader="LoadIntentTarget" Component="@typeof(PreloadTargetPage)" />
+        <Broute Path="/preload/viewport-target" Loader="LoadViewportTarget" Component="@typeof(PreloadTargetPage)" />
+
+        <Broute Path="/leave" LeaveGuard="GuardLeave" Component="@typeof(LeavePage)" />
+        <Broute Path="/history/{step:int}" Component="@typeof(HistoryPage)" />
+        <Broute Path="/keepalive" KeepAlive="true" Component="@typeof(KeepAlivePage)" />
+        <Broute Path="/confirm" Component="@typeof(ConfirmPage)" />
+    </Routes>
+
+    <NotFound Context="location">
+        <h1 id="not-found" data-path="@location.Path">not found</h1>
+    </NotFound>
+</Brouter>
+
+@code {
+    private ValueTask RedirectToDenied(BrouterNavigationContext ctx)
+    {
+        ctx.Redirect("/denied");
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask GuardLeave(BrouterNavigationContext ctx)
+    {
+        if (Scope.BlockLeave) ctx.Cancel();
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask<object?> LoadData(BrouterNavigationContext ctx) =>
+        ValueTask.FromResult<object?>(new HarnessData(Scope.Id, HarnessRuntime.Platform, ++Scope.DataLoaderRuns));
+
+    private static ValueTask<object?> LoadBroken(BrouterNavigationContext ctx) =>
+        ValueTask.FromException<object?>(new InvalidOperationException("harness loader failure"));
+
+    private ValueTask<object?> LoadIntentTarget(BrouterNavigationContext ctx) =>
+        ValueTask.FromResult<object?>(new HarnessData(Scope.Id, HarnessRuntime.Platform, Scope.CountIntentTargetRun()));
+
+    private ValueTask<object?> LoadViewportTarget(BrouterNavigationContext ctx) =>
+        ValueTask.FromResult<object?>(new HarnessData(Scope.Id, HarnessRuntime.Platform, Scope.CountViewportTargetRun()));
+}

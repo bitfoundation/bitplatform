@@ -112,11 +112,6 @@ The two are meant to read almost identically, so the page shows one at a time: t
 
 > **Credentials are not in the output.** `Authorization` is reported as its scheme alone and `Cookie` as its cookie names, so a wrong or missing credential is still diagnosable while no token or session value reaches an issue tracker or an AI agent's transcript. Every other header is reported as it arrived.
 
-#### ⏱️ **Open Hangfire Dashboard**
-- Shown only to a user holding `AppFeatures.System.Jobs_Manage` - the same claim [`HangfireDashboardAuthorizationFilter`](/src/Server/Boilerplate.Server.Api/Infrastructure/RequestPipeline/HangfireDashboardAuthorizationFilter.cs) checks - and only on web, since a hybrid app opens the url in the system browser, which shares no cookie jar with its web view
-- Refreshes the access token, then calls `IUserController.UpdateSession`, which writes the `access_token` cookie on the API's origin with its expiry taken from the token's own `exp` claim
-- Opens `/hangfire` on the API address in a new tab. The dashboard is a plain browser navigation, so that cookie is the only credential it can carry
-
 #### 🛠️ **Open Dev Tools**
 - Opens an **in-app browser DevTools** interface
 - **Critical Feature**: Works on **mobile devices** (Android/iOS) where traditional DevTools are unavailable

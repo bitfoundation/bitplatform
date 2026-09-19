@@ -11,7 +11,25 @@ public sealed class BitMarkdownRenderer
 {
     private readonly IReadOnlyList<BitMarkdownNodeRenderer> _renderers;
 
-    public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers) => _renderers = renderers;
+    /// <summary>Creates a renderer that writes its own words in English.</summary>
+    public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers)
+        : this(renderers, BitMarkdownTexts.Default)
+    {
+    }
+
+    /// <summary>Creates a renderer that writes its own words from <paramref name="texts"/>.</summary>
+    public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers, BitMarkdownTexts texts)
+    {
+        _renderers = renderers;
+        Texts = texts ?? BitMarkdownTexts.Default;
+    }
+
+    /// <summary>
+    /// The words the renderers write themselves - alert titles, footnote back-links, the accessible
+    /// names of the regions and controls the markup adds. A renderer reads them from here rather
+    /// than hard-coding English.
+    /// </summary>
+    public BitMarkdownTexts Texts { get; }
 
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)

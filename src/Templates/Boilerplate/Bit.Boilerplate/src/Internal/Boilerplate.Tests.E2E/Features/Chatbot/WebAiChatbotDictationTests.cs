@@ -23,8 +23,8 @@ public partial class WebAiChatbotDictationTests : AppTestBase
 {
     private const string SpokenSentence = "Please change the application language to Persian.";
 
-    /// <summary>Long enough for the whole sentence to play into the fake microphone before the take is ended.</summary>
-    private static readonly TimeSpan SpeakingTime = TimeSpan.FromSeconds(8);
+    /// <summary>On top of the recording's own length: the microphone opens a moment after the button is clicked.</summary>
+    private static readonly TimeSpan SpeakingMargin = TimeSpan.FromSeconds(1);
 
     private static bool IsChromium => PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Chromium;
 
@@ -34,11 +34,9 @@ public partial class WebAiChatbotDictationTests : AppTestBase
     /// Hands chromium the recording to play whenever the page opens the microphone, and auto-answers the permission
     /// prompt - a browser dialog the test cannot click.
     /// </summary>
-    private async Task<BrowserTypeLaunchOptions> DictationLaunchOptions()
+    private async Task<BrowserTypeLaunchOptions> DictationLaunchOptions(string wavFile)
     {
         var options = (await LaunchOptionsAsync())!;
-
-        var wavFile = await SpokenAudio.WavFileOf(SpokenSentence, CancellationToken.None);
 
         // The full browser rather than playwright's default headless shell, which ships without the audio stack the
         // switches below feed: in the shell the microphone never opens and the panel never starts listening.
@@ -49,7 +47,9 @@ public partial class WebAiChatbotDictationTests : AppTestBase
             .. options.Args ?? [],
             "--use-fake-ui-for-media-stream",
             "--use-fake-device-for-media-stream",
-            $"--use-file-for-fake-audio-capture={wavFile}",
+            // %noloop: chromium otherwise plays the file over and over for as long as the microphone is open, so a
+            // take longer than the sentence records it twice and the transcription faithfully repeats it.
+            $"--use-file-for-fake-audio-capture={wavFile}%noloop",
         ];
 
         return options;
@@ -77,8 +77,10 @@ public partial class WebAiChatbotDictationTests : AppTestBase
         if (IsChromium is false)
             Assert.Inconclusive($"Only chromium can play a file into the microphone; this run is on {PlaywrightSettingsProvider.BrowserName}.");
 
+        var wavFile = await SpokenAudio.WavFileOf(SpokenSentence, TestContext.CancellationToken);
+
         // Its own browser rather than Page, which is the worker's shared one (See the class summary).
-        await using var browser = await BrowserType.LaunchAsync(await DictationLaunchOptions());
+        await using var browser = await BrowserType.LaunchAsync(await DictationLaunchOptions(wavFile));
         await using var context = await NewBrowserContext(browser);
 
         var page = await context.NewPageAsync();
@@ -111,10 +113,11 @@ public partial class WebAiChatbotDictationTests : AppTestBase
 
         await panel.DictateButton.ClickAsync();
 
-        // The wave beside the button is the panel saying the microphone is open; without it the recording never began.
-        await Expect(page.Locator(".dictate-wave")).ToBeVisibleAsync();
+        // The timer beside the button is the panel saying the microphone is open; without it the recording never began.
+        await Expect(page.Locator(".speech-timer")).ToBeVisibleAsync();
 
-        await page.WaitForTimeoutAsync((float)SpeakingTime.TotalMilliseconds);
+        // Ended as the sentence finishes: what follows it is silence, which a transcriber fills by repeating itself.
+        await page.WaitForTimeoutAsync((float)(SpokenAudio.DurationOf(wavFile) + SpeakingMargin).TotalMilliseconds);
 
         await panel.DictateButton.ClickAsync();
 

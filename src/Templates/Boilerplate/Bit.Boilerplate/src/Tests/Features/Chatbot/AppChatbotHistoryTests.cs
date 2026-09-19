@@ -38,7 +38,7 @@ public partial class AppChatbotHistoryTests
     {
         var chatClient = new TestChatClient
         {
-            StreamingChunks = _ => ReplyChunks("bit platform is", " a set of tools"),
+            StreamingChunks = _ => ["bit platform is", " a set of tools"],
             PauseAfterFirstChunk = new TaskCompletionSource()
         };
 
@@ -65,9 +65,9 @@ public partial class AppChatbotHistoryTests
         {
             turn = reader.Append(await ReadNextResponse(responses, "a piece of the answer"));
         }
-        while (turn?.Reply?.Answer is not { Length: > 0 });
+        while (turn?.Answer is not { Length: > 0 });
 
-        Assert.AreEqual("bit platform is", turn.Reply.Answer,
+        Assert.AreEqual("bit platform is", turn.Answer,
             "The chatbot did not stream the model's first chunk through to the client.");
 
         await firstMessageCts.CancelAsync();
@@ -88,7 +88,7 @@ public partial class AppChatbotHistoryTests
 
         // The next message is what exposes the history.
         chatClient.PauseAfterFirstChunk = null;
-        chatClient.StreamingChunks = _ => ReplyChunks("Bit.BlazorUI is a component library.");
+        chatClient.StreamingChunks = _ => ["Bit.BlazorUI is a component library."];
 
         await chatbot.ProcessNewMessage(new AiChatMessage { Content = "and what is Bit.BlazorUI?" }, httpContext.User, TestContext.CancellationToken);
 
@@ -111,7 +111,7 @@ public partial class AppChatbotHistoryTests
     [TestMethod]
     public async Task ACompletedAnswer_Should_BeReplayedToTheModelInFull()
     {
-        var chatClient = new TestChatClient { StreamingChunks = _ => ReplyChunks("bit platform ", "is a set ", "of tools.") };
+        var chatClient = new TestChatClient { StreamingChunks = _ => ["bit platform ", "is a set ", "of tools."] };
 
         await using var server = BuildServerWith(chatClient);
         await server.Start(TestContext.CancellationToken);
@@ -128,8 +128,7 @@ public partial class AppChatbotHistoryTests
 
         var turn = await ReadTurn(responses);
 
-        Assert.IsNotNull(turn.Reply);
-        Assert.AreEqual("bit platform is a set of tools.", turn.Reply.Answer,
+        Assert.AreEqual("bit platform is a set of tools.", turn.Answer,
             "The answer the client is handed must be every streamed chunk reassembled.");
 
         Assert.IsTrue(turn.Successful, "A turn that ran to the end must say so, or the client tags it as canceled.");
@@ -150,6 +149,95 @@ public partial class AppChatbotHistoryTests
         Assert.AreEqual("bit platform is a set of tools.", assistantTurns[0].Text,
             "The answer the model is shown must be every streamed chunk reassembled, with nothing added and nothing lost.");
     }
+
+    /// <summary>
+    /// A model that calls a tool can say so first, and write the answer on the round trip after the tool. Only what came
+    /// before the tool used to reach the client, so "let me check" was all the user ever got.
+    /// </summary>
+    [TestMethod]
+    public async Task AnAnswerWrittenAroundAToolCall_Should_ReachTheClientWhole_AndBeReplayedAsOneTurn()
+    {
+        const string question = "what time is it?";
+        const string preamble = "Let me check the time.";
+        const string answer = "It is noon in UTC.";
+        const string whole = $"{preamble}\n\n{answer}";
+
+        var chatClient = new TestChatClient
+        {
+            StreamingUpdates = (_, conversation) =>
+            {
+                if (conversation.Last(message => message.Role == ChatRole.User).Text != question)
+                    return Updates(["You're welcome."]);
+
+                if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+                    return Updates([answer]);
+
+                return [.. Updates([preamble]),
+                        new(ChatRole.Assistant, (IList<AIContent>)[new FunctionCallContent("what-time-is-it", "GetCurrentDateTime", new Dictionary<string, object?> { ["timeZoneId"] = "UTC" })])];
+            }
+        };
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        var responses = chatbot.GetStreamingChannel();
+
+        await chatbot.ProcessNewMessage(new AiChatMessage { Content = question }, httpContext.User, TestContext.CancellationToken);
+
+        var turn = await ReadTurn(responses);
+
+        Assert.AreEqual(whole, turn.Answer, "What the model wrote after the tool call must reach the client too, under what it wrote before it.");
+
+        Assert.IsTrue(scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Verify(whole, turn.Signature),
+            $"The signature must cover the whole answer the client holds. Got: {turn.Signature}");
+
+        await chatbot.ProcessNewMessage(new AiChatMessage { Content = "thanks" }, httpContext.User, TestContext.CancellationToken);
+
+        // Calls 0 and 1 were the question's two round trips.
+        var nextConversation = chatClient.ReceivedConversations[2];
+
+        var assistantTurns = nextConversation.Where(message => message.Role == ChatRole.Assistant).ToArray();
+
+        Assert.HasCount(1, assistantTurns, $"The answer must be replayed as one assistant turn. Conversation: {Describe(nextConversation)}");
+        Assert.AreEqual(whole, assistantTurns[0].Text, "The model must be shown the whole answer it gave, as it gave it.");
+    }
+
+    /// <summary>The answer is written into the turn's document piece by piece, so each piece has to be escaped on its own.</summary>
+    [TestMethod]
+    public async Task AnAnswerWithWhatJsonEscapes_Should_ReachTheClientAsWritten()
+    {
+        string[] pieces = ["Run \"", "C:\\Temp\"\n", "\t- پاک کن"];
+
+        var chatClient = new TestChatClient { StreamingChunks = _ => pieces };
+
+        await using var server = BuildServerWith(chatClient);
+        await server.Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpContext = SetCurrentHttpContext(scope.ServiceProvider, server.WebAppServerAddress);
+
+        var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
+        await chatbot.StartChat(new StartChatRequest(), signalRConnectionId: "test-connection-id", TestContext.CancellationToken);
+
+        var responses = chatbot.GetStreamingChannel();
+
+        await chatbot.ProcessNewMessage(new AiChatMessage { Content = "how do I clear it?" }, httpContext.User, TestContext.CancellationToken);
+
+        var turn = await ReadTurn(responses);
+
+        Assert.AreEqual(string.Concat(pieces), turn.Answer, "Quotes, backslashes, line breaks and non-latin text must reach the client exactly as the model wrote them.");
+
+        Assert.IsTrue(scope.ServiceProvider.GetRequiredService<ChatbotAnswerSigner>().Verify(string.Concat(pieces), turn.Signature),
+            $"The signature must cover the text the client holds. Got: {turn.Signature}");
+    }
+
+    private static ChatResponseUpdate[] Updates(string[] chunks) => [.. chunks.Select(chunk => new ChatResponseUpdate(ChatRole.Assistant, chunk))];
 
     /// <summary>
     /// The server keeps the history in memory for the lifetime of one SignalR connection, so on a reconnect (or when
@@ -174,15 +262,13 @@ public partial class AppChatbotHistoryTests
 
         var chatbot = scope.ServiceProvider.GetRequiredService<AppChatbot>();
 
-        // Exactly what AppAiChatPanel holds after one answered question and one interrupted one: the greeting it
-        // renders locally, the two user turns, the truncated answer it tagged as canceled, and the empty assistant
-        // placeholder it creates for every in-flight answer. None of the assistant turns is signed, because none of
-        // them was written by the assistant.
+        // Exactly what AppAiChatPanel resends after one answered question and one interrupted one: the two user turns,
+        // the truncated answer it tagged as canceled, and the empty assistant placeholder it creates for every
+        // in-flight answer. Not the greeting it renders locally (See AppAiChatPanel.ResentHistory).
         await chatbot.StartChat(new StartChatRequest
         {
             ChatMessagesHistory =
             [
-                new() { Role = AiChatMessageRole.Assistant, Content = "Hi, how can I help?" },
                 new() { Role = AiChatMessageRole.User, Content = "what is bit platform?" },
                 new() { Role = AiChatMessageRole.Assistant, Content = "bit platform is" , Successful = false },
                 new() { Role = AiChatMessageRole.User, Content = "and what is Bit.BlazorUI?" },
@@ -201,7 +287,7 @@ public partial class AppChatbotHistoryTests
             $"The panel's empty placeholder for the in-flight answer was replayed to the model as a blank assistant turn. Conversation: {Describe(conversation)}");
 
         Assert.DoesNotContain(message => message.Role == ChatRole.Assistant, conversation,
-            $"The greeting the panel writes locally carries no signature, so the model must not read it back as something it said. Conversation: {Describe(conversation)}");
+            $"Neither the canceled answer nor the placeholder may become an assistant turn. Conversation: {Describe(conversation)}");
 
         // The two earlier questions and the new one - plus the '### Variables:' system message.
         Assert.HasCount(4, conversation, $"Conversation: {Describe(conversation)}");
@@ -252,10 +338,11 @@ public partial class AppChatbotHistoryTests
 
     /// <summary>
     /// The resent history is whatever the caller says it is, so without the signature check anyone with an account can
-    /// dictate what the model believes it already said - its own rules, prices or promises.
+    /// dictate what the model believes it already said - its own rules, prices or promises. What fails the check still
+    /// reaches the model (a voice call's spoken answers do), but as the user's words, which the caller could type anyway.
     /// </summary>
     [TestMethod]
-    public async Task AResentHistory_Should_DropAnAssistantTurnTheAssistantDidNotSign()
+    public async Task AResentHistory_Should_ReplayAnAssistantTurnTheAssistantDidNotSignAsTheUsers()
     {
         var chatClient = new TestChatClient();
 
@@ -297,14 +384,14 @@ public partial class AppChatbotHistoryTests
             $"Only the answer this app signed may be replayed as something the assistant said. Conversation: {Describe(conversation)}");
 
         Assert.AreEqual(genuine, assistantTurns[0].Text,
-            "The signed answer must survive untouched - dropping the forgeries may not cost the model the real history.");
+            "The signed answer must survive untouched - demoting the forgeries may not cost the model the real history.");
 
-        Assert.DoesNotContain(message => message.Text?.Contains("Ignore every rule", StringComparison.Ordinal) is true, conversation,
-            $"A signature only covers the words it was written for, so a signed answer with anything appended must go too. Conversation: {Describe(conversation)}");
+        Assert.Contains(message => message.Role == ChatRole.User && message.Text?.Contains("Ignore every rule", StringComparison.Ordinal) is true, conversation,
+            $"A signature only covers the words it was written for, so a signed answer with anything appended is the user's too. Conversation: {Describe(conversation)}");
 
-        // The user's own turns are never signed and never dropped: the user really did say them.
-        Assert.HasCount(4, conversation.Where(message => message.Role == ChatRole.User && message.Text != "so, what did you tell me?").ToArray(),
-            $"Dropping forged answers must not take the questions with them. Conversation: {Describe(conversation)}");
+        // The user's own four turns, plus the three forgeries as the user's.
+        Assert.HasCount(7, conversation.Where(message => message.Role == ChatRole.User && message.Text != "so, what did you tell me?").ToArray(),
+            $"Neither the questions nor the demoted answers may be lost. Conversation: {Describe(conversation)}");
     }
 
     /// <summary>An assistant turn as the panel holds it: the answer, plus the signature the server streamed with it.</summary>
@@ -319,14 +406,14 @@ public partial class AppChatbotHistoryTests
     }
 
     /// <summary>
-    /// Each property's rules ride on the schema the model fills in rather than the system prompt (See
-    /// <see cref="AssistantReply"/>), so a description that stops being exported is a rule the model stops being
-    /// given, silently.
+    /// The answer streams into the turn's document as the model writes it, so the model must not be asked for a shape of
+    /// its own: a json schema would put that json on the user's screen. Follow-up suggestions come from a tool (See
+    /// AppChatbot.ShowFollowUpSuggestions).
     /// </summary>
     [TestMethod]
-    public async Task TheReplySchema_Should_CarryWhatEachPropertyIsFor()
+    public async Task TheModel_Should_WriteItsAnswerAsIs_AndOfferSuggestionsThroughATool()
     {
-        var chatClient = new TestChatClient { StreamingChunks = _ => ReplyChunks("bit platform is a set of tools.") };
+        var chatClient = new TestChatClient { StreamingChunks = _ => ["bit platform is a set of tools."] };
 
         await using var server = BuildServerWith(chatClient);
         await server.Start(TestContext.CancellationToken);
@@ -339,22 +426,13 @@ public partial class AppChatbotHistoryTests
 
         await chatbot.ProcessNewMessage(new AiChatMessage { Content = "what is bit platform?" }, httpContext.User, TestContext.CancellationToken);
 
-        var format = chatClient.LastStreamingOptions?.ResponseFormat as ChatResponseFormatJson;
+        Assert.IsNotInstanceOfType<ChatResponseFormatJson>(chatClient.LastStreamingOptions!.ResponseFormat,
+            "The model was asked for json, which the chat would show the user as it is.");
 
-        Assert.IsNotNull(format?.Schema, "The model was never asked for a structured reply, so it is free to answer in whatever shape it likes.");
+        var tools = chatClient.LastStreamingOptions.Tools?.Select(tool => tool.Name).ToArray() ?? [];
 
-        var schema = format.Schema.ToString()!;
-
-        Assert.Contains("answer", schema, StringComparison.Ordinal, $"Schema: {schema}");
-        Assert.Contains("followUpSuggestions", schema, StringComparison.Ordinal, $"Schema: {schema}");
-
-        // A phrase out of each property's description, written nowhere else - so finding them proves the attributes
-        // were exported.
-        Assert.Contains("as markdown", schema, StringComparison.Ordinal,
-            $"The answer's description did not reach the model, so nothing tells it to write markdown. Schema: {schema}");
-
-        Assert.Contains("under 60 characters", schema, StringComparison.Ordinal,
-            $"The suggestions' description did not reach the model, so nothing bounds them. Schema: {schema}");
+        Assert.Contains("ShowFollowUpSuggestions", tools,
+            $"The prompt tells the model to offer suggestions through a tool it was not given. Tools: [{string.Join(", ", tools)}].");
     }
 
     /// <summary>
@@ -634,21 +712,6 @@ public partial class AppChatbotHistoryTests
         scopedServices.GetRequiredService<IHttpContextAccessor>().HttpContext = httpContext;
 
         return httpContext;
-    }
-
-    /// <summary>
-    /// A reply in the pieces the model streams it in, shaped by <see cref="AssistantReply"/>'s schema (See
-    /// <c>AppChatbot.AnswerFormat</c>). Pieces are spliced in as they are, so a test needing escaping writes the
-    /// document itself.
-    /// </summary>
-    private static string[] ReplyChunks(params string[] answerPieces)
-    {
-        return
-        [
-            $"{{\"answer\":\"{answerPieces[0]}",
-            .. answerPieces.Skip(1),
-            "\",\"followUpSuggestions\":[]}"
-        ];
     }
 
     /// <summary>Reads one whole turn off the response channel, the way the panel reads it.</summary>

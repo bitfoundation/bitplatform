@@ -156,7 +156,8 @@ public sealed class BrouterOptions
     /// component - sees the new values. The content then votes on the change through
     /// <see cref="IBrouterRoute.OnDeactivatingAsync"/> (reason Disposing) and the route's
     /// <see cref="Broute.LeaveGuard"/>, exactly like a route being left. Individual routes can opt
-    /// either way with <see cref="Broute.RemountOnParameterChange"/>. Everything nested below a
+    /// either way with <see cref="Broute.RemountOnParameterChange"/>, or a page with
+    /// <see cref="BrouterRemountOnParameterChangeAttribute"/>. Everything nested below a
     /// rebuilt route is rebuilt with it - including, for pages rendered through
     /// <c>Brouter.DefaultLayout</c> / <c>Found</c>, the framework <c>RouteView</c> and the layout it
     /// composes inside the page's subtree; a layout declared as a parent <c>Broute</c> whose own

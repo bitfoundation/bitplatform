@@ -59,12 +59,13 @@ public class JsonOptionsContractTests
     [TestMethod]
     public void ThePersistedStorageDictionary_Should_RoundTripItsKeysVerbatim()
     {
-        // The real keys the clients store; "Culture" is the one whose casing does not survive a camelCase key policy.
+        // The real keys the clients store; "Culture" and "Theme" are the ones a camelCase key policy would rewrite.
         var saved = new Dictionary<string, string?>
         {
             ["access_token"] = "at",
             ["refresh_token"] = "rt",
             ["Culture"] = "fa-IR",
+            [ThemeService.THEME_STORAGE_KEY] = nameof(AppThemeType.Dark),
             ["bit-webauthn"] = "[]"
         };
 
