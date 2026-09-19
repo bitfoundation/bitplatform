@@ -18,94 +18,17 @@ internal enum RenameScope
 }
 
 /// <summary>
-/// The passes that trade debuggability and some compatibility for size: every non-public name in every
-/// assembly is shortened. Public API names stay, so stack traces still say where things happened. A name that
+/// The renaming passes, at whatever level: every non-public name in every assembly is shortened, and with
+/// <paramref name="aggressive"/> the public ones too, along with namespaces, generic parameter names and event
+/// metadata. Public API names stay below that, so stack traces still say where things happened. A name that
 /// appears as a word in any string literal of the app is kept - that is what nameof(...) and GetMethod("...")
 /// compile to - and the assemblies the runtime binds to by name from native code are left out of renaming.
-/// Aggressive (<see cref="RenameScope.Public"/>) renames public names too, and clears namespaces,
-/// generic parameter names and event metadata.
+/// The attribute lists are <see cref="AssemblyMinifier"/>'s; this class only renames.
 /// </summary>
-internal sealed partial class AggressiveMinifier(Action<ModuleDefinition, string, string, string> map, bool aggressive, bool keepPublicFields = false)
+internal sealed partial class NameMinifier(Action<ModuleDefinition, string, string, string> map, bool aggressive, bool keepPublicFields = false)
 {
     // the Mono runtime and the JS interop layer look members of these up by name, from native code
     private static readonly HashSet<string> RuntimeBound = new(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib", "System.Runtime.InteropServices.JavaScript" };
-
-    public static readonly HashSet<string> MoreAttributes =
-    [
-        "System.CLSCompliantAttribute",
-        "System.ObsoleteAttribute",
-        "System.ComponentModel.EditorBrowsableAttribute",
-        "System.CodeDom.Compiler.GeneratedCodeAttribute",
-        "System.Diagnostics.DebuggerBrowsableAttribute",
-        "System.Diagnostics.DebuggerDisplayAttribute",
-        "System.Diagnostics.DebuggerHiddenAttribute",
-        "System.Diagnostics.DebuggerNonUserCodeAttribute",
-        "System.Diagnostics.DebuggerStepThroughAttribute",
-        "System.Diagnostics.DebuggerStepperBoundaryAttribute",
-        "System.Diagnostics.DebuggerTypeProxyAttribute",
-        "System.Diagnostics.CodeAnalysis.ConstantExpectedAttribute",
-        "System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembersAttribute",
-        "System.Diagnostics.CodeAnalysis.ExperimentalAttribute",
-        "System.Diagnostics.CodeAnalysis.RequiresAssemblyFilesAttribute",
-        "System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
-        "System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute",
-        "System.Diagnostics.CodeAnalysis.StringSyntaxAttribute",
-        "System.Diagnostics.CodeAnalysis.SuppressMessageAttribute",
-        "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute",
-        "System.Diagnostics.CodeAnalysis.UnscopedRefAttribute",
-        "System.Runtime.CompilerServices.CallerArgumentExpressionAttribute",
-        "System.Runtime.CompilerServices.CallerFilePathAttribute",
-        "System.Runtime.CompilerServices.CallerLineNumberAttribute",
-        "System.Runtime.CompilerServices.CallerMemberNameAttribute",
-        "System.Runtime.CompilerServices.CollectionBuilderAttribute",
-        "System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute",
-        "System.Runtime.CompilerServices.ExtensionAttribute",
-        "System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
-        "System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
-        "System.Runtime.CompilerServices.IsReadOnlyAttribute",
-        "System.Runtime.CompilerServices.IsUnmanagedAttribute",
-        "System.Runtime.CompilerServices.NativeIntegerAttribute",
-        "System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute",
-        "System.Runtime.CompilerServices.ParamCollectionAttribute",
-        "System.Runtime.CompilerServices.RequiresLocationAttribute",
-        "System.Runtime.CompilerServices.TupleElementNamesAttribute",
-        "System.Reflection.AssemblyCompanyAttribute",
-        "System.Reflection.AssemblyConfigurationAttribute",
-        "System.Reflection.AssemblyCopyrightAttribute",
-        "System.Reflection.AssemblyDefaultAliasAttribute",
-        "System.Reflection.AssemblyDescriptionAttribute",
-        "System.Reflection.AssemblyFileVersionAttribute",
-        "System.Reflection.AssemblyProductAttribute",
-        "System.Reflection.AssemblyTitleAttribute",
-        "System.Reflection.AssemblyTrademarkAttribute",
-    ];
-
-    // aggressive: read by the compiler, analyzers, the trimmer or a debugger only
-    public static readonly HashSet<string> AggressiveAttributes =
-    [
-        "Microsoft.CodeAnalysis.EmbeddedAttribute",
-        "System.Diagnostics.DebuggableAttribute",
-        "System.Diagnostics.CodeAnalysis.DynamicDependencyAttribute",
-        "System.Diagnostics.CodeAnalysis.FeatureGuardAttribute",
-        "System.Diagnostics.CodeAnalysis.FeatureSwitchDefinitionAttribute",
-        "System.Reflection.AssemblyDelaySignAttribute",
-        "System.Reflection.AssemblyKeyFileAttribute",
-        "System.Reflection.AssemblyKeyNameAttribute",
-        "System.Reflection.AssemblySignatureKeyAttribute",
-        "System.Runtime.CompilerServices.AsyncMethodBuilderAttribute",
-        "System.Runtime.CompilerServices.EnumeratorCancellationAttribute",
-        "System.Runtime.CompilerServices.ExtensionMarkerAttribute",
-        "System.Runtime.CompilerServices.ModuleInitializerAttribute",
-        "System.Runtime.CompilerServices.SkipLocalsInitAttribute",
-        "System.Runtime.InteropServices.ComVisibleAttribute",
-        "System.Runtime.Versioning.ObsoletedOSPlatformAttribute",
-        "System.Runtime.Versioning.RequiresPreviewFeaturesAttribute",
-        "System.Runtime.Versioning.SupportedOSPlatformAttribute",
-        "System.Runtime.Versioning.SupportedOSPlatformGuardAttribute",
-        "System.Runtime.Versioning.TargetPlatformAttribute",
-        "System.Runtime.Versioning.UnsupportedOSPlatformAttribute",
-        "System.Runtime.Versioning.UnsupportedOSPlatformGuardAttribute",
-    ];
 
     private const string Component = "Microsoft.AspNetCore.Components.IComponent";
 

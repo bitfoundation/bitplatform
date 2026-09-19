@@ -66,21 +66,27 @@ internal sealed class ReferenceIndex
     }
 
     /// <summary>
+    /// A reference that resolved into the rewritten assemblies, and the assemblies whose new names are what could
+    /// stop it resolving - the ones to leave alone if it does.
+    /// </summary>
+    public sealed record Resolvable(ModuleDefinition Module, string Name, IReadOnlyList<string> Culprits, Func<bool> Resolves);
+
+    /// <summary>
     /// The type references and forwarders of <paramref name="module"/> that resolve into <paramref name="modules"/>
     /// now, so that <see cref="AssemblyMinifier"/> can tell afterwards whether one of them stopped resolving.
     /// </summary>
-    public static List<(ModuleDefinition module, string name, Func<bool> resolves)> ResolvableTypes(ModuleDefinition module, HashSet<ModuleDefinition> modules)
+    public static List<Resolvable> ResolvableTypes(ModuleDefinition module, HashSet<ModuleDefinition> modules)
     {
-        var result = new List<(ModuleDefinition, string, Func<bool>)>();
+        var result = new List<Resolvable>();
         foreach (var reference in module.GetTypeReferences())
         {
             if (Resolve(reference) is { } definition && modules.Contains(definition.Module))
-                result.Add((module, reference.FullName, () => ReferenceEquals(Resolve(reference), definition)));
+                result.Add(new Resolvable(module, reference.FullName, [Owner(definition)], () => ReferenceEquals(Resolve(reference), definition)));
         }
         foreach (var forwarder in module.ExportedTypes)
         {
             if (Resolve(forwarder) is { } definition && modules.Contains(definition.Module))
-                result.Add((module, forwarder.FullName, () => ReferenceEquals(Resolve(forwarder), definition)));
+                result.Add(new Resolvable(module, forwarder.FullName, [Owner(definition)], () => ReferenceEquals(Resolve(forwarder), definition)));
         }
         // attribute blobs name types by string; the argument is read again when checked, since fixes replace it
         foreach (var provider in AssemblyMinifier.Providers(module))
@@ -109,17 +115,22 @@ internal sealed class ReferenceIndex
         {
             var types = NamedTypes(argument()).Select(t => Resolve(t)).ToList();
             if (types.Any(t => t is not null && modules.Contains(t.Module)) && types.All(t => t is not null))
-                result.Add((module, $"[{name}] argument", () => NamedTypes(argument()).Select(t => Resolve(t)).SequenceEqual(types)));
+                result.Add(new Resolvable(module, $"[{name}] argument",
+                    types.Where(t => modules.Contains(t!.Module)).Select(t => Owner(t!)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+                    () => NamedTypes(argument()).Select(t => Resolve(t)).SequenceEqual(types)));
         }
     }
 
+    private static string Owner(TypeDefinition definition) => definition.Module.Assembly.Name.Name;
+
     /// <summary>
     /// Every reference that pointed into the rewritten assemblies and no longer reaches the very definition it
-    /// did: one whose row could not be re-pointed, or a rename that hid it behind another member.
+    /// did: one whose row could not be re-pointed, or a rename that hid it behind another member. The culprit is
+    /// the assembly the definition is in - the one whose new names are what the reference stopped reaching.
     /// </summary>
-    public IEnumerable<string> Broken()
+    public IEnumerable<(string Description, string Culprit)> Broken()
         => members.Concat(foreign).Where(p => ReferenceEquals(Resolve(p.reference), p.definition) is false)
-            .Select(p => $"{p.reference.Module.Assembly.Name.Name}: {p.reference.FullName}");
+            .Select(p => ($"{p.reference.Module.Assembly.Name.Name}: {p.reference.FullName}", p.definition.Module.Assembly.Name.Name));
 
     /// <summary>Re-points the references; returns the modules in which one of them actually changed.</summary>
     public HashSet<ModuleDefinition> Apply()

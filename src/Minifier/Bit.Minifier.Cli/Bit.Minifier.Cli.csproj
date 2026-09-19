@@ -2,12 +2,13 @@
 
     <Import Project="../../Bit.Build.props" />
 
-    <!-- The same program the Bit.Minifier package carries under tools/, packaged the way a person runs it: with
-         dnx, given a map and a stack trace (see src/Minifier/README.md).
+    <!-- The decoder the Bit.Minifier package carries under tools/, packaged the way a person runs it: with dnx,
+         given a map and a stack trace (see src/Minifier/README.md).
 
          Bit.Minifier is what an app installs to be minified on publish. This is what whoever holds a map and a
          stack trace runs, with no checkout, no project and nothing installed, to read that trace back into the
-         names its source has. One program, compiled twice, so the two can never drift apart. -->
+         names its source has. It compiles the very files that do the decoding, so the two can never drift apart,
+         and nothing else: minifying needs Mono.Cecil and reading a map needs no dependency at all. -->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
@@ -29,11 +30,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Include="../Bit.Minifier/**/*.cs" Exclude="../Bit.Minifier/bin/**;../Bit.Minifier/obj/**" LinkBase="Bit.Minifier" />
+        <Compile Include="../Bit.Minifier/MapDecoder.cs;../Bit.Minifier/Decode.cs" LinkBase="Bit.Minifier" />
     </ItemGroup>
 
 </Project>

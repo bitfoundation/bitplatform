@@ -115,7 +115,15 @@ jobs:
           dotnet build AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
       
     - name: Publish Server Web
-      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true
+      run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Web/AdminPanel.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
+    # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: AdminPanel-minifier-map
+        path: bit-minifier.map
 
     - name: Publish Server API
       run: dotnet publish AdminPanel/src/Server/AdminPanel.Server.Api/AdminPanel.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
@@ -244,7 +252,14 @@ jobs:
       run: dotnet build AdminPanel/src/Client/AdminPanel.Client.Core/AdminPanel.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-restore -c Release
       
     - name: Publish
-      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true
+      run: dotnet publish AdminPanel/src/Client/AdminPanel.Client.Web/AdminPanel.Client.Web.csproj -c Release -o client -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # what the stack traces this client logs are read back through: see the note in the server web job
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: AdminPanelClient-minifier-map
+        path: bit-minifier.map
 
     - name: Upload to asw
       run: |

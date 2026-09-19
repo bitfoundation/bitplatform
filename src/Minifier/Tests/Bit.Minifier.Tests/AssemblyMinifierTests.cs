@@ -268,7 +268,7 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
-    public void LeavesTheFolderUntouchedWhenAReferenceWouldBreak()
+    public void LeavesAnAssemblyAloneWhenItsNewNamesWouldBreakAReference()
     {
         // without the InternalsVisibleTo the minifier believes nobody else can see the internals the friend uses
         var libraryPath = Path.Combine(minified, Library + ".dll");
@@ -280,10 +280,46 @@ public class AssemblyMinifierTests
         }
         var before = Snapshot(minified);
 
-        var error = Assert.ThrowsExactly<MinifierException>(() => Minify(Level.Default, assemblies: [Library]));
+        // the library is the assembly whose names broke it, so it is the one left alone - and it was the only one
+        // asked for here, which leaves nothing to write
+        var results = Minify(Level.Default, assemblies: [Library]);
 
-        StringAssert.Contains(error.Message, Friend);
+        Assert.IsEmpty(results);
+        var skipped = Assert.ContainsSingle(minifier.Skipped);
+        StringAssert.Contains(skipped, Library);
+        StringAssert.Contains(skipped, Friend);
         CollectionAssert.AreEqual(before, Snapshot(minified));
+    }
+
+    [TestMethod]
+    public void MinifiesTheRestAroundAnAssemblyWhoseNewNamesWouldBreakAReference()
+    {
+        const string Extra = "Bit.Minifier.Tests.Extra";
+        // an assembly of its own to minify, which the library and the friend know nothing about
+        using (var extra = AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition(Extra, new Version(1, 0)), Extra, ModuleKind.Dll))
+        {
+            var widget = new Mono.Cecil.TypeDefinition(Extra, "Widget", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, extra.MainModule.TypeSystem.Object);
+            widget.Fields.Add(new Mono.Cecil.FieldDefinition("privateCounter", Mono.Cecil.FieldAttributes.Private, extra.MainModule.TypeSystem.Int32));
+            extra.MainModule.Types.Add(widget);
+            extra.Write(Path.Combine(minified, Extra + ".dll"));
+        }
+        // the unminified friend reaches the library's internals, and nothing says so any more: renaming them breaks it
+        var libraryPath = Path.Combine(minified, Library + ".dll");
+        using (var assembly = AssemblyDefinition.ReadAssembly(libraryPath, new ReaderParameters { InMemory = true, ReadSymbols = true }))
+        {
+            assembly.CustomAttributes.Remove(assembly.CustomAttributes.Single(a => a.AttributeType.Name == "InternalsVisibleToAttribute"));
+            assembly.Write(libraryPath, new WriterParameters { WriteSymbols = true });
+        }
+        var library = Snapshot(minified).Single(f => f.StartsWith(Library + ".dll:", StringComparison.Ordinal));
+
+        var results = Minify(Level.Default, assemblies: [Library, Extra]);
+
+        // one assembly costing the whole publish its savings is what this must never do
+        CollectionAssert.AreEqual(new[] { Extra }, results.Select(r => r.Name).ToArray());
+        var skipped = Assert.ContainsSingle(minifier.Skipped);
+        StringAssert.Contains(skipped, Library);
+        StringAssert.Contains(skipped, Friend);
+        CollectionAssert.Contains(Snapshot(minified), library);
     }
 
     [TestMethod]
@@ -296,8 +332,9 @@ public class AssemblyMinifierTests
         var map = Path.Combine(root, "bit-minifier.map");
         var before = Snapshot(minified);
 
-        // the library is replaced first, then the friend's pdb can't be
-        using (File.Open(Path.Combine(minified, Friend + ".pdb"), FileMode.Open, FileAccess.Read, FileShare.None))
+        // the library is replaced first, then the friend's pdb can't be: an open handle still lets it be read, and
+        // a file with one open on it is a file Windows won't move
+        using (File.Open(Path.Combine(minified, Friend + ".pdb"), FileMode.Open, FileAccess.Read, FileShare.Read))
         {
             Assert.Throws<IOException>(() => Minify(level, mapFile: map));
         }
@@ -377,6 +414,12 @@ public class AssemblyMinifierTests
             // reflection's own binder reads [ParamArray] too (Type.InvokeMember, Activator.CreateInstance)
             Assert.IsTrue(parameters.Any(p => HasAttribute(p, "ParamArrayAttribute")));
             Assert.AreEqual(dynamicPublished, parameters.Any(p => HasAttribute(p, "DynamicAttribute")));
+            // and [Extension], to find the extension methods of a dynamic receiver - the names are the level's
+            if (level == Level.Default)
+            {
+                var describe = module.GetType("Bit.Minifier.Tests.Library.LedgerExtensions").Methods.Single(m => m.Name == "Describe");
+                Assert.AreEqual(dynamicPublished, HasAttribute(describe, "ExtensionAttribute"));
+            }
         }
         if (dynamicPublished) CollectionAssert.AreEqual(expected, await Drive(minified));
     }
@@ -451,7 +494,9 @@ public class AssemblyMinifierTests
             // everything else is short
             foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "_limit", "Select" }) CollectionAssert.DoesNotContain(names, name);
             Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Any(p => p.Name.Length > 0));
-            Assert.IsFalse(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyCompanyAttribute"));
+            // what the app itself may read of its own metadata stays: Assembly.GetCustomAttribute is an About page
+            Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyCompanyAttribute"));
+            Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyFileVersionAttribute"));
             // only on generic parameters, where DI compares them
             Assert.IsTrue(HasAttribute(module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters[0], "DynamicallyAccessedMembersAttribute"));
             Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "DynamicallyAccessedMembersAttribute")));
@@ -606,6 +651,49 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    public void TheSameFolderGivesTheSameNamesEveryTime()
+    {
+        var backup = Directory.CreateDirectory(Path.Combine(root, "backup")).FullName;
+        foreach (var file in Directory.GetFiles(minified)) File.Copy(file, Path.Combine(backup, Path.GetFileName(file)));
+        var first = Path.Combine(root, "first.map");
+        var second = Path.Combine(root, "second.map");
+
+        new AssemblyMinifier(new MinifierOptions { Directory = minified, Aggressive = true, MapFile = first }).Run();
+        foreach (var file in Directory.GetFiles(minified)) File.Delete(file);
+        foreach (var file in Directory.GetFiles(backup)) File.Copy(file, Path.Combine(minified, Path.GetFileName(file)));
+        new AssemblyMinifier(new MinifierOptions { Directory = minified, Aggressive = true, MapFile = second }).Run();
+
+        // nothing a publish produces may depend on the order a folder happens to be enumerated in: a map read
+        // against a release has to be the map that release's own publish would have written, wherever it ran
+        Assert.IsNotEmpty(File.ReadAllLines(first));
+        CollectionAssert.AreEqual(File.ReadAllLines(first), File.ReadAllLines(second));
+    }
+
+    [TestMethod]
+    [DataRow(new string[0], "usage: ")]
+    [DataRow(new[] { "map", "trace", "extra" }, "usage: ")]
+    [DataRow(new[] { "not-a-map" }, "no map at ")]
+    public void CommandLineDecodeWantsAMapAndAtMostATrace(string[] rest, string expected)
+    {
+        var (exitCode, output) = RunCommandLine(["--decode", .. rest]);
+
+        Assert.AreEqual(2, exitCode);
+        StringAssert.Contains(output, expected);
+    }
+
+    [TestMethod]
+    public void CommandLineDecodeWantsAStackTraceThatIsThere()
+    {
+        var map = Path.Combine(root, "bit-minifier.map");
+        File.WriteAllLines(map, ["App\tT\tApp.Services.Worker\t_a"]);
+
+        var (exitCode, output) = RunCommandLine(["--decode", map, Path.Combine(root, "not-a-trace")]);
+
+        Assert.AreEqual(2, exitCode);
+        StringAssert.Contains(output, "no stack trace at ");
+    }
+
+    [TestMethod]
     public void CommandLineWantsTheDirectoryFirst()
     {
         var before = Snapshot(minified);
@@ -623,19 +711,37 @@ public class AssemblyMinifierTests
     public void CommandLineReportsAFailureAsAWarning(string? option)
     {
         var map = Path.Combine(root, "bit-minifier.map");
-        // a pdb that can't be read fails the run whatever the level
-        File.WriteAllBytes(Path.Combine(minified, Library + ".pdb"), [1, 2, 3]);
         var before = Snapshot(minified);
-        string[] args = option is null ? [minified, "--map", map, Library, Friend] : [minified, "--map", map, option, Library, Friend];
+        // nothing to read at all: whatever goes wrong, the publish goes on with the trimmed assemblies
+        var missing = Path.Combine(root, "not-a-folder");
+        string[] args = option is null ? [missing, "--map", map] : [missing, "--map", map, option];
 
         var (exitCode, output) = RunCommandLine(args);
 
-        // MSBuild shows it as a warning, and the publish goes on with the trimmed assemblies
+        // MSBuild shows it as a warning
         Assert.AreEqual(0, exitCode, output);
         StringAssert.StartsWith(output, "Bit.Minifier : warning BITMIN001: ");
         StringAssert.Contains(output, "The assemblies were left unminified.");
         CollectionAssert.AreEqual(before, Snapshot(minified));
         Assert.IsFalse(File.Exists(map));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("--aggressive")]
+    public void CommandLineWarnsAboutAnAssemblyItCouldNotReadAndMinifiesTheRest(string? option)
+    {
+        // a pdb that can't be read costs that one assembly its names, not the whole publish its savings
+        File.WriteAllBytes(Path.Combine(minified, Library + ".pdb"), [1, 2, 3]);
+        var libraryBefore = new FileInfo(Path.Combine(minified, Library + ".dll")).Length;
+        string[] args = option is null ? [minified, Library, Friend] : [minified, option, Library, Friend];
+
+        var (exitCode, output) = RunCommandLine(args);
+
+        Assert.AreEqual(0, exitCode, output);
+        StringAssert.Contains(output, "warning BITMIN001: left unminified: " + Library);
+        StringAssert.Contains(output, $"Bit.Minifier: {Friend} ");
+        Assert.AreEqual(libraryBefore, new FileInfo(Path.Combine(minified, Library + ".dll")).Length);
     }
 
     [TestMethod]
@@ -658,6 +764,12 @@ public class AssemblyMinifierTests
         var historyCount = module.GetTypes().SelectMany(t => t.Properties).Single(p => p.Name == "HistoryCount");
         Assert.AreNotEqual("get_HistoryCount", historyCount.GetMethod.Name);
         CollectionAssert.DoesNotContain(names, "get_HistoryCount");
+        // the assembly metadata an app may read of itself, which only this level takes
+        Assert.IsFalse(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name is "AssemblyCompanyAttribute" or "AssemblyFileVersionAttribute" or "AssemblyProductAttribute"));
+        // except the version, the one an app has to have something to show
+        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyInformationalVersionAttribute"));
+        // and the InternalsVisibleTo the runtime reads to let a friend touch an internal member
+        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "InternalsVisibleToAttribute"));
         // event metadata goes, generic parameters get short names
         Assert.IsFalse(module.GetTypes().Any(t => t.HasEvents));
         Assert.IsFalse(module.GetTypes().SelectMany(t => t.GenericParameters).Any(p => p.Name == "TSelf"));
@@ -889,8 +1001,12 @@ public class AssemblyMinifierTests
         Assert.AreEqual("Bit.Minifier.Tests.Library.Ledger", forwarded.ExportedTypes.Single().FullName);
     }
 
+    /// <summary>The minifier of the last <see cref="Minify"/>, for what it has to say besides its results.</summary>
+    private AssemblyMinifier minifier = default!;
+
     private IReadOnlyList<MinifiedAssembly> Minify(Level level = Level.Default, bool keepNullable = false, string[]? assemblies = null, string? mapFile = null, string[]? full = null, string[]? own = null)
-        => new AssemblyMinifier(new MinifierOptions
+    {
+        minifier = new AssemblyMinifier(new MinifierOptions
         {
             Directory = minified,
             Assemblies = assemblies ?? [Library, Friend],
@@ -899,7 +1015,9 @@ public class AssemblyMinifierTests
             Aggressive = level == Level.Aggressive,
             KeepNullable = keepNullable,
             MapFile = mapFile,
-        }).Run();
+        });
+        return minifier.Run();
+    }
 
     private async Task<List<string>> Exercise(string directory)
     {

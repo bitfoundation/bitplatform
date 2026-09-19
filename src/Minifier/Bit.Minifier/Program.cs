@@ -10,30 +10,7 @@ const string Usage = """
            Bit.Minifier --decode <map file> [<stack trace file>]
     """;
 
-if (args is ["--decode", var mapFile, ..])
-{
-    if (args.Length > 3)
-    {
-        Console.Error.WriteLine(Usage);
-        return 2;
-    }
-    if (File.Exists(mapFile) is false)
-    {
-        Console.Error.WriteLine($"Bit.Minifier: no map at {Path.GetFullPath(mapFile)}. It is written next to the assemblies a publish minifies, as obj/<configuration>/<tfm>/bit-minifier.map, and only kept until the next clean.");
-        return 2;
-    }
-    if (args.Length == 3 && File.Exists(args[2]) is false)
-    {
-        Console.Error.WriteLine($"Bit.Minifier: no stack trace at {Path.GetFullPath(args[2])}.");
-        return 2;
-    }
-    var trace = args.Length == 3 ? File.ReadAllText(args[2]) : Console.In.ReadToEnd();
-    // the trace is written back the way it came in, with whatever ends its lines
-    var decoded = MapDecoder.Load(mapFile).Decode(trace);
-    Console.Out.Write(decoded);
-    if (decoded.EndsWith('\n') is false) Console.Out.WriteLine();
-    return 0;
-}
+if (args is ["--decode", ..]) return Decode.Run(Usage, args);
 
 if (args.Length < 1 || args[0].StartsWith("--", StringComparison.Ordinal))
 {
@@ -76,7 +53,8 @@ var options = new MinifierOptions
 try
 {
     var started = DateTime.UtcNow;
-    var results = new AssemblyMinifier(options).Run();
+    var minifier = new AssemblyMinifier(options);
+    var results = minifier.Run();
     foreach (var result in results)
     {
         Console.WriteLine($"Bit.Minifier: {result.Name} {result.OriginalSize:N0} -> {result.MinifiedSize:N0} bytes ({result.RemovedAttributes:N0} attributes removed, {result.RenamedMembers:N0} names shortened)");
@@ -84,6 +62,12 @@ try
     var before = results.Sum(r => r.OriginalSize);
     var after = results.Sum(r => r.MinifiedSize);
     Console.WriteLine($"Bit.Minifier: {results.Count} assemblies, {before:N0} -> {after:N0} bytes (-{before - after:N0}) in {(DateTime.UtcNow - started).TotalSeconds:N1}s");
+    // an assembly minified around rather than minified is worth a warning of its own: the publish is fine, and a
+    // release that quietly stopped shrinking what it used to shrink is what nobody would otherwise notice
+    if (minifier.Skipped.Count > 0)
+    {
+        Console.WriteLine($"Bit.Minifier : warning BITMIN001: left unminified: {string.Join("; ", minifier.Skipped).ReplaceLineEndings(" ")}");
+    }
     return 0;
 }
 catch (Exception e)

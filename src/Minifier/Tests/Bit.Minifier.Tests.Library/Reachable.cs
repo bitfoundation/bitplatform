@@ -79,6 +79,15 @@ namespace Bit.Minifier.Tests.Library
         // Newtonsoft.Json asks this, by name, whether to write Memo
         public bool ShouldSerializeMemo() => Memo is not null;
     }
+
+    /// <summary>
+    /// [Extension] is the compiler's, except to the dynamic binder, which reads it to find the extension methods
+    /// of a dynamic receiver - so it stays exactly when Microsoft.CSharp is published.
+    /// </summary>
+    public static class LedgerExtensions
+    {
+        public static string Describe(this Ledger ledger) => ledger.Memo ?? "empty";
+    }
 }
 
 // a namespace no string names
