@@ -79,7 +79,7 @@ public abstract partial class ThemeAndAccentTestsBase : AppTestBase
         await Expect(swatch).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
-    private static async Task<bool> IsDark(IPage page)
+    protected static async Task<bool> IsDark(IPage page)
     {
         return ThemeName(dark: true).IsMatch(await page.Locator("html").GetAttributeAsync("bit-theme") ?? "");
     }
