@@ -19,7 +19,8 @@ public enum BitButtonGroupOverflow
     /// <summary>
     /// The items are kept on a single line and the group becomes scrollable along the axis it is laid out on -
     /// sideways, or down a vertical group - without rendering a scrollbar. It can still be scrolled by swiping,
-    /// by shift+wheel, and through the arrow keys, which bring the button they focus into view.
+    /// by the wheel - ordinary wheel input down a vertical group, shift+wheel across a horizontal one - and
+    /// through the arrow keys, which bring the button they focus into view.
     /// </summary>
     Scroll,
 

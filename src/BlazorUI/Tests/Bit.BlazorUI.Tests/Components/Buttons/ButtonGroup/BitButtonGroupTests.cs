@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Buttons.ButtonGroup;
@@ -980,7 +981,7 @@ public class BitButtonGroupTests : BunitTestContext
         {
             builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
             builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), items);
-            builder.AddAttribute(2, "role", "menubar");
+            builder.AddAttribute(2, "role", "toolbar");
             builder.AddAttribute(3, "aria-label", "Formatting");
             builder.CloseComponent();
         });
@@ -989,7 +990,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         // Everything the group writes on its root is written after the splat, and a null there would have
         // removed what the page put on the component by hand.
-        Assert.AreEqual("menubar", root.GetAttribute("role"));
+        Assert.AreEqual("toolbar", root.GetAttribute("role"));
         Assert.AreEqual("Formatting", root.GetAttribute("aria-label"));
         Assert.AreEqual("horizontal", root.GetAttribute("aria-orientation"));
 
@@ -1008,6 +1009,46 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("Alignment", labelled.Find(".bit-btg").GetAttribute("aria-label"));
         Assert.IsNull(labelled.Find(".bit-btg").GetAttribute("aria-orientation"));
     }
+
+    [TestMethod]
+    public void BitButtonGroupShouldDropARoleWhoseItemSemanticsItDoesNotRender()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A" }
+        };
+
+        // A menubar owns menuitems and is driven by the menu keyboard pattern, while the group renders plain
+        // buttons with the toolbar one. A role it renders nothing to match is dropped for the role the selection
+        // mode implies, rather than announcing a pattern nothing underneath it follows.
+        var generated = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
+            builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), items);
+            builder.AddAttribute(2, "role", "menubar");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("toolbar", generated.Find(".bit-btg").GetAttribute("role"));
+
+        // Child content writes the items itself, so it is the page that decides what they are: the role stands.
+        var custom = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
+            builder.AddAttribute(1, "role", "menubar");
+            builder.AddAttribute(2, nameof(BitButtonGroup<BitButtonGroupItem>.ChildContent), (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "role", "menuitem");
+                b.AddContent(2, "A");
+                b.CloseElement();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("menubar", custom.Find(".bit-btg").GetAttribute("role"));
+    }
+
     [TestMethod]
     public void BitButtonGroupShouldMoveTheTabStopToAClickedButtonWhoseClickIsIgnored()
     {

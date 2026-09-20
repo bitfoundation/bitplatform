@@ -103,7 +103,8 @@
 // A native scrollbar is always laid out inside the element that scrolls, so leaving it visible
 // puts it within the group's border, where it crowds the buttons and gets clipped by the rounded
 // corners. Hiding it keeps the border hugging the buttons: the group still scrolls by swiping, by
-// shift+wheel, and through the arrow keys, which bring the focused button into view on their own.
+// the wheel - ordinary wheel input down a vertical group, shift+wheel across a horizontal one - and
+// through the arrow keys, which bring the focused button into view on their own.
 .bit-btg-scr {
     scrollbar-width: none;
     -ms-overflow-style: none;

@@ -10,8 +10,19 @@
     // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do, and
     // losing it would take the name off a toolbar that assistive technologies will not announce without one.
     // The role is resolved the same way, and so the pattern the selection mode implies is only the default: a
-    // page that knows better - a menubar, a tablist, a plain group - keeps the role it wrote.
-    var role = GetSplattedAttribute("role") ?? _RootRole;
+    // page that knows better - a plain group, a region of its own - keeps the role it wrote. The exception is a
+    // role that owns items of a matching role: a menubar owns menuitems, a tablist tabs, a listbox options, and
+    // this component renders buttons - with the toolbar and radiogroup keyboard behavior HandleOnKeyDown
+    // implements, not the behavior those patterns require. So such a role is honoured only where the page writes
+    // the items itself, through ChildContent or Options, and is otherwise dropped for the role the selection mode
+    // implies rather than announcing a pattern nothing underneath it follows.
+    var hasCustomContent = Options is not null || ChildContent is not null;
+    var splattedRole = GetSplattedAttribute("role");
+    if (hasCustomContent is false && splattedRole is "menubar" or "menu" or "tablist" or "listbox" or "tree")
+    {
+        splattedRole = null;
+    }
+    var role = splattedRole ?? _RootRole;
     var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
     var ariaOrientation = GetSplattedAttribute("aria-orientation") ?? GetAriaOrientation(role);
     // A disabled group says so on the group itself as well as on each of its buttons: every role it renders with -
@@ -29,7 +40,7 @@
      aria-label="@ariaLabel"
      aria-disabled="@ariaDisabled"
      aria-orientation="@ariaOrientation">
-    @if (Options is not null || ChildContent is not null)
+    @if (hasCustomContent)
     {
         <CascadingValue Value="this" IsFixed="true">
             @(Options ?? ChildContent)
