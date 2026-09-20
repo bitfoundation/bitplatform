@@ -296,7 +296,7 @@ private async Task HandleAutoLoadingChange()
                  Text=""Details"" />
 <div id=""accessibility-details"">@(detailsVisible ? ""The details panel is visible."" : ""The details panel is hidden."")</div>
 
-<BitToggleButton role=""menuitemcheckbox"" Variant=""BitVariant.Text""
+<BitToggleButton role=""checkbox"" Variant=""BitVariant.Text""
                  @bind-IsChecked=""statusBarVisible""
                  AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 
