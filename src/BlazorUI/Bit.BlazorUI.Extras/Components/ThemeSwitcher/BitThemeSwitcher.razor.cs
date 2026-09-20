@@ -2,7 +2,7 @@
 
 /// <summary>
 /// BitThemeSwitcher is the chrome for the two choices a themed app usually puts in its header: which design
-/// system it is dressed in (Fluent, Fluent 2, Material, Cupertino - see <see cref="BitExtraThemePresets"/>)
+/// system it is dressed in (Fluent, Fluent 2, Material, Cupertino - see <see cref="BitThemePresets"/>)
 /// and whether that design system is showing its light or its dark scheme. Both halves resolve to one
 /// <c>bit-theme</c> name applied through <see cref="BitThemeManager"/>, so the two controls stay two views of
 /// a single piece of state: switching the design system keeps the current scheme, and toggling the scheme
@@ -10,7 +10,7 @@
 /// </summary>
 /// <remarks>
 /// The Fluent 2, Material and Cupertino design systems need their stylesheet bundle linked after the core one
-/// to have any effect (see <see cref="BitExtraThemePresets"/>); offering an item whose bundle the host page
+/// to have any effect (see <see cref="BitThemePresets"/>); offering an item whose bundle the host page
 /// does not link leaves the app on the Fluent defaults.
 /// </remarks>
 public partial class BitThemeSwitcher : BitComponentBase
@@ -37,9 +37,9 @@ public partial class BitThemeSwitcher : BitComponentBase
     public static readonly IReadOnlyList<BitThemeSwitcherItem> DefaultDesignSystems =
     [
         new() { Text = "Fluent", Value = "fluent", LightTheme = BitThemePresets.Light, DarkTheme = BitThemePresets.Dark },
-        new() { Text = "Fluent 2", Value = BitExtraThemePresets.Fluent2, LightTheme = BitExtraThemePresets.Fluent2Light, DarkTheme = BitExtraThemePresets.Fluent2Dark },
-        new() { Text = "Material", Value = BitExtraThemePresets.Material, LightTheme = BitExtraThemePresets.MaterialLight, DarkTheme = BitExtraThemePresets.MaterialDark },
-        new() { Text = "Cupertino", Value = BitExtraThemePresets.Cupertino, LightTheme = BitExtraThemePresets.CupertinoLight, DarkTheme = BitExtraThemePresets.CupertinoDark },
+        new() { Text = "Fluent 2", Value = BitThemePresets.Fluent2, LightTheme = BitThemePresets.Fluent2Light, DarkTheme = BitThemePresets.Fluent2Dark },
+        new() { Text = "Material", Value = BitThemePresets.Material, LightTheme = BitThemePresets.MaterialLight, DarkTheme = BitThemePresets.MaterialDark },
+        new() { Text = "Cupertino", Value = BitThemePresets.Cupertino, LightTheme = BitThemePresets.CupertinoLight, DarkTheme = BitThemePresets.CupertinoDark },
     ];
 
 

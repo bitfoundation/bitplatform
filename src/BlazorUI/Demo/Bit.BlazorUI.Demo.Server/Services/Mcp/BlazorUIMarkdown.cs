@@ -294,6 +294,21 @@ public static class BlazorUIMarkdown
             return builder.ToString();
         }
 
+        // An extension container is a name nobody writes: what reflection finds on it is the
+        // compiler's implementation of members that are written on another type entirely. So it is
+        // answered with that type, and with the members under the names they are actually read by.
+        if (type.IsExtensionContainer)
+        {
+            foreach (var group in BlazorUIExtensionMembers.All.Where(g => g.Container == clr))
+            {
+                builder.AppendLine($"Read off `{group.ReceiverName}` rather than off this type: `{group.ReceiverName}.{group.Members[0].Name}`, which `GetBitBlazorUIType(typeName: \"{group.ReceiverName}\")` answers with in full.").AppendLine();
+
+                BlazorUIReflection.AppendExtensionMembers(builder, group.Members);
+            }
+
+            return Truncate(builder.ToString());
+        }
+
         BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());

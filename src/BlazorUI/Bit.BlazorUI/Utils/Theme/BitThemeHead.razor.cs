@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The single-drop first-paint setup for the theme: place it at the start of a server-rendered host
@@ -23,10 +23,22 @@ namespace Bit.BlazorUI;
 /// <para>
 /// The theme-color half is the only part that needs colors as literals - the browser paints its
 /// chrome long before a stylesheet has loaded - and they come from <see cref="ThemeColors"/>,
-/// defaulting to the packaged Fluent surfaces. An app on the Fluent 2 / Material / Cupertino presets
-/// passes <c>BitExtraThemeSurfaces.BackgroundPrimary</c> (or <c>.BackgroundSecondary</c>), and an app
-/// with its own palette passes its own map. Set <see cref="EmitThemeColor"/> to <see langword="false"/>
-/// to keep a hand-written tag (or a media-qualified pair) instead and have this emit only the script.
+/// defaulting to <see cref="BitThemeSurfaces.BackgroundPrimary"/>, which carries every preset
+/// registered with <see cref="BitThemePresetRegistry"/> - the packaged ones and the app's own. An
+/// app whose pages sit on the secondary surface passes <c>BitThemeSurfaces.BackgroundSecondary</c>
+/// instead, and an app with its own palette passes its own map. Set <see cref="EmitThemeColor"/> to
+/// <see langword="false"/> to keep a hand-written tag (or a media-qualified pair) instead and have
+/// this emit only the script.
+/// </para>
+/// <para>
+/// <b>The default map is every preset the process has registered</b>, which for an app that
+/// references Bit.BlazorUI.Extras includes Fluent 2, Material and Cupertino whether or not it links
+/// their stylesheets. That is the right table for an app that offers them, and costs one small
+/// lookup object in the correction script otherwise. An app that wants it exact says so once at
+/// startup, and the registry keeps its word whatever loads afterwards:
+/// <see cref="BitThemePresetRegistry.Remove(string?)"/> for a packaged preset it does not offer,
+/// <see cref="BitThemePresetRegistry.Register(BitThemePreset)"/> for one whose surface it has
+/// overridden in its own CSS - or it passes <see cref="ThemeColors"/> a map of its own.
 /// </para>
 /// <para>
 /// Renders no element of its own, so it does not inherit <see cref="BitComponentBase"/>.
@@ -65,9 +77,12 @@ public partial class BitThemeHead : ComponentBase
 
     /// <summary>
     /// Theme name to browser-chrome color, as CSS colors. Defaults to
-    /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of the packaged Fluent
-    /// presets. <c>BitExtraThemeSurfaces</c> has the same two maps covering every packaged preset, and
-    /// an app with its own palette (or one whose pages sit on the secondary surface) passes its own.
+    /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of every registered
+    /// preset, packaged or the app's own (the remarks on this type say how to narrow it). An app
+    /// whose pages sit on the secondary surface passes
+    /// <see cref="BitThemeSurfaces.BackgroundSecondary"/>, and an app with its own palette passes its own.
+    /// Keys are matched exactly (ordinal) against the normalized <c>bit-theme</c> token, which is
+    /// the only form the attribute ever carries.
     /// A name the map does not carry falls back to the light / dark entry - and, failing that, to any
     /// entry of the map on the same side of the scheme - by the same "ends with dark" rule the
     /// packaged stylesheets classify names with.
@@ -104,9 +119,16 @@ public partial class BitThemeHead : ComponentBase
 
     private IReadOnlyDictionary<string, string> Colors => ThemeColors ?? BitThemeSurfaces.BackgroundPrimary;
 
-    private string ResolveLightThemeColor() => ColorOf(LightTheme ?? BitThemePresets.Light, isDark: false);
+    // Normalized, as every other layer sees them: the attribute the client reads back carries the
+    // normalized token, the maps are keyed by it, and IsDarkName tests it ordinally - so a pair
+    // written as "Fluent2-Dark" has to become that token before it is looked up or classified.
+    private string LightThemeName => BitThemeName.NormalizeToken(LightTheme, out _) ?? BitThemePresets.Light;
 
-    private string ResolveDarkThemeColor() => ColorOf(DarkTheme ?? BitThemePresets.Dark, isDark: true);
+    private string DarkThemeName => BitThemeName.NormalizeToken(DarkTheme, out _) ?? BitThemePresets.Dark;
+
+    private string ResolveLightThemeColor() => ColorOf(LightThemeName, isDark: false);
+
+    private string ResolveDarkThemeColor() => ColorOf(DarkThemeName, isDark: true);
 
     /// <summary>
     /// The color of the theme being rendered. While the visitor follows the OS there is no such
@@ -128,24 +150,31 @@ public partial class BitThemeHead : ComponentBase
     {
         if (Colors.TryGetValue(theme, out var color)) return color;
 
-        var fallback = isDark ? DarkTheme ?? BitThemePresets.Dark : LightTheme ?? BitThemePresets.Light;
+        var fallback = isDark ? DarkThemeName : LightThemeName;
         if (fallback != theme && Colors.TryGetValue(fallback, out color)) return color;
 
         // Still nothing: any entry of the CALLER's map on the right side of the scheme, before the
         // packaged surfaces - an app whose pages sit on the secondary surface (or on a palette of its
-        // own) must not have the chrome painted from a table it deliberately replaced. Ordered so the
-        // pick is the same on every render rather than whatever the dictionary happens to enumerate.
-        var sameScheme = Colors.Where(entry => IsDarkName(entry.Key) == isDark)
-                               .OrderBy(entry => entry.Key, StringComparer.Ordinal)
-                               .Select(entry => entry.Value)
-                               .FirstOrDefault();
+        // own) must not have the chrome painted from a table it deliberately replaced. The smallest
+        // key, so the pick is the same on every render rather than whatever the dictionary happens to
+        // enumerate first - found in one pass, with nothing sorted on the way.
+        string? sameSchemeKey = null, sameScheme = null;
+        foreach (var entry in Colors)
+        {
+            if (IsDarkName(entry.Key) != isDark) continue;
+            if (sameSchemeKey is not null && string.CompareOrdinal(entry.Key, sameSchemeKey) >= 0) continue;
+
+            (sameSchemeKey, sameScheme) = (entry.Key, entry.Value);
+        }
         if (sameScheme is not null) return sameScheme;
 
-        // An empty map, or one with no name on this side at all: the packaged surfaces of the scheme,
-        // which is what the tag would have carried before an app handed in a map of its own.
+        // An empty map, or one with no name on this side at all: the core stylesheet's own surfaces
+        // for the scheme. Constants rather than a read of BitThemeSurfaces, which is a view over a
+        // registry an app is free to take "light" and "dark" out of - and this is the one line that
+        // has to answer on every request regardless.
         return isDark
-            ? BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark]
-            : BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light];
+            ? BitThemePresetRegistry.CoreDarkBackgroundPrimary
+            : BitThemePresetRegistry.CoreLightBackgroundPrimary;
     }
 
     /// <summary>
@@ -190,17 +219,20 @@ public partial class BitThemeHead : ComponentBase
         // alone would hand it the light surface. Normalized, because the attribute the script reads
         // back carries the normalized form. Only emitted when the suffix rule does not already cover
         // the name, so the default pair keeps the short test it had.
-        var darkName = BitThemeName.NormalizeToken(DarkTheme, out _);
-        var isDark = darkName is null || IsDarkName(darkName)
+        var darkName = DarkThemeName;
+        var isDark = IsDarkName(darkName)
             ? "/dark$/.test(t)"
             : "(t==='" + JsString(darkName) + "'||/dark$/.test(t))";
 
         var scheme = "c=" + isDark + "?'" + JsString(dark) + "':'" + JsString(light) + "';";
 
-        var overrides = Colors.Where(entry => entry.Value != (IsDarkName(entry.Key) ? dark : light))
-                              .OrderBy(entry => entry.Key, StringComparer.Ordinal)
-                              .Select(entry => "'" + JsString(entry.Key) + "':'" + JsString(entry.Value) + "'")
-                              .ToArray();
+        // Only what the fallback gets wrong is kept, and only that is ordered - the registry's own
+        // views already enumerate in key order, so for them (the default) there is nothing to sort.
+        var wrong = Colors.Where(entry => entry.Value != (IsDarkName(entry.Key) ? dark : light));
+        if (Colors is not BitThemeSurfaceMap) wrong = wrong.OrderBy(entry => entry.Key, StringComparer.Ordinal);
+
+        var overrides = wrong.Select(entry => "'" + JsString(entry.Key) + "':'" + JsString(entry.Value) + "'")
+                             .ToArray();
 
         // Nothing the fallback gets wrong: the whole table would be dead weight in front of every
         // first paint. This is the default map's case, where all four names share the two colors.
