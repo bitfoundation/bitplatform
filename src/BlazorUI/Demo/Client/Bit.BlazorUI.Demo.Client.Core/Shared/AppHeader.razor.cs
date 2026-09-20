@@ -30,9 +30,9 @@ public partial class AppHeader
     private static readonly BitThemeSwitcherItem[] _designSystems =
     [
         new() { Text = "Fluent", Value = BitThemePresets.Fluent, LightTheme = BitThemePresets.FluentLight, DarkTheme = BitThemePresets.FluentDark },
-        new() { Text = "Fluent 2", Value = BitExtraThemePresets.Fluent2, LightTheme = BitExtraThemePresets.Fluent2Light, DarkTheme = BitExtraThemePresets.Fluent2Dark },
-        new() { Text = "Material", Value = BitExtraThemePresets.Material, LightTheme = BitExtraThemePresets.MaterialLight, DarkTheme = BitExtraThemePresets.MaterialDark },
-        new() { Text = "Cupertino", Value = BitExtraThemePresets.Cupertino, LightTheme = BitExtraThemePresets.CupertinoLight, DarkTheme = BitExtraThemePresets.CupertinoDark },
+        new() { Text = "Fluent 2", Value = BitThemePresets.Fluent2, LightTheme = BitThemePresets.Fluent2Light, DarkTheme = BitThemePresets.Fluent2Dark },
+        new() { Text = "Material", Value = BitThemePresets.Material, LightTheme = BitThemePresets.MaterialLight, DarkTheme = BitThemePresets.MaterialDark },
+        new() { Text = "Cupertino", Value = BitThemePresets.Cupertino, LightTheme = BitThemePresets.CupertinoLight, DarkTheme = BitThemePresets.CupertinoDark },
     ];
 
     /// <summary>
@@ -95,7 +95,7 @@ public partial class AppHeader
         var rootTheme = BitThemeSsr.BuildRootThemeAttributeMap(persisted);
         _initialTheme = rootTheme.TryGetValue(BitThemeAttributeNames.Theme, out var theme) && theme is string themeName
                         ? themeName
-                        : BitExtraThemePresets.Fluent2;
+                        : BitThemePresets.Fluent2;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)

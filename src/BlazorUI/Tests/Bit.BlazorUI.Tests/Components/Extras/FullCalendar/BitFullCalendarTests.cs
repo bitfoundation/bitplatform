@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -2474,13 +2474,15 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldMakeAnOutOfRangeWeekColumnInert()
     {
-        var today = DateTime.Today;
+        // A midweek anchor, so whatever day the culture starts the week on, some days come before it.
+        var anchor = new DateTime(2024, 6, 12);
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Week);
-            // Only today onwards is reachable, so the days before it are inert columns.
-            parameters.Add(p => p.MinDate, today);
+            parameters.Add(p => p.DefaultDate, anchor);
+            // Only the anchor onwards is reachable, so the days before it are inert columns.
+            parameters.Add(p => p.MinDate, anchor);
         });
 
         var columns = component.FindAll(".bit-bfc-week-day-col");

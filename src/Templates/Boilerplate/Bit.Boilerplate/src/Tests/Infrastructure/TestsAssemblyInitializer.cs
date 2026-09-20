@@ -38,11 +38,11 @@ public partial class TestsAssemblyInitializer
 
     //#if (aspire == true)
     /// <summary>
-    /// Aspire.Hosting.Testing executes the complete application, including dependencies like databases, 
-    /// closely mimicking a production environment. However, it has a limitation: backend services cannot 
-    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="UITests"/> 
-    /// and <see cref="IntegrationTests"/>. The code below runs the Aspire app without the server web 
-    /// project, retrieves necessary connection strings (e.g., database connection string), and passes 
+    /// Aspire.Hosting.Testing executes the complete application, including dependencies like databases,
+    /// closely mimicking a production environment. However, it has a limitation: backend services cannot
+    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="UITests"/>
+    /// and <see cref="IntegrationTests"/>. The code below runs the Aspire app without the server web
+    /// project, retrieves necessary connection strings (e.g., database connection string), and passes
     /// them to <see cref="AppTestServer"/>, so you can override services in the server project.
     /// </summary>
     private static async Task RunAspireHost(TestContext testContext)
@@ -90,6 +90,18 @@ public partial class TestsAssemblyInitializer
         {
             Environment.SetEnvironmentVariable($"ConnectionStrings__{connectionString.Name}", await aspireApp.GetConnectionStringAsync(connectionString.Name, testContext.CancellationToken));
             await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, [.. KnownResourceStates.TerminalStates, KnownResourceStates.Running], testContext.CancellationToken);
+        }
+
+        using var healthBudget = CancellationTokenSource.CreateLinkedTokenSource(testContext.CancellationToken);
+        healthBudget.CancelAfter(TimeSpan.FromSeconds(10));
+
+        try
+        {
+            await Task.WhenAll(aspireAppBuilder.Resources.OfType<IResourceWithConnectionString>()
+                .Select(resource => AspireApp.ResourceNotifications.WaitForResourceHealthyAsync(resource.Name, healthBudget.Token)));
+        }
+        catch (OperationCanceledException) when (testContext.CancellationToken.IsCancellationRequested is false)
+        {
         }
     }
     //#endif
