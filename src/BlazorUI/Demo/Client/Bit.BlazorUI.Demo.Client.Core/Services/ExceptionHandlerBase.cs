@@ -20,6 +20,6 @@ public abstract partial class ExceptionHandlerBase : IExceptionHandler
 
         _ = Console.Out.WriteLineAsync(exception.ToString());
 
-        _ = MessageBoxService.Show("Error", exceptionMessage);
+        _ = MessageBoxService.ShowError("Error", exceptionMessage);
     }
 }

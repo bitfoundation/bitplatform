@@ -23,31 +23,35 @@ public class VelopackPackagingContractTests
     /// newer of the pair, logs an error saying the mismatch "can cause compatibility issues" and that "in a future
     /// version this may become a fatal error".
     /// <para>
-    /// This drifts silently and will drift again: <c>.config/dotnet-tools.json</c> is not an MSBuild file, so the
-    /// dependency-update commits that move <c>PackageVersion</c> never touch it. That is exactly what happened here -
-    /// the tool was pinned to 1.0.1, and the library was moved to 1.2.0 eleven days later by a bulk dependency bump.
-    /// Nothing failed; the CD log simply gained an error line nobody reads.
+    /// This drifts silently and will drift again: the pipelines run the tool as <c>dnx vpk@&lt;version&gt;</c>, which is
+    /// no more an MSBuild file than the tool manifest it replaced, so the dependency-update commits that move
+    /// <c>PackageVersion</c> never touch it. That is exactly what happened here - the tool was pinned to 1.0.1, and the
+    /// library was moved to 1.2.0 eleven days later by a bulk dependency bump. Nothing failed; the CD log simply gained
+    /// an error line nobody reads.
     /// </para>
     /// </summary>
     [TestMethod]
     public void VpkToolVersion_Should_MatchThePinnedVelopackLibraryVersion()
     {
-        var toolsManifest = ReadTemplateFile("src/Client/Boilerplate.Client.Windows/.config/dotnet-tools.json");
         var packageVersions = ReadTemplateFile("src/Directory.Packages.props");
-
-        var toolVersion = Regex.Match(toolsManifest, """"vpk"\s*:\s*\{[^}]*?"version"\s*:\s*"(?<version>[^"]+)"""",
-                                      RegexOptions.Singleline).Groups["version"].Value;
         var libraryVersion = Regex.Match(packageVersions, """<PackageVersion\s+Include="Velopack"\s+Version="(?<version>[^"]+)""")
                                   .Groups["version"].Value;
 
-        Assert.AreNotEqual(string.Empty, toolVersion, "No vpk entry in the Windows head's dotnet-tools.json - if the tool was renamed or removed, retarget this test rather than deleting it.");
         Assert.AreNotEqual(string.Empty, libraryVersion, "No Velopack PackageVersion in src/Directory.Packages.props - if the package was renamed or removed, retarget this test rather than deleting it.");
 
-        Assert.AreEqual(libraryVersion, toolVersion,
-            $"The vpk tool is pinned to {toolVersion} while the Velopack library is pinned to {libraryVersion}. " +
-            "vpk pack compares the two and logs a compatibility error when the library is newer. Move the tool " +
-            "manifest with the package version - a dependency bump cannot do it for you, because dotnet-tools.json " +
-            "is not an MSBuild file.");
+        // both pipelines pack with it, and either one of them can be the one that drifts
+        foreach (var pipeline in (string[])[".github/workflows/cd-template.yml", ".azure-devops/workflows/cd.yml"])
+        {
+            var toolVersion = Regex.Match(ReadTemplateFile(pipeline), @"dnx\s+vpk@(?<version>[^\s]+)").Groups["version"].Value;
+
+            Assert.AreNotEqual(string.Empty, toolVersion, $"No dnx vpk@<version> call in {pipeline} - if the tool was renamed or removed, retarget this test rather than deleting it.");
+
+            Assert.AreEqual(libraryVersion, toolVersion,
+                $"{pipeline} runs vpk {toolVersion} while the Velopack library is pinned to {libraryVersion}. " +
+                "vpk pack compares the two and logs a compatibility error when the library is newer. Move the dnx " +
+                "call with the package version - a dependency bump cannot do it for you, because a workflow is not " +
+                "an MSBuild file.");
+        }
     }
 
     /// <summary>

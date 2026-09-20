@@ -222,7 +222,7 @@
                             </BitText>
                             <BitText Element="p" Color="BitColor.SecondaryForeground">
                                 MDL2 names things in its own words. Try a shorter term, or the word Microsoft
-                                would have used &mdash; <b>Ringer</b> for a bell, <b>Contact</b> for a user,
+                                would have used - <b>Ringer</b> for a bell, <b>Contact</b> for a user,
                                 <b>Cancel</b> for a close.
                             </BitText>
                             <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="icon-empty-actions">
@@ -247,7 +247,7 @@
                     Description="The icons ship separately from the components, so an app that does not use them does not download them.">
 
             <BitText Element="p">
-                Add the <code>Bit.BlazorUI.Icons</code> package and link its stylesheet &mdash; both halves,
+                Add the <code>Bit.BlazorUI.Icons</code> package and link its stylesheet - both halves,
                 or the glyphs come out as empty boxes. It is one of the optional steps of the
                 <BitLink Href="/getting-started#install">getting started</BitLink> page.
             </BitText>
@@ -256,7 +256,7 @@
             <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
 
             <BitText Element="p">
-                The core package embeds a @IconCatalog.CoreItems.Count-glyph subset of the same font &mdash; about 3&nbsp;KB &mdash;
+                The core package embeds a @IconCatalog.CoreItems.Count-glyph subset of the same font - about 3&nbsp;KB -
                 because its own components draw with it. These render in an app that never installed
                 anything above, which is why a date picker has arrows and a message has a dismiss cross
                 before the icon pack is anywhere in the project:
@@ -273,7 +273,7 @@
             </div>
 
             <BitText Element="p">
-                Anything else &mdash; every other name on this page &mdash; needs the package.
+                Anything else - every other name on this page - needs the package.
             </BitText>
         </DocSection>
 
@@ -285,7 +285,7 @@
 
                 <BitText Element="p">
                     <code>BitIcon</code> renders one glyph. <code>IconName</code> takes a name from
-                    <code>BitIconName</code>, which is a class of string constants &mdash; so the compiler
+                    <code>BitIconName</code>, which is a class of string constants - so the compiler
                     catches a typo that a raw string would not.
                 </BitText>
 
@@ -303,7 +303,7 @@
                 </div>
 
                 <BitText Element="p">
-                    The full parameter list &mdash; and every state of it &mdash; is on the
+                    The full parameter list - and every state of it - is on the
                     <BitLink Href="/components/icon">BitIcon page</BitLink>.
                 </BitText>
             </DocSection>
@@ -313,7 +313,7 @@
                 <BitText Element="p">
                     Anything in the library that can show an icon takes the same name. The parameter is
                     <code>IconName</code> on the component itself, or a property of the same name on the
-                    item type of a list-shaped one &mdash; a nav item, a menu item, a pivot header.
+                    item type of a list-shaped one - a nav item, a menu item, a pivot header.
                 </BitText>
 
                 <div class="icon-demo">
@@ -335,7 +335,7 @@
                 <BitText Element="p">
                     The stylesheet is the whole API: a glyph is a <code>::before</code> on a class, so any
                     element can carry one without a component around it. This is also what the browser above
-                    renders &mdash; two thousand components would cost more than two thousand glyphs are worth.
+                    renders - two thousand components would cost more than two thousand glyphs are worth.
                 </BitText>
 
                 <div class="icon-demo">
@@ -455,7 +455,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
             </div>
 
             <BitText Element="p">
-                The set's own stylesheet has to be referenced by the app &mdash; the library never fetches
+                The set's own stylesheet has to be referenced by the app - the library never fetches
                 one for you. Nothing else changes: sizing, coloring and disabled states are the component's,
                 not the icon set's.
             </BitText>
@@ -466,7 +466,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
                     Description="An icon is either decoration or information, and the two are marked up differently. Deciding which is the whole job.">
 
             <BitText Element="p">
-                <b>Decorative</b> &mdash; the icon repeats a label that is already there, and must add
+                <b>Decorative</b> - the icon repeats a label that is already there, and must add
                 nothing to what is announced. The library's components draw the glyph as an empty element
                 with no text of its own, so a <code>BitButton</code> with a word beside its icon announces
                 the word and nothing else. In markup you write yourself, mark the glyph
@@ -474,7 +474,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
             </BitText>
 
             <BitText Element="p">
-                <b>Informative</b> &mdash; the icon is the only thing saying what the control does. It needs
+                <b>Informative</b> - the icon is the only thing saying what the control does. It needs
                 a text alternative, which on <code>BitIcon</code> and on every icon-only control is
                 <code>AriaLabel</code>. An icon-only button without one is a button screen readers announce
                 as nothing at all.
@@ -497,7 +497,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
             <ul>
                 <li>
                     <b>Never let color carry the meaning on its own.</b> A red glyph and a green glyph are
-                    the same glyph to a reader who cannot tell them apart &mdash; pair the color with a
+                    the same glyph to a reader who cannot tell them apart - pair the color with a
                     shape that differs, or with a word.
                 </li>
                 <li>
@@ -525,7 +525,7 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
                     </p>
                     <ul>
                         <li>Stay inside one set. Fabric next to Font Awesome reads as two designs sharing a screen.</li>
-                        <li>Use the same icon for the same action everywhere &mdash; one delete glyph, not three.</li>
+                        <li>Use the same icon for the same action everywhere - one delete glyph, not three.</li>
                         <li>Let the icon sit beside a label wherever there is room for one.</li>
                         <li>Size the glyph to the text it sits with, and let it take <code>currentColor</code>.</li>
                         <li>Prefer the plainest glyph that says it. MDL2 offers a dozen mails; the one called <code>Mail</code> is almost always right.</li>
@@ -539,10 +539,10 @@ BitIconInfo.Bit("Home")               // back to the built-in set</CodeBox>
                     </p>
                     <ul>
                         <li>Don't use an icon for a concept it does not already carry. If it needs explaining, use a word.</li>
-                        <li>Don't rotate or mirror a glyph to mean something else &mdash; the set has a name for that direction.</li>
+                        <li>Don't rotate or mirror a glyph to mean something else - the set has a name for that direction.</li>
                         <li>Don't put an icon on every row of a list. When everything is emphasised, nothing is.</li>
                         <li>Don't scale a glyph past about 32&nbsp;px as an illustration; it is a UI icon and its strokes thin out.</li>
-                        <li>Don't ship the whole icon pack for the handful of glyphs a marketing page uses &mdash; the core subset may already have them.</li>
+                        <li>Don't ship the whole icon pack for the handful of glyphs a marketing page uses - the core subset may already have them.</li>
                     </ul>
                 </div>
             </div>

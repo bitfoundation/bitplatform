@@ -18,6 +18,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
       <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+      <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
     </ItemGroup>
 
 </Project>

@@ -4,8 +4,13 @@ namespace Bit.BlazorUI;
 public sealed class BitChartTooltipOptions
 {
     public bool Enabled { get; set; } = true;
-    public BitChartInteractionMode Mode { get; set; } = BitChartInteractionMode.Nearest;
-    public bool Intersect { get; set; } = true;
+
+    /// <summary>Overrides <see cref="BitChartInteractionOptions.Mode"/> for the tooltip only.</summary>
+    public BitChartInteractionMode? Mode { get; set; }
+
+    /// <summary>Overrides <see cref="BitChartInteractionOptions.Intersect"/> for the tooltip only.</summary>
+    public bool? Intersect { get; set; }
+
     /// <summary>Where the tooltip is anchored when multiple items are active.</summary>
     public BitChartTooltipPositioner Position { get; set; } = BitChartTooltipPositioner.Average;
     public string BackgroundColor { get; set; } = "rgba(0,0,0,0.8)";
@@ -16,6 +21,13 @@ public sealed class BitChartTooltipOptions
     public BitChartFont BodyFont { get; set; } = new();
     public BitChartFont FooterFont { get; set; } = new() { Weight = "bold" };
     public double Padding { get; set; } = 6;
+
+    /// <summary>
+    /// Caps the tooltip's width in pixels and wraps its text at that point. Without one the box stays on
+    /// a single line per row, which is right for a value but wrong for a sentence, so a callback that
+    /// returns prose wants a width here.
+    /// </summary>
+    public double? MaxWidth { get; set; }
     public double CornerRadius { get; set; } = 6;
     public bool DisplayColors { get; set; } = true;
     /// <summary>Render the color swatch using the dataset point style instead of a square.</summary>
@@ -24,20 +36,20 @@ public sealed class BitChartTooltipOptions
     public string? BorderColor { get; set; }
     /// <summary>Border width of the tooltip box.</summary>
     public double BorderWidth { get; set; }
-    /// <summary>Text alignment of the title (default is the start).</summary>
-    /// <remarks>
-    /// Only Start, Center, End, Left and Right are meaningful here. Start and End follow the reading direction, while
-    /// Left and Right stay on the same side of the screen in both; every other value centers the text.
-    /// </remarks>
+    /// <summary>Draw a caret (arrow) pointing at the anchored element. Chart.js draws one by default.</summary>
+    public bool Caret { get; set; } = true;
+    /// <summary>Size of the caret in pixels.</summary>
+    public double CaretSize { get; set; } = 6;
+    /// <summary>Text alignment of the title (left/center/right).</summary>
     public BitPlacement TitleAlign { get; set; } = BitPlacement.Start;
-    /// <summary>Text alignment of the body (default is the start).</summary>
-    /// <remarks>
-    /// Only Start, Center, End, Left and Right are meaningful here. Start and End follow the reading direction, while
-    /// Left and Right stay on the same side of the screen in both; every other value centers the text.
-    /// </remarks>
+    /// <summary>Text alignment of the body (left/center/right).</summary>
     public BitPlacement BodyAlign { get; set; } = BitPlacement.Start;
     /// <summary>Rich text/styling callbacks.</summary>
     public BitChartTooltipCallbacks Callbacks { get; set; } = new();
     /// <summary>Optional label formatter: (datasetLabel, value) => text. Shorthand for <c>Callbacks.Label</c>.</summary>
     public Func<string, double, string>? LabelFormatter { get; set; }
+    /// <summary>Filters which active items are listed, mirroring Chart.js <c>tooltip.filter</c>.</summary>
+    public Func<BitChartTooltipItemContext, bool>? Filter { get; set; }
+    /// <summary>Sorts the listed items, mirroring Chart.js <c>tooltip.itemSort</c>.</summary>
+    public Comparison<BitChartTooltipItemContext>? ItemSort { get; set; }
 }

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownEditor;
@@ -384,6 +384,17 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    [DataRow("* [x] done", "* [x] done\n* [ ] ")]
+    [DataRow("+ [ ] todo", "+ [ ] todo\n+ [ ] ")]
+    public void NewLineShouldContinueTaskListWithTheLinesOwnBullet(string text, string expected)
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.NewLine, text, text.Length, text.Length);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(expected, result.Text);
+    }
+
+    [TestMethod]
     public void NewLineShouldClearEmptyListItem()
     {
         const string text = "- item\n- ";
@@ -507,6 +518,21 @@ public class BitMarkdownEditorCommandsTests
     }
 
     [TestMethod]
+    public void DetectActiveFormatsShouldDetectItalicDelimitedOutsideTheSelection()
+    {
+        // The delimiters sit outside the selection, which is what toggling italic unwraps.
+        var italic = BitMarkdownEditorCommands.DetectActiveFormats("*italic*", 1, 7);
+
+        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
+
+        // The single '*' either side of a bold selection belongs to '**', not to italic.
+        var bold = BitMarkdownEditorCommands.DetectActiveFormats("**bold**", 2, 6);
+
+        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+    }
+
+    [TestMethod]
     public void DetectActiveFormatsShouldDetectTaskList()
     {
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("- [ ] task", 8, 8);
@@ -521,5 +547,758 @@ public class BitMarkdownEditorCommandsTests
         var formats = BitMarkdownEditorCommands.DetectActiveFormats("plain text", 3, 3);
 
         Assert.AreEqual(0, formats.Count);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldWorkOnASingleLineSlice()
+    {
+        // The interop script sends only the lines the selection touches, with the offsets
+        // rebased on that slice, so the detection has to hold for a bare line too.
+        var formats = BitMarkdownEditorCommands.DetectActiveFormats("> **quoted**", 5, 5);
+
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Quote));
+        Assert.IsTrue(formats.Contains(BitMarkdownEditorCommand.Bold));
+    }
+
+    [TestMethod]
+    public void MoveLineUpShouldSwapWithThePreviousLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineUp, "a\nb\nc", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("b\na\nc", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+        Assert.AreEqual(0, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void MoveLineUpShouldDoNothingOnTheFirstLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineUp, "a\nb", 0, 0);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("a\nb", result.Text);
+    }
+
+    [TestMethod]
+    public void MoveLineDownShouldSwapWithTheNextLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb\nc", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("b\na\nc", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void MoveLineDownShouldDoNothingOnTheLastLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb", 2, 2);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("a\nb", result.Text);
+    }
+
+    [TestMethod]
+    public void MoveLineShouldCarryAWholeSelectedBlock()
+    {
+        // "b\nc" selected, moved under "d".
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.MoveLineDown, "a\nb\nc\nd", 2, 5);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nd\nb\nc", result.Text);
+        Assert.AreEqual(4, result.SelectionStart);
+        Assert.AreEqual(7, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void DuplicateLineShouldCopyTheLineBelowItself()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DuplicateLine, "a\nb", 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\na\nb", result.Text);
+        // The selection lands on the copy so a second run duplicates the newest one.
+        Assert.AreEqual(2, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void DuplicateLineShouldCopyEveryTouchedLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DuplicateLine, "a\nb\nc", 0, 3);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nb\na\nb\nc", result.Text);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldRemoveTheLineAndItsNewline()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "a\nb\nc", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a\nc", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(2, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldEatThePrecedingNewlineOnTheLastLine()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "a\nb", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("a", result.Text);
+        Assert.AreEqual(1, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void DeleteLineShouldEmptyASingleLineDocument()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.DeleteLine, "only", 2, 2);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void LinkShouldUseASelectedUrlAsTheTarget()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Link, "https://bitplatform.dev", 0, 23);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("[text](https://bitplatform.dev)", result.Text);
+        // The caret lands on the label, which is the part still to be typed.
+        Assert.AreEqual(1, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void ImageShouldUseASelectedUrlAsTheSource()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Image, "https://a.dev/b.png", 0, 19);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("![alt](https://a.dev/b.png)", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void LinkShouldStillUsePlainSelectionsAsTheLabel()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Link, "bit platform", 0, 12);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("[bit platform](url)", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldUnwrapLinksAndImages()
+    {
+        const string text = "see [the **docs**](https://bit.dev) and ![logo](a.png)";
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, text, 0, text.Length);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("see the docs and logo", result.Text);
+    }
+
+    [TestMethod]
+    public void ApplyShouldNotHandleAnUndefinedCommand()
+    {
+        var result = BitMarkdownEditorCommands.Apply((BitMarkdownEditorCommand)999, "text", 0, 4);
+
+        Assert.IsFalse(result.Handled);
+        Assert.AreEqual("text", result.Text);
+    }
+
+    [TestMethod]
+    public void TableShouldFollowTheConfiguredSize()
+    {
+        var options = new BitMarkdownEditorCommandOptions { TableColumns = 3, TableRows = 2 };
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Table, "", 0, 0, options);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(
+            "| Column 1 | Column 2 | Column 3 |\n" +
+            "| -------- | -------- | -------- |\n" +
+            "| Cell     | Cell     | Cell     |\n" +
+            "| Cell     | Cell     | Cell     |\n", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(10, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void TableShouldClampAnImpossibleSize()
+    {
+        var options = new BitMarkdownEditorCommandOptions { TableColumns = 0, TableRows = -3 };
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Table, "", 0, 0, options);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("| Column 1 |\n| -------- |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void ApplyShouldFallBackToTheDefaultIndentUnit()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "text", 0, 0, string.Empty);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("  text", result.Text);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldTellSubscriptFromStrikethrough()
+    {
+        var strike = BitMarkdownEditorCommands.DetectActiveFormats("~~gone~~", 4, 4);
+        Assert.IsTrue(strike.Contains(BitMarkdownEditorCommand.Strikethrough));
+        Assert.IsFalse(strike.Contains(BitMarkdownEditorCommand.Subscript));
+
+        var sub = BitMarkdownEditorCommands.DetectActiveFormats("H~2~O", 3, 3);
+        Assert.IsTrue(sub.Contains(BitMarkdownEditorCommand.Subscript));
+        Assert.IsFalse(sub.Contains(BitMarkdownEditorCommand.Strikethrough));
+
+        var sup = BitMarkdownEditorCommands.DetectActiveFormats("x^2^", 3, 3);
+        Assert.IsTrue(sup.Contains(BitMarkdownEditorCommand.Superscript));
+    }
+
+    [TestMethod]
+    public void ApplyShouldTreatNullTextAsEmpty()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Bold, null!, 0, 0);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("**bold text**", result.Text);
+    }
+
+    [TestMethod]
+    public void HeadingShouldKeepACaretWhereItWas()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Heading1, "hello", 5, 5);
+
+        Assert.AreEqual("# hello", result.Text);
+        Assert.AreEqual(7, result.SelectionStart);
+        Assert.AreEqual(7, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void HeadingShouldCarryACaretAtTheLineStartPastTheNewMarker()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Heading2, "hello", 0, 0);
+
+        Assert.AreEqual("## hello", result.Text);
+        Assert.AreEqual(3, result.SelectionStart);
+        Assert.AreEqual(3, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void HeadingShouldKeepACaretOnTheRightLineOfABlock()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Heading1, "one\ntwo\nthree", 6, 6);
+
+        Assert.AreEqual("one\n# two\nthree", result.Text);
+        // "one\n# tw|o": the caret kept its place inside the second line.
+        Assert.AreEqual(8, result.SelectionStart);
+        Assert.AreEqual(8, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void QuoteShouldKeepACaretWhereItWas()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Quote, "hello", 3, 3);
+
+        Assert.AreEqual("> hello", result.Text);
+        Assert.AreEqual(5, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void OutdentShouldKeepACaretWhereItWas()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Outdent, "  hello", 4, 4);
+
+        Assert.AreEqual("hello", result.Text);
+        Assert.AreEqual(2, result.SelectionStart);
+        Assert.AreEqual(2, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void IndentShouldNestAListItemFromACaretInsideIt()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "- item", 3, 3);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("  - item", result.Text);
+        Assert.AreEqual(5, result.SelectionStart);
+        Assert.AreEqual(5, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void IndentShouldNestAnOrderedItemATaskAndAQuoteFromACaret()
+    {
+        Assert.AreEqual("  1. one", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "1. one", 4, 4).Text);
+        Assert.AreEqual("  - [ ] todo", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "- [ ] todo", 8, 8).Text);
+        Assert.AreEqual("  > quoted", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "> quoted", 4, 4).Text);
+    }
+
+    [TestMethod]
+    public void IndentShouldStillInsertAtTheCaretInPlainText()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "hello", 2, 2);
+
+        Assert.AreEqual("he  llo", result.Text);
+        Assert.AreEqual(4, result.SelectionStart);
+        Assert.AreEqual(4, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldStillClearTheWholeLineFromACaret()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, "# **big** title", 4, 4);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual("big title", result.Text);
+        // The marker the caret sat in is gone, so it lands on the nearest surviving text.
+        Assert.AreEqual(3, result.SelectionStart);
+        Assert.AreEqual(3, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void ListToggleShouldStillSelectTheBlockForARealSelection()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.UnorderedList, "one\ntwo", 0, 7);
+
+        Assert.AreEqual("- one\n- two", result.Text);
+        Assert.AreEqual(0, result.SelectionStart);
+        Assert.AreEqual(11, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldDetectItalicAtABareCaret()
+    {
+        var italic = BitMarkdownEditorCommands.DetectActiveFormats("an *emphatic* word", 6, 6);
+
+        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.IsFalse(italic.Contains(BitMarkdownEditorCommand.Bold));
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldNotReportItalicInsideBold()
+    {
+        var bold = BitMarkdownEditorCommands.DetectActiveFormats("a **strong** word", 6, 6);
+
+        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldReportBothInsideBoldItalic()
+    {
+        var both = BitMarkdownEditorCommands.DetectActiveFormats("***loud***", 5, 5);
+
+        Assert.IsTrue(both.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsTrue(both.Contains(BitMarkdownEditorCommand.Italic));
+    }
+
+    [TestMethod]
+    public void BoldAndItalicShouldFollowTheConfiguredEmphasisStyle()
+    {
+        var options = new BitMarkdownEditorCommandOptions
+        {
+            BoldStyle = BitMarkdownEditorEmphasisStyle.Underscore,
+            ItalicStyle = BitMarkdownEditorEmphasisStyle.Underscore
+        };
+
+        Assert.AreEqual("__hello__", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Bold, "hello", 0, 5, options).Text);
+        Assert.AreEqual("_hello_", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "hello", 0, 5, options).Text);
+    }
+
+    [TestMethod]
+    public void EmphasisShouldUnwrapInTheConfiguredStyle()
+    {
+        var options = new BitMarkdownEditorCommandOptions
+        {
+            BoldStyle = BitMarkdownEditorEmphasisStyle.Underscore,
+            ItalicStyle = BitMarkdownEditorEmphasisStyle.Underscore
+        };
+
+        Assert.AreEqual("hello", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Bold, "__hello__", 2, 7, options).Text);
+        Assert.AreEqual("hello", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "_hello_", 1, 6, options).Text);
+    }
+
+    [TestMethod]
+    public void UnderscoreItalicShouldNotUnwrapUnderscoreBold()
+    {
+        var options = new BitMarkdownEditorCommandOptions { ItalicStyle = BitMarkdownEditorEmphasisStyle.Underscore };
+
+        // The '_' either side of the selection belongs to the '__' pair, so this wraps rather
+        // than unwrapping - exactly the way a lone '*' inside '**' behaves.
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Italic, "__hello__", 2, 7, options);
+
+        Assert.AreEqual("___hello___", result.Text);
+    }
+
+    [TestMethod]
+    public void ListsShouldFollowTheConfiguredBulletStyle()
+    {
+        var options = new BitMarkdownEditorCommandOptions { BulletStyle = BitMarkdownEditorBulletStyle.Asterisk };
+
+        Assert.AreEqual("* one\n* two", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.UnorderedList, "one\ntwo", 0, 7, options).Text);
+        Assert.AreEqual("* [ ] one", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TaskList, "one", 0, 3, options).Text);
+
+        var plus = new BitMarkdownEditorCommandOptions { BulletStyle = BitMarkdownEditorBulletStyle.Plus };
+        Assert.AreEqual("+ one", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.UnorderedList, "one", 0, 3, plus).Text);
+    }
+
+    [TestMethod]
+    public void ListToggleShouldStillRemoveAnyBulletCharacter()
+    {
+        var options = new BitMarkdownEditorCommandOptions { BulletStyle = BitMarkdownEditorBulletStyle.Asterisk };
+
+        // The text was not necessarily written in the configured style, so toggling off has to
+        // recognise every bullet character rather than only the one it writes.
+        Assert.AreEqual("one", BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.UnorderedList, "- one", 2, 5, options).Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldStripBothEmphasisSpellings()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, "__very__ _plain_ **now** *here*", 0, 30);
+
+        Assert.AreEqual("very plain now here", result.Text);
+    }
+
+    [TestMethod]
+    public void ClearFormattingShouldLeaveUnderscoresInsideWordsAlone()
+    {
+        const string text = "call snake_case_name _now_";
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.ClearFormatting, text, 0, text.Length);
+
+        Assert.AreEqual("call snake_case_name now", result.Text);
+    }
+
+    [TestMethod]
+    public void DetectActiveFormatsShouldFollowTheConfiguredEmphasisStyle()
+    {
+        var options = new BitMarkdownEditorCommandOptions
+        {
+            BoldStyle = BitMarkdownEditorEmphasisStyle.Underscore,
+            ItalicStyle = BitMarkdownEditorEmphasisStyle.Underscore
+        };
+
+        var bold = BitMarkdownEditorCommands.DetectActiveFormats("a __strong__ word", 6, 6, options);
+        Assert.IsTrue(bold.Contains(BitMarkdownEditorCommand.Bold));
+        Assert.IsFalse(bold.Contains(BitMarkdownEditorCommand.Italic));
+
+        var italic = BitMarkdownEditorCommands.DetectActiveFormats("an _emphatic_ word", 6, 6, options);
+        Assert.IsTrue(italic.Contains(BitMarkdownEditorCommand.Italic));
+        Assert.IsFalse(italic.Contains(BitMarkdownEditorCommand.Bold));
+    }
+
+    private const string Table =
+        "| Name | Age |\n" +
+        "| ---- | --- |\n" +
+        "| Ann  | 30  |\n";
+
+    // The caret sits on "Ann" in the body row.
+    private static int TableCaret => Table.IndexOf("Ann");
+
+    [TestMethod]
+    public void TableCommandsShouldDoNothingOutsideATable()
+    {
+        foreach (var command in new[]
+        {
+            BitMarkdownEditorCommand.TableInsertRowAbove,
+            BitMarkdownEditorCommand.TableInsertRowBelow,
+            BitMarkdownEditorCommand.TableDeleteRow,
+            BitMarkdownEditorCommand.TableInsertColumnBefore,
+            BitMarkdownEditorCommand.TableInsertColumnAfter,
+            BitMarkdownEditorCommand.TableDeleteColumn,
+            BitMarkdownEditorCommand.TableAlignLeft,
+            BitMarkdownEditorCommand.TableAlignCenter,
+            BitMarkdownEditorCommand.TableAlignRight,
+        })
+        {
+            var result = BitMarkdownEditorCommands.Apply(command, "just a paragraph", 4, 4);
+
+            Assert.IsFalse(result.Handled, command.ToString());
+            Assert.AreEqual("just a paragraph", result.Text);
+        }
+    }
+
+    [TestMethod]
+    public void TableCommandsShouldIgnoreAPipeThatIsNotATable()
+    {
+        // No delimiter row below the first line, so this is prose that happens to carry pipes.
+        var text = "a | b\nc | d";
+
+        Assert.IsFalse(BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowBelow, text, 0, 0).Handled);
+    }
+
+    [TestMethod]
+    public void TableInsertRowBelowShouldAddAnEmptyRow()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowBelow, Table, TableCaret, TableCaret);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---- | --- |\n" +
+            "| Ann  | 30  |\n" +
+            "|      |     |\n", result.Text);
+        // The caret lands in the first cell of the new row, ready to type.
+        Assert.AreEqual(result.SelectionStart, result.SelectionEnd);
+        Assert.AreEqual("| Name | Age |\n| ---- | --- |\n| Ann  | 30  |\n| ".Length, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void TableInsertRowAboveShouldAddAnEmptyRowAboveTheCaretRow()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowAbove, Table, TableCaret, TableCaret);
+
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---- | --- |\n" +
+            "|      |     |\n" +
+            "| Ann  | 30  |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableInsertRowAboveShouldAddTheFirstBodyRowFromTheHeader()
+    {
+        // Nothing can go above the header, so it adds the row right below it instead.
+        var caret = Table.IndexOf("Name");
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowAbove, Table, caret, caret);
+
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---- | --- |\n" +
+            "|      |     |\n" +
+            "| Ann  | 30  |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableDeleteRowShouldRemoveTheCaretRow()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableDeleteRow, Table, TableCaret, TableCaret);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---- | --- |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableDeleteRowShouldRefuseToRemoveTheHeader()
+    {
+        var caret = Table.IndexOf("Name");
+
+        Assert.IsFalse(BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableDeleteRow, Table, caret, caret).Handled);
+    }
+
+    [TestMethod]
+    public void TableInsertColumnAfterShouldAddAColumnAndMoveTheCaretIntoItsHeader()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertColumnAfter, Table, TableCaret, TableCaret);
+
+        Assert.AreEqual(
+            "| Name |     | Age |\n" +
+            "| ---- | --- | --- |\n" +
+            "| Ann  |     | 30  |\n", result.Text);
+        Assert.AreEqual("| Name | ".Length, result.SelectionStart);
+    }
+
+    [TestMethod]
+    public void TableInsertColumnBeforeShouldAddAColumnInFrontOfTheCaretColumn()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertColumnBefore, Table, TableCaret, TableCaret);
+
+        Assert.AreEqual(
+            "|     | Name | Age |\n" +
+            "| --- | ---- | --- |\n" +
+            "|     | Ann  | 30  |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableDeleteColumnShouldRemoveTheCaretColumn()
+    {
+        var caret = Table.IndexOf("30");
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableDeleteColumn, Table, caret, caret);
+
+        Assert.AreEqual(
+            "| Name |\n" +
+            "| ---- |\n" +
+            "| Ann  |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableDeleteColumnShouldRefuseToRemoveTheLastOne()
+    {
+        var single = "| Name |\n| ---- |\n| Ann  |\n";
+        var caret = single.IndexOf("Ann");
+
+        Assert.IsFalse(BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableDeleteColumn, single, caret, caret).Handled);
+    }
+
+    [TestMethod]
+    public void TableAlignShouldRewriteOnlyTheCaretColumnsDelimiter()
+    {
+        var centered = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableAlignCenter, Table, TableCaret, TableCaret);
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| :--: | --- |\n" +
+            "| Ann  | 30  |\n", centered.Text);
+
+        var right = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableAlignRight, Table, TableCaret, TableCaret);
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---: | --- |\n" +
+            "| Ann  | 30  |\n", right.Text);
+
+        var left = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableAlignLeft, Table, TableCaret, TableCaret);
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| :--- | --- |\n" +
+            "| Ann  | 30  |\n", left.Text);
+    }
+
+    [TestMethod]
+    public void TableAlignShouldDoNothingWhenTheColumnAlreadyHasIt()
+    {
+        var aligned = "| Name | Age |\n| :--- | --- |\n| Ann  | 30  |\n";
+        var caret = aligned.IndexOf("Ann");
+
+        Assert.IsFalse(BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableAlignLeft, aligned, caret, caret).Handled);
+    }
+
+    [TestMethod]
+    public void TableEditsShouldKeepAnExistingAlignmentAndRealignTheSource()
+    {
+        // Ragged input, a centered second column, and a row that is short of a cell.
+        var ragged = "|Name|Age|\n|-|:-:|\n|Annabelle|\n";
+        var caret = ragged.IndexOf("Annabelle");
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowBelow, ragged, caret, caret);
+
+        Assert.AreEqual(
+            "| Name      | Age |\n" +
+            "| --------- | :-: |\n" +
+            "| Annabelle |     |\n" +
+            "|           |     |\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableCommandsShouldOnlyRewriteTheTableAroundTheCaret()
+    {
+        var document = "intro\n\n" + Table + "\noutro\n";
+        var caret = document.IndexOf("Ann");
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableDeleteRow, document, caret, caret);
+
+        Assert.AreEqual("intro\n\n| Name | Age |\n| ---- | --- |\n\noutro\n", result.Text);
+    }
+
+    [TestMethod]
+    public void TableCommandsShouldKeepAnEscapedPipeInsideACell()
+    {
+        var escaped = "| a \\| b | c |\n| ------ | - |\n| d      | e |\n";
+        var caret = escaped.IndexOf("d");
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableInsertRowBelow, escaped, caret, caret);
+
+        Assert.Contains("a \\| b", result.Text);
+        Assert.AreEqual(4, result.Text.Split('\n').Length - 1);
+    }
+
+    [TestMethod]
+    public void TableNextCellShouldSelectTheCellToTheRight()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableNextCell, Table, TableCaret, TableCaret);
+
+        Assert.IsTrue(result.Handled);
+        Assert.AreEqual(Table, result.Text);
+        // Selected, not merely reached, so typing replaces what is in the cell.
+        Assert.AreEqual("30", result.Text[result.SelectionStart..result.SelectionEnd]);
+    }
+
+    [TestMethod]
+    public void TableNextCellShouldWrapOntoTheNextRow()
+    {
+        var two = "| a | b |\n| - | - |\n| c | d |\n| e | f |\n";
+        var caret = two.IndexOf("d");
+
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableNextCell, two, caret, caret);
+
+        Assert.AreEqual("e", result.Text[result.SelectionStart..result.SelectionEnd]);
+    }
+
+    [TestMethod]
+    public void TableNextCellShouldAddARowPastTheLastCell()
+    {
+        var caret = Table.IndexOf("30");
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableNextCell, Table, caret, caret);
+
+        Assert.AreEqual(
+            "| Name | Age |\n" +
+            "| ---- | --- |\n" +
+            "| Ann  | 30  |\n" +
+            "|      |     |\n", result.Text);
+        Assert.AreEqual(result.SelectionStart, result.SelectionEnd);
+    }
+
+    [TestMethod]
+    public void TableNextCellShouldStepFromTheHeaderIntoTheFirstBodyRow()
+    {
+        var caret = Table.IndexOf("Age");
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TableNextCell, Table, caret, caret);
+
+        Assert.AreEqual("Ann", result.Text[result.SelectionStart..result.SelectionEnd]);
+    }
+
+    [TestMethod]
+    public void TablePreviousCellShouldWalkBack()
+    {
+        var caret = Table.IndexOf("30");
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TablePreviousCell, Table, caret, caret);
+
+        Assert.AreEqual("Ann", result.Text[result.SelectionStart..result.SelectionEnd]);
+    }
+
+    [TestMethod]
+    public void TablePreviousCellShouldDoNothingAtTheVeryFirstCell()
+    {
+        var caret = Table.IndexOf("Name");
+
+        Assert.IsFalse(BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.TablePreviousCell, Table, caret, caret).Handled);
+    }
+
+    [TestMethod]
+    public void IndentAndOutdentShouldWalkTheCellsInsideATable()
+    {
+        var forward = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, Table, TableCaret, TableCaret);
+        Assert.AreEqual("30", forward.Text[forward.SelectionStart..forward.SelectionEnd]);
+
+        var caret = Table.IndexOf("30");
+        var back = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Outdent, Table, caret, caret);
+        Assert.AreEqual("Ann", back.Text[back.SelectionStart..back.SelectionEnd]);
+    }
+
+    [TestMethod]
+    public void IndentShouldStillIndentOutsideATable()
+    {
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, "- item", 3, 3);
+
+        Assert.AreEqual("  - item", result.Text);
+    }
+
+    [TestMethod]
+    public void IndentShouldStillIndentASelectionSpanningATable()
+    {
+        // A real selection is a block operation, whatever it happens to cover.
+        var result = BitMarkdownEditorCommands.Apply(BitMarkdownEditorCommand.Indent, Table, 0, Table.Length);
+
+        Assert.Contains("  | Name | Age |", result.Text);
     }
 }

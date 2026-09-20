@@ -21,7 +21,8 @@ public class DevMcpConfigurationTests
         var text = await DevMcpTestUtils.CallText(client, "GetDeploymentInfo", [], TestContext.CancellationToken);
         var json = JsonNode.Parse(text)!;
 
-        Assert.AreEqual("Development", json["hosting"]!["environmentName"]!.GetValue<string>());
+        // Everything read from the answering process itself lives under Instance, not Hosting.
+        Assert.AreEqual("Development", json["instance"]!["environmentName"]!.GetValue<string>());
         // The issuer is the origin the caller reached, which is what every token minted there carries.
         Assert.AreEqual(server.WebAppServerAddress.ToString().TrimEnd('/'), json["identity"]!["issuer"]!.GetValue<string>());
         Assert.IsTrue(json["identity"]!["requireConfirmedAccount"]!.GetValue<bool>());

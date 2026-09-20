@@ -103,15 +103,28 @@ dotnet test --filter "TestCategory=Stress"
 
 ### Run with Specific Browser
 
+The browser comes from the `BROWSER` environment variable (`chromium` by default); the Microsoft.Testing.Platform
+runner does not pass runsettings through, so there is no `.runsettings` to edit.
+
 ```bash
-dotnet test -- Playwright.BrowserName=firefox
-dotnet test -- Playwright.BrowserName=webkit
+BROWSER=firefox dotnet test
+BROWSER=webkit dotnet test
 ```
 
 ### Run in Headed Mode (for debugging)
 
 ```bash
-dotnet test -- Playwright.LaunchOptions.Headless=false
+HEADED=1 dotnet test
+```
+
+### Run the Browser Regression Tests
+
+Classes marked `[RequiresBrowser]` (see `RequiresBrowserAttribute.cs`) need a test host and installed Playwright
+browsers, so they are skipped unless `RUN_BROWSER_TESTS=1` is set. They stay discoverable, so a name filter still
+selects them:
+
+```bash
+RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitTextFieldBrowserTests
 ```
 
 ## Performance Thresholds
@@ -143,7 +156,7 @@ Run tests with Chromium browser for memory measurements.
 
 ### Tests Timeout
 
-1. Increase timeout in `.runsettings`
+1. Raise `PerformanceTestBase.DefaultTimeout`, or pass a longer `Timeout` to the individual wait call
 2. Check if the test host is starting properly
 3. Reduce component count for initial debugging
 

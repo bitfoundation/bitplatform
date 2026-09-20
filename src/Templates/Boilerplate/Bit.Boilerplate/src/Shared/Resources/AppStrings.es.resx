@@ -1332,7 +1332,122 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Canceled" xml:space="preserve">
     <value>Cancelado</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Ninguna aplicación de este dispositivo puede abrir enlaces {0}.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Llamada de voz</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Iniciar llamada de voz</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Finalizar llamada de voz</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Volver a la llamada de voz</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Tiempo restante de la llamada de voz</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>La llamada de voz ha finalizado.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>No se pudo enviar el mensaje a la llamada.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>El asistente está ocupado. Inténtalo de nuevo en {0} segundos.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>El asistente no pudo responder. Inténtalo de nuevo.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Deja tus datos de contacto y un operador se pondrá en contacto contigo.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Resumen de la conversación</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Sesión iniciada como</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Tu solicitud se envió correctamente. Un operador se pondrá en contacto contigo pronto.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Qué pasará</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Esperando tu respuesta</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>¿Borrar los archivos de la aplicación en este dispositivo?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Empezar de cero soluciona la mayoría de los problemas causados por datos locales dañados.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>Se cerrará tu sesión</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Se eliminará esta conversación</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>La aplicación se reiniciará</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>La llamada de voz finalizará</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Borrar archivos</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Ahora no</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Borrando los archivos de la aplicación</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>Conservaste los archivos de la aplicación.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>No se borró nada: la solicitud no obtuvo respuesta.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>¿Aprobar esto?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Aprobar</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Rechazado.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>La solicitud no obtuvo respuesta.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Mejor opción</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>También encajan bien</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Preguntar</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Cuéntame más sobre {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panel de chat con IA</value>
   </data>
@@ -1965,6 +2080,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>Leer información de diagnóstico de este despliegue.</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Leer el informe detallado de estado de este despliegue, incluidos los detalles de error de todo lo que esté fallando.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Leer el informe de estado.</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>Aplicación autorizada</value>
   </data>
@@ -1973,6 +2094,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>Aplicaciones autorizadas</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Operaciones</value>
   </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>Aplicaciones externas que sus usuarios han autorizado mediante OAuth.</value>

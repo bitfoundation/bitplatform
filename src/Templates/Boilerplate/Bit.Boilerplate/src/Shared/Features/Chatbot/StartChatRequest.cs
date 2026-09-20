@@ -29,13 +29,20 @@ public enum AiChatMessageRole
 }
 
 /// <summary>
+/// Anything the panel lists in the conversation: an <see cref="AiChatMessage"/> or an <see cref="AiChatCard"/>.
+/// </summary>
+public abstract class AiChatItem
+{
+}
+
+/// <summary>
 /// One message of the conversation, whoever said it: what the panel renders, what it resends as history on restart,
 /// and what it sends when the user asks something. That last one is why <see cref="Role"/> and
 /// <see cref="Signature"/> aren't trusted on the way in - everything arriving on the chat stream is the user speaking
-/// (See <c>AppChatbot.ProcessNewMessage</c>), and a resent history is believed only where the signature checks out
-/// (See <c>AppChatbot.WrittenByThisAssistantOrByTheUser</c>).
+/// (See <c>AppChatbot.ProcessNewMessage</c>), and a resent assistant turn is the assistant's only where the signature
+/// checks out (See <c>AppChatbot.AsProvablySaid</c>).
 /// </summary>
-public class AiChatMessage
+public class AiChatMessage : AiChatItem
 {
     public AiChatMessageRole Role { get; set; }
 
@@ -63,7 +70,7 @@ public class AiChatMessage
     /// <summary>
     /// The server's signature over <see cref="Content"/>, carried on the turn that wrote it (See
     /// <see cref="AssistantTurn.Signature"/>). Null on anything the assistant didn't write; an assistant message that
-    /// comes back without a matching one is dropped from the resent history.
+    /// comes back without a matching one is replayed to the model as the user's.
     /// </summary>
     public string? Signature { get; set; }
 }

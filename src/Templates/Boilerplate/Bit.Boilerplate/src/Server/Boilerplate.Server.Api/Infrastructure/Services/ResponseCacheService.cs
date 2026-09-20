@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using Hangfire.Server;
 using Microsoft.AspNetCore.OutputCaching;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
@@ -25,8 +26,8 @@ public partial class ResponseCacheService
     //#if (cloudflare == true)
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
     [AutoInject] private JsonSerializerOptions jsonSerializerOptions = default!;
-    //#else
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private IBackgroundJobClientV2 backgroundJobClient = default!;
+    [AutoInject] private ApiServerExceptionHandler serverExceptionHandler = default!;
     //#endif
 
     /// <summary>For responses tagged by their path, which is the default.</summary>
@@ -48,16 +49,10 @@ public partial class ResponseCacheService
             await outputCacheStore.EvictByTagAsync(tag, default);
         }
         //#if (cloudflare == true)
-        await PurgeCloudflareCache(tags);
-        //#else
-        // If you're using CDN like GCore or others, make sure to purge the Edge Cache of your CDN.
-        // The Cloudflare Cache API is already integrated into the Boilerplate, but for other CDNs,
-        // you'll need to implement the caching logic yourself. AppResponseCachePolicy already stamps every edge
-        // cacheable response with the tag to purge it by, under Cloudflare's `Cache-Tag` header name; other CDNs read
-        // the same idea from a different header (Fastly's `Surrogate-Key`, Akamai's `Edge-Cache-Tag`, ...).
-        if (httpContextAccessor.HttpContext!.Request.IsFromCDN())
+        if (serverApiSettings.Cloudflare?.Configured is true)
         {
-            throw new NotImplementedException();
+            // A failed purge must not fail a change that is already saved; the job retries it instead.
+            backgroundJobClient.Enqueue<ResponseCacheService>(x => x.PurgeCloudflareCache(tags));
         }
         //#endif
     }
@@ -104,12 +99,32 @@ public partial class ResponseCacheService
     /// which a purge by URL could do, since the edge keeps a separate entry per full URL.
     /// Purge by tag is available on all Cloudflare plans, including the free one.
     /// </summary>
-    private async Task PurgeCloudflareCache(string[] tags)
+    [AutomaticRetry(Attempts = 5, DelaysInSeconds = [15, 60, 180, 600, 1800] /*Outlasts Cloudflare's purge rate limit; a purge hours later is pointless.*/)]
+    public async Task PurgeCloudflareCache(string[] tags,
+        PerformContext context = null!,
+        CancellationToken cancellationToken = default)
     {
-        if (serverApiSettings?.Cloudflare?.Configured is not true)
-            return;
+        try
+        {
+            await PurgeCloudflareTags(tags, cancellationToken);
+        }
+        catch (Exception exp)
+        {
+            serverExceptionHandler.Handle(exp, new()
+            {
+                { "Tags", string.Join(", ", tags) },
+                { "JobId", context.BackgroundJob.Id }
+            });
+            throw; // To retry the job
+        }
+    }
 
-        var apiToken = serverApiSettings.Cloudflare.ApiToken;
+    /// <summary>
+    /// Throws unless every zone confirms the purge. Also used by <see cref="CloudflareHealthCheck"/>.
+    /// </summary>
+    public virtual async Task PurgeCloudflareTags(string[] tags, CancellationToken cancellationToken)
+    {
+        var apiToken = serverApiSettings.Cloudflare!.ApiToken;
 
         foreach (var zoneId in serverApiSettings.Cloudflare.ZoneIds)
         {
@@ -119,15 +134,15 @@ public partial class ResponseCacheService
                 using var request = new HttpRequestMessage(HttpMethod.Post, $"{zoneId}/purge_cache");
                 request.Headers.Add("Authorization", $"Bearer {apiToken}");
                 request.Content = JsonContent.Create(new { tags = tagsChunk });
-                using var response = await httpClient.SendAsync(request);
+                using var response = await httpClient.SendAsync(request, cancellationToken);
 
                 // The status code alone does not say whether the purge happened: Cloudflare reports that in the body's
                 // `success` flag and gives the reason in `errors`. A purge that quietly did nothing is the worst
                 // outcome here, since the stale page then sits on the edge until it expires on its own.
                 if (response.IsSuccessStatusCode is false)
-                    throw new InvalidOperationException($"Cloudflare cache purge of zone '{zoneId}' failed with {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+                    throw new InvalidOperationException($"Cloudflare cache purge of zone '{zoneId}' failed with {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync(cancellationToken)}");
 
-                var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<CloudflarePurgeResponse>());
+                var result = await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<CloudflarePurgeResponse>(), cancellationToken);
 
                 if (result?.Success is not true)
                 {

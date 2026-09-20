@@ -55,7 +55,9 @@
 
 <h1>Butil E2E</h1>
 
-<div data-testid="status" id="status">@_status</div>
+@* data-platform and data-renderer say where this page is running, so a suite driving one of the harness
+   hosts can prove it is exercising the render mode it asked for rather than whichever one answered. *@
+<div data-testid="status" id="status" data-platform="@Platform" data-renderer="@RendererName">@_status</div>
 
 <section>
     <h3>Storage</h3>
@@ -112,6 +114,8 @@
     <h3>Document</h3>
     <button id="doc-title" @onclick="DocSetTitle">Set document.title</button>
     <button id="doc-meta" @onclick="DocMeta">visibility/charset/url</button>
+    <button id="doc-dir" @onclick="DocDir">dir + designMode</button>
+    <button id="doc-dir-ltr" @onclick="DocDirLtr">dir ltr</button>
 </section>
 
 <section>
@@ -256,7 +260,8 @@
 
 <section>
     @* The echo endpoint's URL arrives as ?ws=...- the tests host it themselves, on a port chosen
-       at run time, because this sample is a standalone WebAssembly host with no server side. *@
+       at run time, because the standalone WebAssembly sample has no server side to host it and every
+       host this page runs in has to talk to the same endpoint. *@
     <h3>WebSocket</h3>
     <button id="ws-open" @onclick="WebSocketOpen">open + negotiate</button>
     <button id="ws-text" @onclick="WebSocketText">send text</button>
@@ -278,6 +283,8 @@
         <div style="height:20rem;">scroll space</div>
     </div>
     <div @ref="_elementHidden" id="el-hidden" style="display:none;">hidden</div>
+    <div @ref="_elementHiddenState" id="el-hidden-state">hidden states</div>
+    <div @ref="_elementScrollBoth" id="el-scroll-both" style="width:6rem;height:6rem;overflow:scroll;"><div style="width:40rem;height:40rem;"></div></div>
     <div @ref="_elementContent" id="el-content-box">original</div>
     <div @ref="_elementPopover" id="el-popover-box">popover body</div>
     <button @ref="_elementButton" id="el-synthetic" @onclick="() => _syntheticClicks++">synthetic target</button>
@@ -294,6 +301,8 @@
     <button id="el-ns" @onclick="ElementNamespacedAttributes">namespaced attributes</button>
     <button id="el-query" @onclick="ElementQueries">query helpers</button>
     <button id="el-scroll" @onclick="ElementScrollOffsets">scroll offsets</button>
+    <button id="el-scroll-axis" @onclick="ElementScrollOneAxis">scroll one axis</button>
+    <button id="el-hidden-states" @onclick="ElementHiddenStates">hidden states</button>
     <button id="el-rects" @onclick="ElementClientRects">getClientRects</button>
     <button id="el-popover" @onclick="ElementPopoverState">popover</button>
     <button id="el-identity" @onclick="ElementIdentity">identity + tree facts</button>
@@ -359,13 +368,32 @@
 @code {
     private const string TestCookieName = "butil_e2e";
     private const string TestCookieValue = "v=1; b=hello world & again";
-    private string _status = "ready";
+    // "ready" only after the first interactive render: a prerendered copy of this page is on screen before
+    // its event handlers are, and a click in between is silently lost.
+    private string _status = "starting";
 
     private void Set(string value) { _status = value; StateHasChanged(); }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) Set("ready");
+    }
+
+    /// <summary>"browser" inside the WebAssembly runtime, "dotnet" in a Server circuit or a BlazorWebView.</summary>
+    private static string Platform => OperatingSystem.IsBrowser() ? "browser" : "dotnet";
+
+#if NET9_0_OR_GREATER
+    private string RendererName => RendererInfo.Name;
+#else
+    // RendererInfo arrived in .NET 9; data-platform is what tells the runtimes apart on net8.0.
+    private string RendererName => "unknown";
+#endif
 
     private ElementReference _elementBox;
     private ElementReference _elementContent;
     private ElementReference _elementHidden;
+    private ElementReference _elementHiddenState;
+    private ElementReference _elementScrollBoth;
     private ElementReference _elementPopover;
     private ElementReference _elementButton;
     private ElementReference _elementInput;
@@ -605,6 +633,25 @@
         var charset = await document.GetCharacterSet();
         var url = await document.GetUrl();
         Set($"doc:meta:{visibility}/{charset.Length > 0}/{url.Contains("/e2e")}");
+    }
+    private async Task DocDir()
+    {
+        await document.SetDir(DocumentDir.Auto);
+        var auto = await document.GetDir();
+        // The dir stays rtl so the test can read the attribute the browser was actually handed.
+        await document.SetDir(DocumentDir.Rtl);
+        var dir = await document.GetDir();
+        await document.SetDesignMode(DesignMode.On);
+        var design = await document.GetDesignMode();
+        await document.SetDesignMode(DesignMode.Off);
+        Set($"doc:dir:{auto}/{dir}/{design}");
+    }
+    private async Task DocDirLtr()
+    {
+        // Separate from DocDir so the test can read the raw attribute of each keyword it writes.
+        await document.SetDir(DocumentDir.Ltr);
+        var dir = await document.GetDir();
+        Set($"doc:dir-ltr:{dir}");
     }
     private async Task LocationHref()
     {
@@ -1217,22 +1264,40 @@
         if (subscription is null) { Set("sched:idle:null"); return; }
 
         var deadline = await AwaitCallback(fired);
-        // An idle page reports slack rather than a timeout.
-        Set(deadline is null ? "sched:idle:(timed out)" : $"sched:idle:{deadline.DidTimeout}/{deadline.TimeRemaining > 0}");
+        // An idle page reports slack rather than a timeout. The slack itself is only bounded, not required
+        // to be positive: it is read when the callback starts, and on a loaded machine an idle period can
+        // already be used up by then - a Server circuit, where the callback also waits on a round trip,
+        // makes that routine. What would be wrong is a reading outside what the browser ever reports.
+        Set(deadline is null ? "sched:idle:(timed out)" : $"sched:idle:{deadline.DidTimeout}/{deadline.TimeRemaining is >= 0 and <= 50}");
     }
 
     private async Task SchedulerIdleTimeout()
     {
         if (await scheduler.IsIdleCallbackSupported() is false) { Set("sched:idle-timeout:unsupported"); return; }
 
+        // Busy on purpose: the page never goes idle, so the callback can only run because its timeout
+        // expired - which is what DidTimeout reports. The browser's main thread is what has to be busy,
+        // so the work runs there (a loop in .NET only blocks it under WebAssembly), and it starts BEFORE
+        // the callback is requested: in a Server circuit the request and anything after it are separate
+        // round trips, and the page is genuinely idle in the gap between them. Back-to-back short tasks
+        // rather than one long one, so the request itself - and the timeout firing - still get a turn.
+        // A verbatim string, not a raw one: the Razor tokenizer does not understand """ and loses the code block.
+        await js.InvokeVoidAsync("eval", @"
+            (() => {
+                const end = performance.now() + 1500;
+                const channel = new MessageChannel();
+                channel.port1.onmessage = () => {
+                    const until = performance.now() + 40;
+                    while (performance.now() < until) { }
+                    if (performance.now() < end) channel.port2.postMessage(0); else channel.port1.close();
+                };
+                channel.port2.postMessage(0);
+            })()
+            ");
+
         var fired = new TaskCompletionSource<IdleDeadline>(TaskCreationOptions.RunContinuationsAsynchronously);
         var subscription = await scheduler.RequestIdleCallback(deadline => fired.TrySetResult(deadline), TimeSpan.FromMilliseconds(200));
         if (subscription is null) { Set("sched:idle-timeout:null"); return; }
-
-        // Blocking on purpose: the page never goes idle, so the callback can only run because its
-        // timeout expired - which is what DidTimeout reports.
-        var until = DateTime.UtcNow.AddMilliseconds(700);
-        while (DateTime.UtcNow < until) { }
 
         var deadline = await AwaitCallback(fired);
         Set(deadline is null ? "sched:idle-timeout:(timed out)" : $"sched:idle-timeout:{deadline.DidTimeout}");
@@ -1992,6 +2057,26 @@
         var max = await _elementBox.GetScrollTopMax();
         await _elementBox.SetScrollTop(0);
         Set($"el:scroll:{top > 0}/{max > 0}");
+    }
+    private async Task ElementScrollOneAxis()
+    {
+        // Only Top is set, so the horizontal offset has to stay where it was rather than snap to 0.
+        await _elementScrollBoth.ScrollTo(50, 50);
+        await _elementScrollBoth.ScrollTo(new ScrollOptions { Top = 100 });
+        var left = await _elementScrollBoth.GetScrollLeft();
+        var top = await _elementScrollBoth.GetScrollTop();
+        await _elementScrollBoth.ScrollTo(0, 0);
+        Set($"el:scroll-axis:{left}/{top}");
+    }
+    private async Task ElementHiddenStates()
+    {
+        await _elementHiddenState.SetHidden(Hidden.True);
+        var hidden = await _elementHiddenState.GetHidden();
+        await _elementHiddenState.SetHidden(Hidden.UntilFound);
+        var untilFound = await _elementHiddenState.GetHidden();
+        await _elementHiddenState.SetHidden(Hidden.False);
+        var shown = await _elementHiddenState.GetHidden();
+        Set($"el:hidden:{hidden}/{untilFound}/{shown}");
     }
     private async Task ElementClientRects()
     {

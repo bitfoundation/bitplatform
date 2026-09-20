@@ -1,0 +1,9 @@
+﻿@using Bit.Brouter
+
+@* Host for the [BrouterRemountOnParameterChange] tests: the attributed pages are discovered from
+   this assembly, and also hand-declared as Component routes - once plainly and once with an explicit
+   RemountOnParameterChange that must beat the attribute. *@
+<Brouter AppAssembly="@typeof(RemountAttributeHost).Assembly">
+    <Broute Path="/rmattrhand/{id:int}" Component="@typeof(RemountAttributePage)" />
+    <Broute Path="/rmattrexplicit/{id:int}" Component="@typeof(RemountAttributePage)" RemountOnParameterChange="false" />
+</Brouter>

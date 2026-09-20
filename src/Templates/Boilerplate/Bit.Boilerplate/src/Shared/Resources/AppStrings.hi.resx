@@ -1332,7 +1332,122 @@
   <data name="Canceled" xml:space="preserve">
     <value>रद्द</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>इस डिवाइस पर कोई भी ऐप {0} लिंक नहीं खोल सकता।</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल शुरू करें</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त करें</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल पर वापस जाएँ</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>वॉइस कॉल का शेष समय</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त हो गई।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>संदेश कॉल में नहीं भेजा जा सका।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>सहायक व्यस्त है। {0} सेकंड में फिर से प्रयास करें।</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>सहायक उत्तर नहीं दे सका। फिर से प्रयास करें।</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>अपनी संपर्क जानकारी छोड़ें, एक सहायता प्रतिनिधि आपसे संपर्क करेगा।</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>बातचीत का सारांश</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>इस रूप में साइन इन किया गया</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>आपका अनुरोध सफलतापूर्वक भेज दिया गया। एक सहायता प्रतिनिधि जल्द ही आपसे संपर्क करेगा।</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>क्या होगा</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>आपके उत्तर की प्रतीक्षा है</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>क्या इस डिवाइस पर ऐप की फ़ाइलें साफ़ करें?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>नए सिरे से शुरू करने से खराब स्थानीय डेटा के कारण होने वाली अधिकांश समस्याएँ ठीक हो जाती हैं।</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>आप साइन आउट हो जाएँगे</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>यह बातचीत हटा दी जाएगी</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>ऐप फिर से शुरू होगा</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>वॉइस कॉल समाप्त हो जाएगी</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>फ़ाइलें साफ़ करें</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>अभी नहीं</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>ऐप की फ़ाइलें साफ़ की जा रही हैं</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>आपने ऐप की फ़ाइलें रखीं।</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>कुछ भी साफ़ नहीं किया गया: अनुरोध का उत्तर नहीं मिला।</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>क्या इसे स्वीकृत करें?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>स्वीकृत करें</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>स्वीकृत</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>अस्वीकार किया गया।</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>अनुरोध का उत्तर नहीं मिला।</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>सबसे उपयुक्त</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>ये भी उपयुक्त हैं</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>पूछें</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>मुझे {0} के बारे में और बताएँ</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>एआई चैट पैनल</value>
   </data>
@@ -1965,6 +2080,12 @@
     <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
     <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
   </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>इस डिप्लॉयमेंट की विस्तृत हेल्थ रिपोर्ट पढ़ना, जिसमें विफल हो रही हर चीज़ के एरर विवरण शामिल हैं।</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>हेल्थ रिपोर्ट पढ़ना।</value>
+  </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
   </data>
@@ -1973,6 +2094,9 @@
   </data>
     <data name="OAuthClientsPageTitle" xml:space="preserve">
     <value>अधिकृत एप्लिकेशन</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>संचालन</value>
   </data>
     <data name="OAuthClientsSubtitle" xml:space="preserve">
     <value>बाहरी एप्लिकेशन जिन्हें आपके उपयोगकर्ताओं ने OAuth के ज़रिए अनुमति दी है।</value>

@@ -49,6 +49,18 @@ public static class SpokenAudio
     }
 
     /// <summary>
+    /// How long the recording plays for, from the one format this class writes. A caller that keeps the microphone
+    /// open past it is recording silence - or, where the fake device loops the file, the sentence a second time.
+    /// </summary>
+    public static TimeSpan DurationOf(string wavFile)
+    {
+        const int headerBytes = 44;
+        const int bytesPerSecond = 16000 * 2; // 16 kHz, mono, 16-bit.
+
+        return TimeSpan.FromSeconds(Math.Max(0, new FileInfo(wavFile).Length - headerBytes) / (double)bytesPerSecond);
+    }
+
+    /// <summary>
     /// The path and the text are arguments rather than being written into the script, so nothing the caller passes
     /// can be read as PowerShell.
     /// </summary>

@@ -22,7 +22,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
-    /// Keeps the disabled action button focusable by not forcing a negative tabindex when <see cref="BitComponentBase.IsEnabled"/> is false.
+    /// Keeps the disabled action button focusable and discoverable by assistive technologies.
+    /// When enabled, the disabled state is conveyed using the <c>aria-disabled</c> attribute instead of the
+    /// native <c>disabled</c> attribute, so the button remains in the tab order while its action is suppressed.
     /// </summary>
     public bool? AllowDisabledFocus { get; set; }
 
@@ -35,6 +37,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     public bool? AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, the action button automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    public bool? AutoFocus { get; set; }
 
     /// <summary>
     /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
@@ -52,7 +59,8 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the button that applies to the icon and text of the action button.
+    /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
+    /// foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.
     /// </summary>
     public BitColor? Color { get; set; }
 
@@ -63,7 +71,15 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? Download { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
+    /// The id of the form element that the action button is associated with (rendered as the <c>form</c> attribute).
+    /// Allows a submit/reset button to be placed outside of its form element.
+    /// </summary>
+    public string? FormId { get; set; }
+
+    /// <summary>
+    /// Stretches the action button across the full available width. The icon and the content stay next to each other
+    /// with <see cref="BitPlacement.Start"/>; <see cref="BitPlacement.End"/> reverses the inner wrapper, so the
+    /// growing content pushes them to the opposite edges.
     /// </summary>
     public bool? FullWidth { get; set; }
 
@@ -119,6 +135,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
+    /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    public string? IconUrl { get; set; }
+
+    /// <summary>
     /// Determines whether the action button is in loading mode or not.
     /// </summary>
     public bool? IsLoading { get; set; }
@@ -132,6 +153,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// The text to show next to the spinner while the action button is in the loading state, replacing the button body.
     /// </summary>
     public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// Keeps the content of the action button on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    public bool? NoWrap { get; set; }
 
     /// <summary>
     /// Enables re-clicking the action button while it is in the loading state.
@@ -187,7 +213,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? Title { get; set; }
 
     /// <summary>
-    /// Adds an underline to the action button text, useful for link-style buttons.
+    /// Underlines the text of the action button, which thickens on hover, for the link-style use inside running text.
     /// </summary>
     public bool? Underlined { get; set; }
 
@@ -223,6 +249,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (AriaHidden.HasValue && bitActionButton.HasNotBeenSet(nameof(AriaHidden)))
         {
             bitActionButton.AriaHidden = AriaHidden.Value;
+        }
+
+        if (AutoFocus.HasValue && bitActionButton.HasNotBeenSet(nameof(AutoFocus)))
+        {
+            bitActionButton.AutoFocus = AutoFocus.Value;
         }
 
         if (AutoLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(AutoLoading)))
@@ -261,6 +292,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.Download = Download;
         }
 
+        if (FormId.HasValue() && bitActionButton.HasNotBeenSet(nameof(FormId)))
+        {
+            bitActionButton.FormId = FormId;
+        }
+
         bool hrefWasSet = false;
         bool relWasSet = false;
         bool targetWasSet = false;
@@ -285,6 +321,8 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (IconOnly.HasValue && bitActionButton.HasNotBeenSet(nameof(IconOnly)))
         {
             bitActionButton.IconOnly = IconOnly.Value;
+
+            bitActionButton.ClassBuilder.Reset();
         }
 
         if (IconPlacement.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPlacement)))
@@ -292,6 +330,11 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.IconPlacement = IconPlacement.Value;
 
             bitActionButton.ClassBuilder.Reset();
+        }
+
+        if (IconUrl.HasValue() && bitActionButton.HasNotBeenSet(nameof(IconUrl)))
+        {
+            bitActionButton.IconUrl = IconUrl;
         }
 
         if (IsLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(IsLoading)))
@@ -309,6 +352,13 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
         if (LoadingLabel.HasValue() && bitActionButton.HasNotBeenSet(nameof(LoadingLabel)))
         {
             bitActionButton.LoadingLabel = LoadingLabel;
+        }
+
+        if (NoWrap.HasValue && bitActionButton.HasNotBeenSet(nameof(NoWrap)))
+        {
+            bitActionButton.NoWrap = NoWrap.Value;
+
+            bitActionButton.ClassBuilder.Reset();
         }
 
         if (Reclickable.HasValue && bitActionButton.HasNotBeenSet(nameof(Reclickable)))

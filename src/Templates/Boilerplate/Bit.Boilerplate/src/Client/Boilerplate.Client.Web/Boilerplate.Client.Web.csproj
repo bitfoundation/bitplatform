@@ -32,6 +32,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
         <PackageReference Include="Bit.Bswup" />
         <!--/+:msbuild-conditional:noEmit -->
+        <PackageReference Condition=" '$(offlineDb)' != 'true' " Include="Bit.Minifier" PrivateAssets="all" />
         <PackageReference Condition=" '$(sentry)' == 'true' OR '$(sentry)' == '' " Include="Sentry.Extensions.Logging" />
         <!--/-:msbuild-conditional:noEmit -->
     </ItemGroup>

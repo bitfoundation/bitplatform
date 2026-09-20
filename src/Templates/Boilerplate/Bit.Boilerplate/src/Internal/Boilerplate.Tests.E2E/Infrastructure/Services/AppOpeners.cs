@@ -24,13 +24,7 @@ public sealed class WindowsAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
-        var windowsAppId = app switch
-        {
-            App.Todo => DeployedApps.TodoWindowsAppId,
-            App.AdminPanel => DeployedApps.AdminPanelWindowsAppId,
-            App.Sales => DeployedApps.SalesWindowsAppId,
-            _ => null,
-        };
+        var windowsAppId = DeployedApps.WindowsAppIdOf(app);
 
         if (windowsAppId is null)
             return null;
@@ -47,12 +41,7 @@ public sealed class AndroidAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
     {
-        var applicationId = app switch
-        {
-            App.Todo => DeployedApps.TodoAndroidAppId,
-            App.AdminPanel => DeployedApps.AdminPanelAndroidAppId,
-            _ => null,
-        };
+        var applicationId = DeployedApps.AndroidAppIdOf(app);
 
         if (applicationId is null)
             return null;

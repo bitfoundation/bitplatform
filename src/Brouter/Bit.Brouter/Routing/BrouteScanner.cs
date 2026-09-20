@@ -15,6 +15,10 @@ internal static class BrouteScanner
     /// <summary>A single route discovered from a <c>[Route]</c> attribute on a routable component.</summary>
     internal readonly record struct DiscoveredRoute(
         string Template,
+        // [param:] as well as [property:]: a positional record copies the constructor argument into the
+        // property's backing field, and the trimmer requires the value stored there to carry the same
+        // annotation (IL2069 otherwise).
+        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
         [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type ComponentType);
 
     /// <summary>

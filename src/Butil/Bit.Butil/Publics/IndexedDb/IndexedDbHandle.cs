@@ -341,7 +341,9 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// <br/>
     /// During prerender/SSR (no JS runtime) this returns an empty array without writing anything.
     /// </remarks>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbOperation))]
+    // What System.Text.Json reads, not All: All also keeps the RUC Put<T>/Add<T> factories, and preserving them
+    // from here raises IL2026 against this method in every trimmed app that calls it.
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(IndexedDbOperation))]
     public ValueTask<JsonElement[]> Transact(IndexedDbOperation[] operations,
         IndexedDbTransactionMode mode = IndexedDbTransactionMode.ReadWrite,
         IndexedDbDurability durability = IndexedDbDurability.Default)

@@ -92,20 +92,6 @@
                            OnClick="WrapHandled(OpenDevTools)"
                            IconName="@BitIconName.DeveloperTools" />
 
-                @*#if (api == "Integrated")*@
-                @if (AppPlatform.IsBlazorHybrid is false)
-                {
-                    <AuthorizeView Policy="@AppFeatures.System.Jobs_Manage">
-                        <BitButton IconOnly
-                                   AutoLoading
-                                   Title="Open Hangfire dashboard"
-                                   Color="BitColor.SecondaryBackground"
-                                   IconName="@BitIconName.RecurringTask"
-                                   OnClick="WrapHandled(OpenHangfireDashboard)" />
-                    </AuthorizeView>
-                }
-                @*#endif*@
-
                 @if (AppPlatform.IsBrowser is false)
                 {
                     <BitButton IconOnly

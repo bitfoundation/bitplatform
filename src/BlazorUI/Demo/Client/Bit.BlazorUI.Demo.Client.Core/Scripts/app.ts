@@ -1,4 +1,5 @@
 ﻿declare var Prism: any;
+declare var katex: any;
 
 function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
@@ -179,13 +180,26 @@ function registerSideRailScrollSpy(id: string, dotnetObj: any, activeItemMethodN
         listener();
     };
 
+    // A scroll is not what swaps the sections, though: clicking a pivot tab replaces them while the
+    // page stays exactly where it was, so a check that only ran on scroll would leave the rail listing
+    // the previous tab until the reader next moved. Watching the document for removals closes that
+    // gap. The callback only asks whether a measured section has left - no layout is read - so the
+    // mutations a live chart makes every second cost next to nothing, and the rAF gate is shared.
+    const observer = new MutationObserver(() => {
+        if (sections.some(section => section.element.isConnected === false)) {
+            listener();
+        }
+    });
+
     sideRailScrollSpies[id] = () => {
         window.removeEventListener('scroll', listener, true);
         window.removeEventListener('resize', resizeListener);
+        observer.disconnect();
         if (frame !== 0) cancelAnimationFrame(frame);
     };
     window.addEventListener('scroll', listener, true);
     window.addEventListener('resize', resizeListener);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     measure();
     listener();
@@ -213,6 +227,56 @@ function highlightSnippet(id: string | undefined) {
 
 function getInnerText(element: HTMLElement) {
     return element?.innerText;
+}
+
+// The KaTeX build the Markdown viewer's Mathematics example typesets with. It is fetched the first
+// time that example is shown, so no other page pays for it.
+const katexBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.6/';
+let katexLoading: Promise<void> | undefined;
+
+function loadKatex() {
+    katexLoading ??= new Promise<void>((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = katexBaseUrl + 'katex.min.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = katexBaseUrl + 'katex.min.js';
+        script.onload = () => resolve();
+        // Forgotten on failure, so a later call tries again instead of inheriting the rejection.
+        script.onerror = () => {
+            katexLoading = undefined;
+            reject(new Error('KaTeX could not be loaded.'));
+        };
+        document.head.appendChild(script);
+    });
+
+    return katexLoading;
+}
+
+// BitMarkdownViewer leaves math as the TeX it is, delimiters included, in .math-inline and
+// .math-display elements. The class is what is read rather than the delimiters: KaTeX's auto-render
+// does not take a single $ as one by default, and the viewer has already told math from prices. An
+// element is typeset once and marked, so calling this again only touches math drawn since.
+async function typesetMath(element: HTMLElement | null) {
+    if (element == null) return;
+
+    try {
+        await loadKatex();
+    } catch {
+        // With no typesetter the TeX still reads as itself, which is the viewer's own fallback.
+        return;
+    }
+
+    element.querySelectorAll<HTMLElement>('.math:not([data-typeset])').forEach(math => {
+        const display = math.classList.contains('math-display');
+        const delimiter = display ? 2 : 1;
+        const tex = (math.textContent ?? '').slice(delimiter, -delimiter);
+
+        katex.render(tex, math, { displayMode: display, throwOnError: false });
+        math.dataset.typeset = '';
+    });
 }
 
 const windowResizeListeners: { [key: string]: () => void } = {};
@@ -419,8 +483,9 @@ declare namespace BitBlazorUI {
 }
 
 // Theme-dependent styling in the app keys off the bit-theme attribute the library script keeps on
-// the document element, so this callback only has to maintain what CSS cannot reach: the browser
-// chrome color.
+// the document element, and the browser chrome color - the one thing CSS cannot reach - is kept with
+// it by the library too: see bit-theme-color-meta on <html> in App.razor / the MAUI index.html,
+// pointed at the secondary surface the site is drawn on.
 BitBlazorUI.Theme.init({
     system: true,
     persist: true,
@@ -428,9 +493,4 @@ BitBlazorUI.Theme.init({
     // right theme into the prerendered markup (see App.razor). Without it the server would fall back
     // to following the OS and the app would flash the wrong theme for visitors who picked one.
     persistCookie: true,
-    onChange: (newTheme: string, oldTheme: string) => {
-        const name = (newTheme ?? '').toLowerCase();
-        const isDark = name === 'dark' || name.endsWith('-dark');
-        document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
-    }
 });

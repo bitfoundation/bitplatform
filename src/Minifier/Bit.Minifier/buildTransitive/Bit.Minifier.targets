@@ -1,0 +1,147 @@
+﻿<Project>
+
+    <!--
+    Bit.Minifier: shrinks every assembly of a trimmed Blazor WebAssembly publish, right after ILLink, and rewrites
+    their pdbs to match. Installing the package is all it takes; the build output, dotnet run and dotnet watch are
+    never touched. See the package README.
+
+      By default everything that can go, goes - every non-public name, non-public parameter names and properties,
+      and the attributes only the compiler, debuggers and analyzers read. Public names stay, so logged stack traces
+      still name the public frames.
+
+      BitMinify               true (default). false turns everything below off: the next publish trims afresh and
+                              ships the assemblies as ILLink wrote them.
+
+      BitMinifyAggressive     experimental, false (default). true: public names go too - public types and their
+                              namespaces, non-virtual methods and property accessors, fields, parameter and generic
+                              parameter names, and the assembly metadata an app can read of itself - in every
+                              assembly only minified assemblies reference. For apps nothing reaches by a public
+                              name from outside the WebAssembly client, or through reflection no string spells out.
+                              See the package README.
+
+      BitMinifyMapOutputPath  where to copy bit-minifier.map as well, for a release to be archived with. Empty
+                              (default) leaves it in obj, where the next clean takes it away. Never next to the
+                              published client: served, it hands the names back to everyone who downloads it.
+
+    The app's own assemblies - this project and the projects it references, as opposed to the packages it uses - keep
+    every name they have at every level, so an exception the app logs still names its own types and methods.
+
+    Nullable metadata is kept when the app reads it at runtime (NullabilityInfoContextSupport=true).
+    obj/<configuration>/<tfm>/bit-minifier.map lists every name that changed; the BitMinifierDecode target below
+    reads a stack trace back through it.
+    -->
+
+    <PropertyGroup>
+        <BitMinify Condition="'$(BitMinify)' == ''">true</BitMinify>
+    </PropertyGroup>
+
+    <Target Name="_BitMinifierLocate">
+        <PropertyGroup>
+            <_BitMinifierPath>$(MSBuildThisFileDirectory)..\tools\Bit.Minifier.dll</_BitMinifierPath>
+            <!-- imported straight from this repository's source tree, the tool is in its own build output -->
+            <_BitMinifierPath Condition="!Exists('$(_BitMinifierPath)')">$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net8.0\Bit.Minifier.dll</_BitMinifierPath>
+            <!-- ILLink's own fallback for Visual Studio's msbuild.exe, where DOTNET_HOST_PATH is not set -->
+            <_BitMinifyDotNetHost>$(DOTNET_HOST_PATH)</_BitMinifyDotNetHost>
+            <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == '' and $([MSBuild]::IsOSPlatform(`Windows`))">$(NetCoreRoot)dotnet.exe</_BitMinifyDotNetHost>
+            <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == ''">$(NetCoreRoot)dotnet</_BitMinifyDotNetHost>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="_BitMinifierComputeArguments"
+            DependsOnTargets="_BitMinifierLocate"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+        <!-- the app's own assemblies, told from the libraries the way the SDK tells them apart: this project's
+             output, and every reference a project of the solution produced rather than a package -->
+        <ItemGroup>
+            <_BitMinifyOwnReference Include="@(ReferencePath)" Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference'" />
+            <!-- this project by its assembly name rather than by its file, which needn't be there yet -->
+            <_BitMinifyOwnAssembly Include="$(TargetName)" />
+            <_BitMinifyOwnAssembly Include="@(_BitMinifyOwnReference->'%(Filename)')" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_BitMinifyOwn>@(_BitMinifyOwnAssembly->Distinct())</_BitMinifyOwn>
+            <_BitMinifyArgs>&quot;$(IntermediateLinkDir.TrimEnd('\').TrimEnd('/'))&quot; --map &quot;$(IntermediateOutputPath)bit-minifier.map&quot;</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(_BitMinifyOwn)' != ''">$(_BitMinifyArgs) --own &quot;$(_BitMinifyOwn)&quot;</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(NullabilityInfoContextSupport)' == 'true'">$(_BitMinifyArgs) --keep-nullable</_BitMinifyArgs>
+            <_BitMinifyArgs Condition="'$(BitMinifyAggressive)' == 'true'">$(_BitMinifyArgs) --aggressive</_BitMinifyArgs>
+            <_BitMinifySettings>$(BitMinify) $(_BitMinifyArgs) @ $(_BitMinifierPath) $([System.IO.File]::GetLastWriteTime('$(_BitMinifierPath)').Ticks)</_BitMinifySettings>
+        </PropertyGroup>
+    </Target>
+
+    <!-- ILLink's output is minified in place, so other settings (or another version of the tool) need a fresh one:
+         ILLink only runs again when its own inputs change, and a -p:BitMinify... switch is not one of them. This
+         runs whatever BitMinify says, so that turning the minifier off gives back an unminified publish. -->
+    <Target Name="_BitMinifierInvalidateTrimmedAssemblies"
+            BeforeTargets="_RunILLink"
+            DependsOnTargets="_BitMinifierComputeArguments"
+            Condition="'$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+        <ReadLinesFromFile File="$(IntermediateOutputPath)bit-minifier.settings" Condition="Exists('$(IntermediateOutputPath)bit-minifier.settings')">
+            <Output TaskParameter="Lines" PropertyName="_BitMinifyPreviousSettings" />
+        </ReadLinesFromFile>
+        <Delete Files="$(_LinkSemaphore)" Condition="'$(_BitMinifyPreviousSettings)' != '$(_BitMinifySettings)'" />
+        <WriteLinesToFile File="$(IntermediateOutputPath)bit-minifier.settings" Lines="$(_BitMinifySettings)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)bit-minifier.settings" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BitMinifyTrimmedAssemblies"
+            AfterTargets="_RunILLink"
+            DependsOnTargets="_BitMinifierComputeArguments"
+            Condition="'$(BitMinify)' == 'true' and '$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true' and ('$(_ILLinkExitCode)' == '' or '$(_ILLinkExitCode)' == '0')"
+            Inputs="$(_LinkSemaphore)"
+            Outputs="$(IntermediateOutputPath)bit-minifier.stamp">
+        <!-- A failure is a warning, never a broken publish: the tool writes nothing unless every reference into the
+             rewritten assemblies still resolves, so the app then ships what ILLink produced. An assembly it had to
+             leave alone to keep the rest is a warning too - BITMIN001 either way. -->
+        <Delete Files="$(IntermediateOutputPath)bit-minifier.map" />
+        <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; $(_BitMinifyArgs)"
+              ContinueOnError="WarnAndContinue"
+              StandardOutputImportance="normal" />
+        <!-- runs again only when ILLink rewrote the folder, so nothing is minified twice. The tool writes the map only
+             along with the assemblies, so a folder it left as it was is tried again (and warned about) next time. -->
+        <Touch Files="$(IntermediateOutputPath)bit-minifier.stamp" AlwaysCreate="true" Condition="Exists('$(IntermediateOutputPath)bit-minifier.map')" />
+        <ItemGroup>
+            <FileWrites Include="$(IntermediateOutputPath)bit-minifier.stamp;$(IntermediateOutputPath)bit-minifier.map" />
+        </ItemGroup>
+    </Target>
+
+    <!-- With the minifier off the assemblies are ILLink's own, so a map an earlier publish left in obj describes
+         nothing that is there any more. It goes, rather than being kept for someone to read a stack trace against
+         a publish it says nothing about. -->
+    <Target Name="_BitMinifierRemoveMap"
+            AfterTargets="_RunILLink"
+            Condition="'$(BitMinify)' != 'true' and '$(RuntimeIdentifier)' == 'browser-wasm' and '$(PublishTrimmed)' == 'true'">
+        <Delete Files="$(IntermediateOutputPath)bit-minifier.map;$(IntermediateOutputPath)bit-minifier.stamp" />
+    </Target>
+
+    <!-- A map reads the stack traces of its own publish and of no other, and obj is not where a release keeps
+         anything, so this copies it wherever the release is collected from. Outside the target above, and without
+         inputs of its own, so a publish that minified nothing new still puts the map where it was asked for. -->
+    <Target Name="_BitMinifierCopyMap"
+            AfterTargets="BitMinifyTrimmedAssemblies"
+            Condition="'$(BitMinify)' == 'true' and '$(BitMinifyMapOutputPath)' != '' and Exists('$(IntermediateOutputPath)bit-minifier.map')">
+        <Copy SourceFiles="$(IntermediateOutputPath)bit-minifier.map" DestinationFiles="$(BitMinifyMapOutputPath)" />
+    </Target>
+
+    <!--
+    Reads a stack trace the published app logged back into the names the source has, through the map of the publish
+    that produced it:
+
+      dotnet msbuild MyApp.Client.csproj -t:BitMinifierDecode -p:Configuration=Release -p:BitMinifyTrace=trace.txt
+
+    BitMinifyMap points at another map (one kept with an earlier release, say); it defaults to the one the last
+    publish of this configuration wrote. Leaving BitMinifyTrace out reads the trace from standard input.
+    -->
+    <Target Name="BitMinifierDecode" DependsOnTargets="_BitMinifierLocate">
+        <PropertyGroup>
+            <BitMinifyMap Condition="'$(BitMinifyMap)' == ''">$(IntermediateOutputPath)bit-minifier.map</BitMinifyMap>
+            <_BitMinifyTraceArg Condition="'$(BitMinifyTrace)' != ''"> &quot;$(BitMinifyTrace)&quot;</_BitMinifyTraceArg>
+        </PropertyGroup>
+        <Error Condition="!Exists('$(BitMinifyMap)')"
+               Text="Bit.Minifier: no map at $(BitMinifyMap). A publish writes it next to the assemblies it minifies, and a clean takes it away with them - pass -p:Configuration=Release, or -p:BitMinifyMap=&lt;path&gt; for a map kept with the release the stack trace came from. Set BitMinifyMapOutputPath on the publish to have it copied out of obj." />
+        <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; --decode &quot;$(BitMinifyMap)&quot;$(_BitMinifyTraceArg)"
+              StandardOutputImportance="high" />
+    </Target>
+
+</Project>

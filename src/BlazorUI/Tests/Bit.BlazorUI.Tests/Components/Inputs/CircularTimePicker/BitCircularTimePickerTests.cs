@@ -1941,7 +1941,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldRespectIconPosition()
+    public void BitCircularTimePickerShouldRespectIconPlacement()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {

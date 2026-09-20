@@ -28,19 +28,25 @@
       bit-theme-light="@BitExtraThemePresets.Fluent2Light" bit-theme-dark="@BitExtraThemePresets.Fluent2Dark">
 
 <head>
-    <ContentSecurityPolicy />
-    <ResourcePreloader />
-    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
-    
     <base href="/" />
 
+    @* First after base on purpose: the CSP has to be in force before anything else in the document runs. *@
+    @*#if (appInsights == true)*@
+    @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
+    @*#endif*@
+    <AppHeadCoordinator @rendermode="null" InHead />
+    <ResourcePreloader />
+    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
+
     <meta charset="utf-8" />
-    @* [mirror] The PWA status bar / browser chrome color. These must equal ThemeColors.cs's PrimaryLightBgColor and *@
-    @* PrimaryDarkBgColor (the colors the native apps paint their status bar with), so an installed PWA looks like them. *@
-    @* The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags on every theme change, so a *@
-    @* theme pinned against the OS wins as well. Keep in sync with: src/Client/Boilerplate.Client.Core/Styles/ThemeColors.cs *@
-    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
+    @* [mirror] The PWA status bar / browser chrome color, which has to be a literal because no stylesheet has loaded yet. *@
+    @* BitExtraThemeSurfaces carries each packaged preset's own --bit-clr-bg-pri, pinned to its stylesheet, and the native *@
+    @* apps paint their status bar / caption from the very same table, so an installed PWA looks like them. *@
+    @* The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags with the live --bit-clr-bg-pri on every theme or accent change, so a *@
+    @* theme pinned against the OS, or a picked accent, wins as well. Keep in sync with: src/Client/Boilerplate.Client.Web/wwwroot/index.html, *@
+    @* src/Client/Boilerplate.Client.Maui/wwwroot/index.html, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json *@
+    <meta name="theme-color" content="@(BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.Fluent2Light])" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="@(BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.Fluent2Dark])" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     @if (noPrerenderedContent)
@@ -77,11 +83,6 @@
 
     <Link rel="icon" Href="favicon.ico" type="image/x-icon" />
     <HeadOutlet @rendermode=renderMode />
-    @*#if (appInsights == true)*@
-    <Link rel="preconnect" Href="https://js.monitor.azure.com" crossorigin />
-    <!-- Perform the initial static render of ApplicationInsightsInit to start App Insights ASAP. -->
-    <BlazorApplicationInsights.ApplicationInsightsInit />
-    @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
 </head>
@@ -131,7 +132,7 @@
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
-        <Script Src="_content/Bit.Bswup/bit-bswup.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
+        <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js?host=server-web-project" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="60" updateOnVisibility="true"></Script>
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>

@@ -57,7 +57,7 @@ public partial class Acknowledgements
         new("pgvector-dotnet", "https://github.com/pgvector/pgvector-dotnet", "https://github.com/pgvector/pgvector-dotnet", "MIT"),
         //#endif
         //#if (database == "MySql")
-        new("Pomelo (MySQL provider)", "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql", "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql", "MIT"),
+        new("MySQL Connector/NET (EF Core provider)", "https://dev.mysql.com/doc/connector-net/en", "https://github.com/mysql/mysql-connector-net", "GPL-2.0 WITH Universal-FOSS-exception-1.0"),
         //#endif
         //#if (notification == true)
         new("Firebase Cloud Messaging", "https://firebase.google.com/docs/cloud-messaging", "https://github.com/dotnet/android-libraries", "MIT / Apache-2.0"),

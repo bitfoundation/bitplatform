@@ -172,7 +172,8 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
     /// </param>
     /// <returns>A handle, or null when the runtime has no <c>RTCPeerConnection</c>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RtcIceServer))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ButilMessage))]
+    // JsonSerialized, not All - see MessageChannel.Create: All keeps the RUC Deserialize<T> and raises IL2026 here.
+    [DynamicDependency(LinkerFlags.JsonSerialized, typeof(ButilMessage))]
     public async ValueTask<PeerConnectionHandle?> CreatePeerConnection(RtcIceServer[]? iceServers = null,
                                                                        Action<string?>? onIceCandidate = null,
                                                                        Action<string>? onConnectionState = null,
@@ -225,7 +226,7 @@ public class WebRtc(IJSRuntime js) : IAsyncDisposable
         {
             _peers.Clear();
             _channels.Clear();
-            await js.InvokeVoid("BitButil.webRtc.disposeAll");
+            await js.InvokeTeardown("BitButil.webRtc.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

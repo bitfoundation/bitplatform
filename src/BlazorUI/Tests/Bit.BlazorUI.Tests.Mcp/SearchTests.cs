@@ -90,6 +90,15 @@ public class SearchTests : McpTestBase
         // The setup guide, which is what "how do I install this" has to reach.
         var setup = await CallAsync("SearchBitBlazorUI", new { query = "register services stylesheet script", limit = 8 });
         StringAssert.Contains(setup, "GetBitBlazorUISetupGuide");
+
+        // A component's public custom property, which is the half of its look no parameter reaches.
+        var variable = await CallAsync("SearchBitBlazorUI", new { query = "--bit-ActionButton-hover-background", limit = 8 });
+        StringAssert.Contains(variable, "--bit-ActionButton-hover-background");
+
+        // A preset one package adds to another package's type, which is stored nowhere near the
+        // type it is written on and so has to be indexed under the name it is read by.
+        var preset = await CallAsync("SearchBitBlazorUI", new { query = "material dark preset", limit = 8 });
+        StringAssert.Contains(preset, "BitThemePresets.MaterialDark");
     }
 
     [TestMethod]

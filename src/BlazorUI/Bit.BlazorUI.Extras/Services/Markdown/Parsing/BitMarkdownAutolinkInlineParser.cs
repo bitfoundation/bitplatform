@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Handles CommonMark angle-bracket autolinks: <c>&lt;https://...&gt;</c>.</summary>
 public sealed partial class BitMarkdownAutolinkInlineParser : BitMarkdownInlineParser
@@ -56,7 +56,7 @@ public sealed partial class BitMarkdownAutolinkInlineParser : BitMarkdownInlineP
 
     private static void Emit(BitMarkdownInlineProcessor state, string href, string label, int close)
     {
-        var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false) };
+        var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false), IsAutoLink = true };
         link.Children.Add(new BitMarkdownTextNode(label));
         state.AppendNode(link);
         state.Pos = close + 1;

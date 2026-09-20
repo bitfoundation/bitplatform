@@ -500,7 +500,7 @@ public class BitToggleButtonTests : BunitTestContext
         DataRow(BitPlacement.Start),
         DataRow(BitPlacement.End)
     ]
-    public void BitToggleButtonIconPositionTest(BitPlacement iconPosition)
+    public void BitToggleButtonIconPlacementTest(BitPlacement iconPosition)
     {
         var component = RenderComponent<BitToggleButton>(parameters =>
         {

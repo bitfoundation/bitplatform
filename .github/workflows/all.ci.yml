@@ -2,6 +2,59 @@ name: All CI
 
 on:
   workflow_dispatch:
+    inputs:
+      boilerplate:
+        description: Boilerplate solution
+        type: boolean
+        default: true
+      boilerplate_postgres:
+        description: Boilerplate tests with PostgreSQL
+        type: boolean
+        default: true
+      boilerplate_mysql:
+        description: Boilerplate tests with MySQL
+        type: boolean
+        default: true
+      boilerplate_mssql:
+        description: Boilerplate tests with SQL Server
+        type: boolean
+        default: true
+      boilerplate_configurations:
+        description: Boilerplate configurations
+        type: boolean
+        default: true
+      blazorempty:
+        description: BlazorEmpty configurations
+        type: boolean
+        default: true
+      nuget_packages:
+        description: NuGet packages
+        type: boolean
+        default: true
+      bswup:
+        description: Bswup solution
+        type: boolean
+        default: true
+      butil:
+        description: Butil solution
+        type: boolean
+        default: true
+      brouter:
+        description: Brouter solution
+        type: boolean
+        default: true
+      bmotion:
+        description: Bmotion solution
+        type: boolean
+        default: true
+      tooling:
+        description: CodeAnalyzers, ResxTranslator and SourceGenerators solutions
+        type: boolean
+        default: true
+      websites:
+        description: Website solutions
+        type: boolean
+        default: true
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -16,6 +69,7 @@ jobs:
 
   build_boilerplate:
     name: build boilerplate itself
+    if: ${{ inputs.boilerplate }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -46,6 +100,7 @@ jobs:
 
   test_boilerplate_postgres:
     name: create project from template with postgresql and test it
+    if: ${{ inputs.boilerplate_postgres }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -87,8 +142,7 @@ jobs:
       run: |
         cd TestPostgreSQL/src/Server/TestPostgreSQL.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Trust dotnet cert
       continue-on-error: true
@@ -153,8 +207,118 @@ jobs:
         retention-days: 14
 
 
+  test_boilerplate_mysql:
+    name: create project from template with mysql and test it
+    if: ${{ inputs.boilerplate_mysql }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Create project from template with mySQL
+      run: dotnet new bit-bp --name TestMySql --database MySql --module Sales --signalR --aspire --redis --advancedTests
+
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestMySql/src/Client/TestMySql.Client.Web/wwwroot/appsettings.json
+
+    - name: Build and setup database
+      run: |
+        cd TestMySql/src/Server/TestMySql.Server.Api/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
+
+    - name: Trust dotnet cert
+      continue-on-error: true
+      run: dotnet dev-certs https --trust # Necessary for aspire related resources
+
+    - name: Build tests and install Playwright
+      working-directory: TestMySql/src/Tests
+      run: |
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+
+    - name: Run tests (Blazor Server)
+      id: test-mysql-blazorserver
+      working-directory: TestMySql/src/Tests
+      run: dotnet test
+
+    - name: Upload Blazor Server test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorserver.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorserver
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly)
+      id: test-mysql-blazorwasm
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorwasm.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorwasm
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
+      id: test-mysql-blazorwasm-prerender
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly prerender test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorwasm-prerender.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorwasm-prerender-firefox
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (InvariantGlobalization)
+      id: test-mysql-invariantglobalization
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
+
+    - name: Upload InvariantGlobalization test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-invariantglobalization.outcome == 'failure' }}
+      with:
+        name: mysql-tests-invariantglobalization
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+
   test_boilerplate_mssql:
     name: create project from template with sql server and test it
+    if: ${{ inputs.boilerplate_mssql }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -196,8 +360,7 @@ jobs:
       run: |
         cd TestSqlServer/src/Server/TestSqlServer.Server.Api/
         dotnet build -p:EnforceCodeStyleInBuild=true
-        dotnet tool restore
-        dotnet ef migrations add Initial --verbose
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
 
     - name: Install sql server
       uses: potatoqualitee/mssqlsuite@2291d923e83859edd871679c05b379037376761f # v1.12
@@ -259,6 +422,7 @@ jobs:
 
   build_boilerplate_configurations:
     name: create several projects from template and build them
+    if: ${{ inputs.boilerplate_configurations }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -327,6 +491,7 @@ jobs:
 
   build_blazorempty_configurations:
     name: build blazorempty based projects
+    if: ${{ inputs.blazorempty }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -367,6 +532,7 @@ jobs:
 
   build_nuget_packages:
     name: build nuget packages locally
+    if: ${{ inputs.nuget_packages }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -502,6 +668,13 @@ jobs:
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Minifier
+      run: |
+        dotnet build src/Minifier/Bit.Minifier/Bit.Minifier.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier/Bit.Minifier.csproj --output ./packages --configuration Release
+        dotnet build src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Minifier/Bit.Minifier.Cli/Bit.Minifier.Cli.csproj --output ./packages --configuration Release
+
     - name: Build and pack ResxTranslator
       run: |
         dotnet build src/ResxTranslator/Bit.ResxTranslator/Bit.ResxTranslator.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -527,6 +700,7 @@ jobs:
 
   build_bswup_solution:
     name: build bswup solution
+    if: ${{ inputs.bswup }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -557,6 +731,7 @@ jobs:
 
   build_butil_solution:
     name: build butil solution
+    if: ${{ inputs.butil }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -587,6 +762,7 @@ jobs:
 
   build_brouter_solution:
     name: build brouter solution
+    if: ${{ inputs.brouter }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -617,6 +793,7 @@ jobs:
 
   build_bmotion_solution:
     name: build bmotion solution
+    if: ${{ inputs.bmotion }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -647,6 +824,7 @@ jobs:
 
   build_tooling_solutions:
     name: build tooling solutions
+    if: ${{ inputs.tooling }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -663,6 +841,12 @@ jobs:
     - name: Build CodeAnalyzers solution in Release mode
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers.slnx -c Release
 
+    - name: Build Minifier solution in Release mode
+      run: dotnet build src/Minifier/Bit.Minifier.slnx -c Release
+
+    - name: Test Minifier
+      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj -c Release --no-build
+
     - name: Build ResxTranslator solution in Release mode
       run: dotnet build src/ResxTranslator/Bit.ResxTranslator.slnx -c Release
 
@@ -673,6 +857,7 @@ jobs:
 
   build_websites:
     name: build website solutions
+    if: ${{ inputs.websites }}
     runs-on: ubuntu-24.04
 
     steps:

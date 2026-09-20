@@ -65,7 +65,7 @@ public partial class App
         {
             base.OnStart();
 
-            await deviceCoordinator.ApplyTheme(AppInfo.Current.RequestedTheme is AppTheme.Dark);
+            await deviceCoordinator.ApplyTheme(MauiProgram.IsDarkTheme());
             //-:cnd:noEmit
 #if Android
             const int minimumSupportedWebViewVersion = 85;

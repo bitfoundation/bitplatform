@@ -319,6 +319,48 @@ namespace BitBlazorUI {
                 return true;
             }
 
+            // Whether the visible band being short is the on-screen keyboard's doing rather than the page
+            // having moved under the callout. The keyboard is raised by the focus, so the focus is what says
+            // so. Nothing is measured for it, because the platforms disagree on which viewport the keyboard
+            // shrinks: iOS leaves the layout viewport alone and shrinks the visual one, while Android Chrome
+            // shrinks both - which leaves the difference between them, the only thing a measurement could
+            // read, at zero on exactly the platform that needs this. The focus reads the same on both.
+            // It is asked of the whole stack rather than of this callout alone: a callout opened from inside
+            // another one is relocated to the body and is no longer a descendant of the outer one, which
+            // would otherwise leave that outer callout hidden underneath the inner one whose own keyboard
+            // shrank the band for both of them.
+            const active = document.activeElement;
+            // A touch-screen laptop is not asked: its short band is a window made shorter, and a callout
+            // pinned to the bottom of it, away from its anchor, would be the wrong answer to that.
+            const focusOwnsTheKeyboard = Utils.hasOnScreenKeyboard()
+                                      && Utils.isEditableElementFocused()
+                                      && active != null
+                                      && (Callouts.calloutContains(active) || Callouts.componentContains(active));
+
+            // A callout whose component has been scrolled out of the visible area has nothing left to
+            // point at, and the clamping below would leave it stuck against an edge of the screen next to
+            // whatever happens to be there. It is hidden rather than dismissed, so it comes back with its
+            // component: a callout is normally dismissed by the page moving under it, and the ones that
+            // asked not to be are the ones that reach this.
+            // Strictly outside on one of the axes: a zero-height component (which is what a callout with
+            // no anchor of its own is positioned against) sitting exactly on an edge of the band is still
+            // on screen, not past it.
+            // Measured against the screen itself rather than against the padded band: a component that is
+            // merely within the padding of an edge is still on screen, and hiding the callout it belongs
+            // to would take it away while the user can still see what it points at.
+            const aboveBand = (componentY + componentHeight) < rawTop;
+            const belowBand = componentY > rawBottom;
+            const besideBand = (componentX + componentWidth) < rawLeft || componentX > rawRight;
+
+            // The component is under the keyboard that this stack's own focus raised. A keyboard only ever
+            // takes room off the BOTTOM of the band, so a component below the band is the one case it can
+            // account for - one that went off the top, or off either side, was put there by the page and is
+            // hidden as it always was. The callout itself is still in the band, which is where the user is
+            // looking, so it is laid out inside that band rather than taken away with its anchor.
+            const underKeyboard = belowBand && besideBand === false && focusOwnsTheKeyboard;
+
+            const detached = (aboveBand || belowBand || besideBand) && underKeyboard === false;
+
             // How the callout lines up with the component across the side it is placed on. 'start' - the
             // default every component that does not offer the choice gets - keeps the edge the component
             // starts at, which is its right edge in a right-to-left layout on the horizontal axis; the
@@ -367,11 +409,22 @@ namespace BitBlazorUI {
                     fixedRect, offset, componentX, componentY, componentWidth, componentHeight,
                     calloutWidth, calloutHeight, distanceToTop, distanceToBottom, distanceToLeft, distanceToRight,
                     visibleTop, visibleLeft, visibleBottom, visibleRight, scrollOffset, headerHeight, footerHeight,
-                    alignAcross, noFlip)
+                    alignAcross, noFlip, underKeyboard)
                 : null;
 
             if (placedOnPreferredSide) {
                 placement = placedOnPreferredSide;
+            } else if (underKeyboard) {
+                // The component is under the keyboard, below the band, so there is no room on either side of
+                // it to measure: the whole band is what the callout gets, and it keeps the bottom edge of it -
+                // the edge the component fell out of - so it stays on the side the anchor was last seen on.
+                // It is still anchored by its bottom edge rather than by its top one, so the browser goes on
+                // growing it upwards on its own as its content changes, exactly as a callout placed above a
+                // component does.
+                placement = 'above';
+                const available = Math.max(0, visibleBottom - visibleTop - 4);
+                callout.style.bottom = (fixedRect.bottom - (visibleBottom - 2)) + 'px';
+                scrollContainer.style.maxHeight = cap(Math.max(0, available - scrollOffset - headerHeight - footerHeight - 10)) + 'px';
             } else if (dropDirection == BitDropDirection.TopAndBottom) {
                 if (calloutHeight <= distanceToBottom || distanceToBottom >= distanceToTop) {
                     callout.style.top = (componentY + componentHeight + offset - fixedRect.top) + 'px';
@@ -417,19 +470,8 @@ namespace BitBlazorUI {
                 }
             }
 
-            // A callout whose component has been scrolled out of the visible area has nothing left to
-            // point at, and the clamping above would leave it stuck against an edge of the screen next to
-            // whatever happens to be there. It is hidden rather than dismissed, so it comes back with its
-            // component: a callout is normally dismissed by the page moving under it, and the ones that
-            // asked not to be are the ones that reach this.
-            // Strictly outside on one of the axes: a zero-height component (which is what a callout with
-            // no anchor of its own is positioned against) sitting exactly on an edge of the band is still
-            // on screen, not past it.
-            // Measured against the screen itself rather than against the padded band: a component that is
-            // merely within the padding of an edge is still on screen, and hiding the callout it belongs
-            // to would take it away while the user can still see what it points at.
-            const detached = (componentY + componentHeight) < rawTop || componentY > rawBottom
-                          || (componentX + componentWidth) < rawLeft || componentX > rawRight;
+            // Decided along with the band above, because the placement has to know whether the component
+            // fell out of it only because the keyboard shrank it.
             callout.style.visibility = detached ? 'hidden' : '';
 
             // Where the callout ended up, for the stylesheets to read back: the entry animation slides it
@@ -440,7 +482,9 @@ namespace BitBlazorUI {
             callout.setAttribute('data-bit-cal-align', alignment || 'start');
 
             if (arrow) {
-                arrow.style.visibility = detached ? 'hidden' : '';
+                // A callout laid out against the band rather than against its component has nothing left
+                // on screen for an arrow to point at either, so the arrow goes with the anchor.
+                arrow.style.visibility = (detached || underKeyboard) ? 'hidden' : '';
 
                 Callouts.positionArrow(arrow, callout, placement, fixedRect,
                     componentX, componentY, componentWidth, componentHeight,
@@ -486,6 +530,10 @@ namespace BitBlazorUI {
             footerHeight: number,
             alignAcross: (componentStart: number, componentSize: number, calloutSize: number, horizontal: boolean) => number,
             noFlip: boolean,
+            // The component is not in the visible band at all - it is under the on-screen keyboard - so
+            // neither side of it has any room to be measured against: the callout is laid out against the
+            // whole band and clamped into it, which is exactly what a side the consumer forced it onto does.
+            underKeyboard: boolean,
         ): BitCalloutPlacement | null {
             // The logical sides are resolved against the direction the callout is laid out in; the
             // physical ones the placement works in are what comes out.
@@ -521,7 +569,7 @@ namespace BitBlazorUI {
             // there, so it ends up overlapping the component rather than running off the edge of the page,
             // and it is measured against the whole visible band rather than against the sliver the side it
             // was forced onto leaves - which would otherwise collapse it to nothing.
-            const forced = !fits(placement);
+            const forced = underKeyboard || !fits(placement);
             const availableAcross = Math.max(0, visibleBottom - visibleTop - 4);
 
             if (placement === 'below') {

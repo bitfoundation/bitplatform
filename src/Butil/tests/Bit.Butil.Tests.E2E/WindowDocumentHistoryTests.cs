@@ -63,6 +63,24 @@ public class WindowDocumentHistoryTests : ButilPageTest
         await ClickAndExpectAsync("doc-meta", "doc:meta:Visible/True/True");
     }
 
+    /// <summary>
+    /// Browsers match <c>dir</c> keywords case-insensitively, so the round trip alone would pass even with
+    /// <c>dir="Rtl"</c> in the DOM. The attribute is read back raw to pin the exact keyword handed over.
+    /// </summary>
+    [TestMethod]
+    public async Task Document_SetDir_Writes_The_Lowercase_Keyword()
+    {
+        await ClickAndExpectAsync("doc-dir", "doc:dir:Auto/Rtl/On");
+
+        var attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
+        Assert.AreEqual("rtl", attribute);
+
+        await ClickAndExpectAsync("doc-dir-ltr", "doc:dir-ltr:Ltr");
+
+        attribute = await Page.EvaluateAsync<string>("document.documentElement.getAttribute('dir')");
+        Assert.AreEqual("ltr", attribute);
+    }
+
     [TestMethod]
     public async Task Window_Metrics_Report_Positive_Inner_Size()
     {

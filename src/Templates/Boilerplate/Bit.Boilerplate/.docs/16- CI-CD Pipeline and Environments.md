@@ -266,8 +266,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 2. **Localization with Bit.ResxTranslator**
    ```bash
-   dotnet tool install --global Bit.ResxTranslator
-   bit-resx-translate
+   dnx Bit.ResxTranslator
    ```
    - Automatically translates all `.resx` resource files missing values
 
@@ -341,7 +340,7 @@ This is the **core deployment workflow** that handles building and deploying all
 1. **Environment Setup & Configuration**
    ```yaml
    - Setup .NET SDK and Node.js
-   - Translate resource files (bit-resx-translate)
+   - Translate resource files (Bit.ResxTranslator)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
      - WindowsUpdate.FilesUrl: Auto-update endpoint
@@ -357,7 +356,7 @@ This is the **core deployment workflow** that handles building and deploying all
      -p:Version="1.0.0" -p:Environment=Production
    
    # Create installer with Velopack
-   dotnet vpk pack \
+   dnx vpk@1.2.0 -- pack \
      -u com.company.app \           # Application ID
      -v 1.0.0 \                     # Version
      -p .\publish-result \          # Published files location
@@ -449,7 +448,7 @@ dotnet publish -c Release \
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
    - Setup Node.js 24
-   - Translate resources (bit-resx-translate)
+   - Translate resources (Bit.ResxTranslator)
    - Update appsettings.json with ServerAddress
    ```
 

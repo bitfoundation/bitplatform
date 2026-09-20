@@ -37,4 +37,21 @@ public static class RepoLayout
     /// <summary>The project file of the standalone WebAssembly sample the browser suites drive.</summary>
     public static string SampleWebProject()
         => FindUpward(Path.Combine("Samples", "Bit.Butil.Samples.Web", "Bit.Butil.Samples.Web.csproj"));
+
+    public const string WebHarnessName = "Bit.Butil.Tests.Harness.Web";
+    public const string HybridHarnessName = "Bit.Butil.Tests.Harness.Hybrid";
+
+    /// <summary>The Blazor Web App that serves the harness pages in every render mode.</summary>
+    public static string WebHarnessProject()
+        => FindUpward(Path.Combine("tests", WebHarnessName, $"{WebHarnessName}.csproj"));
+
+    public static string WebHarnessAssembly(string framework, string configuration)
+        => Path.Combine(Path.GetDirectoryName(WebHarnessProject())!, "bin", configuration, framework, $"{WebHarnessName}.dll");
+
+    /// <summary>The WinForms BlazorWebView app that serves the harness pages as a hybrid app.</summary>
+    public static string HybridHarnessProject()
+        => FindUpward(Path.Combine("tests", HybridHarnessName, $"{HybridHarnessName}.csproj"));
+
+    public static string HybridHarnessExecutable(string configuration)
+        => Path.Combine(Path.GetDirectoryName(HybridHarnessProject())!, "bin", configuration, "net10.0-windows", $"{HybridHarnessName}.exe");
 }

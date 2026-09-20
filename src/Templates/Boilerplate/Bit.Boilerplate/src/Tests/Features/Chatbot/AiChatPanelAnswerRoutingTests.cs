@@ -4,9 +4,10 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// An answer and its follow-up suggestions are one json document (See <see cref="AssistantReply"/>), streamed down the
-/// hub method the panel is enumerating, so what reaches the screen is a property of a document reassembled from
-/// prefixes rather than the frames themselves (<c>AppAiChatPanel.RunChannel</c>, <see cref="PartialJsonReader{T}"/>).
+/// A turn is one json document (See <see cref="AssistantTurn"/>), streamed down the hub method the panel is
+/// enumerating, so what reaches the screen is a property of a document reassembled from prefixes rather than the frames
+/// themselves (<c>AppAiChatPanel.RunChannel</c>, <see cref="PartialJsonReader{T}"/>). Follow-up suggestions come the other
+/// way, from a tool the model calls (See <c>AppChatbot.ShowFollowUpSuggestions</c>).
 /// <para>
 /// The wire carries no message identity: a frame belongs to whichever question has waited longest, and a turn ends
 /// when its document does. One document too many or too few and the queue is out of step with the conversation for
@@ -32,10 +33,11 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
         "Switch to dark mode"
     ];
 
+    /// <summary>Offered through a tool, capped to what fits above the message box, and sent as the user's words when tapped.</summary>
     [TestMethod]
-    public async Task Panel_Should_ShowTheSuggestions_TheAnswerWasWrittenWith()
+    public async Task Panel_Should_ShowTheSuggestionsTheModelOffered_AndSendTheOneTapped()
     {
-        var chatClient = new TestChatClient { StreamingUpdates = AnswerAsOneDocument };
+        var chatClient = new TestChatClient { StreamingUpdates = OfferSuggestionsThenAnswer };
 
         var panel = await StartChat(chatClient);
 
@@ -43,14 +45,26 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
 
         await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
 
-        // The payoff: these arrived inside the same document as the text above, not as a message of their own.
-        foreach (var suggestion in followUpSuggestions)
-        {
-            await Expect(panel.Locator(".default-prompt-button").GetByText(suggestion)).ToBeVisibleAsync();
-        }
+        var suggestions = panel.Locator(".default-prompt-button");
+
+        // The blank one dropped, and the one too many left out.
+        await Expect(suggestions).ToHaveTextAsync(followUpSuggestions);
 
         // And the document around the answer is the panel's business, never the user's.
-        await Expect(panel).Not.ToContainTextAsync("followUpSuggestions");
+        await Expect(panel).Not.ToContainTextAsync("sentAt");
+
+        var conversationsBefore = chatClient.ReceivedConversations.Count;
+
+        await suggestions.GetByText(followUpSuggestions[2]).ClickAsync();
+
+        Assert.IsTrue(await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)),
+                      "Tapping a suggestion sent nothing.");
+
+        Assert.AreEqual(followUpSuggestions[2], chatClient.ReceivedConversations[^1].Last(message => message.Role == ChatRole.User).Text,
+                        "The tapped suggestion must be sent as the user's own words.");
+
+        await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
+        await Expect(suggestions).ToHaveCountAsync(0);
     }
 
     /// <summary>
@@ -81,22 +95,55 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
     }
 
     /// <summary>
-    /// What the schema makes a real model write: one json document with the answer and three suggestions, split into
-    /// pieces that are not documents on their own.
+    /// A model that calls a tool can say so first ("let me look that up"), and write the answer on the round trip after
+    /// the tool. Only what came before the tool used to reach the screen, so the answer never did.
     /// </summary>
-    private static ChatResponseUpdate[] AnswerAsOneDocument(int callIndex, ChatMessage[] conversation)
+    [TestMethod]
+    public async Task Panel_Should_ShowTheAnswerWrittenAfterAToolCall_UnderWhatWasWrittenBeforeIt()
+    {
+        var chatClient = new TestChatClient { StreamingUpdates = SayItThenAskTheTimeThenAnswer };
+
+        var panel = await StartChat(chatClient);
+
+        await SendChatMessage(panel, FirstQuestion, chatClient);
+
+        await Expect(panel.GetByText(FirstAnswer)).ToBeVisibleAsync();
+        await Expect(panel.GetByText(Preamble)).ToBeVisibleAsync();
+        await Expect(panel).Not.ToContainTextAsync("sentAt");
+
+        // Two round trips still close the turn once, or the next answer would land in no bubble.
+        await SendFollowUpMessage(panel, SecondQuestion, chatClient);
+
+        await Expect(panel.GetByText(SecondAnswer)).ToBeVisibleAsync();
+    }
+
+    /// <summary>The answer as a real model streams it: in pieces.</summary>
+    private static ChatResponseUpdate[] AnswerInPieces(int callIndex, ChatMessage[] conversation)
+    {
+        var answer = conversation.Last(message => message.Role == ChatRole.User).Text == FirstQuestion ? FirstAnswer : SecondAnswer;
+
+        // Seven characters at a time, so the splits land mid word.
+        return [.. answer.Chunk(7).Select(piece => new ChatResponseUpdate(ChatRole.Assistant, new string(piece)))];
+    }
+
+    /// <summary>Offers suggestions through the tool for the first question - a blank one and one too many included - then answers.</summary>
+    private static ChatResponseUpdate[] OfferSuggestionsThenAnswer(int callIndex, ChatMessage[] conversation)
     {
         var question = conversation.Last(message => message.Role == ChatRole.User).Text;
 
-        var document = JsonSerializer.Serialize(new AssistantReply
-        {
-            Answer = question == FirstQuestion ? FirstAnswer : SecondAnswer,
-            FollowUpSuggestions = [.. followUpSuggestions]
-        }, AppJsonContext.Default.AssistantReply);
+        if (question != FirstQuestion || conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return AnswerInPieces(callIndex, conversation);
 
-        // Seven characters at a time, so the splits land mid string, mid property name and mid suggestion.
-        return [.. Enumerable.Range(0, (document.Length + 6) / 7)
-            .Select(piece => new ChatResponseUpdate(ChatRole.Assistant, document[(piece * 7)..Math.Min((piece * 7) + 7, document.Length)]))];
+        return
+        [
+            new ChatResponseUpdate(ChatRole.Assistant, (IList<AIContent>)
+            [
+                new FunctionCallContent($"suggest-{callIndex}", "ShowFollowUpSuggestions", new Dictionary<string, object?>
+                {
+                    ["suggestions"] = new[] { followUpSuggestions[0], " ", followUpSuggestions[1], followUpSuggestions[2], "One too many" }
+                })
+            ])
+        ];
     }
 
     /// <summary>
@@ -106,7 +153,7 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
     private static ChatResponseUpdate[] AskTheTimeThenAnswer(int callIndex, ChatMessage[] conversation)
     {
         if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
-            return AnswerAsOneDocument(callIndex, conversation);
+            return AnswerInPieces(callIndex, conversation);
 
         return
         [
@@ -117,6 +164,21 @@ public partial class AiChatPanelAnswerRoutingTests : AiChatPanelTestBase
                     ["timeZoneId"] = "UTC"
                 })
             ])
+        ];
+    }
+
+    private const string Preamble = "Let me look that up.";
+
+    /// <summary>Says what it is about to do, calls the tool in the same round trip, then answers.</summary>
+    private static ChatResponseUpdate[] SayItThenAskTheTimeThenAnswer(int callIndex, ChatMessage[] conversation)
+    {
+        if (conversation.Any(message => message.Contents.OfType<FunctionResultContent>().Any()))
+            return AnswerInPieces(callIndex, conversation);
+
+        return
+        [
+            new ChatResponseUpdate(ChatRole.Assistant, Preamble),
+            .. AskTheTimeThenAnswer(callIndex, conversation)
         ];
     }
 

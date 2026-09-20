@@ -227,7 +227,7 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try { await js.InvokeVoid("BitButil.originPrivateFileSystem.disposeAll"); }
+        try { await js.InvokeTeardown("BitButil.originPrivateFileSystem.disposeAll"); }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         GC.SuppressFinalize(this);
     }

@@ -91,7 +91,15 @@ jobs:
           dotnet build SalesModule/src/Client/SalesModule.Client.Web/SalesModule.Client.Web.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+
+    # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
+    # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
+    - name: Upload minifier map artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: SalesModule-minifier-map
+        path: bit-minifier.map
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
@@ -177,8 +185,7 @@ jobs:
     - name: Use Bit.ResxTranslator
       run: |
             cd SalesModule
-            dotnet tool install --global Bit.ResxTranslator --prerelease
-            bit-resx-translate
+            dnx Bit.ResxTranslator --prerelease
 
     - name: Generate CSS/JS files
       run: dotnet build SalesModule\src\Client\SalesModule.Client.Core\SalesModule.Client.Core.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
@@ -188,18 +195,16 @@ jobs:
       continue-on-error: true
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
-          dotnet tool restore
-          dotnet vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
+          dnx vpk@1.2.0 -- download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
     - name: Publish
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
           dotnet publish SalesModule.Client.Windows.csproj -c Release -o .\publish-result -r win-x64 -p:Version="${{ vars.APP_VERSION}}" -p:PublishReadyToRun=true -p:PublishReadyToRunComposite=true --self-contained
-          dotnet tool restore
-          dotnet vpk pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
+          dnx vpk@1.2.0 -- pack -u SalesModule.Client.Windows -v "${{ vars.APP_VERSION }}" -p .\publish-result -e SalesModule.Client.Windows.exe -r win-x64 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle 'SalesModule'
 
     # The update feed behind WindowsUpdate.FilesUrl.
     - name: Upload releases to R2
       run: |
           cd SalesModule\src\Client\SalesModule.Client.Windows\
-          dotnet vpk upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10
+          dnx vpk@1.2.0 -- upload s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases --keepMaxReleases 10

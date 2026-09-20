@@ -335,4 +335,300 @@ private BitChartData StackedGroups() => new()
         new BitChartDataset { Label = ""2026 · Renew"", Stack = ""2026"", Data = new() { 15, 18, 17, 22 }, BackgroundColor = ""#ffb1c1"" }
     }
 };";
+
+    private readonly BitChartOptions _target = new()
+    {
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+        Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Title = new BitChartScaleTitleOptions { Display = true, Text = "Units" } } }
+    };
+
+    private BitChartData AgainstTarget() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Units vs target",
+                Data = BitChartSampleData.V(118, 96, 100.2, 131, 88, 104, 112),
+                Base = 100,
+                MinBarLength = 6,
+                BorderRadius = 3,
+                BackgroundColorFn = ctx => ctx.Value >= 100 ? "#2ecc71" : "#ff6384"
+            }
+        }
+    };
+
+    private BitChartData Overlay() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Budget", Grouped = false,
+                Data = BitChartSampleData.V(20, 22, 24, 26, 28, 30, 32),
+                BackgroundColor = "rgba(120,130,145,0.25)"
+            },
+            new BitChartDataset
+            {
+                Label = "Team A", SkipNull = true,
+                Data = BitChartSampleData.V(12, 19, 14, 22, 18, 25, 20),
+                BackgroundColor = "#36a2eb", BorderRadius = 3
+            },
+            new BitChartDataset
+            {
+                Label = "Team B", SkipNull = true,
+                Data = BitChartSampleData.V(8, null, 17, null, 14, 12, 19),
+                BackgroundColor = "#ff9f40", BorderRadius = 3
+            }
+        }
+    };
+
+    private readonly string minLengthRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""AgainstTarget()"" Options=""_target"" />";
+    private readonly string minLengthCsharpCode = @"
+private readonly BitChartOptions _target = new()
+{
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } },
+    Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Title = new BitChartScaleTitleOptions { Display = true, Text = ""Units"" } } }
+};
+
+private BitChartData AgainstTarget() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Label = ""Units vs target"",
+            Data = new() { 118, 96, 100.2, 131, 88, 104, 112 },
+            Base = 100,          // bars grow from the target instead of zero
+            MinBarLength = 6,    // a value that is almost on target still shows
+            BorderRadius = 3,
+            BackgroundColorFn = ctx => ctx.Value >= 100 ? ""#2ecc71"" : ""#ff6384""
+        }
+    }
+};";
+
+    private readonly string overlayRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Overlay()"" Options=""_bottom"" />";
+    private readonly string overlayCsharpCode = @"
+private BitChartData Overlay() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        // Grouped = false steps out of the side-by-side layout and keeps the whole band.
+        new BitChartDataset
+        {
+            Label = ""Budget"", Grouped = false,
+            Data = new() { 20, 22, 24, 26, 28, 30, 32 },
+            BackgroundColor = ""rgba(120,130,145,0.25)""
+        },
+        new BitChartDataset
+        {
+            Label = ""Team A"", SkipNull = true,
+            Data = new() { 12, 19, 14, 22, 18, 25, 20 },
+            BackgroundColor = ""#36a2eb"", BorderRadius = 3
+        },
+        // The nulls leave no gap: Team A widens over those categories.
+        new BitChartDataset
+        {
+            Label = ""Team B"", SkipNull = true,
+            Data = new() { 8, null, 17, null, 14, 12, 19 },
+            BackgroundColor = ""#ff9f40"", BorderRadius = 3
+        }
+    }
+};";
+
+    private BitChartData Measured() => new()
+    {
+        Labels = BitChartSampleData.Months.ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = "Response time (ms)",
+                Data = BitChartSampleData.V(120, 138, 131, 156, 149, 162, 158),
+                BackgroundColor = "rgba(54,162,235,0.55)",
+                BorderColor = "#36a2eb",
+                BorderRadius = 4,
+                ErrorData = [12, 9, 15, new BitChartErrorBar(6, 24), 11, null, 8],
+                ErrorBarColor = "#1f2733"
+            }
+        }
+    };
+
+    private readonly string errorBarsRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Measured()"" Options=""_bottom"" />";
+    private readonly string errorBarsCsharpCode = @"
+private BitChartData Measured() => new()
+{
+    Labels = { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"", ""Jul"" },
+    Datasets =
+    {
+        new BitChartDataset
+        {
+            Label = ""Response time (ms)"",
+            Data = new() { 120, 138, 131, 156, 149, 162, 158 },
+            BackgroundColor = ""rgba(54,162,235,0.55)"",
+            BorderColor = ""#36a2eb"",
+            BorderRadius = 4,
+            // A number is a symmetric interval; BitChartErrorBar(minus, plus) is asymmetric;
+            // null leaves that value without a whisker.
+            ErrorData = [12, 9, 15, new BitChartErrorBar(6, 24), 11, null, 8],
+            ErrorBarColor = ""#1f2733""
+        }
+    }
+};";
+
+    // Each step is a signed change, except the two totals which are drawn from the axis.
+    private static readonly (string Label, double Step, bool IsTotal)[] WaterfallSteps =
+    [
+        ("Opening", 120, true),
+        ("New", 46, false),
+        ("Upsell", 18, false),
+        ("Churn", -32, false),
+        ("Discounts", -11, false),
+        ("Expansion", 24, false),
+        ("Closing", 0, true)
+    ];
+
+    private readonly BitChartOptions _waterfall = new()
+    {
+        Plugins = new BitChartPluginOptions
+        {
+            Legend = new BitChartLegendOptions { Display = false },
+            Tooltip = new BitChartTooltipOptions
+            {
+                Callbacks = new BitChartTooltipCallbacks
+                {
+                    Label = item =>
+                    {
+                        var (label, step, isTotal) = WaterfallSteps[item.DataIndex];
+                        return isTotal ? $"{label}: {WaterfallTotalAt(item.DataIndex):N0}"
+                                       : $"{label}: {step:+#,##0;-#,##0;0}";
+                    }
+                }
+            }
+        }
+    };
+
+    /// <summary>The running total once the given step has been applied.</summary>
+    private static double WaterfallTotalAt(int index)
+    {
+        double total = 0;
+        for (int i = 0; i <= index; i++) total += WaterfallSteps[i].Step;
+        return total;
+    }
+
+    private BitChartData Waterfall()
+    {
+        var ranges = new List<(double Low, double High)?>();
+        double running = 0;
+        foreach (var (_, step, isTotal) in WaterfallSteps)
+        {
+            if (isTotal)
+            {
+                running += step;
+                ranges.Add((0, running));
+                continue;
+            }
+            double next = running + step;
+            ranges.Add((Math.Min(running, next), Math.Max(running, next)));
+            running = next;
+        }
+
+        return new BitChartData
+        {
+            Labels = WaterfallSteps.Select(s => s.Label).ToList(),
+            Datasets =
+            {
+                new BitChartDataset
+                {
+                    Label = "MRR",
+                    RangeData = ranges,
+                    BorderRadius = 3,
+                    BackgroundColorFn = ctx =>
+                    {
+                        var (_, step, isTotal) = WaterfallSteps[ctx.DataIndex];
+                        return isTotal ? "#6b7785" : step >= 0 ? "#2ecc71" : "#ff6384";
+                    }
+                }
+            }
+        };
+    }
+
+    private readonly string waterfallRazorCode = @"<BitChart Type=""BitChartType.Bar"" Data=""Waterfall()"" Options=""_waterfall"" />";
+    private readonly string waterfallCsharpCode = @"
+// Each step is a signed change, except the two totals which are drawn from the axis.
+private static readonly (string Label, double Step, bool IsTotal)[] Steps =
+[
+    (""Opening"", 120, true),
+    (""New"", 46, false),
+    (""Upsell"", 18, false),
+    (""Churn"", -32, false),
+    (""Discounts"", -11, false),
+    (""Expansion"", 24, false),
+    (""Closing"", 0, true)
+];
+
+private readonly BitChartOptions _waterfall = new()
+{
+    Plugins = new BitChartPluginOptions
+    {
+        Legend = new BitChartLegendOptions { Display = false },
+        Tooltip = new BitChartTooltipOptions
+        {
+            Callbacks = new BitChartTooltipCallbacks
+            {
+                Label = item =>
+                {
+                    var (label, step, isTotal) = Steps[item.DataIndex];
+                    return isTotal ? $""{label}: {WaterfallTotalAt(item.DataIndex):N0}""
+                                   : $""{label}: {step:+#,##0;-#,##0;0}"";
+                }
+            }
+        }
+    }
+};
+
+// The running total once the given step has been applied.
+private static double WaterfallTotalAt(int index)
+{
+    double total = 0;
+    for (int i = 0; i <= index; i++) total += Steps[i].Step;
+    return total;
+}
+
+private BitChartData Waterfall()
+{
+    // RangeData floats each bar between the running total before and after its step.
+    var ranges = new List<(double Low, double High)?>();
+    double running = 0;
+    foreach (var (_, step, isTotal) in Steps)
+    {
+        if (isTotal) { running += step; ranges.Add((0, running)); continue; }
+        double next = running + step;
+        ranges.Add((Math.Min(running, next), Math.Max(running, next)));
+        running = next;
+    }
+
+    return new BitChartData
+    {
+        Labels = Steps.Select(s => s.Label).ToList(),
+        Datasets =
+        {
+            new BitChartDataset
+            {
+                Label = ""MRR"",
+                RangeData = ranges,
+                BorderRadius = 3,
+                BackgroundColorFn = ctx =>
+                {
+                    var (_, step, isTotal) = Steps[ctx.DataIndex];
+                    return isTotal ? ""#6b7785"" : step >= 0 ? ""#2ecc71"" : ""#ff6384"";
+                }
+            }
+        }
+    };
+}";
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Components;
 using System.ClientModel.Primitives;
 using Boilerplate.Client.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 using Boilerplate.Tests.E2E.Infrastructure.Services;
 
@@ -62,13 +63,77 @@ public static class DeployedApiClientProvider
         return new DeployedApiClient(scope, scope.ServiceProvider.GetRequiredService<HttpClient>());
     }
 
-    /// <summary>Releases the MCP session and the pooled connections to the deployment's database.</summary>
+    /// <summary>
+    /// The global admin signed in on <paramref name="apiAddress"/>: the password, then the authenticator's code. A
+    /// deployment only takes the tokens its own API issued, so <see cref="GetGlobalApiClient"/>'s session serves on
+    /// AdminPanelApi alone. The session is the caller's to sign out - disposing only releases the scope.
+    /// </summary>
+    public static async Task<DeployedApiClient> SignInGlobalAdminOn(string apiAddress, CancellationToken cancellationToken)
+    {
+        var apiClient = CreateApiClientFor(apiAddress);
+
+        try
+        {
+            var configuration = apiClient.Services.GetRequiredService<IConfiguration>();
+            var email = configuration["GlobalAdminEmail"]!;
+            var password = configuration["GlobalAdminPassword"]!;
+            var authManager = apiClient.Services.GetRequiredService<AuthManager>();
+
+            await authManager.SignIn(new() { Email = email, Password = password, RememberMe = true }, cancellationToken);
+
+            await authManager.SignIn(new()
+            {
+                Email = email,
+                Password = password,
+                RememberMe = true,
+                TwoFactorCode = new Totp(Base32Encoding.ToBytes(configuration["GlobalAdminAuthenticatorKey"]!)).ComputeTotp()
+            }, cancellationToken);
+
+            return apiClient;
+        }
+        catch
+        {
+            await apiClient.DisposeAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Inconclusive rather than failed without the global admin's user secrets: the deployment's database, and every
+    /// change a test makes there, is reached through that session.
+    /// </summary>
+    public static void SkipWithoutGlobalAdminCredentials()
+    {
+        var configuration = host.Value.Services.GetRequiredService<IConfiguration>();
+
+        if (string.IsNullOrWhiteSpace(configuration["GlobalAdminEmail"]) || string.IsNullOrWhiteSpace(configuration["GlobalAdminPassword"]))
+            Assert.Inconclusive("'GlobalAdminEmail' / 'GlobalAdminPassword' are not in this project's user secrets, and this test reaches the deployment through the global admin.");
+    }
+
+    /// <summary>
+    /// Signs the global admin out - deletes its session, which would otherwise stay signed in on the deployment, one
+    /// per test process - and releases the MCP session and the pooled connections to the deployment's database.
+    /// </summary>
     public static async Task ShutdownAsync()
     {
         if (globalApiClient is not null)
         {
+            var accessToken = await globalApiClient.Services.GetRequiredService<IAuthTokenProvider>().GetAccessToken();
+            var dbContextFactory = globalApiClient.DbContextFactory!;
+
+            // Disposed first: closing the MCP session is a request that still needs the session.
             await globalApiClient.DisposeAsync();
             globalApiClient = null;
+
+            if (accessToken is not null)
+            {
+                var sessionId = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false).GetSessionId();
+
+                await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+                await dbContext.UserSessions.IgnoreQueryFilters()
+                    .Where(session => session.Id == sessionId)
+                    .ExecuteDeleteAsync();
+            }
         }
 
         if (host.IsValueCreated)

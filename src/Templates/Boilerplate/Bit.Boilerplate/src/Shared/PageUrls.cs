@@ -76,6 +76,9 @@ public static partial class PageUrls
     [Description("Review and revoke the external applications authorized over OAuth. Requires sign-in.")]
     public const string OAuthClients = "/oauth-clients";
 
+    [Description("Run this deployment: the status of every dependency it relies on, and its background jobs. Requires sign-in.")]
+    public const string Operations = "/operations";
+
     /// <summary>
     /// Where <c>/oauth/authorize</c> sends the browser; no [Description] because only that redirect reaches it. An app
     /// link on both platforms: whoever installed the app is usually signed in there, and even a cold hybrid start beats

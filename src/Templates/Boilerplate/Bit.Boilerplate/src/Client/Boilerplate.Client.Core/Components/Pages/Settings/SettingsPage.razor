@@ -9,7 +9,7 @@
 
 <section>
     <BitStack Class="stack">
-        <BitAccordionList TItem="BitAccordionListOption" DefaultExpandedKey="@Section" Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
+        <BitAccordionList TItem="BitAccordionListOption" @bind-ExpandedKey="expandedSection" Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
 
             <BitAccordionListOption Key="@PageUrls.SettingsSections.Profile" Title="@Localizer[nameof(AppStrings.ProfileTitle)]" Description="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
                 <ProfileSection />

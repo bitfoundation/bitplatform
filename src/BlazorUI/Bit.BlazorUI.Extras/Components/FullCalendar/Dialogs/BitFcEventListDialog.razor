@@ -1,15 +1,21 @@
 @namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef" @onclick:stopPropagation="true">
+    @* Escape dismisses the dialog, the way every modal is expected to behave. *@
+    <div class="bit-bfc-dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef"
+         @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header">
-            <h3 id="@_dialogTitleId">@string.Format(State.Culture, Texts.EventListTitleFormat, Date.ToString("dddd, MMM d, yyyy", State.Culture))</h3>
+            <h3 id="@_dialogTitleId">@string.Format(State.Culture, Texts.EventListTitleFormat, Date.ToString("D", State.Culture))</h3>
             <p>@string.Format(State.Culture, Texts.EventListCountFormat, Events.Count)</p>
         </div>
         <div class="bit-bfc-dialog-body" style="max-height:400px;overflow-y:auto;">
-            @foreach (var ev in Events)
+            @* Same reading order the agenda list uses: the all-day events of the date first, then
+               the timed ones in clock order, so the overflow list is not in supply order. *@
+            @foreach (var ev in SortedEvents)
             {
-                <button type="button" class="bit-bfc-agenda-item" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;" @onclick="() => SelectEvent(ev)">
+                <button type="button" class="bit-bfc-agenda-item @ev.CssClass" style="width:100%;border:none;background:none;font:inherit;color:inherit;text-align:start;"
+                        title="@BitFullCalendarHelpers.BuildEventTooltip(ev, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+                        @onclick="() => SelectEvent(ev)">
                     <span class="bit-bfc-agenda-avatar bit-bfc-bg" style="@ColorScheme.GetColorStyle(ev.Color)">
                         @(ev.Attendees.Count > 0 ? ev.Attendees[0].Initials : "")
                     </span>
@@ -18,7 +24,10 @@
                         <span class="bit-bfc-agenda-desc" style="display:block;">@ev.Description</span>
                     </span>
                     <span class="bit-bfc-agenda-time">
-                        @BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture)
+                        @* An all-day event has no clock time to show, so the label stands in for it. *@
+                        @(ev.IsAllDay
+                            ? Texts.AllDayLabel
+                            : BitFullCalendarHelpers.FormatTime(ev.StartDate, State.Use24HourFormat, State.Culture))
                     </span>
                 </button>
             }

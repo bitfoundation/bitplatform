@@ -158,7 +158,7 @@
             </tr>
             <tr>
                 <td><code>LeaveGuard</code> doesn't fire on <code>/edit/1 → /edit/2</code></td>
-                <td>The route stays matched, so nothing is being left. Implement <code>OnRenavigatingAsync</code> on the component - that's exactly the gap it fills.</td>
+                <td>The route stays matched, so nothing is being left. Implement <code>OnRenavigatingAsync</code> on the component - that's exactly the gap it fills. (A route that opted into <code>RemountOnParameterChange</code> is disposed by the change, so there the guard <em>does</em> fire, along with <code>OnDeactivatingAsync</code>.)</td>
             </tr>
             <tr>
                 <td>A dialog closes itself and the navigation proceeds</td>

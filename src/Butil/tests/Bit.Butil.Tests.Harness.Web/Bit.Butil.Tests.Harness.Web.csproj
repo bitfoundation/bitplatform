@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!-- One Blazor Web App that serves the Samples.Core pages - the /e2e harness pages among them - in any render
+         mode, chosen at startup with ButilHarness:Mode (see HarnessRenderModes), and in either script-loading
+         mode with ButilHarness:Scripts. A single host for every mode, rather than one project per mode, keeps
+         the Program.cs and App.razor under test identical across modes, so a failure that shows up in one mode
+         only belongs to the mode and not to a difference between two hosts. Multi-targeted because the library
+         is: the suites can run the harness on every runtime Bit.Butil ships for. -->
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- ButilHarnessFramework narrows the harness hosts to one framework for a publish (see publish-gate.sh).
+             A property of their own rather than -p:TargetFrameworks, which as a global property also reaches
+             Bit.Butil.Build - a netstandard2.0 task project whose restore it breaks. -->
+        <TargetFrameworks Condition="'$(ButilHarnessFramework)' != ''">$(ButilHarnessFramework)</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- Not under Bit.Butil: a namespace nested there would let Butil's Console, Window and Navigator
+             services shadow the framework types of the same name throughout this project. -->
+        <RootNamespace>ButilTests.Harness.Web</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Butil.Tests.Harness.Web.Client\Bit.Butil.Tests.Harness.Web.Client.csproj" />
+        <ProjectReference Include="..\..\Samples\Bit.Butil.Samples.Core\Bit.Butil.Samples.Core.csproj" />
+    </ItemGroup>
+
+    <!-- The documents the harness pages load by URL - the worker scripts, the frame WindowMessaging talks to and
+         the 1024-byte file Streams reads - taken from the standalone sample's wwwroot rather than copied into this
+         project, so every host serves the very same files at the very same paths and the assertions stay exact.
+         Copied next to the assembly and served from there by Program.cs, not linked into wwwroot: a linked static
+         web asset is recorded against this project's own wwwroot folder, which in a build output does not exist. -->
+    <PropertyGroup>
+        <_SamplesWebRoot>$(MSBuildThisFileDirectory)..\..\Samples\Bit.Butil.Samples.Web\wwwroot\</_SamplesWebRoot>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="$(_SamplesWebRoot)workers\**" Link="harness-files\workers\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <None Include="$(_SamplesWebRoot)frames\**" Link="harness-files\frames\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <None Include="$(_SamplesWebRoot)data\**" Link="harness-files\data\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <!-- Bit.Butil reaches this app as a ProjectReference, so the consumer-side logic the NuGet package would import
+         (script-loading mode, publish-time bundle trimming) is imported by hand, pointed at the source tree - the
+         same arrangement as Bit.Butil.Samples.Web. This is the project a Blazor Web App publishes from, so it is
+         where those properties belong. BitButilTrimScripts is on so a publish of this host goes through the
+         reference scan a real Web App consumer's does: a module the scan misses is a harness page that breaks.
+         Both script shapes stay in the output because the suites run this one app in bundle and lazy mode. -->
+    <PropertyGroup>
+        <BitButilTrimScripts>true</BitButilTrimScripts>
+        <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+        <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
+        <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
+    </PropertyGroup>
+    <Import Project="..\..\Bit.Butil\buildTransitive\Bit.Butil.targets" />
+
+</Project>

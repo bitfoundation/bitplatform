@@ -5,7 +5,7 @@ namespace Boilerplate.Shared.Features.Chatbot;
 /// panel reads the document rather than routing frames by kind (See <c>AppAiChatPanel.RunChannel</c> and
 /// <see cref="PartialJsonReader{T}"/>).
 /// <para>
-/// The server writes the opening, splices the model's reply in as it arrives, then writes the closing (See
+/// The server writes the opening, the answer as the model writes it, then the closing (See
 /// <c>AppChatbot.ProcessNewMessage</c>). Property order is streaming order and is load bearing:
 /// <see cref="Signature"/> and <see cref="Successful"/> aren't knowable until the end.
 /// </para>
@@ -15,8 +15,8 @@ public class AssistantTurn
     /// <summary>When the server began the turn, by its own clock rather than the device's.</summary>
     public DateTimeOffset SentAt { get; set; }
 
-    /// <summary>What the model wrote. Null on a turn that failed before it wrote anything.</summary>
-    public AssistantReply? Reply { get; set; }
+    /// <summary>What the model wrote, as markdown: what the user is shown, and what gets signed and resent.</summary>
+    public string? Answer { get; set; }
 
     /// <inheritdoc cref="AiChatMessage.Signature"/>
     public string? Signature { get; set; }

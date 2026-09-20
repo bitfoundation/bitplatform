@@ -20,10 +20,12 @@
         <Using Include="Microsoft.AspNetCore.Authentication" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Data" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Services" />
+        <Using Include="Boilerplate.Server.Api.Infrastructure.HealthChecks" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.Controllers" />
         <Using Include="Boilerplate.Server.Api.Infrastructure.RequestPipeline" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Models" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Services" />
+        <Using Include="Boilerplate.Server.Api.Features.Identity.HealthChecks" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Resources" />
         <Using Include="Boilerplate.Server.Api.Features.Identity.Components" />
         <Using Include="Microsoft.EntityFrameworkCore.Migrations" />
@@ -74,7 +76,7 @@
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" />
         <PackageReference Condition="'$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.Azure.SignalR" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="System.Linq.Dynamic.Core" />
@@ -111,7 +113,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include=".config\dotnet-tools.json" />
         <Content Include="..\..\..\Bit.ResxTranslator.json" Link="Features\Identity\Resources\Bit.ResxTranslator.json" />
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" />
     </ItemGroup>

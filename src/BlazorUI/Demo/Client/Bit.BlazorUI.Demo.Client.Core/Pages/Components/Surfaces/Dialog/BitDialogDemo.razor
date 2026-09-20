@@ -676,7 +676,8 @@
                        ShowCloseButton="false"
                        OkText="Send">
                 <div class="dialog-body">
-                    <BitTextField Label="What happened?" Multiline Rows="4" />
+                    <BitTextField Label="What happened?" Multiline Rows="4" @bind-Value="dialogValue" />
+                    <div><b>Value</b> is: @dialogValue</div>
                 </div>
             </BitDialog>
 

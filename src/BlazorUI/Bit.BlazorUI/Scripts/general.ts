@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.6.0-pre-05';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.6.1';
 
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
@@ -64,9 +64,13 @@ window.addEventListener('resize', () => {
     // A resize caused by the virtual keyboard (touch devices, notably iOS) should not dismiss an
     // open callout whose focused editable belongs to the callout or is its anchor component;
     // reposition it instead. Any other resize dismisses the callout as before.
+    // The screen is not measured for it, the way the scroll handler above has never measured it either:
+    // a landscape phone, a tablet, an unfolded foldable and a convertible in its tablet posture all raise a
+    // keyboard on a viewport far wider than a portrait phone's, and a width test there dismissed the callout
+    // out from under the very keyboard the focus inside it had just asked for. The primary pointer is what
+    // tells them from a touch-screen laptop, whose resizes are the window's own and still dismiss.
     const active = document.activeElement;
-    if (BitBlazorUI.Utils.isTouchDevice()
-        && window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH
+    if (BitBlazorUI.Utils.hasOnScreenKeyboard()
         && BitBlazorUI.Utils.isEditableElementFocused()
         && active
         && (BitBlazorUI.Callouts.calloutContains(active)

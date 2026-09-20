@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createServiceWorkerContext, ORIGIN } from './harness.js';
+import { createHash, webcrypto } from 'node:crypto';
+import { createServiceWorkerContext, ORIGIN, FakeResponse } from './harness.js';
 
 const manifest = (assets, version = 'v1') => ({ version, assets });
 
@@ -990,6 +991,58 @@ describe('download retry with backoff', () => {
         expect(calls).toBe(1);
         const errors = sw.messagesOfType('error');
         expect(errors.some(e => e.data.reason === 'integrity')).toBe(true);
+    });
+
+    // Chromium rejects an SRI mismatch with a bare "Failed to fetch", which the message check cannot
+    // tell from a network failure (the browser suite caught tampered assets being retried and then
+    // reported as 'fetch'). The worker then compares the served bytes against the hash itself.
+    describe('when the rejection does not say it was an integrity failure', () => {
+        const PUBLISHED = 'the published bytes';
+        const hash = `sha256-${createHash('sha256').update(PUBLISHED).digest('base64')}`;
+
+        const bootComparing = fetchHandler => boot({
+            config: { maxRetries: 2, retryDelay: 1, enableIntegrityCheck: true, crypto: webcrypto },
+            assets: [{ url: 'app.js', hash }],
+            fetchHandler,
+        });
+
+        it('reports bytes that do not match the hash as an integrity failure, without retrying', async () => {
+            let verifiedAttempts = 0;
+            const sw = bootComparing(async (url, request) => {
+                if (request.integrity) { verifiedAttempts++; throw new TypeError('Failed to fetch'); }
+                return new FakeResponse('tampered bytes');
+            });
+            await install(sw);
+
+            expect(verifiedAttempts).toBe(1);
+            const reasons = sw.messagesOfType('error').map(e => e.data.reason);
+            expect(reasons).toContain('integrity');
+            expect(reasons).not.toContain('fetch');
+            expect(sw.messagesOfType('error').find(e => e.data.reason === 'integrity').data.url).toBe(`${ORIGIN}/app.js`);
+        });
+
+        it('treats the failure as transient when the served bytes match, and retries', async () => {
+            let verifiedAttempts = 0;
+            const sw = bootComparing(async (url, request) => {
+                if (request.integrity && ++verifiedAttempts === 1) throw new TypeError('Failed to fetch');
+                return new FakeResponse(PUBLISHED);
+            });
+            await install(sw);
+
+            expect(verifiedAttempts).toBe(2);
+            expect(sw.messagesOfType('error')).toHaveLength(0);
+            expect(sw.caches.snapshot()['bit-bswup:/ - v1']).toContain(`${ORIGIN}/app.js.${hash}`);
+        });
+
+        it('stays on the transient path when the comparison download fails too', async () => {
+            let calls = 0;
+            const sw = bootComparing(async () => { calls++; throw new TypeError('Failed to fetch'); });
+            await install(sw);
+
+            // Three verified attempts, each followed by one comparison download that fails as well.
+            expect(calls).toBe(6);
+            expect(sw.messagesOfType('error').map(e => e.data.reason)).toEqual(['fetch']);
+        });
     });
 
     it('falls back to the default retry policy when the config is not a sane number', async () => {

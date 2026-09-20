@@ -138,7 +138,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dotnet ef dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.12 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }
@@ -179,7 +179,11 @@ public static partial class IClientCoreServiceCollectionExtensions
                     .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
                     .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
                     {
+                        //#if (redis == true)
+                        options.SkipNegotiation = true; // No negotiate request, so no sticky sessions behind the Redis backplane.
+                        //#else
                         options.SkipNegotiation = false; // Required for Azure SignalR.
+                        //#endif
                         options.Transports = HttpTransportType.WebSockets;
                         // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
                         // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.

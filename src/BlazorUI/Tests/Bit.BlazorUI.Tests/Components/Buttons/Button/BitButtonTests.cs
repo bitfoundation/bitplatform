@@ -359,7 +359,7 @@ public class BitButtonTests : BunitTestContext
         DataRow(BitPlacement.End),
         DataRow(null)
     ]
-    public void BitButtonIconPositionClassTest(BitPlacement? iconPosition)
+    public void BitButtonIconPlacementClassTest(BitPlacement? iconPosition)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {

@@ -1114,7 +1114,7 @@ public partial class BitPanel : BitComponentBase
 
         try
         {
-            await _js.BitUtilsSetupFocusTrap(_containerId);
+            await _js.BitUtilsSetupFocusTrap(_containerId, _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

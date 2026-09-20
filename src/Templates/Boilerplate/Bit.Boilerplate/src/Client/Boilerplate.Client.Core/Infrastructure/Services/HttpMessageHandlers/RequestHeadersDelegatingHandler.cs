@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
@@ -39,10 +40,20 @@ public partial class RequestHeadersDelegatingHandler(ITelemetryContext telemetry
             request.Headers.Remove("X-Origin"); // It gets added by default in Program.Services.cs of Client projects and it might be rejected by some external APIs due to CORS limitations.
         }
 
-        request.SetBrowserRequestCredentials(request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) or nameof(IUserController.SignOut)
-            ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
-        // `BrowserRequestCredentials.Omit` would prevent server Set-Cookie or Delete-Cookie headers from being processed by the browser.
-        // Setting and removing cookies is crucial for pre-rendering scenarios.
+        // UpdateSession, SignOut and Delete write the access_token cookie pre-rendering reads, so the Blazor WebAssembly app Server.Web
+        // serves sends them to its own origin, the host that pre-renders. Every other request goes without cookies.
+        var writesAccessTokenCookie = isInternalRequest && AppPlatform.IsBrowser && AppPlatform.IsWasmStandalone is false
+            && request.Options.GetValueOrDefault(RequestOptionNames.ActionName)?.ToString() is nameof(IUserController.UpdateSession) or nameof(IUserController.SignOut) or nameof(IUserController.Delete);
+
+        //#if (api == "Standalone")
+        if (writesAccessTokenCookie)
+        {
+            // Server.Web's YARP forwarder answers it by passing it on to Server.Api (See Server.Web's Program.Middlewares.cs).
+            request.RequestUri = new Uri(new Uri(request.Headers.GetValues("X-Origin").Single()), request.RequestUri!.PathAndQuery.TrimStart('/'));
+        }
+        //#endif
+
+        request.SetBrowserRequestCredentials(writesAccessTokenCookie ? BrowserRequestCredentials.Include : BrowserRequestCredentials.Omit);
 
         return await base.SendAsync(request, cancellationToken);
     }

@@ -47,8 +47,7 @@ jobs:
       script: cd src && dotnet workload install wasm-tools
 
   - script: |
-      dotnet tool install --global Bit.ResxTranslator
-      bit-resx-translate
+      dnx Bit.ResxTranslator
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -147,8 +146,7 @@ jobs:
     displayName: 'Install Node.js'
 
   - script: |
-      dotnet tool install --global Bit.ResxTranslator
-      bit-resx-translate
+      dnx Bit.ResxTranslator
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)
@@ -175,8 +173,7 @@ jobs:
       script: |
         cd src/Client/Boilerplate.Client.Windows
         dotnet publish Boilerplate.Client.Windows.csproj -c Release -o ./publish-result -r win-x86 -p:Version="$(APP_VERSION)" --self-contained
-        dotnet tool restore
-        dotnet vpk pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
+        dnx vpk@1.2.0 -- pack -u $(APP_ID) -v "$(APP_VERSION)" -p ./publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon ./wwwroot/favicon.ico --packTitle '$(APP_TITLE)'
 
   - task: PublishPipelineArtifact@1
     displayName: Upload artifact
@@ -227,8 +224,7 @@ jobs:
     displayName: Copy keystore to app project folder
 
   - script: |
-      dotnet tool install --global Bit.ResxTranslator
-      bit-resx-translate
+      dnx Bit.ResxTranslator
     env:
       OpenAI__ApiKey: $(OPENAI_APIKEY)
       OpenAI__Endpoint: $(OPENAI_ENDPOINT)

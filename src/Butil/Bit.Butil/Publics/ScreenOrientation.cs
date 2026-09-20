@@ -28,10 +28,15 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     /// Invoked from JS on the orientation <c>change</c> event. Public + <see cref="JSInvokableAttribute"/>
     /// so it can be dispatched through the per-instance <see cref="DotNetObjectReference{T}"/>.
     /// </summary>
+    /// <remarks>
+    /// The type arrives as the raw spec keyword (e.g. <c>portrait-primary</c>) rather than inside an
+    /// <see cref="OrientationState"/>: System.Text.Json has no way to read that keyword into a
+    /// <see cref="ScreenOrientationType"/>, and the failed deserialization would drop every event.
+    /// </remarks>
     [JSInvokable(InvokeMethodName)]
-    public void InvokeScreenOrientationChange(Guid id, OrientationState state)
+    public void InvokeScreenOrientationChange(Guid id, ushort angle, string type)
     {
-        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(state);
+        if (_handlers.TryGetValue(id, out var handler)) handler.Invoke(new() { Angle = angle, Type = ToType(type) });
     }
 
     /// <summary>True when the runtime exposes <c>screen.orientation</c>.</summary>
@@ -72,15 +77,17 @@ public class ScreenOrientation(IJSRuntime js) : IAsyncDisposable
     {
         var type = await js.Invoke<string>("BitButil.screenOrientation.type");
 
-        return type switch
-        {
-            "portrait-primary" => ScreenOrientationType.PortraitPrimary,
-            "portrait-secondary" => ScreenOrientationType.PortraitSecondary,
-            "landscape-primary" => ScreenOrientationType.LandscapePrimary,
-            "landscape-secondary" => ScreenOrientationType.LandscapeSecondary,
-            _ => ScreenOrientationType.LandscapePrimary
-        };
+        return ToType(type);
     }
+
+    private static ScreenOrientationType ToType(string? type) => type switch
+    {
+        "portrait-primary" => ScreenOrientationType.PortraitPrimary,
+        "portrait-secondary" => ScreenOrientationType.PortraitSecondary,
+        "landscape-primary" => ScreenOrientationType.LandscapePrimary,
+        "landscape-secondary" => ScreenOrientationType.LandscapeSecondary,
+        _ => ScreenOrientationType.LandscapePrimary
+    };
 
     /// <summary>
     /// Returns the document's current orientation angle.
