@@ -6,9 +6,9 @@ internal static class BitFileUploadJsRuntimeExtensions
 {
     // The js side of the setup is asynchronous (it reads the image dimensions before it answers), so this
     // one stays on the regular asynchronous invocation - the fast in-process path would leave it running
-    // and come back with nothing. Invoke still returns default (null) when the runtime can't service
-    // interop, so the result is normalized to an empty array to keep callers (e.g. _files.AddRange(...))
-    // from crashing with ArgumentNullException.
+    // and come back with nothing. Invoke returns default (null) when the runtime can't service interop,
+    // so the result is normalized to an empty array to keep callers (e.g. _files.AddRange(...)) from
+    // crashing with ArgumentNullException.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInfo))]
     internal static async ValueTask<BitFileInfo[]> BitFileUploadSetup(this IJSRuntime jsRuntime,
                                                                      string id,
@@ -24,11 +24,9 @@ internal static class BitFileUploadJsRuntimeExtensions
                                                                      bool showPreview,
                                                                      bool readImageDimensions)
     {
-        const string identifier = "BitBlazorUI.FileUpload.setup";
-        var result = await jsRuntime.Invoke<BitFileInfo[]>(identifier,
+        var result = await jsRuntime.Invoke<BitFileInfo[]>("BitBlazorUI.FileUpload.setup",
                                                            id, dotnetObjectReference, element, append, uploadAddress, uploadRequestHttpHeaders,
                                                            method, withCredentials, timeout, fieldName, showPreview, readImageDimensions);
-        jsRuntime.ReportIfUnexpectedNull(identifier, result);
         return result ?? [];
     }
 
@@ -62,23 +60,20 @@ internal static class BitFileUploadJsRuntimeExtensions
         return jsRuntime.FastInvokeVoid("BitBlazorUI.FileUpload.pause", id, index);
     }
 
-    // FastInvoke returns default (null) when the runtime can't service interop or a JSON/JS interop
-    // error is swallowed on the in-process (WASM) path. Callers must null-check before using the
-    // reference; a null result means drag/drop was not initialized.
-    internal static async ValueTask<IJSObjectReference?> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime,
-                                                                                         ElementReference dragDropZoneElement,
-                                                                                         ElementReference inputFileElement,
-                                                                                         string dragClass,
-                                                                                         string? dragStyle,
-                                                                                         bool allowDrop,
-                                                                                         bool allowPaste,
-                                                                                         bool expandDirectories)
+    // Null when the runtime can't service interop (prerendering, a circuit that is not initialized): the
+    // call is skipped and there is no drop zone to reference, so callers null-check before using it.
+    internal static ValueTask<IJSObjectReference?> BitFileUploadSetupDragDrop(this IJSRuntime jsRuntime,
+                                                                                   ElementReference dragDropZoneElement,
+                                                                                   ElementReference inputFileElement,
+                                                                                   string dragClass,
+                                                                                   string? dragStyle,
+                                                                                   bool allowDrop,
+                                                                                   bool allowPaste,
+                                                                                   bool expandDirectories)
     {
-        const string identifier = "BitBlazorUI.FileUpload.setupDragDrop";
-        var result = await jsRuntime.FastInvoke<IJSObjectReference>(identifier,
-                                                                    dragDropZoneElement, inputFileElement, dragClass, dragStyle,
-                                                                    allowDrop, allowPaste, expandDirectories);
-        return jsRuntime.ReportIfUnexpectedNull(identifier, result);
+        return jsRuntime.FastInvoke<IJSObjectReference?>("BitBlazorUI.FileUpload.setupDragDrop",
+                                                         dragDropZoneElement, inputFileElement, dragClass, dragStyle,
+                                                         allowDrop, allowPaste, expandDirectories);
     }
 
     internal static ValueTask BitFileUploadBrowse(this IJSRuntime jsRuntime, ElementReference inputFileElement)

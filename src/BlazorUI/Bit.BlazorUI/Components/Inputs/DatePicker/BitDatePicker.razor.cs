@@ -1204,7 +1204,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         ResetPickersState();
 
-        var bodyWidth = await _js.BitUtilsGetBodyWidth() ?? 0;
+        var bodyWidth = await _js.BitUtilsGetBodyWidth();
         var notEnoughWidthAvailable = bodyWidth < MAX_WIDTH;
 
         if (_showMonthPickerAsOverlayInternal is false)

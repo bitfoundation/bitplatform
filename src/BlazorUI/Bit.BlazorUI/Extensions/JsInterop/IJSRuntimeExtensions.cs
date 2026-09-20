@@ -102,15 +102,14 @@ public static class IJSRuntimeExtensions
     /// <item><description><see href="https://github.com/dotnet/aspnetcore/blob/main/src/Components/Server/src/Circuits/RemoteJSRuntime.cs">RemoteJSRuntime</see> — reflects <c>IsInitialized</c></description></item>
     /// <item><description><see href="https://github.com/dotnet/aspnetcore/blob/main/src/Components/WebView/WebView/src/Services/WebViewJSRuntime.cs">WebViewJSRuntime</see> — reflects <c>_ipcSender</c></description></item>
     /// </list>
-    /// <para>Guarded by <c>IsRuntimeInvalidFrameworkContractTests</c>.</para>
+    /// <para>Guarded by <c>IJSRuntimeExtensionsProbeContractTests</c>.</para>
     /// </remarks>
     [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Reflection here only reads a well-known bool property (RemoteJSRuntime.IsInitialized) and a private field (WebViewJSRuntime._ipcSender) by name for host-runtime detection; no members are dynamically invoked or instantiated, and a missing member is handled by treating the runtime as valid, so trimming cannot break this probe.")]
     public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
-        // A null runtime can't service interop, so report it as invalid. This lets the no-op paths in
-        // InvokeVoid/Invoke/FastInvoke skip the call instead of dereferencing null (the async fallback
-        // would otherwise throw ArgumentNullException from the framework's JSRuntimeExtensions).
-        if (jsRuntime is null) return true;
+        // A missing runtime is a wiring bug to surface, not a state to service: treating it as "invalid"
+        // would turn every interop call into a silent no-op and hide the misconfiguration.
+        ArgumentNullException.ThrowIfNull(jsRuntime);
 
         // Resolve (and cache) a probe for this concrete runtime type. The probe is defensive: it
         // relies on framework-internal type names / members that can shift between .NET releases,

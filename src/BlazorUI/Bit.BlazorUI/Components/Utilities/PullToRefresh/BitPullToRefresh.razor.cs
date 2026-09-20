@@ -27,6 +27,7 @@ public partial class BitPullToRefresh : BitComponentBase
     private string? _lastScrollerSelector;
     private ElementReference? _lastScrollerElement;
     private ElementReference _loadingRef = default!;
+    private DotNetObjectReference<BitPullToRefresh>? _dotnetObj;
 
 
 
@@ -404,8 +405,10 @@ public partial class BitPullToRefresh : BitComponentBase
         if (firstRender)
         {
             CacheJsParameters();
-            var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, dotnetObj);
+
+            _dotnetObj = DotNetObjectReference.Create(this);
+
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, IsEnabled, _dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -595,7 +598,14 @@ public partial class BitPullToRefresh : BitComponentBase
             await _js.BitPullToRefreshDispose(UniqueId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // The reference is owned here: whatever the JS dispose answered (or whether it could run at
+            // all), it is released on this side, after the JS cleanup so its callbacks kept a live target.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
 
-        await base.DisposeAsync(disposing);
+            await base.DisposeAsync(disposing);
+        }
     }
 }

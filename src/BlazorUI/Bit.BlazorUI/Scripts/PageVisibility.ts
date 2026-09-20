@@ -1,49 +1,28 @@
 namespace BitBlazorUI {
     export class PageVisibility {
-        private static _isInitialized = false;
-        private static _visibilityHandler?: () => void;
-        private static _blurHandler?: () => void;
-        private static _focusHandler?: () => void;
+        // One controller owns every listener: registering them with its signal lets dispose() remove them
+        // all with a single abort, and "a controller exists" is what says the listeners are installed.
+        private static _abort?: AbortController;
 
         public static init(dotnetObj: DotNetObject) {
-            if (PageVisibility._isInitialized) return;
+            if (PageVisibility._abort) return;
 
-            PageVisibility._isInitialized = true;
+            PageVisibility._abort = new AbortController();
+            const signal = PageVisibility._abort.signal;
 
-            PageVisibility._visibilityHandler = () => dotnetObj.invokeMethodAsync('VisibilityChanged', document.hidden);
-
-            document.addEventListener('visibilitychange', PageVisibility._visibilityHandler);
+            document.addEventListener('visibilitychange', () => dotnetObj.invokeMethodAsync('VisibilityChanged', document.hidden), { signal });
 
             // A window that lost the focus is not hidden - another window is simply covering it, or the focus went
             // to the dev tools or an iframe - so visibilitychange never fires for it. It is reported separately
             // because "the page is not being looked at" and "the page is not being typed into" are different
             // questions, and a consumer that only cares about one of them should not have to hear about the other.
-            PageVisibility._blurHandler = () => dotnetObj.invokeMethodAsync('WindowFocusChanged', true);
-            PageVisibility._focusHandler = () => dotnetObj.invokeMethodAsync('WindowFocusChanged', false);
-
-            window.addEventListener('blur', PageVisibility._blurHandler);
-            window.addEventListener('focus', PageVisibility._focusHandler);
+            window.addEventListener('blur', () => dotnetObj.invokeMethodAsync('WindowFocusChanged', true), { signal });
+            window.addEventListener('focus', () => dotnetObj.invokeMethodAsync('WindowFocusChanged', false), { signal });
         }
 
         public static dispose() {
-            if (!PageVisibility._isInitialized) return;
-
-            if (PageVisibility._visibilityHandler) {
-                document.removeEventListener('visibilitychange', PageVisibility._visibilityHandler);
-                PageVisibility._visibilityHandler = undefined;
-            }
-
-            if (PageVisibility._blurHandler) {
-                window.removeEventListener('blur', PageVisibility._blurHandler);
-                PageVisibility._blurHandler = undefined;
-            }
-
-            if (PageVisibility._focusHandler) {
-                window.removeEventListener('focus', PageVisibility._focusHandler);
-                PageVisibility._focusHandler = undefined;
-            }
-
-            PageVisibility._isInitialized = false;
+            PageVisibility._abort?.abort();
+            PageVisibility._abort = undefined;
         }
     }
 }
