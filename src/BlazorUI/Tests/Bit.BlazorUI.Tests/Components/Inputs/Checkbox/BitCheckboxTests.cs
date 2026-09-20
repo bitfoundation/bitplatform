@@ -578,8 +578,37 @@ public class BitCheckboxTests : BunitTestContext
 
         var chbInput = component.Find("input");
 
-        Assert.AreEqual(required, chbInput.HasAttribute("required"));
+        Assert.AreEqual(required && isEnabled, chbInput.HasAttribute("required"));
         Assert.AreEqual(required && isEnabled, component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    /// <summary>
+    /// The native disabled attribute is what keeps a disabled checkbox out of its form and out of that
+    /// form's validation, so a checkbox kept focusable - which trades that attribute away - has to be kept
+    /// out of both by hand. An unchecked required one would otherwise block the very submit it cannot join.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDisabledButFocusableIsNotSubmittedOrRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Name, "terms");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+        });
+
+        var input = component.Find("input");
+
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.IsFalse(input.HasAttribute("name"));
+        Assert.IsFalse(input.HasAttribute("required"));
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+
+        Assert.AreEqual("terms", component.Find("input").GetAttribute("name"));
+        Assert.IsTrue(component.Find("input").HasAttribute("required"));
     }
 
     /// <summary>

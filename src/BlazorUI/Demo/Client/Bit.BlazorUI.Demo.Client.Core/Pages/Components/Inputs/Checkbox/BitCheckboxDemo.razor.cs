@@ -785,6 +785,10 @@ public partial class BitCheckboxDemo
 
     private void LogOnFocus() => eventsLog = "OnFocus";
 
+    private void LogOnFocusIn() => eventsLog += " → OnFocusIn";
+
+    private void LogOnFocusOut() => eventsLog += " → OnFocusOut";
+
     private void LogOnBlur() => eventsLog += " → OnBlur";
 
     private void HandleOnChanging(BitCheckboxChangeArgs args)

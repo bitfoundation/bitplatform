@@ -244,6 +244,8 @@
                      OnChanging="LogOnChanging"
                      OnChange="LogOnChange"
                      OnFocus="LogOnFocus"
+                     OnFocusIn="LogOnFocusIn"
+                     OnFocusOut="LogOnFocusOut"
                      OnBlur="LogOnBlur" />
         <br />
         <div>@(string.IsNullOrEmpty(eventsLog) ? "No clicks yet." : eventsLog)</div>

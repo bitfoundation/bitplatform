@@ -30,6 +30,13 @@
     // no value at all, which assistive technologies read as the default - that is, as not disabled.
     var ariaDisabled = IsEnabled ? null : "true";
 
+    // A disabled checkbox kept in the tab order carries no native disabled attribute, so the two things that
+    // attribute would otherwise do have to be done by hand: a disabled control is not serialized into its
+    // form, and its required is not enforced. Left to the browser, an unchecked one would block the very
+    // submit it is disabled from taking part in.
+    var name = IsEnabled ? Name ?? GetSplattedInputAttribute("name") : null;
+    var required = Required && IsEnabled;
+
     // The glyph is decorative beside the state the input itself announces, so it is hidden from assistive
     // technologies - unless it was given a name of its own, which is an explicit ask for it to be read.
     var iconIsNamed = CheckIconAriaLabel.HasValue();
@@ -52,13 +59,13 @@
            @onclick="@HandleOnCheckboxClick"
            @onclick:stopPropagation="StopPropagation"
            @onclick:preventDefault="@(IsEnabled is false || ReadOnly)"
-           name="@Name"
+           name="@name"
            id="@_inputId"
            type="checkbox"
            class="bit-chb-inp"
            value="@CurrentValueAsString"
            checked="@CurrentValue"
-           required="@Required"
+           required="@required"
            tabindex="@TabIndex"
            autofocus="@autoFocus"
            disabled="@(IsEnabled is false && AllowDisabledFocus is false)"

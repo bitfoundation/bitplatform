@@ -191,6 +191,8 @@ private bool customContentIndeterminate = true;";
              OnChanging=""LogOnChanging""
              OnChange=""LogOnChange""
              OnFocus=""LogOnFocus""
+             OnFocusIn=""LogOnFocusIn""
+             OnFocusOut=""LogOnFocusOut""
              OnBlur=""LogOnBlur"" />
 <div>@(string.IsNullOrEmpty(eventsLog) ? ""No clicks yet."" : eventsLog)</div>
 
@@ -219,6 +221,10 @@ private void LogOnChanging(BitCheckboxChangeArgs args) => eventsLog += $"" → O
 private void LogOnChange(bool value) => eventsLog += $"" → OnChange({value})"";
 
 private void LogOnFocus() => eventsLog = ""OnFocus"";
+
+private void LogOnFocusIn() => eventsLog += "" → OnFocusIn"";
+
+private void LogOnFocusOut() => eventsLog += "" → OnFocusOut"";
 
 private void LogOnBlur() => eventsLog += "" → OnBlur"";
 
