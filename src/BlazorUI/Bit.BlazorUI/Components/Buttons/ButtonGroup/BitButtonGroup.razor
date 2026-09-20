@@ -2,14 +2,28 @@
 @inherits BitComponentBase
 @typeparam TItem
 
+@{
+    // A null written over a splatted attribute removes that attribute rather than leaving it alone, so every
+    // attribute a page can also write by hand is resolved against what it wrote (see
+    // BitComponentBase.GetSplattedAttribute) instead of being overwritten with this component's null. The
+    // hyphenated aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a
+    // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do, and
+    // losing it would take the name off a toolbar that assistive technologies will not announce without one.
+    // The role is resolved the same way, and so the pattern the selection mode implies is only the default: a
+    // page that knows better - a menubar, a tablist, a plain group - keeps the role it wrote.
+    var role = GetSplattedAttribute("role") ?? _RootRole;
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaOrientation = GetSplattedAttribute("aria-orientation") ?? GetAriaOrientation(role);
+}
+
 <div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"
      id="@_Id"
-     role="@_RootRole"
+     role="@role"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel"
-     aria-orientation="@_AriaOrientation">
+     aria-label="@ariaLabel"
+     aria-orientation="@ariaOrientation">
     @if (Options is not null || ChildContent is not null)
     {
         <CascadingValue Value="this" IsFixed="true">

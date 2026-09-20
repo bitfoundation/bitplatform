@@ -424,8 +424,8 @@ private List<BitButtonGroupItem> toggleTitleItems =
                 Items=""a11yItems""
                 DefaultToggleKey=""start"" />
 
-<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
-                SelectOnFocus
+<BitButtonGroup AriaLabel=""Text alignment (committed with Space)""
+                SelectOnFocus=""false""
                 Variant=""BitVariant.Outline""
                 SelectionMode=""BitButtonGroupSelectionMode.Single""
                 Items=""selectOnFocusItems""
@@ -439,8 +439,22 @@ private List<BitButtonGroupItem> toggleTitleItems =
 <BitButtonGroup AriaLabel=""Operations""
                 Navigable=""false""
                 Variant=""BitVariant.Outline""
-                Items=""basicItems"" />";
+                Items=""basicItems"" />
+
+<BitButtonGroup @ref=""focusGroup""
+                AriaLabel=""Operations""
+                Variant=""BitVariant.Outline""
+                Items=""basicItems"" />
+<BitButton Variant=""BitVariant.Outline"" OnClick=""FocusTheGroup"">Focus the group</BitButton>";
     private readonly string example20CsharpCode = @"
+private BitButtonGroup<BitButtonGroupItem>? focusGroup;
+
+// FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+private async Task FocusTheGroup()
+{
+    if (focusGroup is not null) await focusGroup.FocusAsync();
+}
+
 private List<BitButtonGroupItem> a11yItems =
 [
     new() { Key = ""start"", Text = ""Start"", IconName = BitIconName.AlignLeft, AriaLabel = ""Align start"" },
@@ -689,6 +703,8 @@ private List<BitButtonGroupItem> basicItems =
 
 <BitButtonGroup Items=""styleClassItems"" Variant=""BitVariant.Text"" />
 
+<BitButtonGroup Items=""cssVarItems"" />
+
 <BitButtonGroup Items=""basicItems""
                 Variant=""BitVariant.Text""
                 Styles=""@(new() { Button = ""color: darkcyan; border-color: deepskyblue; background-color: azure;"" })"" />
@@ -700,6 +716,20 @@ private List<BitButtonGroupItem> basicItems =
 private List<BitButtonGroupItem> basicItems =
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
+];
+
+private List<BitButtonGroupItem> cssVarItems =
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add },
+    new() { Text = ""Edit"", IconName = BitIconName.Edit },
+    new()
+    {
+        Text = ""Delete"",
+        IconName = BitIconName.Delete,
+        Style = ""--bit-ButtonGroup-color: var(--bit-clr-err-text);"" +
+                ""--bit-ButtonGroup-background: var(--bit-clr-err);"" +
+                ""--bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);"",
+    },
 ];
 
 private List<BitButtonGroupItem> styleClassItems =

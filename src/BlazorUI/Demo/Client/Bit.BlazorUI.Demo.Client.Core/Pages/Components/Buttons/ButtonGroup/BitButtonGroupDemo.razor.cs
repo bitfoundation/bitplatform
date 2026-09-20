@@ -8,6 +8,13 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives the keyboard focus to the ButtonGroup when the page first renders. The focus lands on the button that owns the group's single tab stop, which is the same button a Tab into the group reaches.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -18,7 +25,7 @@ public partial class BitButtonGroupDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines that only the icon should be rendered. The hidden text stays the accessible name of the button, so an icon-only group is still readable without an AriaLabel being set on every item.",
+            Description = "Determines that only the icon should be rendered, which also squares the buttons the way every icon button in the library is shaped. The hidden text stays the accessible name of the button, so an icon-only group is still readable without an AriaLabel being set on every item.",
         },
         new()
         {
@@ -180,9 +187,9 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "SelectOnFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus - which is what the WAI-ARIA radiogroup pattern expects of the arrow keys in the Single selection mode. It is off by default so that arrowing through a group whose selection does work does not fire it on every keystroke.",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus. Unset, it follows the SelectionMode: on in the Single mode, whose arrow keys the WAI-ARIA radiogroup pattern expects to check the radio they land on, and off in the Multiple and None modes. Set it to false on a Single-mode group whose selection does work - a filter, a fetch - so that arrowing across it does not fire that work on every keystroke.",
         },
         new()
         {
@@ -248,6 +255,16 @@ public partial class BitButtonGroupDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives the keyboard focus to the button that owns the ButtonGroup's tab stop - the toggled one, otherwise the first focusable one - which is the same button a Tab into the group reaches. It does nothing while the group holds no focusable button at all.",
+        },
+    ];
+
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()
@@ -267,6 +284,12 @@ public partial class BitButtonGroupDemo
             Name = "--bit-ButtonGroup-border-color",
             DefaultValue = "The Color role's main color (the group) and dark color (the separators)",
             Description = "Color of the group's outer border and of the separators between its buttons. It wins over the hover and pressed states, which otherwise repaint the border along with the buttons.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-separator-color",
+            DefaultValue = "--bit-ButtonGroup-border-color",
+            Description = "Color of the separators between the buttons alone, leaving the group's outer border to the variable above - which is what a segmented control whose dividers are lighter than its outline needs. In the Detached and Wrap layouts every button draws the whole outline itself, so there are no separators of their own there and the border color paints all of it.",
         },
         new()
         {
@@ -356,7 +379,7 @@ public partial class BitButtonGroupDemo
         {
             Name = "--bit-ButtonGroup-font-size",
             DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of a button, which the badge follows.",
+            Description = "Text size of a button.",
         },
         new()
         {
@@ -387,6 +410,12 @@ public partial class BitButtonGroupDemo
             Name = "--bit-ButtonGroup-badge-color",
             DefaultValue = "The button's own text color",
             Description = "Text color of a button's badge.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-badge-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
+            Description = "Text size of a button's badge, one ramp step below the button's own text.",
         },
         new()
         {

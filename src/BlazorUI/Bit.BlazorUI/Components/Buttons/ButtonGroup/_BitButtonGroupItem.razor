@@ -18,6 +18,7 @@
             @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
             role="@ButtonGroup.GetItemRole()"
             tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+            autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
             disabled="@(isEnabled is false && ButtonGroup.DisabledInteractive is false)"
             aria-disabled="@(isInteractive ? null : "true")"
             aria-busy="@(isLoading ? "true" : null)"
@@ -39,10 +40,11 @@ else
        rel="@(isInteractive ? ButtonGroup.GetItemRel(Item) : null)"
        role="@anchorRole"
        tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+       autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
        aria-disabled="@(isInteractive ? null : "true")"
        aria-busy="@(isLoading ? "true" : null)"
        aria-label="@ButtonGroup.GetItemAriaLabel(Item)"
-       aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
+       aria-current="@ButtonGroup.GetItemAriaCurrent(Item)"
        aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
        title="@ButtonGroup.GetItemTitle(Item)"
        style="@ButtonGroup.GetItemStyle(Item)"
@@ -72,7 +74,7 @@ else
         {
             @if (isLoading)
             {
-                <div aria-hidden="true" style="@ButtonGroup.Styles?.Spinner" class="bit-btg-spn @ButtonGroup.Classes?.Spinner" />
+                <span aria-hidden="true" style="@ButtonGroup.Styles?.Spinner" class="bit-btg-spn @ButtonGroup.Classes?.Spinner" />
             }
             else
             {

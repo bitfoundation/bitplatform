@@ -79,10 +79,11 @@
 <DemoExample Title="IconOnly" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4"
              PreventRenderForMcpClient>
     <div>
-        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
-        toolbars and tight spaces. The hidden text stays the button's accessible name, so a screen reader still reads
-        it; map the <strong>AriaLabel</strong> selector where the name should read differently, and
-        <strong>Title</strong> to explain the icon on hover.
+        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, squaring the buttons
+        the way every icon button in the library is shaped. The hidden text stays the button's accessible name,
+        together with its badge, so a screen reader is told neither less nor more than a sighted user; map the
+        <strong>AriaLabel</strong> selector where the name should read differently, and <strong>Title</strong> to
+        explain the icon on hover.
     </div>
     <br /><br />
     <div class="example-content">
@@ -486,7 +487,9 @@
         Mapping the <strong>Href</strong> selector renders that button as an anchor tag instead, optionally opened
         elsewhere through the <strong>Target</strong> selector. A link opened in a new tab is given
         <code>rel="noopener"</code> automatically, and the <strong>Rel</strong> selector sets the relationship
-        itself. A disabled or loading link drops its href and keeps its link role.
+        itself. A disabled or loading link drops its href and
+        keeps its link role. In a toggle group a link reports its selection through
+        <code>aria-current</code>, since <code>aria-pressed</code> belongs to a button.
     </div>
     <br /><br />
     <div class="example-content">
@@ -566,14 +569,13 @@
     <br /><br />
     <div class="example-content">
         <div>
-            <strong>SelectOnFocus</strong> makes the selection follow the keyboard focus, which is what the
-            WAI-ARIA radiogroup pattern expects of the arrow keys. It is off by default so that arrowing
-            through a group whose selection does work - a filter, a fetch - does not fire it on every keystroke;
-            turn it on for a group that only records an answer.
+            In the Single mode the arrow keys also toggle the button they land on, as the radiogroup pattern
+            expects. <strong>SelectOnFocus="false"</strong> takes that back for a group whose selection does work -
+            a filter, a fetch - so arrowing across it fires nothing and the user commits with Space or Enter.
         </div>
-        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
-                        SelectionMode="BitButtonGroupSelectionMode.Single" Items="selectOnFocusCustoms"
-                        NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
+        <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
+                        Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Single"
+                        Items="selectOnFocusCustoms" NameSelectors="a11yNameSelectors" DefaultToggleKey="start" />
     </div>
     <br /><br />
     <div class="example-content">
@@ -587,6 +589,19 @@
         </div>
         <BitButtonGroup AriaLabel="Operations" Navigable="false" Variant="BitVariant.Outline" Items="basicCustoms"
                         NameSelectors="nameSelector" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>
+            <strong>FocusAsync</strong> hands the keyboard back to the group, landing on the button that holds its
+            tab stop, which is what a page re-rendering the list behind a toolbar calls; <strong>AutoFocus</strong>
+            does the same on the first render. <strong>TabIndex</strong> sets the tabindex of that one button, so
+            <strong>TabIndex="-1"</strong> takes the group out of the tab order while leaving it navigable once
+            something else has focused it.
+        </div>
+        <BitButtonGroup @ref="focusGroup" AriaLabel="Operations" Variant="BitVariant.Outline" Items="basicCustoms"
+                        NameSelectors="nameSelector" />
+        <BitButton Variant="BitVariant.Outline" OnClick="FocusTheGroup">Focus the group</BitButton>
     </div>
 </DemoExample>
 
@@ -1050,6 +1065,15 @@
     <div class="example-content">
         <div>Item's style & class:</div>
         <BitButtonGroup Items="styleClassCustoms" Variant="BitVariant.Text" NameSelectors="@(new()
+                        {
+                            Text = { Selector = i => i.Name },
+                            IconName = { Selector = i => i.Image }
+                        })" />
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Item's CSS variables (the group's own knobs, set on a single button):</div>
+        <BitButtonGroup Items="cssVarCustoms" NameSelectors="@(new()
                         {
                             Text = { Selector = i => i.Name },
                             IconName = { Selector = i => i.Image }

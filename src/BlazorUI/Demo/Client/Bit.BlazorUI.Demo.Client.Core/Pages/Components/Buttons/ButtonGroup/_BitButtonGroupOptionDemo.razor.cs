@@ -2,6 +2,14 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
 
 public partial class _BitButtonGroupOptionDemo
 {
+    private BitButtonGroup<BitButtonGroupOption>? focusGroup;
+
+    // FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+    private async Task FocusTheGroup()
+    {
+        if (focusGroup is not null) await focusGroup.FocusAsync();
+    }
+
     private int clickCounter;
     private string? clickedOption;
 

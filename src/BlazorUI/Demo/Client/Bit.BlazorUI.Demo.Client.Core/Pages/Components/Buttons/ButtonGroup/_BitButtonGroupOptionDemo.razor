@@ -116,9 +116,10 @@
 
 <DemoExample Title="IconOnly" RazorCode="@example4RazorCode" Id="example4" PreventRenderForMcpClient>
     <div>
-        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, which suits compact
-        toolbars and tight spaces. The hidden <strong>Text</strong> stays the button's accessible name, so a screen
-        reader still reads it; set an <strong>AriaLabel</strong> where the name should read differently, and a
+        The <strong>IconOnly</strong> drops the text of every button and keeps only its icon, squaring the buttons
+        the way every icon button in the library is shaped. The hidden <strong>Text</strong> stays the button's
+        accessible name, together with its <strong>Badge</strong>, so a screen reader is told neither less nor more
+        than a sighted user; set an <strong>AriaLabel</strong> where the name should read differently, and a
         <strong>Title</strong> to explain the icon on hover. An option with no text at all needs one of the two.
     </div>
     <br /><br />
@@ -671,7 +672,8 @@
         Providing an option's <strong>Href</strong> renders that button as an anchor tag, optionally with a
         <strong>Target</strong>. A link opened in a new tab is given <code>rel="noopener"</code> automatically,
         and <strong>Rel</strong> sets the relationship itself. A disabled or loading link drops its href and
-        keeps its link role.
+        keeps its link role. In a toggle group a link reports its selection through
+        <code>aria-current</code>, since <code>aria-pressed</code> belongs to a button.
     </div>
     <br /><br />
     <div class="example-content">
@@ -760,7 +762,8 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+             PreventRenderForMcpClient>
     <div>
         The ButtonGroup follows the WAI-ARIA patterns: it renders as a <strong>radiogroup</strong> of radio buttons
         in the Single selection mode and as a <strong>toolbar</strong> of toggle buttons otherwise, and the whole
@@ -783,13 +786,13 @@
     <br /><br />
     <div class="example-content">
         <div>
-            <strong>SelectOnFocus</strong> makes the selection follow the keyboard focus, which is what the
-            WAI-ARIA radiogroup pattern expects of the arrow keys. It is off by default so that arrowing
-            through a group whose selection does work - a filter, a fetch - does not fire it on every keystroke;
-            turn it on for a group that only records an answer.
+            In the Single mode the arrow keys also toggle the button they land on, as the radiogroup pattern
+            expects. <strong>SelectOnFocus="false"</strong> takes that back for a group whose selection does work -
+            a filter, a fetch - so arrowing across it fires nothing and the user commits with Space or Enter.
         </div>
-        <BitButtonGroup AriaLabel="Text alignment (selection follows focus)" SelectOnFocus Variant="BitVariant.Outline"
-                        TItem="BitButtonGroupOption" SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
+        <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
+                        Variant="BitVariant.Outline" TItem="BitButtonGroupOption"
+                        SelectionMode="BitButtonGroupSelectionMode.Single" DefaultToggleKey="start">
             <BitButtonGroupOption Key="start" Text="Start" IconName="@BitIconName.AlignLeft" AriaLabel="Align start" />
             <BitButtonGroupOption Key="center" Text="Center" IconName="@BitIconName.AlignCenter"
                                   AriaLabel="Align center" />
@@ -816,6 +819,23 @@
             <BitButtonGroupOption Text="Edit" />
             <BitButtonGroupOption Text="Delete" />
         </BitButtonGroup>
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>
+            <strong>FocusAsync</strong> hands the keyboard back to the group, landing on the button that holds its
+            tab stop, which is what a page re-rendering the list behind a toolbar calls; <strong>AutoFocus</strong>
+            does the same on the first render. <strong>TabIndex</strong> sets the tabindex of that one button, so
+            <strong>TabIndex="-1"</strong> takes the group out of the tab order while leaving it navigable once
+            something else has focused it.
+        </div>
+        <BitButtonGroup @ref="focusGroup" AriaLabel="Operations" Variant="BitVariant.Outline"
+                        TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
+        </BitButtonGroup>
+        <BitButton Variant="BitVariant.Outline" OnClick="FocusTheGroup">Focus the group</BitButton>
     </div>
 </DemoExample>
 
@@ -1667,6 +1687,18 @@
             <BitButtonGroupOption Text="Styled" IconName="@BitIconName.Brush"
                                   Style="color: tomato; border-color: brown; background-color: peachpuff;" />
             <BitButtonGroupOption Text="Classed" IconName="@BitIconName.FormatPainter" Class="custom-item" />
+        </BitButtonGroup>
+    </div>
+    <br /><br />
+    <div class="example-content">
+        <div>Item's CSS variables (the group's own knobs, set on a single button):</div>
+        <BitButtonGroup TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" IconName="@BitIconName.Add" />
+            <BitButtonGroupOption Text="Edit" IconName="@BitIconName.Edit" />
+            <BitButtonGroupOption Text="Delete" IconName="@BitIconName.Delete"
+                                  Style="--bit-ButtonGroup-color: var(--bit-clr-err-text);
+                                         --bit-ButtonGroup-background: var(--bit-clr-err);
+                                         --bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);" />
         </BitButtonGroup>
     </div>
     <br /><br />

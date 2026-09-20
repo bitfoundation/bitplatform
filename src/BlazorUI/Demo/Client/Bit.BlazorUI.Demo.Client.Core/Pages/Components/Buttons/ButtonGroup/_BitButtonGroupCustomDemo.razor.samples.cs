@@ -628,8 +628,8 @@ private List<Operation> toggleTitleCustoms =
                 NameSelectors=""a11yNameSelectors""
                 DefaultToggleKey=""start"" />
 
-<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
-                SelectOnFocus
+<BitButtonGroup AriaLabel=""Text alignment (committed with Space)""
+                SelectOnFocus=""false""
                 Variant=""BitVariant.Outline""
                 SelectionMode=""BitButtonGroupSelectionMode.Single""
                 Items=""selectOnFocusCustoms""
@@ -646,8 +646,23 @@ private List<Operation> toggleTitleCustoms =
                 Navigable=""false""
                 Variant=""BitVariant.Outline""
                 Items=""basicCustoms""
-                NameSelectors=""nameSelector"" />";
+                NameSelectors=""nameSelector"" />
+
+<BitButtonGroup @ref=""focusGroup""
+                AriaLabel=""Operations""
+                Variant=""BitVariant.Outline""
+                Items=""basicCustoms""
+                NameSelectors=""nameSelector"" />
+<BitButton Variant=""BitVariant.Outline"" OnClick=""FocusTheGroup"">Focus the group</BitButton>";
     private readonly string example20CsharpCode = @"
+private BitButtonGroup<Operation>? focusGroup;
+
+// FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+private async Task FocusTheGroup()
+{
+    if (focusGroup is not null) await focusGroup.FocusAsync();
+}
+
 private BitButtonGroupNameSelectors<Operation> a11yNameSelectors = new()
 {
     Key = { Selector = i => i.Id },
@@ -921,6 +936,10 @@ private List<Operation> basicCustoms =
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          IconName = { Selector = i => i.Image } })"" />
 
+<BitButtonGroup Items=""cssVarCustoms""
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
+                                         IconName = { Selector = i => i.Image } })"" />
+
 <BitButtonGroup Items=""basicCustoms""
                 Variant=""BitVariant.Text""
                 NameSelectors=""nameSelector""
@@ -944,6 +963,20 @@ public class Operation
 private List<Operation> basicCustoms =
 [
     new() { Name = ""Add"" }, new() { Name = ""Edit"" }, new() { Name = ""Delete"" }
+];
+
+private List<Operation> cssVarCustoms =
+[
+    new() { Name = ""Add"", Image = BitIconName.Add },
+    new() { Name = ""Edit"", Image = BitIconName.Edit },
+    new()
+    {
+        Name = ""Delete"",
+        Image = BitIconName.Delete,
+        Style = ""--bit-ButtonGroup-color: var(--bit-clr-err-text);"" +
+                ""--bit-ButtonGroup-background: var(--bit-clr-err);"" +
+                ""--bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);"",
+    },
 ];
 
 private List<Operation> styleClassCustoms =

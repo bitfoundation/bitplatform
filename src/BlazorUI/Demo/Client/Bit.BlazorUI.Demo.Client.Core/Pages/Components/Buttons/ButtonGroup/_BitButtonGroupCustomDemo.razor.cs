@@ -2,10 +2,35 @@
 
 public partial class _BitButtonGroupCustomDemo
 {
+    private BitButtonGroup<Operation>? focusGroup;
+
+    // FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+    private async Task FocusTheGroup()
+    {
+        if (focusGroup is not null) await focusGroup.FocusAsync();
+    }
+
     private int clickCounter;
     private string? clickedCustom;
 
     private BitButtonGroupNameSelectors<Operation> nameSelector = new() { Text = { Selector = i => i.Name } };
+
+    // Every public custom property of the group is read off each button, so one set in an item's own Style
+    // re-skins that button alone - a destructive action inside an otherwise neutral toolbar - and does it in
+    // theme colors rather than in literals, so it follows the light and dark schemes like everything else.
+    private List<Operation> cssVarCustoms =
+    [
+        new() { Name = "Add", Image = BitIconName.Add },
+        new() { Name = "Edit", Image = BitIconName.Edit },
+        new()
+        {
+            Name = "Delete",
+            Image = BitIconName.Delete,
+            Style = "--bit-ButtonGroup-color: var(--bit-clr-err-text);" +
+                    "--bit-ButtonGroup-background: var(--bit-clr-err);" +
+                    "--bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);",
+        },
+    ];
 
     private List<Operation> basicCustoms =
     [

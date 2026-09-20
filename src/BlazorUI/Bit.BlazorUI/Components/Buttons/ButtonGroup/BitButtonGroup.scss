@@ -6,6 +6,8 @@
 //   --bit-ButtonGroup-background                  background of a button at rest                (default: per variant, from the Color role)
 //   --bit-ButtonGroup-border-color                the group's outer border and the separators
 //                                                 between its buttons                           (default: per variant, from the Color role)
+//   --bit-ButtonGroup-separator-color             the separators alone, where they are lines of
+//                                                 their own rather than the outer border        (default: the border color)
 //   --bit-ButtonGroup-hover-color                 text and icon color while hovered             (default: the role's on color)
 //   --bit-ButtonGroup-hover-background            background while hovered                      (default: the role's hover color)
 //   --bit-ButtonGroup-active-background           background while pressed                      (default: the hover background)
@@ -32,6 +34,8 @@
 //                                                 instance                                      (default: spacing(1))
 //   --bit-ButtonGroup-badge-color                 text color of a button's badge                (default: the button's own text color)
 //   --bit-ButtonGroup-badge-background            background of a button's badge                (default: a 20% tint of that text color)
+//   --bit-ButtonGroup-badge-font-size             text size of a button's badge                 (default: per Size, one ramp step below
+//                                                                                               the button's own text)
 
 .bit-btg {
     overflow: hidden;
@@ -46,6 +50,11 @@
     // repainting border-color itself, so this one declaration is where the public override lands
     // and it wins in every one of those states.
     border-color: var(--bit-ButtonGroup-border-color, var(--bit-btg-clr-outer));
+    // The line between two buttons: a separator of its own in the attached single-row layout, and the outer
+    // border itself in the detached and wrapping ones, which redirect it below. It is resolved here rather than
+    // on the button so that those two can redirect it with a selector on the group - a selector on the button
+    // would outrank the toggled and disabled states, which paint a border of their own.
+    --bit-btg-sep: var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd)));
     --bit-btg-itm-brd-wid: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
     --bit-btg-itm-brd-wid-ver: 0;
     // Only the border is painted on the group itself: the filled and outline variants repaint it
@@ -140,7 +149,7 @@
     font-weight: var(--bit-ButtonGroup-font-weight, #{$tg-font-weight});
     padding: var(--bit-ButtonGroup-padding, var(--bit-btg-itm-padding));
     color: var(--bit-ButtonGroup-color, var(--bit-btg-itm-clr-txt));
-    border-color: var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd));
+    border-color: var(--bit-btg-sep);
     background-color: var(--bit-ButtonGroup-background, var(--bit-btg-itm-clr-bg));
     // The control height of the size class, as a floor rather than a height: the button still grows
     // with a wrapped label or a taller template. It is what lines a group up with the other controls
@@ -206,6 +215,8 @@
     overflow: visible;
     border-width: 0;
     gap: var(--bit-ButtonGroup-gap, #{spacing(1)});
+    // Every button draws the whole outline here, so there are no separators for a separator color to paint.
+    --bit-btg-sep: var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd));
 
     .bit-btg-itm {
         border-width: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
@@ -237,6 +248,9 @@
 // balances the negative margin of the first button of each row and of the first row.
 .bit-btg-wrp {
     flex-wrap: wrap;
+    // As in the detached layout: each button draws a full border, which the overlap below collapses into the
+    // shared lines, so the whole outline is the border color and no part of it is a separator on its own.
+    --bit-btg-sep: var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd));
 
     // Without this the buttons of every row stretch to fill their own row, so a row holding fewer
     // buttons renders them much wider than the rows above it.
@@ -311,7 +325,7 @@
     justify-content: center;
     padding: spacing(0.25) spacing(0.75);
     border-radius: $shp-radius-full;
-    font-size: calc(var(--bit-btg-itm-fs) * 0.8);
+    font-size: var(--bit-ButtonGroup-badge-font-size, var(--bit-btg-itm-bdg-fs));
 
     // Tinting the current foreground keeps the badge legible on every variant,
     // including the ones whose button background is transparent.
@@ -322,6 +336,7 @@
 
 .bit-btg-spn {
     flex: none;
+    display: block;
     border-radius: 50%;
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
@@ -598,23 +613,41 @@
 // global token, so a density preset or another design system resizes the group without touching it.
 .bit-btg-sm {
     --bit-btg-itm-min-height: #{$siz-ctrl-sm};
+    --bit-btg-itm-pad-y: #{$siz-ctrl-pad-y-sm};
     --bit-btg-itm-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
     --bit-btg-itm-fontsize: #{$tg-fs-xs};
+    --bit-btg-itm-bdg-fs: #{$tg-fs-2xs};
     --bit-btg-itm-iconsize: #{$siz-icon-sm};
 }
 
 .bit-btg-md {
     --bit-btg-itm-min-height: #{$siz-ctrl-md};
+    --bit-btg-itm-pad-y: #{$siz-ctrl-pad-y-md};
     --bit-btg-itm-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
     --bit-btg-itm-fontsize: #{$tg-fs-sm};
+    --bit-btg-itm-bdg-fs: #{$tg-fs-xs};
     --bit-btg-itm-iconsize: #{$siz-icon-md};
 }
 
 .bit-btg-lg {
     --bit-btg-itm-min-height: #{$siz-ctrl-lg};
+    --bit-btg-itm-pad-y: #{$siz-ctrl-pad-y-lg};
     --bit-btg-itm-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
     --bit-btg-itm-fontsize: #{$tg-fs-md};
+    --bit-btg-itm-bdg-fs: #{$tg-fs-sm};
     --bit-btg-itm-iconsize: #{$siz-icon-lg};
+}
+
+// An icon-only group squares its buttons, the way every icon button in the library is shaped: the side padding
+// drops to the vertical one and each button takes its own floor height as a floor width. That is what lines a
+// toolbar of them up with the icon buttons beside it, and what clears the 24px minimum pointer target of
+// WCAG 2.2 (SC 2.5.8) on the narrow axis too. Declared after the size classes, which is where both values it
+// reads come from, and after .bit-btg-jst, whose equal-width buttons are wider than the floor anyway.
+.bit-btg-ion {
+    .bit-btg-itm {
+        min-width: var(--bit-ButtonGroup-min-height, var(--bit-btg-itm-min-height));
+        padding: var(--bit-ButtonGroup-padding, var(--bit-btg-itm-pad-y));
+    }
 }
 
 .bit-btg-vrt {

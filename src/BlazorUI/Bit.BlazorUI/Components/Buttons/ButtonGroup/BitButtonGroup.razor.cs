@@ -26,6 +26,16 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
 
     /// <summary>
+    /// Gives the keyboard focus to the ButtonGroup when the page first renders.
+    /// </summary>
+    /// <remarks>
+    /// The focus lands on the button that owns the group's single tab stop - the toggled one, otherwise the first
+    /// focusable one - which is the same button a Tab into the group reaches, so the group is entered the same way
+    /// whether it was focused automatically or by hand.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// The content of the BitButtonGroup, that are BitButtonGroupOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -88,7 +98,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Determines that only the icon should be rendered. The hidden text stays the accessible name of the
     /// button, so an icon-only group is still readable without an AriaLabel being set on every item.
     /// </summary>
-    [Parameter] public bool IconOnly { get; set; }
+    /// <remarks>
+    /// The buttons then take the square shape every icon button in the library has, which is what lines a toolbar
+    /// of them up with the icon buttons beside it. A button with no text of its own needs an AriaLabel, and a
+    /// <see cref="BitButtonGroupItem.Title"/> is what explains its icon to a pointer user.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// Gives every button an equal width so that the buttons evenly fill the width of the ButtonGroup.
@@ -152,11 +168,18 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     /// <summary>
     /// Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection
-    /// follows the focus - which is what the WAI-ARIA radiogroup pattern expects of the arrow keys in the
-    /// Single selection mode. It is off by default so that arrowing through a group whose selection does work
-    /// does not fire it on every keystroke.
+    /// follows the focus.
     /// </summary>
-    [Parameter] public bool SelectOnFocus { get; set; }
+    /// <remarks>
+    /// Unset, it follows the <see cref="SelectionMode"/>: on in the Single mode, which renders a radiogroup and
+    /// whose arrow keys the WAI-ARIA pattern expects to check the radio they land on, and off in the Multiple and
+    /// None modes, where the items are independent and only a click or a Space may change one.
+    /// <br />
+    /// Set it to <see langword="false"/> on a Single-mode group whose selection does work - a filter, a fetch -
+    /// so that arrowing across it does not fire that work on every keystroke; the user then commits with Space
+    /// or Enter.
+    /// </remarks>
+    [Parameter] public bool? SelectOnFocus { get; set; }
 
     /// <summary>
     /// Determines how many items can be toggled at the same time.
@@ -216,6 +239,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// The effective selection mode, which falls back to the legacy Toggle parameter when SelectionMode is not set.
     /// </summary>
     internal BitButtonGroupSelectionMode _Mode => SelectionMode ?? (Toggle ? BitButtonGroupSelectionMode.Single : BitButtonGroupSelectionMode.None);
+
+    /// <summary>
+    /// Whether the keyboard navigation also toggles the item it lands on, which follows the selection mode
+    /// unless <see cref="SelectOnFocus"/> says otherwise.
+    /// </summary>
+    internal bool _SelectOnFocus => SelectOnFocus ?? _Mode is BitButtonGroupSelectionMode.Single;
 
 
 
@@ -299,6 +328,40 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
 
 
+    /// <summary>
+    /// Gives the keyboard focus to the button that owns the ButtonGroup's tab stop - the toggled one, otherwise
+    /// the first focusable one - which is the same button a Tab into the group reaches.
+    /// </summary>
+    /// <remarks>
+    /// It does nothing while the group holds no focusable button at all (an empty group, or one disabled without
+    /// <see cref="DisabledInteractive"/>), so a focus call is never answered with an exception.
+    /// </remarks>
+    public ValueTask FocusAsync()
+    {
+        var item = GetActiveItem();
+        if (item is null) return ValueTask.CompletedTask;
+
+        if (_itemElements.TryGetValue(item, out var element) is false) return ValueTask.CompletedTask;
+
+        return FocusElement(element);
+    }
+
+    // An element reference left behind by a render that has not happened yet, or by one whose markup has since
+    // been removed, throws instead of doing nothing when it is focused. Awaited rather than handed back, since
+    // the call itself only starts the interop: a disconnected circuit throws when the task completes.
+    private static async ValueTask FocusElement(ElementReference element)
+    {
+        if (element.Context is null) return;
+
+        try
+        {
+            await element.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+
+
     protected override string RootElementClass => "bit-btg";
 
     protected override void RegisterCssClasses()
@@ -353,6 +416,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         ClassBuilder.Register(() => FullWidth ? "bit-btg-flw" : string.Empty);
 
         ClassBuilder.Register(() => Justified ? "bit-btg-jst" : string.Empty);
+
+        ClassBuilder.Register(() => IconOnly ? "bit-btg-ion" : string.Empty);
 
         ClassBuilder.Register(() => Rounded ? "bit-btg-rnd" : string.Empty);
 
@@ -556,10 +621,24 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal async Task HandleOnItemClick(TItem item)
     {
+        // A pointer press moves the focus whether or not it does anything else, so the tab stop follows it even
+        // for the two buttons whose click is ignored: a disabled one kept focusable by DisabledInteractive, and a
+        // loading one. Left behind, the tabindex would stay on another button and the next arrow key would carry
+        // on from there rather than from the button the user is looking at.
+        // The click arrives on the clicked button's own renderer, and moving the tab stop changes the tabindex of
+        // two buttons, so the group is re-rendered here rather than left to whatever the click goes on to do -
+        // a plain action toolbar toggles nothing and would otherwise be left with two tab stops in it.
+        var key = GetItemKey(item);
+        if (key != _focusedKey)
+        {
+            _focusedKey = key;
+
+            RefreshOptions();
+            StateHasChanged();
+        }
+
         if (GetIsEnabled(item) is false) return;
         if (GetIsLoading(item)) return;
-
-        _focusedKey = GetItemKey(item);
 
         await OnItemClick.InvokeAsync(item);
 
@@ -645,14 +724,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (_itemElements.TryGetValue(item, out var element))
         {
-            try
-            {
-                await element.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await FocusElement(element);
         }
 
-        if (SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
+        if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
         {
             await UpdateItemToggle(item);
         }
@@ -661,11 +736,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         StateHasChanged();
     }
 
+    // The tabindex of the group's own tab stop, which is what BitComponentBase.TabIndex sets: a group taken out
+    // of the tab order with a -1 is still reachable by script and by a pointer, and still navigable once entered.
     internal string? GetItemTabIndex(TItem item)
     {
-        if (Navigable is false) return IsItemFocusable(item) ? "0" : "-1";
+        if (Navigable is false) return IsItemFocusable(item) ? TabIndex ?? "0" : "-1";
 
-        return GetActiveItem() == item ? "0" : "-1";
+        return GetActiveItem() == item ? TabIndex ?? "0" : "-1";
+    }
+
+    // Autofocus is written on the one button that holds the tab stop, so the focus lands where a Tab into the
+    // group would have put it. A group with nothing focusable in it has nothing to autofocus either.
+    internal bool GetItemAutoFocus(TItem item)
+    {
+        return AutoFocus && GetActiveItem() == item;
     }
 
     /// <summary>
@@ -687,6 +771,25 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return IsItemToggled(item) ? "true" : "false";
     }
 
+    /// <summary>
+    /// The selected state of a LINK item, which is reported through aria-current.
+    /// </summary>
+    /// <remarks>
+    /// aria-pressed belongs to a button and is not supported on a link, so a toggling link would be reporting a
+    /// state no assistive technology is required to read - and an invalid combination an accessibility audit
+    /// flags. aria-current says the same thing in the vocabulary a link does have.
+    /// <br />
+    /// The Single mode gives every item the radio role explicitly, and a radio reports aria-checked whatever
+    /// element it is written on, so the link follows the rest of the group there.
+    /// </remarks>
+    internal string? GetItemAriaCurrent(TItem item)
+    {
+        if (_Mode is BitButtonGroupSelectionMode.None) return null;
+        if (GetItemRole() is not null) return null;
+
+        return IsItemToggled(item) ? "true" : null;
+    }
+
     internal string? GetItemAriaChecked(TItem item)
     {
         if (_Mode is not BitButtonGroupSelectionMode.Single) return null;
@@ -705,27 +808,37 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     };
 
     /// <summary>
-    /// The aria-orientation is only supported by the radiogroup and toolbar roles, not by the plain group role.
+    /// The aria-orientation of the root element, which is only supported by the radiogroup and toolbar roles -
+    /// not by the plain group role, nor by whatever role a page has written on the component itself.
     /// </summary>
-    internal string? _AriaOrientation => _RootRole is "group" ? null : (Vertical ? "vertical" : "horizontal");
+    internal string? GetAriaOrientation(string? role)
+    {
+        if (role is not ("radiogroup" or "toolbar" or "menubar" or "tablist" or "listbox")) return null;
+
+        return Vertical ? "vertical" : "horizontal";
+    }
 
     // The item that owns the group's tabindex: the last focused one, otherwise the toggled one,
     // otherwise the first focusable item.
+    // Walked rather than filtered into a list of its own: every button asks for this while it renders, to
+    // know whether it is the one holding the tabindex, so a list per button is a list per button per render.
     private TItem? GetActiveItem()
     {
-        var focusables = _items.Where(IsItemFocusable).ToList();
-        if (focusables.Count == 0) return null;
+        TItem? first = null;
+        TItem? toggled = null;
+        var hasFocusedKey = _focusedKey.HasValue();
 
-        if (_focusedKey.HasValue())
+        foreach (var item in _items)
         {
-            var focused = focusables.FirstOrDefault(i => GetItemKey(i) == _focusedKey);
-            if (focused is not null) return focused;
+            if (IsItemFocusable(item) is false) continue;
+
+            if (hasFocusedKey && GetItemKey(item) == _focusedKey) return item;
+
+            first ??= item;
+            if (toggled is null && IsItemToggled(item)) toggled = item;
         }
 
-        var toggled = focusables.FirstOrDefault(IsItemToggled);
-        if (toggled is not null) return toggled;
-
-        return focusables[0];
+        return toggled ?? first;
     }
 
     // Disabled items stay focusable in the DisabledInteractive mode, which the WAI-ARIA toolbar
@@ -827,7 +940,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (GetTemplate(item) is not null || ItemTemplate is not null) return null;
         if (GetItemText(item).HasValue()) return null;
 
-        return GetStatefulText(item);
+        var text = GetStatefulText(item);
+
+        // The badge is the other half of what a button showing its text would have been named by - the count
+        // beside "Inbox" - and a name written to replace the hidden text has to carry it too, or the number
+        // the button is there to report is the one thing a screen reader is not told.
+        var badge = GetBadge(item);
+        if (badge.HasNoValue()) return text;
+
+        return text.HasValue() ? $"{text} {badge}" : badge;
     }
 
     // The text of an item, following the toggle state through OnText/OffText, before IconOnly has a say.

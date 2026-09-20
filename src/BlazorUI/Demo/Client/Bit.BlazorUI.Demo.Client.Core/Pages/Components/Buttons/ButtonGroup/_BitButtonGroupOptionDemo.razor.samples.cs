@@ -430,8 +430,8 @@ private async Task HandleLoadingClick(string key)
     <BitButtonGroupOption Key=""end"" Text=""End"" IconName=""@BitIconName.AlignRight"" AriaLabel=""Align end"" />
 </BitButtonGroup>
 
-<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
-                SelectOnFocus
+<BitButtonGroup AriaLabel=""Text alignment (committed with Space)""
+                SelectOnFocus=""false""
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
                 SelectionMode=""BitButtonGroupSelectionMode.Single""
@@ -453,7 +453,23 @@ private async Task HandleLoadingClick(string key)
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
-</BitButtonGroup>";
+</BitButtonGroup>
+
+<BitButtonGroup @ref=""focusGroup""
+                AriaLabel=""Operations""
+                Variant=""BitVariant.Outline""
+                TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""FocusTheGroup"">Focus the group</BitButton>";
+    private readonly string example20CsharpCode = @"
+private BitButtonGroup<BitButtonGroupOption>? focusGroup;
+
+// FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+private async Task FocusTheGroup()
+{
+    if (focusGroup is not null) await focusGroup.FocusAsync();
+}";
 
     private readonly string example21RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
@@ -909,6 +925,15 @@ private async Task HandleLoadingClick(string key)
 <BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Styled"" IconName=""@BitIconName.Brush"" Style=""color: tomato; border-color: brown; background-color: peachpuff;"" />
     <BitButtonGroupOption Text=""Classed"" IconName=""@BitIconName.FormatPainter"" Class=""custom-item"" />
+</BitButtonGroup>
+
+<BitButtonGroup TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" IconName=""@BitIconName.Add"" />
+    <BitButtonGroupOption Text=""Edit"" IconName=""@BitIconName.Edit"" />
+    <BitButtonGroupOption Text=""Delete"" IconName=""@BitIconName.Delete""
+                          Style=""--bit-ButtonGroup-color: var(--bit-clr-err-text);
+                                 --bit-ButtonGroup-background: var(--bit-clr-err);
+                                 --bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);"" />
 </BitButtonGroup>
 
 <BitButtonGroup Variant=""BitVariant.Text""

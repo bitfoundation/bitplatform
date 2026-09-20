@@ -741,6 +741,313 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("true", link.GetAttribute("aria-disabled"));
     }
 
+    [TestMethod]
+    public void BitButtonGroupSingleSelectionShouldCheckWhatTheArrowKeysLandOnByDefault()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        comp.Find(".bit-btg").KeyDown("ArrowRight");
+
+        // The Single mode renders a radiogroup, whose arrow keys the WAI-ARIA pattern expects to check the
+        // radio they move to - so the selection follows the focus there without being asked to.
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSelectOnFocusFalseShouldMoveTheFocusWithoutCheckingAnything()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectOnFocus, false);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        comp.Find(".bit-btg").KeyDown("ArrowRight");
+
+        // The tab stop moved, which is the whole of what the arrow key did.
+        Assert.AreEqual("0", comp.FindAll("button")[1].GetAttribute("tabindex"));
+        Assert.AreEqual("true", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupMultipleSelectionShouldNotToggleWhileNavigating()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+        });
+
+        comp.Find(".bit-btg").KeyDown("ArrowRight");
+
+        // The items of a toolbar are independent of one another, so arrowing across it presses nothing.
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("aria-pressed") == "false"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupTabIndexShouldSetTheTabIndexOfTheRovingTabStop()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.TabIndex, "-1");
+        });
+
+        var buttons = comp.FindAll("button");
+
+        // The group is taken out of the tab order as a whole, and stays navigable once something focuses it.
+        Assert.AreEqual("-1", buttons[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", buttons[1].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupAutoFocusShouldBeWrittenOnTheTabStopAlone()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "b");
+        });
+
+        var buttons = comp.FindAll("button");
+
+        // The focus lands where a Tab into the group would have put it, and nowhere else.
+        Assert.IsFalse(buttons[0].HasAttribute("autofocus"));
+        Assert.IsTrue(buttons[1].HasAttribute("autofocus"));
+        Assert.IsFalse(buttons[2].HasAttribute("autofocus"));
+
+        var withoutAutoFocus = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.IsTrue(withoutAutoFocus.FindAll("button").All(b => b.HasAttribute("autofocus") is false));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupIconOnlyShouldSquareTheButtons()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Add", IconName = "Add" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        // The square shape is a class on the root, so it survives a re-render of the buttons inside it.
+        Assert.IsTrue(comp.Find(".bit-btg").ClassList.Contains("bit-btg-ion"));
+
+        comp.Render(parameters => parameters.Add(p => p.IconOnly, false));
+
+        Assert.IsFalse(comp.Find(".bit-btg").ClassList.Contains("bit-btg-ion"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupLinkItemShouldNotReportAToggleStateItsRoleDoesNotSupport()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Docs", Key = "docs", Href = "/components" },
+            new() { Text = "Bold", Key = "bold" }
+        };
+
+        var multiple = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.DefaultToggleKeys, ["docs"]);
+        });
+
+        // aria-pressed belongs to a button, so the link says the same thing in the vocabulary it does have.
+        Assert.IsNull(multiple.Find("a").GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", multiple.Find("a").GetAttribute("aria-current"));
+        Assert.AreEqual("false", multiple.Find("button").GetAttribute("aria-pressed"));
+
+        var single = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "docs");
+        });
+
+        // The Single mode gives every item the radio role explicitly, which does support aria-checked.
+        Assert.AreEqual("radio", single.Find("a").GetAttribute("role"));
+        Assert.AreEqual("true", single.Find("a").GetAttribute("aria-checked"));
+        Assert.IsNull(single.Find("a").GetAttribute("aria-current"));
+    }
+    [TestMethod]
+    public void BitButtonGroupLoadingSpinnerShouldBeValidInsideItsButton()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Save", IsLoading = true }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        // A button only takes phrasing content, which a div is not.
+        Assert.AreEqual("SPAN", comp.Find(".bit-btg-spn").TagName);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldKeepTheRoleAndLabelWrittenOnTheComponentItself()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A" }
+        };
+
+        // The unmatched attributes are captured by BitComponentBase rather than by a CaptureUnmatchedValues
+        // parameter, so they are supplied as raw component attributes the way real markup writes them.
+        var comp = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
+            builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), items);
+            builder.AddAttribute(2, "role", "menubar");
+            builder.AddAttribute(3, "aria-label", "Formatting");
+            builder.CloseComponent();
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        // Everything the group writes on its root is written after the splat, and a null there would have
+        // removed what the page put on the component by hand.
+        Assert.AreEqual("menubar", root.GetAttribute("role"));
+        Assert.AreEqual("Formatting", root.GetAttribute("aria-label"));
+        Assert.AreEqual("horizontal", root.GetAttribute("aria-orientation"));
+
+        // The parameter still wins over the splatted attribute, and the orientation follows the role: the
+        // plain group role does not support it.
+        var labelled = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
+            builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), items);
+            builder.AddAttribute(2, nameof(BitButtonGroup<BitButtonGroupItem>.AriaLabel), "Alignment");
+            builder.AddAttribute(3, "aria-label", "Formatting");
+            builder.AddAttribute(4, "role", "group");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Alignment", labelled.Find(".bit-btg").GetAttribute("aria-label"));
+        Assert.IsNull(labelled.Find(".bit-btg").GetAttribute("aria-orientation"));
+    }
+    [TestMethod]
+    public void BitButtonGroupShouldMoveTheTabStopToAClickedButtonWhoseClickIsIgnored()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b", IsEnabled = false },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.DisabledInteractive, true);
+        });
+
+        comp.FindAll("button")[1].Click();
+
+        // The press focused the disabled button, so the next arrow key has to carry on from there rather
+        // than from the button that held the tab stop before it.
+        var buttons = comp.FindAll("button");
+        Assert.AreEqual("-1", buttons[0].GetAttribute("tabindex"));
+        Assert.AreEqual("0", buttons[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", buttons[2].GetAttribute("tabindex"));
+
+        // And a plain action toolbar, which toggles nothing, is left with one tab stop rather than two.
+        comp.FindAll("button")[2].Click();
+
+        buttons = comp.FindAll("button");
+        Assert.AreEqual("-1", buttons[1].GetAttribute("tabindex"));
+        Assert.AreEqual("0", buttons[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupIconOnlyShouldKeepTheBadgeInTheAccessibleName()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Inbox", IconName = "Mail", Badge = "3" },
+            new() { Text = "Drafts", IconName = "Edit" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        var buttons = comp.FindAll("button");
+
+        // The name written to replace the hidden text carries the count the button is there to report,
+        // which the text and the badge together would have read out on their own.
+        Assert.AreEqual("Inbox 3", buttons[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Drafts", buttons[1].GetAttribute("aria-label"));
+
+        // An explicit label is the author's, and is left exactly as it was written.
+        var labelled = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem>
+            {
+                new() { Text = "Inbox", IconName = "Mail", Badge = "3", AriaLabel = "Inbox, 3 unread" }
+            });
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        Assert.AreEqual("Inbox, 3 unread", labelled.Find("button").GetAttribute("aria-label"));
+    }
+
     public class KeylessButtonGroupItem
     {
         public string? Text { get; set; }
