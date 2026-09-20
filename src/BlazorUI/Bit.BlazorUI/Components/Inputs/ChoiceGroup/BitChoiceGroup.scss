@@ -243,9 +243,12 @@
 // aims at - it is the click target - so hovering the text of an option has to answer the same way
 // hovering its circle does; on the circle alone, the largest part of every option gave no feedback.
 // Disabled items are excluded here rather than by a later reset, and the checked item is excluded so
-// that the checked hover below (which is less specific) is the one that decides its colors.
+// that the checked hover below (which is less specific) is the one that decides its colors. An invalid
+// group is excluded the same way: its circle is painted with the error color by a rule this one would
+// otherwise outweigh, so hovering an invalid option dropped the error color. The scope is wrapped in
+// :where() to cost no specificity, which keeps the read-only reset below the winner it already was.
 @media (hover: hover) {
-    .bit-chg-icn:not(.bit-chg-ids):not(.bit-chg-ich) .bit-chg-itl:hover .bit-chg-rad {
+    :where(.bit-chg:not(.bit-inv)) .bit-chg-icn:not(.bit-chg-ids):not(.bit-chg-ich) .bit-chg-itl:hover .bit-chg-rad {
         &::before {
             border-color: var(--bit-ChoiceGroup-circle-hover-color, #{$clr-brd-pri-hover});
         }
@@ -289,12 +292,13 @@
     gap: var(--bit-ChoiceGroup-item-content-gap, #{spacing(0.75)});
     padding: var(--bit-ChoiceGroup-item-padding, 0);
 
-    // A floor rather than a height: the label still grows with a wrapped text or a description. It
-    // defaults to the circle, already the tallest part of a plain item, so it changes nothing on its own -
-    // it is what keeps a NoCircle item, whose only content is one line of text, from collapsing to a
-    // target thinner than that text (WCAG 2.2 SC 2.5.8). The row around it reads the same variable, so
-    // this is the single knob to turn for a comfortably sized touch target.
-    min-height: var(--bit-ChoiceGroup-item-min-height, var(--bit-chg-circle-size));
+    // A floor rather than a height: the label still grows with a wrapped text or a description. It keeps
+    // an item - a NoCircle one especially, whose only content is one line of text - from collapsing to a
+    // target smaller than the 24px WCAG 2.2 SC 2.5.8 asks for. The circle it used to default to is that
+    // small itself (14px at sm, 20px at md), so the floor is the spec's own constant, written as a literal
+    // because a density scale must not shrink it. The row around it reads the same variable, so this is
+    // the single knob to turn for a larger touch target.
+    min-height: var(--bit-ChoiceGroup-item-min-height, 24px);
 
     // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
     // border radius) is rounded on a plain item too instead of only on a tile.
@@ -847,10 +851,13 @@
         border-color: var(--bit-chg-clr-inv);
     }
 
-    // Scoped to an enabled item and written above the specificity of the tile's own hover, so a disabled
-    // card stays inert and a tile inside a card does not keep its stand-alone hover border.
+    // Scoped to an enabled item of a valid group and written above the specificity of the tile's own
+    // hover, so a disabled card stays inert, an invalid card keeps the error border the rule above gives
+    // it, and a tile inside a card does not keep its stand-alone hover border. The invalid scope is
+    // wrapped in :where() to cost no specificity, which keeps the read-only reset below the winner it
+    // already was.
     @media (hover: hover) {
-        .bit-chg-icn:not(.bit-chg-ids) .bit-chg-itl:hover {
+        &:where(:not(.bit-inv)) .bit-chg-icn:not(.bit-chg-ids) .bit-chg-itl:hover {
             border-color: var(--bit-ChoiceGroup-item-hover-border-color, var(--bit-chg-clr-hover));
             background-color: var(--bit-ChoiceGroup-item-hover-background, var(--bit-chg-card-bg-hover));
         }
