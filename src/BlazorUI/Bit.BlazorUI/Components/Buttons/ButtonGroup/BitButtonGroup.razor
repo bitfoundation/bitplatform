@@ -14,6 +14,10 @@
     var role = GetSplattedAttribute("role") ?? _RootRole;
     var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
     var ariaOrientation = GetSplattedAttribute("aria-orientation") ?? GetAriaOrientation(role);
+    // A disabled group says so on the group itself as well as on each of its buttons: every role it renders with -
+    // radiogroup, toolbar, group - supports aria-disabled, and it is what tells a screen reader that the whole
+    // toolbar is unavailable rather than leaving it to be inferred from button after button.
+    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"
@@ -23,6 +27,7 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      aria-label="@ariaLabel"
+     aria-disabled="@ariaDisabled"
      aria-orientation="@ariaOrientation">
     @if (Options is not null || ChildContent is not null)
     {

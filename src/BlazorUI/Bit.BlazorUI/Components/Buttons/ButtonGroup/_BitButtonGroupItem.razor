@@ -4,7 +4,11 @@
 @{
     var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
     var isLoading = ButtonGroup.GetIsLoading(Item);
-    var isInteractive = isEnabled && isLoading is false;
+    // An item the Multiple mode's MaxToggles cap has taken out of reach is activated to no effect until one of
+    // the toggled items is un-toggled, so it says so rather than answering a click with silence. It is not given
+    // the disabled attribute, since it is not disabled but temporarily out of reach - and a disabled button is
+    // not focusable, which would leave a hole in the group's keyboard navigation.
+    var isInteractive = isEnabled && isLoading is false && ButtonGroup.GetIsToggleCapped(Item) is false;
     var template = ButtonGroup.GetTemplate(Item);
     var href = ButtonGroup.GetHref(Item);
     // A disabled or loading link loses its href, and with it the implicit link role, so the role is put back -
@@ -16,6 +20,7 @@
 {
     <button @ref="_element" type="button"
             @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+            @onfocus="() => ButtonGroup.HandleOnItemFocus(Item)"
             role="@ButtonGroup.GetItemRole()"
             tabindex="@ButtonGroup.GetItemTabIndex(Item)"
             autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
@@ -35,6 +40,7 @@ else
 {
     <a @ref="_element"
        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+       @onfocus="() => ButtonGroup.HandleOnItemFocus(Item)"
        href="@(isInteractive ? href : null)"
        target="@ButtonGroup.GetTarget(Item)"
        rel="@(isInteractive ? ButtonGroup.GetItemRel(Item) : null)"

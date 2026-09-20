@@ -14,6 +14,9 @@
 //   --bit-ButtonGroup-selected-color              text and icon color of a toggled button       (default: the role's on color)
 //   --bit-ButtonGroup-selected-background         background and border of a toggled button     (default: the role's dark color)
 //   --bit-ButtonGroup-selected-hover-background   the same while hovered or pressed             (default: the role's dark-hover color)
+//   --bit-ButtonGroup-selected-border-color       border of a toggled button, for a selection
+//                                                 whose outline is not its background, and it
+//                                                 is kept through hover and press               (default: the selected background)
 //   --bit-ButtonGroup-disabled-color              text and icon color while disabled            (default: the role's disabled text color)
 //   --bit-ButtonGroup-disabled-background         background while disabled                     (default: per variant, transparent unless filled)
 //   --bit-ButtonGroup-disabled-border-color       border and separators while disabled          (default: the role's disabled color)
@@ -97,15 +100,6 @@
     }
 }
 
-.bit-btg-scr,
-.bit-btg-scb {
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    // A swipe past either end scrolls the group only, never the page behind it.
-    overscroll-behavior-x: contain;
-}
-
 // A native scrollbar is always laid out inside the element that scrolls, so leaving it visible
 // puts it within the group's border, where it crowds the buttons and gets clipped by the rounded
 // corners. Hiding it keeps the border hugging the buttons: the group still scrolls by swiping, by
@@ -121,12 +115,11 @@
     }
 }
 
-// The opt-in variant that keeps the scrollbar visible as an affordance. It costs the height the
-// scrollbar occupies inside the border, so the buttons get a matching gap above it rather than
+// The opt-in variant that keeps the scrollbar visible as an affordance. It costs the room the
+// scrollbar occupies inside the border, so the buttons get a matching gap beside it rather than
 // sitting directly on top of it.
 .bit-btg-scb {
     scrollbar-width: thin;
-    padding-block-end: spacing(0.5);
 }
 
 .bit-btg-itm {
@@ -221,13 +214,14 @@
     .bit-btg-itm {
         border-width: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
         border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-button});
+    }
 
-        // Nothing is clipped here, so the focused button takes the library's real focus ring back:
-        // an outset ring held off the button by a gap, which reads at a glance next to the
-        // separated buttons around it.
-        &:focus-visible {
-            @include focus-ring(var(--bit-ButtonGroup-focus-color, var(--bit-btg-itm-clr-fcs)));
-        }
+    // Nothing is clipped here, so the focused button takes the library's real focus ring back: an outset
+    // ring held off the button by a gap, which reads at a glance next to the separated buttons around it.
+    // Except while the group scrolls, which clips along its own axis like the attached layout does - there
+    // a ring held off the button is exactly what gets cut off, so the inset outline above is kept.
+    &:not(.bit-btg-scr):not(.bit-btg-scb) .bit-btg-itm:focus-visible {
+        @include focus-ring(var(--bit-ButtonGroup-focus-color, var(--bit-btg-itm-clr-fcs)));
     }
 
     &.bit-btg-rnd {
@@ -282,11 +276,39 @@
 }
 
 // Declared after .bit-btg-jst on purpose: buttons that share the width equally can never overflow,
-// so a scrolling group keeps them at their natural width even when it is justified as well.
+// so a scrolling group keeps them at their natural width even when it is justified as well. And after
+// .bit-btg-dtc, whose visible overflow - it clips nothing, so its focus rings are not cut off - would
+// otherwise win over the scrolling and leave the buttons spilling out of a group asked to scroll.
 .bit-btg-scr,
 .bit-btg-scb {
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    // A swipe past either end scrolls the group only, never the page behind it.
+    overscroll-behavior-x: contain;
+
     .bit-btg-itm {
         flex: 0 0 auto;
+    }
+}
+
+// The scrolling axis is the axis the group is laid out along, so a vertical group scrolls down its own
+// column rather than sideways along a row it does not have.
+.bit-btg-vrt.bit-btg-scr,
+.bit-btg-vrt.bit-btg-scb {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: contain;
+}
+
+// The room the visible scrollbar takes inside the border, on the edge it is laid out along.
+.bit-btg-scb {
+    padding-block-end: spacing(0.5);
+
+    &.bit-btg-vrt {
+        padding-block-end: 0;
+        padding-inline-end: spacing(0.5);
     }
 }
 
@@ -444,21 +466,25 @@
     }
 }
 
+// The toggled button's border follows its background unless it is given a color of its own, which is what a
+// selection marked by a tinted background and a strong outline needs: the two are one declaration otherwise,
+// so tinting the background would take the outline down with it. A color given here is kept through hover and
+// press, the way the group's own border color is.
 .bit-btg-chk {
     color: var(--bit-ButtonGroup-selected-color, var(--bit-btg-clr-txt));
-    border-color: var(--bit-ButtonGroup-selected-background, var(--bit-btg-clr-dark));
+    border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-background, var(--bit-btg-clr-dark)));
     background-color: var(--bit-ButtonGroup-selected-background, var(--bit-btg-clr-dark));
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-hover));
+            border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-hover)));
             background-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-hover));
         }
     }
 
     &:active {
-        border-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-active));
+        border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-active)));
         background-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-active));
     }
 }

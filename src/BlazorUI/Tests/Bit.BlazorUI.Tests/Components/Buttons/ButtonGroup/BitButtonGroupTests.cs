@@ -1076,6 +1076,159 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("Inbox, 3 unread", labelled.Find("button").GetAttribute("aria-label"));
     }
 
+    [TestMethod]
+    public void BitButtonGroupNavigationShouldNeverUncheckTheItemItLandsOn()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        var group = comp.Find(".bit-btg");
+
+        // Home on the first item and End on the last one land on the item that is already checked, and the arrow
+        // keys of a radiogroup may not leave it with nothing checked.
+        group.KeyDown("Home");
+
+        Assert.AreEqual("true", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+
+        group.KeyDown("End");
+        group.KeyDown("End");
+
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+
+        // A click is the way a Single-mode selection is taken back, and it still is.
+        comp.FindAll("button")[1].Click();
+
+        Assert.AreEqual(0, comp.FindAll(".bit-btg-chk").Count);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSingleItemGroupShouldStayCheckedWhileTheArrowKeysWrapAroundIt()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitButtonGroupItem> { new() { Text = "A", Key = "a" } });
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+        });
+
+        var group = comp.Find(".bit-btg");
+
+        // The navigation wraps around, so in a group of one every arrow key lands back on the checked item.
+        group.KeyDown("ArrowRight");
+        group.KeyDown("ArrowLeft");
+
+        Assert.AreEqual("true", comp.Find("button").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupMaxTogglesShouldReportTheCappedItemsAsDisabledAndIgnoreTheirClick()
+    {
+        var clicks = 0;
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.MaxToggles, 2);
+            parameters.Add(p => p.DefaultToggleKeys, new[] { "a", "b" });
+            parameters.Add(p => p.OnItemClick, (BitButtonGroupItem _) => clicks++);
+        });
+
+        var buttons = comp.FindAll("button");
+
+        // The cap is reached, so the item that is not toggled cannot be toggled at all and says so - while the
+        // toggled ones stay live, since un-toggling one is how the cap is made room in.
+        Assert.IsNull(buttons[0].GetAttribute("aria-disabled"));
+        Assert.IsNull(buttons[1].GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", buttons[2].GetAttribute("aria-disabled"));
+
+        // A capped item is out of reach, not disabled: it keeps no disabled attribute, so it stays focusable and
+        // the group's keyboard navigation reaches it.
+        Assert.IsFalse(buttons[2].HasAttribute("disabled"));
+
+        comp.FindAll("button")[2].Click();
+
+        Assert.AreEqual(0, clicks);
+        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+
+        // Un-toggling one of them brings the capped item back.
+        comp.FindAll("button")[0].Click();
+
+        Assert.IsNull(comp.FindAll("button")[2].GetAttribute("aria-disabled"));
+
+        comp.FindAll("button")[2].Click();
+
+        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.AreEqual(2, clicks);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldMoveTheTabStopToTheFocusedButton()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+
+        // The focus does not only arrive through the arrow keys: a screen reader moves it by itself, and the tab
+        // stop follows it wherever it lands so that the next arrow key carries on from there.
+        comp.FindAll("button")[2].Focus();
+
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", comp.FindAll("button")[0].GetAttribute("tabindex"));
+
+        comp.Find(".bit-btg").KeyDown("ArrowRight");
+
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupDisabledGroupShouldReportItselfAsDisabled()
+    {
+        var items = new List<BitButtonGroupItem> { new() { Text = "A", Key = "a" } };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.IsNull(comp.Find(".bit-btg").GetAttribute("aria-disabled"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.AreEqual("true", comp.Find(".bit-btg").GetAttribute("aria-disabled"));
+    }
+
     public class KeylessButtonGroupItem
     {
         public string? Text { get; set; }

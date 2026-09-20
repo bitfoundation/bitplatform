@@ -15,6 +15,7 @@
 public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
 {
     private int _optionKeySeed;
+    private bool _autoFocusDone;
     private TItem? _toggleItem;
     private TItem? _focusedItem;
     private string? _focusedKey;
@@ -33,6 +34,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// The focus lands on the button that owns the group's single tab stop - the toggled one, otherwise the first
     /// focusable one - which is the same button a Tab into the group reaches, so the group is entered the same way
     /// whether it was focused automatically or by hand.
+    /// <br />
+    /// The button carries the autofocus attribute, which is all a prerendered page needs, and the focus is also
+    /// given to it once it has rendered, since a browser ignores the attribute on markup that arrives after the
+    /// document has loaded - which is every render of a WebAssembly page. It is given once: a group that holds
+    /// nothing focusable yet is focused as soon as it holds one, and never again after that.
     /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
@@ -79,6 +85,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Enables the fixed-toggle mode that ensures one item to be always toggled.
     /// In the Multiple selection mode it prevents un-toggling the last toggled item.
     /// </summary>
+    /// <remarks>
+    /// It is what makes a Single-mode group a mandatory choice, and it is worth setting on one that stands for
+    /// a setting with no "none" to it: without it, activating the toggled item takes the selection back, and a
+    /// radiogroup left with nothing checked is not what the radio the user pressed says it does.
+    /// </remarks>
     [Parameter] public bool FixedToggle { get; set; }
 
     /// <summary>
@@ -121,11 +132,29 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The content inside the item can be customized.
     /// </summary>
+    /// <remarks>
+    /// It replaces the icon, the text and the badge of every button, and renders inside the button (or the link)
+    /// itself, so it holds content and not controls: interactive content inside a button is invalid markup, and
+    /// anything focusable in there would be a second tab stop inside the group's single one.
+    /// <br />
+    /// A template renders content of its own, so it is also what names the button: a template of nothing but
+    /// glyphs needs an AriaLabel on the item.
+    /// </remarks>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// The maximum number of items that can be toggled at the same time in the Multiple selection mode.
     /// </summary>
+    /// <remarks>
+    /// While the cap is reached, the items that are not toggled are rendered with the aria-disabled attribute and
+    /// stop responding, so that the cap is something both a pointer and a screen reader user can see rather than a
+    /// click that silently does nothing. They stay focusable, so the group is still navigable end to end, and they
+    /// come back as soon as one of the toggled items is un-toggled.
+    /// <br />
+    /// Capping a group at one item is <see cref="BitButtonGroupSelectionMode.Single"/> with an extra step - the user
+    /// has to un-toggle before choosing again - and capping it at one while <see cref="FixedToggle"/> also forbids
+    /// un-toggling the last item freezes the selection for good.
+    /// </remarks>
     [Parameter] public int? MaxToggles { get; set; }
 
     /// <summary>
@@ -179,6 +208,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// Set it to <see langword="false"/> on a Single-mode group whose selection does work - a filter, a fetch -
     /// so that arrowing across it does not fire that work on every keystroke; the user then commits with Space
     /// or Enter.
+    /// <br />
+    /// The navigation only ever selects: a key landing on an item that is already toggled - Home on the first item,
+    /// End on the last, an arrow key wrapping around a group of one - leaves it toggled rather than un-toggling it,
+    /// which is not something the arrow keys of a radiogroup may do. Un-toggling stays with Space, Enter and a click.
     /// </remarks>
     [Parameter] public bool? SelectOnFocus { get; set; }
 
@@ -283,7 +316,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
             if (toggleKey.HasValue() && option.Key == toggleKey)
             {
-                _ = UpdateItemToggle(item, false);
+                _ = UpdateItemToggle(item, allowUntoggle: false);
             }
         }
         else if (_Mode is BitButtonGroupSelectionMode.Multiple)
@@ -322,9 +355,22 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         StateHasChanged();
     }
 
-    internal void RegisterItemElement(TItem item, ElementReference element)
+    internal async Task RegisterItemElement(TItem item, ElementReference element)
     {
         _itemElements[item] = element;
+
+        if (AutoFocus is false || _autoFocusDone) return;
+        // The autofocus attribute is written on this same button, but a browser only honors it while the
+        // document is still loading, so on a WebAssembly page - and on any group that renders later - it is
+        // this call that does it. Only the button holding the tab stop is focused, which is the button a Tab
+        // into the group would have reached.
+        if (GetItemAutoFocus(item) is false) return;
+
+        // Latched on the attempt: the focus is given once and never taken again, whatever the group goes on
+        // to render.
+        _autoFocusDone = true;
+
+        await FocusElement(element);
     }
 
 
@@ -467,7 +513,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (toggleKey.HasValue())
                 {
                     var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
-                    await UpdateItemToggle(item, false);
+                    await UpdateItemToggle(item, allowUntoggle: false);
                 }
             }
             else if (_Mode is BitButtonGroupSelectionMode.Multiple)
@@ -520,7 +566,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             if (_internalToggleKey.HasValue())
             {
                 var item = _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey);
-                await UpdateItemToggle(item, false);
+                await UpdateItemToggle(item, allowUntoggle: false);
             }
         }
 
@@ -627,28 +673,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     internal async Task HandleOnItemClick(TItem item)
     {
         // A pointer press moves the focus whether or not it does anything else, so the tab stop follows it even
-        // for the two buttons whose click is ignored: a disabled one kept focusable by DisabledInteractive, and a
-        // loading one. Left behind, the tabindex would stay on another button and the next arrow key would carry
-        // on from there rather than from the button the user is looking at.
-        // The click arrives on the clicked button's own renderer, and moving the tab stop changes the tabindex of
-        // two buttons, so the group is re-rendered here rather than left to whatever the click goes on to do -
-        // a plain action toolbar toggles nothing and would otherwise be left with two tab stops in it.
-        // The key is what the tab stop is remembered by, so that a page handing over a fresh list on every
-        // render keeps it on the item the user left it on. An item of a custom type can have no key to be
-        // remembered by at all - one whose Key selector reads a property AssignItemKeys cannot write back to -
-        // and is followed by reference instead, which is all such an item has to be told apart by.
-        var key = GetItemKey(item);
-        if (key != _focusedKey || IsFocusedItem(item) is false)
-        {
-            _focusedKey = key;
-            _focusedItem = item;
-
-            RefreshOptions();
-            StateHasChanged();
-        }
+        // for the buttons whose click is ignored: a disabled one kept focusable by DisabledInteractive, a loading
+        // one, and one the toggle cap has taken out of reach. Left behind, the tabindex would stay on another
+        // button and the next arrow key would carry on from there rather than from the button the user is looking
+        // at. It is done here rather than left to the focus handler because a pointer press does not focus the
+        // button it lands on everywhere - a click on macOS does not.
+        HandleOnItemFocus(item);
 
         if (GetIsEnabled(item) is false) return;
         if (GetIsLoading(item)) return;
+        // An item the Multiple mode's cap has taken out of reach reports itself as aria-disabled, so it does
+        // nothing at all while it does - a click that runs the item's action but cannot toggle it would be
+        // the one thing its own state does not say.
+        if (GetIsToggleCapped(item)) return;
 
         await OnItemClick.InvokeAsync(item);
 
@@ -673,6 +710,34 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         await UpdateItemToggle(item);
+    }
+
+    // The tab stop follows the focus however the focus moved. The arrow keys and a pointer press are not the only
+    // ways a button of the group comes to hold it: a screen reader moves the focus by itself, and a page can focus
+    // one of the buttons through an element reference of its own. A tab stop left behind on another button would
+    // send the next arrow key off from a button the user is not on, and would hand the next Tab back to it.
+    // (The pointer press is still handled where the click is: a click on macOS does not focus the button it lands on.)
+    // The key is what the tab stop is remembered by, so that a page handing over a fresh list on every render
+    // keeps it on the item the user left it on. An item of a custom type can have no key to be remembered by at
+    // all - one whose Key selector reads a property AssignItemKeys cannot write back to - and is followed by
+    // reference instead, which is all such an item has to be told apart by.
+    internal void HandleOnItemFocus(TItem item)
+    {
+        var key = GetItemKey(item);
+        if (key == _focusedKey && IsFocusedItem(item)) return;
+
+        _focusedKey = key;
+        _focusedItem = item;
+
+        // The roving tabindex is the only thing rendered out of it, so a group that is not navigable records
+        // where the focus went - FocusAsync hands it back there - and re-renders nothing over it.
+        if (Navigable is false) return;
+
+        // Moving the tab stop changes the tabindex of two buttons, and the event arrived on one button's own
+        // renderer, so the group is re-rendered here rather than left to whatever the event goes on to do - a
+        // plain action toolbar toggles nothing and would otherwise be left with two tab stops in it.
+        RefreshOptions();
+        StateHasChanged();
     }
 
     // The whole group is a single tab stop: the toggled item (or the first focusable one) holds the
@@ -740,7 +805,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         if (_SelectOnFocus && GetIsEnabled(item) && GetIsLoading(item) is false)
         {
-            await UpdateItemToggle(item);
+            // Selecting only: Home on the first item, End on the last one and an arrow key wrapping around a
+            // group of one all land on the item that is already toggled, and un-toggling it there would leave a
+            // radiogroup with nothing checked - which is not something its arrow keys are allowed to do.
+            await UpdateItemToggle(item, allowUntoggle: false);
         }
 
         RefreshOptions();
@@ -799,6 +867,25 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (GetItemRole() is not null) return null;
 
         return IsItemToggled(item) ? "true" : null;
+    }
+
+    /// <summary>
+    /// Whether the <see cref="MaxToggles"/> cap of the Multiple selection mode has this item out of reach: the cap
+    /// is reached and this is not one of the items holding it.
+    /// </summary>
+    /// <remarks>
+    /// Such an item cannot be toggled at all until one of the toggled ones is un-toggled, so it reports itself as
+    /// aria-disabled and does nothing when it is activated, rather than answering a click with silence. It stays
+    /// focusable, the way <see cref="DisabledInteractive"/> keeps a disabled item focusable, so the cap never
+    /// leaves a hole in the group's keyboard navigation.
+    /// </remarks>
+    internal bool GetIsToggleCapped(TItem item)
+    {
+        if (_Mode is not BitButtonGroupSelectionMode.Multiple) return false;
+        if (MaxToggles is not int max || max <= 0) return false;
+        if (_toggledItems.Count < max) return false;
+
+        return _toggledItems.Contains(item) is false;
     }
 
     internal string? GetItemAriaChecked(TItem item)
@@ -1044,14 +1131,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         return BitIconInfo.From(GetIcon(item), GetIconName(item));
     }
 
-    private async Task UpdateItemToggle(TItem? item, bool isToggled = true)
+    // allowUntoggle is what tells a click - which toggles what it lands on and un-toggles what is already
+    // toggled - from the two callers that only ever select: the keyboard navigation, whose keys may not
+    // un-toggle a radio they land on, and the initial toggle keys, which are a state to establish.
+    private async Task UpdateItemToggle(TItem? item, bool allowUntoggle = true)
     {
         if (item is null) return;
         if (_items is null || _items.Count == 0) return;
 
         if (_Mode is BitButtonGroupSelectionMode.Multiple)
         {
-            await UpdateItemToggleMultiple(item);
+            await UpdateItemToggleMultiple(item, allowUntoggle);
             return;
         }
 
@@ -1061,7 +1151,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         string? toggleKey = GetItemKey(_toggleItem);
         var oldToggledItem = _items.FirstOrDefault(IsItemToggled);
 
-        if (oldToggledItem == item && (isToggled is false || FixedToggle)) return;
+        if (oldToggledItem == item && (allowUntoggle is false || FixedToggle)) return;
 
         if (oldToggledItem != item)
         {
@@ -1090,12 +1180,14 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         StateHasChanged();
     }
 
-    private async Task UpdateItemToggleMultiple(TItem item)
+    private async Task UpdateItemToggleMultiple(TItem item, bool allowUntoggle = true)
     {
         if (ToggleKeysHasBeenSet && ToggleKeysChanged.HasDelegate is false) return;
 
         if (_toggledItems.Contains(item))
         {
+            if (allowUntoggle is false) return;
+
             // FixedToggle keeps at least one item toggled, so the last one cannot be un-toggled.
             if (FixedToggle && _toggledItems.Count == 1) return;
 

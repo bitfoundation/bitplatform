@@ -322,7 +322,12 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div><strong>MaxToggles</strong> caps how many buttons can be toggled at once:</div>
+        <div>
+            <strong>MaxToggles</strong> caps how many buttons can be toggled at once. While the cap is reached the
+            buttons that are not toggled report themselves as <code>aria-disabled</code> and stop responding, so the
+            cap is visible instead of being a click that does nothing; they stay focusable and come back as soon as
+            one of the toggled buttons is un-toggled.
+        </div>
         <BitButtonGroup Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Multiple" MaxToggles="2"
                         Items="maxToggleCustoms" NameSelectors="multiNameSelectors" DefaultToggleKeys="@defaultKeys" />
     </div>
@@ -408,7 +413,8 @@
         shift+wheel, or with the arrow keys, since the scrollbar itself is hidden so that the border keeps hugging
         the buttons - <strong>Scrollbar</strong> does the same but keeps the scrollbar visible as an affordance,
         at the cost of the height it occupies inside the border, and <strong>Clip</strong> (the default) keeps one line
-        and cuts the rest off. Drag the bottom-right corner of the dashed boxes below to resize
+        and cuts the rest off. The scrolling follows the group's own axis, so a <strong>Vertical</strong> group
+        scrolls down its column instead of sideways. Drag the bottom-right corner of the dashed boxes below to resize
         them and watch the behavior change.
     </div>
     <br /><br />
@@ -572,6 +578,9 @@
             In the Single mode the arrow keys also toggle the button they land on, as the radiogroup pattern
             expects. <strong>SelectOnFocus="false"</strong> takes that back for a group whose selection does work -
             a filter, a fetch - so arrowing across it fires nothing and the user commits with Space or Enter.
+            The navigation only ever selects: a key landing on the button that is already toggled - Home on the
+            first, End on the last - leaves it toggled, which is not something the arrow keys of a radiogroup may
+            take back.
         </div>
         <BitButtonGroup AriaLabel="Text alignment (committed with Space)" SelectOnFocus="false"
                         Variant="BitVariant.Outline" SelectionMode="BitButtonGroupSelectionMode.Single"

@@ -24,8 +24,9 @@ namespace BitBlazorUI {
                 const target = e.target as HTMLElement | null;
                 if (!target?.closest) return;
 
-                // An editable rendered by a custom item template owns its own keys: Home, End and the
-                // arrows move the caret there rather than the focus along the group.
+                // The caret keys of an editable are never cancelled. Interactive content inside a button or a
+                // link is invalid markup, so an item template holds none and this is only a guard against one
+                // that does: it leaves the caret alone, while the group's own handler still navigates.
                 if (ButtonGroup.isEditable(target)) return;
 
                 const item = target.closest('.bit-btg-itm');

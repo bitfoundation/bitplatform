@@ -78,7 +78,7 @@ public partial class BitButtonGroupDemo
             Name = "FixedToggle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the fixed-toggle mode that ensures one item to be always toggled. In the Multiple selection mode it prevents un-toggling the last toggled item.",
+            Description = "Enables the fixed-toggle mode that ensures one item to be always toggled. In the Multiple selection mode it prevents un-toggling the last toggled item. It is what makes a Single-mode group a mandatory choice: without it, activating the toggled item takes the selection back and leaves the radiogroup with nothing checked.",
         },
         new()
         {
@@ -122,7 +122,7 @@ public partial class BitButtonGroupDemo
             Name = "MaxToggles",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The maximum number of items that can be toggled at the same time in the Multiple selection mode.",
+            Description = "The maximum number of items that can be toggled at the same time in the Multiple selection mode. While the cap is reached, the items that are not toggled are rendered with the aria-disabled attribute and stop responding, so that the cap is visible rather than a click that silently does nothing; they stay focusable and come back as soon as one of the toggled items is un-toggled.",
         },
         new()
         {
@@ -189,7 +189,7 @@ public partial class BitButtonGroupDemo
             Name = "SelectOnFocus",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus. Unset, it follows the SelectionMode: on in the Single mode, whose arrow keys the WAI-ARIA radiogroup pattern expects to check the radio they land on, and off in the Multiple and None modes. Set it to false on a Single-mode group whose selection does work - a filter, a fetch - so that arrowing across it does not fire that work on every keystroke.",
+            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus. Unset, it follows the SelectionMode: on in the Single mode, whose arrow keys the WAI-ARIA radiogroup pattern expects to check the radio they land on, and off in the Multiple and None modes. Set it to false on a Single-mode group whose selection does work - a filter, a fetch - so that arrowing across it does not fire that work on every keystroke. The navigation only ever selects: a key landing on an item that is already toggled leaves it toggled, and un-toggling stays with Space, Enter and a click.",
         },
         new()
         {
@@ -326,6 +326,12 @@ public partial class BitButtonGroupDemo
             Name = "--bit-ButtonGroup-selected-hover-background",
             DefaultValue = "The Color role's dark-hover color",
             Description = "Background and border of a toggled button while hovered or pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-selected-border-color",
+            DefaultValue = "--bit-ButtonGroup-selected-background",
+            Description = "Border of a toggled button, for a selection whose outline is not its background: the two are one declaration otherwise, so tinting the background takes the outline down with it. A color set here is kept while the button is hovered and pressed.",
         },
         new()
         {
@@ -1219,7 +1225,7 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Clip",
-                    Description="The items are kept on a single line and the overflowing part is clipped.",
+                    Description="The items are kept on a single line and the overflowing part is clipped. A detached group lets it spill out instead, since it clips nothing at all - which is what keeps the focus ring of its buttons whole.",
                     Value="0",
                 },
                 new()
@@ -1231,13 +1237,13 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Scroll",
-                    Description="The items are kept on a single line and the group becomes scrollable, without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys.",
+                    Description="The items are kept on a single line and the group becomes scrollable along the axis it is laid out on - sideways, or down a vertical group - without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys, which bring the button they focus into view.",
                     Value="2",
                 },
                 new()
                 {
                     Name= "Scrollbar",
-                    Description="The items are kept on a single line and the group becomes scrollable, with a visible scrollbar. The scrollbar is laid out inside the border of the group, which makes the group taller.",
+                    Description="The same, with a visible scrollbar. The scrollbar is laid out inside the border of the group, so the group grows by the room it takes on the edge it sits on.",
                     Value="3",
                 }
             ]
