@@ -159,9 +159,9 @@ public sealed class BitThemeScopedPresetTests
 
         foreach (var preset in new[]
         {
-            BitExtraThemePresets.Fluent2, BitExtraThemePresets.Fluent2Light, BitExtraThemePresets.Fluent2Dark,
-            BitExtraThemePresets.Material, BitExtraThemePresets.MaterialLight, BitExtraThemePresets.MaterialDark,
-            BitExtraThemePresets.Cupertino, BitExtraThemePresets.CupertinoLight, BitExtraThemePresets.CupertinoDark,
+            BitThemePresets.Fluent2, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark,
+            BitThemePresets.Material, BitThemePresets.MaterialLight, BitThemePresets.MaterialDark,
+            BitThemePresets.Cupertino, BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
         })
         {
             Assert.IsTrue(scopedNames.Contains(preset),
