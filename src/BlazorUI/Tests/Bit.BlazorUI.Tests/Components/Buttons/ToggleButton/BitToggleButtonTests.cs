@@ -764,6 +764,28 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitToggleButtonShouldRenderALoadingTemplateAsItWasWritten()
+    {
+        // A template of the page's own replaces the spinner and the label rather than joining them, so it is neither
+        // laid out by the loading container nor hidden from assistive technologies: what it carries may be the only
+        // thing saying the toggle button is busy, and the live region below announces the LoadingLabel alone.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.LoadingTemplate, "<span class=\"custom-loading\">Saving...</span>");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tgb-ldg").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tgb-spn").Count);
+
+        var template = component.Find(".custom-loading");
+
+        Assert.IsFalse(template.HasAttribute("aria-hidden"));
+        Assert.AreEqual("Microphone", component.Find(".bit-tgb-hcn").TextContent.Trim());
+    }
+
+    [TestMethod]
     public void BitToggleButtonShouldAnnounceTheLoadingLabelThroughALiveRegion()
     {
         const string loadingLabel = "Saving...";
@@ -1085,6 +1107,33 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.AreEqual("-1", bitToggleButton.GetAttribute("tabindex"));
         Assert.IsFalse(bitToggleButton.HasAttribute("autofocus"));
+    }
+
+    [TestMethod,
+        DataRow(true, "true"),
+        DataRow("true", "true"),
+        DataRow("TRUE", "true"),
+        DataRow("false", "false"),
+        DataRow(false, (string?)null)
+    ]
+    public void BitToggleButtonShouldKeepASplattedAriaHiddenWhateverItWasWrittenAs(object ariaHidden, string? expected)
+    {
+        // The component writes this attribute itself, so the value the page wrote has to be resolved against it like
+        // every other one: a null written over a splatted attribute removes it rather than leaving it alone. Neither
+        // the name nor the value is read as text alone - the renderer writes a splatted true with no value at all,
+        // and the value is case insensitive - so a hidden button is hidden however it was said.
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["AutoFocus"] = true,
+            ["aria-hidden"] = ariaHidden
+        }).Find(".bit-tgb");
+
+        Assert.AreEqual(expected, bitToggleButton.GetAttribute("aria-hidden"));
+
+        // and what it means is what the tab order and the autofocus are decided by
+        var isHidden = expected is "true";
+        Assert.AreEqual(isHidden ? "-1" : null, bitToggleButton.GetAttribute("tabindex"));
+        Assert.AreEqual(isHidden is false, bitToggleButton.HasAttribute("autofocus"));
     }
 
     [TestMethod,

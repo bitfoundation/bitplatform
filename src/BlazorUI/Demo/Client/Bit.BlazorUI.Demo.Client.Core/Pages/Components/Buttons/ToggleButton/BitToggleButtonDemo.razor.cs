@@ -562,7 +562,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-checked-disabled-opacity",
             DefaultValue = "--bit-opa-dis",
-            Description = "Dimming of a disabled toggle button that is checked. It keeps the checked colors rather than taking the disabled ones, since a setting greyed out at \"on\" and one greyed out at \"off\" are different facts; set it to 1 to hand the whole appearance back to the disabled variables above.",
+            Description = "Dimming of a disabled toggle button that is checked. It keeps the checked colors rather than taking the disabled ones, since a setting greyed out at \"on\" and one greyed out at \"off\" are different facts, so the disabled variables above do not reach it; set it to 1 to remove the dimming and leave it in its checked colors at full strength, and restyle it through the checked variables.",
         },
         new()
         {

@@ -12,7 +12,14 @@
     // by hand is a real thing to do, and losing it would take a control's name or state with it.
     var title = GetTitle() ?? GetSplattedAttribute("title");
     var ariaLabel = GetAriaLabel() ?? GetSplattedAttribute("aria-label");
-    var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
+    // aria-hidden is both written out and read back - the tab order, the autofocus and the live region below all turn
+    // on whether this button is hidden from assistive technologies - so the two are kept apart: what is read back is
+    // what the value means, and what is written is the value itself, since anything else written over the page's own
+    // would change it. The renderer writes a splatted true with no value at all, and the name and the value are both
+    // case insensitive, so neither is read as text alone.
+    var splattedAriaHidden = GetSplattedAttribute("aria-hidden");
+    var ariaHidden = AriaHidden || splattedAriaHidden is "" || string.Equals(splattedAriaHidden, "true", StringComparison.OrdinalIgnoreCase);
+    var ariaHiddenValue = ariaHidden ? "true" : splattedAriaHidden;
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
     var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
     var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
@@ -84,7 +91,7 @@
         autofocus="@autoFocus"
         tabindex="@GetTabIndex(ariaHidden)"
         aria-label="@ariaLabel"
-        aria-hidden="@(ariaHidden ? "true" : null)"
+        aria-hidden="@ariaHiddenValue"
         aria-controls="@ariaControls"
         aria-pressed="@ariaPressed"
         aria-checked="@ariaChecked"
@@ -102,14 +109,15 @@
         @* Faded out rather than hidden, and deliberately not aria-hidden: the content is what names the button, and
            a name that disappears while it is busy leaves a screen reader with nothing to announce it as. The loading
            visuals stacked over it carry the aria-hidden instead - the spinner says nothing, and the label is
-           announced once by the live region below rather than folded into the name on every re-render. *@
+           announced once by the live region below rather than folded into the name on every re-render. A
+           LoadingTemplate is the page's own and is left alone, below. *@
         <div style="@Styles?.HiddenContent" class="bit-tgb-hcn @Classes?.HiddenContent">
             @content
         </div>
 
-        <div aria-hidden="true" style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
-            @if (LoadingTemplate is null)
-            {
+        @if (LoadingTemplate is null)
+        {
+            <div aria-hidden="true" style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
                 <div style="@Styles?.Spinner" class="bit-tgb-spn @Classes?.Spinner"></div>
                 @if (LoadingLabel.HasValue())
                 {
@@ -117,12 +125,15 @@
                         @LoadingLabel
                     </div>
                 }
-            }
-            else
-            {
-                @LoadingTemplate
-            }
-        </div>
+            </div>
+        }
+        else
+        {
+            @* A template of the page's own is rendered as it was written: neither laid out by the loading container
+               nor hidden from assistive technologies, since what it carries - a message, a progress figure - is the
+               page's to name and may be the only thing saying the button is busy. *@
+            @LoadingTemplate
+        }
     }
 </button>
 
