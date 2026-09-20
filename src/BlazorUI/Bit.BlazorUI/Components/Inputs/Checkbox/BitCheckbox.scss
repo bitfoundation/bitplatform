@@ -123,6 +123,18 @@
     @include focus-ring(var(--bit-Checkbox-focus-color, var(--bit-chb-clr-focus)));
 }
 
+// The two states that recolor the ring around the box recolor it around the face as well, since the face
+// is where it is drawn: the error color, so a custom face is not the one place an invalid checkbox drops
+// the state, and the disabled color, for the same reason the box has it - a focused AllowDisabledFocus
+// checkbox that keeps the vivid role ring reads as actionable.
+.bit-chb-cct.bit-inv .bit-chb-inp:focus-visible ~ .bit-chb-lbl {
+    @include focus-ring($clr-err-focus);
+}
+
+.bit-chb-cct.bit-dis .bit-chb-inp:focus-visible ~ .bit-chb-lbl {
+    @include focus-ring(var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis)));
+}
+
 .bit-chb-dsc {
     border: 0;
     padding: 0;
