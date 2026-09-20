@@ -11,7 +11,7 @@
           SubClasses="componentSubClasses" SubEnums="componentSubEnums"
           GitHubUrl="Inputs/Calendar/BitCalendar.razor" GitHubDemoUrl="Inputs/Calendar/BitCalendarDemo.razor">
 
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             The calendar renders a day grid with a month and year picker beside it. <b>IsEnabled</b> false dims it
             and stops every interaction; <b>ReadOnly</b> keeps it browsable but stops the value from changing.
@@ -23,10 +23,10 @@
             <BitCalendar />
             <br /><br />
             <div>IsEnabled = false:</div>
-            <BitCalendar IsEnabled="false" @bind-Value="readOnlyDate" />
+            <BitCalendar IsEnabled="false" />
             <br /><br />
             <div>ReadOnly:</div>
-            <BitCalendar ReadOnly @bind-Value="readOnlyDate" />
+            <BitCalendar ReadOnly />
             <br /><br />
             <div>ShowGoToToday = false:</div>
             <BitCalendar ShowGoToToday="false" />
@@ -58,14 +58,14 @@
     <DemoExample Title="Starting view" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
             Without a value the calendar opens on today. <b>StartingValue</b> opens it somewhere else (and seeds
-            the time picker), and <b>Today</b> overrides which day counts as today, for a custom time provider or
-            a test. <b>OnMonthChange</b> reports the first day of the newly displayed month after every
-            navigation, which is where the events of that month are usually loaded.
+            the time picker further down this page), and <b>Today</b> overrides which day counts as today, for a
+            custom time provider or a test. <b>OnMonthChange</b> reports the first day of the newly displayed
+            month after every navigation, which is where the events of that month are usually loaded.
         </div>
         <br /><br />
         <div class="example-content">
-            <div>StartingValue = December 2020, 20:45:</div>
-            <BitCalendar ShowTimePicker StartingValue="startingValue" />
+            <div>StartingValue = December 2020:</div>
+            <BitCalendar StartingValue="startingValue" />
             <br /><br />
             <div>Today = March 15, 2021:</div>
             <BitCalendar Today="customToday" />

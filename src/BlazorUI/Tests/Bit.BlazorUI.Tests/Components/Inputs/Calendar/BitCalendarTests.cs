@@ -1465,6 +1465,38 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalendarDisablePastShouldNotOverwriteTheTimeOfTheValue()
+    {
+        var now = new DateTime(2026, 1, 15, 14, 30, 0);
+        var today = new DateTimeOffset(now, TimeSpan.Zero);
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.DisablePast, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The bound rules out the days before today, not the hours before this instant: today's midnight is
+        // in range, so it is left where it is rather than being pulled up to 14:30 - which the next day
+        // picked would then silently be given too.
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        Assert.AreEqual(0, value!.Value.Hour);
+        Assert.AreEqual(0, value!.Value.Minute);
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16").Click();
+
+        Assert.AreEqual(16, value!.Value.Day);
+        Assert.AreEqual(0, value!.Value.Hour);
+        Assert.AreEqual(0, value!.Value.Minute);
+    }
+
+    [TestMethod]
     public void BitCalendarHourStepShouldLayAGridOverTheDay()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -1642,6 +1674,32 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalendarDeselectShouldChangeNothingButTheValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2050, 6, 10, 8, 45, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.AllowDeselect, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "10").Click();
+
+        Assert.IsNull(value);
+        // Emptying the value rebuilds the whole view around today, so everything a deselection is not about -
+        // the month on screen and the time the picker holds - is put back the way the user left it.
+        Assert.Contains("June 2050", component.Find(".bit-cal-pkt, .bit-cal-ptb").TextContent);
+        Assert.AreEqual("8", component.FindAll(".bit-cal-tin")[0].GetAttribute("value"));
+        Assert.AreEqual("45", component.FindAll(".bit-cal-tin")[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitCalendarWithoutAllowDeselectShouldKeepTheValueOnReselect()
     {
         DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
@@ -1769,6 +1827,39 @@ public class BitCalendarTests : BunitTestContext
         Assert.IsEmpty(component.FindAll(".bit-cal-eov"));
         Assert.AreEqual(15, value!.Value.Day);
         Assert.IsNotEmpty(component.FindAll(".bit-cal-evi"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventDetailsShouldNotDeselectTheDayItIsOpenedFrom()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.AllowDeselect, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Date = new DateOnly(2026, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("15")).Click();
+
+        Assert.AreEqual(15, value!.Value.Day);
+
+        component.Find(".bit-cal-emc").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // Opening the details of the selected day again is a second look at its events, not a second press of
+        // the deselect toggle, so the value survives it.
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("15")).Click();
+
+        Assert.IsNotNull(value);
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-eov"));
     }
 
     [TestMethod]
@@ -1959,6 +2050,35 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalendarShouldNameTheMonthsOfACommonYearOfAThirteenMonthCalendar()
+    {
+        // The month names of a Hebrew culture are the thirteen of a leap year, so a common year names its
+        // seventh month onwards one place further along that table - as .NET's own formatter does. 5785 is a
+        // common year, and the tenth of April 2025 falls in its seventh month, which is Nisan.
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!
+               .SetValue(culture, new HebrewCalendar());
+        culture.DateTimeFormat.Calendar = new HebrewCalendar();
+
+        var inNisan = new DateTime(2025, 4, 10);
+        var nisan = inNisan.ToString("MMMM", culture);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(inNisan, TimeSpan.Zero));
+        });
+
+        // The seventh name of the table is the second Adar, which a common year does not have at all: reading
+        // the names straight off it would spell the month differently from the date the calendar is showing.
+        Assert.AreNotEqual(nisan, culture.DateTimeFormat.GetMonthName(7));
+        Assert.AreEqual(12, component.FindAll(".bit-cal-pkb").Count);
+        Assert.AreEqual(nisan, component.FindAll(".bit-cal-pkb")[6].GetAttribute("title"));
+        Assert.Contains(nisan, component.Find(".bit-cal-pkt, .bit-cal-ptb").TextContent);
+    }
+
+    [TestMethod]
     public void BitCalendarShouldSurviveACultureWithoutShortestDayNames()
     {
         var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
@@ -2055,10 +2175,15 @@ public class BitCalendarTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        // What the spin buttons produce is on the grid, so what is typed is held to it too - 20 is nearer to
-        // 15 than to 30.
-        component.FindAll(".bit-cal-tin")[1].Input("20");
+        // What is typed is left alone while it is being typed, so a two-digit value can be reached a digit at
+        // a time, and is held to the grid once the field is committed - 20 is nearer to 15 than to 30.
+        component.FindAll(".bit-cal-tin")[1].Input("2");
+        Assert.AreEqual(2, value!.Value.Minute);
 
+        component.FindAll(".bit-cal-tin")[1].Input("20");
+        Assert.AreEqual(20, value!.Value.Minute);
+
+        component.FindAll(".bit-cal-tin")[1].Change("20");
         Assert.AreEqual(15, value!.Value.Minute);
     }
 

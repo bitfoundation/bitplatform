@@ -28,6 +28,11 @@
 //   --bit-Calendar-today-background          background of today, and of the highlighted
 //                                            current month                                (default: the Color role's main color)
 //   --bit-Calendar-today-color               text color of today                           (default: the Color role's on-color)
+//   --bit-Calendar-today-hover-background    background of today on hover, and of the
+//                                            highlighted current month and the selected
+//                                            AM/PM button                                  (default: the Color role's hover color)
+//   --bit-Calendar-today-active-background   background of today while pressed, and of
+//                                            the selected AM/PM button                     (default: the Color role's active color)
 //   --bit-Calendar-today-radius              corner radius of today                        (default: $shp-radius-full)
 //   --bit-Calendar-highlighted-background    background of a HighlightedDates day          (default: $clr-bg-ter)
 //   --bit-Calendar-week-number-color         text color of a week number                   (default: $clr-fg-sec)
@@ -43,7 +48,7 @@
 // a size class and a CSS variable never fight over the same property.
 @mixin cal-size-medium {
     --bit-cal-cell-size-def: #{spacing(3.5)};
-    --bit-cal-cell-fs-def: #{$tg-fs-xs};
+    --bit-cal-cell-fs-def: #{$tg-fs-sm};
     --bit-cal-mcell-w: #{spacing(6)};
     --bit-cal-mcell-h: #{spacing(5.17)};
     --bit-cal-tcell-size: #{spacing(3.75)};
@@ -64,6 +69,9 @@
     box-sizing: border-box;
     font-size: $tg-fs-lg;
     font-family: $tg-font-family;
+    // The radius sits on the element the background is painted on, so it is the calendar's own surface that
+    // is rounded - the header and footer slots inside it included, which is more than the pickers alone.
+    border-radius: var(--bit-Calendar-radius, #{$shp-radius-control});
     background-color: var(--bit-Calendar-background, transparent);
 
     @include cal-size-medium;
@@ -276,12 +284,12 @@
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover);
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active);
+        background-color: var(--bit-Calendar-today-active-background, var(--bit-cal-clr-active));
     }
 }
 
@@ -545,7 +553,7 @@
     @media (hover: hover) {
         &:hover {
             color: var(--bit-Calendar-today-color, var(--bit-cal-clr-txt));
-            background-color: var(--bit-cal-clr-hover);
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 }
@@ -646,12 +654,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover);
+            background-color: var(--bit-Calendar-today-hover-background, var(--bit-cal-clr-hover));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active);
+        background-color: var(--bit-Calendar-today-active-background, var(--bit-cal-clr-active));
     }
 }
 
@@ -827,7 +835,7 @@
 
 .bit-cal-lg {
     --bit-cal-cell-size-def: #{spacing(4.25)};
-    --bit-cal-cell-fs-def: #{$tg-fs-sm};
+    --bit-cal-cell-fs-def: #{$tg-fs-md};
     --bit-cal-mcell-w: #{spacing(7)};
     --bit-cal-mcell-h: #{spacing(6)};
     --bit-cal-tcell-size: #{spacing(4.5)};

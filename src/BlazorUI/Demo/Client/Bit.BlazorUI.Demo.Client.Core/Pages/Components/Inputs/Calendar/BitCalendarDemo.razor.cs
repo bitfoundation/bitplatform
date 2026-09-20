@@ -1705,7 +1705,7 @@ public partial class BitCalendarDemo
         new()
         {
             Name = "--bit-Calendar-day-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -xs / -sm",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
             Description = "Text size of the day cells and of the headers and week numbers that line up with them.",
         },
         new()
@@ -1749,6 +1749,18 @@ public partial class BitCalendarDemo
             Name = "--bit-Calendar-today-color",
             DefaultValue = "The Color role's on-color",
             Description = "Text color of today, of the highlighted current month and of the AM/PM button that is in force.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-today-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Background of today on hover (pointer devices only), which the highlighted current month and the AM/PM button that is in force share. Set it alongside --bit-Calendar-today-background so the hover does not fall back to the Color role.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-today-active-background",
+            DefaultValue = "The Color role's active color",
+            Description = "Background of today while pressed, which the AM/PM button that is in force shares.",
         },
         new()
         {
@@ -1912,8 +1924,6 @@ public partial class BitCalendarDemo
 
     private DateTimeOffset? timeZoneDate1;
     private DateTimeOffset? timeZoneDate2;
-
-    private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;
 
     private string SuccessMessage = string.Empty;
     private BitCalendarValidationModel validationModel = new();

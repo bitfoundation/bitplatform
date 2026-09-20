@@ -5,13 +5,11 @@ public partial class BitCalendarDemo
     private readonly string example1RazorCode = @"
 <BitCalendar />
 
-<BitCalendar IsEnabled=""false"" @bind-Value=""readOnlyDate"" />
+<BitCalendar IsEnabled=""false"" />
 
-<BitCalendar ReadOnly @bind-Value=""readOnlyDate"" />
+<BitCalendar ReadOnly />
 
 <BitCalendar ShowGoToToday=""false"" />";
-    private readonly string example1CsharpCode = @"
-private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
 
     private readonly string example2RazorCode = @"
 <BitCalendar @bind-Value=""@selectedDate"" />
@@ -35,7 +33,7 @@ private void HandleOnSelectDate(DateTimeOffset? date)
 }";
 
     private readonly string example3RazorCode = @"
-<BitCalendar ShowTimePicker StartingValue=""startingValue"" />
+<BitCalendar StartingValue=""startingValue"" />
 
 <BitCalendar Today=""customToday"" />
 

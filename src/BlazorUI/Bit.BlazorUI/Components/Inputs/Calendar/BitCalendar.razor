@@ -362,7 +362,7 @@
 
                                     if (month > monthsInYear) continue;
 
-                                    var monthName = _culture.DateTimeFormat.GetMonthName(month);
+                                    var monthName = GetMonthName(_currentYear, month);
                                     var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
                                     var selected = month == _currentMonth;
                                     <button @onclick="() => SelectMonth(month)"
@@ -388,7 +388,7 @@
                                         }
                                         else
                                         {
-                                            @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                            @GetAbbreviatedMonthName(_currentYear, month)
                                         }
                                     </button>
                                 }
@@ -564,6 +564,7 @@
                         <input @ref="_inputTimeHourRef"
                                @bind="@_hourView"
                                @bind:event="oninput"
+                               @onchange="() => HandleOnTimeInputChange(true)"
                                @onfocus="HandleOnTimeHourFocus"
                                @onkeydown="e => HandleOnTimeInputKeyDown(e, true)"
                                min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
@@ -611,6 +612,7 @@
                         <input @ref="_inputTimeMinuteRef"
                                @bind="@_minuteView"
                                @bind:event="oninput"
+                               @onchange="() => HandleOnTimeInputChange(false)"
                                @onfocus="HandleOnTimeMinuteFocus"
                                @onkeydown="e => HandleOnTimeInputKeyDown(e, false)"
                                min="0"

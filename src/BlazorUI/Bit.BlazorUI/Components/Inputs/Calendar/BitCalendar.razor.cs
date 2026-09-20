@@ -52,6 +52,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
 
     private int _hour;
+    private int _hourBeforeInput;
     private int _hourView
     {
         get
@@ -75,31 +76,31 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         {
             if (IsEnabled is false || ReadOnly) return;
 
-            int candidate;
+            _hourBeforeInput = _hour;
 
+            // The field is bound on every keystroke, so what lands here is whatever has been typed so far -
+            // the first digit of a two-digit hour among it. It is only brought into the day here; the
+            // HourStep grid is laid over it once the field is committed (HandleOnTimeInputChange), which is
+            // what lets 12 be typed into a picker whose step is 3.
             if (TimeFormat == BitTimeFormat.TwelveHours)
             {
                 // A value typed into the hour is an hour of the clock face (1-12), so it lands in the half of
                 // the day the picker is already on: typing 5 into an afternoon time means 17:00, not a silent
                 // flip to the morning - which half the time is in is what the AM/PM pair is there to change.
                 // Both 12 and 0 mean the top of the clock, which is hour zero of the half.
-                candidate = BitTimeSteps.Wrap(value, 12) + (_hour >= 12 ? 12 : 0);
+                _hour = BitTimeSteps.Wrap(value, 12) + (_hour >= 12 ? 12 : 0);
             }
             else
             {
-                candidate = Math.Clamp(value, 0, 23);
+                _hour = Math.Clamp(value, 0, 23);
             }
-
-            // What the spin buttons produce is held to the HourStep grid, so what is typed - and what the
-            // arrow keys of the number input produce, which is a typed value of one more or one less - is
-            // held to it too, instead of the two halves of the same control disagreeing about the same hour.
-            _hour = BitTimeSteps.FindAllowedNear(candidate, _hour, 24, IsHourOnGrid) ?? _hour;
 
             UpdateTime();
         }
     }
 
     private int _minute;
+    private int _minuteBeforeInput;
     private int _minuteView
     {
         get => _minute;
@@ -107,8 +108,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         {
             if (IsEnabled is false || ReadOnly) return;
 
-            // Held to the MinuteStep grid for the same reason the hour above is held to its own.
-            _minute = BitTimeSteps.FindAllowedNear(Math.Clamp(value, 0, 59), _minute, 60, IsMinuteOnGrid) ?? _minute;
+            // Brought into the hour here and held to the MinuteStep grid on commit, for the same reason the
+            // hour above is.
+            _minuteBeforeInput = _minute;
+            _minute = Math.Clamp(value, 0, 59);
 
             UpdateTime();
         }
@@ -873,22 +876,25 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         var value = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(GetNow()));
 
-        var minDate = GetMinDate();
-        var maxDate = GetMaxDate();
-
-        if (minDate.HasValue && minDate > value)
-        {
-            value = minDate.Value;
-        }
-
-        if (maxDate.HasValue && maxDate < value)
-        {
-            value = maxDate.Value;
-        }
-
         // Everything the calendar shows - the month it opens on, the time in the time picker - belongs to the
         // TimeZone of the component, not to the offset the value happens to carry.
         var dateTime = GetDateTime(value);
+
+        // The bounds rule out days rather than instants, the way every other comparison against them does, so
+        // a value falling on the MinDate's or the MaxDate's own day is already in range: comparing the two as
+        // instants would pull today's midnight up to a DisablePast bound of now and overwrite the time of day
+        // with the bound's on every value the user picks.
+        var minDate = GetMinDate();
+        if (minDate.HasValue && GetDateTime(minDate.Value).Date > dateTime.Date)
+        {
+            dateTime = GetDateTime(minDate.Value);
+        }
+
+        var maxDate = GetMaxDate();
+        if (maxDate.HasValue && GetDateTime(maxDate.Value).Date < dateTime.Date)
+        {
+            dateTime = GetDateTime(maxDate.Value);
+        }
 
         _hour = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Hour : 0;
         _minute = CurrentValue.HasValue || StartingValue.HasValue ? dateTime.Minute : 0;
@@ -909,21 +915,29 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         // the user is looking at rather than jumping back onto today the way an emptied value otherwise would.
         if (AllowDeselect && IsSelectedDate(selectedDate))
         {
-            var deselectedYear = _culture.Calendar.GetYear(selectedDate);
-            var deselectedMonth = _culture.Calendar.GetMonth(selectedDate);
+            // Emptying the value runs the whole of OnSetParameters, which rebuilds the view around today (or
+            // around StartingValue) - the displayed month, the range the year picker offers and the time in
+            // the time picker alike. None of that is what the user asked for by clearing a day, so all of it
+            // is put back: what a deselection changes is the value and nothing else.
+            var hour = _hour;
+            var minute = _minute;
+            var yearPickerEndYear = _yearPickerEndYear;
+            var yearPickerStartYear = _yearPickerStartYear;
 
             _focusedDate = selectedDate;
 
             CurrentValue = null;
 
-            _currentYear = deselectedYear;
-            _currentMonth = deselectedMonth;
+            _hour = hour;
+            _minute = minute;
+            _currentYear = previousYear;
+            _currentMonth = previousMonth;
+            _yearPickerEndYear = yearPickerEndYear;
+            _yearPickerStartYear = yearPickerStartYear;
 
             GenerateMonthData(_currentYear, _currentMonth);
 
             await OnSelectDate.InvokeAsync(CurrentValue);
-
-            await NotifyMonthChange(previousYear, previousMonth);
 
             return;
         }
@@ -1129,7 +1143,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void GenerateMonthData(int year, int month)
     {
-        _monthTitle = $"{_culture.DateTimeFormat.GetMonthName(month)} {year}";
+        _monthTitle = $"{GetMonthName(year, month)} {year}";
 
         var calendar = _culture.Calendar;
         int daysInMonth = calendar.GetDaysInMonth(year, month);
@@ -1271,7 +1285,35 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private int GetMonthsInCurrentYear()
     {
         // Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen.
-        return _culture.Calendar.GetMonthsInYear(_currentYear);
+        return GetMonthsInYear(_currentYear);
+    }
+
+    /// <inheritdoc cref="GetMonthsInCurrentYear"/>
+    private int GetMonthsInYear(int year)
+    {
+        return _culture.Calendar.GetMonthsInYear(year);
+    }
+
+    // A culture whose month names are the thirteen of a Hebrew leap year names the months of a common year
+    // one place further along that table from the seventh on - the thirteenth name is the second Adar, which
+    // a common year does not have. .NET's own formatter makes the same shift, so a month read off the names
+    // directly would be spelled differently from the very date the calendar is showing.
+    private string GetMonthName(int year, int month) => _culture.DateTimeFormat.GetMonthName(GetMonthNameIndex(year, month));
+
+    /// <inheritdoc cref="GetMonthName"/>
+    private string GetAbbreviatedMonthName(int year, int month) => _culture.DateTimeFormat.GetAbbreviatedMonthName(GetMonthNameIndex(year, month));
+
+    /// <inheritdoc cref="GetMonthName"/>
+    private int GetMonthNameIndex(int year, int month)
+    {
+        if (month < 7) return month;
+
+        // Only a culture whose table really does hold thirteen names shifts: everywhere else the thirteenth
+        // entry is the empty string every DateTimeFormatInfo pads its twelve names with.
+        var monthNames = _culture.DateTimeFormat.MonthNames;
+        if (monthNames.Length < 13 || monthNames[12].HasNoValue()) return month;
+
+        return GetMonthsInYear(year) == 13 ? month : month + 1;
     }
 
     private bool IsWeekRowEmpty(int weekIndex)
@@ -2219,6 +2261,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (ShowEventDetails && events.Count > 0)
         {
             OpenEventModal(date);
+
+            // Opening the details of the day the value is already on is a second look at its events, not a
+            // second press of a toggle: the day stays selected, so its dialog can be opened as often as the
+            // user likes. Without this, AllowDeselect would empty the value on every other look.
+            if (AllowDeselect && IsSelectedDate(date)) return;
         }
 
         await SelectDate(date);
@@ -2331,14 +2378,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(_inputTimeMinuteRef);
-    }
-
-    private void ToggleAmPmTime()
-    {
-        if (ReadOnly) return;
-        if (IsEnabled is false) return;
-
-        _hourView = _hour + (_hour >= 12 ? -12 : 12);
     }
 
     private void HandleOnAmClick()
@@ -2490,9 +2529,30 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="IsHourOnGrid"/>
     private bool IsMinuteOnGrid(int minute) => BitTimeSteps.IsOnGrid(minute, MinuteStep, 0, 60);
 
+    // A committed hour or minute - the field left, Enter pressed, an arrow key or a spinner of the number
+    // input stepped, each of which fires a change of its own - is held to the HourStep/MinuteStep grid, so
+    // the two halves of the same control cannot disagree about which times the picker offers. The value
+    // typed on the way there was left alone (see the setters above), so the grid never rewrites a half-typed
+    // number; the value the editing started from is what tells a move of exactly one - an arrow key - from
+    // a number that was typed, so a step of a sparser grid moves on rather than sitting still.
+    private void HandleOnTimeInputChange(bool isHour)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        if (isHour)
+        {
+            _hour = BitTimeSteps.FindAllowedNear(_hour, _hourBeforeInput, 24, IsHourOnGrid) ?? _hour;
+        }
+        else
+        {
+            _minute = BitTimeSteps.FindAllowedNear(_minute, _minuteBeforeInput, 60, IsMinuteOnGrid) ?? _minute;
+        }
+
+        UpdateTime();
+    }
+
     // The hour and the minute answer PageUp and PageDown with the same step the spin buttons next to them
-    // move by, so the time can be set without leaving the keyboard or the field. (The arrow keys are the
-    // number input's own, and the setter above snaps the one-step move they make onto the grid.)
+    // move by, so the time can be set without leaving the keyboard or the field.
     private void HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour)
     {
         if (IsEnabled is false || ReadOnly) return;
