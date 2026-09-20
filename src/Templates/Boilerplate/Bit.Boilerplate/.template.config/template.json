@@ -926,7 +926,10 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
-                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs"
+                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs",
+                        // Its subject is Diagnostic/SendTestPushNotification - the one anonymous POST that binds
+                        // nothing but a route value, so a form body reaches AutoCsrfProtectionFilter intact.
+                        "src/Tests/Features/Antiforgery/AntiforgeryFormPostTests.cs"
                     ]
                 },
                 {

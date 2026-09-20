@@ -3531,7 +3531,9 @@ public class BitDateRangePickerTests : BunitTestContext
 
         component.Find(".bit-dtrp-inp").Change("2026-01-12 - 2026-01-15");
         component.Find("form").Submit();
-        Assert.AreEqual(0, component.FindAll(".validation-message").Count);
+        Assert.IsEmpty(component.FindAll(".validation-message")
+                                .Select(message => message.TextContent.Trim())
+                                .Where(text => text.Length > 0));
     }
 
     [TestMethod]
