@@ -13,7 +13,7 @@ public class BitThemeSwitcherItem
 
     /// <summary>
     /// The design system this item selects - the stem its two theme names share, e.g. <c>"material"</c> for
-    /// the <c>material-light</c> / <c>material-dark</c> pair (see <see cref="BitExtraThemePresets"/>). It is
+    /// the <c>material-light</c> / <c>material-dark</c> pair (see <see cref="BitThemePresets"/>). It is
     /// also what identifies the item, so it has to be unique within one switcher, and it is matched against
     /// the applied theme name to decide which item is the selected one.
     /// </summary>
