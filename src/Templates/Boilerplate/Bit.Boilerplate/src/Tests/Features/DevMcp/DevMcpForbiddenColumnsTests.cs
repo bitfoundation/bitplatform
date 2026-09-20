@@ -59,7 +59,7 @@ public class DevMcpForbiddenColumnsTests
     /// </summary>
     [TestMethod]
     [DataRow("Npgsql.EntityFrameworkCore.PostgreSQL", true)]
-    [DataRow("Pomelo.EntityFrameworkCore.MySql", false)]
+    [DataRow("MySql.EntityFrameworkCore", false)]
     [DataRow("Microsoft.EntityFrameworkCore.SqlServer", false)]
     [DataRow("Microsoft.EntityFrameworkCore.Sqlite", false)]
     [DataRow(null, false)]

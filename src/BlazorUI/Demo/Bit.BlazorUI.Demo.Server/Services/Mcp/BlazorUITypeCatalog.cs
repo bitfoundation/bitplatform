@@ -9,6 +9,12 @@ public sealed record BlazorUIType(Type Clr, string Name, string Kind, BlazorUIPa
 {
     /// <summary>Whether this type belongs to one component - its class-styles bag, its item class, its own enum.</summary>
     public bool OwnedByComponent { get; init; }
+
+    /// <summary>
+    /// Whether this type is only a container for extension members - a name nobody writes, since
+    /// its members are read off the type they extend and are answered there.
+    /// </summary>
+    public bool IsExtensionContainer { get; init; }
 }
 
 /// <summary>
@@ -41,8 +47,12 @@ public static class BlazorUITypeCatalog
     /// <summary>Every public type of the five packages.</summary>
     public static BlazorUIType[] Types => _types.Value;
 
-    /// <summary>The types no component page owns - what a listing is worth showing.</summary>
-    public static BlazorUIType[] LibraryWide => [.. Types.Where(t => t.OwnedByComponent is false)];
+    /// <summary>
+    /// The types no component page owns - what a listing is worth showing. An extension container
+    /// is left out with them: naming one is not how its members are reached, and the type it
+    /// extends is already here with those members under it.
+    /// </summary>
+    public static BlazorUIType[] LibraryWide => [.. Types.Where(t => t.OwnedByComponent is false && t.IsExtensionContainer is false)];
 
     /// <summary>
     /// The library-wide types a caller will actually meet, which is what the listing shows.
@@ -195,7 +205,8 @@ public static class BlazorUITypeCatalog
             {
                 // A type named after a component is that component's, and is answered there in the
                 // context that explains it. BitDropdownItem is BitDropdown's; BitColor is nobody's.
-                OwnedByComponent = componentNames.Any(name => Simple(type).StartsWith(name, StringComparison.Ordinal))
+                OwnedByComponent = componentNames.Any(name => Simple(type).StartsWith(name, StringComparison.Ordinal)),
+                IsExtensionContainer = BlazorUIExtensionMembers.IsContainer(type)
             }))
             .OrderBy(t => t.Name, StringComparer.Ordinal)];
     }

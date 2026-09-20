@@ -45,7 +45,7 @@ public partial class McpProxyService : IAsyncDisposable
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository, never the caller's own workspace, not even a project created from a bit template.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository, never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites and the build time projects, and none of the bit libraries: BlazorUI, Bmotion, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, routing or the service worker goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -71,7 +71,8 @@ public partial class McpProxyService : IAsyncDisposable
         new("bitBswup", new("https://bswup.bitplatform.dev/mcp")),
         new("bitMotion", new("https://bmotion.bitplatform.dev/mcp")),
         // codebase-memory-mcp (a stdio child process npx fetches) serves a graph index of the repository
-        // configured at AppSettings:CodebaseMemory:SourceRepositoryPath, so agents can answer from the
+        // configured at AppSettings:CodebaseMemory:SourceRepositoryPath - of the part of it that has no better
+        // source on this endpoint, see CodebaseMemoryIndexService.IndexedPaths - so agents can answer from the
         // source itself rather than from documentation. Renamed, as a developer's own codebase-memory
         // server answers about their project under the original names. Only three read tools are listed:
         // trace_path binds calls by bare method name, which misleads across this monorepo, and

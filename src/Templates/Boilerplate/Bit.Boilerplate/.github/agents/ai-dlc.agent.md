@@ -22,7 +22,7 @@ Verify these before phase 1 and offer to fix whatever is missing - they are one-
 ### 1. Requirements Elaboration
 - Ask clarifying questions to fully understand the feature/task
 - Identify acceptance criteria, edge cases, and constraints
-<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true)-->
+<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 - Check the requested feature against **Optional Features This Project Has Not Enabled Yet** (below) before treating any of it as new work
 <!--#endif-->
 - Do NOT proceed until requirements are unambiguous
@@ -64,7 +64,7 @@ Verify these before phase 1 and offer to fix whatever is missing - they are one-
 <!--#endif-->
 - Confirm the fix against the same evidence that showed the problem, then re-run phase 5
 
-<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true)-->
+<!--#if (multitenant != true || aspire != true || redis != true || notification != true || sentry != true || appInsights != true || signalR != true || offlineDb != true || module != "Admin")-->
 
 ## Optional Features This Project Has Not Enabled Yet
 
@@ -94,11 +94,14 @@ The features below were switched **off** when this project was generated from th
 <!--#if (offlineDb != true)-->
 *   **Offline database** (`offlineDb`): a client-side EF Core `DbContext` so the app can store and query its data on the device.
 <!--#endif-->
+<!--#if (module != "Admin")-->
+*   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and `BitDataGrid` CRUD pages with their controllers, one editing its rows in a modal popup and one on a page of its own.
+<!--#endif-->
 
 When the user asks for one of these, or you conclude the task needs it:
 
 1.  Tell the user it is a first-class option that simply was not selected at project creation, and that the supported implementation can be brought in - then let phase 2 plan bringing it in as its own task, ahead of the tasks that build on it.
-2.  Read the real code with the bit platform source code MCP tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource` - which read the `bitfoundation/bitplatform` repository, never this workspace. Scope every search with `path_filter: src/Templates`. Search the feature's own conditional (`#if (<symbol> == true)`) to enumerate **every** file it touches: each feature spans several projects, plus `.csproj` package references, `appsettings.json` settings and DI registrations.
+2.  Read the real code with the bit platform source code MCP tools - `FindBitPlatformSymbols`, `SearchBitPlatformCode` and `GetBitPlatformSymbolSource` - which read the `bitfoundation/bitplatform` repository, never this workspace. Scope every search with `path_filter: src/Templates`. Search the feature's own conditional (`#if (<symbol> == true)`, or `#if (module == "Admin")`) to enumerate **every** file it touches: each feature spans several projects, plus `.csproj` package references, `appsettings.json` settings and DI registrations.
 3.  Port it.
 <!--#endif-->
 
@@ -107,4 +110,5 @@ When the user asks for one of these, or you conclude the task needs it:
 - Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
+- This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the project for it - a page, service or pattern to copy is usually already here
 - Limit each task to a single concern; avoid batching unrelated changes

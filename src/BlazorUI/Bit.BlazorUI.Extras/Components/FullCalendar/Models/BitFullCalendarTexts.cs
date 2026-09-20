@@ -14,18 +14,6 @@ public class BitFullCalendarTexts
     /// <summary>Label of the "today" navigation button.</summary>
     public string TodayButton { get; set; } = "Today";
 
-    /// <summary>
-    /// Obsolete alias of <see cref="TodayButton"/>. The old name leaked the internal
-    /// <c>BitFcTodayButton</c> component name into the public text bag; it forwards to
-    /// <see cref="TodayButton"/> so existing assignments keep working.
-    /// </summary>
-    [Obsolete($"Use {nameof(TodayButton)} instead. This alias forwards to it and will be removed in a future release.")]
-    public string BitFcTodayButton
-    {
-        get => TodayButton;
-        set => TodayButton = value;
-    }
-
     public string AddEventButton { get; set; } = "Add Event";
     public string AddEventHoverHint { get; set; } = "Add event";
     public string PreviousButtonTitle { get; set; } = "Previous";

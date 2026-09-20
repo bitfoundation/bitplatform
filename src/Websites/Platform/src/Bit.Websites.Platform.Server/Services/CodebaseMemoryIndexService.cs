@@ -5,12 +5,69 @@ using Microsoft.Extensions.Options;
 namespace Bit.Websites.Platform.Server.Services;
 
 /// <summary>
-/// Indexes the repository configured at AppSettings:CodebaseMemory:SourceRepositoryPath when the site
-/// starts, so the CodebaseMemory upstream of <see cref="McpProxyService"/> answers from a ready index.
+/// Indexes <see cref="IndexedPaths"/> of the repository configured at
+/// AppSettings:CodebaseMemory:SourceRepositoryPath when the site starts, so the CodebaseMemory upstream of
+/// <see cref="McpProxyService"/> answers from a ready index.
 /// Runs in the background: startup never waits for it, and a missing executable or a failed run only logs.
 /// </summary>
 public partial class CodebaseMemoryIndexService : BackgroundService
 {
+    /// <summary>
+    /// The parts of the repository this site indexes, and so the only code its CodebaseMemory tools reach.
+    /// What is left out is what already answers for itself elsewhere on this endpoint: BlazorUI, Bmotion,
+    /// Brouter, Butil and Bswup each have their own MCP server here, written for the library rather than
+    /// grepped out of it, and a question about a component or a theme belongs to those. Indexing them here
+    /// as well would only bury the code that has no other source - the project template above all - under
+    /// the code that has one, and answer every such question twice over, once badly.
+    /// </summary>
+    internal static readonly string[] IndexedPaths =
+    [
+        "src/Besql",
+        "src/BlazorES2019",
+        "src/CodeAnalyzers",
+        "src/Minifier",
+        "src/ResxTranslator",
+        "src/SourceGenerators",
+        "src/Templates/Boilerplate/Bit.Boilerplate",
+        "src/Websites"
+    ];
+
+    /// <summary>
+    /// The first line of the .cbmignore this site writes, marking the file as one it owns: a repository that
+    /// brings a .cbmignore of its own keeps it, rather than having it overwritten on every start.
+    /// </summary>
+    private const string ignoreFileHeader = "# Written by the bit platform website. Edit CodebaseMemoryIndexService.IndexedPaths instead.";
+
+    /// <summary>
+    /// The indexer takes a single root and narrows it down by gitignore rules alone, so <see cref="IndexedPaths"/>
+    /// becomes an allowlist: everything is ignored, then each directory on the way down to an indexed one is
+    /// un-ignored and its siblings ignored again. A later rule wins, so the levels are written from the root down.
+    /// </summary>
+    internal static string BuildIgnoreFileContent()
+    {
+        var segments = IndexedPaths.Select(path => path.Split('/')).ToArray();
+
+        List<string> lines = [ignoreFileHeader, "/*"];
+
+        for (var depth = 1; segments.Any(segment => segment.Length >= depth); depth++)
+        {
+            var directories = segments.Where(segment => segment.Length >= depth)
+                                      .Select(segment => string.Join('/', segment.Take(depth)))
+                                      .Distinct(StringComparer.Ordinal)
+                                      .Order(StringComparer.Ordinal)
+                                      .ToArray();
+
+            lines.AddRange(directories.Select(directory => $"!/{directory}/"));
+
+            // Only a directory that is merely on the way to an indexed one has to have its own children
+            // ignored again; an indexed one is kept whole.
+            lines.AddRange(directories.Where(directory => segments.Any(segment => segment.Length > depth && string.Join('/', segment.Take(depth)) == directory))
+                                      .Select(directory => $"/{directory}/*"));
+        }
+
+        return string.Join('\n', lines) + '\n';
+    }
+
     /// <summary>
     /// npx by default, so no global install has to sit on the PATH of the account the site runs under.
     /// </summary>
@@ -67,6 +124,8 @@ public partial class CodebaseMemoryIndexService : BackgroundService
 
         try
         {
+            WriteIgnoreFile(repositoryPath);
+
             // A first index of a large repository takes a minute or two; later runs reuse the persisted
             // index and only process what changed.
             if (await Run(stoppingToken, "index_repository", "--repo-path", repositoryPath) is null) return;
@@ -84,6 +143,25 @@ public partial class CodebaseMemoryIndexService : BackgroundService
             // The chatbot still works; its CodebaseMemory tools report the repository as not indexed.
             logger.LogError(exp, "Codebase memory indexing could not run for {RepositoryPath}.", repositoryPath);
         }
+    }
+
+    /// <summary>
+    /// Narrows the index down to <see cref="IndexedPaths"/>, through the only mechanism the indexer offers
+    /// for it: a .cbmignore at the root of the repository it is pointed at. A repository that already has one
+    /// of its own keeps it and is indexed whole, which is loud in the log rather than silent, since the tools
+    /// then answer about libraries that have a better source on this same endpoint.
+    /// </summary>
+    private void WriteIgnoreFile(string repositoryPath)
+    {
+        var ignoreFilePath = Path.Combine(repositoryPath, ".cbmignore");
+
+        if (File.Exists(ignoreFilePath) && File.ReadLines(ignoreFilePath).FirstOrDefault() != ignoreFileHeader)
+        {
+            logger.LogWarning("Codebase memory is indexing all of {RepositoryPath}: {IgnoreFilePath} was written by someone else, so it is left as it is.", repositoryPath, ignoreFilePath);
+            return;
+        }
+
+        File.WriteAllText(ignoreFilePath, BuildIgnoreFileContent());
     }
 
     /// <summary>

@@ -27,6 +27,7 @@ public static class BlazorUIReflection
         if (type.IsEnum)
         {
             AppendEnum(builder, type);
+            AppendExtensions(builder, type);
             return;
         }
 
@@ -41,6 +42,53 @@ public static class BlazorUIReflection
         AppendProperties(builder, type);
         AppendMethods(builder, type);
         AppendEvents(builder, type);
+        AppendExtensions(builder, type);
+    }
+
+    /// <summary>
+    /// What another package adds to this type. Answered here, under the type the members are
+    /// written on, because that is where they are read: <c>BitThemePresets.MaterialDark</c> is
+    /// reached exactly like <c>BitThemePresets.FluentDark</c>, and an answer that listed only the
+    /// members the type's own assembly declares would say the first of those does not exist.
+    /// <para>
+    /// The prose is the difference between the two forms, which is the part that bites: a
+    /// contributed name is a static property rather than a <c>const</c>, and reading one needs
+    /// C# 14 on the reading side as well. What to write where that will not do is the container's
+    /// own documentation, which is one call away rather than repeated per member.
+    /// </para>
+    /// </summary>
+    private static void AppendExtensions(StringBuilder builder, Type type)
+    {
+        foreach (var group in BlazorUIExtensionMembers.For(type))
+        {
+            builder.AppendLine($"## Added by {group.Package.PackageId}").AppendLine();
+
+            builder.Append($"Extension members on `{group.ReceiverName}`, so they are read exactly like the members above - ")
+                   .Append($"`{group.ReceiverName}.{group.Members[0].Name}` - with nothing but `@using Bit.BlazorUI` in scope, once the app references `{group.Package.PackageId}`. ")
+                   .Append("Each is a static property rather than a `const`, so it cannot be a `case` label, an attribute argument or a default parameter value, and a project compiling at an older C# version cannot read one at all. ")
+                   .AppendLine($"`GetBitBlazorUIType(typeName: \"{group.Container.Name}\")` has what to write in either case.")
+                   .AppendLine();
+
+            AppendExtensionMembers(builder, group.Members);
+        }
+    }
+
+    /// <summary>The members of one extension block as a table - the same rows on either side of it.</summary>
+    public static void AppendExtensionMembers(StringBuilder builder, IReadOnlyList<BlazorUIExtensionMember> members)
+    {
+        var values = members.Any(m => string.IsNullOrWhiteSpace(m.Value) is false);
+
+        builder.AppendLine(values ? "| Name | Type | Value | Description |" : "| Name | Type | Description |");
+        builder.AppendLine(values ? "| --- | --- | --- | --- |" : "| --- | --- | --- |");
+
+        foreach (var member in members)
+        {
+            builder.Append($"| `{member.Name}` | `{member.Type}` | ");
+            if (values) builder.Append($"{Code(member.Value)} | ");
+            builder.AppendLine($"{Cell(member.Summary)} |");
+        }
+
+        builder.AppendLine();
     }
 
     private static void AppendEnum(StringBuilder builder, Type type)
