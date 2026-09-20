@@ -510,43 +510,48 @@
         cursor: default;
     }
 
+    // The hover resets below exclude an invalid group: its circle and its tile carry the error color, the
+    // base hover rules already leave an invalid group alone, and undoing a hover that never applies would
+    // only repaint the error state in the resting color under the pointer.
     @media (hover: hover) {
-        // An unchecked item must not preview a selection that cannot be made, so its hover is reset
-        // to the resting look: no dot, no highlighted ring and no tile border.
-        .bit-chg-icn:not(.bit-chg-ich):not(.bit-chg-ids) {
-            .bit-chg-itl:hover .bit-chg-rad {
-                &::before {
-                    border-color: var(--bit-ChoiceGroup-circle-color, #{$clr-brd-pri});
+        &:not(.bit-inv) {
+            // An unchecked item must not preview a selection that cannot be made, so its hover is reset
+            // to the resting look: no dot, no highlighted ring and no tile border.
+            .bit-chg-icn:not(.bit-chg-ich):not(.bit-chg-ids) {
+                .bit-chg-itl:hover .bit-chg-rad {
+                    &::before {
+                        border-color: var(--bit-ChoiceGroup-circle-color, #{$clr-brd-pri});
+                    }
+
+                    &::after {
+                        opacity: 0;
+                    }
                 }
 
-                &::after {
-                    opacity: 0;
+                .bit-chg-ili:hover {
+                    border-color: transparent;
+
+                    .bit-chg-rad::before {
+                        opacity: 0;
+                    }
                 }
             }
 
-            .bit-chg-ili:hover {
-                border-color: transparent;
+            // The checked item keeps its dot and its border, they just stop brightening on hover.
+            .bit-chg-ich {
+                .bit-chg-itl:hover .bit-chg-rad {
+                    &::before {
+                        border-color: var(--bit-chg-clr);
+                    }
 
-                .bit-chg-rad::before {
-                    opacity: 0;
+                    &::after {
+                        background-color: var(--bit-chg-clr);
+                    }
                 }
-            }
-        }
 
-        // The checked item keeps its dot and its border, they just stop brightening on hover.
-        .bit-chg-ich {
-            .bit-chg-itl:hover .bit-chg-rad {
-                &::before {
+                .bit-chg-ili:hover {
                     border-color: var(--bit-chg-clr);
                 }
-
-                &::after {
-                    background-color: var(--bit-chg-clr);
-                }
-            }
-
-            .bit-chg-ili:hover {
-                border-color: var(--bit-chg-clr);
             }
         }
     }
@@ -902,8 +907,9 @@
 
 // The read-only rules above reset the hover of the circle and of the tile; a card is a third surface, so
 // its hover is reset here too - an unchecked card must not preview a selection that cannot be made, and
-// the checked one keeps its border instead of brightening.
-.bit-chg-rdo {
+// the checked one keeps its border instead of brightening. An invalid group is excluded for the same
+// reason the resets above exclude it: its card carries the error border and no hover rule touches it.
+.bit-chg-rdo:not(.bit-inv) {
     &.bit-chg-otl,
     &.bit-chg-fil {
         @media (hover: hover) {
