@@ -289,6 +289,9 @@
 // one is left out of it, because it is still there to be clicked). Neither is done with pointer-events: none,
 // which would suppress the Title that explains the state and let the press fall through to whatever is underneath.
 .bit-btn-fil {
+    // The foreground FixedColor holds on to is the one this variant paints at rest (see .bit-btn-fxc below).
+    --bit-btn-fxc-clr: var(--bit-btn-clr-txt);
+
     background-color: var(--bit-Button-background, var(--bit-btn-clr));
     border-color: var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-clr)));
 
@@ -316,6 +319,8 @@
 }
 
 .bit-btn-otl {
+    --bit-btn-fxc-clr: var(--bit-btn-clr);
+
     color: var(--bit-Button-color, var(--bit-btn-clr));
     background-color: var(--bit-Button-background, transparent);
     border-color: var(--bit-Button-border-color, var(--bit-btn-clr));
@@ -342,6 +347,8 @@
 }
 
 .bit-btn-txt {
+    --bit-btn-fxc-clr: var(--bit-btn-clr);
+
     color: var(--bit-Button-color, var(--bit-btn-clr));
     background-color: var(--bit-Button-background, transparent);
     border-color: var(--bit-Button-border-color, transparent);
@@ -533,17 +540,20 @@
 // FixedColor has to outrank the hover and press rules of all three variants, each of which is a class, a state
 // guard and a pseudo-class, so it is written against the root class as well - and kept away from the disabled state, whose
 // muted foreground is not something a fixed color should hold on to.
+// The color it holds is the variant's own rest foreground, which each variant hands over as --bit-btn-fxc-clr: the
+// text one for Fill, the variant color for Outline and Text, whose resting label is not painted on the variant color
+// and would otherwise be repainted in it by the very parameter that promises to leave it alone.
 .bit-btn.bit-btn-fxc:not(.bit-dis) {
-    color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+    color: var(--bit-Button-color, var(--bit-btn-fxc-clr, var(--bit-btn-clr-txt)));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+            color: var(--bit-Button-color, var(--bit-btn-fxc-clr, var(--bit-btn-clr-txt)));
         }
     }
 
     &:active {
-        color: var(--bit-Button-color, var(--bit-btn-clr-txt));
+        color: var(--bit-Button-color, var(--bit-btn-fxc-clr, var(--bit-btn-clr-txt)));
     }
 }
 
