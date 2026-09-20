@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {
@@ -15,6 +15,8 @@ public partial class _BitMenuButtonCustomDemo
 
     private bool customIsLoading;
 
+    private string? submenuClickedCustom;
+
     private static BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     {
         Text = { Name = nameof(Operation.Name) },
@@ -30,7 +32,9 @@ public partial class _BitMenuButtonCustomDemo
         SecondaryText = { Name = nameof(Operation.Shortcut) },
         IsHeader = { Name = nameof(Operation.IsGroupLabel) },
         Checkable = { Name = nameof(Operation.Checkable) },
-        IsChecked = { Name = nameof(Operation.Checked) }
+        IsChecked = { Name = nameof(Operation.Checked) },
+        ChildItems = { Name = nameof(Operation.Children) },
+        RadioGroup = { Name = nameof(Operation.SortGroup) }
     };
 
     private static BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
@@ -47,6 +51,47 @@ public partial class _BitMenuButtonCustomDemo
         new() { Name = "Custom A", Id = "A" },
         new() { Name = "Custom B", Id = "B", Disabled = true },
         new() { Name = "Custom C", Id = "C" }
+    ];
+
+    private static List<Operation> submenuCustoms =
+    [
+        new() { Name = "Text box", Id = "text", Image = BitIconName.TextBox },
+        new()
+        {
+            Name = "Chart", Id = "chart", Image = BitIconName.BarChart4,
+            Children =
+            [
+                new() { Name = "Common", IsGroupLabel = true },
+                new() { Name = "Bar", Id = "bar", Image = BitIconName.BarChartHorizontal },
+                new() { Name = "Line", Id = "line", Image = BitIconName.LineChart },
+                new() { IsDivider = true },
+                new()
+                {
+                    Name = "More", Id = "more", Image = BitIconName.More,
+                    Children =
+                    [
+                        new() { Name = "Scatter", Id = "scatter" },
+                        new() { Name = "Bubble", Id = "bubble", Disabled = true }
+                    ]
+                }
+            ]
+        },
+        new() { Name = "Table", Id = "table", Image = BitIconName.Table }
+    ];
+
+    private static List<Operation> shareCustoms =
+    [
+        new() { Name = "Copy link", Id = "copy", Image = BitIconName.Link, Shortcut = "Ctrl+C" },
+        new()
+        {
+            Name = "Send to", Id = "send", Image = BitIconName.Send,
+            Children =
+            [
+                new() { Name = "Email", Id = "email", Image = BitIconName.Mail, Shortcut = "Ctrl+E" },
+                new() { Name = "Teams", Id = "teams", Image = BitIconName.TeamsLogo },
+                new() { Name = "Printer", Id = "printer", Image = BitIconName.Print, Disabled = true }
+            ]
+        }
     ];
 
     private static List<Operation> basicIconCustoms =
@@ -116,6 +161,13 @@ public partial class _BitMenuButtonCustomDemo
     [
         new() { Name = "Wrap lines", Id = "wrap", Checkable = true, Checked = true },
         new() { Name = "Show whitespace", Id = "whitespace", Checkable = true }
+    ];
+
+    private static List<Operation> sortCustoms =
+    [
+        new() { Name = "Name", Id = "name", SortGroup = "sort", Checked = true },
+        new() { Name = "Date modified", Id = "date", SortGroup = "sort" },
+        new() { Name = "Size", Id = "size", SortGroup = "sort" }
     ];
 
     private static List<Operation> ariaLabelCustoms =

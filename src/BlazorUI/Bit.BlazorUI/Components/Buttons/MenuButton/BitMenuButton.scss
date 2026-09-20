@@ -25,7 +25,7 @@
 //   --bit-MenuButton-icon-size                 glyph and spinner size                          (default: per size, $siz-icon-*)
 //   --bit-MenuButton-chevron-width             width of the chevron half of a split button     (default: per size, $siz-ctrl-*)
 //   --bit-MenuButton-divider-color             the hairline between the two halves             (default: per variant)
-//   --bit-MenuButton-callout-background        background of the callout                       (default: $clr-bg-pri, or the Background kind)
+//   --bit-MenuButton-callout-background        background of the callout and of any submenu    (default: $clr-bg-pri, or the Background kind)
 //   --bit-MenuButton-callout-radius            corner radius of the callout, on the corners
 //                                              away from the button                           (default: $shp-radius-popup)
 //   --bit-MenuButton-callout-shadow            elevation of the callout                       (default: $box-shadow-popup)
@@ -41,10 +41,12 @@
 //   --bit-MenuButton-item-min-height           smallest height of an item                     (default: per size, $siz-item-*)
 //   --bit-MenuButton-item-padding              padding of an item                             (default: per size)
 //   --bit-MenuButton-item-gap                  room between an item's icon, text and trailings(default: spacing(1))
-//   --bit-MenuButton-item-hover-background     background of a hovered item                   (default: $clr-bg-pri-hover)
+//   --bit-MenuButton-item-hover-background     background of a hovered item, and of the row
+//                                              whose submenu is open                          (default: $clr-bg-pri-hover)
 //   --bit-MenuButton-item-active-background    background of a pressed item                   (default: $clr-bg-pri-active)
 //   --bit-MenuButton-item-checked-background   background of a checked item                   (default: $clr-bg-sec)
-//   --bit-MenuButton-item-checked-color        the check glyph of a checked item              (default: the role's main color)
+//   --bit-MenuButton-item-checked-color        the mark of a checked item: a check mark, or a
+//                                              bullet on a single-choice one                  (default: the role's main color)
 //   --bit-MenuButton-item-disabled-color       text and icon color of a disabled item         (default: $clr-fg-dis)
 //   --bit-MenuButton-item-focus-color          focus ring color of the focused item           (default: the role's focus color)
 //   --bit-MenuButton-item-separator-color      the hairline of a separator item                (default: $clr-brd-sec)
@@ -258,7 +260,7 @@
     height: 100%;
     display: none;
     position: fixed;
-    z-index: $zindex-overlay;
+    z-index: calc(#{$zindex-overlay} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     background-color: transparent;
 }
 
@@ -273,7 +275,9 @@
     position: fixed;
     overflow: hidden auto;
     box-sizing: border-box;
-    z-index: $zindex-callout;
+    // How deep this callout is in the stack of open ones, set on the wrapper it is moved into. A submenu
+    // is a callout opened from inside another, so it has to paint above the menu it belongs to.
+    z-index: calc(#{$zindex-callout} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -323,6 +327,25 @@
         transition: none;
         --bit-mnb-cal-opa: 0;
         --bit-mnb-cal-tra: var(--bit-mnb-cal-tra-ent);
+    }
+}
+
+// A submenu always opens beside the row it belongs to, so it meets the menu on a side the rounding does
+// not run along and keeps all four corners - from the first frame, rather than from the layout pass that
+// writes the placement onto it. It slides out of that side the way a menu slides out of its button.
+.bit-mnb-cal.bit-mnb-sub {
+    border-radius: var(--bit-MenuButton-callout-radius, #{$shp-radius-popup});
+
+    &[data-bit-cal-pos="right"] {
+        --bit-mnb-cal-tra-ent: translateX(#{spacing(-0.5)});
+    }
+
+    &[data-bit-cal-pos="left"] {
+        --bit-mnb-cal-tra-ent: translateX(#{spacing(0.5)});
+    }
+
+    &.bit-mnb-ocl {
+        --bit-mnb-cal-tra: translateX(0);
     }
 }
 
@@ -441,6 +464,31 @@
 
 .bit-mnb-chk > .bit-mnb-ick {
     visibility: visible;
+}
+
+// The chevron of a row that opens a submenu. It is pushed to the far end of the row - unless a secondary
+// text is already there, which it then simply follows - and mirrored in a right-to-left menu, so one icon
+// serves both directions.
+.bit-mnb-sch {
+    line-height: 1;
+    flex-shrink: 0;
+    color: inherit;
+    margin-inline-start: auto;
+    font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
+}
+
+.bit-mnb-isc + .bit-mnb-sch {
+    margin-inline-start: 0;
+}
+
+[dir="rtl"] .bit-mnb-sch {
+    transform: scaleX(-1);
+}
+
+// The row a submenu is open beside keeps the background it had under the pointer, so the path into the
+// open submenu can be read off the menu once the pointer has travelled on into it.
+.bit-mnb-itm.bit-mnb-osb:not([disabled]):not([aria-disabled="true"]) {
+    background-color: var(--bit-MenuButton-item-hover-background, #{$clr-bg-pri-hover});
 }
 
 // The trailing text of an item - a keyboard shortcut, a count. It is pushed to the far end and never gives
@@ -625,7 +673,8 @@
 
     .bit-mnb-omn .bit-mnb-chb,
     .bit-mnb-tgl .bit-mnb-opb,
-    .bit-mnb-itm.bit-mnb-chk {
+    .bit-mnb-itm.bit-mnb-chk,
+    .bit-mnb-itm.bit-mnb-osb:not([disabled]):not([aria-disabled="true"]) {
         color: HighlightText;
         background-color: Highlight;
     }
@@ -655,8 +704,9 @@
         background-color: Canvas;
     }
 
-    // The glyph keeps a role color of its own, which the forced pair of the row it sits on does not include.
-    .bit-mnb-ick {
+    // The glyphs keep a color of their own, which the forced pair of the row they sit on does not include.
+    .bit-mnb-ick,
+    .bit-mnb-sch {
         color: currentColor;
     }
 

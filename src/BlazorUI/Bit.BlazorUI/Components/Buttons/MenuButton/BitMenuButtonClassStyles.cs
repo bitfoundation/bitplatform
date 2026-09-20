@@ -53,6 +53,11 @@ public class BitMenuButtonClassStyles
     public string? ChevronDown { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the submenu callout of each item of the BitMenuButton that opens one.
+    /// </summary>
+    public string? Submenu { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the separator of the BitMenuButton.
     /// </summary>
     public string? Separator { get; set; }
@@ -76,6 +81,11 @@ public class BitMenuButtonClassStyles
     /// Custom CSS classes/styles for each item icon of the BitMenuButton.
     /// </summary>
     public string? ItemIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the chevron of each item of the BitMenuButton that opens a submenu.
+    /// </summary>
+    public string? ItemChevron { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the check mark icon of each checkable item of the BitMenuButton.

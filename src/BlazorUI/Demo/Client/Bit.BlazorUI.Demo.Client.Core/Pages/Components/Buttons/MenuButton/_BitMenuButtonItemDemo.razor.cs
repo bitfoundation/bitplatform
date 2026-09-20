@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -14,6 +14,8 @@ public partial class _BitMenuButtonItemDemo
     private bool twoWayIsOpen;
 
     private bool itemIsLoading;
+
+    private string? submenuClickedItem;
 
     private static List<BitMenuButtonItem> basicItems =
     [
@@ -89,6 +91,54 @@ public partial class _BitMenuButtonItemDemo
     [
         new() { Text = "Wrap lines", Key = "wrap", Checkable = true, IsChecked = true },
         new() { Text = "Show whitespace", Key = "whitespace", Checkable = true }
+    ];
+
+    private static List<BitMenuButtonItem> submenuItems =
+    [
+        new() { Text = "Text box", Key = "text", IconName = BitIconName.TextBox },
+        new()
+        {
+            Text = "Chart", Key = "chart", IconName = BitIconName.BarChart4,
+            ChildItems =
+            [
+                new() { Text = "Common", IsHeader = true },
+                new() { Text = "Bar", Key = "bar", IconName = BitIconName.BarChartHorizontal },
+                new() { Text = "Line", Key = "line", IconName = BitIconName.LineChart },
+                new() { IsSeparator = true },
+                new()
+                {
+                    Text = "More", Key = "more", IconName = BitIconName.More,
+                    ChildItems =
+                    [
+                        new() { Text = "Scatter", Key = "scatter" },
+                        new() { Text = "Bubble", Key = "bubble", IsEnabled = false }
+                    ]
+                }
+            ]
+        },
+        new() { Text = "Table", Key = "table", IconName = BitIconName.Table }
+    ];
+
+    private static List<BitMenuButtonItem> shareItems =
+    [
+        new() { Text = "Copy link", Key = "copy", IconName = BitIconName.Link, SecondaryText = "Ctrl+C" },
+        new()
+        {
+            Text = "Send to", Key = "send", IconName = BitIconName.Send,
+            ChildItems =
+            [
+                new() { Text = "Email", Key = "email", IconName = BitIconName.Mail, SecondaryText = "Ctrl+E" },
+                new() { Text = "Teams", Key = "teams", IconName = BitIconName.TeamsLogo },
+                new() { Text = "Printer", Key = "printer", IconName = BitIconName.Print, IsEnabled = false }
+            ]
+        }
+    ];
+
+    private static List<BitMenuButtonItem> sortItems =
+    [
+        new() { Text = "Name", Key = "name", RadioGroup = "sort", IsChecked = true },
+        new() { Text = "Date modified", Key = "date", RadioGroup = "sort" },
+        new() { Text = "Size", Key = "size", RadioGroup = "sort" }
     ];
 
     private static List<BitMenuButtonItem> ariaLabelItems =

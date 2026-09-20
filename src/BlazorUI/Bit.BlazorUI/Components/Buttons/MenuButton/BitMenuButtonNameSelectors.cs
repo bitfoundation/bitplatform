@@ -13,6 +13,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, bool> Checkable { get; set; } = new(nameof(BitMenuButtonItem.Checkable));
 
     /// <summary>
+    /// ChildItems field name and selector of the custom input class (see <see cref="BitMenuButtonItem.ChildItems"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, List<TItem>?> ChildItems { get; set; } = new(nameof(BitMenuButtonItem.ChildItems));
+
+    /// <summary>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitMenuButtonItem.Class));
@@ -67,6 +72,11 @@ public class BitMenuButtonNameSelectors<TItem>
     /// OnClick field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, Action<TItem>?> OnClick { get; set; } = new(nameof(BitMenuButtonItem.OnClick));
+
+    /// <summary>
+    /// RadioGroup field name and selector of the custom input class (see <see cref="BitMenuButtonItem.RadioGroup"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> RadioGroup { get; set; } = new(nameof(BitMenuButtonItem.RadioGroup));
 
     /// <summary>
     /// SecondaryText field name and selector of the custom input class.

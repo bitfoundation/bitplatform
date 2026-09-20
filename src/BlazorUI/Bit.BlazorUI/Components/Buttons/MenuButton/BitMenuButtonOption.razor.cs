@@ -1,10 +1,14 @@
 namespace Bit.BlazorUI;
 
-public class BitMenuButtonOption : ComponentBase, IDisposable
+public partial class BitMenuButtonOption : IDisposable
 {
     private bool _disposed;
 
     [CascadingParameter] protected BitMenuButton<BitMenuButtonOption> Parent { get; set; } = default!;
+
+    // The option this one is nested in, which is what tells a child option to register with its parent
+    // instead of with the menu button - the top-level list is the menu, and a child belongs to a submenu.
+    [CascadingParameter] protected BitMenuButtonOption? ParentOption { get; set; }
 
 
     /// <summary>
@@ -22,6 +26,17 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     /// <c>CloseOnItemClick="false"</c> on the menu button to keep the callout open between the toggles.
     /// </remarks>
     [Parameter] public bool Checkable { get; set; }
+
+    /// <summary>
+    /// The nested <see cref="BitMenuButtonOption"/> components of the submenu that opens from this option.
+    /// An option that has children opens its submenu instead of raising a click: it is announced with
+    /// <c>aria-haspopup</c>, it carries a trailing chevron, and the arrow keys walk into and out of it.
+    /// </summary>
+    /// <remarks>
+    /// A parent option is never a command of its own, so <see cref="Checkable"/>, <see cref="Href"/> and
+    /// <see cref="OnClick"/> are ignored on it, and a sticky menu button never promotes it to its header.
+    /// </remarks>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// The custom CSS classes of the option.
@@ -97,6 +112,19 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public EventCallback<BitMenuButtonOption> OnClick { get; set; }
 
     /// <summary>
+    /// Turns the option into a single-choice option: it is announced as a radio button inside the menu,
+    /// carries its <see cref="IsChecked"/> state as a bullet, and checking it clears every other option of
+    /// the menu button that names the same group.
+    /// </summary>
+    /// <remarks>
+    /// It is the menu's answer to a set of mutually exclusive choices - a sort order, a zoom level - where
+    /// <see cref="Checkable"/> is the answer to independent on/off ones. A group is identified by its name
+    /// alone, so a group named in a submenu and in the menu around it is one group, and it outranks
+    /// <see cref="Checkable"/> where both are set.
+    /// </remarks>
+    [Parameter] public string? RadioGroup { get; set; }
+
+    /// <summary>
     /// The trailing text of the option, shown at its far end and read after its label - a keyboard shortcut,
     /// a count, a short hint.
     /// </summary>
@@ -128,9 +156,26 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     [Parameter] public string? Title { get; set; }
 
 
+    // The options nested in this one, kept so that a parent can be re-rendered together with its submenu.
+    internal IList<BitMenuButtonOption> ChildItems { get; } = [];
+
+    // How deep the option's menu is: zero for the menu the button opens, one more for each submenu.
+    internal int Level => ParentOption is null ? 0 : ParentOption.Level + 1;
+
+    // The check column is reserved per menu, so an option asks the list it is one of - the menu button's
+    // own options, or the ones nested in the option it sits in.
+    private bool _showCheckColumn => ParentOption is null
+                                        ? Parent?.ShowCheckColumn ?? false
+                                        : ParentOption.ChildItems.Any(o => o.Checkable || o.RadioGroup.HasValue());
+
     internal void InternalStateHasChanged()
     {
         StateHasChanged();
+
+        foreach (var child in ChildItems)
+        {
+            child.InternalStateHasChanged();
+        }
     }
 
     // The checked state is written back through here rather than assigned from the outside, so that an option
@@ -152,21 +197,19 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        Parent?.RegisterOption(this);
+        // A nested option belongs to the submenu of the option it sits in rather than to the menu itself,
+        // so it registers with its parent and stays out of the top-level list the menu is built from.
+        if (ParentOption is null)
+        {
+            Parent?.RegisterOption(this);
+        }
+        else
+        {
+            ParentOption.ChildItems.Add(this);
+            ParentOption.InternalStateHasChanged();
+        }
 
         await base.OnInitializedAsync();
-    }
-
-    // Renders the option's item in place, so the rendered order of the items always follows the
-    // markup order of the options, even when an option is added or removed conditionally later on.
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        if (Parent is null) return;
-
-        builder.OpenComponent<_BitMenuButtonItem<BitMenuButtonOption>>(0);
-        builder.AddComponentParameter(1, nameof(_BitMenuButtonItem<BitMenuButtonOption>.MenuButton), Parent);
-        builder.AddComponentParameter(2, nameof(_BitMenuButtonItem<BitMenuButtonOption>.Item), this);
-        builder.CloseComponent();
     }
 
     public void Dispose()
@@ -179,7 +222,14 @@ public class BitMenuButtonOption : ComponentBase, IDisposable
     {
         if (disposing is false || _disposed) return;
 
-        Parent?.UnregisterOption(this);
+        if (ParentOption is null)
+        {
+            Parent?.UnregisterOption(this);
+        }
+        else
+        {
+            ParentOption.ChildItems.Remove(this);
+        }
 
         _disposed = true;
     }

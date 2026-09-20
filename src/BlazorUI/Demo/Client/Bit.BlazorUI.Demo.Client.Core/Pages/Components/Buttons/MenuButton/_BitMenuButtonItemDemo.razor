@@ -1,4 +1,4 @@
-﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The basic usage of BitMenuButton, opening a callout with a list of clickable items provided by the Items
         parameter using the BitMenuButtonItem class.
@@ -153,9 +153,11 @@
 <DemoExample Title="Checkable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8"
              PreventRenderForMcpClient>
     <div>
-        A Checkable item carries its IsChecked state as a check mark and flips it when clicked, announced to screen
-        readers as a checkbox inside the menu. Pair it with CloseOnItemClick="false" so that several items can be
-        toggled without reopening the menu, and use CheckIconName to replace the check mark.
+        A Checkable item carries its IsChecked state as a check mark and flips it when clicked, announced to
+        screen readers as a checkbox inside the menu. RadioGroup makes it one of a set of mutually exclusive
+        choices instead - announced as a radio button, marked with a bullet, and picking one clears the rest of
+        its group. Pair Checkable with CloseOnItemClick="false" so that several items can be toggled without
+        reopening the menu. CheckIconName and RadioIconName replace the two marks.
     </div>
     <br />
     <div class="example-content">
@@ -163,9 +165,14 @@
                        CloseOnItemClick="false" OnClick="(BitMenuButtonItem _) => StateHasChanged()" />
         <BitMenuButton Text="Closes on click" Items="checkableItems2" Variant="BitVariant.Outline"
                        CheckIconName="@BitIconName.CheckboxCompositeReversed" />
+        <BitMenuButton Text="Sort by" Items="sortItems" Variant="BitVariant.Text" IconName="@BitIconName.Sort"
+                       OnClick="(BitMenuButtonItem _) => StateHasChanged()" />
     </div>
     <br />
-    <div>Visible columns: @string.Join(", ", checkableItems.Where(i => i.IsChecked).Select(i => i.Text))</div>
+    <div>
+        Visible columns: @string.Join(", ", checkableItems.Where(i => i.IsChecked).Select(i => i.Text)),
+        sorted by @(sortItems.FirstOrDefault(i => i.IsChecked)?.Text)
+    </div>
 </DemoExample>
 
 <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -377,7 +384,27 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18"
+<DemoExample Title="Submenu" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18"
+             PreventRenderForMcpClient>
+    <div>
+        An item with ChildItems opens a submenu beside it instead of raising a click of its own. The pointer
+        opens it on hover, the keyboard with ArrowRight, and ArrowLeft or Escape walks back out one level.
+        Submenus nest, and carry the icons, separators, group headers and shortcuts of any other menu.
+        SubmenuIconName replaces the chevron that marks the row.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Insert" Items="submenuItems" IconName="@BitIconName.Add"
+                       OnClick="(BitMenuButtonItem? item) => submenuClickedItem = item?.Text" />
+        <BitMenuButton Split Text="Share" Items="shareItems" Variant="BitVariant.Outline"
+                       SubmenuIconName="@BitIconName.ChevronRightMed"
+                       OnClick="(BitMenuButtonItem? item) => submenuClickedItem = item?.Text" />
+    </div>
+    <br />
+    <div>Clicked item: @submenuClickedItem</div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19"
              PreventRenderForMcpClient>
     <div>
         The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu
@@ -964,7 +991,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+<DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
     <div>
         Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button
         and its items, either as a plain CSS class string or a BitIconInfo instance. The ChevronDownIcon parameter
@@ -1003,7 +1030,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+<DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
              PreventRenderForMcpClient>
     <div>The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.</div>
     <br />
@@ -1026,7 +1053,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the component,
@@ -1085,7 +1112,7 @@
                                                "--bit-MenuButton-item-focus-color: #6d28d9;" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
+<DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
              PreventRenderForMcpClient>
     <div>Use the Dir parameter to render the menu button in right-to-left (RTL) direction.</div>
     <br />

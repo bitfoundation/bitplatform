@@ -19,6 +19,17 @@ public class BitMenuButtonItem
     public bool Checkable { get; set; }
 
     /// <summary>
+    /// The items of the submenu that opens from this item. An item that has children opens its submenu
+    /// instead of raising a click: it is announced with <c>aria-haspopup</c>, it carries a trailing chevron,
+    /// and the arrow keys walk into and out of it.
+    /// </summary>
+    /// <remarks>
+    /// A parent item is never a command of its own, so <see cref="Checkable"/>, <see cref="Href"/> and
+    /// <see cref="OnClick"/> are ignored on it, and a sticky menu button never promotes it to its header.
+    /// </remarks>
+    public List<BitMenuButtonItem> ChildItems { get; set; } = [];
+
+    /// <summary>
     /// The custom CSS classes of the item.
     /// </summary>
     public string? Class { get; set; }
@@ -84,6 +95,19 @@ public class BitMenuButtonItem
     /// Click event handler of the item.
     /// </summary>
     public Action<BitMenuButtonItem>? OnClick { get; set; }
+
+    /// <summary>
+    /// Turns the item into a single-choice item: it is announced as a radio button inside the menu, carries
+    /// its <see cref="IsChecked"/> state as a bullet, and checking it clears every other item of the menu
+    /// button that names the same group.
+    /// </summary>
+    /// <remarks>
+    /// It is the menu's answer to a set of mutually exclusive choices - a sort order, a zoom level - where
+    /// <see cref="Checkable"/> is the answer to independent on/off ones. A group is identified by its name
+    /// alone, so a group named in a submenu and in the menu around it is one group, and it outranks
+    /// <see cref="Checkable"/> where both are set.
+    /// </remarks>
+    public string? RadioGroup { get; set; }
 
     /// <summary>
     /// The trailing text of the item, shown at its far end and read after its label - a keyboard shortcut,

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class BitMenuButtonDemo
 {
@@ -305,6 +305,20 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "RadioIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external icon libraries. Takes precedence over RadioIconName when both are set.",
+        },
+        new()
+        {
+            Name = "RadioIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the bullet shown on a checked single-choice item (one whose RadioGroup is set).",
+        },
+        new()
+        {
             Name = "Reclickable",
             Type = "bool",
             DefaultValue = "false",
@@ -355,6 +369,20 @@ public partial class BitMenuButtonDemo
             Description = "Custom CSS styles for different parts of the menu button.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "SubmenuIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the chevron an item that opens a submenu carries, using custom CSS classes for external icon libraries. Takes precedence over SubmenuIconName when both are set.",
+        },
+        new()
+        {
+            Name = "SubmenuIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the chevron an item that opens a submenu carries. It is mirrored in a right-to-left menu, so one icon serves both directions.",
         },
         new()
         {
@@ -514,7 +542,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "--bit-MenuButton-callout-background",
             DefaultValue = "--bit-clr-bg-pri, or the surface of the Background kind",
-            Description = "Background of the callout.",
+            Description = "Background of the callout, and of every submenu opened from inside it.",
         },
         new()
         {
@@ -580,7 +608,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "--bit-MenuButton-item-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background of a hovered item (pointer devices only). The items are neutral surfaces, so the label keeps its own color.",
+            Description = "Background of a hovered item, and of the row whose submenu is open. The items are neutral surfaces, so the label keeps its own color.",
         },
         new()
         {
@@ -598,7 +626,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "--bit-MenuButton-item-checked-color",
             DefaultValue = "The Color role's main color",
-            Description = "The check mark of a checked item.",
+            Description = "The mark of a checked item: the check mark of a check item, the bullet of a single-choice one.",
         },
         new()
         {
@@ -653,6 +681,13 @@ public partial class BitMenuButtonDemo
                    Type = "bool",
                    DefaultValue = "false",
                    Description = "Turns the item into a check item: it is announced as a checkbox inside the menu, carries its IsChecked state as a check mark, and flips that state when it is clicked.",
+               },
+               new()
+               {
+                   Name = "ChildItems",
+                   Type = "List<BitMenuButtonItem>",
+                   DefaultValue = "[]",
+                   Description = "The items of the submenu that opens from this item. An item that has children opens its submenu instead of raising a click: it is announced with aria-haspopup, it carries a trailing chevron, and the arrow keys walk into and out of it.",
                },
                new()
                {
@@ -735,6 +770,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "RadioGroup",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Turns the item into a single-choice item: it is announced as a radio button inside the menu, carries its IsChecked state as a bullet, and checking it clears every other item of the menu button that names the same group. It outranks Checkable where both are set.",
+               },
+               new()
+               {
                    Name = "SecondaryText",
                    Type = "string?",
                    DefaultValue = "null",
@@ -796,6 +838,13 @@ public partial class BitMenuButtonDemo
                    Type = "bool",
                    DefaultValue = "false",
                    Description = "Turns the option into a check item: it is announced as a checkbox inside the menu, carries its IsChecked state as a check mark, and flips that state when it is clicked.",
+               },
+               new()
+               {
+                   Name = "ChildContent",
+                   Type = "RenderFragment?",
+                   DefaultValue = "null",
+                   Description = "The nested BitMenuButtonOption components of the submenu that opens from this option. An option that has children opens its submenu instead of raising a click: it is announced with aria-haspopup, it carries a trailing chevron, and the arrow keys walk into and out of it.",
                },
                new()
                {
@@ -882,6 +931,13 @@ public partial class BitMenuButtonDemo
                    Type = "EventCallback",
                    DefaultValue = "",
                    Description = "Click event handler of the option.",
+               },
+               new()
+               {
+                   Name = "RadioGroup",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Turns the option into a single-choice option: it is announced as a radio button inside the menu, carries its IsChecked state as a bullet, and checking it clears every other option of the menu button that names the same group. It outranks Checkable where both are set.",
                },
                new()
                {
@@ -1005,6 +1061,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Submenu",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the submenu callout of each item of the BitMenuButton that opens one."
+               },
+               new()
+               {
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1036,7 +1099,14 @@ public partial class BitMenuButtonDemo
                    Name = "ItemCheckIcon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the check mark icon of each checkable item of the BitMenuButton."
+                   Description = "Custom CSS classes/styles for the mark of each check or single-choice item of the BitMenuButton."
+               },
+               new()
+               {
+                   Name = "ItemChevron",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the chevron of each item of the BitMenuButton that opens a submenu."
                },
                new()
                {
@@ -1117,6 +1187,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, bool>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Checkable))",
                     Description = "Checkable field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "ChildItems",
+                    Type = "BitNameSelectorPair<TItem, List<TItem>?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.ChildItems))",
+                    Description = "ChildItems field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -1216,6 +1295,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, Action<TItem>?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.OnClick))",
                     Description = "OnClick field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "RadioGroup",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.RadioGroup))",
+                    Description = "RadioGroup field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },

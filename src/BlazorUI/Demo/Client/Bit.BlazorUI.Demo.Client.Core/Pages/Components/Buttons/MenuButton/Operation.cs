@@ -19,6 +19,9 @@ public class Operation
     public bool IsGroupLabel { get; set; }
     public bool Checkable { get; set; }
     public bool Checked { get; set; }
+    public string? SortGroup { get; set; }
+
+    public List<Operation> Children { get; set; } = [];
 
     public RenderFragment<Operation>? Fragment { get; set; }
 

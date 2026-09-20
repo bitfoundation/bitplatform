@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1180,5 +1180,128 @@ public class BitMenuButtonTests : BunitTestContext
 
         com.Find(".bit-mnb-chb").Click();
         Assert.IsFalse(com.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonRadioItemsShouldHaveRadioSemanticsAndTheirOwnMark()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitMenuButtonItem>
+            {
+                new() { Text = "Name", Key = "name", RadioGroup = "sort", IsChecked = true },
+                new() { Text = "Size", Key = "size", RadioGroup = "sort" },
+                new() { Text = "Wrap", Key = "wrap", Checkable = true }
+            });
+        });
+
+        var menuItems = com.FindAll(".bit-mnb-itm");
+
+        Assert.AreEqual("menuitemradio", menuItems[0].GetAttribute("role"));
+        Assert.AreEqual("true", menuItems[0].GetAttribute("aria-checked"));
+        Assert.IsTrue(menuItems[0].ClassList.Contains("bit-mnb-chk"));
+
+        Assert.AreEqual("menuitemradio", menuItems[1].GetAttribute("role"));
+        Assert.AreEqual("false", menuItems[1].GetAttribute("aria-checked"));
+
+        // A check item beside a radio one keeps its own role and its own mark.
+        Assert.AreEqual("menuitemcheckbox", menuItems[2].GetAttribute("role"));
+
+        var marks = com.FindAll(".bit-mnb-ick");
+
+        Assert.AreEqual(3, marks.Count);
+        Assert.IsTrue(marks[0].ClassList.Any(c => c.Contains("StatusCircleInner")));
+        Assert.IsTrue(marks[2].ClassList.Any(c => c.Contains("Accept")));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonPickingARadioItemShouldClearTheRestOfItsGroup()
+    {
+        var radioItems = new List<BitMenuButtonItem>
+        {
+            new() { Text = "Name", Key = "name", RadioGroup = "sort", IsChecked = true },
+            new() { Text = "Size", Key = "size", RadioGroup = "sort" },
+            new() { Text = "Ascending", Key = "asc", RadioGroup = "order", IsChecked = true },
+            new() { Text = "Wrap", Key = "wrap", Checkable = true, IsChecked = true }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, radioItems);
+            parameters.Add(p => p.CloseOnItemClick, false);
+        });
+
+        com.FindAll(".bit-mnb-itm")[1].Click();
+
+        Assert.IsFalse(radioItems[0].IsChecked);
+        Assert.IsTrue(radioItems[1].IsChecked);
+        // Another group, and an independent check item, are left alone.
+        Assert.IsTrue(radioItems[2].IsChecked);
+        Assert.IsTrue(radioItems[3].IsChecked);
+
+        // Picking one of a set of choices is picking it, not toggling it: the group is never left empty.
+        com.FindAll(".bit-mnb-itm")[1].Click();
+
+        Assert.IsTrue(radioItems[1].IsChecked);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonARadioGroupShouldReachIntoTheSubmenusOfTheMenuButton()
+    {
+        var nested = new BitMenuButtonItem { Text = "Size", Key = "size", RadioGroup = "sort" };
+        var items = new List<BitMenuButtonItem>
+        {
+            new() { Text = "Name", Key = "name", RadioGroup = "sort", IsChecked = true },
+            new() { Text = "More", Key = "more", ChildItems = [nested] }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.CloseOnItemClick, false);
+        });
+
+        com.Find(".bit-mnb-sub .bit-mnb-itm").Click();
+
+        Assert.IsTrue(nested.IsChecked);
+        Assert.IsFalse(items[0].IsChecked);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonGenericItemsShouldTakeTheirRadioGroupFromTheNameSelectors()
+    {
+        var items = new List<RadioModel>
+        {
+            new() { Label = "Name", Group = "sort", Selected = true },
+            new() { Label = "Size", Group = "sort" }
+        };
+
+        var com = RenderComponent<BitMenuButton<RadioModel>>(parameters =>
+        {
+            parameters.Add(p => p.NameSelectors, new BitMenuButtonNameSelectors<RadioModel>
+            {
+                Text = { Name = nameof(RadioModel.Label) },
+                RadioGroup = { Name = nameof(RadioModel.Group) },
+                IsChecked = { Name = nameof(RadioModel.Selected) }
+            });
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.CloseOnItemClick, false);
+        });
+
+        Assert.AreEqual("menuitemradio", com.Find(".bit-mnb-itm").GetAttribute("role"));
+
+        com.FindAll(".bit-mnb-itm")[1].Click();
+
+        Assert.IsFalse(items[0].Selected);
+        Assert.IsTrue(items[1].Selected);
+    }
+
+    private class RadioModel
+    {
+        public string? Label { get; set; }
+
+        public string? Group { get; set; }
+
+        public bool Selected { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonOptionDemo
 {
@@ -19,9 +19,17 @@ public partial class _BitMenuButtonOptionDemo
 
     private bool optionIsLoading;
 
+    private string? submenuClickedOption;
+
     private bool optionShowName = true;
     private bool optionShowStatus = true;
     private bool optionShowOwner;
+
+    private bool optionSortByName = true;
+    private bool optionSortByDate;
+    private bool optionSortBySize;
+
+    private string SortedBy => optionSortByName ? "Name" : optionSortByDate ? "Date modified" : "Size";
 
     private string VisibleColumns => string.Join(", ", new[]
     {
@@ -258,7 +266,13 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Show whitespace"" Key=""whitespace"" Checkable />
 </BitMenuButton>
 
-<div>Visible columns: @VisibleColumns</div>";
+<BitMenuButton Text=""Sort by"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" IconName=""@BitIconName.Sort"">
+    <BitMenuButtonOption Text=""Name"" Key=""name"" RadioGroup=""sort"" @bind-IsChecked=""optionSortByName"" />
+    <BitMenuButtonOption Text=""Date modified"" Key=""date"" RadioGroup=""sort"" @bind-IsChecked=""optionSortByDate"" />
+    <BitMenuButtonOption Text=""Size"" Key=""size"" RadioGroup=""sort"" @bind-IsChecked=""optionSortBySize"" />
+</BitMenuButton>
+
+<div>Visible columns: @VisibleColumns, sorted by @SortedBy</div>";
 
     private readonly string example8CsharpCode = @"
 private bool optionShowName = true;
@@ -271,6 +285,12 @@ private string VisibleColumns => string.Join("", "", new[]
     optionShowStatus ? ""Status"" : null,
     optionShowOwner ? ""Owner"" : null
 }.Where(c => c is not null));
+
+private bool optionSortByName = true;
+private bool optionSortByDate;
+private bool optionSortBySize;
+
+private string SortedBy => optionSortByName ? ""Name"" : optionSortByDate ? ""Date modified"" : ""Size"";
 
 private void ResetColumns()
 {
@@ -545,6 +565,36 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 </BitMenuButton>";
 
     private readonly string example18RazorCode = @"
+<BitMenuButton Text=""Insert"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Add""
+               OnClick=""(BitMenuButtonOption? o) => submenuClickedOption = o?.Text"">
+    <BitMenuButtonOption Text=""Text box"" Key=""text"" IconName=""@BitIconName.TextBox"" />
+    <BitMenuButtonOption Text=""Chart"" Key=""chart"" IconName=""@BitIconName.BarChart4"">
+        <BitMenuButtonOption Text=""Common"" IsHeader />
+        <BitMenuButtonOption Text=""Bar"" Key=""bar"" IconName=""@BitIconName.BarChartHorizontal"" />
+        <BitMenuButtonOption Text=""Line"" Key=""line"" IconName=""@BitIconName.LineChart"" />
+        <BitMenuButtonOption IsSeparator />
+        <BitMenuButtonOption Text=""More"" Key=""more"" IconName=""@BitIconName.More"">
+            <BitMenuButtonOption Text=""Scatter"" Key=""scatter"" />
+            <BitMenuButtonOption Text=""Bubble"" Key=""bubble"" IsEnabled=""false"" />
+        </BitMenuButtonOption>
+    </BitMenuButtonOption>
+    <BitMenuButtonOption Text=""Table"" Key=""table"" IconName=""@BitIconName.Table"" />
+</BitMenuButton>
+
+<BitMenuButton Split Text=""Share"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline""
+               SubmenuIconName=""@BitIconName.ChevronRightMed""
+               OnClick=""(BitMenuButtonOption? o) => submenuClickedOption = o?.Text"">
+    <BitMenuButtonOption Text=""Copy link"" Key=""copy"" IconName=""@BitIconName.Link"" SecondaryText=""Ctrl+C"" />
+    <BitMenuButtonOption Text=""Send to"" Key=""send"" IconName=""@BitIconName.Send"">
+        <BitMenuButtonOption Text=""Email"" Key=""email"" IconName=""@BitIconName.Mail"" SecondaryText=""Ctrl+E"" />
+        <BitMenuButtonOption Text=""Teams"" Key=""teams"" IconName=""@BitIconName.TeamsLogo"" />
+        <BitMenuButtonOption Text=""Printer"" Key=""printer"" IconName=""@BitIconName.Print"" IsEnabled=""false"" />
+    </BitMenuButtonOption>
+</BitMenuButton>
+
+<div>Clicked item: @submenuClickedOption</div>";
+
+    private readonly string example19RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1704,7 +1754,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -1771,7 +1821,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
 </BitMenuButton>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1820,7 +1870,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -1939,7 +1989,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />

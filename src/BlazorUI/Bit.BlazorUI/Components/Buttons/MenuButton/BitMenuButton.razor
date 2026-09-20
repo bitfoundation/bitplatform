@@ -181,7 +181,7 @@
      id="@_overlayId"
      class="bit-mnb-ovl @Classes?.Overlay"></div>
 
-<div @onkeydown="HandleOnCalloutKeyDown"
+<div @onkeydown="e => HandleOnMenuKeyDown(e, _calloutId, null)"
      id="@_calloutId"
      dir="@Dir?.ToString().ToLower()"
      style="@GetCalloutStyle()"
@@ -201,7 +201,8 @@
             @for (int i = 0; i < _items.Count; i++)
             {
                 var item = _items[i];
-                <_BitMenuButtonItem @key="@GetItemKey(item, i.ToString())" MenuButton="this" Item="item" />
+                <_BitMenuButtonItem @key="@GetItemKey(item, i.ToString())" MenuButton="this" Item="item"
+                                                    Level="0" ShowCheckColumn="ShowCheckColumn" />
             }
         }
     </ul>

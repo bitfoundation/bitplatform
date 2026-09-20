@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Shared;
+namespace Bit.BlazorUI.Demo.Client.Core.Shared;
 
 public partial class MainLayout
 {
@@ -21,7 +21,7 @@ public partial class MainLayout
                 new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = ["/components/action-button"] },
                 new() { Text = "Button", Url = "/components/button" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group" },
-                new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"] },
+                new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"], Description = "DropdownButton, SplitButton, Menu" },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
             ]
         },
