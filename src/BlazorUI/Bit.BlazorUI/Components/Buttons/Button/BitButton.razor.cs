@@ -11,6 +11,7 @@ public partial class BitButton : BitComponentBase
     private string? _rel;
     private bool _dragging;
     private bool _showLoading;
+    private bool _draggableEnabled;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
     private DotNetObjectReference<BitButton>? _dotnetObj;
@@ -101,9 +102,16 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? Download { get; set; }
 
     /// <summary>
-    /// Makes the Float/FloatAbsolute button draggable on the page.
+    /// Makes the Float/FloatAbsolute button draggable on the page; ignored when neither is set.
     /// </summary>
-    [Parameter] public bool Draggable { get; set; }
+    /// <remarks>
+    /// The button can also be moved from the keyboard while it has the focus - the arrow keys move it by a
+    /// step and Shift with an arrow by a coarser one - so the repositioning is not dragging-only
+    /// (WCAG 2.2 SC 2.5.7). The click that ends a drag is swallowed, so <see cref="OnClick"/> is raised by a
+    /// press and not by a move.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Draggable { get; set; }
 
     /// <summary>
     /// Preserves the foreground color of the button through hover and focus.
@@ -230,8 +238,13 @@ public partial class BitButton : BitComponentBase
     [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
 
     /// <summary>
-    /// The custom template used to replace the default loading text inside the button in the loading state.
+    /// The custom template used to replace the default spinner and loading label inside the button in the loading state.
     /// </summary>
+    /// <remarks>
+    /// Like the spinner it replaces, it is hidden from assistive technologies: the content stacked underneath it
+    /// keeps the button's accessible name while it works. Use <see cref="LoadingLabel"/> for what should be
+    /// announced when the loading starts.
+    /// </remarks>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
@@ -321,14 +334,18 @@ public partial class BitButton : BitComponentBase
 
 
 
+    // The three callbacks the drag script invokes, each with the pointer's position. The coordinates are
+    // unused here, but the signatures have to take them: the interop dispatcher matches a call to a method
+    // by the number of arguments and throws when they differ, and the script swallows what it throws - so a
+    // handler declared without them is never actually reached, and the drag flag below never flips.
     [JSInvokable("OnDragStart")]
-    public ValueTask _OnDragStart()
+    public ValueTask _OnDragStart(double x, double y)
     {
         return ValueTask.CompletedTask;
     }
 
     [JSInvokable("OnDragging")]
-    public ValueTask _OnDragging()
+    public ValueTask _OnDragging(double x, double y)
     {
         _dragging = true;
 
@@ -336,7 +353,7 @@ public partial class BitButton : BitComponentBase
     }
 
     [JSInvokable("OnDragEnd")]
-    public async ValueTask _OnDragEnd()
+    public async ValueTask _OnDragEnd(double x, double y)
     {
         // The click that ends a drag arrives after the drag does, so the flag that swallows it has to outlive it.
         await Task.Delay(100);
@@ -413,6 +430,9 @@ public partial class BitButton : BitComponentBase
         ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
                                   : Float ? "bit-btn-ffx" : string.Empty);
 
+        // The grab cursor is the only thing that says a floating button can be moved before anyone tries.
+        ClassBuilder.Register(() => Draggable && (Float || FloatAbsolute) ? "bit-btn-drg" : string.Empty);
+
         ClassBuilder.Register(() => (Float || FloatAbsolute) ? FloatPosition switch
         {
             BitPosition.TopLeft => "bit-btn-tlf",
@@ -457,20 +477,28 @@ public partial class BitButton : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (Float || FloatAbsolute)
+        if (IsDisposed) return;
+
+        // Dragging only means anything for a button that is positioned, so the two parameters are read
+        // together. The result is compared against what the script was last told, rather than re-sent on
+        // every render: enable() returns early on a second call, but disable() does not - a floating button
+        // that is not draggable used to tear the listeners down once per render, and one that stopped
+        // floating kept them for good.
+        var draggable = Draggable && (Float || FloatAbsolute);
+
+        if (draggable == _draggableEnabled) return;
+
+        _draggableEnabled = draggable;
+
+        if (draggable)
         {
-            if (IsDisposed) return;
+            _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            if (Draggable)
-            {
-                _dotnetObj ??= DotNetObjectReference.Create(this);
-
-                await _js.BitDraggablesEnable(_Id, _dotnetObj);
-            }
-            else
-            {
-                await _js.BitDraggablesDisable(_Id);
-            }
+            await _js.BitDraggablesEnable(_Id, _dotnetObj);
+        }
+        else
+        {
+            await _js.BitDraggablesDisable(_Id);
         }
     }
 

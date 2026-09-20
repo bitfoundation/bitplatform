@@ -376,7 +376,7 @@ private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.Get
 </BitButton>
 
 
-<BitButton IsEnabled=""false"" IconName=""@BitIconName.Blocked"">
+<BitButton IsEnabled=""false"" IconName=""@BitIconName.Blocked"" Title=""Pick a plan first"">
     Disabled (still focusable)
 </BitButton>
 

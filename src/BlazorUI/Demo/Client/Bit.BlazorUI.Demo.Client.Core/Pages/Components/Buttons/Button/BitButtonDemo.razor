@@ -10,6 +10,7 @@
 <DemoPage Name="Button"
           Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
           Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
           GitHubUrl="Buttons/Button/BitButton.razor" GitHubDemoUrl="Buttons/Button/BitButtonDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -283,7 +284,9 @@
     <DemoExample Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             <b>PrimaryTemplate</b> and <b>SecondaryTemplate</b> replace the two lines of text with markup of your own,
-            and <b>LoadingTemplate</b> replaces the whole spinner-and-label block while the button is loading.
+            and <b>LoadingTemplate</b> replaces the whole spinner-and-label block while the button is loading. Like
+            the spinner it stands in for, it is hidden from screen readers - the content underneath keeps the button's
+            name, and <b>LoadingLabel</b> is what gets announced.
         </div>
         <br />
         <div>
@@ -390,9 +393,14 @@
     <DemoExample Title="Float & Draggable" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode"
                  Id="example11">
         <div>
-            A floating button is pinned to a corner or an edge so it stays in view. <b>Float</b> pins it to the
-            viewport and <b>FloatAbsolute</b> to its container; <b>FloatPosition</b> picks the anchor,
-            <b>FloatOffset</b> the distance from it, and <b>Draggable</b> lets the user move it.
+            A floating button is pinned to a corner or an edge so it stays in view, and is raised off the content
+            it sits over. <b>Float</b> pins it to the viewport and <b>FloatAbsolute</b> to its container;
+            <b>FloatPosition</b> picks the anchor and <b>FloatOffset</b> the distance from it.
+        </div>
+        <div>
+            <b>Draggable</b> lets the user move it out of the way - by pointer, or with the arrow keys while it has
+            the focus (<b>Shift</b> for a coarser step), so the repositioning is never dragging-only. The click that
+            ends a drag is swallowed, so <b>OnClick</b> answers a press and not a move.
         </div>
         <div>
             Using the <b>FloatPosition</b> parameter and its value of type
@@ -469,12 +477,13 @@
             A disabled button normally leaves the tab order, so keyboard and screen reader users can miss that the
             action exists at all. <b>AllowDisabledFocus</b> - on by default here - conveys the state through
             <code>aria-disabled</code> instead of the native attribute: the button stays focusable and discoverable, its
-            click stays suppressed, and the focus ring is drawn in the muted disabled color. Tab through the two below
-            to feel the difference.
+            click stays suppressed, and the focus ring is drawn in the muted disabled color. It also keeps answering the
+            pointer, so its <b>Title</b> still explains why it cannot be pressed. Tab through the two below to feel the
+            difference, and hover the first for its reason.
         </div>
         <br />
         <div class="example-content">
-            <BitButton IsEnabled="false" IconName="@BitIconName.Blocked">
+            <BitButton IsEnabled="false" IconName="@BitIconName.Blocked" Title="Pick a plan first">
                 Disabled (still focusable)
             </BitButton>
 

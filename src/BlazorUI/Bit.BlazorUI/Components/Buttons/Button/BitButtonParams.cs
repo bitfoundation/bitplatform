@@ -69,7 +69,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? Download { get; set; }
 
     /// <summary>
-    /// Makes the Float/FloatAbsolute button draggable on the page.
+    /// Makes the Float/FloatAbsolute button draggable on the page, by pointer or with the arrow keys; ignored when neither is set.
     /// </summary>
     public bool? Draggable { get; set; }
 
@@ -296,6 +296,8 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
         if (Draggable.HasValue && bitButton.HasNotBeenSet(nameof(Draggable)))
         {
             bitButton.Draggable = Draggable.Value;
+
+            bitButton.ClassBuilder.Reset();
         }
 
         if (FixedColor.HasValue && bitButton.HasNotBeenSet(nameof(FixedColor)))

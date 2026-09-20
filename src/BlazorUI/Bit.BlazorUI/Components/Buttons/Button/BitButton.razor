@@ -22,6 +22,11 @@
     // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put
     // back - unless the page gave the button a role of its own (a menuitem, a tab), which is the one it should keep.
     var anchorRole = GetSplattedAttribute("role") ?? (IsEnabled && IsLoading is false ? null : "link");
+    // A floating button that can be dragged can also be moved with the arrow keys, which is the alternative
+    // to the dragging that WCAG 2.2 SC 2.5.7 asks for. Naming the keys here is what tells a screen reader
+    // user the alternative is there - nothing else on the button says so.
+    var keyShortcuts = GetSplattedAttribute("aria-keyshortcuts")
+                    ?? (Draggable && (Float || FloatAbsolute) ? "ArrowUp ArrowDown ArrowLeft ArrowRight" : null);
     var tabIndex = GetTabIndex(ariaHidden);
     // Autofocus follows the same rule as the tab order: a control hidden from assistive technologies, or a disabled one
     // that is not kept focusable, must not pull the focus on the first render - a hand-written autofocus included.
@@ -81,12 +86,13 @@
                 @content
             </div>
 
-            @if (LoadingTemplate is null)
-            {
-                @* The spinner and its label are the visual half of the loading state; the label is announced from the
-                   live region below instead, so that it is heard as a change of state rather than read as part of the
-                   name of the button it is sitting inside. *@
-                <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer" aria-hidden="true">
+            @* Everything the loading state draws - the stock spinner and its label, or a LoadingTemplate in their
+               place - is the visual half of it and is hidden from assistive technologies, so the content stacked
+               underneath keeps the button's accessible name while it works. The label is announced from the live
+               region below instead, heard as a change of state rather than read as part of that name. *@
+            <div style="@Styles?.LoadingContainer" class="bit-btn-ldg @GetLabelPositionClass() @Classes?.LoadingContainer" aria-hidden="true">
+                @if (LoadingTemplate is null)
+                {
                     <div style="@Styles?.Spinner" class="bit-btn-spn @Classes?.Spinner"></div>
                     @if (LoadingLabel.HasValue())
                     {
@@ -94,12 +100,12 @@
                             @LoadingLabel
                         </div>
                     }
-                </div>
-            }
-            else
-            {
-                @LoadingTemplate
-            }
+                }
+                else
+                {
+                    @LoadingTemplate
+                }
+            </div>
         }
     </text>;
 }
@@ -123,7 +129,8 @@
             aria-hidden="@(ariaHidden ? "true" : null)"
             aria-busy="@ariaBusy"
             aria-disabled="@ariaDisabled"
-            aria-describedby="@(describedBy.HasValue() ? describedBy : null)">
+            aria-describedby="@(describedBy.HasValue() ? describedBy : null)"
+            aria-keyshortcuts="@keyShortcuts">
         @body
     </button>
 }
@@ -148,7 +155,8 @@ else
        aria-hidden="@(ariaHidden ? "true" : null)"
        aria-busy="@ariaBusy"
        aria-disabled="@ariaDisabled"
-       aria-describedby="@(describedBy.HasValue() ? describedBy : null)">
+       aria-describedby="@(describedBy.HasValue() ? describedBy : null)"
+       aria-keyshortcuts="@keyShortcuts">
         @body
     </a>
 }

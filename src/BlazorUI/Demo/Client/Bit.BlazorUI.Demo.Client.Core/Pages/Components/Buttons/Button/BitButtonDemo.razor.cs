@@ -85,7 +85,7 @@ public partial class BitButtonDemo
             Name = "Draggable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Makes the Float/FloatAbsolute button draggable on the page.",
+            Description = "Makes the Float/FloatAbsolute button draggable on the page, by pointer or with the arrow keys while it has the focus; ignored when neither is set.",
         },
         new()
         {
@@ -221,7 +221,7 @@ public partial class BitButtonDemo
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template used to replace the default loading text inside the button in the loading state.",
+            Description = "The custom template used to replace the default spinner and loading label inside the button in the loading state. Like the spinner it replaces, it is hidden from assistive technologies; use LoadingLabel for what should be announced.",
         },
         new()
         {
@@ -345,28 +345,28 @@ public partial class BitButtonDemo
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the icon element."
+                   Description = "Custom class or style applied to the icon element (the glyph, or the image rendered for IconUrl)."
                },
                new()
                {
                    Name = "Container",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the internal container."
+                   Description = "Custom class or style applied to the column that holds the primary and secondary lines of text."
                },
                new()
                {
                    Name = "Primary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the primary section."
+                   Description = "Custom class or style applied to the primary line of text."
                },
                new()
                {
                    Name = "Secondary",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the secondary section."
+                   Description = "Custom class or style applied to the secondary line of text."
                },
                new()
                {
@@ -380,21 +380,21 @@ public partial class BitButtonDemo
                    Name = "LoadingContainer",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the loading container."
+                   Description = "Custom class or style applied to the container of the spinner and its label in the loading state."
                },
                new()
                {
                    Name = "Spinner",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the spinner element."
+                   Description = "Custom class or style applied to the loading spinner element."
                },
                new()
                {
                    Name = "LoadingLabel",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the loading label."
+                   Description = "Custom class or style applied to the loading label element."
                },
             ]
         },
@@ -886,6 +886,16 @@ public partial class BitButtonDemo
         },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the root element of the button.",
+        },
+    ];
+
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new()
@@ -999,7 +1009,7 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-gap",
-            DefaultValue = "0.25rem",
+            DefaultValue = "Per size: 0.25rem for Small, 0.5rem otherwise",
             Description = "Room between the icon and the text.",
         },
         new()
@@ -1013,6 +1023,12 @@ public partial class BitButtonDemo
             Name = "--bit-Button-secondary-font-size",
             DefaultValue = "One ramp step below the primary text",
             Description = "Size of the secondary text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-secondary-color",
+            DefaultValue = "The button's own foreground",
+            Description = "Color of the secondary line of text. It is not muted by default, since on a filled button the contrast of the smaller of the two lines is what a muted color spends first.",
         },
         new()
         {
@@ -1049,6 +1065,12 @@ public partial class BitButtonDemo
             Name = "--bit-Button-float-offset",
             DefaultValue = "1rem",
             Description = "Inset of a Float or FloatAbsolute button from the edge it is pinned to. The FloatOffset parameter writes this variable on the instance.",
+        },
+        new()
+        {
+            Name = "--bit-Button-float-shadow",
+            DefaultValue = "--bit-shd-card",
+            Description = "Elevation of a Float or FloatAbsolute button, which is what lifts it off the content it sits over. The focus ring is a shadow too and replaces it while the button is focused.",
         },
     ];
 

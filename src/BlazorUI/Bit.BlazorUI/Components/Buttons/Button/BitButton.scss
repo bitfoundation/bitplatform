@@ -21,8 +21,9 @@
 //   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width)
 //   --bit-Button-min-height                smallest height of the box, and the smallest
 //                                          width of an icon-only one                      (default: per size, $siz-ctrl-*)
-//   --bit-Button-gap                       room between the icon and the text             (default: spacing(0.5))
+//   --bit-Button-gap                       room between the icon and the text             (default: per size, spacing(0.5) for Small and spacing(1) otherwise)
 //   --bit-Button-font-size                 size of the primary text                       (default: per size, from the type ramp)
+//   --bit-Button-secondary-color           color of the secondary line of text            (default: the button's own foreground)
 //   --bit-Button-secondary-font-size       size of the secondary text                     (default: one ramp step below the primary text)
 //   --bit-Button-font-weight               weight of both lines of text                   (default: $tg-font-weight)
 //   --bit-Button-icon-size                 icon size, for a glyph and an IconUrl alike    (default: per size, $siz-icon-*)
@@ -31,6 +32,7 @@
 //   --bit-Button-spinner-track-color       the ring the arc travels on                    (default: the foreground at 25%)
 //   --bit-Button-float-offset              inset of a Float/FloatAbsolute button from the
 //                                          edge it is pinned to                           (default: spacing(2), overridden by the FloatOffset parameter)
+//   --bit-Button-float-shadow              elevation of a Float/FloatAbsolute button      (default: $box-shadow-card)
 
 .bit-btn {
     cursor: pointer;
@@ -45,7 +47,7 @@
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
-    gap: var(--bit-Button-gap, #{spacing(0.5)});
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
     color: var(--bit-Button-color, var(--bit-btn-clr-txt));
     font-weight: var(--bit-Button-font-weight, #{$tg-font-weight});
     padding: var(--bit-Button-padding, var(--bit-btn-padding));
@@ -65,9 +67,14 @@
         @include focus-ring(var(--bit-Button-focus-color, var(--bit-btn-clr-focus)));
     }
 
+    // The pointer is deliberately left alone here. A disabled button that stops answering it also stops
+    // showing its Title, and "why can I not press this?" is exactly what that tooltip is usually there to
+    // answer; pointer-events: none would also let the press fall through to whatever is underneath, so a
+    // disabled button inside a clickable row would activate the row. The click itself is already refused in
+    // the component - and by the native disabled attribute when AllowDisabledFocus is off - and every
+    // hover and press rule below is written after its variant's, so none of them paint a disabled button.
     &.bit-dis {
         cursor: default;
-        pointer-events: none;
 
         // AllowDisabledFocus - the default here - keeps a disabled button in the tab order, so the indicator has
         // to stay visible, but drawn in the disabled color: the vivid role ring of the enabled state contradicts
@@ -88,8 +95,16 @@
     }
 }
 
+// A compound button aligns its children to the top so the two lines of text start at the top of the box,
+// and the icon beside them is dropped onto the line of the primary text. That nudge belongs to this case
+// alone: everywhere else the root centres its children, and a top margin only pushes the icon off centre.
 .bit-btn-hsc {
     align-items: flex-start;
+
+    .bit-btn-icn,
+    .bit-btn-icnu {
+        margin-top: var(--bit-btn-icn-margintop);
+    }
 }
 
 .bit-btn-tcn {
@@ -104,14 +119,17 @@
     font-size: var(--bit-Button-font-size, var(--bit-btn-prt-fontsize));
 }
 
+// The secondary line inherits the button's foreground rather than being muted by default: on a filled
+// button the only color available to dim it with is the fill itself, and that is where the contrast of
+// the smaller of the two lines of text would go first (WCAG 1.4.3).
 .bit-btn-sct {
+    color: var(--bit-Button-secondary-color, inherit);
     font-size: var(--bit-Button-secondary-font-size, var(--bit-btn-sct-fontsize));
 }
 
 .bit-btn-icn {
     line-height: 1;
     flex-shrink: 0;
-    margin-top: var(--bit-btn-icn-margintop);
     font-size: var(--bit-Button-icon-size, var(--bit-btn-icn-size));
 }
 
@@ -165,7 +183,7 @@
     display: inline-flex;
     pointer-events: none;
     justify-content: center;
-    gap: var(--bit-Button-gap, #{spacing(0.5)});
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
 }
 
 // The two pieces of text the button carries for a screen reader and for nobody else: the live region that
@@ -229,14 +247,25 @@
     }
 }
 
+// A floating button sits over content rather than in it, so it is lifted off the surface the way every
+// other floating surface in the library is. The focus ring is a box-shadow too and replaces this one
+// while the button is focused, which is the right way round: the indicator has to win.
 .bit-btn-fab {
     position: absolute;
     z-index: $zindex-base;
+    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
 }
 
 .bit-btn-ffx {
     position: fixed;
     z-index: $zindex-base;
+    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
+}
+
+// A floating button that can be moved says so with the cursor; the script swaps it for a grabbing one
+// for the duration of the drag, and restores this one after.
+.bit-btn-drg {
+    cursor: grab;
 }
 
 
@@ -345,6 +374,7 @@
     --bit-btn-spn-size: #{$siz-icon-sm};
     --bit-btn-min-height: #{$siz-ctrl-sm};
     --bit-btn-icn-margintop: #{spacing(0.2)};
+    --bit-btn-gap: #{spacing(0.5)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-sm};
     --bit-btn-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
 }
@@ -357,6 +387,7 @@
     --bit-btn-spn-size: #{$siz-icon-md};
     --bit-btn-min-height: #{$siz-ctrl-md};
     --bit-btn-icn-margintop: #{spacing(0.25)};
+    --bit-btn-gap: #{spacing(1)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-md};
     --bit-btn-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
 }
@@ -369,10 +400,18 @@
     --bit-btn-spn-size: #{$siz-icon-lg};
     --bit-btn-min-height: #{$siz-ctrl-lg};
     --bit-btn-icn-margintop: #{spacing(0.5)};
+    --bit-btn-gap: #{spacing(1)};
     --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-lg};
     --bit-btn-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
 }
 
+
+// Where the loading label sits in relation to the spinner (LoadingLabelPosition). All four values are
+// written out, End included: it is the default direction of the container, but a value that names no rule
+// is a value that silently follows whatever the container happens to do next.
+.bit-btn-end {
+    flex-direction: row;
+}
 
 .bit-btn-srt {
     flex-direction: row-reverse;
@@ -496,7 +535,6 @@
 .bit-btn-ntx {
     padding: var(--bit-Button-padding, var(--bit-btn-pad-ntx));
     min-width: var(--bit-Button-min-width, var(--bit-Button-min-height, var(--bit-btn-min-height)));
-    --bit-btn-icn-margintop: 0;
 }
 
 

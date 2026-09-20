@@ -28,6 +28,12 @@
 
             dragElement.addEventListener('pointerdown', handlePointerDown, { signal: ac.signal });
 
+            // WCAG 2.2 SC 2.5.7 (Dragging Movements): everything a drag can do has to be reachable without
+            // one. The arrow keys move the focused element by a step, Shift by a coarser one, so a keyboard
+            // or switch user can push it off whatever it is covering. It is bound to the drag element rather
+            // than the document, so nothing is hijacked until the element itself has the focus.
+            dragElement.addEventListener('keydown', handleKeyDown, { signal: ac.signal });
+
             async function handlePointerDown(e: PointerEvent) {
                 //e.preventDefault();
                 //e.stopPropagation();
@@ -57,16 +63,42 @@
 
                 if (!thresholdDragged) return;
 
-                element.style.left = `${element.offsetLeft - (x - e.clientX)}px`;
-                element.style.top = `${element.offsetTop - (y - e.clientY)}px`;
-
-                element.style.right = 'unset';
-                element.style.bottom = 'unset';
+                move(element.offsetLeft - (x - e.clientX), element.offsetTop - (y - e.clientY));
 
                 x = e.clientX;
                 y = e.clientY;
 
                 try { await dotnetObj?.invokeMethodAsync('OnDragging', x, y); } catch { }
+            }
+
+            function handleKeyDown(e: KeyboardEvent) {
+                const steps: { [key: string]: [number, number] } = {
+                    ArrowLeft: [-1, 0],
+                    ArrowRight: [1, 0],
+                    ArrowUp: [0, -1],
+                    ArrowDown: [0, 1],
+                };
+
+                const step = steps[e.key];
+                if (!step || e.altKey || e.ctrlKey || e.metaKey) return;
+
+                // The arrow keys scroll the page by default, and the element being moved is usually pinned
+                // over what is scrolling, so the two would fight for the same press.
+                e.preventDefault();
+
+                const distance = e.shiftKey ? 24 : 8;
+
+                move(element.offsetLeft + step[0] * distance, element.offsetTop + step[1] * distance);
+            }
+
+            // The one place the element's position is written, so a nudge lands exactly where a drag would:
+            // pinned by its top-left corner, with the edges it may have been anchored to released.
+            function move(left: number, top: number) {
+                element.style.left = `${left}px`;
+                element.style.top = `${top}px`;
+
+                element.style.right = 'unset';
+                element.style.bottom = 'unset';
             }
 
             async function handlePointerUp(e: PointerEvent) {
