@@ -195,7 +195,7 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The text stays as screen-reader-only content, so the button keeps the accessible name the label gave it
-    /// instead of becoming a nameless icon. Setting <see cref="AriaLabel"/> (or an <c>aria-labelledby</c>) names
+    /// instead of becoming a nameless icon. Setting <see cref="BitComponentBase.AriaLabel"/> (or an <c>aria-labelledby</c>) names
     /// the button explicitly and replaces it.
     /// </remarks>
     [Parameter, ResetClassBuilder]

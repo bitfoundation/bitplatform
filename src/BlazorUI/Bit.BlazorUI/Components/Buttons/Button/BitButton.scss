@@ -73,7 +73,7 @@
     // answer; pointer-events: none would also let the press fall through to whatever is underneath, so a
     // disabled button inside a clickable row would activate the row. The click itself is already refused in
     // the component - and by the native disabled attribute when AllowDisabledFocus is off - and every
-    // hover and press rule below is written after its variant's, so none of them paint a disabled button.
+    // hover and press rule below excludes this class, so none of them paint a disabled button.
     &.bit-dis {
         cursor: default;
 
@@ -99,7 +99,9 @@
 // A compound button aligns its children to the top so the two lines of text start at the top of the box,
 // and the icon beside them is dropped onto the line of the primary text. That nudge belongs to this case
 // alone: everywhere else the root centres its children, and a top margin only pushes the icon off centre.
-.bit-btn-hsc {
+// IconOnly is one of those elsewheres even when a secondary line is set - the text is out of the flow as
+// screen-reader-only content, so there is no line to drop the icon onto and nothing left to align to.
+.bit-btn-hsc:not(.bit-btn-ntx) {
     align-items: flex-start;
 
     .bit-btn-icn,
@@ -170,12 +172,6 @@
     > * {
         grid-area: 1 / 1;
     }
-}
-
-// Only a button that refuses the second click stops answering the pointer; a Reclickable one keeps its hover
-// and its cursor, because it is still there to be clicked.
-.bit-btn-lnc {
-    pointer-events: none;
 }
 
 .bit-btn-hcn {
@@ -288,12 +284,16 @@
 }
 
 
+// Two states are painted at rest however the pointer is over them, so every hover and press rule below excludes
+// both: a disabled button (bit-dis), and a loading one that refuses the second click (bit-btn-lnc - a Reclickable
+// one is left out of it, because it is still there to be clicked). Neither is done with pointer-events: none,
+// which would suppress the Title that explains the state and let the press fall through to whatever is underneath.
 .bit-btn-fil {
     background-color: var(--bit-Button-background, var(--bit-btn-clr));
     border-color: var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-clr)));
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis, .bit-btn-lnc):hover {
             // Filled buttons keep their foreground through hover and press, so these resolve to the rest color
             // until an author sets the state variable - the point is that the variable reaches this variant too.
             color: var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-clr-txt)));
@@ -302,7 +302,7 @@
         }
     }
 
-    &:active {
+    &:not(.bit-dis, .bit-btn-lnc):active {
         color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-clr-txt))));
         background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
         border-color: var(--bit-Button-active-border-color, var(--bit-Button-active-background, var(--bit-btn-clr-active)));
@@ -321,14 +321,14 @@
     border-color: var(--bit-Button-border-color, var(--bit-btn-clr));
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis, .bit-btn-lnc):hover {
             color: var(--bit-Button-hover-color, var(--bit-btn-clr-txt));
             background-color: var(--bit-Button-hover-background, var(--bit-btn-clr-hover));
             border-color: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, var(--bit-btn-clr)));
         }
     }
 
-    &:active {
+    &:not(.bit-dis, .bit-btn-lnc):active {
         color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-clr-txt)));
         background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
         border-color: var(--bit-Button-active-border-color, var(--bit-Button-border-color, var(--bit-btn-clr)));
@@ -347,14 +347,14 @@
     border-color: var(--bit-Button-border-color, transparent);
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis, .bit-btn-lnc):hover {
             color: var(--bit-Button-hover-color, var(--bit-btn-clr-txt));
             background-color: var(--bit-Button-hover-background, var(--bit-btn-clr-hover));
             border-color: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, transparent));
         }
     }
 
-    &:active {
+    &:not(.bit-dis, .bit-btn-lnc):active {
         color: var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-clr-txt)));
         background-color: var(--bit-Button-active-background, var(--bit-btn-clr-active));
         border-color: var(--bit-Button-active-border-color, var(--bit-Button-border-color, transparent));
@@ -530,8 +530,8 @@
 
 // important: these need to be here at the end!
 
-// FixedColor has to outrank the hover and press rules of all three variants, each of which is a class and a
-// pseudo-class, so it is written against the root class as well - and kept away from the disabled state, whose
+// FixedColor has to outrank the hover and press rules of all three variants, each of which is a class, a state
+// guard and a pseudo-class, so it is written against the root class as well - and kept away from the disabled state, whose
 // muted foreground is not something a fixed color should hold on to.
 .bit-btn.bit-btn-fxc:not(.bit-dis) {
     color: var(--bit-Button-color, var(--bit-btn-clr-txt));

@@ -36,8 +36,8 @@
     // that is not kept focusable, must not pull the focus on the first render - a hand-written autofocus included.
     var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (IsEnabled || AllowDisabledFocus);
     // The two states whose click is ignored are also the two whose native default has to be suppressed: a disabled
-    // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one is
-    // only kept from the pointer by pointer-events - both would still submit their form on Enter without this.
+    // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one
+    // carries none either - both would still submit their form on Enter without this.
     var suppressDefault = IsEnabled is false || (IsLoading && Reclickable is false);
     // IconOnly takes the label out of the box, and with it the button's accessible name - which is the usual way
     // an icon button ends up nameless. The label is kept as screen-reader-only text instead, so the name survives
