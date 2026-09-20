@@ -70,9 +70,29 @@ public partial class AiChatImagesRetentionJobRunner
 
         // ExecuteDelete rather than tracked removes: another worker may have read the same batch, and removing a row
         // that is already gone fails the whole run on a concurrency check.
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        //#if (database == "MySql")
+        // One id per statement: MySQL's provider can map neither a collection parameter nor an inlined constant list,
+        // so a Contains over the ids throws before any SQL is sent. MaxDeletionsPerRun caps the loop at 100.
+        var deletedCount = 0;
+
+        foreach (var deletedId in deletedIds)
+        {
+            deletedCount += await dbContext.Attachments
+                .Where(att => att.Kind == AttachmentKind.AiChatImage && att.Id == deletedId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+        //#endif
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#if (database != "MySql")
         var deletedCount = await dbContext.Attachments
             .Where(att => att.Kind == AttachmentKind.AiChatImage && deletedIds.Contains(att.Id))
             .ExecuteDeleteAsync(cancellationToken);
+        //#endif
 
         if (deletedCount > 0)
         {
