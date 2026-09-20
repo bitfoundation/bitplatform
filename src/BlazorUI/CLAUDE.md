@@ -147,7 +147,11 @@ all it takes for it to appear in the catalog, the search index and the completio
   type behind it is the public `--bit-<Component>-*` custom properties: the demo page's
   `componentCssVariables` table is their whole source, and the answer carries it with the one thing
   the names do not say - that they inherit, so `:root`, an ancestor and an instance's `Style` are all
-  places to set one.
+  places to set one. The other part reflection alone misses is an **extension member**: one package's
+  contribution to another's type is compiled into the container that declares it, so a type's answer
+  carries what the packages add to it (`BlazorUIExtensionMembers`, read off the `<Extension>$` marker
+  rather than off the generated names), and a container nobody writes - `BitThemePresetsExtensions` -
+  is kept out of the listing and answered as a pointer to the type its members are read off.
 - **What a table cannot say is derived rather than left out**: which parameters are two-way bindable
   (an `X` with an `XChanged` beside it, printed as `@bind-X`), what constrains a generic component's
   type arguments, and whether a type named beside a component is a class it takes or a component that

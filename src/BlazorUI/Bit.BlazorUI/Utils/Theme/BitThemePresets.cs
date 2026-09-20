@@ -16,10 +16,21 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public static class BitThemePresets
 {
+    /// <summary>Light preset; the Fluent light palette under its plain name.</summary>
     public const string Light = "light";
+
+    /// <summary>Dark preset; the Fluent dark palette under its plain name.</summary>
     public const string Dark = "dark";
+
+    /// <summary>Fluent base preset; follows the light palette.</summary>
     public const string Fluent = "fluent";
+
+    /// <summary>Fluent light preset.</summary>
     public const string FluentLight = "fluent-light";
+
+    /// <summary>Fluent dark preset.</summary>
     public const string FluentDark = "fluent-dark";
+
+    /// <summary>Pseudo-preset that follows the operating system's <c>prefers-color-scheme</c>.</summary>
     public const string System = "system";
 }
