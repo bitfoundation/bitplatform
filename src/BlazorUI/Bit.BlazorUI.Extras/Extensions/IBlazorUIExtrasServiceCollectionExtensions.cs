@@ -30,6 +30,11 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     {
         services.AddBitBlazorUIServices(trySingleton);
 
+        // Nothing to do here for the packaged theme presets: this method lives in the Extras assembly,
+        // so calling it is already the first touch that runs the module initializer behind
+        // BitExtraThemeRegistration - the presets are in BitThemePresetRegistry before this line is
+        // reached, and so before the first host page renders.
+
         if (accentColor is not null)
         {
             var accentColorConfig = new BitAccentColorConfig();
