@@ -76,7 +76,11 @@ public partial class BitButtonDemo
 </BitButton>
 
 <BitButton AutoLoading LoadingDelay=""500"" OnClick=""FastOperation"" Variant=""BitVariant.Outline"">
-    LoadingDelay=""500""
+    LoadingDelay=""500"" (250ms)
+</BitButton>
+
+<BitButton AutoLoading LoadingDelay=""500"" OnClick=""SlowOperation"" Variant=""BitVariant.Outline"">
+    LoadingDelay=""500"" (2s)
 </BitButton>";
 
     private readonly string example4CsharpCode = @"
@@ -138,8 +142,11 @@ private Task AutoLoadingReclick(bool isLoading)
     return clickTsc.Task;
 }
 
-// Finishes inside the 500ms delay of the second button, so only the first one ever shows a spinner.
-private async Task FastOperation() => await Task.Delay(250);";
+// Finishes inside the 500ms delay of the second button, so that one never shows a spinner.
+private async Task FastOperation() => await Task.Delay(250);
+
+// Outlasts the same delay, so the third button shows its spinner once the 500ms are up.
+private async Task SlowOperation() => await Task.Delay(2000);";
 
     private readonly string example5RazorCode = @"
 <BitButton Href=""https://bitplatform.dev"" Target=""_blank"" IconName=""@BitIconName.Globe"" Variant=""BitVariant.Outline"">
@@ -172,7 +179,8 @@ private async Task FastOperation() => await Task.Delay(250);";
 
         <div class=""example-content"">
             <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-            <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline"">Reset</BitButton>
+            <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
+                       OnClick=""ResetValidationForm"">Reset</BitButton>
             <BitButton ButtonType=""BitButtonType.Button"" Variant=""BitVariant.Text"">Button</BitButton>
         </div>
     </EditForm>
@@ -229,6 +237,13 @@ private async Task HandleValidSubmit()
 private void HandleInvalidSubmit()
 {
     formIsValidSubmit = false;
+}
+
+// The native reset empties the inputs and stops there, so the bound model - and the validation state
+// built from it - would otherwise survive a reset and be submitted by the next click.
+private void ResetValidationForm()
+{
+    buttonValidationModel = new();
 }
 
 private bool externalFormSubmitted;
@@ -325,17 +340,15 @@ private bool noWrap = true;";
     ];
 
     private readonly string example10RazorCode = @"
-<div class=""fixed-color-surface"">
-    <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
-        Default
-    </BitButton>
+<BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
+    Default (not fixed)
+</BitButton>
 
-    <BitButton FixedColor Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
-        FixedColor
-    </BitButton>
+<BitButton FixedColor Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
+    FixedColor
+</BitButton>
 
-    <BitButton FixedColor IconOnly AriaLabel=""Emoji"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"" />
-</div>";
+<BitButton FixedColor IconOnly AriaLabel=""Emoji"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"" />";
 
     private const string example10ScssCode = @"
 // A surface whose color the buttons on it are meant to keep matching, which is the case FixedColor is for.

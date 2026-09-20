@@ -63,7 +63,7 @@
 
                 if (!thresholdDragged) return;
 
-                move(element.offsetLeft - (x - e.clientX), element.offsetTop - (y - e.clientY));
+                moveBy(e.clientX - x, e.clientY - y);
 
                 x = e.clientX;
                 y = e.clientY;
@@ -88,17 +88,40 @@
 
                 const distance = e.shiftKey ? 24 : 8;
 
-                move(element.offsetLeft + step[0] * distance, element.offsetTop + step[1] * distance);
+                moveBy(step[0] * distance, step[1] * distance);
+            }
+
+            // Both the pointer and the keys move the element by a delta, and both read where it is now the
+            // same way: left/top mean the offset parent's box for an absolutely positioned element, and the
+            // viewport for a fixed one - which is what its own rect is measured against, scrolling included.
+            function moveBy(deltaX: number, deltaY: number) {
+                const parent = element.offsetParent as HTMLElement | null;
+
+                if (parent) {
+                    move(element.offsetLeft + deltaX, element.offsetTop + deltaY, parent.clientWidth, parent.clientHeight);
+                } else {
+                    const rect = element.getBoundingClientRect();
+
+                    move(rect.left + deltaX, rect.top + deltaY, document.documentElement.clientWidth, document.documentElement.clientHeight);
+                }
             }
 
             // The one place the element's position is written, so a nudge lands exactly where a drag would:
-            // pinned by its top-left corner, with the edges it may have been anchored to released.
-            function move(left: number, top: number) {
-                element.style.left = `${left}px`;
-                element.style.top = `${top}px`;
+            // pinned by its top-left corner, with the edges it may have been anchored to released. It is kept
+            // inside the box it is positioned in, since a move that drops it past an edge leaves the user with
+            // no way to reach it again - the pointer has nothing left to grab and the keys nothing focused.
+            function move(left: number, top: number, boundsWidth: number, boundsHeight: number) {
+                element.style.left = `${clamp(left, boundsWidth - element.offsetWidth)}px`;
+                element.style.top = `${clamp(top, boundsHeight - element.offsetHeight)}px`;
 
                 element.style.right = 'unset';
                 element.style.bottom = 'unset';
+            }
+
+            // A box smaller than the element it holds has a negative maximum, which would otherwise clamp to
+            // the far side instead of the near one.
+            function clamp(value: number, max: number) {
+                return Math.min(Math.max(value, 0), Math.max(max, 0));
             }
 
             async function handlePointerUp(e: PointerEvent) {
@@ -113,6 +136,19 @@
 
                 try { await dotnetObj?.invokeMethodAsync('OnDragEnd', x, y); } catch { }
             }
+        }
+
+        // Drops the position a drag or a nudge wrote, so the element goes back to wherever its own styles
+        // anchor it. It is what a component calls when the anchor itself changes: the inline left/top outrank
+        // every rule that positions the element, so without this they would silently win for good.
+        public static reset(id: string) {
+            const element = document.getElementById(id);
+            if (!element) return;
+
+            element.style.left = '';
+            element.style.top = '';
+            element.style.right = '';
+            element.style.bottom = '';
         }
 
         public static disable(id: string) {

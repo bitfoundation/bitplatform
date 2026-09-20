@@ -8,6 +8,7 @@
             Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, and public CSS variables for everything the parameters do not cover." />
 
 <DemoPage Name="Button"
+          SecondaryNames="@(["CompoundButton", "IconButton"])"
           Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, an icon-only button keeps its label as its accessible name, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
           Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
@@ -165,7 +166,8 @@
             <b>AutoLoading</b> keeps the state for you: the button enters the loading state for as long as the
             <b>OnClick</b> handler is awaited, and leaves it even if the handler throws. <b>Reclickable</b> lets the
             user click again while it is loading, and leaves the button reported - and drawn - as the available
-            control it still is.
+            control it still is. The re-click only raises <b>OnClick</b>: the loading state is left alone until the
+            run the last click started has ended.
         </div>
         <br />
         <div class="example-content">
@@ -181,7 +183,9 @@
         <div>
             <b>LoadingDelay</b> holds the spinner back for a number of milliseconds, so an operation that finishes
             quickly never flashes one. Only the visuals wait: the click is blocked and <b>aria-busy</b> is rendered the
-            moment the loading starts. Click both below - the second one answers in 250ms and stays still.
+            moment the loading starts. Click all three below - the first spins for the 250ms it works, the second runs
+            the same 250ms operation and stays still because it ends inside the delay, and the third works for 2s so
+            the spinner appears once the 500ms are up.
         </div>
         <br />
         <div class="example-content">
@@ -190,7 +194,11 @@
             </BitButton>
 
             <BitButton AutoLoading LoadingDelay="500" OnClick="FastOperation" Variant="BitVariant.Outline">
-                LoadingDelay="500"
+                LoadingDelay="500" (250ms)
+            </BitButton>
+
+            <BitButton AutoLoading LoadingDelay="500" OnClick="SlowOperation" Variant="BitVariant.Outline">
+                LoadingDelay="500" (2s)
             </BitButton>
         </div>
     </DemoExample>
@@ -241,6 +249,11 @@
             and <b>Button</b> does neither. Inside an <b>EditForm</b> the type defaults to Submit, elsewhere to Button.
         </div>
         <div>
+            A reset is the browser's own: it empties the inputs and nothing else, so the model the
+            <b>EditForm</b> is bound to still holds what was typed and a submit right after would send it. Give the
+            reset button an <b>OnClick</b> that puts a fresh model back, and the form is cleared in both places.
+        </div>
+        <div>
             Using the <b>ButtonType</b> parameter and its value of type
             <BitLink Href="#button-type-enum">BitButtonType</BitLink> enum:
         </div>
@@ -259,7 +272,8 @@
                     <br />
                     <div class="example-content">
                         <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                        <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline">Reset</BitButton>
+                        <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
+                                   OnClick="ResetValidationForm">Reset</BitButton>
                         <BitButton ButtonType="BitButtonType.Button" Variant="BitVariant.Text">Button</BitButton>
                     </div>
                 </EditForm>
@@ -390,26 +404,23 @@
 
     <DemoExample Title="FixedColor" RazorCode="@example10RazorCode" CodeFiles="@example10CodeFiles" Id="example10">
         <div>
-            An Outline or Text button swaps its foreground for the on-color of its color role - the palette entry the
-            <b>Color</b> parameter picks - when hovered or pressed. <b>FixedColor</b> holds that foreground still
-            through both, for a button sitting on a surface whose color it must keep matching. Hover the buttons below
-            to see the difference.
+            An Outline or Text button paints its foreground in its color role - the palette entry the <b>Color</b>
+            parameter picks - and swaps it for that role's on-color when hovered or pressed, since those states fill
+            the box with the role's own color. <b>FixedColor</b> paints the on-color from the start and holds it
+            through both. That is what a button sitting on a surface of its own color needs: the ones below are given
+            the tertiary background color on a tertiary background, so only the fixed ones are legible at rest. Hover
+            them to see the difference.
         </div>
         <br />
-        <div class="fixed-color-surface">
-            <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground"
-                       IconName="@BitIconName.Emoji2">
-                Default
-            </BitButton>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" IconName="@BitIconName.Emoji2">
+            Default (not fixed)
+        </BitButton>
 
-            <BitButton FixedColor Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground"
-                       IconName="@BitIconName.Emoji2">
-                FixedColor
-            </BitButton>
+        <BitButton FixedColor Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" IconName="@BitIconName.Emoji2">
+            FixedColor
+        </BitButton>
 
-            <BitButton FixedColor IconOnly AriaLabel="Emoji" Variant="BitVariant.Text"
-                       Color="BitColor.TertiaryBackground" IconName="@BitIconName.Emoji2" />
-        </div>
+        <BitButton FixedColor IconOnly AriaLabel="Emoji" Variant="BitVariant.Text" Color="BitColor.TertiaryBackground" IconName="@BitIconName.Emoji2" />
     </DemoExample>
 
     <DemoExample Title="Float & Draggable" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode"
@@ -423,7 +434,9 @@
         <div>
             <b>Draggable</b> lets the user move it out of the way - by pointer, or with the arrow keys while it has
             the focus (<b>Shift</b> for a coarser step), so the repositioning is never dragging-only. The click that
-            ends a drag is swallowed, so <b>OnClick</b> answers a press and not a move.
+            ends a drag is swallowed, so <b>OnClick</b> answers a press and not a move. A move cannot put the button
+            past the edges of what it is pinned to, and it holds until the anchor changes: setting
+            <b>FloatPosition</b> or <b>FloatOffset</b> again is what brings it back.
         </div>
         <div>
             Using the <b>FloatPosition</b> parameter and its value of type

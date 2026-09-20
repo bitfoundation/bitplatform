@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -8,10 +9,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButton : BitComponentBase
 {
+    private int _clickId;
     private string? _rel;
     private bool _dragging;
     private bool _showLoading;
     private bool _draggableEnabled;
+    private bool _resetDragPosition;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
     private DotNetObjectReference<BitButton>? _dotnetObj;
@@ -108,7 +111,9 @@ public partial class BitButton : BitComponentBase
     /// The button can also be moved from the keyboard while it has the focus - the arrow keys move it by a
     /// step and Shift with an arrow by a coarser one - so the repositioning is not dragging-only
     /// (WCAG 2.2 SC 2.5.7). The click that ends a drag is swallowed, so <see cref="OnClick"/> is raised by a
-    /// press and not by a move.
+    /// press and not by a move. A move is kept inside the box the button is positioned in - the viewport for
+    /// <see cref="Float"/>, the container for <see cref="FloatAbsolute"/> - and holds until the anchor
+    /// changes: setting <see cref="FloatPosition"/> or <see cref="FloatOffset"/> again drops it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Draggable { get; set; }
@@ -134,13 +139,18 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Specifies the offset of the floating button.
     /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>1rem</c>, <c>5%</c>, a <c>calc()</c>), or a bare number, which is read as pixels.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
+    [CallOnSet(nameof(OnSetFloatAnchor))]
     public string? FloatOffset { get; set; }
 
     /// <summary>
     /// Specifies the position of the floating button.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetFloatAnchor))]
     public BitPosition? FloatPosition { get; set; }
 
     /// <summary>
@@ -279,7 +289,9 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A loading button that takes the click is still an available control, so it keeps the pointer cursor and
-    /// is not reported as <c>aria-disabled</c> the way a loading one that refuses the click is.
+    /// is not reported as <c>aria-disabled</c> the way a loading one that refuses the click is. The re-click only
+    /// raises <see cref="OnClick"/>: with <see cref="AutoLoading"/>, the state stays as it is until the run the
+    /// last click started has ended.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reclickable { get; set; }
@@ -484,7 +496,17 @@ public partial class BitButton : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{FloatOffset}" : string.Empty);
+        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{NormalizeFloatOffset(FloatOffset!)}" : string.Empty);
+    }
+
+    // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
+    // button stops being pinned at all and drifts off with the content. A number is also what an offset
+    // bound to a numeric input arrives as, so it is read as pixels rather than dropped on the floor.
+    private static string NormalizeFloatOffset(string floatOffset)
+    {
+        var offset = floatOffset.Trim();
+
+        return double.TryParse(offset, NumberStyles.Float, CultureInfo.InvariantCulture, out _) ? $"{offset}px" : offset;
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonParams))]
@@ -510,6 +532,19 @@ public partial class BitButton : BitComponentBase
         // every render: enable() returns early on a second call, but disable() does not - a floating button
         // that is not draggable used to tear the listeners down once per render, and one that stopped
         // floating kept them for good.
+        // A drag pins the button by an inline left/top of its own, which outranks every rule the anchor
+        // classes bring. Setting the anchor again is the app asking for that position back, so what the
+        // drag wrote is dropped - otherwise both parameters would silently do nothing after the first move.
+        if (_resetDragPosition)
+        {
+            _resetDragPosition = false;
+
+            if (_draggableEnabled)
+            {
+                await _js.BitDraggablesReset(_Id);
+            }
+        }
+
         var draggable = Draggable && (Float || FloatAbsolute);
 
         if (draggable == _draggableEnabled) return;
@@ -529,6 +564,13 @@ public partial class BitButton : BitComponentBase
     }
 
 
+
+    // The position a drag left behind is only dropped once the button has rendered with the new anchor, so
+    // the two never race: the class and the style land first, and the inline left/top go after them.
+    internal void OnSetFloatAnchor()
+    {
+        _resetDragPosition = true;
+    }
 
     internal void OnSetHrefRelAndTarget()
     {
@@ -628,7 +670,14 @@ public partial class BitButton : BitComponentBase
 
         var isLoading = IsLoading;
 
-        if (AutoLoading)
+        // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
+        // that state is already on, so it only raises the event: entering it again would be a no-op, and
+        // leaving it when this run ends would clear the spinner of the run that is still in flight - or,
+        // for a handler that abandons its previous run by throwing into it, clear it on the way out of the
+        // run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
         {
             if (await AssignIsLoading(true) is false) return;
 
@@ -643,7 +692,7 @@ public partial class BitButton : BitComponentBase
         {
             // in a finally so that a handler that throws leaves the button clickable again instead of
             // stranding it in a loading state that nothing will ever clear.
-            if (AutoLoading)
+            if (AutoLoading && clickId == _clickId)
             {
                 await AssignIsLoading(false);
 

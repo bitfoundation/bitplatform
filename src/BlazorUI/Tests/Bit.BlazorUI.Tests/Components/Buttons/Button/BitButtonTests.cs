@@ -1124,6 +1124,32 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitButtonLoadingDelayShouldShowTheSpinnerOfAnAutoLoadingClickThatOutlastsIt()
+    {
+        var tsc = new TaskCompletionSource();
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.LoadingDelay, 150);
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<bool>(this, () => tsc.Task));
+            parameters.AddChildContent("Save");
+        });
+
+        var click = com.Find(".bit-btn").ClickAsync(new());
+
+        // the handler is still running, but the spinner is still being held back by the delay
+        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-btn-spn").Count), TimeSpan.FromSeconds(2));
+
+        tsc.SetResult();
+        await click;
+
+        Assert.AreEqual(0, com.FindAll(".bit-btn-spn").Count);
+    }
+
+    [TestMethod]
     public async Task BitButtonAutoLoadingShouldLeaveTheLoadingStateWhenTheHandlerThrows()
     {
         var com = RenderComponent<BitButton>(parameters =>
@@ -1149,6 +1175,24 @@ public class BitButtonTests : BunitTestContext
         });
 
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), "--bit-Button-float-offset:2rem");
+    }
+
+    [DataTestMethod,
+        DataRow("16", "16px"),
+        DataRow(" 12.5 ", "12.5px"),
+        DataRow("0", "0px"),
+        DataRow("2rem", "2rem"),
+        DataRow("5%", "5%"),
+        DataRow("calc(1rem + 2px)", "calc(1rem + 2px)")]
+    public void BitButtonFloatOffsetShouldReadABareNumberAsPixels(string offset, string expected)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Float, true);
+            parameters.Add(p => p.FloatOffset, offset);
+        });
+
+        StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), $"--bit-Button-float-offset:{expected}");
     }
 
     [TestMethod]
@@ -1511,6 +1555,50 @@ public class BitButtonTests : BunitTestContext
         tcs.SetResult();
         await clickTask;
 
+        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+    }
+
+    [TestMethod]
+    public async Task BitButtonReclickShouldRaiseTheEventWithoutTouchingTheLoadingState()
+    {
+        var loadingStates = new List<bool>();
+        var firstTcs = new TaskCompletionSource();
+        var secondTcs = new TaskCompletionSource();
+        var clickCount = 0;
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Reclickable, true);
+            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            // the second click abandons the run the first one started, the way a handler that replaces
+            // its own in-flight work does
+            parameters.Add(p => p.OnClick, (bool _) =>
+            {
+                clickCount++;
+                if (clickCount == 1) return firstTcs.Task;
+                firstTcs.TrySetException(new TaskCanceledException());
+                return secondTcs.Task;
+            });
+        });
+
+        var button = com.Find(".bit-btn");
+
+        var firstClick = button.ClickAsync(new MouseEventArgs());
+        var secondClick = button.ClickAsync(new MouseEventArgs());
+
+        // WhenAny rather than an await, since the abandoned run ends on the exception thrown into it
+        await Task.WhenAny(firstClick);
+
+        // the abandoned first run is gone, but the second one is still in flight and still loading
+        Assert.AreEqual(2, clickCount);
+        Assert.IsTrue(com.Instance.IsLoading);
+        CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
+
+        secondTcs.SetResult();
+        await secondClick;
+
+        Assert.IsFalse(com.Instance.IsLoading);
         CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
     }
 

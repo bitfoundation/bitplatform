@@ -113,7 +113,7 @@ public partial class BitButtonDemo
             Name = "FloatOffset",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies the offset of the floating button.",
+            Description = "Specifies the offset of the floating button: any CSS length (1rem, 5%, a calc()), or a bare number, which is read as pixels.",
         },
         new()
         {
@@ -1153,8 +1153,11 @@ public partial class BitButtonDemo
         textIsLoading = false;
     }
 
-    // Finishes inside the 500ms delay of the second button, so only the first one ever shows a spinner.
+    // Finishes inside the 500ms delay of the second button, so that one never shows a spinner.
     private async Task FastOperation() => await Task.Delay(250);
+
+    // Outlasts the same delay, so the third button shows its spinner once the 500ms are up.
+    private async Task SlowOperation() => await Task.Delay(2000);
 
     private int autoLoadCount;
     private async Task AutoLoadingClick()
@@ -1236,6 +1239,13 @@ public partial class BitButtonDemo
     private void HandleInvalidSubmit()
     {
         formIsValidSubmit = false;
+    }
+
+    // The native reset empties the inputs and stops there, so the bound model - and the validation state
+    // built from it - would otherwise survive a reset and be submitted by the next click.
+    private void ResetValidationForm()
+    {
+        buttonValidationModel = new();
     }
 
     private bool externalFormSubmitted;
