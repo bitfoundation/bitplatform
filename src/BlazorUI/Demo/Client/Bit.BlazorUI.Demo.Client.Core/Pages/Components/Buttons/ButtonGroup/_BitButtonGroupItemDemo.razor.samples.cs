@@ -88,6 +88,7 @@ private List<BitButtonGroupItem> reversedIconItems =
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
 <BitButton OnClick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => toggleKey = null)"">Clear</BitButton>
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""changeToggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleItem = i"" />
 <div>Changed toggle: @onChangeToggleItem?.Key , @onChangeToggleItem?.IsToggled</div>

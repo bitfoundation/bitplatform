@@ -162,6 +162,7 @@ private List<Operation> reversedIconCustoms =
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledCustoms"" NameSelectors=""toggledNameSelectors"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
 <BitButton OnClick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => toggleKey = null)"">Clear</BitButton>
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""changeToggledCustoms"" NameSelectors=""toggledNameSelectors"" DefaultToggleKey=""forward"" OnToggleChange=""(Operation o) => onChangeToggleCustom = o"" />
 <div>Changed toggle: @onChangeToggleCustom?.Id , @onChangeToggleCustom?.IsSelected</div>

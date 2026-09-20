@@ -1299,6 +1299,206 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("-1", comp.FindAll(".bit-btg-itm")[1].GetAttribute("tabindex"));
     }
 
+    [TestMethod]
+    public void BitButtonGroupClearingTheBoundToggleKeyShouldTakeTheSelectionBack()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "a");
+            parameters.Add(p => p.ToggleKeyChanged, (string? _) => { });
+        });
+
+        Assert.AreEqual("true", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, null);
+            parameters.Add(p => p.ToggleKeyChanged, (string? _) => { });
+        });
+
+        // The key the group reports its selection through now names nothing, so neither does the group.
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("aria-checked") == "false"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "b");
+            parameters.Add(p => p.ToggleKeyChanged, (string? _) => { });
+        });
+
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "no-such-item");
+            parameters.Add(p => p.ToggleKeyChanged, (string? _) => { });
+        });
+
+        // A key naming no item of this group is the same thing: it is not a reason to keep showing the last one.
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("aria-checked") == "false"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupBoundToggleKeysShouldBeCorrectedToWhatTheGroupCanHold()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        IEnumerable<string>? toggleKeys = null;
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.MaxToggles, 2);
+            parameters.Add(p => p.ToggleKeys, (IEnumerable<string>?)["a", "b", "c"]);
+            parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? keys) => toggleKeys = keys);
+        });
+
+        var buttons = comp.FindAll("button");
+        Assert.AreEqual("true", buttons[0].GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", buttons[1].GetAttribute("aria-pressed"));
+        Assert.AreEqual("false", buttons[2].GetAttribute("aria-pressed"));
+
+        // The cap took the third key, and the bound value is what the page reads its own state back out of:
+        // left as it was given, it would say the group holds an item it does not.
+        CollectionAssert.AreEqual(new[] { "a", "b" }, toggleKeys?.ToArray());
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.MaxToggles, 2);
+            parameters.Add(p => p.ToggleKeys, (IEnumerable<string>?)["b", "no-such-item"]);
+            parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? keys) => toggleKeys = keys);
+        });
+
+        // A key naming no item is dropped the same way.
+        CollectionAssert.AreEqual(new[] { "b" }, toggleKeys?.ToArray());
+        Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-pressed"));
+        Assert.AreEqual("false", comp.FindAll("button")[0].GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSpaceShouldSelectALinkItemStandingInForARadio()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Day", Key = "day", Href = "/day" },
+            new() { Text = "Week", Key = "week", Href = "/week" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectOnFocus, false);
+            parameters.Add(p => p.DefaultToggleKey, "day");
+        });
+
+        comp.Find(".bit-btg").KeyDown("ArrowRight");
+
+        Assert.AreEqual("true", comp.FindAll("a")[0].GetAttribute("aria-checked"));
+
+        comp.Find(".bit-btg").KeyDown(" ");
+
+        // A link is followed by Enter and scrolls the page on Space, which is the right pair of keys for a link
+        // and the wrong one for the radio the Single mode has made of it: a radio is checked with Space.
+        Assert.AreEqual("true", comp.FindAll("a")[1].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("a")[0].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSpaceShouldLeaveTheItemsThatAreNotRadiosAlone()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Bold", Key = "bold", Href = "/bold" },
+            new() { Text = "Italic", Key = "italic", Href = "/italic" }
+        };
+
+        var links = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+        });
+
+        links.Find(".bit-btg").KeyDown(" ");
+
+        // Outside the Single mode a link is a plain link, and Space is not one of the two keys a link has.
+        Assert.IsTrue(links.FindAll("a").All(a => a.GetAttribute("aria-current") is null));
+
+        var buttonItems = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Bold", Key = "bold" },
+            new() { Text = "Italic", Key = "italic" }
+        };
+
+        var buttons = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, buttonItems);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Single);
+            parameters.Add(p => p.SelectOnFocus, false);
+        });
+
+        buttons.Find(".bit-btg").KeyDown(" ");
+
+        // A button is activated by Space by itself, so the handler must not select it a second time.
+        Assert.IsTrue(buttons.FindAll("button").All(b => b.GetAttribute("aria-checked") == "false"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupTighteningMaxTogglesShouldCutWhatTheGroupAlreadyHolds()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.DefaultToggleKeys, (IEnumerable<string>?)["a", "b", "c"]);
+        });
+
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("aria-pressed") == "true"));
+
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitButtonGroupSelectionMode.Multiple);
+            parameters.Add(p => p.MaxToggles, 2);
+        });
+
+        // A cap tightened onto a group holding more than it allows is still a cap: left alone, the group would
+        // be showing a third toggled item that nothing it does from here on would let the user reach.
+        var buttons = comp.FindAll("button");
+        Assert.AreEqual("true", buttons[0].GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", buttons[1].GetAttribute("aria-pressed"));
+        Assert.AreEqual("false", buttons[2].GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", buttons[2].GetAttribute("aria-disabled"));
+    }
+
     public class KeylessButtonGroupItem
     {
         public string? Text { get; set; }

@@ -139,7 +139,8 @@
         so
         the accessible name stays the same as the state changes. The toggled key is read and set through
         <strong>ToggleKey</strong>, seeded by <strong>DefaultToggleKey</strong>, and every change raises
-        <strong>OnToggleChange</strong>.
+        <strong>OnToggleChange</strong>. Setting the bound key to <strong>null</strong> - or to a key no
+        item carries - takes the selection back.
     </div>
     <br /><br />
     <div class="example-content">
@@ -161,6 +162,7 @@
     <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="toggledItems" @bind-ToggleKey="toggleKey" />
     <div>Toggle key: @toggleKey</div>
     <BitButton OnClick="@(() => toggleKey = "forward")">Forward</BitButton>
+    <BitButton Variant="BitVariant.Outline" OnClick="@(() => toggleKey = null)">Clear</BitButton>
     <br /><br /><br /><br />
     <div>OnToggleChange:</div><br />
     <BitButtonGroup Toggle Variant="BitVariant.Outline" Items="changeToggledItems" DefaultToggleKey="forward"
@@ -242,6 +244,9 @@
         Setting the <strong>SelectionMode</strong> to <strong>Multiple</strong> lets any number of buttons be toggled at
         the
         same time. The toggled keys are available through the <strong>ToggleKeys</strong> two-way bound parameter.
+        Only the keys the group can hold are kept - one naming no item, and everything past the
+        <strong>MaxToggles</strong> cap, is dropped and written back - so the bound value always reads as the set
+        of buttons that are actually toggled.
     </div>
     <br /><br />
     <div class="example-content">
@@ -417,6 +422,8 @@
         (nofollow, external, ...). A disabled or loading link drops its href and
         keeps its link role. In a toggle group a link reports its selection through
         <code>aria-current</code>, since <code>aria-pressed</code> belongs to a button.
+        In the Single mode a link also carries the radio role, so <strong>Space</strong> selects it while
+        <strong>Enter</strong> still follows it.
     </div>
     <br /><br />
     <div class="example-content">

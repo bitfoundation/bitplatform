@@ -156,6 +156,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// An action that has to run whatever the cap says belongs on an item outside the capped group, or on a group
     /// that caps nothing.
     /// <br />
+    /// Tightening the cap onto a group that already holds more than it allows cuts what it holds down to it,
+    /// keeping the first items of the group, so the cap is an invariant rather than something only new toggles
+    /// are held to.
+    /// <br />
     /// Capping a group at one item is <see cref="BitButtonGroupSelectionMode.Single"/> with an extra step - the user
     /// has to un-toggle before choosing again - and capping it at one while <see cref="FixedToggle"/> also forbids
     /// un-toggling the last item freezes the selection for good.
@@ -256,12 +260,21 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The key of the toggled item in the Single selection mode. (two-way bound)
     /// </summary>
+    /// <remarks>
+    /// Setting it to <see langword="null"/> - or to a key no item of the group carries - takes the selection
+    /// back, which is how a page clears the group's selection from the outside.
+    /// </remarks>
     [Parameter, TwoWayBound]
     public string? ToggleKey { get; set; }
 
     /// <summary>
     /// The keys of the toggled items in the Multiple selection mode. (two-way bound)
     /// </summary>
+    /// <remarks>
+    /// Only the keys the group can hold are kept: one naming no item is dropped, and <see cref="MaxToggles"/>
+    /// takes everything past the cap. What is dropped is written back, so the bound value always reads as the
+    /// set of items that are actually toggled.
+    /// </remarks>
     [Parameter, TwoWayBound]
     public IEnumerable<string>? ToggleKeys { get; set; }
 
@@ -333,7 +346,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             var toggleKeys = ToggleKeysHasBeenSet ? ToggleKeys : DefaultToggleKeys;
 
-            if (toggleKeys is not null && option.Key.HasValue() && toggleKeys.Contains(option.Key!))
+            if (toggleKeys is not null && option.Key.HasValue() && toggleKeys.Contains(option.Key!) &&
+                // The cap counts the same here as it does everywhere else: a set of keys longer than it is cut
+                // to it, rather than the group opening with more toggled than it would ever let the user reach.
+                (MaxToggles is not int max || max <= 0 || _toggledItems.Count < max))
             {
                 _toggledItems.Add(item);
                 SetIsToggled(item, true);
@@ -562,6 +578,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (toggleKeys is not null)
                 {
                     ApplyToggleKeys(toggleKeys);
+                    await SyncToggleKeysBack();
                 }
             }
         }
@@ -592,10 +609,20 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             _internalToggleKey = ToggleKey;
 
-            if (_internalToggleKey.HasValue())
+            var item = _internalToggleKey.HasValue()
+                        ? _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey)
+                        : null;
+
+            if (item is not null)
             {
-                var item = _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey);
                 await UpdateItemToggle(item, allowUntoggle: false);
+            }
+            else if (_Mode is BitButtonGroupSelectionMode.Single)
+            {
+                // The bound key now names no item at all - it was cleared, or it was pointed at something this
+                // group does not hold. Left alone, the item toggled before it would stay toggled and the group
+                // would be reporting a selection the key it is bound to says is gone.
+                ClearToggle();
             }
         }
 
@@ -607,6 +634,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _internalToggleKeys = ToggleKeys;
 
             ApplyToggleKeys(ToggleKeys ?? []);
+            await SyncToggleKeysBack();
+        }
+
+        // The cap can be tightened onto a group that already holds more than it now allows - a plan that has
+        // dropped a tier, a limit read off something the page has just loaded. Left alone, the group would be
+        // showing more toggled items than anything it does from here on would let the user reach, so it is cut
+        // to the cap the same way a set of keys past it is, keeping the first items of the group.
+        if (_Mode is BitButtonGroupSelectionMode.Multiple && MaxToggles is int max && max > 0 && _toggledItems.Count > max)
+        {
+            ApplyToggleKeys(GetToggledKeys());
+            await SyncToggleKeysBack();
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
@@ -614,6 +652,21 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         RefreshOptions();
 
         await base.OnParametersSetAsync();
+    }
+
+
+
+    // The options register themselves while they render, so the group only knows everything it holds once the
+    // render is over - which is where a set of toggle keys handed to that API is corrected to the ones the group
+    // could keep. The Items API knows its list before it renders and is corrected as its parameters are set.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if ((Options ?? ChildContent) is not null)
+        {
+            await SyncToggleKeysBack();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 
@@ -792,6 +845,22 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (focusables.Count == 0) return;
 
         var current = GetActiveItem();
+
+        // A button is activated by Space by itself, and so a key handler never sees one that matters. A link is
+        // not: Enter follows it and Space scrolls the page. That is the right pair of keys for a link, and it is
+        // the wrong one for the radio the Single mode makes of it - a radio is checked with Space, and an item of
+        // a mandatory choice that no key checks is one a keyboard user cannot pick without leaving the page it
+        // navigates to. So Space selects it here, and only here: it leaves the link's own Enter alone, and a link
+        // that is not standing in for a radio keeps the two keys a link has always had.
+        // (The page scroll is cancelled by the capture-phase guard in BitButtonGroup.ts, on those links alone.)
+        if (e.Key is " " or "Spacebar" &&
+            _Mode is BitButtonGroupSelectionMode.Single &&
+            current is not null && GetHref(current).HasValue())
+        {
+            await HandleOnItemClick(current);
+            return;
+        }
+
         var index = current is null ? -1 : focusables.IndexOf(current);
         var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
@@ -1241,6 +1310,49 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         _internalToggleKeys = keys;
         await AssignToggleKeys(keys);
         await OnToggleChange.InvokeAsync(item);
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Not every key handed to the group is one it can hold: a key naming no item is dropped, and the MaxToggles
+    // cap takes everything past it. The bound value is what the page reads its own state back out of, so what
+    // was dropped is written back rather than left to say the group holds items it does not. The write is
+    // idempotent - the keys that come back are the ones already applied - so it settles in a single round.
+    private async Task SyncToggleKeysBack()
+    {
+        if (ToggleKeysHasBeenSet is false || ToggleKeys is null) return;
+        // An empty group has dropped nothing - it has not been given anything to drop yet. The options register
+        // themselves while they render, which is after the group has had its own parameters set, so a group that
+        // holds nothing here is one whose options are about to arrive and whose keys would otherwise all be
+        // written back as dropped before a single button exists to carry them.
+        if (_items.Count == 0) return;
+
+        var applied = GetToggledKeys();
+        if (applied.SequenceEqual(ToggleKeys)) return;
+
+        // Remembered only once the write is taken: a value bound one way cannot be written back, and holding
+        // what the group kept rather than what it was given would re-enter this from every later render.
+        if (await AssignToggleKeys(applied))
+        {
+            _internalToggleKeys = applied;
+        }
+    }
+
+    // Takes the Single mode's selection back without raising the change callbacks, which is what a bound
+    // ToggleKey cleared by the page needs: the page has already written the new value, so there is nothing to
+    // hand back to it, and nothing the user did for an OnToggleChange to report.
+    private void ClearToggle()
+    {
+        var toggled = _items.Where(IsItemToggled).ToArray();
+        if (toggled.Length == 0 && _toggleItem is null) return;
+
+        foreach (var item in toggled)
+        {
+            SetIsToggled(item, false);
+        }
+
+        _toggleItem = null;
 
         RefreshOptions();
         StateHasChanged();

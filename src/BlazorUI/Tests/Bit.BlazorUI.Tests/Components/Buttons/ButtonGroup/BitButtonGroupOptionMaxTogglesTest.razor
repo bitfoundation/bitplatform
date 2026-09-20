@@ -1,0 +1,20 @@
+@using Bit.BlazorUI
+
+<BitButtonGroup TItem="BitButtonGroupOption" SelectionMode="BitButtonGroupSelectionMode.Multiple"
+                MaxToggles="2" ToggleKeys="ToggleKeys" ToggleKeysChanged="HandleToggleKeysChanged">
+    <BitButtonGroupOption Text="A" Key="a" />
+    <BitButtonGroupOption Text="B" Key="b" />
+    <BitButtonGroupOption Text="C" Key="c" />
+</BitButtonGroup>
+
+@code {
+    [Parameter] public IEnumerable<string>? ToggleKeys { get; set; }
+
+    [Parameter] public EventCallback<IEnumerable<string>?> ToggleKeysChanged { get; set; }
+
+    private async Task HandleToggleKeysChanged(IEnumerable<string>? keys)
+    {
+        ToggleKeys = keys;
+        await ToggleKeysChanged.InvokeAsync(keys);
+    }
+}

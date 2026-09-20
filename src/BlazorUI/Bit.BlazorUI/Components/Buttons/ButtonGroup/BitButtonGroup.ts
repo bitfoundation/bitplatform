@@ -37,6 +37,15 @@ namespace BitBlazorUI {
                 const group = item.closest('.bit-btg');
                 if (!group || group.classList.contains('bit-dis') || !group.classList.contains('bit-btg-nav')) return;
 
+                // Space is the activation key of a radio, and a link does not have it: on a link the Single
+                // mode has made a radio of, the .NET handler selects it and the page scroll that Space would
+                // otherwise do is what has to go. Nowhere else - a button activates on Space by itself, and
+                // cancelling it there would take that activation away.
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    if (item.tagName === 'A' && item.getAttribute('role') === 'radio') e.preventDefault();
+                    return;
+                }
+
                 // Only the axis the group is laid out along is taken over. The other pair of arrows is
                 // left to the page, which is what a reader scrolling past the group expects of them.
                 const keys = group.classList.contains('bit-btg-vrt') ? ButtonGroup.VERTICAL_KEYS : ButtonGroup.HORIZONTAL_KEYS;
