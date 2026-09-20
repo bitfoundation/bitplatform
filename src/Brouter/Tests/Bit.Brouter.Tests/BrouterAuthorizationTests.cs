@@ -137,17 +137,9 @@ public class BrouterAuthorizationTests : BunitTestContext
         // same. The rematch runs as a component lifecycle task (BrouterRematchRunner), so the
         // fail-closed throw reaches the renderer instead of being swallowed by a detached
         // continuation - which would leave the developer with no signal at all.
-        Exception? exception = null;
-        try
-        {
-            cut.Render(p => p.Add(h => h.ShowSecure, true));
-        }
-        catch (Exception thrownDuringRender)
-        {
-            exception = thrownDuringRender;
-        }
+        cut.Render(p => p.Add(h => h.ShowSecure, true));
 
-        exception ??= await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.IsInstanceOfType<InvalidOperationException>(exception);
         StringAssert.Contains(exception.Message, "authorization");
         Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count,

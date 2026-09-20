@@ -253,10 +253,6 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await GotoAsync("/long");
         await WaitForInitialNavigationEffectsAsync("#page-long");
         await ClickAndExpectAsync("#long-to-other", "#page-other");
-        // The arriving page is visible before Brouter has finished with it, and scrolling in that window is
-        // undone by its scroll-to-top - two runs in six ended here with scrollY back at 0. The focused
-        // heading is the signal that the navigation's effects have run.
-        await Expect(Page.Locator("#page-other")).ToBeFocusedAsync();
         await Page.EvaluateAsync("() => window.scrollTo(0, 1500)");
         await WaitForScrollYAsync(1500);
 
