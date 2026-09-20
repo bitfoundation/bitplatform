@@ -136,8 +136,7 @@ public static partial class MauiProgram
 #if Windows
             // MAUI's Background mapping only reaches the WinUI control WebView2 paints over, so this is the only way
             // to set what WebView2 shows before the page has painted.
-            webView.DefaultBackgroundColor = Color.FromArgb(BitExtraThemeSurfaces.BackgroundPrimary[IsDarkTheme() ?
-                BitExtraThemePresets.Fluent2Dark : BitExtraThemePresets.Fluent2Light]).ToWindowsColor();
+            webView.DefaultBackgroundColor = Color.FromArgb(AppThemePresets.Background(IsDarkTheme())).ToWindowsColor();
 
             webView.EnsureCoreWebView2Async()
                 .AsTask()
