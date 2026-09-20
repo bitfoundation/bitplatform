@@ -206,8 +206,10 @@ public partial class BitActionButton : BitComponentBase
     /// <remarks>
     /// The content wraps onto as many lines as it needs by default, which is what keeps a long label readable.
     /// Turn this on where the layout has a width of its own to protect - a stretched row in a settings list, a
-    /// toolbar, a cell of a grid - and pair it with a <see cref="Title"/> so the part that was cut off is still
-    /// reachable. It has no effect on a button left to hug its content, which is never narrower than its text.
+    /// toolbar, a cell of a grid - and pair it with a <c>BitTooltip</c> around the button, or another disclosure
+    /// the keyboard can reach, so the part that was cut off is still readable. The native <see cref="Title"/> is
+    /// not that disclosure: it opens under a pointer only, leaving a keyboard or a touch user with the truncated
+    /// label alone. It has no effect on a button left to hug its content, which is never narrower than its text.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoWrap { get; set; }

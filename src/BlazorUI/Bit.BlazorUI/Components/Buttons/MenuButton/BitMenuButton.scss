@@ -630,6 +630,25 @@
         background-color: Highlight;
     }
 
+    // forced-color-adjust: none keeps the author colors of the pressed row and of the focus ring as they were
+    // declared, so both are restated in the system pair: a tint chosen for the themed palette can land on the
+    // forced foreground, and a ring in an accent the system does not use is the only thing saying where the
+    // keyboard is (WCAG 2.4.7, 1.4.11).
+    .bit-mnb-itm:active:not([disabled]):not([aria-disabled="true"]) {
+        color: HighlightText;
+        background-color: Highlight;
+    }
+
+    .bit-mnb-itm:focus-visible {
+        outline-color: Highlight;
+    }
+
+    // A checked row already carries Highlight, so a ring in the same color would vanish into it: the focused
+    // one is drawn in the other half of the pair instead.
+    .bit-mnb-itm.bit-mnb-chk:focus-visible {
+        outline-color: HighlightText;
+    }
+
     .bit-mnb-itm[disabled],
     .bit-mnb-itm[aria-disabled="true"] {
         color: GrayText;

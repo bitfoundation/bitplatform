@@ -27,6 +27,11 @@
     // The association only matters for a header or an item that submits or resets, but it is written wherever
     // the page asked for it rather than guessed at from the button type the component happens to have resolved.
     var formId = FormId ?? GetSplattedAttribute("form");
+    // A menu button hidden from assistive technologies must not be reachable by Tab either, or a keyboard user
+    // lands on a control a screen reader has nothing to say about (WCAG 4.1.2). The native disabled attribute is
+    // not there to do it here - a disabled button kept interactive does not carry one - so the tab order of both
+    // halves is written out rather than left to the browser.
+    var tabIndex = (ariaHidden is false && (IsEnabled || DisabledInteractive)) ? 0 : -1;
     // Autofocus follows the same rule as the tab order: a menu button hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.
@@ -48,7 +53,7 @@
             form="@formId"
             type="@headerButtonType"
             autofocus="@autoFocus"
-            tabindex="@(IsEnabled || DisabledInteractive ? 0 : -1)"
+            tabindex="@tabIndex"
             disabled="@(IsEnabled is false && DisabledInteractive is false)"
             aria-label="@ariaLabel"
             aria-hidden="@(ariaHidden ? "true" : null)"
@@ -138,7 +143,7 @@
                 type="button"
                 id="@(_Id + "-chb")"
                 title="@ChevronDownTitle"
-                tabindex="@(IsEnabled || DisabledInteractive ? 0 : -1)"
+                tabindex="@tabIndex"
                 disabled="@(IsEnabled is false && DisabledInteractive is false)"
                 aria-haspopup="menu"
                 aria-controls="@_calloutId"

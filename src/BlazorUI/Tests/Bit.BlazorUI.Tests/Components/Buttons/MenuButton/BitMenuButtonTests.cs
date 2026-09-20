@@ -928,6 +928,38 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMenuButtonAriaHiddenShouldTakeBothHalvesOutOfTheTabOrder()
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either - the disabled but
+        // interactive one included, since it carries no native disabled attribute to do it.
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        foreach (var selector in new[] { ".bit-mnb-opb", ".bit-mnb-chb" })
+        {
+            Assert.AreEqual("-1", com.Find(selector).GetAttribute("tabindex"));
+        }
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.AriaHidden, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.DisabledInteractive, true);
+        });
+
+        foreach (var selector in new[] { ".bit-mnb-opb", ".bit-mnb-chb" })
+        {
+            Assert.AreEqual("-1", com.Find(selector).GetAttribute("tabindex"));
+        }
+    }
+
+    [TestMethod]
     public void BitMenuButtonLoadingShouldNotOpenAPlainMenuFromTheKeyboard()
     {
         // The loading state takes the click of the header away, so it takes the keys that stand in for it too.
