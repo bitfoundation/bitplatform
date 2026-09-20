@@ -151,7 +151,9 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
     public async Task Erase(PersonalDataErasureContext context, CancellationToken cancellationToken)
     {
         await dbContext.Attachments
-            .Where(attachment => attachment.Id == context.UserId && profileImageKinds.Contains(attachment.Kind))
+            .Where(attachment => attachment.Id == context.UserId
+                                 && (attachment.Kind == AttachmentKind.UserProfileImageSmall
+                                     || attachment.Kind == AttachmentKind.UserProfileImageOriginal))
             .ExecuteDeleteAsync(cancellationToken);
     }
 

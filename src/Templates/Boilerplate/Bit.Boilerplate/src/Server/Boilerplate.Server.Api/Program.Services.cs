@@ -381,7 +381,7 @@ public static partial class Program
                     errorCodesToAdd: null);
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetRequiredConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetRequiredConnectionString("mysqldb")), dbOptions =>
+            options.UseMySQL(configuration.GetRequiredConnectionString("mysqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 dbOptions.EnableRetryOnFailure(

@@ -60,7 +60,7 @@
                 },
                 {
                     "choice": "MySql",
-                    "description": "MySql - MariaDB"
+                    "description": "MySql - uses Oracle's Connector/NET EF Core provider, which is licensed GPL-2.0 with the Universal FOSS Exception, so a closed source application needs Oracle's commercial license."
                 },
                 {
                     "choice": "Other",
