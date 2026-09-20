@@ -2195,8 +2195,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Style=""--bit-Dropdown-min-height: 1.5rem;
                     --bit-Dropdown-font-size: 0.75rem;
                     --bit-Dropdown-item-height: 1.75rem;
-                    --bit-Dropdown-item-font-size: 0.75rem;
-                    --bit-Dropdown-callout-max-height: 10rem;"" />";
+                    --bit-Dropdown-item-font-size: 0.75rem;"" />";
     private readonly string example34CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {

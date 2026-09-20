@@ -48,13 +48,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _selectAllStateSelectionVersion = -1;
     private (bool HasCandidates, bool AllSelected, bool AnySelected)? _selectAllState;
     private bool _isResponsiveMode;
-    private int _calloutScrollOffset = -1;
+    private (bool SearchBox, bool SelectAll)? _calloutChrome;
     private bool _internalIsOpenChange;
     private bool _suppressOpenOnFocus;
     private bool _openedOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private bool _pendingSearchBoxFocus;
+    private int? _pendingSearchBoxCaret;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
@@ -1828,6 +1829,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await FocusOnSearchBox();
             }
 
+            // A character typed on the closed trigger went into the search box, which only holds it as
+            // of this render (see TypeIntoSearchBox).
+            if (_pendingSearchBoxCaret is int caret)
+            {
+                _pendingSearchBoxCaret = null;
+
+                await FocusSearchBoxCaret(caret);
+            }
+
             return;
         }
 
@@ -2362,8 +2372,51 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         else if (IsPrintableKey(e))
         {
             await OpenCallout();
-            await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+
+            // A dropdown that filters through a search box has no type-ahead: HandleOnCalloutKeyDown leaves
+            // every printable key to that box, and Dropdowns.ts hands one typed on an option back to it. The
+            // character that opened the list is therefore typed INTO it rather than spent on a focus move,
+            // which would have dropped it and left the next character to start the term on its own.
+            if (HasSearchBox)
+            {
+                await TypeIntoSearchBox(e.Key!);
+            }
+            else
+            {
+                await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
+            }
         }
+    }
+
+    // The first character of a search typed on a closed dropdown, which the search box never saw: the key
+    // was handled by the trigger the focus was still on. It is put into the box, and the box takes the
+    // focus, so the characters that follow simply continue the term natively.
+    private async Task TypeIntoSearchBox(string key)
+    {
+        var text = (_searchInputText ?? string.Empty) + key;
+
+        // Through the input handler, so the term follows the same Immediate / debounce / throttle path a
+        // typed character takes instead of applying itself on rules of its own.
+        await HandleOnSearchBoxInput(new ChangeEventArgs { Value = text });
+
+        // The input only holds the new text as of the render this handler is followed by, so the focus -
+        // and the caret that has to end up behind the character - is left to OnAfterRenderAsync rather
+        // than moved onto a value that is still the one the box had.
+        _pendingSearchBoxCaret = text.Length;
+    }
+
+    // Focuses the search box and puts the caret at the given offset, whatever AutoFocusSearchBox says: this
+    // is not the focus an opening hands to the box, it is the box being typed into.
+    private async Task FocusSearchBoxCaret(int caret)
+    {
+        if (IsEnabled is false || HasSearchBox is false) return;
+        if (IsOpen is false || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _js.BitDropdownsFocusSearchBox(_calloutId, caret);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     // See the note on HandleOnTriggerKeyDown about keeping these keys in sync with Dropdowns.ts.
@@ -3323,42 +3376,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     }
 
     // The height available to the scrollable item list is the callout's height minus the parts that sit
-    // above it, so every one of those parts has to be reported here or the callout overflows the
-    // viewport. The values mirror the --bit-drp-h (search box) and --bit-drp-itm-h plus its bottom
-    // border (select all row) of each size in the stylesheet.
-    private int GetCalloutScrollOffset()
-    {
-        var offset = 0;
+    // above it - the search box and the select all row - and those are sized with --bit-Dropdown-min-height
+    // and --bit-Dropdown-item-height, which an author is free to override. So the heights are not repeated
+    // here at all: the callout is asked to measure its own chrome (see Callouts.position), which a number
+    // hard-coded against the defaults of those variables could only ever guess at.
+    private const int MEASURED_CALLOUT_SCROLL_OFFSET = -1;
 
-        if (HasSearchBox)
-        {
-            offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
-        }
-
-        if (HasSelectAllItem)
-        {
-            offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
-        }
-
-        return offset;
-    }
+    // Only WHETHER those parts are there, which is what can change while the callout stays open and is
+    // therefore what decides when it has to be measured again.
+    private (bool SearchBox, bool SelectAll) GetCalloutChrome() => (HasSearchBox, HasSelectAllItem);
 
     // The height available to the item list is only computed when the callout is laid out, which happens
     // when it is toggled. The parts above that list can come and go while it stays open - a search that
-    // matches nothing takes the select all row with it - so a change to the offset is pushed to the
-    // already positioned callout instead of waiting for the next open.
+    // matches nothing takes the select all row with it - so a re-measure is pushed to the already
+    // positioned callout instead of waiting for the next open.
     private async Task RefreshCalloutScrollOffset()
     {
         if (IsOpen is false || IsDisposed || IsEnabled is false) return;
 
-        var scrollOffset = GetCalloutScrollOffset();
-        if (scrollOffset == _calloutScrollOffset) return;
+        var chrome = GetCalloutChrome();
+        if (chrome == _calloutChrome) return;
 
-        _calloutScrollOffset = scrollOffset;
+        _calloutChrome = chrome;
 
         try
         {
-            await _js.BitCalloutUpdateScrollOffset(_calloutId, scrollOffset);
+            await _js.BitCalloutUpdateScrollOffset(_calloutId, MEASURED_CALLOUT_SCROLL_OFFSET);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -3371,7 +3414,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // handler left for the click it may be paired with stops being about the current state.
         _openedOnFocus = false;
 
-        _calloutScrollOffset = GetCalloutScrollOffset();
+        _calloutChrome = GetCalloutChrome();
 
         _isResponsiveMode = await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -3385,7 +3428,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: _scrollContainerId,
-            scrollOffset: _calloutScrollOffset,
+            scrollOffset: MEASURED_CALLOUT_SCROLL_OFFSET,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
@@ -4001,57 +4044,60 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // fallback (see BitDropdown.scss). Nothing else in a style string is copied to the callout.
     private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Dropdown-";
 
-    private string? _calloutStyles;
+    private string? _publicCssVariables;
     private string? _lastRootStyle;
     private string? _lastStylesRoot;
-    private string? _lastStylesCallout;
 
-    // The callout is rendered outside the root element - and reparented to the body while it is open - so it
-    // inherits nothing an author sets on the dropdown: neither the Style of the instance nor a custom property
-    // declared on an ancestor of it (only :root and body stay ancestors of it once it has moved). The public
-    // --bit-Dropdown-* declarations are therefore carried across by hand, so ONE Style on the component
-    // restyles the field and the list it opens together, the way it reads as if it would.
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
+    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
+    // callout is open - so they inherit nothing an author sets on the dropdown: neither the Style of the
+    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them
+    // once they have moved). The public --bit-Dropdown-* declarations are therefore carried across by hand, so
+    // ONE Style on the component restyles the field, the list it opens and the layer behind it together, the
+    // way it reads as if it would.
+    private string? GetPublicCssVariables()
     {
         var style = Style;
         var stylesRoot = Styles?.Root;
-        var stylesCallout = Styles?.Callout;
 
-        // Rebuilt only when one of the three strings it is made of has actually changed: the callout is
-        // re-rendered on every keystroke typed into the search box, and parsing three style strings per
+        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
+        // re-rendered on every keystroke typed into the search box, and parsing two style strings per
         // render for a result that almost never changes is work no one asked for.
         if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal) &&
-            string.Equals(stylesCallout, _lastStylesCallout, StringComparison.Ordinal))
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
         {
-            return _calloutStyles;
+            return _publicCssVariables;
         }
 
         _lastRootStyle = style;
         _lastStylesRoot = stylesRoot;
-        _lastStylesCallout = stylesCallout;
 
         StringBuilder? builder = null;
 
         AppendPublicCssVariables(ref builder, style);
         AppendPublicCssVariables(ref builder, stylesRoot);
 
-        if (builder is null)
-        {
-            _calloutStyles = stylesCallout;
-        }
-        else
-        {
-            if (stylesCallout.HasValue())
-            {
-                builder.Append(stylesCallout);
-            }
+        _publicCssVariables = builder?.ToString();
 
-            _calloutStyles = builder.ToString();
-        }
+        return _publicCssVariables;
+    }
 
-        return _calloutStyles;
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var variables = GetPublicCssVariables();
+        var stylesCallout = Styles?.Callout;
+
+        if (variables.HasNoValue()) return stylesCallout;
+        if (stylesCallout.HasNoValue()) return variables;
+
+        return variables + stylesCallout;
+    }
+
+    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
+    // rather than in the stylesheet because it is what the component toggles the layer with.
+    private string GetOverlayStyles()
+    {
+        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
     }
 
     private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)

@@ -3,8 +3,9 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins
 // every dropdown and one set on the Style of an instance re-skins that one alone.
-// The callout is rendered outside the root element (and reparented to the body while it is open), so the
-// component copies the --bit-Dropdown-* declarations of Style and Styles.Root onto it - see GetCalloutStyles.
+// The callout and the overlay are rendered outside the root element (and reparented to the body while the
+// callout is open), so the component copies the --bit-Dropdown-* declarations of Style and Styles.Root onto
+// both of them by hand - see GetPublicCssVariables.
 //
 //   FIELD
 //   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri, transparent with Transparent)
@@ -57,7 +58,6 @@
 //   --bit-Dropdown-callout-background      background of the list surface           (default: $clr-bg-pri)
 //   --bit-Dropdown-callout-radius          corner radius of that surface            (default: $shp-radius-popup)
 //   --bit-Dropdown-callout-shadow          its elevation                            (default: $box-shadow-popup)
-//   --bit-Dropdown-callout-max-height      how tall the scrolling list may grow     (default: $siz-popup-max-height)
 //   --bit-Dropdown-responsive-width        width of the side panel a Responsive
 //                                          dropdown opens on a small screen         (default: spacing(34))
 //   --bit-Dropdown-overlay-background      the layer between the page and an open
@@ -168,11 +168,12 @@
                 border-color: var(--bit-Dropdown-invalid-color, #{$clr-err});
             }
 
-            // :focus-within as well as :focus - in the ComboBox mode the element the keyboard lands on is
-            // the input inside the field, so the field itself never matched :focus and an invalid ComboBox
-            // was left without an indicator of its own.
+            // :has() beside :focus - in the ComboBox mode the element the keyboard lands on is the input
+            // inside the field, so the field itself never matched :focus and an invalid ComboBox was left
+            // without an indicator of its own. It names that input rather than using :focus-within, which
+            // matches the buttons inside the field as well.
             &:focus,
-            &:focus-within {
+            &:has(.bit-drp-inp:focus) {
                 @include focus-ring(var(--bit-Dropdown-invalid-color, #{$clr-err-focus}));
             }
         }
@@ -183,13 +184,13 @@
         &.bit-drp-und {
             .bit-drp-wrp {
                 &:focus,
-                &:focus-within {
+                &:has(.bit-drp-inp:focus) {
                     outline: none;
                     box-shadow: none;
                 }
 
                 &:focus-visible,
-                &:has(:focus-visible) {
+                &:has(.bit-drp-inp:focus-visible) {
                     @include focus-underline-ring(var(--bit-Dropdown-invalid-color, #{$clr-err-focus}));
                 }
             }
@@ -210,7 +211,7 @@
             }
 
             &:focus,
-            &:focus-within {
+            &:has(.bit-drp-inp:focus) {
                 color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
                 border-color: var(--bit-Dropdown-disabled-border-color, #{$clr-brd-dis});
                 // Suppress the focus ring while disabled, including the forced-colors outline.
@@ -261,17 +262,17 @@
         }
 
         &:focus,
-        &:focus-within {
+        &:has(.bit-drp-inp:focus) {
             // Suppress the global focus ring on the no-border variant; the underline-ring
             // below still applies for keyboard focus via :focus-visible.
             outline: none;
             box-shadow: none;
         }
 
-        // :has() beside :focus-visible for the same reason the boxed variant needs :focus-within: in the
-        // ComboBox mode the keyboard lands on the input inside the field, not on the field.
+        // :has() beside :focus-visible for the same reason the boxed variant needs it: in the ComboBox
+        // mode the keyboard lands on the input inside the field, not on the field.
         &:focus-visible,
-        &:has(:focus-visible) {
+        &:has(.bit-drp-inp:focus-visible) {
             // No-border variant: keep the no-border look but use an inset underline-style
             // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
             @include focus-underline-ring(var(--bit-drp-clr-focus));
@@ -293,13 +294,13 @@
         }
 
         &:focus,
-        &:focus-within {
+        &:has(.bit-drp-inp:focus) {
             outline: none;
             box-shadow: none;
         }
 
         &:focus-visible,
-        &:has(:focus-visible) {
+        &:has(.bit-drp-inp:focus-visible) {
             @include focus-underline-ring(var(--bit-drp-clr-focus));
         }
     }
@@ -399,10 +400,13 @@
         }
     }
 
-    // :focus-within as well as :focus: in the ComboBox mode the keyboard lands on the input inside the
-    // field, so without it a focused ComboBox carried no focus indicator at all (WCAG 2.4.7 / 2.4.13).
+    // :has() beside :focus: in the ComboBox mode the keyboard lands on the input inside the field, so
+    // without it a focused ComboBox carried no focus indicator at all (WCAG 2.4.7 / 2.4.13). It names that
+    // input rather than using :focus-within, which matches the buttons inside the field as well and would
+    // draw the ring of the whole field - on a mouse click at that - on top of the inset ring the clear
+    // button and the chip remove buttons draw for themselves.
     &:focus,
-    &:focus-within {
+    &:has(.bit-drp-inp:focus) {
         color: var(--bit-Dropdown-color, #{$clr-fg-pri});
 
         .bit-drp-icn i {
@@ -1004,9 +1008,14 @@
     animation-timing-function: $mot-easing-decelerate;
 }
 
+// The cap the callout is laid out against is the room the viewport leaves, which only the placement knows,
+// so it is written onto this element as an inline style (see Callouts.position) - and the MaxHeight
+// parameter is what shortens the list below it. The declaration here is the floor that holds until that
+// placement has run, which is why it is a fixed token and not a public variable an author could set and
+// then watch the first open overwrite.
 .bit-drp-scn {
     overflow: hidden auto;
-    max-height: var(--bit-Dropdown-callout-max-height, #{$siz-popup-max-height});
+    max-height: $siz-popup-max-height;
 }
 
 // The wrapper is the direct child of the scroll container, so it is the element that can stick; the

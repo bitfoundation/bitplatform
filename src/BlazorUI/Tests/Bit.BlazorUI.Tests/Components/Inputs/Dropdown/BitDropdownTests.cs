@@ -3893,6 +3893,65 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownTypingOnTheClosedTriggerShouldGoIntoTheSearchBox()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        var trigger = component.Find(".bit-drp-wrp");
+        trigger.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // The key opens the list, and it is the search box that it lands in: the callout leaves every
+        // printable key to that box, so a type-ahead here would spend the character on a focus move and
+        // drop it from the term the next characters go on building.
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual("b", component.Find(".bit-drp-sin").GetAttribute("value"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+
+        // The box takes the focus with the caret behind that character, so the browser types the rest of
+        // the term into it natively rather than in front of what is already there.
+        var focus = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusSearchBox"];
+        Assert.AreEqual(1, focus[^1].Arguments[1]);
+
+        trigger.KeyDown(new KeyboardEventArgs { Key = "a" });
+
+        Assert.AreEqual("ba", component.Find(".bit-drp-sin").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDropdownOverlayShouldInheritThePublicCssVariablesOfTheStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem;--bit-Dropdown-overlay-background:rgba(0,0,0,.4)");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-accent-color:red", Overlay = "z-index:9" });
+        });
+
+        // The overlay is a sibling of the root and is moved to the body along with the callout, so the
+        // public variables reach it the same way they reach the callout - by hand. Styles.Overlay is
+        // appended last, so a value written for the layer itself still wins.
+        var overlay = component.Find(".bit-drp-ovl").GetAttribute("style");
+
+        Assert.IsNotNull(overlay);
+        StringAssert.Contains(overlay, "--bit-Dropdown-overlay-background:rgba(0,0,0,.4);");
+        StringAssert.Contains(overlay, "--bit-Dropdown-accent-color:red;");
+        StringAssert.Contains(overlay, "z-index:9");
+        Assert.IsTrue(overlay.IndexOf("--bit-Dropdown-accent-color", StringComparison.Ordinal) < overlay.IndexOf("z-index:9", StringComparison.Ordinal));
+
+        // Only the public variables travel, and the layer keeps the display the component toggles it with.
+        Assert.IsFalse(overlay.Contains("margin:1rem", StringComparison.Ordinal));
+        StringAssert.Contains(overlay, "display:none");
+    }
+
+    [TestMethod]
     public void BitDropdownMinSearchLengthShouldSayHowManyCharactersAreMissing()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

@@ -30,10 +30,13 @@ namespace BitBlazorUI {
         // search/combo input, where they keep their caret behavior.
         private static readonly CARET_KEYS = ['Home', 'End'];
 
-        // The keys that edit the text of the ComboBox input rather than navigate the list, so they
+        // The keys that CHANGE the text of the ComboBox input rather than navigate the list, so they
         // belong to the input even while the focus sits on an option. They are not in CALLOUT_KEYS,
         // so their default is not prevented and they still act on the input once it has the focus.
-        private static readonly TEXT_KEYS = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+        private static readonly EDIT_KEYS = ['Backspace', 'Delete'];
+        // Those plus the ones that only move the caret, which belong to the ComboBox input for the same
+        // reason - the term is edited where it is, not by leaving the list and coming back to it.
+        private static readonly TEXT_KEYS = [...Dropdowns.EDIT_KEYS, 'ArrowLeft', 'ArrowRight'];
 
         // Attaches keydown listeners that only prevent the default behavior (e.g. page scrolling)
         // of the navigation keys. The actual keyboard logic runs in the Blazor keydown handlers,
@@ -107,9 +110,12 @@ namespace BitBlazorUI {
                         // A search box filters the same list, so the keys that edit text belong to it for
                         // the same reason - typing after the arrow keys refines the search instead of
                         // starting a type-ahead the search box has already made redundant (see
-                        // HandleOnCalloutKeyDown). The space bar is the exception: on a dropdown that is
-                        // not typed into it is the toggle of the focused option, which nothing replaces.
-                        if (e.key !== ' ') {
+                        // HandleOnCalloutKeyDown). Two keys are left out where the ComboBox input takes
+                        // them: the space bar, which on a dropdown that is not typed into is the toggle of
+                        // the focused option and has nothing to replace it, and the caret keys, which have
+                        // no caret to move on an option and would only pull the focus off the row the
+                        // arrow keys had reached.
+                        if (isPrintable(e) || Dropdowns.EDIT_KEYS.indexOf(e.key) > -1) {
                             (callout.querySelector('.bit-drp-sin') as HTMLElement | null)?.focus();
                         }
                     }
@@ -127,6 +133,23 @@ namespace BitBlazorUI {
 
             entries.forEach(e => e.element.removeEventListener('keydown', e.handler));
             Dropdowns._handlers.delete(id);
+        }
+
+        // Focuses the search box of a callout and puts the caret at the given offset. It is what the
+        // character typed on a CLOSED dropdown lands in (see TypeIntoSearchBox): the caret is placed by
+        // hand because a browser that focuses an input by script may leave it in front of the value, which
+        // would have the next character typed ahead of the one that opened the list.
+        public static focusSearchBox(calloutId: string, caret: number) {
+            const input = document.getElementById(calloutId)?.querySelector('.bit-drp-sin') as HTMLInputElement | null;
+            if (!input) return;
+
+            input.focus();
+
+            try {
+                input.setSelectionRange(caret, caret);
+            } catch (e) {
+                // An input that does not support a text selection cannot be given a caret; it has the focus either way.
+            }
         }
 
         public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,

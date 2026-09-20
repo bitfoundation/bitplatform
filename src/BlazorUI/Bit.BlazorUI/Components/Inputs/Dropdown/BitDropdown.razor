@@ -30,6 +30,12 @@
     // text box that reports neither that it has a list nor whether that list is showing.
     var comboboxOnField = Combo is false;
 
+    // The ComboBox input of the responsive panel takes the focus while that panel is on the screen, and
+    // the combobox role goes with it: the field's own input is behind the panel and its overlay, so
+    // leaving it a combobox would point a second one at the same listbox and leave a tab stop on an
+    // element the user cannot see.
+    var comboboxOnFieldInput = Combo && _isResponsiveMode is false;
+
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
            options of the listbox it is rendered in; its text stays exposed either way. *@
@@ -258,21 +264,21 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
-                       role="combobox"
+                       role="@(comboboxOnFieldInput ? "combobox" : null)"
                        value="@_comboInputText"
                        readonly="@ReadOnly"
                        autofocus="@AutoFocus"
-                       tabindex="@TabIndex"
+                       tabindex="@(comboboxOnFieldInput ? TabIndex : "-1")"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                        aria-describedby="@(HasDescription ? _descriptionId : null)"
-                       aria-haspopup="listbox"
-                       aria-autocomplete="list"
+                       aria-haspopup="@(comboboxOnFieldInput ? "listbox" : null)"
+                       aria-autocomplete="@(comboboxOnFieldInput ? "list" : null)"
                        aria-required="@(Required ? "true" : null)"
                        aria-invalid="@(ValueInvalid is true ? "true" : null)"
-                       aria-expanded="@(IsOpen ? "true" : "false")"
-                       aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
-                       aria-controls="@(IsOpen ? _scrollContainerId : null)"
+                       aria-expanded="@(comboboxOnFieldInput ? (IsOpen ? "true" : "false") : null)"
+                       aria-activedescendant="@(comboboxOnFieldInput && IsOpen ? GetCommitTargetId() : null)"
+                       aria-controls="@(comboboxOnFieldInput && IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
@@ -393,8 +399,10 @@
     </div>
 </div>
 
+@* Like the callout, the overlay is a sibling of the root element and is reparented to the body while it
+   is open, so the public variables it reads are copied onto it by hand - see GetOverlayStyles. *@
 <div @onclick="CloseCalloutAndRestoreFocus"
-     style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+     style="@GetOverlayStyles()"
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
 

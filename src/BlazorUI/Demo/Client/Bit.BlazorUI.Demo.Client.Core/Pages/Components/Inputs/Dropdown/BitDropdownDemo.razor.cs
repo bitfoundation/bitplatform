@@ -2096,7 +2096,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-font-size",
             DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of the field, the search box, and the empty and loading states.",
+            Description = "Text size of the field and of the search box.",
         },
         new()
         {
@@ -2232,12 +2232,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "--bit-Dropdown-callout-max-height",
-            DefaultValue = "--bit-siz-popup-max-height",
-            Description = "How tall the scrolling list may grow before it scrolls. The MaxHeight parameter overrides it per instance.",
-        },
-        new()
-        {
             Name = "--bit-Dropdown-responsive-width",
             DefaultValue = "272px",
             Description = "Width of the side panel a Responsive dropdown opens on a small screen. Capped at the width of the viewport.",
@@ -2258,7 +2252,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-item-font-size",
             DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of one row and of a group header.",
+            Description = "Text size of one row, of a group header, and of the empty and loading states.",
         },
         new()
         {
