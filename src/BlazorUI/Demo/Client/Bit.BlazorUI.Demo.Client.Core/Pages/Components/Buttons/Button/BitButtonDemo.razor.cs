@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.Button;
 
 public partial class BitButtonDemo
 {
@@ -191,7 +191,7 @@ public partial class BitButtonDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the button is in loading mode or not."
+            Description = "Determines whether the button is in loading mode or not. The spinner is stacked over the content rather than replacing it, so the box keeps its size and its accessible name, and the button reports aria-busy - plus aria-disabled unless Reclickable is set, since the click is refused."
         },
         new()
         {
@@ -249,7 +249,7 @@ public partial class BitButtonDemo
             Name = "Reclickable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables re-clicking while the button is in the loading state.",
+            Description = "Enables re-clicking while the button is in the loading state, which also keeps it reported and drawn as an available control instead of a busy and disabled one.",
         },
         new()
         {
@@ -992,8 +992,14 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-border-width",
-            DefaultValue = "--bit-shp-border-width",
+            DefaultValue = "--bit-shp-brd-width",
             Description = "Thickness of the border on every variant.",
+        },
+        new()
+        {
+            Name = "--bit-Button-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the box, for a design system whose buttons are raised rather than flat. A Float or FloatAbsolute button is lifted by --bit-Button-float-shadow instead.",
         },
         new()
         {
@@ -1040,8 +1046,20 @@ public partial class BitButtonDemo
         new()
         {
             Name = "--bit-Button-font-weight",
-            DefaultValue = "--bit-tg-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
             Description = "Weight of both lines of text.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-transform",
+            DefaultValue = "--bit-tpg-ctrl-text-transform",
+            Description = "Casing of both lines of text. Set it to none to drop the uppercasing of the buttons alone, without touching the other controls that share the global token.",
+        },
+        new()
+        {
+            Name = "--bit-Button-letter-spacing",
+            DefaultValue = "--bit-tpg-ctrl-letter-spacing",
+            Description = "Tracking of both lines of text, which usually moves with the casing above.",
         },
         new()
         {
@@ -1079,6 +1097,17 @@ public partial class BitButtonDemo
             DefaultValue = "--bit-shd-card",
             Description = "Elevation of a Float or FloatAbsolute button, which is what lifts it off the content it sits over. The focus ring is a shadow too and replaces it while the button is focused.",
         },
+    ];
+
+    private readonly BitButtonParams[] buttonParams =
+    [
+        new()
+        {
+            Size = BitSize.Small,
+            Rounded = true,
+            Variant = BitVariant.Outline,
+            Color = BitColor.Secondary,
+        }
     ];
 
     private bool noWrap = true;

@@ -17,6 +17,7 @@
 //   --bit-Button-focus-color               focus ring color                               (default: the role's focus color)
 //   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button, $shp-radius-full when Rounded)
 //   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
+//   --bit-Button-shadow                    elevation of the box in every state            (default: none; a floating button has --bit-Button-float-shadow of its own)
 //   --bit-Button-padding                   padding of the box                             (default: per size, $siz-ctrl-pad-*)
 //   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width, 0 when FullWidth or NoWrap sizes the button by its container)
 //   --bit-Button-min-height                smallest height of the box, and the smallest
@@ -27,6 +28,8 @@
 //   --bit-Button-secondary-color           color of the secondary line of text            (default: the button's own foreground)
 //   --bit-Button-secondary-font-size       size of the secondary text                     (default: one ramp step below the primary text)
 //   --bit-Button-font-weight               weight of both lines of text                   (default: $tg-font-weight)
+//   --bit-Button-text-transform            casing of both lines of text                   (default: $tg-ctrl-text-transform)
+//   --bit-Button-letter-spacing            tracking of both lines of text                 (default: $tg-ctrl-letter-spacing)
 //   --bit-Button-icon-size                 icon size, for a glyph and an IconUrl alike    (default: per size, $siz-icon-*)
 //   --bit-Button-spinner-size              diameter of the loading spinner                (default: per size, as the icon)
 //   --bit-Button-spinner-color             the spinner's moving arc                       (default: the button's own foreground)
@@ -45,9 +48,15 @@
     box-sizing: border-box;
     justify-content: center;
     font-family: $tg-font-family;
-    letter-spacing: $tg-ctrl-letter-spacing;
-    text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
+    // Casing and tracking default to the global control tokens but are reachable per component, because dropping
+    // the uppercasing of the buttons alone - without touching the tags, the pivots and everything else that reads
+    // $tg-ctrl-text-transform - is the first thing asked of a button inherited from another design system.
+    letter-spacing: var(--bit-Button-letter-spacing, #{$tg-ctrl-letter-spacing});
+    text-transform: var(--bit-Button-text-transform, #{$tg-ctrl-text-transform});
+    // Flat by default, the way every variant here is drawn. It is left out of the transition below on purpose:
+    // the focus ring is a box-shadow too, and an indicator that fades in is an indicator that arrives late.
+    box-shadow: var(--bit-Button-shadow, none);
     gap: var(--bit-Button-gap, var(--bit-btn-gap));
     color: var(--bit-Button-color, var(--bit-btn-clr-txt));
     font-weight: var(--bit-Button-font-weight, #{$tg-font-weight});
@@ -165,13 +174,19 @@
 // The loading visuals are stacked on top of the content rather than replacing it, so the box keeps the width
 // and height it had before the click and nothing around it moves.
 .bit-btn-lda {
-    cursor: default;
     display: inline-grid;
     place-items: center;
 
     > * {
         grid-area: 1 / 1;
     }
+}
+
+// The cursor follows the click rather than the spinner: a loading button that refuses the second click stops
+// pointing, from the moment the loading starts rather than from the moment a delayed spinner appears, while a
+// Reclickable one keeps the pointer it has earned - it is still there to be clicked.
+.bit-btn-lnc {
+    cursor: default;
 }
 
 .bit-btn-hcn {

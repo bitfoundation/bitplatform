@@ -600,6 +600,27 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(false, false, null),
+        DataRow(true, false, "true"),
+        DataRow(true, true, null)
+    ]
+    public void BitButtonLoadingShouldBeReportedAsDisabledUnlessItIsReclickable(bool isLoading, bool reclickable, string? expectedAriaDisabled)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Reclickable, reclickable);
+        });
+
+        var bitButton = com.Find(".bit-btn");
+
+        Assert.AreEqual(expectedAriaDisabled, bitButton.GetAttribute("aria-disabled"));
+
+        // the class that stops the button pointing, and that keeps the hover and press rules off it, follows the same rule
+        Assert.AreEqual(expectedAriaDisabled is not null, bitButton.ClassList.Contains("bit-btn-lnc"));
+    }
+
+    [TestMethod,
         DataRow("https://bitplatform.dev", "_blank", "noopener"),
         DataRow("https://bitplatform.dev", "_self", null),
         DataRow("https://bitplatform.dev", null, null)

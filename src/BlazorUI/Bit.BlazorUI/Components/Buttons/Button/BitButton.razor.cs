@@ -215,6 +215,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
+    /// <remarks>
+    /// The spinner is stacked over the content rather than replacing it, so the box keeps the size and the
+    /// accessible name it had before the click. The button renders <c>aria-busy</c>, and - unless
+    /// <see cref="Reclickable"/> is set - <c>aria-disabled</c> too, since the click is refused.
+    /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
 
@@ -272,6 +277,10 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Enables re-clicking while the button is in the loading state.
     /// </summary>
+    /// <remarks>
+    /// A loading button that takes the click is still an available control, so it keeps the pointer cursor and
+    /// is not reported as <c>aria-disabled</c> the way a loading one that refuses the click is.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reclickable { get; set; }
 

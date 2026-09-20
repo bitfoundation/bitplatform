@@ -20,7 +20,11 @@
     var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
-    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    // A loading button that refuses the second click is unavailable as well as busy, and aria-busy does not say
+    // so - it says that something is in progress, not that the press will do nothing. So the state is conveyed
+    // the way the disabled one is, with aria-disabled. A Reclickable button is left out of it: it is still there
+    // to be clicked.
+    var ariaDisabled = IsEnabled && (IsLoading is false || Reclickable) ? GetSplattedAttribute("aria-disabled") : "true";
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
     // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put

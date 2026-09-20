@@ -1,4 +1,4 @@
-@page "/components/button"
+﻿@page "/components/button"
 @page "/components/compoundbutton"
 @page "/components/compound-button"
 @page "/components/iconbutton"
@@ -123,9 +123,10 @@
     <DemoExample Title="Loading" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>IsLoading</b> stacks a spinner over the content instead of replacing it, so the button keeps the size and
-            the accessible name it had before the click, renders <b>aria-busy</b>, and refuses a second click.
-            <b>LoadingLabel</b> adds text beside the spinner - announced from a live region rather than folded into the
-            button's name - and <b>LoadingLabelPosition</b> places it.
+            the accessible name it had before the click. It refuses a second click and says so with
+            <code>aria-busy</code> and <code>aria-disabled</code> - busy alone would report progress without reporting
+            that the press now does nothing. <b>LoadingLabel</b> adds text beside the spinner - announced from a live
+            region rather than folded into the button's name - and <b>LoadingLabelPosition</b> places it.
         </div>
         <br />
         <div class="example-content">
@@ -163,7 +164,8 @@
         <div>
             <b>AutoLoading</b> keeps the state for you: the button enters the loading state for as long as the
             <b>OnClick</b> handler is awaited, and leaves it even if the handler throws. <b>Reclickable</b> lets the
-            user click again while it is loading.
+            user click again while it is loading, and leaves the button reported - and drawn - as the available
+            control it still is.
         </div>
         <br />
         <div class="example-content">
@@ -272,7 +274,9 @@
         <br /><br />
         <div>
             <b>FormId</b> is the id of the form the button belongs to, which lets a submit button live outside it - in a
-            dialog footer, or in a toolbar above the fields it commits:
+            dialog footer, or in a toolbar above the fields it commits. The rest of the native submit attributes -
+            <code>formaction</code>, <code>formmethod</code>, <code>formnovalidate</code> - have no parameter of their
+            own: write them on the component and they are passed through to the button.
         </div>
         <br />
         <div class="form-container">
@@ -532,7 +536,31 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode"
+                 Id="example13">
+        <div>
+            <b>BitParams</b> carries a <b>BitButtonParams</b> down to every button under it, so a toolbar, a dialog
+            footer or a whole page sets the variant, the size and the color once instead of on every button in it.
+            What it carries is a default and not an override: a button that sets a parameter for itself keeps its own
+            value, and only what it left unset is filled in - which is what lets the one destructive action in a row
+            step out of the cascade without the row having to know about it. Every parameter of the component is on
+            the params object, and each is filled in on its own.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitParams Parameters="@buttonParams">
+                <BitButton IconName="@BitIconName.Save">Save</BitButton>
+                <BitButton IconName="@BitIconName.Copy">Duplicate</BitButton>
+                <BitButton Color="BitColor.Error" IconName="@BitIconName.Delete">Delete</BitButton>
+            </BitParams>
+        </div>
+        <br />
+        <div class="example-content">
+            <BitButton IconName="@BitIconName.Save">Outside the cascade, and back to the defaults</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Color</b> picks the semantic role the button paints itself from - the fill of a Fill button, the border
             and text of an Outline one, the text of a Text one, and the focus ring of all three. Beyond the eight
@@ -651,7 +679,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>
             Beyond the built-in Fluent icons, the <b>Icon</b> parameter renders icons from external libraries such as
             FontAwesome and Bootstrap Icons. Pass their CSS classes directly, or use the <b>BitIconInfo</b> helpers
@@ -695,7 +723,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Size</b> sets the preset that drives the button's type, padding, icon and minimum height together, so a
             row of Small buttons lines up with the other Small controls beside it. Each size keeps an icon-only button
@@ -751,8 +779,8 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode"
-                 CodeFiles="@example16CodeFiles" Id="example16">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode"
+                 CodeFiles="@example17CodeFiles" Id="example17">
         <div>
             Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters reach the
             button's individual parts - root, icon, the two lines of text, the loading container, the spinner and its
@@ -816,10 +844,14 @@
                        Style="--bit-Button-border-width: 2px; --bit-Button-hover-background: transparent; --bit-Button-hover-color: var(--bit-clr-suc); --bit-Button-hover-border-color: var(--bit-clr-suc);">
                 Ghost on hover
             </BitButton>
+
+            <BitButton Style="--bit-Button-shadow: var(--bit-shd-card); --bit-Button-text-transform: uppercase; --bit-Button-letter-spacing: 0.06em;">
+                Raised & tracked
+            </BitButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Set the <b>Dir</b> parameter to <b>Rtl</b> to lay the button out for right-to-left languages; the icon, the
             two lines of text, and the loading indicator all mirror accordingly.
