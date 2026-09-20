@@ -149,15 +149,21 @@
 </DemoExample>
 
 <DemoExample Title="Validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <div>Integrates with EditForm and data annotations. While the field is invalid the radiogroup and its inputs carry aria-invalid and the radio circles turn red, until a choice is made. Required is separate from the validation attribute of the model: it adds the required asterisk to the label and the aria-required of the group, so set both.</div>
+    <div>Integrates with EditForm and data annotations. While the field is invalid the radiogroup and its inputs carry aria-invalid and the radio circles turn red, until a choice is made. Required is separate from the validation attribute of the model: it adds the required asterisk to the label, the aria-required of the group and the native required check of the inputs, so set both. A read-only group is barred from that native check the way a read-only control is in HTML, so it cannot block a submit with an error no one can clear. Pointing the aria-describedby of the group at the ValidationMessage is what has the error read out with the group: the group keeps its own description as well, since aria-describedby is a list.</div>
     <br />
     @if (string.IsNullOrEmpty(successMessage))
     {
         <EditForm Model="@validationModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" novalidate>
             <DataAnnotationsValidator />
 
-            <BitChoiceGroup Label="Pick one" Required Items="basicItems" @bind-Value="validationModel.Value" />
-            <ValidationMessage For="@(() => validationModel.Value)" />
+            <BitChoiceGroup Label="Pick one" Required Items="basicItems" @bind-Value="validationModel.Value"
+                            aria-describedby="chg-item-error" />
+            @* A wrapper rather than an id on the ValidationMessage itself: it renders one element per
+               message, so an id there would be duplicated the moment a second rule fails, and it renders
+               nothing at all while the field is valid, which would leave a dangling reference behind. *@
+            <div id="chg-item-error">
+                <ValidationMessage For="@(() => validationModel.Value)" />
+            </div>
 
             <br />
 
@@ -329,7 +335,35 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+<DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <div>
+        Names the group and its items, and moves the focus. A group without a visible Label needs a name of
+        its own: AriaLabel writes one, AriaLabelledBy points at text already on the page. An item is named by
+        what it shows, so only give it an AriaLabel when that text is not a name on its own - and keep the
+        visible text inside the name you write, or the voice user asking for what they can read will not
+        match it. FocusAsync on a @@ref focuses the item the Tab key would reach: the checked one, or the
+        first enabled one; activate the button with the keyboard to watch the focus ring follow, since a ring only shows for a focus the keyboard moved.
+    </div>
+    <br />
+    <div class="example-content column">
+        <BitChoiceGroup AriaLabel="Sort order" Items="sortItems" DefaultValue="@("Asc")" Horizontal />
+
+        <div>
+            <div id="chg-density-question" class="example-question">How dense should the rows be?</div>
+            <BitChoiceGroup AriaLabelledBy="chg-density-question" Items="densityItems" DefaultValue="@("Cozy")" Horizontal />
+        </div>
+
+        <BitChoiceGroup Label="Rating (each item is named in full)" Items="ratingItems" DefaultValue="@("3")" Horizontal />
+
+        <div>
+            <BitButton OnClick="() => focusRef?.FocusAsync()">Focus the ChoiceGroup below</BitButton>
+            <br /><br />
+            <BitChoiceGroup @ref="focusRef" Label="Focus target" Items="basicItems" DefaultValue="@("C")" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
         <div>Colors the radio circle and the checked state of the items using the BitColor palette, with Primary being the default.</div>
         <br />
         <div>
@@ -634,7 +668,7 @@
     </div>
     </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>Renders icons from external libraries like Font Awesome or Bootstrap Icons using the Icon parameter, instead of the built-in icon font used by IconName.</div>
 
     <br />
@@ -653,7 +687,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and item spacing together.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -717,7 +751,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>Customizes the appearance at every level: Style and Class on the root element, per-item styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -788,7 +822,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
     <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored and the keyboard arrow keys follow the text direction.</div>
     <br />
     <div dir="rtl" class="example-content">

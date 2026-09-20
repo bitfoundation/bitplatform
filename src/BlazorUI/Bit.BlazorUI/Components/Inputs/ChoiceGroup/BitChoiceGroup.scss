@@ -29,6 +29,7 @@
 //   --bit-ChoiceGroup-item-content-gap           room between the circle and the item content  (default: spacing(0.75))
 //   --bit-ChoiceGroup-item-min-height            height of an item's row, which is its
 //                                                pointer target                                (default: the circle size plus its air)
+//   --bit-ChoiceGroup-item-min-width             width of an item's pointer target             (default: 24px, the WCAG 2.2 SC 2.5.8 floor)
 //   --bit-ChoiceGroup-item-padding               padding inside an item                        (default: 0, per size in the card variants)
 //   --bit-ChoiceGroup-item-radius                corner radius of an item and its focus ring   (default: $shp-radius-control, $shp-radius-surface for a card)
 //   --bit-ChoiceGroup-item-color                 text color of an item                         (default: inherited)
@@ -300,6 +301,13 @@
     // because a density scale must not shrink it. The row around it reads the same variable, so this is
     // the single knob to turn for a larger touch target.
     min-height: var(--bit-ChoiceGroup-item-min-height, 24px);
+
+    // SC 2.5.8 asks for 24px in both directions and the floor above only covers one of them: a NoCircle
+    // item is a bare line of text, so a one word - or one character - item was a target a few pixels wide.
+    // Its own knob rather than the height's, so widening the target in one direction does not silently
+    // stretch it in the other; the row around it does not read this one, since a card and a tile are wider
+    // than the floor already.
+    min-width: var(--bit-ChoiceGroup-item-min-width, 24px);
 
     // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
     // border radius) is rounded on a plain item too instead of only on a tile.

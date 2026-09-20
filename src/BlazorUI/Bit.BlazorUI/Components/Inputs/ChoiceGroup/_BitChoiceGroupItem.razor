@@ -59,6 +59,10 @@
     @* The focus and blur listeners are only attached when a callback is actually subscribed (a default
        EventCallback renders no listener): every focus move inside the group (each arrow key step is a
        blur plus a focus) would otherwise dispatch two no-op events to .NET per step. *@
+    @* A read-only control is barred from constraint validation in HTML, and the same has to hold for the
+       read-only this component implements itself: a required group that cannot be changed and has nothing
+       checked would otherwise block the submit of the form with an error no one is able to clear. The group
+       still reports aria-required, so the field is still announced as a required one. *@
     <input @ref="_inputElement" @attributes="ChoiceGroup.InputHtmlAttributes"
            @onclick="e => ChoiceGroup.HandleClick(Item)"
            @onclick:preventDefault="ChoiceGroup.ReadOnly"
@@ -70,7 +74,7 @@
            checked=@isChecked
            class="bit-chg-inp"
            name="@ChoiceGroup.GetName()"
-           required="@ChoiceGroup.Required"
+           required="@(ChoiceGroup.IsRequired && ChoiceGroup.ReadOnly is false)"
            aria-label="@ariaLabel"
            aria-describedby="@ariaDescribedBy"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
@@ -144,7 +148,10 @@
                 }
                 else if (description.HasValue())
                 {
-                    <div class="bit-chg-txd">
+                    @* Same part as the .bit-chg-itw wrapper above - the box that stacks the text over its
+                       description - so it carries the same Styles/Classes hook; without it an item with a
+                       description but no icon would be the one item ItemTextWrapper could not reach. *@
+                    <div style="@ChoiceGroup.Styles?.ItemTextWrapper" class="bit-chg-txd @ChoiceGroup.Classes?.ItemTextWrapper">
                         <span style="@ChoiceGroup.Styles?.ItemText" class="bit-chg-itx @ChoiceGroup.Classes?.ItemText">@ChoiceGroup.GetText(Item)</span>
                         <span id="@descriptionId" style="@ChoiceGroup.Styles?.ItemDescription" class="bit-chg-dsc @ChoiceGroup.Classes?.ItemDescription">@description</span>
                     </div>

@@ -159,6 +159,32 @@ public partial class _BitChoiceGroupCustomDemo
         new() { Name = "Month", ItemValue = "Month" }
     ];
 
+    private BitChoiceGroup<Order, string>? focusRef;
+
+    private readonly List<Order> sortCustoms =
+    [
+        new() { Name = "Ascending", ItemValue = "Asc" },
+        new() { Name = "Descending", ItemValue = "Desc" }
+    ];
+
+    private readonly List<Order> densityCustoms =
+    [
+        new() { Name = "Compact", ItemValue = "Compact" },
+        new() { Name = "Cozy", ItemValue = "Cozy" },
+        new() { Name = "Comfortable", ItemValue = "Comfortable" }
+    ];
+
+    // The visible text of these items is a bare number, which says nothing on its own once it is read out
+    // of the group; the AriaLabel spells it out and keeps that number inside the name it writes.
+    private readonly List<Order> ratingCustoms =
+    [
+        new() { Name = "1", ItemValue = "1", ScreenReaderName = "1 star" },
+        new() { Name = "2", ItemValue = "2", ScreenReaderName = "2 stars" },
+        new() { Name = "3", ItemValue = "3", ScreenReaderName = "3 stars" },
+        new() { Name = "4", ItemValue = "4", ScreenReaderName = "4 stars" },
+        new() { Name = "5", ItemValue = "5", ScreenReaderName = "5 stars" }
+    ];
+
     private readonly List<Order> rtlCustoms =
     [
         new() { Name = "ویژه آ", ItemValue = "A" },

@@ -506,4 +506,54 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         Assert.AreEqual("the whole story of A", containers[0].GetAttribute("title"));
         Assert.IsFalse(containers[1].HasAttribute("title"));
     }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldMarkTheGroupAndItsInputsAsRequired()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-required"));
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.HasAttribute("required")));
+    }
+
+    // A read-only control is barred from constraint validation in HTML, and the read-only this component
+    // implements itself has to behave the same way: the field is still announced as required, but the
+    // native check cannot block a submit with an error no one is able to clear.
+    [TestMethod]
+    public void BitChoiceGroupShouldNotRequireTheInputsOfAReadOnlyGroup()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-required"));
+        Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-readonly"));
+        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
+    }
+
+    // A disabled group is neither submitted nor validated and drops the required asterisk from its label,
+    // so announcing it as required would say the opposite of what the label shows.
+    [TestMethod]
+    public void BitChoiceGroupShouldNotAnnounceADisabledGroupAsRequired()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.HasAttribute("aria-required"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-req"));
+        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("required")));
+    }
 }

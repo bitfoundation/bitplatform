@@ -389,7 +389,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
         ClassBuilder.Register(() => NoCircle ? "bit-chg-ncr" : "bit-chg-wcr");
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-chg-req" : string.Empty);
+        ClassBuilder.Register(() => IsRequired ? "bit-chg-req" : string.Empty);
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
@@ -477,6 +477,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
     private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
+
+    // Follows the required asterisk the label shows, which a disabled group drops: a disabled field is
+    // neither submitted nor validated, so announcing it as required would say the opposite of what the
+    // label shows and of what the form does with it.
+    internal bool IsRequired => IsEnabled && Required;
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
     // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in
@@ -632,6 +637,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
             styles.Add(Styles.ItemChecked!);
         }
 
+        // Last, so a disabled checked item ends up looking disabled: an inline declaration list is resolved
+        // in source order, and this is the state that says the item cannot be interacted with at all.
+        if (GetIsItemEnabled(item) is false && (Styles?.ItemDisabled.HasValue() ?? false))
+        {
+            styles.Add(Styles.ItemDisabled!);
+        }
+
         return string.Join(';', styles);
     }
 
@@ -666,6 +678,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         if (GetIsItemEnabled(item) is false)
         {
             classes.Add("bit-chg-ids");
+
+            if (Classes?.ItemDisabled.HasValue() ?? false)
+            {
+                classes.Add(Classes.ItemDisabled!);
+            }
         }
 
         // Only meaningful for the built-in item content, a template renders its own image or icon.

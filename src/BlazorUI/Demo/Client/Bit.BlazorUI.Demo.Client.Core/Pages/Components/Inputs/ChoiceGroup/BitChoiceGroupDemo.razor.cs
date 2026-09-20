@@ -404,6 +404,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "--bit-ChoiceGroup-item-min-width",
+            DefaultValue = "24px",
+            Description = "Smallest width of an item, the other half of its pointer target. The default is the 24px WCAG 2.2 SC 2.5.8 floor, which only a NoCircle item with a very short text ever reaches.",
+        },
+        new()
+        {
             Name = "--bit-ChoiceGroup-item-padding",
             DefaultValue = "0, and per size in the card variants",
             Description = "Padding inside an item.",
@@ -1188,7 +1194,14 @@ public partial class BitChoiceGroupDemo
                    Name = "ItemChecked",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the checked item of the BitChoiceGroup.",
+                   Description = "Custom CSS classes/styles for the checked item of the BitChoiceGroup, applied on top of ItemContainer.",
+               },
+               new()
+               {
+                   Name = "ItemDisabled",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for a disabled item of the BitChoiceGroup, whether the item itself or the whole group is disabled, applied on top of ItemContainer.",
                },
                new()
                {
