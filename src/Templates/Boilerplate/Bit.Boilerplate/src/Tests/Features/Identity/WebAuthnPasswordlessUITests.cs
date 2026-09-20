@@ -68,6 +68,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         await Page.GotoAsync(new Uri(appBaseUrl, $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}").ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await Page.WaitForBlazorInteractive();
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.EnablePasswordless }).ClickAsync();
 
         // Enrolling a passkey is a privileged operation: PasswordlessTab.EnablePasswordless calls
@@ -103,6 +105,8 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         // <i class="bit-icon bit-icon--Fingerprint">. It appears once SignInPanel's first render has confirmed a
         // configured credential exists (See SignInPanel.OnAfterFirstRenderAsync -> showWebAuthn). It is the only
         // Fingerprint icon on the sign-in page, so this selector is unambiguous.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator("button:has(.bit-icon--Fingerprint)").ClickAsync();
 
         // credentials.get() against the virtual authenticator completes the sign-in and redirects home as her.
