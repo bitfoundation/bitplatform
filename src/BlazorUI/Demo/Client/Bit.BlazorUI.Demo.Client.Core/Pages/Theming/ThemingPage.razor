@@ -502,7 +502,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <DocSection Level="3" Id="preset-names" Title="The preset names">
 
                 <BitText>
-                    <code>BitThemePresets</code> exposes the built-in theme names, and <code>BitExtraThemePresets</code> (in the <code>Bit.BlazorUI.Extras</code> package, next to the stylesheet bundles that implement them) the Fluent&nbsp;2, Material and Cupertino ones. Use them with <code>SetThemeAsync</code>, <code>BitThemeName</code>, or directly as the <code>bit-theme</code> attribute value.
+                    <code>BitThemePresets</code> exposes every packaged theme name - the Fluent family the core stylesheet carries, and the Fluent&nbsp;2, Material and Cupertino ones whose stylesheet bundles ship with the <code>Bit.BlazorUI.Extras</code> package. There is no second, package-specific table: a package that ships presets adds them to this same class, as <a href="#preset-extension-point">the extension point</a> below describes. Use them with <code>SetThemeAsync</code>, <code>BitThemeName</code>, or directly as the <code>bit-theme</code> attribute value.
                 </BitText>
 
                 <CodeBox Language="csharp">// Bit.BlazorUI - the presets the core stylesheet carries
@@ -516,19 +516,27 @@ public static class BitThemePresets
     public const string System         = "system";           // pseudo-preset: follow OS
 }
 
-// Bit.BlazorUI.Extras - the design systems that ship as their own stylesheet bundle
-public static class BitExtraThemePresets
+// Bit.BlazorUI.Extras adds ITS design systems to that same class, as extension members.
+// You never name the container below - you read BitThemePresets.MaterialDark.
+public static class BitThemePresetsExtensions
 {
-    public const string Fluent2        = "fluent2";          // alias for fluent2-light
-    public const string Fluent2Light   = "fluent2-light";
-    public const string Fluent2Dark    = "fluent2-dark";
-    public const string Material       = "material";         // alias for material-light
-    public const string MaterialLight  = "material-light";
-    public const string MaterialDark   = "material-dark";
-    public const string Cupertino      = "cupertino";        // alias for cupertino-light
-    public const string CupertinoLight = "cupertino-light";
-    public const string CupertinoDark  = "cupertino-dark";
+    extension(BitThemePresets)
+    {
+        public static string Fluent2       => "fluent2";          // alias for fluent2-light
+        public static string Fluent2Light  => "fluent2-light";
+        public static string Fluent2Dark   => "fluent2-dark";
+        public static string Material      => "material";         // alias for material-light
+        public static string MaterialLight => "material-light";
+        public static string MaterialDark  => "material-dark";
+        public static string Cupertino     => "cupertino";        // alias for cupertino-light
+        public static string CupertinoLight => "cupertino-light";
+        public static string CupertinoDark  => "cupertino-dark";
+    }
 }</CodeBox>
+
+                <BitText>
+                    One difference comes with that: a name contributed from another package is a static property, not a <code>const</code>, so it cannot be a <code>case</code> label, an attribute argument or a default parameter value. Use <code>if</code> / <code>==</code> where a <code>switch</code> over constants was. Everything else - <code>SetThemeAsync</code>, the attribute value, comparisons - is unchanged.
+                </BitText>
             </DocSection>
 
             <DocSection Level="3" Id="packaged-design-systems" Title="The packaged design systems">
@@ -574,18 +582,53 @@ public static class BitExtraThemePresets
                 </BitText>
             </DocSection>
 
+            <DocSection Level="3" Id="preset-extension-point" Title="The preset extension point">
+
+                <BitText>
+                    A package that ships a stylesheet contributes its presets to the core theming APIs instead of publishing a parallel set of its own - which is how <code>Bit.BlazorUI.Extras</code> puts Fluent&nbsp;2, Material and Cupertino on <code>BitThemePresets</code>, <code>BitThemeName</code> and <code>BitThemeSurfaces</code>, and how your app puts its own preset there too. There are two halves to it.
+                </BitText>
+
+                <BitText>
+                    <b>The names</b> are extension members on the core types (C#&nbsp;14 <code>extension(T)</code> blocks), so <code>BitThemePresets.MaterialDark</code> and <code>BitThemeName.MaterialDark</code> are reached from the same types as the Fluent ones. Nothing but a <code>@@using Bit.BlazorUI</code> is needed to see them.
+                </BitText>
+
+                <BitText>
+                    <b>What C# needs to know about a preset before its CSS can answer</b> - today the two first-paint surfaces - is registered with <code>BitThemePresetRegistry</code>. <code>BitThemeSurfaces</code> is a live view over that registry, so a preset registered by anyone is immediately part of the one table <code>BitThemeHead</code> reads:
+                </BitText>
+
+                <CodeBox Language="csharp">// In your app's Program.cs, for a preset of your own
+BitThemePresetRegistry.Register(new BitThemePreset
+{
+    Name = "acme-dark",                  // the bit-theme token, validated as BitThemeName.Custom validates one
+    BackgroundPrimary = "#101418",       // --bit-clr-bg-pri, for the theme-color tag at first paint
+    BackgroundSecondary = "#161B21",     // --bit-clr-bg-sec, if your pages sit on the secondary surface
+});
+
+BitThemeSurfaces.BackgroundPrimary["acme-dark"];   // "#101418"
+BitThemePresetRegistry.Find("acme-dark")!.IsDark;  // true - the same "ends with dark" rule as every other layer
+BitThemePresetRegistry.All;                        // every preset, yours and the packaged ones, by name</CodeBox>
+
+                <BitText>
+                    Registration is idempotent by name (registering a name again replaces it, which is how you re-skin a packaged preset you have overridden in your own CSS) and thread-safe.
+                </BitText>
+
+                <BitText>
+                    <b>When a package's presets register.</b> A package registers from a module initializer, which the runtime runs before the first access to anything in its assembly - so naming one of its presets in C# is itself what wires it up, and there is no setup call to forget. The one gap is an app that links an Extras bundle and writes the <code>bit-theme</code> token as a bare string, never mentioning the package in C#: nothing loads the assembly, so the first-paint color falls back to the scheme's light/dark surface (everything else is CSS and unaffected). Name the preset through <code>BitThemePresets</code> rather than as a string, or call <code>BitExtraThemeRegistration.Register()</code> once at startup.
+                </BitText>
+            </DocSection>
+
             <DocSection Level="3" Id="theme-names" Title="Typed theme names">
 
                 <BitText>
                     For type-safety, the <code>BitThemeName</code> readonly struct wraps a normalized (trimmed, lower-cased) preset name and converts implicitly to <code>string</code>:
                 </BitText>
 
-                <CodeBox Language="csharp">// Built-in factories
+                <CodeBox Language="csharp">// Core factories
 await _bitThemeManager.SetThemeAsync(BitThemeName.FluentDark);
 await _bitThemeManager.SetThemeAsync(BitThemeName.System);
 
-// The Bit.BlazorUI.Extras design systems, on their own factory type
-await _bitThemeManager.SetThemeAsync(BitExtraThemeName.MaterialDark);
+// The Bit.BlazorUI.Extras design systems, on that same struct
+await _bitThemeManager.SetThemeAsync(BitThemeName.MaterialDark);
 
 // Custom theme name (matches your CSS selector)
 var corporate = BitThemeName.Custom("acme-dark");
@@ -1508,8 +1551,8 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
         PersistCookie = true,
         ViewTransition = true,
         ThemeColorMeta = BitCss.Var.Color.Background.Secondary.Main, // or true for the page background
-        LightTheme = BitExtraThemePresets.Fluent2Light,
-        DarkTheme = BitExtraThemePresets.Fluent2Dark,
+        LightTheme = BitThemePresets.Fluent2Light,
+        DarkTheme = BitThemePresets.Fluent2Dark,
     };
 }
 
@@ -1519,11 +1562,11 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
     &lt;BitThemeHead PersistedPreference="@@preference"
                   LightTheme="@@themeOptions.LightTheme"
                   DarkTheme="@@themeOptions.DarkTheme"
-                  ThemeColors="@@BitExtraThemeSurfaces.BackgroundSecondary" /&gt;
+                  ThemeColors="@@BitThemeSurfaces.BackgroundSecondary" /&gt;
     ...</CodeBox>
 
                 <BitText>
-                    <b>Why the colors are a table.</b> Everything else about the theme is read off the live page, but the browser paints its chrome from the served HTML - before any stylesheet exists - so that one value has to be a literal. <code>BitThemeSurfaces</code> has the two surfaces (<code>BackgroundPrimary</code>, <code>BackgroundSecondary</code>) of the packaged Fluent presets and <code>BitExtraThemeSurfaces</code> the same for every packaged preset, each pinned to its stylesheet by a contract test. An app with its own palette passes its own map; a theme the map does not carry falls back to the light or dark entry - and, failing that, to any entry of the map on the same side - by the same "ends with dark" rule the stylesheets use. Pass <code>EmitThemeColor="false"</code> to keep a tag the page writes itself.
+                    <b>Why the colors are a table.</b> Everything else about the theme is read off the live page, but the browser paints its chrome from the served HTML - before any stylesheet exists - so that one value has to be a literal. <code>BitThemeSurfaces</code> has the two surfaces (<code>BackgroundPrimary</code>, <code>BackgroundSecondary</code>) of every registered preset - the packaged ones, each pinned to its stylesheet by a contract test, plus whatever your app registered. An app with its own palette passes its own map; a theme the map does not carry falls back to the light or dark entry - and, failing that, to any entry of the map on the same side - by the same "ends with dark" rule the stylesheets use. Pass <code>EmitThemeColor="false"</code> to keep a tag the page writes itself.
                 </BitText>
 
                 <BitText>
@@ -1653,6 +1696,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 <li><code>BitThemeAttributeNames</code></li>
                 <li><code>BitThemePresets</code></li>
                 <li><code>BitThemeName</code></li>
+                <li><code>BitThemePreset</code> / <code>BitThemePresetRegistry</code>: <code>Register</code>, <code>Find</code>, <code>Contains</code>, <code>All</code></li>
             </ul>
 
             <BitText Element="h4" Typography="BitTypography.H5">Runtime</BitText>
@@ -1688,7 +1732,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 <li><code>BitThemeSsr</code>: <code>InlineHeadScript</code>, <code>InlineHeadScriptBody</code>, <code>BuildInlineHeadScript(nonce)</code>, <code>BuildRootThemeAttributes(preference, defaultTheme)</code>, <code>BuildRootThemeAttributes(preference, options)</code> and the <code>…AttributeMap</code> pair</li>
                 <li><code>BitThemeSsrOptions</code> - the document-level setup the attribute builders emit</li>
                 <li><code>BitThemeHead</code> - the head half: first-paint script + <code>theme-color</code> tag</li>
-                <li><code>BitThemeSurfaces</code> / <code>BitExtraThemeSurfaces</code>: <code>BackgroundPrimary</code>, <code>BackgroundSecondary</code></li>
+                <li><code>BitThemeSurfaces</code>: <code>BackgroundPrimary</code>, <code>BackgroundSecondary</code></li>
                 <li><code>BitThemeCookie.PreferenceCookieName</code></li>
                 <li><code>bit-theme-persist-cookie</code> (attribute)</li>
                 <li><code>bit-theme-view-transition</code> (attribute)</li>

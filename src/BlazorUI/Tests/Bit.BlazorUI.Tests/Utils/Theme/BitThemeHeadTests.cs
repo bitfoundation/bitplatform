@@ -45,15 +45,15 @@ public class BitThemeHeadTests : BunitTestContext
         // this response painted can be overruled a moment later. The correction script is what has to
         // carry the color of THAT theme - not of whichever light / dark preset was configured.
         var component = RenderComponent<BitThemeHead>(parameters => parameters
-            .Add(p => p.PersistedPreference, BitExtraThemePresets.Fluent2Light)
-            .Add(p => p.LightTheme, BitExtraThemePresets.Fluent2Light)
-            .Add(p => p.DarkTheme, BitExtraThemePresets.Fluent2Dark)
-            .Add(p => p.ThemeColors, BitExtraThemeSurfaces.BackgroundSecondary));
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Light)
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
 
         var script = component.Markup[component.Markup.IndexOf("querySelector", StringComparison.Ordinal)..];
-        StringAssert.Contains(script, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialLight], StringComparison.OrdinalIgnoreCase,
+        StringAssert.Contains(script, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialLight], StringComparison.OrdinalIgnoreCase,
             "A stored material-light is a light name the configured light surface does not cover, so it has to be carried by name.");
-        StringAssert.Contains(script, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialDark], StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(script, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialDark], StringComparison.OrdinalIgnoreCase);
         // The scheme fallback is a statement of its own rather than the right side of an `||`: in one
         // expression the ternary would swallow the lookup (`a||b?c:d` is `(a||b)?c:d`) and every
         // resolved name would get the light color. The guard is a typeof so a name that reaches
@@ -113,12 +113,12 @@ public class BitThemeHeadTests : BunitTestContext
         // A Fluent 2 site renames the pair the OS resolution picks between; the chrome has to follow
         // the same rename, or it paints a color from a palette the page never renders.
         var component = RenderComponent<BitThemeHead>(parameters => parameters
-            .Add(p => p.LightTheme, BitExtraThemePresets.Fluent2Light)
-            .Add(p => p.DarkTheme, BitExtraThemePresets.Fluent2Dark)
-            .Add(p => p.ThemeColors, BitExtraThemeSurfaces.BackgroundSecondary));
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
 
-        StringAssert.Contains(component.Markup, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.Fluent2Light], StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(component.Markup, BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.Fluent2Dark], StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]
@@ -195,16 +195,16 @@ public class BitThemeHeadTests : BunitTestContext
     {
         // The two halves are handed the same preference and must agree: a tag painted for one theme
         // above a document rendering another is a seam on every first paint.
-        foreach (var preference in new[] { BitThemePresets.Dark, BitExtraThemePresets.MaterialLight, BitThemePresets.System, null })
+        foreach (var preference in new[] { BitThemePresets.Dark, BitThemePresets.MaterialLight, BitThemePresets.System, null })
         {
             var attributes = BitThemeSsr.BuildRootThemeAttributeMap(preference);
             var component = RenderComponent<BitThemeHead>(parameters => parameters
                 .Add(p => p.PersistedPreference, preference)
-                .Add(p => p.ThemeColors, BitExtraThemeSurfaces.BackgroundPrimary));
+                .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundPrimary));
 
             if (attributes.TryGetValue(BitThemeAttributeNames.Theme, out var theme))
             {
-                StringAssert.Contains(component.Markup, BitExtraThemeSurfaces.BackgroundPrimary[(string)theme], StringComparison.OrdinalIgnoreCase,
+                StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[(string)theme], StringComparison.OrdinalIgnoreCase,
                     $"'{preference}' renders {theme}, so the chrome must carry that theme's surface.");
             }
             else

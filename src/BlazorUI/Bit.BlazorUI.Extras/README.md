@@ -50,8 +50,11 @@ Install-Package Bit.BlazorUI.Extras
 
 This package also carries the Material and Cupertino design-system presets. They are override-only
 stylesheet bundles that re-value the theme tokens, so link the one you want **after** the core
-`bit.blazorui.css` and activate it with the `bit-theme` attribute (`BitExtraThemePresets` / `BitExtraThemeName`
-name them in C#, and `BitThemeSwitcher` is the ready-made control for letting the user pick):
+`bit.blazorui.css` and activate it with the `bit-theme` attribute. This package adds their names to
+the core `BitThemePresets` / `BitThemeName` themselves - `BitThemePresets.MaterialDark` reads like
+`BitThemePresets.FluentDark`, with no package-specific type to learn - and registers their first-paint
+surfaces with `BitThemePresetRegistry`, so `BitThemeSurfaces` carries them too. `BitThemeSwitcher` is
+the ready-made control for letting the user pick:
 
 ```
 <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />

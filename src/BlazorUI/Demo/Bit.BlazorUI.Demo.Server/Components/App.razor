@@ -48,8 +48,8 @@
         // between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who
         // has already picked a design system in the header is painted from their cookie instead and
         // never reaches this.
-        LightTheme = BitExtraThemePresets.Fluent2Light,
-        DarkTheme = BitExtraThemePresets.Fluent2Dark,
+        LightTheme = BitThemePresets.Fluent2Light,
+        DarkTheme = BitThemePresets.Fluent2Dark,
     };
     var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions);
 }
@@ -68,12 +68,12 @@
        covers the rest - following the OS, which the server cannot read, and a localStorage value
        newer than the cookie), and the theme-color meta tag the browser paints its chrome from, in the
        surface color of the theme this response renders. Handed the same preference and options as the
-       attributes above; BitExtraThemeSurfaces is what carries the Fluent 2 / Material / Cupertino
+       attributes above; BitThemeSurfaces is what carries the Fluent 2 / Material / Cupertino
        colors, which the core table (Fluent only) does not know. *@
     <BitThemeHead PersistedPreference="@themePreference"
                   LightTheme="@themeOptions.LightTheme"
                   DarkTheme="@themeOptions.DarkTheme"
-                  ThemeColors="@BitExtraThemeSurfaces.BackgroundPrimary" />
+                  ThemeColors="@BitThemeSurfaces.BackgroundPrimary" />
     @* The accent counterpart of the script above, as one component: emits the inline script that,
        before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
        injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what

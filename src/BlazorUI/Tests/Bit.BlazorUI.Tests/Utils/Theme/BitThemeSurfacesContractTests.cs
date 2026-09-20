@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
-/// BitThemeSurfaces / BitExtraThemeSurfaces are the one place the library restates a color its own
+/// BitThemeSurfaces is the one place the library restates a color its own
 /// stylesheets already declare, because a host page needs it before any stylesheet has loaded (see
 /// BitThemeHead). A re-generated palette would leave those literals behind with nothing failing: the
 /// page would simply paint the browser chrome in the previous release's color, a seam only visible on
@@ -23,12 +23,12 @@ public sealed class BitThemeSurfacesContractTests
         [BitThemePresets.Dark, "Fluent", "colors.fluent-dark.scss"],
         [BitThemePresets.FluentLight, "Fluent", "colors.fluent-light.scss"],
         [BitThemePresets.FluentDark, "Fluent", "colors.fluent-dark.scss"],
-        [BitExtraThemePresets.Fluent2Light, "Fluent2", "colors.fluent2-light.scss"],
-        [BitExtraThemePresets.Fluent2Dark, "Fluent2", "colors.fluent2-dark.scss"],
-        [BitExtraThemePresets.MaterialLight, "Material", "colors.material-light.scss"],
-        [BitExtraThemePresets.MaterialDark, "Material", "colors.material-dark.scss"],
-        [BitExtraThemePresets.CupertinoLight, "Cupertino", "colors.cupertino-light.scss"],
-        [BitExtraThemePresets.CupertinoDark, "Cupertino", "colors.cupertino-dark.scss"],
+        [BitThemePresets.Fluent2Light, "Fluent2", "colors.fluent2-light.scss"],
+        [BitThemePresets.Fluent2Dark, "Fluent2", "colors.fluent2-dark.scss"],
+        [BitThemePresets.MaterialLight, "Material", "colors.material-light.scss"],
+        [BitThemePresets.MaterialDark, "Material", "colors.material-dark.scss"],
+        [BitThemePresets.CupertinoLight, "Cupertino", "colors.cupertino-light.scss"],
+        [BitThemePresets.CupertinoDark, "Cupertino", "colors.cupertino-dark.scss"],
     ];
 
     [TestMethod]
@@ -37,44 +37,30 @@ public sealed class BitThemeSurfacesContractTests
     {
         var scss = ReadPalette(paletteFolder, paletteFile);
 
-        AssertSurface(BitExtraThemeSurfaces.BackgroundPrimary, preset, ReadVariable(scss, "--bit-clr-bg-pri", paletteFile), "--bit-clr-bg-pri");
-        AssertSurface(BitExtraThemeSurfaces.BackgroundSecondary, preset, ReadVariable(scss, "--bit-clr-bg-sec", paletteFile), "--bit-clr-bg-sec");
-    }
-
-    [TestMethod]
-    public void TheExtrasTableCarriesTheCoreOneUnchanged()
-    {
-        // BitThemeHead's default is the core table and an app on the packaged design systems swaps in
-        // the Extras one, so a visitor who never picked a design system - still on a core Fluent
-        // preset - must get the same color from either.
-        foreach (var (preset, color) in BitThemeSurfaces.BackgroundPrimary)
-        {
-            Assert.AreEqual(color, BitExtraThemeSurfaces.BackgroundPrimary[preset], $"BackgroundPrimary disagrees about {preset}.");
-        }
-
-        foreach (var (preset, color) in BitThemeSurfaces.BackgroundSecondary)
-        {
-            Assert.AreEqual(color, BitExtraThemeSurfaces.BackgroundSecondary[preset], $"BackgroundSecondary disagrees about {preset}.");
-        }
+        AssertSurface(BitThemeSurfaces.BackgroundPrimary, preset, ReadVariable(scss, "--bit-clr-bg-pri", paletteFile), "--bit-clr-bg-pri");
+        AssertSurface(BitThemeSurfaces.BackgroundSecondary, preset, ReadVariable(scss, "--bit-clr-bg-sec", paletteFile), "--bit-clr-bg-sec");
     }
 
     [TestMethod]
     public void EveryPackagedPresetHasBothSurfaces()
     {
-        // A preset added to BitExtraThemePresets without its colors here would fall back to the
-        // scheme's Fluent surface at first paint - a wrong color, silently.
+        // A preset named on BitThemePresets but never registered with BitThemePresetRegistry would
+        // fall back to the scheme's Fluent surface at first paint - a wrong color, silently. System
+        // is excluded: it is a pseudo-preset that resolves to another name before any color is
+        // looked up. Reading the Extras names below is also what loads that package, and so what
+        // registers its presets - the same thing an app's own code does.
         string[] presets =
         [
             BitThemePresets.Light, BitThemePresets.Dark, BitThemePresets.FluentLight, BitThemePresets.FluentDark,
-            BitExtraThemePresets.Fluent2Light, BitExtraThemePresets.Fluent2Dark,
-            BitExtraThemePresets.MaterialLight, BitExtraThemePresets.MaterialDark,
-            BitExtraThemePresets.CupertinoLight, BitExtraThemePresets.CupertinoDark,
+            BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark,
+            BitThemePresets.MaterialLight, BitThemePresets.MaterialDark,
+            BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
         ];
 
         foreach (var preset in presets)
         {
-            Assert.IsTrue(BitExtraThemeSurfaces.BackgroundPrimary.ContainsKey(preset), $"BackgroundPrimary has no entry for {preset}.");
-            Assert.IsTrue(BitExtraThemeSurfaces.BackgroundSecondary.ContainsKey(preset), $"BackgroundSecondary has no entry for {preset}.");
+            Assert.IsTrue(BitThemeSurfaces.BackgroundPrimary.ContainsKey(preset), $"BackgroundPrimary has no entry for {preset}.");
+            Assert.IsTrue(BitThemeSurfaces.BackgroundSecondary.ContainsKey(preset), $"BackgroundSecondary has no entry for {preset}.");
         }
     }
 

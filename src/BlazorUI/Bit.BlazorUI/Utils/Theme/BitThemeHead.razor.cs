@@ -23,9 +23,10 @@ namespace Bit.BlazorUI;
 /// <para>
 /// The theme-color half is the only part that needs colors as literals - the browser paints its
 /// chrome long before a stylesheet has loaded - and they come from <see cref="ThemeColors"/>,
-/// defaulting to the packaged Fluent surfaces. An app on the Fluent 2 / Material / Cupertino presets
-/// passes <c>BitExtraThemeSurfaces.BackgroundPrimary</c> (or <c>.BackgroundSecondary</c>), and an app
-/// with its own palette passes its own map. Set <see cref="EmitThemeColor"/> to <see langword="false"/>
+/// defaulting to <see cref="BitThemeSurfaces.BackgroundPrimary"/>, which carries every preset
+/// registered with <see cref="BitThemePresetRegistry"/> - the packaged ones and the app's own. An app whose pages sit on the secondary surface passes
+/// <c>BitThemeSurfaces.BackgroundSecondary</c> instead, and an app with its own palette passes its
+/// own map. Set <see cref="EmitThemeColor"/> to <see langword="false"/>
 /// to keep a hand-written tag (or a media-qualified pair) instead and have this emit only the script.
 /// </para>
 /// <para>
@@ -65,9 +66,9 @@ public partial class BitThemeHead : ComponentBase
 
     /// <summary>
     /// Theme name to browser-chrome color, as CSS colors. Defaults to
-    /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of the packaged Fluent
-    /// presets. <c>BitExtraThemeSurfaces</c> has the same two maps covering every packaged preset, and
-    /// an app with its own palette (or one whose pages sit on the secondary surface) passes its own.
+    /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of every registered
+    /// preset. An app whose pages sit on the secondary surface passes
+    /// <see cref="BitThemeSurfaces.BackgroundSecondary"/>, and an app with its own palette passes its own.
     /// A name the map does not carry falls back to the light / dark entry - and, failing that, to any
     /// entry of the map on the same side of the scheme - by the same "ends with dark" rule the
     /// packaged stylesheets classify names with.
