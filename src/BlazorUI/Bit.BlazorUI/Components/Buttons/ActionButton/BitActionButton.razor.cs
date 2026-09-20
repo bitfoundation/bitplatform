@@ -225,13 +225,7 @@ public partial class BitActionButton : BitComponentBase
     /// Enables re-clicking the action button while it is in the loading state.
     /// By default, clicks are ignored while the button is loading to protect against double submissions.
     /// </summary>
-    /// <remarks>
-    /// A loading action button otherwise stops responding to the pointer altogether, since neither the hover
-    /// shade nor the pointer cursor belongs on a control that ignores every click. Enabling this keeps them
-    /// along with the clicks.
-    /// </remarks>
-    [Parameter, ResetClassBuilder]
-    public bool Reclickable { get; set; }
+    [Parameter] public bool Reclickable { get; set; }
 
     /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
@@ -338,10 +332,7 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => IconOnly ? "bit-acb-ion" : string.Empty);
 
-        // The class is what takes the pointer away from a loading action button, so it follows the click guard
-        // rather than the loading state: a Reclickable one still takes clicks, and must keep the pointer to
-        // receive them.
-        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-acb-lod" : string.Empty);
+        ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
 
         ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
