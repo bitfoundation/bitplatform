@@ -45,6 +45,8 @@ public partial class CultureSelectionUITests : AppPageTest
         // ---- Switch to Persian (fa-IR) ----
 
         // Open the header app-menu (the persona drop-menu) via its chevron icon.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
 
         // Open the culture sub-menu, then confirm the "Select language" list is showing.
@@ -67,6 +69,8 @@ public partial class CultureSelectionUITests : AppPageTest
         // ---- Switch back to English ----
 
         // The menu chrome class stays the same across cultures, but the Language button now carries its Persian label.
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
         await Page.GetByRole(AriaRole.Button, new() { Name = faLanguageLabel }).ClickAsync();
         await Page.GetByText(enDisplayName, new() { Exact = true }).ClickAsync();
