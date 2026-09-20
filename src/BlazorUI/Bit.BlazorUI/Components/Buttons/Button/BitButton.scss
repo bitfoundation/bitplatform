@@ -534,7 +534,9 @@
 // narrow axis too.
 .bit-btn-ntx {
     padding: var(--bit-Button-padding, var(--bit-btn-pad-ntx));
-    min-width: var(--bit-Button-min-width, var(--bit-Button-min-height, var(--bit-btn-min-height)));
+    // The height rather than the width: --bit-Button-min-width is the smallest width of a labeled button, and
+    // letting it through here would stretch an icon-only one out of its square.
+    min-width: var(--bit-Button-min-height, var(--bit-btn-min-height));
 }
 
 

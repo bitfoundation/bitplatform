@@ -304,16 +304,46 @@ private int buttonClickCounter;";
     private readonly string example9CsharpCode = @"
 private bool noWrap = true;";
 
+    private const string example9ScssCode = @"
+// Narrow enough that the label of the button inside it has to wrap, or be clamped by NoWrap.
+.narrow-container {
+    max-width: 18rem;
+}";
+
+    private readonly DemoCodeFile[] example9CodeFiles =
+    [
+        new("BitButtonDemo.razor.scss", example9ScssCode),
+    ];
+
     private readonly string example10RazorCode = @"
-<BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
-    Default
-</BitButton>
+<div class=""fixed-color-surface"">
+    <BitButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
+        Default
+    </BitButton>
 
-<BitButton FixedColor Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
-    FixedColor
-</BitButton>
+    <BitButton FixedColor Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"">
+        FixedColor
+    </BitButton>
 
-<BitButton FixedColor IconOnly AriaLabel=""Emoji"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"" />";
+    <BitButton FixedColor IconOnly AriaLabel=""Emoji"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IconName=""@BitIconName.Emoji2"" />
+</div>";
+
+    private const string example10ScssCode = @"
+// A surface whose color the buttons on it are meant to keep matching, which is the case FixedColor is for.
+.fixed-color-surface {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    align-items: flex-start;
+    background-color: var(--bit-clr-bg-ter);
+}";
+
+    private readonly DemoCodeFile[] example10CodeFiles =
+    [
+        new("BitButtonDemo.razor.scss", example10ScssCode),
+    ];
 
     private readonly string example11RazorCode = @"
 <BitDropdown Label=""FloatPosition"" Items=""floatPositionList"" @bind-Value=""floatPosition"" FitWidth />
@@ -358,6 +388,23 @@ private readonly List<BitDropdownItem<BitPosition>> floatPositionList = Enum.Get
                                                                                 Text = enumValue.ToString()
                                                                             })
                                                                             .ToList();";
+
+    private const string example11ScssCode = @"
+.float-container {
+    position: relative;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.float-container-content {
+    height: 300px;
+    overflow: auto;
+    padding: 0.5rem;
+}";
+
+    private readonly DemoCodeFile[] example11CodeFiles =
+    [
+        new("BitButtonDemo.razor.scss", example11ScssCode),
+    ];
 
     private readonly string example12RazorCode = @"
 <BitButton Title=""Save your changes"" IconName=""@BitIconName.Save"" Variant=""BitVariant.Outline"">

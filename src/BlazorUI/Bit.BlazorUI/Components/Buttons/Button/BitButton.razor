@@ -165,8 +165,10 @@ else
    neither joins its accessible name: the description is read after the name through aria-describedby, and the live
    region would otherwise be read as part of the name of the button it announces.
    The region is rendered from the first render rather than when the loading starts - a live region only announces
-   what changes inside one already in the document - but a button given no loading label has nothing to announce. *@
-@if (LoadingLabel.HasValue())
+   what changes inside one already in the document - but a button given no loading label has nothing to announce,
+   and one hidden from assistive technologies has no one to announce it to: aria-hidden on the button cannot reach
+   a sibling, so the region is left out rather than left to speak for a button that is not there. *@
+@if (ariaHidden is false && LoadingLabel.HasValue())
 {
     <span class="bit-btn-sts" role="status">@(IsLoading ? LoadingLabel : null)</span>
 }
