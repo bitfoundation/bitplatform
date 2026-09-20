@@ -556,7 +556,6 @@ public partial class BitFullCalendarDemo
                 new() { Name = "ModeEvent", Type = "string", DefaultValue = "\"Events\"", Description = "Label for the event mode tab." },
                 new() { Name = "ModeTimeline", Type = "string", DefaultValue = "\"Timeline\"", Description = "Label for the timeline mode tab." },
                 new() { Name = "TodayButton", Type = "string", DefaultValue = "\"Today\"", Description = "Label for the today navigation button." },
-                new() { Name = "BitFcTodayButton", Type = "string", DefaultValue = "\"Today\"", Description = "Obsolete alias of TodayButton; it forwards to it and will be removed in a future release." },
                 new() { Name = "AddEventButton", Type = "string", DefaultValue = "\"Add Event\"", Description = "Label for the add event button." },
                 new() { Name = "AddEventHoverHint", Type = "string", DefaultValue = "\"Add event\"", Description = "Tooltip shown when hovering the add event affordance." },
                 new() { Name = "PreviousButtonTitle", Type = "string", DefaultValue = "\"Previous\"", Description = "Title for the previous navigation button." },
