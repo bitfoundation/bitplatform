@@ -3,9 +3,10 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Type-safe wrapper for the <c>bit-theme</c> attribute name. Use the static factories
 /// (<see cref="Light"/>, <see cref="Dark"/>, <see cref="Fluent"/>, etc.) for the well-known presets;
-/// call <see cref="Custom(string)"/> for app-specific theme names that match your CSS. The Material and
-/// Cupertino design systems ship with the <c>Bit.BlazorUI.Extras</c> package; their names are the
-/// factories on <c>BitExtraThemeName</c> there.
+/// call <see cref="Custom(string)"/> for app-specific theme names that match your CSS. A package that
+/// ships presets of its own - Bit.BlazorUI.Extras, with Fluent 2, Material and Cupertino - adds its
+/// factories to this same struct as extension members, so <c>BitThemeName.MaterialDark</c> is reached
+/// exactly like <see cref="FluentDark"/>.
 /// </summary>
 /// <remarks>
 /// <para>

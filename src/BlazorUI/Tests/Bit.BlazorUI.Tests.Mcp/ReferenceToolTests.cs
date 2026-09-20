@@ -259,4 +259,56 @@ public class ReferenceToolTests : McpTestBase
 
         StringAssert.Contains(star, "_12PointStar");
     }
+
+    /// <summary>
+    /// A name one package adds to another package's type is compiled into the container that
+    /// declares it, not into the type it is written on - so reflection over that type answers with
+    /// the members its own assembly declares and none of the contributed ones. An agent reading
+    /// that concludes <c>BitThemePresets.MaterialDark</c> does not exist, which is backwards: being
+    /// reached from the core type is the whole point of the design.
+    /// </summary>
+    [DataTestMethod]
+    [DataRow("BitThemePresets", "material-dark")]
+    [DataRow("BitThemeName", "material-dark")]
+    public async Task A_type_answers_with_what_another_package_adds_to_it(string typeName, string value)
+    {
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName });
+
+        using var scope = Assert.Scope();
+
+        // The members the type's own assembly declares are still there, under the contributed ones.
+        StringAssert.Contains(answer, "FluentDark", $"{typeName} lost the presets the core package declares.");
+
+        StringAssert.Contains(answer, "MaterialDark", $"{typeName} does not name what Bit.BlazorUI.Extras adds to it.");
+        StringAssert.Contains(answer, value, $"{typeName}'s contributed members answer without the token each one is.");
+        StringAssert.Contains(answer, "Bit.BlazorUI.Extras", "The package a contributed member needs is not named.");
+
+        // The two ways a contributed name is not a const, which is where markup that compiles
+        // against one version stops compiling against another.
+        StringAssert.Contains(answer, "`case` label", "The answer does not say a contributed name cannot be a case label.");
+    }
+
+    /// <summary>
+    /// The container an extension block is declared in is a name nobody writes - what reflection
+    /// finds on it is the compiler's implementation of members written on another type. So it is
+    /// answered as a pointer to that type, and left out of the listing rather than offered as
+    /// something to call.
+    /// </summary>
+    [TestMethod]
+    public async Task An_extension_container_answers_with_the_type_its_members_are_read_off()
+    {
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName = "BitThemePresetsExtensions" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitThemePresets\")", "The container does not point at the type its members are read off.");
+        StringAssert.Contains(answer, "MaterialDark");
+
+        // The compiler's own implementation of those members is not an API anyone calls.
+        Assert.DoesNotContain("get_MaterialDark", answer, "The container answers with the compiler-generated accessors.");
+
+        var listing = await CallAsync("GetBitBlazorUIType");
+
+        Assert.DoesNotContain("- `BitThemePresetsExtensions`", listing, "A container nobody names is listed as a type to look up.");
+    }
 }
