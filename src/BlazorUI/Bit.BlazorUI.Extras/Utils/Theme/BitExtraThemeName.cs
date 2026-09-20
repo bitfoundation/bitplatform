@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// <see cref="BitThemeName"/> factories for the design-system presets that ship with this package.

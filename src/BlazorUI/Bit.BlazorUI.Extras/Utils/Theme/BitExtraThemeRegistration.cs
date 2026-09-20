@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -11,13 +11,22 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// <para>
 /// The runtime runs <see cref="Register"/> before the first access to anything in this assembly, so
-/// an app that uses this package at all - a component, <see cref="BitThemeSwitcher"/>,
-/// <c>BitThemePresets.MaterialDark</c>, <c>BitThemeName.MaterialDark</c> - has the presets registered
-/// by the time it can ask about them. An app that references the package only for its stylesheet and
-/// writes the <c>bit-theme</c> token as a bare string never loads the assembly; the first-paint color
-/// then falls back to the scheme's light / dark surface, and the app is otherwise unaffected, the
-/// preset being CSS. Calling <see cref="Register"/> from <c>Program.cs</c> covers that case
-/// explicitly - it is public and idempotent for exactly that.
+/// an app that uses this package at all - <c>AddBitBlazorUIExtrasServices</c>, a component,
+/// <see cref="BitThemeSwitcher"/>, <c>BitThemePresets.MaterialDark</c>,
+/// <c>BitThemeName.MaterialDark</c> - has the presets registered by the time it can ask about them.
+/// An app that references the package only for its stylesheet and writes the <c>bit-theme</c> token
+/// as a bare string never loads the assembly; the first-paint color then falls back to the scheme's
+/// light / dark surface, and the app is otherwise unaffected, the preset being CSS. Calling
+/// <see cref="Register"/> from <c>Program.cs</c> covers that case explicitly - it is public and
+/// idempotent for exactly that.
+/// </para>
+/// <para>
+/// <b>It never overrides the app.</b> The presets go in with
+/// <see cref="BitThemePresetRegistry.TryRegister(IEnumerable{BitThemePreset})"/>, which fills gaps
+/// only: a name the app has registered itself (a packaged preset it re-skinned in its own CSS) keeps
+/// the app's colors, and a name the app has taken out with
+/// <see cref="BitThemePresetRegistry.Remove(string?)"/> stays out - whether the app spoke before this
+/// assembly loaded or after. That matters precisely because WHEN this runs is not the app's to see.
 /// </para>
 /// <para>
 /// The colors are pinned to this package's palettes by a contract test that reads the stylesheets
@@ -45,7 +54,7 @@ public static class BitExtraThemeRegistration
         // colors.<family>-light selects both names (:root[bit-theme="material"],
         // [bit-theme="material-light"]), so a page set to the bare family name and left out of this
         // table would paint its first frame in the Fluent fallback and then repaint.
-        BitThemePresetRegistry.Register(
+        BitThemePresetRegistry.TryRegister(
         [
             new() { Name = BitExtraThemePresets.Fluent2, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
             new() { Name = BitExtraThemePresets.Fluent2Light, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },

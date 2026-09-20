@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 
 namespace Bit.BlazorUI;
 
@@ -33,7 +33,11 @@ public static class BitThemeSurfaces
 {
     /// <summary>
     /// <c>--bit-clr-bg-pri</c> per preset: the page background, and the usual choice for the browser
-    /// chrome. Keyed by the preset's <c>bit-theme</c> name (<see cref="BitThemePresets"/>), ordinal.
+    /// chrome. Keyed by the preset's <c>bit-theme</c> name (<see cref="BitThemePresets"/>), ordinal:
+    /// the keys are the normalized tokens the registry stores, and a lookup is an exact match against
+    /// them - it does not trim or lower-case what it is handed, so it always agrees with
+    /// <see cref="IReadOnlyDictionary{TKey, TValue}.Keys"/>. To look a preset up by a looser spelling,
+    /// ask <see cref="BitThemePresetRegistry.Find(string?)"/>, which normalizes.
     /// </summary>
     public static IReadOnlyDictionary<string, string> BackgroundPrimary { get; } = new BitThemeSurfaceMap(preset => preset.BackgroundPrimary);
 
@@ -50,6 +54,12 @@ public static class BitThemeSurfaces
 /// access rather than copied out of it - a preset registered after an app has handed one of these to
 /// <see cref="BitThemeHead"/> still reaches the rendered tag.
 /// </summary>
+/// <remarks>
+/// Enumerates in ordinal key order, straight off the registry's ordered snapshot, and looks a key up
+/// ordinally against the same snapshot - so <see cref="ContainsKey"/>, the indexer and
+/// <see cref="Keys"/> cannot disagree, and a null key is an <see cref="ArgumentNullException"/> as
+/// the dictionary contract says.
+/// </remarks>
 internal sealed class BitThemeSurfaceMap(Func<BitThemePreset, string?> surface) : IReadOnlyDictionary<string, string>
 {
     public string this[string key] => TryGetValue(key, out var color) ? color : throw new KeyNotFoundException($"No surface color is registered for the theme preset '{key}'.");
@@ -58,9 +68,7 @@ internal sealed class BitThemeSurfaceMap(Func<BitThemePreset, string?> surface) 
 
     public IEnumerable<string> Values => BitThemePresetRegistry.SurfacesOf(surface).Select(entry => entry.Value);
 
-    // Counted off the registry rather than through Enumerable.Count(this), which is free to answer
-    // from this very property once it recognizes the IReadOnlyCollection it is handed.
-    public int Count => BitThemePresetRegistry.SurfacesOf(surface).Count();
+    public int Count => BitThemePresetRegistry.SurfaceCountOf(surface);
 
     public bool ContainsKey(string key) => BitThemePresetRegistry.SurfaceOf(key, surface) is not null;
 

@@ -207,11 +207,16 @@ bundles (`_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css` / `...ma
 their first-paint surfaces are registered with `BitThemePresetRegistry` from
 `BitExtraThemeRegistration`'s `[ModuleInitializer]`, which `BitThemeSurfaces` reads as a live view.
 Reading `BitThemePresets.MaterialDark` is itself what loads the assembly and so what registers the
-presets; an app that links a bundle but never names it in C# can call
-`BitExtraThemeRegistration.Register()`, which `AddBitBlazorUIExtrasServices` also does so that a host
-page's first render does not depend on what has loaded yet. An app declares its own preset the same
-way, with `BitThemePresetRegistry.Register(new BitThemePreset { ... })` (`Remove` takes one back
-out). `BitThemeSwitcher` is the ready-made chrome for picking between them.
+presets - as is calling `AddBitBlazorUIExtrasServices`, a method of that assembly, which is why it
+makes no registration call of its own; an app that links a bundle but never touches Extras in C# can
+call `BitExtraThemeRegistration.Register()`. An app declares its own preset with
+`BitThemePresetRegistry.Register(new BitThemePreset { ... })` (`Remove` takes one back out of the
+first-paint table - it does not drive `BitThemeSwitcher`, whose items are its own parameters).
+**`Register` replaces and is the app's verb; a package uses `TryRegister`, which only fills gaps** -
+it skips a name that is already registered or that the app has `Remove`d (removal is remembered) -
+because a module initializer runs whenever the assembly happens to load, usually after `Program.cs`,
+and must not undo an app's re-skin or removal. `BitThemeSwitcher` is the ready-made chrome for
+picking between them.
 
 The extension members are the form to reach for, but they cannot be everything, so **the plain
 `BitExtraThemePresets` (`const`s) / `BitExtraThemeName` / `BitExtraThemeSurfaces` stay public and say

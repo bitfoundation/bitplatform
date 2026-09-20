@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The <c>bit-theme</c> attribute values of the design-system presets that ship with this package, as

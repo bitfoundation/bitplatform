@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// One theme preset as C# knows it: the <c>bit-theme</c> token, plus the facts about it that code has

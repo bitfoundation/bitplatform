@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// <see cref="BitThemeSurfaces"/>, reached through this package - the same two live tables, and the
@@ -14,8 +14,9 @@ namespace Bit.BlazorUI;
 /// names <see cref="BitThemeSurfaces"/> directly, in a process where nothing has touched this package
 /// yet, is served the core entries alone and paints a packaged dark preset with the core dark surface
 /// instead of its own - and then paints it correctly on a later request, once something has loaded
-/// the assembly. Naming this type, or calling <see cref="BitExtraThemeRegistration.Register"/> at
-/// startup (<c>AddBitBlazorUIExtrasServices</c> already does), is what makes the two requests agree.
+/// the assembly. Naming this type, or anything else of this package before the first host page
+/// renders - <c>AddBitBlazorUIExtrasServices</c> is a method of this assembly, so an app that calls
+/// it at startup already has - is what makes the two requests agree.
 /// </para>
 /// <para>
 /// The narrow purpose is the core table's: the first-paint <c>&lt;meta name="theme-color"&gt;</c>

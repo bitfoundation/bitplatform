@@ -30,14 +30,10 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     {
         services.AddBitBlazorUIServices(trySingleton);
 
-        // Not a service: this puts the packaged presets' first-paint surfaces in
-        // BitThemePresetRegistry (see BitExtraThemeRegistration), and it is called here so that an
-        // app which sets its services up - every app - has them before the first host page renders.
-        // Without it the module initializer is what registers them, which is tied to whenever
-        // something first touches this assembly: a host page reading BitThemeSurfaces before that
-        // paints a packaged dark preset with the core dark surface and the same request paints it
-        // correctly later, once the process is warm. Idempotent, so calling it again costs nothing.
-        BitExtraThemeRegistration.Register();
+        // Nothing to do here for the packaged theme presets: this method lives in the Extras assembly,
+        // so calling it is already the first touch that runs the module initializer behind
+        // BitExtraThemeRegistration - the presets are in BitThemePresetRegistry before this line is
+        // reached, and so before the first host page renders.
 
         if (accentColor is not null)
         {

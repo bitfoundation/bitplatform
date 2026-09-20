@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -118,6 +119,98 @@ public sealed class BitThemePresetRegistryTests
         Assert.IsFalse(BitThemePresetRegistry.Remove("acme-removed-dark"));
         Assert.IsFalse(BitThemePresetRegistry.Remove("acme theme"));
         Assert.IsFalse(BitThemePresetRegistry.Remove(null));
+    }
+
+    [TestMethod]
+    public void APackageRegistrationNeverOverridesTheApp()
+    {
+        // A package registers from a module initializer - whenever its assembly first loads, which is
+        // usually AFTER Program.cs. With replace semantics there, an app's re-skin of a packaged preset
+        // would be silently undone by the first thing that touched the package.
+        BitThemePresetRegistry.Register(new BitThemePreset { Name = "acme-reskinned-dark", BackgroundPrimary = "#000000" });
+
+        Assert.IsFalse(BitThemePresetRegistry.TryRegister(new BitThemePreset { Name = "acme-reskinned-dark", BackgroundPrimary = "#0C131B" }));
+        Assert.AreEqual("#000000", BitThemeSurfaces.BackgroundPrimary["acme-reskinned-dark"]);
+
+        // And a gap is filled, which is the whole of what a package needs.
+        Assert.IsTrue(BitThemePresetRegistry.TryRegister(new BitThemePreset { Name = "acme-packaged-dark", BackgroundPrimary = "#0C131B" }));
+        Assert.AreEqual("#0C131B", BitThemeSurfaces.BackgroundPrimary["acme-packaged-dark"]);
+    }
+
+    [TestMethod]
+    public void ARemovalIsRememberedAgainstAPackageButNotAgainstTheApp()
+    {
+        // Removed BEFORE the package has registered it - the order an app's startup code and a
+        // module initializer usually run in - so there is nothing to take out yet, and the name
+        // still has to stay out when the package arrives.
+        Assert.IsFalse(BitThemePresetRegistry.Remove("acme-unoffered-dark"));
+
+        Assert.AreEqual(0, BitThemePresetRegistry.TryRegister([new BitThemePreset { Name = "acme-unoffered-dark", BackgroundPrimary = "#131313" }]));
+        Assert.IsFalse(BitThemePresetRegistry.Contains("acme-unoffered-dark"));
+
+        // The app changing its mind is the app's call.
+        BitThemePresetRegistry.Register(new BitThemePreset { Name = "acme-unoffered-dark", BackgroundPrimary = "#131313" });
+        Assert.IsTrue(BitThemePresetRegistry.Contains("acme-unoffered-dark"));
+    }
+
+    [TestMethod, DoNotParallelize]
+    public void TheExtrasRegistrationLeavesAnAppsReskinAndRemovalAlone()
+    {
+        // The two tests above, against the real package: BitExtraThemeRegistration.Register is what
+        // the module initializer runs, and an app may also call it explicitly at any point.
+        BitExtraThemeRegistration.Register();
+        var materialDark = BitThemePresetRegistry.Find(BitExtraThemePresets.MaterialDark)!;
+        var cupertinoDark = BitThemePresetRegistry.Find(BitExtraThemePresets.CupertinoDark)!;
+        try
+        {
+            BitThemePresetRegistry.Register(new BitThemePreset { Name = BitExtraThemePresets.MaterialDark, BackgroundPrimary = "#000000" });
+            BitThemePresetRegistry.Remove(BitExtraThemePresets.CupertinoDark);
+
+            BitExtraThemeRegistration.Register();
+
+            Assert.AreEqual("#000000", BitThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.MaterialDark]);
+            Assert.IsFalse(BitThemeSurfaces.BackgroundPrimary.ContainsKey(BitExtraThemePresets.CupertinoDark));
+        }
+        finally
+        {
+            BitThemePresetRegistry.Register([materialDark, cupertinoDark]);
+        }
+    }
+
+    [TestMethod]
+    public void ABadTokenInABatchLeavesTheTableAsItWas()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => BitThemePresetRegistry.Register(
+        [
+            new BitThemePreset { Name = "acme-batch-dark", BackgroundPrimary = "#010101" },
+            new BitThemePreset { Name = "acme batch" },
+        ]));
+
+        Assert.IsFalse(BitThemePresetRegistry.Contains("acme-batch-dark"));
+    }
+
+    [TestMethod]
+    public void TheSurfaceMapsAreOrdinalAndAgreeWithTheirOwnKeys()
+    {
+        // IReadOnlyDictionary: what ContainsKey says yes to has to be a key Keys yields. The registry's
+        // own lookups normalize; the maps, being dictionaries, must not.
+        var map = BitThemeSurfaces.BackgroundPrimary;
+
+        Assert.IsTrue(map.ContainsKey(BitThemePresets.Dark));
+        Assert.IsFalse(map.ContainsKey(" Dark "));
+        Assert.IsFalse(map.ContainsKey("DARK"));
+        Assert.IsFalse(map.TryGetValue("DARK", out _));
+        Assert.ThrowsExactly<KeyNotFoundException>(() => map["DARK"]);
+        Assert.ThrowsExactly<ArgumentNullException>(() => map.ContainsKey(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => map[null!]);
+
+        Assert.AreEqual(map.Count, map.Keys.Count());
+        Assert.IsTrue(map.Keys.All(map.ContainsKey));
+        CollectionAssert.AreEqual(map.Keys.OrderBy(key => key, StringComparer.Ordinal).ToArray(), map.Keys.ToArray(),
+            "Enumerated in key order, which is what lets BitThemeHead emit the same script on every render without sorting.");
+
+        // The looser spelling is the registry's to answer.
+        Assert.IsTrue(BitThemePresetRegistry.Contains(" Dark "));
     }
 
     [TestMethod]

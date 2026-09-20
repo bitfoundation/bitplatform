@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -94,6 +94,13 @@ public class BitThemeHeadTests : BunitTestContext
         // The other side of the test above, and the default map's actual case: the registry carries
         // the packaged design systems, whose surfaces are not the core light / dark pair, so those
         // names - and only those - have to be carried by name in front of the fallback.
+        //
+        // Registered explicitly, BEFORE the render: the packaged presets enter the registry when the
+        // Extras assembly is first touched, and nothing on the way to this render touches it - the
+        // BitThemePresets.MaterialDark reads below come after the markup already exists. Run alone,
+        // or first in the process, this test would otherwise render the core presets only.
+        BitExtraThemeRegistration.Register();
+
         var component = RenderComponent<BitThemeHead>();
 
         StringAssert.Contains(component.Markup, $"'{BitThemePresets.MaterialDark}':'{BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark]}'", StringComparison.OrdinalIgnoreCase,
@@ -121,6 +128,54 @@ public class BitThemeHeadTests : BunitTestContext
             "The only light-side entry of the supplied map, rather than the packaged light surface.");
         StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], System.Text.RegularExpressions.RegexOptions.IgnoreCase),
             "The packaged surfaces are the last resort, not the first one past a missing name.");
+    }
+
+    [TestMethod, DoNotParallelize]
+    public void BitThemeHeadShouldStillAnswerWhenTheCorePresetsHaveBeenRemoved()
+    {
+        // Remove is documented for an app that offers a subset of the presets, and nothing stops that
+        // subset from excluding light / dark. The last-resort fallback used to index the live table
+        // for exactly those two names, which turned every host-page render into a KeyNotFoundException.
+        var light = BitThemePresetRegistry.Find(BitThemePresets.Light)!;
+        var dark = BitThemePresetRegistry.Find(BitThemePresets.Dark)!;
+        try
+        {
+            BitThemePresetRegistry.Remove(BitThemePresets.Light);
+            BitThemePresetRegistry.Remove(BitThemePresets.Dark);
+
+            // A map with nothing on the dark side, so ColorOf runs all the way to its last line.
+            var colors = new Dictionary<string, string>(StringComparer.Ordinal) { ["acme-day"] = "#ABCDEF" };
+
+            var component = RenderComponent<BitThemeHead>(parameters => parameters
+                .Add(p => p.PersistedPreference, "acme-dark")
+                .Add(p => p.ThemeColors, colors));
+
+            StringAssert.Contains(component.Markup, dark.BackgroundPrimary!, StringComparison.OrdinalIgnoreCase,
+                "The core dark surface is a constant of the stylesheet, not something the registry has to be asked for.");
+        }
+        finally
+        {
+            // Register, not TryRegister: a removal is remembered, and only the app's verb undoes it.
+            BitThemePresetRegistry.Register([light, dark]);
+        }
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldReadTheConfiguredPairAsTheTokenTheAttributeCarries()
+    {
+        // The maps are ordinal and keyed by the normalized token, and "ends with dark" is ordinal
+        // too - so a pair written with other casing has to be normalized once, up front, or the
+        // lookup and the scheme test would each see a different name.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.LightTheme, " Fluent2-Light ")
+            .Add(p => p.DarkTheme, "FLUENT2-DARK")
+            .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
+
+        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(component.Markup, "c=/dark$/.test(t)?", StringComparison.Ordinal);
+        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex("t==='"),
+            "fluent2-dark ends in dark once normalized, so the suffix test covers it and no by-name check is needed.");
     }
 
     [TestMethod]
