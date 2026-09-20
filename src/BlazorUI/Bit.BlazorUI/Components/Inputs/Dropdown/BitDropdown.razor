@@ -190,11 +190,16 @@
                         @* The chip only shows how many selections it stands for. The ones it hides are named
                            in its title for the pointer, and take its place in the accessible name so that
                            the combobox (which is named after this container) still reports them all. *@
+                        @* aria-label is not exposed on an element with no role of its own, so the items the
+                           chip stands for are RENDERED for a screen reader rather than asserted in an
+                           attribute: the counter is hidden from it and the names take its place, both in
+                           the accessible name of the combobox (computed from this subtree) and in the
+                           content a reader walks through. The pointer gets them from the title. *@
                         <span style="@Styles?.OverflowChip"
                               class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
-                              title="@GetOverflowItemsText()"
-                              aria-label="@GetOverflowItemsText()">
-                            @GetOverflowText()
+                              title="@GetOverflowItemsText()">
+                            <span aria-hidden="true">@GetOverflowText()</span>
+                            <span class="bit-drp-vhd">@GetOverflowItemsText()</span>
                         </span>
                     }
                 }
@@ -391,7 +396,7 @@
      id="@_calloutId"
      tabindex="0"
      dir="@Dir?.ToString().ToLower()"
-     style="@Styles?.Callout"
+     style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()">
 
     @if (Responsive)
@@ -440,11 +445,14 @@
                    style="@Styles?.SearchBoxIcon"
                    class="@searchBoxIconCss @Classes?.SearchBoxIcon" />
             </div>
+            @* aria-controls names the list this box filters: the box sits outside the listbox and would
+               otherwise be a field that narrows nothing a screen reader can tie it to. *@
             <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleOnSearchBoxInput" @onchange="@HandleOnSearchBoxChange"
                    type="text"
                    role="searchbox"
                    value="@_searchInputText"
                    aria-label="@(SearchBoxAriaLabel ?? "Search text")"
+                   aria-controls="@_scrollContainerId"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
                    class="bit-drp-sin @Classes?.SearchBoxInput" />

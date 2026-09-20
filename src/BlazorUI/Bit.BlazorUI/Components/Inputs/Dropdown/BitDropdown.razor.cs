@@ -3978,6 +3978,75 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // The public custom properties of the component, which are what its stylesheet reads off the root with a
+    // fallback (see BitDropdown.scss). Nothing else in a style string is copied to the callout.
+    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Dropdown-";
+
+    private string? _calloutStyles;
+    private string? _lastRootStyle;
+    private string? _lastStylesRoot;
+    private string? _lastStylesCallout;
+
+    // The callout is rendered outside the root element - and reparented to the body while it is open - so it
+    // inherits nothing an author sets on the dropdown: neither the Style of the instance nor a custom property
+    // declared on an ancestor of it (only :root and body stay ancestors of it once it has moved). The public
+    // --bit-Dropdown-* declarations are therefore carried across by hand, so ONE Style on the component
+    // restyles the field and the list it opens together, the way it reads as if it would.
+    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
+    private string? GetCalloutStyles()
+    {
+        var style = Style;
+        var stylesRoot = Styles?.Root;
+        var stylesCallout = Styles?.Callout;
+
+        // Rebuilt only when one of the three strings it is made of has actually changed: the callout is
+        // re-rendered on every keystroke typed into the search box, and parsing three style strings per
+        // render for a result that almost never changes is work no one asked for.
+        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
+            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal) &&
+            string.Equals(stylesCallout, _lastStylesCallout, StringComparison.Ordinal))
+        {
+            return _calloutStyles;
+        }
+
+        _lastRootStyle = style;
+        _lastStylesRoot = stylesRoot;
+        _lastStylesCallout = stylesCallout;
+
+        StringBuilder? builder = null;
+
+        AppendPublicCssVariables(ref builder, style);
+        AppendPublicCssVariables(ref builder, stylesRoot);
+
+        if (builder is null)
+        {
+            _calloutStyles = stylesCallout;
+        }
+        else
+        {
+            if (stylesCallout.HasValue())
+            {
+                builder.Append(stylesCallout);
+            }
+
+            _calloutStyles = builder.ToString();
+        }
+
+        return _calloutStyles;
+    }
+
+    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
+
+            (builder ??= new StringBuilder()).Append(declaration).Append(';');
+        }
+    }
+
     private string GetCalloutCssClasses()
     {
         List<string> classes = ["bit-drp-cal"];

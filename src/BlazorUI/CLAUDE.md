@@ -214,6 +214,17 @@ restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
 
+A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
+`componentCssVariables`) are read off its root **with a fallback and never declared**, so they
+inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel, which the
+callout JS then reparents to the body - therefore hands it nothing: inside its own markup the popup is
+a SIBLING of the root, and once it has moved only `:root` and `body` are still its ancestors. Such a
+component resolves its variables in one mixin that both the root and the popup include, and carries
+the public declarations across by hand (BitDropdown's `GetCalloutStyles` copies the
+`--bit-Dropdown-*` entries of `Style` and `Styles.Root` onto the callout, appending `Styles.Callout`
+last so a value written for the popup still wins). One `Style` on the component then restyles the
+field and the list it opens together, which is what an author setting a variable expects.
+
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets` /
 `BitExtraThemeName`, `BitThemeSwitcher.DefaultDesignSystems`, the test csproj's `theme-styles` link

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Dropdown;
 
 public partial class _BitDropdownItemDemo
 {
@@ -2169,7 +2169,32 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              Classes=""@(new() { Callout = ""custom-callout"",
                                 Container = ""custom-container"",
                                 ItemButton = ""custom-item-button"",
-                                ScrollContainer = ""custom-scroll-container"" })"" />";
+                                ScrollContainer = ""custom-scroll-container"" })"" />
+
+
+<BitDropdown Chips MultiSelect
+             Label=""Accent""
+             Items=""GetBasicItems()""
+             Placeholder=""Select items""
+             DefaultValues=""@(new[] { ""f-app"", ""f-ban"" })""
+             Style=""--bit-Dropdown-accent-color: #d1495b;
+                    --bit-Dropdown-accent-text-color: white;
+                    --bit-Dropdown-focus-color: #d1495b;
+                    --bit-Dropdown-radius: 1rem;
+                    --bit-Dropdown-callout-radius: 1rem;
+                    --bit-Dropdown-chip-border-color: #d1495b;
+                    --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
+                    --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);"" />
+
+<BitDropdown Label=""Density""
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             Style=""--bit-Dropdown-min-height: 1.5rem;
+                    --bit-Dropdown-font-size: 0.75rem;
+                    --bit-Dropdown-item-height: 1.75rem;
+                    --bit-Dropdown-item-font-size: 0.75rem;
+                    --bit-Dropdown-callout-max-height: 10rem;"" />";
     private readonly string example34CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {

@@ -2012,4 +2012,259 @@ public partial class BitDropdownDemo
             Description = "Gives focus to the search input element.",
         }
     ];
+
+    // The public custom properties BitDropdown.scss reads off its root, in the order the stylesheet groups
+    // them: the field, its accent, the label and description, the chips, the callout, the rows.
+    // The callout is a sibling of the root and is moved to the body while it is open, so the component copies
+    // the --bit-Dropdown-* declarations of Style (and of Styles.Root) onto it: one Style restyles the field
+    // and the list it opens together.
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Dropdown-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the field. Transparent turns the default into transparent; a value set here still wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the field once something is selected, and of the text typed into the ComboBox input or the search box.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-placeholder-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text of the field while nothing is selected, which is what the Placeholder is drawn in.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of the field at rest. Underlined draws it as the bottom rule alone, NoBorder drops it.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-hover-border-color",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Border of the field while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the focus indicator: the ring around the field, the underline of the Underlined and NoBorder variants, and the outline drawn inside the row the arrow keys have reached.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-invalid-color",
+            DefaultValue = "--bit-clr-err, and --bit-clr-err-focus for the ring",
+            Description = "Border and focus indicator while the bound value fails validation.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, label and glyphs when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Background of the field when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Border of the field when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the field, which its background and its focus ring follow.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-min-height",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Smallest height of the field, which the search box, the clear button and the ComboBox add button follow. It is a floor, not a height: a Chips field still grows with the rows of chips in it.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Text size of the field, the search box, and the empty and loading states.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The caret, the clear button and the affix glyphs. The search glyph and the check mark take the accent instead.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-icon-size",
+            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
+            Description = "Size of those glyphs.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-accent-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The accent: group headers, the search glyph, the filled checkbox, the highlighted part of a matched item, the overflow chip, the spinner arc and the bar marking the item Enter would commit.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-accent-hover-color",
+            DefaultValue = "--bit-Dropdown-accent-color, then the Color role's hover color",
+            Description = "The accent while the part carrying it is hovered.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-accent-text-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Text and glyphs drawn ON the accent - the check mark, the highlighted text, the overflow chip. Set it along with the accent, or a custom accent keeps the contrast of the role it replaced.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Label text.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-label-font-size",
+            DefaultValue = "--bit-Dropdown-font-size",
+            Description = "Label text size.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Label weight.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "The asterisk a Required dropdown adds after its label.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-description-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Description text. It reaches the default rendering only, not a DescriptionTemplate.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-description-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Description text size.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-chip-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of a chip in the Chips display. The overflow chip takes the accent instead.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-chip-color",
+            DefaultValue = "inherit",
+            Description = "Text of a chip, which follows the field's own text color unless it is set.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-chip-border-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Border of a chip.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-chip-radius",
+            DefaultValue = "--bit-shp-radius-chip",
+            Description = "Corner radius of a chip and of its remove button.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-callout-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the list surface, which the sticky group headers and the search box follow.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-callout-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Corner radius of the list surface.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-callout-shadow",
+            DefaultValue = "--bit-shd-popup",
+            Description = "Elevation of the list surface.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-callout-max-height",
+            DefaultValue = "--bit-siz-popup-max-height",
+            Description = "How tall the scrolling list may grow before it scrolls. The MaxHeight parameter overrides it per instance.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-overlay-background",
+            DefaultValue = "transparent",
+            Description = "The layer between the page and an open callout. Give it a color for a modal-style scrim.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-height",
+            DefaultValue = "Per Size: --bit-siz-item-sm / -md / -lg",
+            Description = "Height of one row, which the group headers, the empty state and the loading row follow. Set ItemSize to the same number when Virtualize is on, since virtualization measures in pixels.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Text size of one row and of a group header.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of one row.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of the hovered row, which is also what marks the item Enter would commit in the ComboBox mode.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-selected-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of a selected row.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of a row that cannot be picked - a disabled item, and every unselected item once MaxSelectedItems is reached.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-header-color",
+            DefaultValue = "--bit-Dropdown-accent-color",
+            Description = "Text of a group header, for a list whose headers should read quieter than the accent.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-divider-color",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "The rule a Divider item draws between two groups.",
+        },
+    ];
 }

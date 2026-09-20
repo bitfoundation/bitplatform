@@ -1070,6 +1070,9 @@
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
         match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
         reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
+        The row the arrow keys have reached carries a focus outline in the focus color, drawn inside the row so the
+        scrolling list cannot clip it, and the field keeps its own ring in the ComboBox mode, where the element
+        actually holding the focus is the input inside it.
         In ComboBox mode the keys that belong to the typed text - the printable characters, <b>Backspace</b>,
         <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> - return the focus to the input and act on it
         there, so arrowing into the list never strands the user away from the term they are typing.
@@ -1800,6 +1803,10 @@
         container, the items and everything else listed in the class-styles reference below. Because the callout is
         rendered outside the root element, styling it through <b>Styles.Callout</b> or <b>Classes.Callout</b> is the way
         to reach it rather than a descendant selector on the root.
+        <br /><br />
+        Above all of them sit the public <b>--bit-Dropdown-*</b> CSS variables listed further down this page: one
+        declaration retunes a decision everywhere it is used - the field, its chips and the list at once - and the
+        ones written into <b>Style</b> are carried over to the callout, which no selector on the root could reach.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1838,6 +1845,31 @@
                                         Container = "custom-container",
                                         ItemButton = "custom-item-button",
                                         ScrollContainer = "custom-scroll-container" })" />
+        <br /><br /><br /><br />
+        <div>CSS variables:</div><br />
+        <BitDropdown Chips MultiSelect
+                     Label="Accent"
+                     Items="GetBasicItems()"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })"
+                     Style="--bit-Dropdown-accent-color: #d1495b;
+                            --bit-Dropdown-accent-text-color: white;
+                            --bit-Dropdown-focus-color: #d1495b;
+                            --bit-Dropdown-radius: 1rem;
+                            --bit-Dropdown-callout-radius: 1rem;
+                            --bit-Dropdown-chip-border-color: #d1495b;
+                            --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
+                            --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);" />
+        <br />
+        <BitDropdown Label="Density"
+                     Items="GetBasicItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     Style="--bit-Dropdown-min-height: 1.5rem;
+                            --bit-Dropdown-font-size: 0.75rem;
+                            --bit-Dropdown-item-height: 1.75rem;
+                            --bit-Dropdown-item-font-size: 0.75rem;
+                            --bit-Dropdown-callout-max-height: 10rem;" />
     </div>
 </DemoExample>
 

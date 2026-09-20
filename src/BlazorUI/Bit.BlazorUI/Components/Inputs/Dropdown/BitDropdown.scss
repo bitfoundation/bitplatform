@@ -1,16 +1,131 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins
+// every dropdown and one set on the Style of an instance re-skins that one alone.
+// The callout is rendered outside the root element (and reparented to the body while it is open), so the
+// component copies the --bit-Dropdown-* declarations of Style and Styles.Root onto it - see GetCalloutStyles.
+//
+//   FIELD
+//   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri, transparent with Transparent)
+//   --bit-Dropdown-color                   text of the field once something
+//                                          is selected                              (default: $clr-fg-pri)
+//   --bit-Dropdown-placeholder-color       text of the field while it is empty      (default: $clr-fg-sec)
+//   --bit-Dropdown-border-color            border at rest                           (default: $clr-brd-pri)
+//   --bit-Dropdown-hover-border-color      border on hover                          (default: $clr-brd-pri-hover)
+//   --bit-Dropdown-focus-color             focus indicator color                    (default: the role's focus color)
+//   --bit-Dropdown-invalid-color           border and focus indicator while the
+//                                          bound value fails validation             (default: $clr-err / $clr-err-focus)
+//   --bit-Dropdown-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
+//   --bit-Dropdown-disabled-background     background when disabled                 (default: $clr-bg-dis)
+//   --bit-Dropdown-disabled-border-color   border when disabled                     (default: $clr-brd-dis)
+//   --bit-Dropdown-radius                  corner radius of the field               (default: $shp-radius-control)
+//   --bit-Dropdown-min-height              smallest height of the field             (default: per size, $siz-ctrl-*)
+//   --bit-Dropdown-font-size               text size of the field                   (default: per size, from the type ramp)
+//   --bit-Dropdown-icon-color              caret and affix glyphs                   (default: $clr-fg-sec)
+//   --bit-Dropdown-icon-size               size of the glyphs of the component      (default: per size, $siz-icon-*)
+//
+//   ACCENT - the role color, which reaches the group headers, the search glyph, the checkbox fill, the
+//   search-match highlight, the overflow chip, the spinner arc and the bar marking the commit target.
+//   --bit-Dropdown-accent-color            the accent itself                        (default: the Color role's main color)
+//   --bit-Dropdown-accent-hover-color      the accent while the part is hovered     (default: the role's hover color)
+//   --bit-Dropdown-accent-text-color       text and glyphs drawn ON the accent -
+//                                          set it along with the accent to keep the
+//                                          check mark and the highlight legible     (default: the role's on-color)
+//
+//   LABEL AND DESCRIPTION
+//   --bit-Dropdown-label-color             label text                               (default: $clr-fg-pri)
+//   --bit-Dropdown-label-font-size         label text size                          (default: --bit-Dropdown-font-size)
+//   --bit-Dropdown-label-font-weight       label weight                             (default: $tg-fw-semibold)
+//   --bit-Dropdown-required-color          the asterisk a Required field carries    (default: $clr-req)
+//   --bit-Dropdown-description-color       description text                         (default: $clr-fg-pri)
+//   --bit-Dropdown-description-font-size   description text size                    (default: $tg-fs-2xs)
+//
+//   CHIPS (the multi select Chips display)
+//   --bit-Dropdown-chip-background         background of a chip                     (default: $clr-bg-sec)
+//   --bit-Dropdown-chip-color              text of a chip                           (default: inherited from the field)
+//   --bit-Dropdown-chip-border-color       border of a chip                         (default: $clr-brd-sec)
+//   --bit-Dropdown-chip-radius             corner radius of a chip                  (default: $shp-radius-chip)
+//
+//   CALLOUT
+//   --bit-Dropdown-callout-background      background of the list surface           (default: $clr-bg-pri)
+//   --bit-Dropdown-callout-radius          corner radius of that surface            (default: $shp-radius-popup)
+//   --bit-Dropdown-callout-shadow          its elevation                            (default: $box-shadow-popup)
+//   --bit-Dropdown-callout-max-height      how tall the scrolling list may grow     (default: $siz-popup-max-height)
+//   --bit-Dropdown-overlay-background      the layer between the page and an open
+//                                          callout, transparent by default - give it
+//                                          a color for a modal-style scrim          (default: transparent)
+//
+//   ITEMS
+//   --bit-Dropdown-item-height             height of one row                        (default: per size, $siz-item-*)
+//   --bit-Dropdown-item-font-size          text size of one row                     (default: per size, from the type ramp)
+//   --bit-Dropdown-item-color              text of one row                          (default: $clr-fg-pri)
+//   --bit-Dropdown-item-hover-background   background of the hovered row            (default: $clr-bg-pri-hover)
+//   --bit-Dropdown-item-selected-background  background of a selected row           (default: $clr-bg-sec)
+//   --bit-Dropdown-item-disabled-color     text of a row that cannot be picked      (default: $clr-fg-dis)
+//   --bit-Dropdown-header-color            text of a group header                   (default: the accent)
+//   --bit-Dropdown-divider-color           the rule a Divider item draws            (default: $clr-bg-sec)
+
+
 // The size of the control and of its callout is driven by these variables so a single size class,
 // applied to the root element and repeated on the callout, resizes every part consistently.
 // A preset that raises the control height (Material 40px, Cupertino 36px) then resizes the trigger,
 // the callout and the rows inside it together.
+@mixin drp-size($fs, $h, $lbl-lh, $itm-h, $itm-fs, $ico, $sel) {
+    --bit-drp-sz-fs: #{$fs};
+    --bit-drp-sz-h: #{$h};
+    --bit-drp-sz-lbl-lh: #{$lbl-lh};
+    --bit-drp-sz-itm-h: #{$itm-h};
+    --bit-drp-sz-itm-fs: #{$itm-fs};
+    --bit-drp-sz-ico: #{$ico};
+    --bit-drp-sz-sel: #{$sel};
+}
+
 @mixin drp-size-medium {
-    --bit-drp-fs: #{$tg-fs-sm};
-    --bit-drp-h: #{$siz-ctrl-md};
-    --bit-drp-lbl-lh: #{spacing(2.75)};
-    --bit-drp-itm-h: #{$siz-item-md};
-    --bit-drp-itm-fs: #{$tg-fs-sm};
+    @include drp-size($tg-fs-sm, $siz-ctrl-md, spacing(2.75), $siz-item-md, $tg-fs-sm, $siz-icon-md, $siz-sel-md);
+}
+
+// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
+// private variables this leaves behind, so no use site repeats the fallback chain - and the block is
+// included on the callout as well, which is a sibling of the root and inherits nothing from it.
+@mixin drp-vars {
+    --bit-drp-fs: var(--bit-Dropdown-font-size, var(--bit-drp-sz-fs));
+    --bit-drp-h: var(--bit-Dropdown-min-height, var(--bit-drp-sz-h));
+    --bit-drp-lbl-lh: var(--bit-drp-sz-lbl-lh);
+    --bit-drp-itm-h: var(--bit-Dropdown-item-height, var(--bit-drp-sz-itm-h));
+    --bit-drp-itm-fs: var(--bit-Dropdown-item-font-size, var(--bit-drp-sz-itm-fs));
+    --bit-drp-ico: var(--bit-Dropdown-icon-size, var(--bit-drp-sz-ico));
+    --bit-drp-sel: var(--bit-drp-sz-sel);
+    --bit-drp-radius: var(--bit-Dropdown-radius, #{$shp-radius-control});
+
+    // The accent, and the two colors that go with it. A theme that repaints the accent has to be able to
+    // repaint what is drawn on top of it too, or the check mark and the highlighted text lose their contrast.
+    --bit-drp-clr: var(--bit-Dropdown-accent-color, var(--bit-drp-role-main, #{$clr-pri}));
+    --bit-drp-clr-hover: var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, var(--bit-drp-role-hover, #{$clr-pri-hover})));
+    --bit-drp-clr-text: var(--bit-Dropdown-accent-text-color, var(--bit-drp-role-on, #{$clr-pri-text}));
+    --bit-drp-clr-focus: var(--bit-Dropdown-focus-color, var(--bit-drp-role-focus, #{$clr-pri-focus}));
+
+    --bit-drp-bg: #{$clr-bg-pri};
+    --bit-drp-itm-clr: var(--bit-Dropdown-item-color, #{$clr-fg-pri});
+    --bit-drp-itm-hover-bg: var(--bit-Dropdown-item-hover-background, #{$clr-bg-pri-hover});
+    --bit-drp-itm-sel-bg: var(--bit-Dropdown-item-selected-background, #{$clr-bg-sec});
+    --bit-drp-itm-dis-clr: var(--bit-Dropdown-item-disabled-color, #{$clr-fg-dis});
+    --bit-drp-cal-bg: var(--bit-Dropdown-callout-background, #{$clr-bg-pri});
+}
+
+// The focus indicator of everything that sits INSIDE a box the browser may clip - the rows of the scrolling
+// list, the buttons flush with the edge of the field or of the search box. An outline drawn inwards is never
+// cut off by an ancestor's overflow the way the outward ring of focus-ring would be, and it survives a
+// forced-colors palette, which strips the box-shadow that ring is drawn with.
+// Every one of these is a <button>, and the library resets `button { outline: none }` globally, so without
+// this the keyboard has nothing to follow through the list at all.
+@mixin drp-focus-inset($color: var(--bit-drp-clr-focus)) {
+    outline: $shp-focus-ring-width $shp-border-style #{$color};
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
 }
 
 .bit-drp {
@@ -19,16 +134,14 @@
     position: relative;
     flex-direction: column;
     font-family: $tg-font-family;
-    --bit-drp-clr: #{$clr-pri};
-    --bit-drp-clr-hover: #{$clr-pri-hover};
-    --bit-drp-clr-text: #{$clr-pri-text};
     @include drp-size-medium;
+    @include drp-vars;
 
     &.bit-drp-req {
         .bit-drp-lbl {
             &::after {
                 content: " *";
-                color: $clr-req;
+                color: var(--bit-Dropdown-required-color, #{$clr-req});
                 padding-inline-end: spacing(1.5);
             }
         }
@@ -36,15 +149,19 @@
 
     &.bit-inv {
         .bit-drp-wrp {
-            border-color: $clr-err;
+            border-color: var(--bit-Dropdown-invalid-color, #{$clr-err});
 
             &:hover,
             &:active {
-                border-color: $clr-err;
+                border-color: var(--bit-Dropdown-invalid-color, #{$clr-err});
             }
 
-            &:focus {
-                @include focus-ring($clr-err-focus);
+            // :focus-within as well as :focus - in the ComboBox mode the element the keyboard lands on is
+            // the input inside the field, so the field itself never matched :focus and an invalid ComboBox
+            // was left without an indicator of its own.
+            &:focus,
+            &:focus-within {
+                @include focus-ring(var(--bit-Dropdown-invalid-color, #{$clr-err-focus}));
             }
         }
 
@@ -53,13 +170,15 @@
         &.bit-drp-nbd,
         &.bit-drp-und {
             .bit-drp-wrp {
-                &:focus {
+                &:focus,
+                &:focus-within {
                     outline: none;
                     box-shadow: none;
                 }
 
-                &:focus-visible {
-                    @include focus-underline-ring($clr-err-focus);
+                &:focus-visible,
+                &:has(:focus-visible) {
+                    @include focus-underline-ring(var(--bit-Dropdown-invalid-color, #{$clr-err-focus}));
                 }
             }
         }
@@ -68,19 +187,20 @@
     &.bit-dis {
         .bit-drp-wrp {
             cursor: default;
-            color: $clr-fg-dis;
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
+            color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
+            border-color: var(--bit-Dropdown-disabled-border-color, #{$clr-brd-dis});
+            background-color: var(--bit-Dropdown-disabled-background, #{$clr-bg-dis});
 
             &:hover,
             &:active {
-                color: $clr-fg-dis;
-                border-color: $clr-brd-dis;
+                color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
+                border-color: var(--bit-Dropdown-disabled-border-color, #{$clr-brd-dis});
             }
 
-            &:focus {
-                color: $clr-fg-dis;
-                border-color: $clr-brd-dis;
+            &:focus,
+            &:focus-within {
+                color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
+                border-color: var(--bit-Dropdown-disabled-border-color, #{$clr-brd-dis});
                 // Suppress the focus ring while disabled, including the forced-colors outline.
                 outline: none;
                 box-shadow: none;
@@ -89,24 +209,24 @@
 
         .bit-drp-pre,
         .bit-drp-suf {
-            color: $clr-fg-dis;
+            color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
         }
 
         .bit-drp-icn {
             cursor: default;
 
             i:first-child {
-                color: $clr-fg-dis;
+                color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
             }
         }
 
         .bit-drp-lbl {
-            color: $clr-fg-dis;
+            color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
         }
 
         &.bit-drp-hvl {
             .bit-drp-wrp {
-                color: $clr-fg-dis;
+                color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
             }
         }
     }
@@ -114,7 +234,7 @@
 
 .bit-drp-hvl {
     .bit-drp-wrp {
-        color: $clr-fg-pri;
+        color: var(--bit-Dropdown-color, #{$clr-fg-pri});
     }
 }
 
@@ -128,14 +248,18 @@
             }
         }
 
-        &:focus {
+        &:focus,
+        &:focus-within {
             // Suppress the global focus ring on the no-border variant; the underline-ring
             // below still applies for keyboard focus via :focus-visible.
             outline: none;
             box-shadow: none;
         }
 
-        &:focus-visible {
+        // :has() beside :focus-visible for the same reason the boxed variant needs :focus-within: in the
+        // ComboBox mode the keyboard lands on the input inside the field, not on the field.
+        &:focus-visible,
+        &:has(:focus-visible) {
             // No-border variant: keep the no-border look but use an inset underline-style
             // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
             @include focus-underline-ring(var(--bit-drp-clr-focus));
@@ -156,21 +280,23 @@
             }
         }
 
-        &:focus {
+        &:focus,
+        &:focus-within {
             outline: none;
             box-shadow: none;
         }
 
-        &:focus-visible {
+        &:focus-visible,
+        &:has(:focus-visible) {
             @include focus-underline-ring(var(--bit-drp-clr-focus));
         }
     }
 }
 
+// Retunes the field's own background variable rather than overriding the declaration that reads it, so a
+// public --bit-Dropdown-background set on a transparent dropdown still wins the way it does everywhere else.
 .bit-drp.bit-drp-trn {
-    .bit-drp-wrp {
-        background-color: transparent;
-    }
+    --bit-drp-bg: transparent;
 }
 
 .bit-drp-des {
@@ -181,18 +307,18 @@
 // The default description text only. A DescriptionTemplate renders whatever it likes, so styling
 // every span under the container would reach into markup the component knows nothing about.
 .bit-drp-dtx {
-    color: $clr-fg-pri;
-    font-size: $tg-fs-2xs;
+    color: var(--bit-Dropdown-description-color, #{$clr-fg-pri});
+    font-size: var(--bit-Dropdown-description-font-size, #{$tg-fs-2xs});
 }
 
 .bit-drp-lbl {
     margin: 0;
-    font-weight: $tg-fw-semibold;
-    color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: var(--bit-drp-fs);
     padding: spacing(0.625) 0;
     line-height: var(--bit-drp-lbl-lh);
+    color: var(--bit-Dropdown-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-Dropdown-label-font-size, var(--bit-drp-fs));
+    font-weight: var(--bit-Dropdown-label-font-weight, #{$tg-fw-semibold});
 }
 
 // Carries the id the combobox is named by, around the selection display alone. It takes no part in
@@ -201,50 +327,74 @@
     display: contents;
 }
 
+// The two pieces of text the dropdown carries for a screen reader and for nobody else: the live region that
+// announces the result count, the loading state and the selection limit, and the full list of selections the
+// overflow chip stands for. Taken out of the flow rather than hidden, since display:none is also hidden from
+// the readers they are written for.
+.bit-drp-vhd,
+.bit-drp-lvr {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: none;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-drp-wrp {
     display: flex;
     outline: none;
     cursor: pointer;
     user-select: none;
-    color: $clr-fg-sec;
     position: relative;
+    color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
 
     // Centers the content of Prefix/SuffixTemplate; the component's own children opt back
     // into the full height with align-self: stretch.
     align-items: center;
     min-height: var(--bit-drp-h);
     box-sizing: border-box;
-    background-color: $clr-bg-pri;
-    border-radius: $shp-radius-control;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-radius: var(--bit-drp-radius);
+    background-color: var(--bit-Dropdown-background, var(--bit-drp-bg));
+    border: $shp-border-width $shp-border-style var(--bit-Dropdown-border-color, #{$clr-brd-pri});
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
+    // Each state reads the public variable of the property it changes before its own default, so an author
+    // who repaints the text or the glyphs once keeps that color through hover, press and focus instead of
+    // watching the component take it back on the first interaction.
     @media (hover: hover) {
         &:hover {
-            border: $shp-border-width $shp-border-style $clr-brd-pri-hover;
-            color: $clr-fg-pri-hover;
+            color: var(--bit-Dropdown-color, #{$clr-fg-pri-hover});
+            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-icn i {
-                color: $clr-fg-pri-hover;
+                color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-hover});
             }
         }
     }
 
     &:active {
-        border-color: $clr-brd-pri-active;
-        color: $clr-fg-pri-active;
+        color: var(--bit-Dropdown-color, #{$clr-fg-pri-active});
+        border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-active});
 
         .bit-drp-icn {
             i {
-                color: $clr-fg-pri-active;
+                color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-active});
             }
         }
     }
 
-    &:focus {
-        color: $clr-fg-pri;
+    // :focus-within as well as :focus: in the ComboBox mode the keyboard lands on the input inside the
+    // field, so without it a focused ComboBox carried no focus indicator at all (WCAG 2.4.7 / 2.4.13).
+    &:focus,
+    &:focus-within {
+        color: var(--bit-Dropdown-color, #{$clr-fg-pri});
 
         .bit-drp-icn i {
-            color: $clr-fg-pri;
+            color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri});
         }
 
         @include focus-ring(var(--bit-drp-clr-focus));
@@ -266,7 +416,7 @@
     text-overflow: ellipsis;
     font-size: var(--bit-drp-fs);
     line-height: normal;
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-drp-radius);
     padding-inline-start: spacing(1);
 
     // Centered as a line box of its own rather than as a line box stretched over the control: where
@@ -304,9 +454,10 @@
     gap: spacing(0.5);
     align-items: center;
     padding: 0 spacing(0.5);
-    border-radius: $shp-radius-chip;
-    background-color: $clr-bg-sec;
-    border: $shp-border-width $shp-border-style $clr-brd-sec;
+    color: var(--bit-Dropdown-chip-color, inherit);
+    border-radius: var(--bit-Dropdown-chip-radius, #{$shp-radius-chip});
+    background-color: var(--bit-Dropdown-chip-background, #{$clr-bg-sec});
+    border: $shp-border-width $shp-border-style var(--bit-Dropdown-chip-border-color, #{$clr-brd-sec});
 }
 
 // Stands for the selected items that did not fit in the chips display.
@@ -333,15 +484,15 @@
     justify-content: center;
     min-width: spacing(3);
     outline: transparent;
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-Dropdown-chip-radius, #{$shp-radius-chip});
     background-color: transparent;
 
     i {
-        font-size: $tg-fs-xs;
+        font-size: $siz-icon-sm;
     }
 
     &:focus-visible {
-        outline: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
+        @include drp-focus-inset;
     }
 
     @media (hover: hover) {
@@ -363,8 +514,8 @@
         width: unset;
         pointer-events: none;
         display: inline-block;
-        font-size: $tg-fs-xs;
-        color: $clr-fg-sec;
+        font-size: var(--bit-drp-ico);
+        color: var(--bit-Dropdown-icon-color, #{$clr-fg-sec});
     }
 }
 
@@ -374,9 +525,9 @@
     display: flex;
     cursor: pointer;
     text-align: start;
-    color: $clr-fg-pri;
     position: relative;
     align-items: center;
+    color: var(--bit-drp-itm-clr);
     height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
@@ -385,7 +536,7 @@
     border: $shp-border-width $shp-border-style transparent;
 
     &.bit-drp-chd {
-        background-color: $clr-bg-sec;
+        background-color: var(--bit-drp-itm-sel-bg);
 
         .bit-drp-chb {
             border-color: var(--bit-drp-clr);
@@ -399,7 +550,7 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: $clr-bg-pri-hover;
+                background-color: var(--bit-drp-itm-hover-bg);
 
                 .bit-drp-chb {
                     border-color: var(--bit-drp-clr-hover);
@@ -413,17 +564,17 @@
         cursor: default;
 
         .bit-drp-chb {
-            border-color: $clr-fg-dis;
+            border-color: var(--bit-drp-itm-dis-clr);
         }
 
         .bit-drp-itx {
-            color: $clr-fg-dis;
+            color: var(--bit-drp-itm-dis-clr);
         }
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-drp-itm-hover-bg);
 
             .bit-drp-chm {
                 opacity: 1;
@@ -435,7 +586,7 @@
 
                 .bit-drp-chm {
                     opacity: 0;
-                    color: $clr-fg-dis;
+                    color: var(--bit-drp-itm-dis-clr);
                 }
             }
         }
@@ -458,7 +609,13 @@
     text-overflow: ellipsis;
     padding: 0 0 spacing(0.0625);
     background-color: transparent;
-    color: $clr-fg-pri;
+    color: var(--bit-Dropdown-color, #{$clr-fg-pri});
+
+    // The typed text and the placeholder of the ComboBox input are the same two colors the selection
+    // display beside it uses, so the field reads as one control whichever of the two is showing.
+    &::placeholder {
+        color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
+    }
 }
 
 .bit-drp-pre,
@@ -475,7 +632,7 @@
     background: $clr-bg-sec;
 
     span {
-        font-size: $tg-fs-sm;
+        font-size: var(--bit-drp-fs);
         padding-bottom: spacing(0.125);
     }
 }
@@ -490,22 +647,28 @@
     user-select: none;
     position: relative;
     align-items: center;
-    font-size: var(--bit-drp-fs);
+    font-size: var(--bit-drp-itm-fs);
     background-color: transparent;
+
+    // The rows are walked with the arrow keys, which moves the real focus from row to row; without this
+    // the multi select row was left with whatever the browser draws under `button { outline: none }`.
+    &:focus-visible {
+        @include drp-focus-inset;
+    }
 }
 
 .bit-drp-chb {
     display: flex;
     overflow: hidden;
     position: relative;
-    width: $siz-sel-md;
-    min-width: $siz-sel-md;
     align-items: center;
-    height: $siz-sel-md;
     box-sizing: border-box;
     justify-content: center;
+    width: var(--bit-drp-sel);
+    height: var(--bit-drp-sel);
+    min-width: var(--bit-drp-sel);
     transition-duration: $mot-duration;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-selection;
     transition-property: background, border, border-color;
     transition-timing-function: $mot-easing;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -518,13 +681,15 @@
         transition: $mot-duration-short;
         align-items: center;
         justify-content: center;
-        font-size: $tg-fs-xs;
+        // Derived from the box rather than fixed, so the check mark keeps its proportion at every size
+        // class instead of shrinking inside the large one.
+        font-size: calc(var(--bit-drp-sel) * 0.6);
     }
 }
 
 .bit-drp-itx {
     line-height: spacing(2.5);
-    color: $clr-fg-pri;
+    color: var(--bit-drp-itm-clr);
 }
 
 .bit-drp-cbi {
@@ -538,12 +703,12 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: var(--bit-drp-fs);
-    color: $clr-fg-pri;
+    color: var(--bit-Dropdown-color, #{$clr-fg-pri});
     border-style: $shp-border-style;
-    border-color: $clr-brd-pri;
+    border-color: var(--bit-Dropdown-border-color, #{$clr-brd-pri});
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-drp-cal-bg);
 
     // The same logical padding the search box beside it uses, so the text of an RTL panel starts
     // where its input does rather than against the opposite edge.
@@ -552,7 +717,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-sic {
                 i {
@@ -574,18 +739,18 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     font-size: var(--bit-drp-fs);
-    color: $clr-fg-pri;
+    color: var(--bit-Dropdown-color, #{$clr-fg-pri});
     border-style: $shp-border-style;
-    border-color: $clr-brd-pri;
+    border-color: var(--bit-Dropdown-border-color, #{$clr-brd-pri});
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-drp-cal-bg);
     padding-block: spacing(0.125);
     padding-inline-start: spacing(1);
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-sic {
                 i {
@@ -636,9 +801,9 @@
     flex-shrink: 0;
     width: spacing(4);
     text-align: center;
-    font-size: $tg-fs-md;
     flex-direction: column;
     justify-content: center;
+    font-size: var(--bit-drp-ico);
     color: var(--bit-drp-clr);
     transition: width $mot-duration $mot-easing 0s;
 
@@ -668,7 +833,11 @@
     text-overflow: ellipsis;
     padding: 0 0 spacing(0.0625);
     background-color: transparent;
-    color: $clr-fg-pri;
+    color: var(--bit-Dropdown-color, #{$clr-fg-pri});
+
+    &::placeholder {
+        color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
+    }
 }
 
 .bit-drp-sbcc {
@@ -678,7 +847,7 @@
     cursor: pointer;
     flex-direction: row;
     align-items: stretch;
-    flex-basis: $siz-ctrl-md;
+    flex-basis: var(--bit-drp-h);
     margin: spacing(-0.125) 0;
 
     @media (hover: hover) {
@@ -699,7 +868,7 @@
     border: none;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    width: $siz-ctrl-md;
+    width: var(--bit-drp-h);
     user-select: none;
     position: relative;
     text-align: center;
@@ -708,15 +877,15 @@
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-drp-fs);
     color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
 
     // Only the corners at the end of the search box are rounded, so they are named logically: in an
     // RTL callout the button sits at the other end and it is the other two corners that are its own.
-    border-start-end-radius: $shp-radius-control;
-    border-end-end-radius: $shp-radius-control;
+    border-start-end-radius: var(--bit-drp-radius);
+    border-end-end-radius: var(--bit-drp-radius);
 
     span {
         height: 100%;
@@ -732,9 +901,13 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: $tg-fs-xs;
+        font-size: var(--bit-drp-ico);
         line-height: spacing(2);
         color: $clr-fg-pri;
+    }
+
+    &:focus-visible {
+        @include drp-focus-inset;
     }
 }
 
@@ -746,24 +919,29 @@
     display: none;
     position: fixed;
     z-index: $zindex-overlay;
-    background-color: transparent;
+    background-color: var(--bit-Dropdown-overlay-background, transparent);
 }
 
 .bit-drp-clr,
 .bit-drp-cai {
     display: flex;
-    width: spacing(3.75);
 
-    // Follows the height of the dropdown like Prefix/Suffix do, so the button fills the trigger
-    // in every size instead of only in the medium one.
+    // Follows the height of the dropdown like Prefix/Suffix do, so the button fills the trigger in every
+    // size instead of only in the medium one. The width follows it too - derived rather than fixed, so the
+    // button stays the same shape at every size; the offset is what keeps the medium one where it was.
     height: var(--bit-drp-h);
+    width: calc(var(--bit-drp-h) - #{spacing(0.25)});
     justify-content: center;
     background-color: $clr-bg-sec;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-drp-itm-hover-bg);
         }
+    }
+
+    &:focus-visible {
+        @include drp-focus-inset;
     }
 }
 
@@ -775,20 +953,22 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-size: var(--bit-drp-fs);
+    font-family: $tg-font-family;
     animation-fill-mode: both;
     @include drp-size-medium;
+    @include drp-vars;
 
     animation-duration: $mot-duration-long;
-    box-shadow: $box-shadow-popup;
-    border-radius: $shp-radius-popup;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-drp-cal-bg);
+    box-shadow: var(--bit-Dropdown-callout-shadow, #{$box-shadow-popup});
+    border-radius: var(--bit-Dropdown-callout-radius, #{$shp-radius-popup});
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-drp-scn {
     overflow: hidden auto;
-    max-height: $siz-popup-max-height;
+    max-height: var(--bit-Dropdown-callout-max-height, #{$siz-popup-max-height});
 }
 
 // The wrapper is the direct child of the scroll container, so it is the element that can stick; the
@@ -798,15 +978,15 @@
     top: 0;
     z-index: 1;
     position: sticky;
-    background-color: $clr-bg-pri;
+    background-color: var(--bit-drp-cal-bg);
 }
 
 .bit-drp-ihd {
     width: 100%;
-    color: var(--bit-drp-clr);
     cursor: default;
     font-weight: $tg-fw-semibold;
     user-select: none;
+    color: var(--bit-Dropdown-header-color, var(--bit-drp-clr));
     height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
@@ -828,7 +1008,7 @@
     text-align: start;
     user-select: none;
     position: relative;
-    color: $clr-fg-pri;
+    color: var(--bit-drp-itm-clr);
     white-space: nowrap;
     align-items: center;
     height: var(--bit-drp-itm-h);
@@ -844,18 +1024,24 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-drp-itm-hover-bg);
         }
+    }
+
+    // Walking the list with the arrow keys moves the real focus onto these rows, and the transparent
+    // outline above removed the only indicator the browser would otherwise have drawn on them.
+    &:focus-visible {
+        @include drp-focus-inset;
     }
 }
 
 .bit-drp-itm[disabled] {
     cursor: default;
-    color: $clr-fg-dis;
+    color: var(--bit-drp-itm-dis-clr);
 
     // The item text carries its own color, so it has to follow the disabled state explicitly.
     .bit-drp-itx {
-        color: $clr-fg-dis;
+        color: var(--bit-drp-itm-dis-clr);
     }
 
     @media (hover: hover) {
@@ -871,7 +1057,7 @@
 .bit-drp-itm.bit-drp-ctg,
 .bit-drp-dyn.bit-drp-ctg,
 .bit-drp-iwr.bit-drp-ctg {
-    background-color: $clr-bg-pri-hover;
+    background-color: var(--bit-drp-itm-hover-bg);
     box-shadow: inset $shp-border-width-thick 0 0 0 var(--bit-drp-clr);
 }
 
@@ -885,34 +1071,21 @@
     }
 }
 
-// The matched part of an item text while a search is active.
+// The matched part of an item text while a search is active. A sub-element of a row, so it takes its
+// corner from the radius ramp rather than from the popup family the callout around it belongs to.
 .bit-drp-hlt {
     font-weight: $tg-fw-semibold;
-    border-radius: $shp-radius-popup;
+    border-radius: $shp-radius-xs;
     color: var(--bit-drp-clr-text);
     background-color: var(--bit-drp-clr);
 }
 
-// Announces the number of items the current search produced, for screen reader users who cannot see
-// the list shrink as they type. Kept out of view but not out of the accessibility tree.
-.bit-drp-lvr {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: none;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
-}
-
 .bit-drp-sel {
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-drp-itm-sel-bg);
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-drp-itm-hover-bg);
         }
     }
 }
@@ -920,7 +1093,7 @@
 .bit-drp-sep {
     width: 100%;
     height: $siz-divider;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-Dropdown-divider-color, #{$clr-bg-sec});
 }
 
 // The hint that the typed text is still too short to filter by, which sits above the (unfiltered)
@@ -1009,7 +1182,7 @@
         }
 
         .bit-drp-iwr.bit-drp-chd:hover {
-            background-color: $clr-bg-sec;
+            background-color: var(--bit-drp-itm-sel-bg);
 
             .bit-drp-chm {
                 opacity: 1;
@@ -1017,13 +1190,15 @@
         }
 
         .bit-drp-sel:hover {
-            background-color: $clr-bg-sec;
+            background-color: var(--bit-drp-itm-sel-bg);
         }
     }
 }
 
+// The rule under the select all row separates it from the items it commands, which is the same job a Divider
+// item does between two groups, so it follows the same variable.
 .bit-drp-sac {
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-bottom: $shp-border-width $shp-border-style var(--bit-Dropdown-divider-color, #{$clr-brd-sec});
 }
 
 .bit-drp-sai {
@@ -1039,9 +1214,9 @@
             content: "";
             margin: auto;
             position: absolute;
-            width: spacing(1.25);
-            height: spacing(1.25);
-            border-radius: $shp-radius-control;
+            width: calc(var(--bit-drp-sel) * 0.5);
+            height: calc(var(--bit-drp-sel) * 0.5);
+            border-radius: $shp-radius-xs;
             background-color: var(--bit-drp-clr);
         }
     }
@@ -1074,9 +1249,9 @@
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-drp-fs);
     margin-inline-start: auto;
-    border-radius: $shp-radius-control;
+    border-radius: var(--bit-drp-radius);
     background-color: transparent;
     color: $clr-fg-pri;
 
@@ -1089,19 +1264,24 @@
 
         i {
             margin: 0 spacing(0.5);
+            font-size: var(--bit-drp-ico);
         }
     }
 
     @media (hover: hover) {
         &:hover {
             color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            background-color: var(--bit-drp-itm-hover-bg);
         }
     }
 
     &:active {
         color: $clr-fg-pri-active;
         background-color: $clr-bg-pri-active;
+    }
+
+    &:focus-visible {
+        @include drp-focus-inset;
     }
 }
 
@@ -1143,11 +1323,7 @@
 
 
 .bit-drp-sm {
-    --bit-drp-fs: #{$tg-fs-xs};
-    --bit-drp-h: #{$siz-ctrl-sm};
-    --bit-drp-lbl-lh: #{spacing(2.5)};
-    --bit-drp-itm-h: #{$siz-item-sm};
-    --bit-drp-itm-fs: #{$tg-fs-xs};
+    @include drp-size($tg-fs-xs, $siz-ctrl-sm, spacing(2.5), $siz-item-sm, $tg-fs-xs, $siz-icon-sm, $siz-sel-sm);
 }
 
 .bit-drp-md {
@@ -1155,129 +1331,104 @@
 }
 
 .bit-drp-lg {
-    --bit-drp-fs: #{$tg-fs-md};
-    --bit-drp-h: #{$siz-ctrl-lg};
-    --bit-drp-lbl-lh: #{spacing(3)};
-    --bit-drp-itm-h: #{$siz-item-lg};
-    --bit-drp-itm-fs: #{$tg-fs-md};
+    @include drp-size($tg-fs-md, $siz-ctrl-lg, spacing(3), $siz-item-lg, $tg-fs-md, $siz-icon-lg, $siz-sel-lg);
 }
 
 
-.bit-drp-pri {
-    --bit-drp-clr: #{$clr-pri};
-    --bit-drp-clr-hover: #{$clr-pri-hover};
-    --bit-drp-clr-text: #{$clr-pri-text};
-    --bit-drp-clr-focus: #{$clr-pri-focus};
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They leave
+// the four slots the dropdown uses behind as defaults; drp-vars is what reads them back through the public
+// accent variables, so a role and an override never have to be kept in sync here.
+@each $role, $tokens in $bit-color-roles {
+    .bit-drp-#{$role} {
+        --bit-drp-role-main: #{role($tokens, main)};
+        --bit-drp-role-on: #{role($tokens, on)};
+        --bit-drp-role-hover: #{role($tokens, hover)};
+        --bit-drp-role-focus: #{role($tokens, focus)};
+    }
 }
 
-.bit-drp-sec {
-    --bit-drp-clr: #{$clr-sec};
-    --bit-drp-clr-hover: #{$clr-sec-hover};
-    --bit-drp-clr-text: #{$clr-sec-text};
-    --bit-drp-clr-focus: #{$clr-sec-focus};
-}
 
-.bit-drp-ter {
-    --bit-drp-clr: #{$clr-ter};
-    --bit-drp-clr-hover: #{$clr-ter-hover};
-    --bit-drp-clr-text: #{$clr-ter-text};
-    --bit-drp-clr-focus: #{$clr-ter-focus};
-}
+// Windows High Contrast / forced-colors: every background an author paints is replaced by the system pair,
+// so the states the dropdown conveys through a background alone - the selected row, the filled checkbox,
+// the highlighted match, the overflow chip - would all come out looking the same. They are re-established
+// in the system colors, which are the only palette that exists in this mode.
+@media (forced-colors: active) {
+    .bit-drp-chp {
+        border-color: CanvasText;
+    }
 
-.bit-drp-inf {
-    --bit-drp-clr: #{$clr-inf};
-    --bit-drp-clr-hover: #{$clr-inf-hover};
-    --bit-drp-clr-text: #{$clr-inf-text};
-    --bit-drp-clr-focus: #{$clr-inf-focus};
-}
+    .bit-drp-ovf {
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+    }
 
-.bit-drp-suc {
-    --bit-drp-clr: #{$clr-suc};
-    --bit-drp-clr-hover: #{$clr-suc-hover};
-    --bit-drp-clr-text: #{$clr-suc-text};
-    --bit-drp-clr-focus: #{$clr-suc-focus};
-}
+    // An outline rather than a background: the fill is stripped, so a selected row is marked with the one
+    // decoration that survives. Inset, so the scroll container cannot clip it.
+    .bit-drp-sel,
+    .bit-drp-iwr.bit-drp-chd {
+        outline: $shp-border-width-thick $shp-border-style Highlight;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
 
-.bit-drp-wrn {
-    --bit-drp-clr: #{$clr-wrn};
-    --bit-drp-clr-hover: #{$clr-wrn-hover};
-    --bit-drp-clr-text: #{$clr-wrn-text};
-    --bit-drp-clr-focus: #{$clr-wrn-focus};
-}
+    // The bar marking the item Enter would take is a box-shadow, which this mode strips. The row is filled
+    // instead - the way a native select fills its current option - which also tells it apart from the
+    // outline a selected row carries. A system color keyword is honoured here where a palette color is not.
+    .bit-drp-itm.bit-drp-ctg,
+    .bit-drp-dyn.bit-drp-ctg,
+    .bit-drp-iwr.bit-drp-ctg {
+        color: HighlightText;
+        background-color: Highlight;
 
-.bit-drp-swr {
-    --bit-drp-clr: #{$clr-swr};
-    --bit-drp-clr-hover: #{$clr-swr-hover};
-    --bit-drp-clr-text: #{$clr-swr-text};
-    --bit-drp-clr-focus: #{$clr-swr-focus};
-}
+        .bit-drp-itx {
+            color: HighlightText;
+        }
+    }
 
-.bit-drp-err {
-    --bit-drp-clr: #{$clr-err};
-    --bit-drp-clr-hover: #{$clr-err-hover};
-    --bit-drp-clr-text: #{$clr-err-text};
-    --bit-drp-clr-focus: #{$clr-err-focus};
-}
+    // A rule drawn as a background, which is stripped, leaving the groups of a long list running together.
+    .bit-drp-sep {
+        background-color: CanvasText;
+    }
 
-.bit-drp-pbg {
-    --bit-drp-clr: #{$clr-bg-pri};
-    --bit-drp-clr-hover: #{$clr-bg-pri-hover};
-    --bit-drp-clr-text: #{$clr-fg-pri};
-    --bit-drp-clr-focus: #{$clr-bg-pri-focus};
-}
+    .bit-drp-chb {
+        border-color: CanvasText;
+    }
 
-.bit-drp-sbg {
-    --bit-drp-clr: #{$clr-bg-sec};
-    --bit-drp-clr-hover: #{$clr-bg-sec-hover};
-    --bit-drp-clr-text: #{$clr-fg-sec};
-    --bit-drp-clr-focus: #{$clr-bg-sec-focus};
-}
+    .bit-drp-iwr.bit-drp-chd .bit-drp-chb {
+        border-color: Highlight;
+        background-color: Highlight;
 
-.bit-drp-tbg {
-    --bit-drp-clr: #{$clr-bg-ter};
-    --bit-drp-clr-hover: #{$clr-bg-ter-hover};
-    --bit-drp-clr-text: #{$clr-fg-ter};
-    --bit-drp-clr-focus: #{$clr-bg-ter-focus};
-}
+        .bit-drp-chm {
+            color: HighlightText;
+        }
+    }
 
-.bit-drp-pfg {
-    --bit-drp-clr: #{$clr-fg-pri};
-    --bit-drp-clr-hover: #{$clr-fg-pri-hover};
-    --bit-drp-clr-text: #{$clr-bg-pri};
-    --bit-drp-clr-focus: #{$clr-fg-pri-focus};
-}
+    .bit-drp-sai .bit-drp-chb::after {
+        background-color: Highlight;
+    }
 
-.bit-drp-sfg {
-    --bit-drp-clr: #{$clr-fg-sec};
-    --bit-drp-clr-hover: #{$clr-fg-sec-hover};
-    --bit-drp-clr-text: #{$clr-bg-sec};
-    --bit-drp-clr-focus: #{$clr-fg-sec-focus};
-}
+    .bit-drp-hlt {
+        color: HighlightText;
+        background-color: Highlight;
+    }
 
-.bit-drp-tfg {
-    --bit-drp-clr: #{$clr-fg-ter};
-    --bit-drp-clr-hover: #{$clr-fg-ter-hover};
-    --bit-drp-clr-text: #{$clr-bg-ter};
-    --bit-drp-clr-focus: #{$clr-fg-ter-focus};
-}
+    // The spinner's track and its arc are painted the same color here, which stops the ring reading as
+    // motion at all; the arc is put back on the text color so the turning stays visible.
+    .bit-drp-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
 
-.bit-drp-pbr {
-    --bit-drp-clr: #{$clr-brd-pri};
-    --bit-drp-clr-hover: #{$clr-brd-pri-hover};
-    --bit-drp-clr-text: #{$clr-fg-pri};
-    --bit-drp-clr-focus: #{$clr-brd-pri-focus};
-}
+    // Disabled is conveyed through a drained palette, which this mode discards, so it is restated with the
+    // one system color that means exactly that.
+    .bit-drp.bit-dis .bit-drp-wrp,
+    .bit-drp.bit-dis .bit-drp-lbl,
+    .bit-drp-itm[disabled],
+    .bit-drp-iwr.bit-drp-ids .bit-drp-itx {
+        color: GrayText;
+    }
 
-.bit-drp-sbr {
-    --bit-drp-clr: #{$clr-brd-sec};
-    --bit-drp-clr-hover: #{$clr-brd-sec-hover};
-    --bit-drp-clr-text: #{$clr-fg-sec};
-    --bit-drp-clr-focus: #{$clr-brd-sec-focus};
-}
-
-.bit-drp-tbr {
-    --bit-drp-clr: #{$clr-brd-ter};
-    --bit-drp-clr-hover: #{$clr-brd-ter-hover};
-    --bit-drp-clr-text: #{$clr-fg-ter};
-    --bit-drp-clr-focus: #{$clr-brd-ter-focus};
+    .bit-drp-iwr.bit-drp-ids .bit-drp-chb {
+        border-color: GrayText;
+    }
 }

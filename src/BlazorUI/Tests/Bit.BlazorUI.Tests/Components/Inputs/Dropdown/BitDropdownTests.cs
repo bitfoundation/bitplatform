@@ -1416,6 +1416,76 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownCalloutShouldInheritThePublicCssVariablesOfTheStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem;--bit-Dropdown-accent-color:red; --bit-Dropdown-item-height:3rem");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-callout-radius:1rem", Callout = "z-index:9" });
+        });
+
+        // The callout is a sibling of the root (and is moved to the body while it is open), so it inherits
+        // nothing the author sets on the dropdown. The public variables are carried across by hand, from the
+        // Style of the instance and from Styles.Root; Styles.Callout is appended last so it still wins.
+        var callout = component.Find(".bit-drp-cal").GetAttribute("style");
+
+        Assert.IsNotNull(callout);
+        StringAssert.Contains(callout, "--bit-Dropdown-accent-color:red;");
+        StringAssert.Contains(callout, "--bit-Dropdown-item-height:3rem;");
+        StringAssert.Contains(callout, "--bit-Dropdown-callout-radius:1rem;");
+        StringAssert.Contains(callout, "z-index:9");
+        Assert.IsTrue(callout.IndexOf("--bit-Dropdown-callout-radius", StringComparison.Ordinal) < callout.IndexOf("z-index:9", StringComparison.Ordinal));
+
+        // Only the public variables travel: a layout declaration written for the field would move the callout
+        // away from the trigger it is positioned against.
+        Assert.IsFalse(callout.Contains("margin:1rem", StringComparison.Ordinal));
+
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-drp").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+    }
+
+    [TestMethod]
+    public void BitDropdownCalloutShouldCarryOnlyItsOwnStyleWithoutPublicCssVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Style, "margin:1rem");
+            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Callout = "z-index:9" });
+        });
+
+        Assert.AreEqual("z-index:9", component.Find(".bit-drp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxShouldNameTheListItFilters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // The search box sits outside the listbox, so without aria-controls it is a field that narrows
+        // nothing a screen reader can tie it to.
+        var listId = component.Find(".bit-drp-scn").GetAttribute("id");
+
+        Assert.IsFalse(string.IsNullOrEmpty(listId));
+        Assert.AreEqual(listId, component.Find(".bit-drp-sin").GetAttribute("aria-controls"));
+    }
+
+    [TestMethod]
     public void BitDropdownComboTypingWhileClosedShouldOpenAndKeepFilter()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -1808,11 +1878,21 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.DefaultValues, items.Select(i => i.Value).ToArray());
         });
 
-        // The count alone says nothing about what got collapsed, so the hidden items are named.
+        // The count alone says nothing about what got collapsed, so the hidden items are named. The names are
+        // RENDERED rather than asserted through aria-label, which is not exposed on an element with no role of
+        // its own: the counter is hidden from a screen reader and the visually hidden list takes its place,
+        // both in the accessible name of the combobox (computed from this subtree) and in what a reader walks.
         var overflow = component.Find(".bit-drp-ovf");
-        Assert.AreEqual("+3", overflow.TextContent.Trim());
         Assert.AreEqual("Orange, Banana, Broccoli", overflow.GetAttribute("title"));
-        Assert.AreEqual("Orange, Banana, Broccoli", overflow.GetAttribute("aria-label"));
+        Assert.IsFalse(overflow.HasAttribute("aria-label"));
+
+        var counter = overflow.QuerySelector("[aria-hidden='true']");
+        Assert.IsNotNull(counter);
+        Assert.AreEqual("+3", counter.TextContent.Trim());
+
+        var names = overflow.QuerySelector(".bit-drp-vhd");
+        Assert.IsNotNull(names);
+        Assert.AreEqual("Orange, Banana, Broccoli", names.TextContent.Trim());
     }
 
     [TestMethod]
