@@ -36,6 +36,16 @@ public partial class WebStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
+        if (value is null)
+        {
+            // Web Storage stringifies whatever it is handed, so a null crosses JS interop and comes back out of
+            // GetItem as the four characters "null" - a value that is neither null nor empty and therefore passes
+            // every emptiness guard in the app. Removing the key is what MauiStorageService already does, through
+            // Preferences.Set(key, null).
+            await RemoveItem(key);
+            return;
+        }
+
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
         // the previous value where GetItem still reads it - and since GetItem reads localStorage first, a temporary
         // write would be shadowed by the persistent value it supersedes.

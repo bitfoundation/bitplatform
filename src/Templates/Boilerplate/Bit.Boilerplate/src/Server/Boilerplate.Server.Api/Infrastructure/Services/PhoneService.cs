@@ -14,7 +14,7 @@ public partial class PhoneService
 
     public virtual string? NormalizePhoneNumber(string? phoneNumber)
     {
-        if (string.IsNullOrEmpty(phoneNumber))
+        if (string.IsNullOrWhiteSpace(phoneNumber))
             return null;
 
         // Get region from Cloudflare "CF-IPCountry" header if available, otherwise use UI culture's region if multilingual is enabled, or fallback to the default region.

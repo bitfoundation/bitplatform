@@ -1,9 +1,7 @@
 //+:cnd:noEmit
-using Aspire.Hosting.Maui;
 //#if (database == "SqlServer" || database == "PostgreSQL" || redis == true || filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
 //#endif
-using Aspire.Hosting.DevTunnels;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
 //#endif
@@ -47,7 +45,7 @@ public static class IDistributedApplicationBuilderExtensions
                 {
                     redis.WithRedisInsight()
                         .WithRedisCommander()
-                        .WithImage("redis/redis-stack", "latest")
+                        .WithImage("redis", "8")
                         .WithArgs(
                          "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
                          "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
@@ -80,7 +78,7 @@ public static class IDistributedApplicationBuilderExtensions
                 {
                     redis.WithRedisInsight()
                         .WithRedisCommander()
-                        .WithImage("redis/redis-stack", "latest")
+                        .WithImage("redis", "8")
                         .WithDataVolume()
                         .WithArgs(
                             "--dir", "/data",
@@ -188,57 +186,65 @@ public static class IDistributedApplicationBuilderExtensions
         }
         //#endif
 
+        //#if (cloudflare == true)
         /// <summary>
-        /// Adds the .NET MAUI Blazor Hybrid project and configures it for all supported device targets
-        /// (Windows, macOS Catalyst, iOS Device, iOS Simulator, Android Device, Android Emulator).
-        /// Uses dev tunnels for OpenTelemetry data collection on mobile/remote targets.
+        /// Exposes the server projects through a Cloudflare Tunnel (cloudflared dials out, so the origin needs no
+        /// public ip). Opt-in: does nothing unless the <c>cloudflare-tunnel-*</c> parameters are set (see appsettings.Development.json).
         /// </summary>
-        public IResourceBuilder<MauiProjectResource> AddMaui(
-            IResourceBuilder<ProjectResource> serverWebProject,
-            IResourceBuilder<DevTunnelResource> tunnel)
+        public void AddCloudflareTunnels(
+            IResourceBuilder<ProjectResource> serverWebProject
+            //#if (api == "Standalone")
+            , IResourceBuilder<ProjectResource> serverApiProject
+            //#endif
+            )
         {
-            var mauiapp = builder.AddMauiProject("mauiapp", @"../../Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj");
-
-            if (OperatingSystem.IsWindows())
+            var serverWebDomain = builder.Configuration["Parameters:cloudflare-tunnel-web-domain"];
+            if (string.IsNullOrWhiteSpace(serverWebDomain) is false)
             {
-                mauiapp.AddWindowsDevice()
-                    .WithExplicitStart()
+                var tunnel = builder.AddCloudflareTunnel("cloudflare-tunnel-web");
+                serverWebProject.WithCloudflareTunnel(tunnel, hostname: serverWebDomain);
+            }
+            else
+            {
+                builder.AddCloudflareQuickTunnel("cloudflare-tunnel-web")
                     .WithReference(serverWebProject);
             }
 
-            if (OperatingSystem.IsMacOS())
+            //#if (api == "Standalone")
+            // Standalone's API is a separate server, so expose it on its own hostname when one is configured.
+            var serverApiDomain = builder.Configuration["Parameters:cloudflare-tunnel-api-domain"];
+            if (string.IsNullOrWhiteSpace(serverApiDomain) is false)
             {
-                mauiapp.AddMacCatalystDevice()
-                    .WithExplicitStart()
-                    .WithReference(serverWebProject);
+                var tunnel = builder.AddCloudflareTunnel("cloudflare-tunnel-api");
+                serverApiProject.WithCloudflareTunnel(tunnel, hostname: serverApiDomain);
+            }
+            else
+            {
+                builder.AddCloudflareQuickTunnel("cloudflare-tunnel-api")
+                    .WithReference(serverApiProject);
+            }
+            //#endif
+        }
+        //#endif
+
+        /// <summary>
+        /// Projects' launchSettings bind <c>http://*:port</c> so a direct <c>dotnet run</c> is reachable over the LAN
+        /// (e.g. from Android/iOS devices), but Aspire can't give a container a reachable address for a wildcard host,
+        /// so that endpoint only makes the ingress container fail to start. Drops every wildcard endpoint from the
+        /// model - run mode only, and launchSettings is untouched, so a direct run still binds every interface.
+        /// </summary>
+        public IDistributedApplicationBuilder RemoveWildcardEndpoints()
+        {
+            if (builder.ExecutionContext.IsRunMode is false)
+                return builder;
+
+            foreach (var project in builder.Resources.OfType<ProjectResource>().ToArray())
+            {
+                foreach (var wildcard in project.Annotations.OfType<EndpointAnnotation>().Where(endpoint => endpoint.TargetHost is "*").ToArray())
+                    project.Annotations.Remove(wildcard);
             }
 
-            if (OperatingSystem.IsMacOS())
-            {
-                // Windows supports iOS Simulator and Physical devices if there's a mac connected to network, but the following runners only work on macOS for now.
-
-                mauiapp.AddiOSDevice()
-                    .WithExplicitStart()
-                    .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-                    .WithReference(serverWebProject, tunnel);
-
-                mauiapp.AddiOSSimulator()
-                    .WithExplicitStart()
-                    .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-                    .WithReference(serverWebProject, tunnel);
-            }
-
-            mauiapp.AddAndroidDevice()
-                .WithExplicitStart()
-                .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-                .WithReference(serverWebProject, tunnel);
-
-            mauiapp.AddAndroidEmulator()
-                .WithExplicitStart()
-                .WithOtlpDevTunnel() // Required for OpenTelemetry data collection
-                .WithReference(serverWebProject, tunnel);
-
-            return mauiapp;
+            return builder;
         }
 
         /// <summary>

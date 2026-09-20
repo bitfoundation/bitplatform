@@ -125,7 +125,7 @@ public partial class AppProblemDetails
 
     private static Type? ResolveExceptionType(string? type)
     {
-        if (string.IsNullOrEmpty(type))
+        if (string.IsNullOrWhiteSpace(type))
             return null;
 
         var assembly = typeof(KnownException).Assembly;

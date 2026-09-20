@@ -4,6 +4,7 @@ public partial class AdsService : IAdsService, IAsyncDisposable
 {
     [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
+    [AutoInject] private ConsentService consentService = default!;
     [AutoInject] private ILogger<AdsService> logger = default!;
 
     /// <summary>
@@ -19,6 +20,11 @@ public partial class AdsService : IAdsService, IAsyncDisposable
 
     public async Task<AdInitResult> Init(string adUnitPath)
     {
+        // The gate is here, not at the call site: this is the only path to Ads.init, and gpt.js sets identifiers of
+        // its own the moment it loads. A caller that forgets to check cannot load an ad anyway.
+        if (await consentService.IsGranted(ConsentCategory.Advertising) is false)
+            return AdInitResult.ConsentRequired;
+
         if (initTsc is not null) return await initTsc.Task; // An init that is already running or already succeeded.
 
         var tsc = initTsc = new();
@@ -66,6 +72,14 @@ public partial class AdsService : IAdsService, IAsyncDisposable
 
     public async Task<AdWatchResult> Watch()
     {
+        // Checked again here, not just in Init: withdrawing consent does not destroy a slot that is already loaded,
+        // so without this the user can still be shown the ad they just refused.
+        if (await consentService.IsGranted(ConsentCategory.Advertising) is false)
+        {
+            initTsc = null; // The slot is no longer ours to show; the next Init has to define a new one.
+            return AdWatchResult.Failed;
+        }
+
         watchTsc?.TrySetCanceled();
         var tsc = watchTsc = new();
 

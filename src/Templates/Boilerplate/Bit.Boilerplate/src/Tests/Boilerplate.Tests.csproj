@@ -4,7 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
-        <TestingPlatformCommandLineArguments>--settings ./.runsettings</TestingPlatformCommandLineArguments>
+        <TestingPlatformCommandLineArguments>--settings ./.runsettings --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults</TestingPlatformCommandLineArguments>
         <EnableMSTestRunner>true</EnableMSTestRunner>
     </PropertyGroup>
 

@@ -100,7 +100,7 @@ public partial class ManageMyTenantsPage
 
         if (await AuthManager.SwitchTenant(tenant.Id, CurrentCancellationToken))
         {
-            await Refresh();
+            Refresh();
         }
     }
 
@@ -120,7 +120,7 @@ public partial class ManageMyTenantsPage
 
             if (await AuthManager.SwitchTenant(createdTenant.Id, CurrentCancellationToken))
             {
-                await Refresh();
+                Refresh();
                 return;
             }
 
@@ -153,7 +153,7 @@ public partial class ManageMyTenantsPage
             // Update only ever targets the current tenant (See ITenantController.Update / AppFeatures.Management.Tenant_Manage).
             await tenantController.Update(editingTenant, CurrentCancellationToken);
 
-            await LoadTenants();
+            Refresh();
         }
         catch (ResourceValidationException e)
         {
@@ -194,21 +194,12 @@ public partial class ManageMyTenantsPage
 
         try
         {
-            var wasDecliningInvitation = IsDecliningInvitation(tenant);
-
             await userController.LeaveTenant(tenant.Id, CurrentCancellationToken);
 
             // Refreshing the token makes the server re-evaluate the tenant claim (falling back to another accepted tenant or none).
-            var accessToken = await AuthManager.RefreshToken(requestedBy: "LeaveTenant");
+            await AuthManager.RefreshToken(requestedBy: "LeaveTenant");
 
-            if (string.IsNullOrEmpty(accessToken) is false)
-            {
-                SnackBarService.Success(wasDecliningInvitation
-                                        ? Localizer[nameof(AppStrings.DeclinedInvitationSuccessfullyMessage)]
-                                        : Localizer[nameof(AppStrings.LeftTenantSuccessfullyMessage)]);
-            }
-
-            await Refresh();
+            Refresh();
         }
         catch (KnownException e)
         {
@@ -251,9 +242,13 @@ public partial class ManageMyTenantsPage
         }
     }
 
-    private async Task Refresh()
+    /// <summary>
+    /// Soft restarts the app after an operation that changed the current tenant (switched, created, renamed, left),
+    /// so everything showing tenant scoped data is rebuilt - including this page, whose <see cref="LoadTenants"/>
+    /// runs again as it is created.
+    /// </summary>
+    private void Refresh()
     {
-        await LoadTenants();
-        PubSubService.Publish(ClientAppMessages.CURRENT_TENANT_CHANGED, currentTenant);
+        PubSubService.Publish(ClientAppMessages.SOFT_RESTART);
     }
 }

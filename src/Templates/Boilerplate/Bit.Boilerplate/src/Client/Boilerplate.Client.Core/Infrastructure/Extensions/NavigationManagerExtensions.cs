@@ -18,14 +18,5 @@ public static partial class NavigationManagerExtensions
         {
             return navigationManager.ToBaseRelativePath(navigationManager.Uri);
         }
-
-        /// <summary>
-        /// This would re-render the current page.
-        /// Note that <see cref="NavigationManager.Refresh(bool)"/> might either decide to do nothing at all of refresh the entire app dependeing on the situation
-        /// </summary>
-        public void RefreshCurrentPage()
-        {
-            navigationManager.NavigateTo(navigationManager.GetUriPath(), forceLoad: false, replace: true);
-        }
     }
 }

@@ -25,11 +25,28 @@
         --bit-clr-err: CanvasText;
         --bit-clr-suc: CanvasText;
         --bit-clr-wrn: CanvasText;
+
+        // Elevation is meaningless against a two-color system palette, so every shadow token is
+        // flattened. The per-family ones have to be named individually rather than left to follow
+        // --bit-shd-cal: they are aliases only in the fallback tier (family-tokens.scss) - every
+        // packaged theme, this one included, resolves them to literals of its own afterwards.
         --bit-shd-cal: none;
+        --bit-shd-cal2: none;
+        --bit-shd-card: none;
+        --bit-shd-popup: none;
+        --bit-shd-dialog: none;
+        --bit-shd-sheet: none;
+        --bit-shd-tooltip: none;
+        --bit-shd-snackbar: none;
+        --bit-shd-appbar-top: none;
+        --bit-shd-appbar-bottom: none;
         --bit-shd-sm: none;
         --bit-shd-nm: none;
         --bit-shd-md: none;
         --bit-shd-lg: none;
+        --bit-shd-xl: none;
+        --bit-shd-2xl: none;
+        --bit-shd-inner: none;
 
         // Focus must remain visible in High Contrast - use system Highlight color and a single solid ring.
         --bit-clr-pri-focus: Highlight;

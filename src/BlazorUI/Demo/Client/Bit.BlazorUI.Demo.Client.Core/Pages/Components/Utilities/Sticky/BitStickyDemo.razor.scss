@@ -17,11 +17,63 @@
     border: 1px solid gray;
 }
 
+// The positioned neighbor of the ZIndex example: its stacking order sits between the default z-index
+// of the component (1) and the raised one the example passes (3), so the two containers show the
+// sticky passing under and over the very same box.
+.positioned-box {
+    z-index: 2;
+    color: black;
+    padding: 0.5rem;
+    position: relative;
+    background-color: cadetblue;
+}
+
+.demo-table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: separate;
+
+    td {
+        padding: 0.5rem;
+    }
+}
+
 ::deep {
     .sticky {
         color: black;
         padding: 0.5rem;
         background-color: #AAA;
         border: 1px solid #777;
+    }
+
+    // Passed as the StuckClass, so it lands on markup the component itself writes and needs ::deep.
+    .stuck-shadow {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    // The stuck edge classes the component writes on itself: the shadow falls away from whichever of
+    // the two edges of a TopAndBottom sticky is holding the bar, with no C# deciding which.
+    .edge-shadow.bit-stk-stc-top {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .edge-shadow.bit-stk-stc-btm {
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    // The frozen table header of the Element example, which is a th the component renders itself.
+    .table-head {
+        color: black;
+        text-align: start;
+        padding: 0.5rem;
+        background-color: #AAA;
+    }
+
+    .custom-class {
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: darkslateblue;
+        border: 2px dashed mediumpurple;
     }
 }

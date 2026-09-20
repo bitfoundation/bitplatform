@@ -40,7 +40,7 @@ public partial class IdentityController
         });
 
         await cache.SetAsync(GetAssertionOptionsCacheKey(options.Challenge), options,
-            options => options.Duration = TimeSpan.FromMinutes(3),
+            options => options.SetDuration(TimeSpan.FromMinutes(3)).SetPriority(CacheItemPriority.NeverRemove),
             cancellationToken);
 
         return options;

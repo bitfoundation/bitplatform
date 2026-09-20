@@ -50,6 +50,33 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Invokes a service's teardown function (a module's <c>disposeAll</c> / <c>releaseAll</c>) from its
+    /// <c>DisposeAsync</c> - unless, with lazy scripts, nothing in this runtime ever loaded that module.
+    /// </summary>
+    /// <param name="jsRuntime">The runtime the service belongs to.</param>
+    /// <param name="identifier">The teardown function, <c>BitButil.&lt;module&gt;.disposeAll</c> or similar.</param>
+    /// <param name="dependentModules">
+    /// Every module that fills the teardown module's registry by calling into it (<c>dom</c> and <c>shadowDom</c>
+    /// for <c>domHandles</c>). A lazy-loaded module file inlines its dependencies, so the loader only ever records
+    /// the module that was asked for: without these, state registered through a dependent would look as if it
+    /// could not exist, and would never be released.
+    /// </param>
+    /// <remarks>
+    /// A scoped service is disposed with its scope whether or not it was used, so a teardown call made
+    /// unconditionally imports the module in lazy mode just to release state that cannot exist: every page reload
+    /// in a BlazorWebView, and every circuit that ends, downloaded the modules of every injected service it never
+    /// touched. When neither the module nor any of its <paramref name="dependentModules"/> was requested, nothing
+    /// registered anything in it, so there is nothing to tear down. In bundle mode every module is already on the
+    /// page, and the call goes through as before.
+    /// </remarks>
+    internal static ValueTask InvokeTeardown(this IJSRuntime jsRuntime, string identifier, params string[] dependentModules)
+    {
+        if (BitButil.LazyScriptsEnabled && ButilScriptLoader.IsModuleRequested(jsRuntime, identifier, dependentModules) is false) return default;
+
+        return jsRuntime.InvokeVoid(identifier);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for VOID calls. Honors <see cref="BitButil.FastInvokeEnabled"/> and,
     /// when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.
@@ -150,6 +177,38 @@ internal static class InternalJSRuntimeExtensions
     }
 
     /// <summary>
+    /// Invokes a JS listener-registration function - one that reports whether it actually attached
+    /// by returning a boolean - and tells the caller whether the registration took.
+    /// </summary>
+    /// <remarks>
+    /// Plain <see cref="Invoke{TValue}(IJSRuntime, string, object?[])"/> can't be used for this:
+    /// during prerender/SSR it hands back <c>default(bool)</c>, which is indistinguishable from the
+    /// JS side refusing to attach. Nothing is registered during prerender and nothing failed either
+    /// - the caller's subscription is simply inert until the app is interactive - so this reports
+    /// success there, and only a real <c>false</c> from JS means "the listener is not attached".
+    /// </remarks>
+    internal static async ValueTask<bool> InvokeRegister(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return true;
+
+        return await jsRuntime.Invoke<bool>(identifier, args);
+    }
+
+    /// <summary>
+    /// <see cref="InvokeRegister"/> for a registration function that reports failure by returning
+    /// the reason as a string, and null when it attached. The reason travels back with the call
+    /// rather than through the error callback, so the caller raises it exactly once and can put the
+    /// real message on the exception it throws.
+    /// </summary>
+    /// <remarks>Prerender/SSR reports success, for the reason given on <see cref="InvokeRegister"/>.</remarks>
+    internal static async ValueTask<string?> InvokeRegisterOrError(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (jsRuntime.IsJsRuntimeInvalid()) return null;
+
+        return await jsRuntime.Invoke<string?>(identifier, args);
+    }
+
+    /// <summary>
     /// Opt-in fast invoke for value-returning calls. Honors <see cref="BitButil.FastInvokeEnabled"/>
     /// and, when running under an <see cref="IJSInProcessRuntime"/> (Blazor WebAssembly), calls the
     /// JS function synchronously.
@@ -212,6 +271,47 @@ internal static class InternalJSRuntimeExtensions
             : await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
 
+
+    /// <summary>
+    /// Bridges a <see cref="CancellationToken"/> to a JavaScript-side abort: when the token fires, the
+    /// given interop function is invoked (fire-and-forget) with the given arguments. Returns the
+    /// registration to dispose once the call it guards has settled - or <c>default</c> when the token
+    /// can never be cancelled, so a <see cref="CancellationToken.None"/> caller pays nothing.
+    /// </summary>
+    /// <remarks>
+    /// One implementation for every cancellable wrapper (<see cref="Fetch"/>, <see cref="WebOtp"/>,
+    /// <see cref="DigitalCredentials"/>), because the callback runs in whatever context cancels the
+    /// token - a component's <c>Dispose</c>, a timer thread - and has nothing to hand an exception to.
+    /// A circuit that is already gone makes the interop call throw or fault; both are swallowed here,
+    /// the way any teardown-time interop failure is, rather than surfacing out of the caller's
+    /// <c>CancellationTokenSource.Cancel()</c> or as an unobserved task exception. An already-cancelled
+    /// token runs the callback synchronously inside this method, which is what dispatches the abort
+    /// <em>before</em> the call it belongs to - the JavaScript side holds such an abort against the
+    /// call's handle (see <c>abortable.ts</c>).
+    /// </remarks>
+    internal static CancellationTokenRegistration RegisterJsAbort(this IJSRuntime jsRuntime, CancellationToken cancellationToken, string identifier, params object?[]? args)
+    {
+        if (cancellationToken.CanBeCanceled is false) return default;
+
+        return cancellationToken.Register(static state =>
+        {
+            var (js, id, arguments) = ((IJSRuntime, string, object?[]?))state!;
+            try
+            {
+                var pending = js.InvokeVoid(id, arguments);
+                if (pending.IsCompletedSuccessfully is false) _ = Observe(pending);
+            }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException()) { }
+        }, (jsRuntime, identifier, args));
+
+        // Awaited only to observe a failure: the abort itself is the whole of the work, and there is no
+        // caller left to report it to.
+        static async Task Observe(ValueTask pending)
+        {
+            try { await pending; }
+            catch (Exception exception) when (exception.IsIgnorableDisposalException() || exception is JSException) { }
+        }
+    }
 
     /// <summary>
     /// True for exceptions that are safe to swallow while tearing down a wrapper (its

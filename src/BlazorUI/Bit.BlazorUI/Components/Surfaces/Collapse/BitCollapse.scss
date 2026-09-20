@@ -1,13 +1,33 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The size is animated by the grid track rather than by a max-height guess: a track going from 0fr to 1fr
+// interpolates, so the collapse opens to whatever its content actually measures and closes to nothing, with
+// no magic number to keep in sync with the content and nothing to clip when the content outgrows it. The
+// track is on the root rather than on the content region because the box a track sizes cannot be the box
+// that carries the padding: a border box never shrinks below its own padding, so a padded grid item leaves
+// the padding on the screen as a strip of the collapse that never closes.
 .bit-col {
+    // The pace of the transition. The Duration and Delay parameters arrive inline as the -full tokens and
+    // the transitions read these derived ones, following the -full pattern of motion.fluent.scss, so the
+    // reduced-motion query below can still collapse a pace that was set inline. The fallbacks are the motion
+    // theme, so a collapse that sets neither animates exactly like every other transition in the library.
+    --bit-col-duration: var(--bit-col-dur-full, #{$mot-duration-long});
+    --bit-col-delay: var(--bit-col-del-full, 0ms);
+    // The easing is not something reduced motion has an opinion about - it shapes the transition rather than
+    // lengthening it - so it is read straight from the parameter.
+    --bit-col-easing: var(--bit-col-eas, #{$mot-easing});
+    --bit-col-size: var(--bit-col-csz, 0px);
+
     width: 100%;
+    display: grid;
     font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows var(--bit-col-duration) var(--bit-col-easing) var(--bit-col-delay);
 
     &.bit-dis {
         color: $clr-fg-dis;
@@ -15,21 +35,167 @@
     }
 }
 
-.bit-col-con {
-    height: auto;
-    overflow: hidden;
-    padding: 0 spacing(1.5);
-    transition: all $mot-duration-long $mot-easing 0ms;
+// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration transition never fires
+// its transitionend event. The delay goes with it: a transition that no longer plays has nothing to postpone,
+// and leaving it would hold the section where it is for as long as the delay before it jumped to the new one.
+@media (prefers-reduced-motion: reduce) {
+    .bit-col {
+        --bit-col-duration: 0.01ms;
+        --bit-col-delay: 0ms;
+    }
 }
 
-.bit-col-cco {
-    opacity: 0;
-    max-height: 0;
-    margin: spacing(-1.5) 0;
+// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
+// collapse's own tokens are restored here, both for a collapse that sets ForceAnimation itself and for one
+// sitting inside an opted-out subtree. ForceAnimation is the only thing that takes a collapse out of the
+// reduced-motion collapse above - setting a Duration is a matter of pace, not of consent.
+.bit-col.bit-fam,
+.bit-fam .bit-col {
+    --bit-col-duration: var(--bit-col-dur-full, #{$mot-duration-long});
+    --bit-col-delay: var(--bit-col-del-full, 0ms);
+}
+
+
+.bit-col-exp {
+    grid-template-rows: 1fr;
+}
+
+.bit-col-col {
+    grid-template-rows: 0fr;
+}
+
+
+.bit-col-pbg {
+    background-color: $clr-bg-pri;
+}
+
+.bit-col-sbg {
+    background-color: $clr-bg-sec;
+}
+
+.bit-col-tbg {
+    background-color: $clr-bg-ter;
+}
+
+.bit-col-rbg {
+    background-color: transparent;
+}
+
+
+// min-height:0 is what lets the 0fr track actually reach zero - a grid item contributes its min-content size
+// to an fr track otherwise - and overflow:hidden is what clips the content while the track is smaller than it.
+.bit-col-con {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: opacity var(--bit-col-duration) var(--bit-col-easing) var(--bit-col-delay),
+                visibility 0s linear var(--bit-col-delay);
+
+    // The content region is keyboard-focusable while it is on the screen; the outline is inset so it stays
+    // inside the box the collapse clips rather than poking past its edge.
+    &:focus-visible {
+        outline: #{$shp-focus-ring-width} solid $clr-pri-focus;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 .bit-col-cex {
     opacity: 1;
-    height: auto;
-    margin: spacing(1.5) 0;
+}
+
+.bit-col-cco {
+    opacity: 0;
+    visibility: hidden;
+
+    // Opening shows the content at once and then grows the track; closing has to keep the content on the
+    // screen for the whole of the transition and only take it out of the accessibility tree at the end,
+    // which is what the duration-long delay on visibility is for.
+    transition-delay: var(--bit-col-delay),
+                      calc(var(--bit-col-delay) + var(--bit-col-duration));
+}
+
+// The padding sits inside the box the track sizes rather than on it, so a closed collapse takes up nothing at
+// all instead of a strip of padding, and the padding is clipped away with the content it insets on the way down.
+.bit-col-wrp {
+    box-sizing: border-box;
+    padding: spacing(1.5);
+}
+
+.bit-col-npd > .bit-col-con > .bit-col-wrp {
+    padding: 0;
+}
+
+// The class is only on the element once the expand transition has finished, so nothing escapes the collapse
+// while the track is still growing; what escapes afterwards is a focus ring, a shadow or a menu dropping out
+// of a control inside the section, none of which the box the collapse has finished drawing should cut off.
+.bit-col-ncl > .bit-col-con {
+    overflow: visible;
+}
+
+
+// A peek keeps part of the content on the screen while the collapse is closed, so the fade is taken off and
+// the floor of the collapsed track is raised to the requested size instead of falling to nothing. The floor
+// is on the content region because that is the box the track sizes, which is also what makes the peek the
+// size of the closed section rather than of the content inside its padding.
+.bit-col-pek {
+    > .bit-col-con {
+        min-height: var(--bit-col-size);
+    }
+
+    // inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
+    > .bit-col-cco {
+        visibility: inherit;
+    }
+}
+
+
+.bit-col-nfd > .bit-col-cco {
+    opacity: 1;
+}
+
+
+// A searchable collapse hides its closed content with the hidden="until-found" attribute the component
+// renders at the end of the close, and that attribute is the only thing allowed to hide it: text the
+// stylesheet has hidden with visibility is text find-in-page skips, which is the whole of what the
+// parameter is for.
+// inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
+.bit-col-huf > .bit-col-cco {
+    visibility: inherit;
+}
+
+
+// A horizontal collapse is the same track animation turned a quarter: the columns carry the size, the root
+// shrinks to its content instead of filling the line, and the wrapper keeps its natural width so the track
+// clips it rather than reflowing it a word at a time.
+.bit-col-hor {
+    width: max-content;
+    max-width: 100%;
+    grid-template-rows: none;
+    transition-property: grid-template-columns;
+
+    &.bit-col-exp {
+        grid-template-columns: 1fr;
+    }
+
+    &.bit-col-col {
+        grid-template-columns: 0fr;
+    }
+
+    > .bit-col-con > .bit-col-wrp {
+        width: max-content;
+        max-width: 100%;
+    }
+
+    &.bit-col-pek > .bit-col-con {
+        min-height: 0;
+        min-width: var(--bit-col-size);
+    }
+}
+
+
+// Last, so it wins over the transition-property the horizontal rules above put back on the root.
+.bit-col-nan,
+.bit-col-nan > .bit-col-con {
+    transition: none;
 }

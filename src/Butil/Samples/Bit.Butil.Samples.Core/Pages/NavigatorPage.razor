@@ -12,7 +12,7 @@
 @@inject Bit.Butil.Navigator navigator
 
 var userAgent = await navigator.GetUserAgent();
-await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitplatform.dev" });
+await navigator.Share(new ShareData { Title = "Bit.Butil", Url = "https://bitplatform.dev" });
 </pre>
 
 <div class="stack" style="margin-top:1.5rem">
@@ -35,6 +35,7 @@ await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitpla
             <button @onclick="@GetIsPdfViewerEnabled">IsPdfViewerEnabled</button>
             <button @onclick="@GetIsWebDriver">IsWebDriver</button>
             <button @onclick="@GetCanShare">CanShare</button>
+            <button @onclick="@GetIsInputPending">IsInputPending</button>
         </div>
     </DemoCard>
 
@@ -117,6 +118,13 @@ await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitpla
         await output.Success("IsPdfViewerEnabled →", await navigator.IsPdfViewerEnabled());
     }
 
+    private async Task GetIsInputPending()
+    {
+        // Chromium-only; elsewhere it answers false, which is what keeps a loop built around it
+        // running instead of yielding forever.
+        await output.Success("IsInputPending →", await navigator.IsInputPending());
+    }
+
     private async Task GetUserAgent()
     {
         await output.Success("UserAgent →", await navigator.GetUserAgent());
@@ -137,8 +145,8 @@ await navigator.Share(new ShareData { title = "Bit.Butil", url = "https://bitpla
         var shareData = new ShareData()
         {
             Text = textValue,
-            title = titleValue,
-            url = urlValue
+            Title = titleValue,
+            Url = urlValue
         };
 
         await navigator.Share(shareData);

@@ -22,6 +22,7 @@ public sealed class NotificationHandle : IAsyncDisposable
     /// <summary>Closes the notification programmatically.</summary>
     public ValueTask Close() => _js.InvokeVoid("BitButil.notification.close", _id);
 
+    /// <summary>Closes the notification if it is still on screen, and stops its callbacks. Calling it again does nothing.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;

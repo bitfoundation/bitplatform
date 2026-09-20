@@ -4,6 +4,7 @@ using FluentStorage.Storage;
 using System.Diagnostics.Metrics;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Shared.Features.Attachments;
+using Boilerplate.Server.Shared.Infrastructure.Services;
 
 namespace Boilerplate.Server.Api.Features.Attachments;
 
@@ -24,17 +25,18 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     [AutoInject] private IHubContext<AppHub> appHubContext = default!;
     //#endif
 
-    //#if (module == "Sales" || module == "Admin")
     [AutoInject] private ResponseCacheService responseCacheService = default!;
-    //#endif
 
     [AutoInject] private IConfiguration configuration = default!;
+
+    /// <summary>The largest upload every endpoint here accepts; the Dev MCP reports this value rather than a copy of it.</summary>
+    public const int MaxUploadSizeBytes = 11 * 1024 * 1024;
 
     // For open telemetry metrics
     private static readonly Histogram<double> updateResizeDurationHistogram = Meter.Current.CreateHistogram<double>("attachment.resize_duration", "ms", "Elapsed time to resize and persist an uploaded image");
 
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadUserProfilePicture(IFormFile? file, CancellationToken cancellationToken)
     {
         return await UploadAttachment(
@@ -46,7 +48,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     //#if (module == "Sales" || module == "Admin")
     [HttpPost("{productId}")]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
     [Authorize(Policy = AppFeatures.AdminPanel.ProductCatalog_Manage)]
     //#if (multitenant == true)
@@ -77,7 +79,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// </para>
     /// </summary>
     [HttpPost]
-    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    [RequestSizeLimit(MaxUploadSizeBytes)]
     public async Task<IActionResult> UploadAiChatImage(IFormFile? file, CancellationToken cancellationToken)
     {
         var attachmentId = Guid.CreateSequentialGuid();
@@ -90,7 +92,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
-    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
+    [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true, CacheTagTemplate = ResponseCacheService.AttachmentCacheTagTemplate)]
     public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
     {
         // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.
@@ -111,7 +113,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => "image/webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => "image/webp",
-            _ => "application/octet-stream" // The *Original kinds keep the uploaded bytes verbatim.
+            _ => "application/octet-stream" // The *Original kinds keep the uploaded format, whatever it was.
         };
 
         return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
@@ -182,7 +184,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
                 throw new ResourceNotFoundException(Localizer[nameof(AppStrings.ImageCouldNotBeFound)]);
 
-            await blobStorage.DeleteObject(filePath, cancellationToken);
+            await blobStorage.DeleteSingleObject(filePath, cancellationToken);
 
             //#if (module == "Sales" || module == "Admin")
             if (attachment.Kind is AttachmentKind.ProductPrimaryImageOriginal)
@@ -215,6 +217,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             DbContext.Attachments.Remove(attachment);
             await DbContext.SaveChangesAsync(cancellationToken);
         }
+
+        // After the loop: every kind shares one tag, and by now no blob is left for a racing read to re-cache.
+        await responseCacheService.PurgeAttachmentCache(attachmentId);
     }
 
     private async Task<IActionResult> UploadAttachment(Guid attachmentId, AttachmentKind[] kinds, IFormFile? file, CancellationToken cancellationToken)
@@ -224,7 +229,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         string? altText = null; // AI-generated alt text, when the analysis agent is configured.
 
-        var preparedUploads = new List<(Attachment Attachment, byte[]? ResizedBytes)>();
+        var preparedUploads = new List<(Attachment Attachment, byte[] Bytes)>();
 
         foreach (var kind in kinds)
         {
@@ -233,6 +238,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 Id = attachmentId,
                 Kind = kind,
                 Path = GetFilePath(attachmentId, kind),
+                CreatedOn = TimeProvider.GetUtcNow(),
             };
 
             // ShrinkOnly makes the size a ceiling instead of a floor: the picture is only scaled down to it, and one
@@ -251,27 +257,44 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 _ => (false, 0, 0, false)
             };
 
-            if (imageResizeContext.NeedsResize is false)
-            {
-                preparedUploads.Add((attachment, null));
-                continue;
-            }
-
             Stopwatch stopwatch = Stopwatch.StartNew();
 
+            // Every kind is decoded, including the ones that are not resized: stripping the metadata means re-encoding,
+            // so the *Original kinds keep the uploaded FORMAT rather than the uploaded bytes.
             // Process-wide ImageMagick ResourceLimits are configured at startup (Program.Services.cs), so what a
             // decode of an untrusted upload can cost is bounded, and anything Magick.NET cannot decode throws here.
             // OpenReadStream hands out a NEW stream per call and MagickImage does not take ownership of it.
             using var sourceStream = file.OpenReadStream();
-            using MagickImage sourceImage = new(sourceStream);
+            MagickImage? decodedImage;
+            try
+            {
+                decodedImage = new(sourceStream);
+            }
+            catch (MagickException)
+            {
+                // An undecodable upload is bad input, not a server fault - a 400 like the endpoint's other rejections,
+                // instead of a 500 with a Critical log per attempt. Only the decode is caught: a failure in the resize
+                // or encode below would be a server problem and stays loud.
+                return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
+            }
+            using MagickImage sourceImage = decodedImage;
 
-            if (imageResizeContext.ShrinkOnly is false &&
-                (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))
-                return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
+            if (imageResizeContext.NeedsResize)
+            {
+                if (imageResizeContext.ShrinkOnly is false &&
+                    (sourceImage.Width < imageResizeContext.Width || sourceImage.Height < imageResizeContext.Height))
+                    return BadRequest(Localizer[nameof(AppStrings.ImageTooSmall), imageResizeContext.Width, imageResizeContext.Height, sourceImage.Width, sourceImage.Height].ToString());
 
-            sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
+                sourceImage.Resize(new MagickGeometry(imageResizeContext.Width, imageResizeContext.Height) { Greater = imageResizeContext.ShrinkOnly });
+            }
 
-            var resizedBytes = sourceImage.ToByteArray(MagickFormat.WebP);
+            // Drops EXIF - GPS coordinates, capture time, camera serial - along with XMP, IPTC, comments and the ICC
+            // profile. A phone photo carries all of it, and the WebP re-encode below does NOT drop it on its own.
+            sourceImage.Strip();
+
+            var storedBytes = imageResizeContext.NeedsResize
+                ? sourceImage.ToByteArray(MagickFormat.WebP)
+                : sourceImage.ToByteArray();
 
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
 
@@ -297,11 +320,13 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                             new ChatMessage(ChatRole.User,
                                 "Analyze this product image for our car catalog. Is this a valid car product image that meets our quality and content standards?")
                             {
-                                Contents = [new DataContent(resizedBytes, "image/webp")]
+                                Contents = [new DataContent(storedBytes, "image/webp")]
                             }
                         ],
                         cancellationToken: cancellationToken,
                         options: new Microsoft.Agents.AI.ChatClientAgentRunOptions(chatOptions));
+
+                    Features.Chatbot.ChatbotMetrics.RecordChatUsage(response.Usage, analyzeProductImageAgent.Name, configuration["AI:OpenAI:ChatModel"]);
 
                     if (response.Result.IsCar is false)
                     {
@@ -328,7 +353,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             }
             //#endif
 
-            preparedUploads.Add((attachment, resizedBytes));
+            preparedUploads.Add((attachment, storedBytes));
         }
 
         //  ---------------------------------------------------------------------------------------------
@@ -358,27 +383,32 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             await DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        foreach (var (attachment, resizedBytes) in preparedUploads)
+        var wroteAnyBlob = false;
+
+        try
         {
-            if (resizedBytes is not null)
+            foreach (var (attachment, storedBytes) in preparedUploads)
             {
-                await blobStorage.SetBytes(attachment.Path, resizedBytes, cancellationToken: cancellationToken);
+                await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+                wroteAnyBlob = true;
             }
-            else
+        }
+        finally
+        {
+            // The replacement is stored under the very key the old bytes were (See GetFilePath), so nothing else
+            // invalidates the copies already on the edge and in browsers. In the finally because a second kind that
+            // fails still leaves the first one replaced, and the edge still holding what it replaced.
+            if (wroteAnyBlob)
             {
-                using var originalStream = file.OpenReadStream();
-                await blobStorage.SetObject(attachment.Path, originalStream, cancellationToken: cancellationToken);
+                await responseCacheService.PurgeAttachmentCache(attachmentId);
             }
         }
 
         //#if (module == "Sales" || module == "Admin")
         if (kinds.Contains(AttachmentKind.ProductPrimaryImageMedium))
         {
-            // Written server-side, mirroring DeleteAttachment. Previously the upload path returned Ok(altText)
-            // and left the client to PUT HasPrimaryImage/PrimaryImageAltText back on a later Update. On an
-            // image-only replacement that changed no property, EF issued no UPDATE, Product.Version never
-            // moved, and the ?v={Version} cache-buster on the attachment URL stayed byte-identical - so
-            // anyone holding the old copy kept it for the full 7-day max-age.
+            // Written server-side: an image-only replacement changes no property, so without this EF issues no
+            // UPDATE, Product.Version never moves, and every document keeps naming the same ?v= url.
             var product = await DbContext.Products.FindAsync([attachmentId], cancellationToken);
             if (product is not null) // else means product is being added to the database.
             {

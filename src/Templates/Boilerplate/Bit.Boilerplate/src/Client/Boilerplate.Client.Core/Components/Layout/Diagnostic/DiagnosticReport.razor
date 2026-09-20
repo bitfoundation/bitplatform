@@ -1,0 +1,68 @@
+@*+:cnd:noEmit*@
+@attribute [Route("/diagnostic")]
+@attribute [Route("{culture?}/diagnostic")]
+
+@inherits AppPageBase
+
+<BitStack Class="diagnostic-report" Gap="1rem" AutoHeight>
+
+    <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center" Gap="0.5rem">
+        <BitIcon Size="BitSize.Large" Color="BitColor.Info" IconName="@BitIconName.DiagnosticDataViewerApp" />
+        <BitText Typography="BitTypography.H6">Diagnostic</BitText>
+        <BitSpacer />
+        @*#if (signalR == true)*@
+        @* The same report over the socket rather than http, replacing what is on screen: the two are near identical,
+           so swapping between them shows the difference better than showing both. *@
+        <BitButton IconOnly
+                   AutoLoading
+                   Color="BitColor.Info"
+                   Title="Ask over SignalR"
+                   AriaLabel="Ask over SignalR"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.PlugConnected"
+                   OnClick="WrapHandled(RunOverSignalR)" />
+        @*#endif*@
+        <BitButton IconOnly
+                   Title="Copy"
+                   AriaLabel="Copy"
+                   Color="BitColor.Info"
+                   Variant="BitVariant.Text"
+                   IconName="@BitIconName.Copy"
+                   OnClick="WrapHandled(Copy)" />
+    </BitStack>
+
+    <div class="pairs">
+        @foreach (var (key, value) in context)
+        {
+            <div class="key">@key</div>
+            <div class="value">@value</div>
+        }
+    </div>
+
+    @if (serverLines.Count is 0)
+    {
+        <BitButton AutoLoading
+                   Color="BitColor.Info"
+                   Variant="BitVariant.Text"
+                   OnClick="WrapHandled(Run)"
+                   IconName="@BitIconName.ChevronDownSmall">
+            Show more
+        </BitButton>
+    }
+    else
+    {
+        <BitSeparator />
+
+        <div class="report">
+            @foreach (var line in serverLines)
+            {
+                <pre class="chunk">@line</pre>
+            }
+            @foreach (var line in clientLines)
+            {
+                <pre class="chunk client">@line</pre>
+            }
+        </div>
+    }
+
+</BitStack>

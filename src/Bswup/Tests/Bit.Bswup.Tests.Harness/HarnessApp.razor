@@ -1,0 +1,50 @@
+﻿@* Root component of every harness host. Each element a test drives or reads carries an id, and the
+   status line reports how and where the tree is being rendered. *@
+
+<div class="harness">
+    <HarnessStatus />
+
+    <nav class="harness-nav">
+        <NavLink id="nav-home" href="" Match="NavLinkMatch.All">home</NavLink>
+        <NavLink id="nav-counter" href="counter">counter</NavLink>
+    </nav>
+
+    <main>
+        <Router AppAssembly="typeof(HarnessApp).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" />
+            </Found>
+            <NotFound>
+                <p id="not-found">nothing here</p>
+            </NotFound>
+        </Router>
+    </main>
+
+    @if (ProgressPlacement == "interactive")
+    {
+        @* Rendered by the interactive renderer instead of the host document: bit-bswup.progress.js
+           has to find this element after load (its MutationObserver path), and an inline script
+           would not run here at all - which is why the component carries no script. *@
+        <BswupProgress AutoReload="AutoReload"
+                       ShowAssets="ShowAssets"
+                       HideApp="HideApp"
+                       AutoHide="AutoHide"
+                       ShowOnUpdate="ShowOnUpdate"
+                       Handler="harnessBswupHandler" />
+    }
+</div>
+
+@code {
+    /// <summary>"interactive" renders BswupProgress inside this component; anything else leaves it to the host document.</summary>
+    [Parameter] public string? ProgressPlacement { get; set; }
+
+    [Parameter] public bool AutoReload { get; set; } = true;
+
+    [Parameter] public bool ShowAssets { get; set; }
+
+    [Parameter] public bool HideApp { get; set; }
+
+    [Parameter] public bool AutoHide { get; set; }
+
+    [Parameter] public bool ShowOnUpdate { get; set; } = true;
+}

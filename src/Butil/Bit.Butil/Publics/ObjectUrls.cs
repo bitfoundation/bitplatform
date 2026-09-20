@@ -29,6 +29,7 @@ public class ObjectUrls(IJSRuntime js) : IAsyncDisposable
     /// <summary>Revokes a previously created object URL.</summary>
     public ValueTask Revoke(string objectUrl) => js.InvokeVoid("BitButil.objectUrls.revoke", objectUrl);
 
+    /// <summary>Revokes every object URL created through this instance, freeing the blobs behind them.</summary>
     public async ValueTask DisposeAsync()
     {
         try

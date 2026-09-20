@@ -103,6 +103,9 @@ public partial class IStorageServiceContractTests
 
         await storageService.SetItem(Key, null, persistent: true);
         Assert.IsNull(await storageService.GetItem(Key));
+        Assert.IsFalse(await storageService.IsPersistent(Key),
+            "Storing a null must remove the key, not keep it holding null - a kept key answers IsPersistent=true, " +
+            "and AuthManager.StoreTokens would re-derive 'Remember me' as true from a token that no longer exists.");
 
         await storageService.Clear();
         Assert.IsNull(await storageService.GetItem(Key));

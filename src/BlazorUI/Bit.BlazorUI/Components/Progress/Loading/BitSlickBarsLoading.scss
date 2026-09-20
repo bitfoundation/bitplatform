@@ -1,20 +1,20 @@
-.bit-ldn-sbr {
-}
-
+// The bars are laid out and spaced by the flex container rather than floated with a margin of their
+// own, which is what centres the group inside the box the component was given - floating them left
+// with a leading margin left the whole row sitting off-centre against every other loader.
 .bit-ldn-sbr-ccn {
-    position: relative;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bit-ldn-sbr-2);
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
 }
 
 .bit-ldn-sbr-chl {
-    float: left;
+    flex: none;
     height: 100%;
-    display: inline-block;
     width: var(--bit-ldn-sbr-8);
     background: var(--bit-ldn-color);
-    margin-left: var(--bit-ldn-sbr-2);
     animation: bit-ldn-sbr-anm calc(0.8s * var(--bit-ldn-mot-factor, 1)) infinite ease-in-out;
 }
 

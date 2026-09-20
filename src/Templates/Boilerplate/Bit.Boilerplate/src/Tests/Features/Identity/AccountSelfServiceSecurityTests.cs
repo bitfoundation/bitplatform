@@ -50,7 +50,7 @@ public class AccountSelfServiceSecurityTests
         var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
 
         var settings = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
-        Assert.IsFalse(string.IsNullOrEmpty(settings.SharedKey),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(settings.SharedKey),
             "Reading the 2fa settings must stay ungated, otherwise opening the Settings tab prompts for an elevated-access code.");
 
         await Assert.ThrowsExactlyAsync<ForbiddenException>(

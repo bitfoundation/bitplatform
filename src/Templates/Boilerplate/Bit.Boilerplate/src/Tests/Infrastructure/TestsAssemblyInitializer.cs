@@ -2,7 +2,6 @@
 //#if (aspire == true)
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
-using Aspire.Hosting.DevTunnels;
 using Aspire.Hosting.ApplicationModel;
 //#endif
 //#if (database  == 'Sqlite')
@@ -39,11 +38,11 @@ public partial class TestsAssemblyInitializer
 
     //#if (aspire == true)
     /// <summary>
-    /// Aspire.Hosting.Testing executes the complete application, including dependencies like databases, 
-    /// closely mimicking a production environment. However, it has a limitation: backend services cannot 
-    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="UITests"/> 
-    /// and <see cref="IntegrationTests"/>. The code below runs the Aspire app without the server web 
-    /// project, retrieves necessary connection strings (e.g., database connection string), and passes 
+    /// Aspire.Hosting.Testing executes the complete application, including dependencies like databases,
+    /// closely mimicking a production environment. However, it has a limitation: backend services cannot
+    /// be overridden in tests if needed, unlike <see cref="AppTestServer"/> used in <see cref="UITests"/>
+    /// and <see cref="IntegrationTests"/>. The code below runs the Aspire app without the server web
+    /// project, retrieves necessary connection strings (e.g., database connection string), and passes
     /// them to <see cref="AppTestServer"/>, so you can override services in the server project.
     /// </summary>
     private static async Task RunAspireHost(TestContext testContext)
@@ -55,23 +54,30 @@ public partial class TestsAssemblyInitializer
             aspireAppBuilder.Resources.Remove(res);
 
         // The following resources are not that much useful in tests and just add to the startup time, so we remove them from the application.
-        foreach (var res in aspireAppBuilder.Resources.Where(r => r is DevTunnelResource or DevTunnelPortResource
+        // Matched by name because some of them (OtlpLoopbackResource, CloudflareTunnelInstallerResource) are internal types.
+        string[] typeNamesToBeRemoved = [
+            "OtlpLoopbackResource",
+            //#if (cloudflare == true)
+            nameof(Aspire.Hosting.ApplicationModel.CloudflareTunnelResource),
+            nameof(Aspire.Hosting.ApplicationModel.CloudflareQuickTunnelResource),
+            "CloudflareTunnelInstallerResource",
+            //#endif
             //#if (database == 'SqlServer')
-            or DbGateContainerResource
+            nameof(DbGateContainerResource),
             //#elif (database == 'PostgreSql')
-            or Aspire.Hosting.Postgres.PgAdminContainerResource
+            nameof(Aspire.Hosting.Postgres.PgAdminContainerResource),
             //#elif (database == 'MySql')
-            or Aspire.Hosting.MySql.PhpMyAdminContainerResource
+            nameof(Aspire.Hosting.MySql.PhpMyAdminContainerResource),
             //#elif (database == 'Sqlite')
-            or SqliteWebResource
+            nameof(SqliteWebResource),
             //#endif
             //#if (redis == true)
-            or Aspire.Hosting.Redis.RedisInsightResource
-            or Aspire.Hosting.Redis.RedisCommanderResource
+            nameof(Aspire.Hosting.Redis.RedisInsightResource),
+            nameof(Aspire.Hosting.Redis.RedisCommanderResource),
             //#endif
-            or Aspire.Hosting.Maui.MauiAndroidDeviceResource
-            or Aspire.Hosting.Maui.MauiAndroidEmulatorResource
-            || r.GetType().Name is "OtlpLoopbackResource").ToList())
+        ];
+
+        foreach (var res in aspireAppBuilder.Resources.Where(r => typeNamesToBeRemoved.Contains(r.GetType().Name)).ToList())
         {
             aspireAppBuilder.Resources.Remove(res);
         }
@@ -85,12 +91,25 @@ public partial class TestsAssemblyInitializer
             Environment.SetEnvironmentVariable($"ConnectionStrings__{connectionString.Name}", await aspireApp.GetConnectionStringAsync(connectionString.Name, testContext.CancellationToken));
             await aspireApp.ResourceNotifications.WaitForResourceAsync(connectionString.Name, [.. KnownResourceStates.TerminalStates, KnownResourceStates.Running], testContext.CancellationToken);
         }
+
+        using var healthBudget = CancellationTokenSource.CreateLinkedTokenSource(testContext.CancellationToken);
+        healthBudget.CancelAfter(TimeSpan.FromSeconds(10));
+
+        try
+        {
+            await Task.WhenAll(aspireAppBuilder.Resources.OfType<IResourceWithConnectionString>()
+                .Select(resource => AspireApp.ResourceNotifications.WaitForResourceHealthyAsync(resource.Name, healthBudget.Token)));
+        }
+        catch (OperationCanceledException) when (testContext.CancellationToken.IsCancellationRequested is false)
+        {
+        }
     }
     //#endif
 
     //#if (database  == 'Sqlite')
-    //SQLite database in in-memory mode only lives as long as at least one connection to it is open
-    //This connection is required to keep the database alive during the test run.
+    // The app's SQLite database is file-based in every shipped configuration, so this keep-alive connection only
+    // matters when ConnectionStrings__sqlite is overridden to an in-memory database (Mode=Memory), which lives
+    // only as long as at least one connection to it stays open.
     private static SqliteConnection connection = null!;
     //#endif
     private static async Task InitializeDatabase(AppTestServer testServer)

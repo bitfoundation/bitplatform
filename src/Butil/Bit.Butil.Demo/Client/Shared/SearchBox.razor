@@ -1,11 +1,21 @@
 ﻿@implements IAsyncDisposable
 @inject NavigationManager navManager
+@using System.Net.Http.Json
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider services
 @inject Bit.Butil.Keyboard keyboard
 @inject Bit.Butil.UserAgent userAgent
 
-@* Client-side docs search over DocsNav - no index build and no server call: the taxonomy's titles,
-   summaries, slugs, group names and documented type names are the corpus. It lives in the header
-   rather than in the nav panel so it also works on the home page, where there is no panel.
+@* Client-side docs search. The corpus is the content of the pages themselves - every section, every
+   code sample, every row of every API table - built by the host from the pages' own source
+   (Server/Services/DocsContentIndex.cs) and fetched once, the first time someone reaches for the
+   field. Searching it here rather than asking the server per keystroke is what keeps the list
+   following the typing, and it means a hit can point at the section it matched rather than at the
+   top of a page the reader then has to scan.
+
+   Until that fetch lands - and if it never does - the taxonomy in DocsNav is the corpus, which is
+   the titles and one-line summaries this box searched before. Every result it can give is a result
+   the content index also gives, so the box is never empty-handed and never wrong, only coarser.
 
    The input is a WAI-ARIA combobox: ArrowUp/ArrowDown move the highlighted option, Enter opens it,
    Escape closes the list. Options navigate on mousedown so the click wins the race against the
@@ -31,6 +41,7 @@
            aria-controls="header-search-listbox"
            aria-activedescendant="@(_results is { Length: > 0 } ? $"header-search-option-{_activeIndex}" : null)"
            value="@_query"
+           @onfocus="LoadContent"
            @oninput="OnInput"
            @onkeydown="OnKeyDown"
            @onblur="() => _results = null" />
@@ -45,13 +56,28 @@
                     id="@($"header-search-option-{index}")"
                     aria-selected="@(index == _activeIndex ? "true" : "false")"
                     class="@(index == _activeIndex ? "active" : null)"
-                    @key="hit.Link.Url"
-                    @onmousedown="() => Go(hit.Link)" @onmousedown:preventDefault>
+                    @key="@($"{index}:{hit.Url}")"
+                    @onmousedown="() => Go(hit.Url)" @onmousedown:preventDefault>
                     <span class="header-search-result-text">
-                        <span class="header-search-result-title">@hit.Link.Title</span>
-                        <span class="header-search-result-summary">@hit.Link.Summary</span>
+                        <span class="header-search-result-title">@hit.Title</span>
+                        <span class="header-search-result-summary">
+                            @* The matched words are marked in place: a hit whose reason is a
+                               sentence halfway down a page has to show that sentence, or the reader
+                               is asked to take the ranking on trust. *@
+                            @foreach (var segment in hit.Snippet)
+                            {
+                                if (segment.Match)
+                                {
+                                    <mark>@segment.Text</mark>
+                                }
+                                else
+                                {
+                                    @segment.Text
+                                }
+                            }
+                        </span>
                     </span>
-                    <span class="header-search-result-group">@hit.Group</span>
+                    <span class="header-search-result-group">@hit.Context</span>
                 </li>
             }
         </ul>
@@ -65,20 +91,58 @@
 </div>
 
 @code {
+    /// <summary>How many hits the list shows, and how many of them one page is allowed to own.</summary>
+    private const int MaxResults = 10;
+    private const int MaxPerPage = 3;
+
+    /// <summary>Roughly a line of the flyout - what a snippet is cut down to before it is shown.</summary>
+    private const int SnippetLength = 140;
+
     /// <summary>
-    /// One searchable page. The fields are held apart rather than concatenated into a single
-    /// haystack so a hit in the title can outrank a hit in a summary.
+    /// One entry of the corpus with its text lowered once, when the corpus arrives, so a keystroke
+    /// scans it with ordinal comparisons instead of folding every character it walks past.
     /// </summary>
-    private sealed record Entry(DocLink Link, string Group, string Types, string Slug);
+    private sealed class Entry
+    {
+        public required DocsSearchEntry Source { get; init; }
 
-    private sealed record Hit(DocLink Link, string Group);
+        /// <summary>
+        /// The title split into words, camel-case humps included, so "WriteText" is found by "write
+        /// text" - and so a term counts as a title word only when it IS one of them, rather than
+        /// merely appearing inside one ("cache" inside "CacheStorage").
+        /// </summary>
+        public required string[] TitleWords { get; init; }
 
-    // The taxonomy is static, so the corpus is built once for the lifetime of the app.
-    private static readonly Entry[] _entries =
+        public required string Title { get; init; }
+        public required string Keywords { get; init; }
+        public required string Summary { get; init; }
+        public required string Body { get; init; }
+    }
+
+    private sealed record Segment(string Text, bool Match);
+
+    private sealed record Hit(string Title, string Url, string? Context, Segment[] Snippet);
+
+    /// <summary>
+    /// The taxonomy as a corpus: what the box searches until the content index arrives, and what it
+    /// keeps searching if the request for it fails.
+    /// </summary>
+    private static readonly Entry[] _navEntries =
     [
-        .. DocsNav.Groups.SelectMany(group => group.Links.Select(link =>
-            new Entry(link, group.Title, string.Join(' ', link.TypeNames()), link.Url.Replace('-', ' ')))),
+        .. DocsNav.Groups.SelectMany(group => group.Links.Select(link => Index(new DocsSearchEntry(
+            Title: link.Title,
+            Page: null,
+            Url: $"/{link.Url}",
+            Group: group.Title,
+            Keywords: $"{link.Url.Replace('-', ' ')} {string.Join(' ', link.TypeNames())}",
+            Summary: link.Summary,
+            Body: "")))),
     ];
+
+    // The corpus is the same for every instance of this component and for the whole life of the
+    // app, so it is fetched once into a static rather than per header, per navigation.
+    private static Entry[]? _contentEntries;
+    private static Task? _loading;
 
     private string _query = "";
     private Hit[]? _results;
@@ -89,58 +153,331 @@
     private ButilSubscription? _metaK;
     private readonly List<ButilSubscription> _listboxKeys = [];
 
+    /// <summary>
+    /// Fetches the content index, once, the first time someone puts the caret in the field.
+    /// <para>
+    /// On focus rather than on load: it is the largest thing this site downloads, and the visitor
+    /// who came to read one page should not pay for the search of a visitor who came to search. By
+    /// the time a query is two characters long it has usually landed; while it has not, the nav
+    /// corpus answers and the query is re-run when it does.
+    /// </para>
+    /// </summary>
+    private async Task LoadContent()
+    {
+        if (_contentEntries is not null) return;
+
+        // Nothing to fetch from while the page is being prerendered: the host's container has no
+        // HttpClient in it, and nobody is typing into a page that has not reached a browser yet.
+        if (services.GetService<HttpClient>() is not { } http) return;
+
+        // A failed fetch clears the task rather than caching it, so the next focus tries again -
+        // this is one request, and the alternative is a session that never gets the content index
+        // because of one bad moment on the network.
+        _loading ??= Load(http);
+
+        try
+        {
+            await _loading;
+        }
+        catch
+        {
+            _loading = null;
+            return;
+        }
+
+        if (_query.Trim().Length < 2) return;
+
+        _results = Find(_query.Trim());
+        _activeIndex = 0;
+
+        StateHasChanged();
+    }
+
+    private static async Task Load(HttpClient http)
+    {
+        var index = await http.GetFromJsonAsync<DocsSearchIndex>("api/docs/search-index");
+
+        if (index?.Entries is { Length: > 0 } entries) _contentEntries = [.. entries.Select(Index)];
+    }
+
+    private static Entry Index(DocsSearchEntry entry) => new()
+    {
+        Source = entry,
+        TitleWords = [.. SplitWords(entry.Title)],
+        Title = entry.Title.ToLowerInvariant(),
+        Keywords = entry.Keywords.ToLowerInvariant(),
+        Summary = entry.Summary.ToLowerInvariant(),
+        Body = entry.Body.ToLowerInvariant(),
+    };
+
     private void OnInput(ChangeEventArgs e)
     {
         _query = e.Value?.ToString() ?? "";
         _results = _query.Trim().Length < 2 ? null : Find(_query.Trim());
         _activeIndex = 0;
+
+        // Typing into a field that was focused programmatically, or pasted into, may be the first
+        // this component hears of it.
+        _ = LoadContent();
     }
 
     private static Hit[] Find(string query)
     {
-        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var terms = Terms(query);
+        if (terms.Length == 0) return [];
 
-        return [.. _entries
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+        // Every word first, because that is what someone typing two of them means. A question -
+        // "how do I copy an image to the clipboard" - is words a page cannot all contain, and
+        // answering it with nothing when three of its words point straight at a section is the
+        // failure this box is most often accused of; so if nothing matches all of them, the same
+        // ranking runs again over the entries that match some, where matching more wins.
+        var hits = Rank(terms, requireEveryTerm: true);
+
+        return hits.Length > 0 ? hits : Rank(terms, requireEveryTerm: false);
+    }
+
+    private static Hit[] Rank(string[] terms, bool requireEveryTerm)
+    {
+        var ranked = (_contentEntries ?? _navEntries)
+            .Select(entry => (Entry: entry, Score: Score(entry, terms, requireEveryTerm)))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
-            .ThenBy(hit => hit.Entry.Link.Title, StringComparer.OrdinalIgnoreCase)
-            .Take(8)
-            .Select(hit => new Hit(hit.Entry.Link, hit.Entry.Group))];
+            .ThenBy(hit => hit.Entry.Source.Title, StringComparer.OrdinalIgnoreCase);
+
+        var hits = new List<Hit>(MaxResults);
+        var perPage = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var (entry, _) in ranked)
+        {
+            // A page whose every section says "cookie" would otherwise fill the list with itself and
+            // hide the nine other pages that mention it once.
+            var page = entry.Source.Url.Split('#')[0];
+            var taken = perPage.GetValueOrDefault(page);
+            if (taken >= MaxPerPage) continue;
+
+            perPage[page] = taken + 1;
+            hits.Add(new Hit(
+                entry.Source.Title,
+                entry.Source.Url,
+                entry.Source.Page ?? entry.Source.Group,
+                Snippet(entry, terms)));
+
+            if (hits.Count == MaxResults) break;
+        }
+
+        return [.. hits];
     }
 
     /// <summary>
-    /// The sum of every term's best field, or zero as soon as one term matches nothing: two words
-    /// narrow the result set rather than widening it.
+    /// The words of a query. Anything shorter than two characters is dropped: a single letter is in
+    /// every entry of the corpus, so it ranks nothing and only costs the other terms their meaning.
     /// </summary>
-    private static int Score(Entry entry, string[] terms)
+    private static string[] Terms(string query)
+    {
+        var terms = query
+            .Split([' ', '\t', '.', ',', '(', ')', '/', ':', '?', '-', '_'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(term => term.Length > 1)
+            .Select(term => term.ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        // The words a question is phrased with are in every page on the site, so they rank nothing
+        // and cost the words that do. They are dropped only when something is left after them:
+        // "how to" is a poor query, but it is the query that was typed.
+        var meaningful = terms.Where(term => _stopWords.Contains(term) is false).ToArray();
+
+        return meaningful.Length > 0 ? meaningful : terms;
+    }
+
+    /// <summary>
+    /// Words that carry no signal here: the ones a question is built from, and the three this whole
+    /// site is about - every page is about the browser, in Blazor, through Butil.
+    /// <para>
+    /// The two-letter words are listed one by one rather than dropped as a class, which is what the
+    /// MCP server's index does with them. This corpus is full of two-letter names someone would
+    /// search by - <c>db</c>, <c>ui</c>, <c>id</c>, <c>ip</c> - and a rule that lost those to be rid
+    /// of "am" would be trading a query that works for a sentence that reads well.
+    /// </para>
+    /// </summary>
+    private static readonly HashSet<string> _stopWords = new(StringComparer.Ordinal)
+    {
+        "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
+        "does", "did", "are", "was", "you", "your", "can", "its", "but", "any", "get", "use", "using",
+        "have", "has", "want", "need", "into", "way", "make", "butil", "blazor", "browser",
+        "am", "is", "it", "do", "in", "on", "of", "to", "my", "me", "be", "by", "at", "or", "if",
+        "so", "we", "as", "an",
+    };
+
+    /// <summary>
+    /// The sum of every term's best field, multiplied by how many of them were found - matching
+    /// more of the query is the strongest signal a hit is the right one.
+    /// </summary>
+    private static int Score(Entry entry, string[] terms, bool requireEveryTerm)
     {
         var total = 0;
+        var body = 0;
+        var matched = 0;
 
         foreach (var term in terms)
         {
             var score = Score(entry, term);
-            if (score == 0) return 0;
 
-            total += score;
+            if (score == 0)
+            {
+                if (requireEveryTerm) return 0;
+                continue;
+            }
+
+            matched++;
+            if (score == 1) body++; else total += score;
         }
 
-        return total;
+        if (matched == 0) return 0;
+
+        // A body is the whole of a section - its sample, its controls, its prose - and long text
+        // mentions everything. Capping what it can contribute is what lets it be indexed at all: it
+        // can rank a hit and break a tie between two, but it can never outweigh the entry whose name
+        // was asked for.
+        total += Math.Min(body, 3);
+
+        // A page outranks its own sections at equal evidence: someone typing "clipboard" wants the
+        // Clipboard page, not the first of its four sections.
+        return (total + (entry.Source.Page is null ? 3 : 0)) * matched;
     }
 
     // The name someone reaches for is rarely the name the platform chose - "copy" is on Clipboard,
-    // "keep the screen on" is WakeLock - so the summary and the group name are searched too. They
-    // score lowest: a page whose title is the word wins over a page that merely mentions it.
+    // "keep the screen on" is WakeLock - so the summary and the body are searched too. They score
+    // lowest: an entry whose title is the word wins over one that merely mentions it.
     private static int Score(Entry entry, string term) => true switch
     {
-        _ when entry.Link.Title.StartsWith(term, StringComparison.OrdinalIgnoreCase) => 6,
-        _ when entry.Link.Title.Contains(term, StringComparison.OrdinalIgnoreCase) => 4,
-        _ when entry.Types.Contains(term, StringComparison.OrdinalIgnoreCase) => 3,
-        _ when entry.Slug.Contains(term, StringComparison.OrdinalIgnoreCase) => 2,
-        _ when entry.Link.Summary.Contains(term, StringComparison.OrdinalIgnoreCase) => 1,
-        _ when entry.Group.Contains(term, StringComparison.OrdinalIgnoreCase) => 1,
+        _ when entry.TitleWords.Any(word => Equivalent(word, term)) => 12,
+        _ when entry.Title.Contains(term, StringComparison.Ordinal) => 6,
+        _ when entry.Keywords.Contains(term, StringComparison.Ordinal) => 4,
+        _ when entry.Summary.Contains(term, StringComparison.Ordinal) => 2,
+        _ when entry.Body.Contains(term, StringComparison.Ordinal) => 1,
         _ => 0,
     };
+
+    /// <summary>
+    /// The same word, plural aside - "cookie" has to find "Cookies", and nobody phrases a question
+    /// in the number the API happens to use. Both sides are already lowered, so this is ordinal.
+    /// </summary>
+    private static bool Equivalent(string word, string term)
+    {
+        return string.Equals(word, term, StringComparison.Ordinal)
+            || (word.Length == term.Length + 1 && word[^1] == 's' && string.Equals(word[..^1], term, StringComparison.Ordinal))
+            || (term.Length == word.Length + 1 && term[^1] == 's' && string.Equals(term[..^1], word, StringComparison.Ordinal));
+    }
+
+    /// <summary>Splits a name into words, breaking camel-case humps as well as punctuation.</summary>
+    private static IEnumerable<string> SplitWords(string text)
+    {
+        var word = new System.Text.StringBuilder();
+
+        foreach (var c in text)
+        {
+            if (char.IsLetterOrDigit(c) is false)
+            {
+                if (word.Length > 0) { yield return word.ToString().ToLowerInvariant(); word.Clear(); }
+                continue;
+            }
+
+            // A capital after a lowercase letter starts a new word ("WriteText" -> write text),
+            // while a run of capitals stays together ("URL", "NFC").
+            if (char.IsUpper(c) && word.Length > 0 && char.IsLower(word[^1]))
+            {
+                yield return word.ToString().ToLowerInvariant();
+                word.Clear();
+            }
+
+            word.Append(c);
+        }
+
+        if (word.Length > 0) yield return word.ToString().ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// What the result shows under its title: the entry's own summary when that is where the match
+    /// is, and otherwise a window of the body around the match - the sentence the query actually
+    /// hit, which is the only thing that explains why the row is in the list at all.
+    /// </summary>
+    private static Segment[] Snippet(Entry entry, string[] terms)
+    {
+        var summary = entry.Source.Summary;
+        var inSummary = terms.Any(term => entry.Summary.Contains(term, StringComparison.Ordinal));
+
+        if (inSummary || entry.Body.Length == 0)
+        {
+            return Highlight(Trim(summary, First(entry.Summary, terms)), terms);
+        }
+
+        return Highlight(Trim(entry.Source.Body, First(entry.Body, terms)), terms);
+    }
+
+    /// <summary>Where the earliest of the terms occurs in an already-lowered field, or 0.</summary>
+    private static int First(string lowered, string[] terms)
+    {
+        var first = -1;
+
+        foreach (var term in terms)
+        {
+            var index = lowered.IndexOf(term, StringComparison.Ordinal);
+            if (index >= 0 && (first < 0 || index < first)) first = index;
+        }
+
+        return Math.Max(first, 0);
+    }
+
+    /// <summary>A window of text around one position, cut at the words on both sides of it.</summary>
+    private static string Trim(string text, int around)
+    {
+        if (text.Length <= SnippetLength) return text;
+
+        var start = Math.Max(0, around - SnippetLength / 3);
+        if (start > 0)
+        {
+            var space = text.IndexOf(' ', start);
+            start = space < 0 || space > around ? start : space + 1;
+        }
+
+        var length = Math.Min(SnippetLength, text.Length - start);
+        var window = text.Substring(start, length).Trim();
+
+        return $"{(start > 0 ? "…" : null)}{window}{(start + length < text.Length ? "…" : null)}";
+    }
+
+    /// <summary>Splits a line into the pieces the query matched and the pieces around them.</summary>
+    private static Segment[] Highlight(string text, string[] terms)
+    {
+        var segments = new List<Segment>();
+        var index = 0;
+
+        while (index < text.Length)
+        {
+            var at = -1;
+            var length = 0;
+
+            foreach (var term in terms)
+            {
+                var found = text.IndexOf(term, index, StringComparison.OrdinalIgnoreCase);
+                if (found < 0 || (at >= 0 && found >= at)) continue;
+
+                at = found;
+                length = term.Length;
+            }
+
+            if (at < 0) break;
+
+            if (at > index) segments.Add(new Segment(text[index..at], false));
+
+            segments.Add(new Segment(text.Substring(at, length), true));
+            index = at + length;
+        }
+
+        if (index < text.Length) segments.Add(new Segment(text[index..], false));
+
+        return [.. segments];
+    }
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
@@ -164,14 +501,14 @@
     {
         if (_results is not { Length: > 0 } results) return;
 
-        Go(results[Math.Clamp(_activeIndex, 0, results.Length - 1)].Link);
+        Go(results[Math.Clamp(_activeIndex, 0, results.Length - 1)].Url);
         StateHasChanged();
     });
 
-    private void Go(DocLink link)
+    private void Go(string url)
     {
         Reset();
-        navManager.NavigateTo(link.Url);
+        navManager.NavigateTo(url);
     }
 
     private void Reset()

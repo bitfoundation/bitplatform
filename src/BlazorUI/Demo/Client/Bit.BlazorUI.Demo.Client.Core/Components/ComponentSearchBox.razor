@@ -7,15 +7,15 @@
 <BitSearchBox Immediate
               HighlightSuggestItems
               Id="@_rootId"
-              DebounceTime="150"
+              Size="@Size"
+              DebounceTime="300"
               MaxSuggestCount="8"
               MinSuggestTriggerChars="1"
               AriaLabel="Search components"
               Placeholder="@Placeholder"
               IconName="@BitIconName.Search"
               Class="@($"cmp-search {Class}".Trim())"
-              SuggestItems="_names"
-              SuggestFilterFunction="Matches"
+              SuggestItemsProvider="Suggest"
               SuggestItemTemplate="_suggestTemplate"
               OnSuggestItemSelect="GoToComponent"
               OnSearch="HandleSearch"
@@ -25,10 +25,10 @@
     // The suggestion row shows the component's name over the category it lives in, which is what
     // separates a Chart from a ChartLegacy, or a Toggle from a ToggleButton, at a glance.
     private readonly RenderFragment<string> _suggestTemplate = name =>
-        @<BitStack Gap="0" AutoHeight Class="cmp-search-item">
+        @<BitStack Gap="0.125rem" AutoHeight Class="cmp-search-item">
             <BitText Typography="BitTypography.Body2" Class="cmp-search-item-name">@name</BitText>
             <BitText Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground" NoWrap>
-                @ComponentCatalog.Items.FirstOrDefault(i => i.Name == name)?.Category
+                @(_byName.TryGetValue(name, out var item) ? item.Category : null)
             </BitText>
         </BitStack>;
 }

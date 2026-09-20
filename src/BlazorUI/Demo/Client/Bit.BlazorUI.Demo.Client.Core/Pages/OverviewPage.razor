@@ -3,12 +3,24 @@
 
 <PageOutlet Url="overview"
             Title="Overview"
-            Description="What bit BlazorUI is, what it costs you in bundle size, which platforms it runs on, and the three steps from an empty project to a working component." />
+            Keywords="Blazor UI library overview, Blazor component library, Blazor render modes, Blazor UI packages, Blazor bundle size"
+            Description="What bit BlazorUI is, what is in the box, which packages ship what, how it is built, what it costs in bundle size, where it runs, and the three steps to a working component." />
 
 <DocsArticle Eyebrow="Documentation"
              Title="bit BlazorUI"
-             Lead="An open-source suite of 100+ native components written entirely in C#, running unchanged across every interactive Blazor mode: WebAssembly, Server, Hybrid (MAUI) and pre-rendering."
+             Lead="An open-source suite of native components written entirely in C#, rendering unchanged under WebAssembly, Server, Hybrid (MAUI) and pre-rendering. This page is the whole library in one read: what is in the box, how to install it, how it is put together, what it costs you, and where it runs."
              GitHubUrl="OverviewPage.razor">
+
+    @* The three things a reader checks before reading any further: which version these docs
+       describe, what it costs to use, and whether it runs on their framework. *@
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="@($"v{Bit.BlazorUI.Info.Version}")" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text="MIT licensed" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
+                Text=".NET 8, 9 and 10" />
+    </Badges>
 
     <Actions>
         <BitButton Size="BitSize.Large"
@@ -36,65 +48,60 @@
     <ChildContent>
 
         <DocSection Id="at-a-glance" Title="At a glance">
+            @* The counts are read from the catalog rather than written out here, so the number in
+               the docs cannot drift from the number of pages the nav actually carries. *@
             <div class="stat-row">
                 <div class="stat">
-                    <span class="stat-value">100+</span>
-                    <span class="stat-label">Components, in 13 categories</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value">~400 KB</span>
-                    <span class="stat-label">The whole suite: dll, css and js</span>
+                    <span class="stat-value">@ComponentCatalog.Items.Count</span>
+                    <span class="stat-label">Components, in @ComponentCatalog.Categories.Count categories</span>
                 </div>
                 <div class="stat">
                     <span class="stat-value">100% C#</span>
-                    <span class="stat-label">No JS framework underneath</span>
+                    <span class="stat-label">No JavaScript framework underneath</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">.NET 8.0+</span>
-                    <span class="stat-label">WASM, Server, Hybrid, SSR</span>
+                    <span class="stat-value">4 presets</span>
+                    <span class="stat-label">Fluent, Fluent&nbsp;2, Material, Cupertino</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">~50&nbsp;KB</span>
+                    <span class="stat-label">For the first five components you use</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">.NET 8+</span>
+                    <span class="stat-label">WASM, Server, Hybrid and static SSR</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">MIT</span>
+                    <span class="stat-label">Free in commercial products, no per-seat fee</span>
                 </div>
             </div>
         </DocSection>
 
-        <DocSection Id="why" Title="Why bit BlazorUI"
-                    Description="Four things that are hard to add to a component library later, and are therefore worth checking before you pick one.">
-            <div class="reason-grid">
-                <div class="reason">
-                    <BitIcon IconName="@BitIconName.SpeedHigh" Color="BitColor.Primary" Class="reason-icon" />
-                    <BitText Element="h3" Typography="BitTypography.H6">Small, and honest about it</BitText>
-                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
-                        Five components add about 50&nbsp;KB to an app; forty add about 200&nbsp;KB. Nothing is
-                        pulled in that you did not use, and there is no JavaScript framework underneath.
-                    </BitText>
-                </div>
-                <div class="reason">
-                    <BitIcon IconName="@BitIconName.Devices3" Color="BitColor.Primary" Class="reason-icon" />
-                    <BitText Element="h3" Typography="BitTypography.H6">Every render mode, one codebase</BitText>
-                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
-                        The same component renders under WebAssembly, Server, Hybrid (MAUI) and static
-                        pre-rendering - including the ones you would expect to need JS, like the PDF viewer
-                        and the markdown renderer.
-                    </BitText>
-                </div>
-                <div class="reason">
-                    <BitIcon IconName="@BitIconName.Color" Color="BitColor.Primary" Class="reason-icon" />
-                    <BitText Element="h3" Typography="BitTypography.H6">Themed from one color</BitText>
-                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
-                        Feed a brand color to the theme factory and it derives complete light and dark
-                        palettes. Four design-system presets ship in the box - Fluent, Fluent&nbsp;2, Material
-                        and Cupertino - and every one of them is only CSS variables.
-                    </BitText>
-                </div>
-                <div class="reason">
-                    <BitIcon IconName="@BitIconName.LocaleLanguage" Color="BitColor.Primary" Class="reason-icon" />
-                    <BitText Element="h3" Typography="BitTypography.H6">RTL and accessibility built in</BitText>
-                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
-                        Right-to-left is a first-class direction on every component, not a stylesheet you add
-                        later - and keyboard support, ARIA semantics and reduced-motion handling come with
-                        the component rather than after it.
-                    </BitText>
-                </div>
+        <DocSection Id="whats-inside" Title="What is in the box"
+                    Description="Every component the library ships, grouped the way the navigation groups them. A category goes straight to that part of the gallery.">
+            @* Derived from the same catalog the nav, the gallery and the pager read, so a component
+               added to the nav appears here without this page being touched. *@
+            <div class="category-list">
+                @foreach (var category in ComponentCatalog.Categories)
+                {
+                    <a class="category" href="@($"/components?category={Uri.EscapeDataString(category.Name)}")">
+                        <BitIcon IconName="@category.IconName" Color="BitColor.Primary" Class="category-icon" />
+                        <span class="category-body">
+                            <span class="category-head">
+                                <span class="category-name">@category.Name</span>
+                                <span class="category-count">@category.Items.Count</span>
+                            </span>
+                            <span class="category-text">@category.Summary</span>
+                        </span>
+                    </a>
+                }
             </div>
+
+            <BitLink Href="/components">
+                Browse all @ComponentCatalog.Items.Count components - every one with a live demo and its full API
+                <BitIcon IconName="@BitIconName.ChevronRightSmall" Style="font-size:12px;margin-inline-start:0.25rem" />
+            </BitLink>
         </DocSection>
 
         <DocSection Id="quick-start" Title="Quick start"
@@ -110,7 +117,7 @@
             <BitText Element="h3" Typography="BitTypography.Subtitle1">3. Use a component</BitText>
             <CodeBox Language="cshtml">@@using Bit.BlazorUI
 
-&lt;BitButton Size="BitSize.Large" IconName="@BitIconName.Add">
+&lt;BitButton Size="BitSize.Large" IconName="@@BitIconName.Add">
     Click me
 &lt;/BitButton>
 
@@ -134,11 +141,223 @@
             <CodeBox>dotnet new bit-empty -n MyBitBlazorEmptyApp</CodeBox>
         </DocSection>
 
-        <DocSection Id="support" Title="Browsers and platforms"
-                    Description="Verified on the current release of each, for desktop and mobile.">
+        <DocSection Id="packages" Title="The packages"
+                    Description="One package is required. The others exist so that an app only ships the parts it asked for.">
+            <div class="package-list">
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorUI</code>
+                        <BitTag Text="Required" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.Primary" />
+                    </div>
+                    <p class="package-text">
+                        The library itself: every component in the categories above except Extras and
+                        Legacy, the theme runtime, and the Fluent design system the core stylesheet
+                        implements.
+                    </p>
+                </div>
+
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorUI.Extras</code>
+                        <BitTag Text="Optional" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </div>
+                    <p class="package-text">
+                        The heavier components - the data grid, the native charts, the map, the PDF viewer
+                        and the editors - together with the Fluent&nbsp;2, Material and Cupertino design
+                        system presets. Every component page says which package it comes from.
+                    </p>
+                </div>
+
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorUI.Icons</code>
+                        <BitTag Text="Optional" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </div>
+                    <p class="package-text">
+                        The Fabric (MDL2) icon set that <code>BitIconName</code> names, shipped as a font
+                        and browsable on the <BitLink Href="/iconography">iconography page</BitLink>.
+                    </p>
+                </div>
+
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorUI.Assets</code>
+                        <BitTag Text="Optional" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </div>
+                    <p class="package-text">
+                        The Segoe UI and Roboto web fonts behind the Fluent and Material type ramps, for
+                        clients that do not have them installed - plus the <code>Script</code> and
+                        <code>Link</code> components that fingerprint a static asset by its content.
+                    </p>
+                </div>
+
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorUI.Legacy</code>
+                        <BitTag Text="Optional" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </div>
+                    <p class="package-text">
+                        The previous implementations of the chart, the grid, the editors and the PDF reader,
+                        preserved unchanged under their own namespace so an upgrading project can run both
+                        generations side by side.
+                    </p>
+                </div>
+
+                <div class="package">
+                    <div class="package-head">
+                        <code class="package-name">Bit.BlazorEmpty</code>
+                        <BitTag Text="Template" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </div>
+                    <p class="package-text">
+                        A <code>dotnet new</code> template rather than a dependency: the starting solution
+                        from <BitLink Href="/overview#project-template">the section above</BitLink>, already
+                        wired for theming, SSR and responsive layouts.
+                    </p>
+                </div>
+            </div>
+        </DocSection>
+
+        <DocSection Id="how-its-built" Title="How it is built"
+                    Description="Six decisions that shape every component in the library - and that are close to impossible to retrofit into one later.">
+
+            <ol class="principle-list">
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">Native C#, not a wrapper</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Every component is a Blazor component rather than a thin layer over a JavaScript
+                        widget. Even the ones you would expect to need a JS library - the PDF viewer, the
+                        markdown renderer and editor, the charts - are drawn by the library itself. That is
+                        the reason one piece of markup works under every render mode instead of only the
+                        interactive ones.
+                    </BitText>
+                </li>
+
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">One API, learned once</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Every component inherits the same base parameters - <code>Class</code>,
+                        <code>Style</code>, <code>Id</code>, <code>Dir</code>, <code>IsEnabled</code>,
+                        <code>Visibility</code>, <code>TabIndex</code>, <code>AriaLabel</code>,
+                        <code>HtmlAttributes</code> and <code>ForceAnimation</code>. Learn them on the first
+                        component and you already know them on all @ComponentCatalog.Items.Count.
+                    </BitText>
+                </li>
+
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">Styled by tokens, not by cascade</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Color, shape, size, type, motion and elevation are <code>--bit-*</code> custom
+                        properties that every component reads. A theme is therefore data you set on
+                        <code>:root</code>, not a stylesheet you fork or an <code>!important</code> you have
+                        to win with - which is how four design systems re-skin the whole library from one
+                        block of variables.
+                    </BitText>
+                </li>
+
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">Direction, keyboard and motion are defaults</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        <code>Dir</code> is a parameter on every component, so right-to-left is a direction
+                        rather than a stylesheet added later. Keyboard support and ARIA semantics arrive with
+                        the component, and <code>prefers-reduced-motion</code> is honoured by the motion
+                        tokens themselves, so it takes effect everywhere at once rather than component by
+                        component.
+                    </BitText>
+                </li>
+
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">You pay for what you render</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        There is no barrel to import and no framework runtime to load before the first
+                        component appears. Nothing is pulled into the app that it did not use, which is what
+                        keeps the figures below as low as they are.
+                    </BitText>
+                </li>
+
+                <li class="principle">
+                    <BitText Element="h3" Typography="BitTypography.H6">Documented for people and for agents</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Every component has a page with live examples and its full API table. The same
+                        catalog is served over MCP, so GitHub Copilot, Cursor, Claude and Windsurf write
+                        against the real API instead of guessing at it -
+                        <BitLink Href="/getting-started#ai-mcp">set it up here</BitLink>.
+                    </BitText>
+                </li>
+            </ol>
+
+            <DocSection Level="3" Id="bundle-size" Title="What it costs">
+                <BitText Element="p">
+                    Measured on a published WebAssembly app - dll, css and js together, on top of the
+                    framework the app already ships:
+                </BitText>
+
+                <table class="cost-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">What you use</th>
+                            <th scope="col">Roughly adds</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Five components</th>
+                            <td>50&nbsp;KB</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Forty components</th>
+                            <td>200&nbsp;KB</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">The whole suite</th>
+                            <td>400&nbsp;KB</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </DocSection>
+        </DocSection>
+
+        <DocSection Id="where-it-runs" Title="Where it runs"
+                    Description="The same component, the same parameters and the same markup under all four Blazor render modes - and on the browsers and devices below.">
+
+            <div class="mode-grid">
+                <div class="mode">
+                    <BitIcon IconName="@BitIconName.Globe" Color="BitColor.Primary" Class="mode-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">WebAssembly</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Standalone or ASP.NET Core hosted, with the whole library running in the browser.
+                    </BitText>
+                </div>
+                <div class="mode">
+                    <BitIcon IconName="@BitIconName.Server" Color="BitColor.Primary" Class="mode-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">Server</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Interactive circuits over SignalR, rendered on the server and patched into the DOM
+                        over the wire.
+                    </BitText>
+                </div>
+                <div class="mode">
+                    <BitIcon IconName="@BitIconName.CellPhone" Color="BitColor.Primary" Class="mode-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">Hybrid</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        .NET MAUI on Android, iOS, macOS and Windows, through a <code>BlazorWebView</code>.
+                    </BitText>
+                </div>
+                <div class="mode">
+                    <BitIcon IconName="@BitIconName.PageList" Color="BitColor.Primary" Class="mode-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">Static SSR and pre-rendering</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Real HTML on the first response, which the component picks up from once
+                        interactivity arrives.
+                    </BitText>
+                </div>
+            </div>
+
+            <BitText Element="h3" Typography="BitTypography.Subtitle1">Browsers and platforms</BitText>
+            <BitText Element="p">Verified on the current release of each, for desktop and mobile.</BitText>
+
             <div class="support-grid">
                 <div class="support-col">
-                    <BitText Element="h3" Typography="BitTypography.Subtitle1">Browsers</BitText>
+                    <BitText Element="h4" Typography="BitTypography.Subtitle2">Browsers</BitText>
                     <ul>
                         <li>Apple Safari (current+)</li>
                         <li>Google Chrome (current+)</li>
@@ -147,7 +366,7 @@
                     </ul>
                 </div>
                 <div class="support-col">
-                    <BitText Element="h3" Typography="BitTypography.Subtitle1">Blazor Hybrid platforms</BitText>
+                    <BitText Element="h4" Typography="BitTypography.Subtitle2">Blazor Hybrid platforms</BitText>
                     <ul>
                         <li>Android 7.1 (API level 24) or higher</li>
                         <li>iOS 15 or higher</li>
@@ -158,13 +377,49 @@
             </div>
         </DocSection>
 
+        <DocSection Id="license-and-support" Title="License, versions and support"
+                    Description="What using the library commits you to, and who is on the other end when something does not work.">
+            <div class="fact-grid">
+                <div class="fact">
+                    <BitIcon IconName="@BitIconName.Certificate" Color="BitColor.Primary" Class="fact-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">MIT, and that is all</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        Free in commercial products, with no per-developer fee, no per-application fee and
+                        nothing you have to display in your own UI. The
+                        <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE">license</BitLink>
+                        is the whole agreement.
+                    </BitText>
+                </div>
+                <div class="fact">
+                    <BitIcon IconName="@BitIconName.ProductRelease" Color="BitColor.Primary" Class="fact-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">One package, three .NET versions</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        <code>Bit.BlazorUI</code> multi-targets .NET 8, 9 and 10, so moving the app to a
+                        newer framework does not mean changing the package reference. These docs describe
+                        <b>@($"v{Bit.BlazorUI.Info.Version}")</b>.
+                    </BitText>
+                </div>
+                <div class="fact">
+                    <BitIcon IconName="@BitIconName.Group" Color="BitColor.Primary" Class="fact-icon" />
+                    <BitText Element="h3" Typography="BitTypography.Subtitle2">Built in the open</BitText>
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                        A dedicated team at bit platform develops the library on the same repository you file
+                        an issue on. Ask in
+                        <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform/discussions">discussions</BitLink>,
+                        report a bug in
+                        <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform/issues">issues</BitLink>.
+                    </BitText>
+                </div>
+            </div>
+        </DocSection>
+
         <DocSection Id="resources" Title="Resources"
                     Description="Where to go next, and where to go when something does not work.">
             <div class="resource-grid">
                 <a class="resource" href="/components">
                     <BitIcon IconName="@BitIconName.Puzzle" Color="BitColor.Primary" Class="resource-icon" />
                     <span class="resource-title">Components</span>
-                    <span class="resource-text">Live demos and the full API for all 100+ components.</span>
+                    <span class="resource-text">Live demos and the full API for all @ComponentCatalog.Items.Count components.</span>
                 </a>
                 <a class="resource" href="/theming">
                     <BitIcon IconName="@BitIconName.Color" Color="BitColor.Primary" Class="resource-icon" />

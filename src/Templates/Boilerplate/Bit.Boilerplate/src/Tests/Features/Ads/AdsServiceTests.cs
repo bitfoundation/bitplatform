@@ -164,13 +164,65 @@ public class AdsServiceTests
         Assert.AreEqual(AdWatchResult.Rewarded, await sut.Watch());
     }
 
-    private static (AdsService sut, FakeAdsJsRuntime jsRuntime, FakeTimeProvider timeProvider) CreateSut()
+    /// <summary>
+    /// Asserted on the JS runtime rather than the return value: <c>gpt.js</c> sets identifiers the moment it loads, so
+    /// "the script was never asked for" is the property that matters. Checking only the result would still pass if the
+    /// script had loaded and the answer been discarded afterwards.
+    /// </summary>
+    [TestMethod]
+    public async Task Init_Should_NotLoadTheAdScript_WithoutAdvertisingConsent()
+    {
+        var (sut, jsRuntime, _) = CreateSut(advertisingConsent: false);
+        jsRuntime.OnInit = service => service.AdReady();
+
+        Assert.AreEqual(AdInitResult.ConsentRequired, await sut.Init("/ad-unit-path"));
+
+        Assert.AreEqual(0, jsRuntime.InitCalls, "gpt.js must not be requested before the user has agreed to it.");
+    }
+
+    /// <summary>And the gate opens: agreeing has to let the very next Init through, with no restart.</summary>
+    [TestMethod]
+    public async Task Init_Should_LoadTheAdScript_OnceAdvertisingConsentIsGranted()
+    {
+        var (sut, jsRuntime, _) = CreateSut(advertisingConsent: false);
+        jsRuntime.OnInit = service => service.AdReady();
+
+        Assert.AreEqual(AdInitResult.ConsentRequired, await sut.Init("/ad-unit-path"));
+
+        await jsRuntime.ConsentService.Set(ConsentCategory.Advertising, granted: true);
+
+        Assert.AreEqual(AdInitResult.Ready, await sut.Init("/ad-unit-path"));
+        Assert.AreEqual(1, jsRuntime.InitCalls);
+    }
+
+    private static (AdsService sut, FakeAdsJsRuntime jsRuntime, FakeTimeProvider timeProvider) CreateSut(bool advertisingConsent = true)
     {
         var jsRuntime = new FakeAdsJsRuntime();
         var timeProvider = new FakeTimeProvider();
-        var sut = new AdsService(jsRuntime, NullLogger<AdsService>.Instance, timeProvider);
+
+        // The rest of these tests are about the Google Publisher Tag state machine, so consent is already given.
+        var consentService = new ConsentService(new PubSubService(new ServiceCollection().BuildServiceProvider()), new FakeStorageService());
+        if (advertisingConsent)
+        {
+            consentService.Set(ConsentCategory.Advertising, granted: true).GetAwaiter().GetResult();
+        }
+
+        var sut = new AdsService(consentService, jsRuntime, NullLogger<AdsService>.Instance, timeProvider);
         jsRuntime.Service = sut;
+        jsRuntime.ConsentService = consentService;
         return (sut, jsRuntime, timeProvider);
+    }
+
+    /// <summary>An <see cref="IStorageService"/> that keeps the values in a dictionary, which is all a consent decision needs.</summary>
+    private sealed class FakeStorageService : IStorageService
+    {
+        private readonly Dictionary<string, string?> items = [];
+
+        public ValueTask SetItem(string key, string? value, bool persistent = true) { items[key] = value; return ValueTask.CompletedTask; }
+        public ValueTask<string?> GetItem(string key) => ValueTask.FromResult(items.GetValueOrDefault(key));
+        public ValueTask<bool> IsPersistent(string key) => ValueTask.FromResult(true);
+        public ValueTask RemoveItem(string key) { items.Remove(key); return ValueTask.CompletedTask; }
+        public ValueTask Clear() { items.Clear(); return ValueTask.CompletedTask; }
     }
 
     /// <summary>
@@ -180,6 +232,8 @@ public class AdsServiceTests
     private sealed class FakeAdsJsRuntime : IJSRuntime
     {
         public AdsService Service { get; set; } = default!;
+        /// <summary>Handed back to the tests that need to change the answer mid-test.</summary>
+        public ConsentService ConsentService { get; set; } = default!;
         public int InitCalls { get; private set; }
         public bool WatchReturnsTrue { get; set; } = true;
         /// <summary>Stands in for an ad script request that neither loads nor errors.</summary>

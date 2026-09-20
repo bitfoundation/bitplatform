@@ -154,6 +154,10 @@ public class MediaSession(IJSRuntime js) : IAsyncDisposable
         MediaSessionAction.ToggleMicrophone => "togglemicrophone",
         MediaSessionAction.ToggleCamera => "togglecamera",
         MediaSessionAction.HangUp => "hangup",
+        MediaSessionAction.PreviousSlide => "previousslide",
+        MediaSessionAction.NextSlide => "nextslide",
+        MediaSessionAction.EnterPictureInPicture => "enterpictureinpicture",
+        MediaSessionAction.VoiceActivity => "voiceactivity",
         _ => "play",
     };
 
@@ -166,7 +170,7 @@ public class MediaSession(IJSRuntime js) : IAsyncDisposable
         try
         {
             _handlers.Clear();
-            await js.InvokeVoid("BitButil.mediaSession.disposeAll");
+            await js.InvokeTeardown("BitButil.mediaSession.disposeAll");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

@@ -8,6 +8,9 @@ public partial class AppDiagnosticModal
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private LocalStorage localStorage = default!;
     [AutoInject] private CacheStorage cacheStorage = default!;
+    //#if (signalR == true)
+    [AutoInject] private IndexedDb indexedDb = default!;
+    //#endif
     [AutoInject] private SessionStorage sessionStorage = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
@@ -26,66 +29,6 @@ public partial class AppDiagnosticModal
         throw showKnownException
             ? new InvalidOperationException("Something critical happened.").WithData("TestData", 1)
             : new DomainLogicException("Something bad happened.").WithData("TestData", 2);
-    }
-
-    private async Task CallDiagnosticApi()
-    {
-        string? signalRConnectionId = null;
-        string? pushNotificationSubscriptionDeviceId = null;
-
-        //#if (signalR == true)
-        try
-        {
-            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get SignalR ConnectionId for diagnostic.");
-        }
-        //#endif
-
-        //#if (notification == true)
-        try
-        {
-            pushNotificationSubscriptionDeviceId = (await pushNotificationService.GetSubscription(CurrentCancellationToken))!.DeviceId;
-        }
-        catch (Exception exp)
-        {
-            logger.LogWarning(exp, "Failed to get Push Notification Subscription DeviceId for diagnostic.");
-        }
-        //#endif
-
-        var serverResult = await diagnosticController.PerformDiagnostic(signalRConnectionId, pushNotificationSubscriptionDeviceId, CurrentCancellationToken);
-
-        StringBuilder resultBuilder = new(serverResult);
-        try
-        {
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"IsDynamicCodeCompiled: {RuntimeFeature.IsDynamicCodeCompiled}");
-            resultBuilder.AppendLine($"IsDynamicCodeSupported: {RuntimeFeature.IsDynamicCodeSupported}");
-            resultBuilder.AppendLine($"Is Aot: {new StackTrace(false).GetFrame(0)?.GetMethod() is null}"); // No 100% Guaranteed way to detect AOT.
-
-            resultBuilder.AppendLine();
-
-            resultBuilder.AppendLine($"Env version: {Environment.Version}");
-            resultBuilder.AppendLine($"64 bit process: {Environment.Is64BitProcess}");
-            resultBuilder.AppendLine($"Privilaged process: {Environment.IsPrivilegedProcess}");
-
-            resultBuilder.AppendLine();
-
-            if (GC.GetConfigurationVariables().TryGetValue("ServerGC", out var serverGC))
-                resultBuilder.AppendLine($"ServerGC: {serverGC}");
-
-            if (GC.GetConfigurationVariables().TryGetValue("ConcurrentGC", out var concurrentGC))
-                resultBuilder.AppendLine($"ConcurrentGC: {concurrentGC}");
-        }
-        catch (Exception exp)
-        {
-            resultBuilder.AppendLine($"{Environment.NewLine}Error while getting diagnostic data: {exp.Message}");
-        }
-
-        await messageBoxService.Show("Diagnostic Result", resultBuilder.ToString());
     }
 
     private async Task OpenDevTools()
@@ -195,6 +138,12 @@ public partial class AppDiagnosticModal
         await Attempt(nameof(LocalStorage), localStorage.Clear);
 
         await Attempt(nameof(SessionStorage), sessionStorage.Clear);
+
+        //#if (signalR == true)
+        // The conversation the AI chat panel keeps on this device (See AppAiChatPanel.RestoreHistory). The panel drops
+        // its connection on delete, which would otherwise block it.
+        await Attempt(nameof(IndexedDb), () => indexedDb.DeleteDatabase(AppAiChatPanel.HistoryDatabase).AsTask());
+        //#endif
 
         await Attempt(nameof(Cookie), async () =>
         {

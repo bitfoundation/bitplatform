@@ -1,0 +1,346 @@
+@page "/window-management"
+@implements IAsyncDisposable
+@inject Bit.Butil.WindowManagement windowManagement
+
+<PageTitle>WindowManagement - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="WindowManagement"
+            Lead="Enumerate every attached screen and place windows or fullscreen content on a chosen one - the presenter's second-screen slide view, in C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Window_Management_API"
+            InjectAs="WindowManagement windowManagement" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    The Window Management API ships in Chromium-based browsers on desktop. The first
+    <code>GetScreenDetails</code> prompts for the <code>window-management</code> permission and so
+    must run inside a user gesture; the resolved details are cached for the page, so later calls do
+    not re-prompt.
+</Callout>
+
+<Callout Type="info" Title="How this differs from Screen">
+    The <a href="/screen">Screen</a> service describes the one screen the window happens to be on
+    and has no coordinate space to compare screens in. This one hands back every screen with
+    <code>Left</code>/<code>Top</code> in a shared multi-screen space, which is what makes placing a
+    window on the right monitor possible at all. <code>IsExtended</code> needs no permission, so it
+    is the right gate for showing a "move to second screen" affordance in the first place.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support, extension and permission"
+                 Api="IsSupported / IsExtended / QueryPermission"
+                 Description="IsSupported reports whether getScreenDetails exists; IsExtended reports whether more than one screen is attached, without any permission - the same reading Screen.IsExtended gives, offered here so a component already injecting this service needs no second one; QueryPermission reads the window-management state without prompting, and answers in PermissionState like every other permission read in the package."
+                 Code=@("""
+@inject Bit.Butil.WindowManagement windowManagement
+
+var supported = await windowManagement.IsSupported();
+var extended  = await windowManagement.IsExtended();
+PermissionState state = await windowManagement.QueryPermission();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Enumerate the screens"
+                 Api="GetScreenDetails"
+                 Description="Returns every attached screen and which one this window is on. Null when the API is missing or the prompt was dismissed. Before permission is granted a browser reports only the current screen, so the list length is itself a hint about the permission state."
+                 Code=@("""
+var details = await windowManagement.GetScreenDetails();
+// Null when the API is missing or the prompt was dismissed - there is nothing to enumerate.
+if (details is null) return;
+
+foreach (var screen in details.Screens)
+{
+    // screen.Label, screen.Left, screen.Top, screen.AvailWidth, screen.IsPrimary, screen.IsCurrent
+}
+""")>
+        <div class="controls">
+            <button @onclick="LoadScreens">GetScreenDetails</button>
+        </div>
+        @if (_details is not null)
+        {
+            <div class="field">
+                <span class="field-label">Target screen</span>
+                <select @bind="_screenIndex">
+                    @for (var index = 0; index < _details.Screens.Length; index++)
+                    {
+                        var screen = _details.Screens[index];
+                        <option value="@index">@index - @(string.IsNullOrEmpty(screen.Label) ? "(unlabelled)" : screen.Label) @(screen.IsCurrent ? "(current)" : "")</option>
+                    }
+                </select>
+            </div>
+        }
+        <DemoConsole @ref="screensOutput" Title="screens output" />
+    </DemoSection>
+
+    <DemoSection Title="Place a window"
+                 Api="OpenOnScreen"
+                 Description="Opens a window positioned on the chosen screen. It is still a popup, so it needs a user gesture and the popup blocker still applies - false means it was blocked, or that the screen index does not exist."
+                 Code=@("""
+await windowManagement.OpenOnScreen("https://bitplatform.dev", screenIndex: 1, fullSize: true);
+""")>
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input type="url" @bind="_url" placeholder="https://bitplatform.dev" />
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_fullSize" /> Fill the target screen</label>
+        </div>
+        <div class="controls">
+            <button @onclick="OpenWindow">OpenOnScreen</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Fullscreen on another screen"
+                 Api="RequestFullscreenOnScreen"
+                 Description="Takes an element fullscreen on the chosen screen rather than on the one the window is currently on. Needs a user gesture, like any fullscreen request."
+                 Code=@("""
+<div @ref="_stage">...</div>
+
+await windowManagement.RequestFullscreenOnScreen(_stage, screenIndex: 1);
+""")>
+        <div @ref="_stage" data-demo="butil"
+             style="display:flex;align-items:center;justify-content:center;min-height:120px;border:1px dashed currentColor;border-radius:8px;background:inherit">
+            This box goes fullscreen on the selected screen.
+        </div>
+        <div class="controls">
+            <button @onclick="GoFullscreen">RequestFullscreenOnScreen</button>
+        </div>
+        <DemoConsole @ref="fullscreenOutput" Title="fullscreen output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch the screens change"
+                 Api="SubscribeChange / RemoveChange / RemoveAllChanges"
+                 Description="Fires when a monitor is attached or removed, and when this window is dragged onto a different screen. The handler gets the whole snapshot, because either event can invalidate every index the caller is holding."
+                 Code=@("""
+await using var subscription = await windowManagement.SubscribeChange(details =>
+{
+    // details!.Screens, details.CurrentScreenIndex
+});
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe">SubscribeChange</button>
+            <button class="secondary" @onclick="RemoveOne">RemoveChange (by id)</button>
+            <button class="danger" @onclick="RemoveAll">RemoveAllChanges</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.getScreenDetails. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsExtended"
+               Signature="ValueTask<bool> IsExtended()"
+               Description="True when more than one screen is attached. Readable without any permission. The same reading as Screen.IsExtended, which it calls through to." />
+    <ApiMember Name="QueryPermission"
+               Signature="ValueTask<PermissionState> QueryPermission()"
+               Description="The window-management permission state, as PermissionState. A query only - the prompt happens on the first GetScreenDetails. Equivalent to Permissions.Query('window-management'), and routed through it." />
+    <ApiMember Name="GetScreenDetails"
+               Signature="ValueTask<ScreenDetails?> GetScreenDetails()"
+               Description="Every attached screen and which one this window is on. Prompts on the first call, so run it from a user gesture." />
+    <ApiMember Name="OpenOnScreen"
+               Signature="ValueTask<bool> OpenOnScreen(string url, int screenIndex, bool fullSize = false, string? features = null)"
+               Description="Opens a window positioned on the chosen screen. Needs a user gesture; the popup blocker still applies." />
+    <ApiMember Name="RequestFullscreenOnScreen"
+               Signature="ValueTask<bool> RequestFullscreenOnScreen(ElementReference element, int screenIndex)"
+               Description="Takes an element fullscreen on the chosen screen. Needs a user gesture." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription> SubscribeChange(Action<ScreenDetails?> handler)"
+               Description="Runs the handler when a screen is attached or removed, or when the window moves to another screen." />
+    <ApiMember Name="RemoveChange"
+               Signature="ValueTask RemoveChange(Guid id)"
+               Description="Detaches one listener by the id its subscription carries." />
+    <ApiMember Name="RemoveAllChanges"
+               Signature="ValueTask RemoveAllChanges()"
+               Description="Detaches every screens-change listener registered through this instance." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Detaches every listener and releases the JS callback reference." />
+    <ApiMember Name="InvokeScreensChange"
+               Signature="void InvokeScreensChange(Guid id, ScreenDetails? details)"
+               Description="JSInvokable interop plumbing for the screens/current-screen change events - not intended for app code." />
+    <ApiMember Name="ScreenDetails"
+               Signature="class ScreenDetails { bool IsExtended; int CurrentScreenIndex; ScreenDetailInfo[] Screens; }"
+               Description="Every attached screen, and which one this window is on." />
+    <ApiMember Name="ScreenDetailInfo"
+               Signature="class ScreenDetailInfo { string Label; int Left; int Top; int Width; int Height; int AvailLeft; int AvailTop; int AvailWidth; int AvailHeight; int ColorDepth; int PixelDepth; double DevicePixelRatio; bool IsPrimary; bool IsInternal; string? OrientationType; int OrientationAngle; bool IsCurrent; }"
+               Description="One screen's geometry in the multi-screen coordinate space, plus its identity." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole screensOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole fullscreenOutput = default!;
+    private DemoConsole changeOutput = default!;
+
+    private ElementReference _stage;
+    private ScreenDetails? _details;
+    private ButilSubscription? _subscription;
+
+    // Every transition of _subscription runs alone. Subscribing is a round-trip, so two clicks
+    // landing during it would each see a null field, attach a listener, and leave the first one
+    // with nothing holding its handle - and a removal racing a subscribe would drop the wrong one.
+    private readonly System.Threading.SemaphoreSlim _gate = new(1, 1);
+
+    private int _screenIndex;
+    private string _url = "https://bitplatform.dev";
+    private bool _fullSize = true;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await windowManagement.IsSupported());
+            await supportOutput.Success("IsExtended →", await windowManagement.IsExtended());
+            await supportOutput.Success("QueryPermission →", await windowManagement.QueryPermission());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task LoadScreens()
+    {
+        try
+        {
+            _details = await windowManagement.GetScreenDetails();
+
+            if (_details is null)
+            {
+                await screensOutput.Warn("GetScreenDetails → no details. The API is missing, or the prompt was dismissed.");
+                return;
+            }
+
+            await screensOutput.Success("GetScreenDetails →",
+                $"{_details.Screens.Length} screen(s), current index {_details.CurrentScreenIndex}, extended={_details.IsExtended}");
+
+            for (var index = 0; index < _details.Screens.Length; index++)
+            {
+                var screen = _details.Screens[index];
+                await screensOutput.Log($"  [{index}] {(string.IsNullOrEmpty(screen.Label) ? "(unlabelled)" : screen.Label)}",
+                    $"{screen.Width}x{screen.Height} at ({screen.Left},{screen.Top}), dpr={screen.DevicePixelRatio}, " +
+                    $"primary={screen.IsPrimary}, internal={screen.IsInternal}, current={screen.IsCurrent}");
+            }
+
+            if (_screenIndex >= _details.Screens.Length) _screenIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            await screensOutput.Error("GetScreenDetails failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenWindow()
+    {
+        try
+        {
+            var opened = await windowManagement.OpenOnScreen(_url, _screenIndex, _fullSize);
+            await openOutput.Success("OpenOnScreen →", opened ? "window opened." : "blocked, or no such screen.");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error("OpenOnScreen failed →", ex.Message);
+        }
+    }
+
+    private async Task GoFullscreen()
+    {
+        try
+        {
+            var ok = await windowManagement.RequestFullscreenOnScreen(_stage, _screenIndex);
+            await fullscreenOutput.Success("RequestFullscreenOnScreen →", ok ? "fullscreen." : "refused, or no such screen.");
+        }
+        catch (Exception ex)
+        {
+            await fullscreenOutput.Error("RequestFullscreenOnScreen failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            // Subscribing twice would overwrite the field and strand the first listener, which
+            // nothing - not even DisposeAsync - could then detach.
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+
+            _subscription = await windowManagement.SubscribeChange(details => _ = InvokeAsync(() =>
+            {
+                _details = details;
+                StateHasChanged();
+                return changeOutput.Success("Screens changed →",
+                    details is null ? "(no details)" : $"{details.Screens.Length} screen(s), current index {details.CurrentScreenIndex}");
+            }));
+
+            await changeOutput.Log($"Subscribed (id {_subscription.Id}) - drag this window to another screen, or attach one.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error("SubscribeChange failed →", ex.Message);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task RemoveOne()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is null)
+            {
+                await changeOutput.Warn("Subscribe first.");
+                return;
+            }
+
+            var id = _subscription.Id;
+            await windowManagement.RemoveChange(id);
+            _subscription = null;
+            await changeOutput.Log($"RemoveChange({id}) - listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task RemoveAll()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            _subscription = null;
+            await windowManagement.RemoveAllChanges();
+            await changeOutput.Log("RemoveAllChanges - every listener detached.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _gate.WaitAsync();
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            _subscription = null;
+        }
+        finally
+        {
+            _gate.Release();
+            _gate.Dispose();
+        }
+    }
+}

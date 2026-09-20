@@ -1,12 +1,8 @@
-.bit-ldn-rsq {
-}
-
 .bit-ldn-rsq-ccn {
     display: flex;
     align-items: center;
     width: var(--bit-ldn-size);
     height: var(--bit-ldn-size);
-    animation: bit-ldn-rsq-anm1 calc(2s * var(--bit-ldn-mot-factor, 1)) linear infinite;
 }
 
 .bit-ldn-rsq-chl {
@@ -18,9 +14,6 @@
     animation: bit-ldn-rsq-anm calc(1.5s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0.17, 0.37, 0.43, 0.67) infinite;
 }
 
-.bit-ldn-rsq-ch1 {
-}
-
 @keyframes bit-ldn-rsq-anm {
     0%, 100% {
         transform: translate(0, 0) rotate(0deg);
@@ -29,4 +22,10 @@
     50% {
         transform: translate(calc(var(--bit-ldn-size) * 0.75), 0) rotate(360deg);
     }
+}
+
+// Mirrored so the square rolls toward the end of the line - which also turns the rotation the other way,
+// as a square actually rolling in that direction does. See the same rule on BitEllipsisLoading.
+.bit-rtl .bit-ldn-rsq-ccn {
+    transform: scaleX(-1);
 }

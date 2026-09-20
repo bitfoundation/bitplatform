@@ -93,7 +93,7 @@ public static class McpPrompts
             1. Inventory what is there: every `IJSRuntime.InvokeAsync`/`InvokeVoidAsync` call site, every `.js` file
                under wwwroot that exists only to be called from C#, and every `IJSObjectReference` module.
             2. For each one, call `SearchButil` with what the JavaScript does (not with its function name) to find
-               the wrapper that covers it. Butil wraps around sixty browser APIs; most bespoke interop in a Blazor
+               the wrapper that covers it. Butil wraps more than a hundred browser APIs; most bespoke interop in a Blazor
                app is one of them.
             3. Call `GetButilApiDetails` for each replacement before rewriting the call site, and
                `PlanButilFeature` for anything gated on a permission, a gesture or a secure context - the hand-written
@@ -130,9 +130,15 @@ public static class McpPrompts
                container - a missing registration surfaces during prerendering, a missing script surfaces as every
                call doing nothing. If the project sets `BitButilLazyScripts` there is deliberately no script tag,
                and the equivalent failure is a 404 on `_content/Bit.Butil/modules/<module>.js` in the network tab.
-            4. Confirm the member with `GetButilApiDetails` before concluding it is a bug - check the actual
+            4. If it fails only in a published app and only for ONE API, the JavaScript trimming is the first
+               suspect: a publish rebuilds `bit-butil.js` from the modules it can still reach, and neither the
+               trimmer nor the scan can follow an API reached by reflection or from your own JavaScript. It is
+               publish-only, so a build never reproduces it - compare two publishes, one with
+               `<BitButilTrimScripts>false</BitButilTrimScripts>`, and read
+               `GetButilDocsPage(slug: "javascript-trimming")` for the fix.
+            5. Confirm the member with `GetButilApiDetails` before concluding it is a bug - check the actual
                signature and the default arguments, and read the XML remarks, which carry the per-member caveats.
-            5. Call `SearchButil` with the symptom for anything the above did not cover.
+            6. Call `SearchButil` with the symptom for anything the above did not cover.
 
             Tell me the cause and the fix, and cite the tool call that established it.
             """;

@@ -14,15 +14,6 @@ public partial class AppDiagnosticModal
 
 
     [AutoInject] private Clipboard clipboard = default!;
-    //#if (signalR == true)
-    [AutoInject] private HubConnection hubConnection = default!;
-    //#endif
-    [AutoInject] private ITelemetryContext telemetryContext = default!;
-    [AutoInject] private BitMessageBoxService messageBoxService = default!;
-    [AutoInject] private IDiagnosticController diagnosticController = default!;
-    //#if (notification == true)
-    [AutoInject] private IPushNotificationService pushNotificationService = default!;
-    //#endif
 
 
     private static bool showKnownException = true;
@@ -78,11 +69,6 @@ public partial class AppDiagnosticModal
     {
         isDescendingSort = !isDescendingSort;
         FilterLogs();
-    }
-
-    private async Task CopyTelemetry()
-    {
-        await clipboard.WriteText(string.Join(Environment.NewLine, telemetryContext.ToDictionary().Select(c => $"{c.Key}: {c.Value}")));
     }
 
     private async Task CopyLog(DiagnosticLogDto? log)
@@ -159,7 +145,7 @@ public partial class AppDiagnosticModal
     {
         allLogs = logs;
 
-        var allCategories = allLogs.Where(c => string.IsNullOrEmpty(c.Category) is false)
+        var allCategories = allLogs.Where(c => string.IsNullOrWhiteSpace(c.Category) is false)
                                    .Select(l => l.Category!)
                                    .Distinct()
                                    .Order()
@@ -194,7 +180,7 @@ public partial class AppDiagnosticModal
 
         IEnumerable<DiagnosticLogDto> FilterSearchText(DiagnosticLogDto[] logs)
         {
-            if (string.IsNullOrEmpty(searchText)) return logs;
+            if (string.IsNullOrWhiteSpace(searchText)) return logs;
 
             if (enableRegExp)
             {

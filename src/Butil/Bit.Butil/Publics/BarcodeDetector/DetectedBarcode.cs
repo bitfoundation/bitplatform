@@ -25,7 +25,9 @@ public class DetectedBarcode
     /// <summary>The bounding box's top edge, in the source element's pixel coordinates.</summary>
     public double Y { get; set; }
 
+    /// <summary>The bounding box's width, in the source element's pixel coordinates.</summary>
     public double Width { get; set; }
 
+    /// <summary>The bounding box's height, in the source element's pixel coordinates.</summary>
     public double Height { get; set; }
 }

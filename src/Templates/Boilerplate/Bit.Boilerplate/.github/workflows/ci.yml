@@ -1,5 +1,10 @@
 name: Boilerplate CI
 
+#if (IsInsideProjectTemplate == true)
+# [mirror] .azure-devops/workflows/ci.yml
+# Only one of the two pipeline directories ships to a generated project, so this note is template-only.
+#endif
+
 # https://bitplatform.dev/templates/dev-ops
 
 on:
@@ -33,6 +38,9 @@ jobs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+
+    - name: Verify formatting
+      run: dotnet format whitespace --folder . --verify-no-changes
 
     - name: Workload restore
       run: dotnet workload restore

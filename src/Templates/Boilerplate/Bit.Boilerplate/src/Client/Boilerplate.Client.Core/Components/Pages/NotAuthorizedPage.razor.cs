@@ -29,10 +29,10 @@ public partial class NotAuthorizedPage
             // Following this procedure, the newly acquired access token may now include the necessary roles or claims.
             // TryRefreshingToken is checked FIRST: arriving here having already been refreshed once for this
             // destination means the refresh cannot help, so a second round trip is pure cost.
-            if (TryRefreshingToken is not false && string.IsNullOrEmpty(refreshToken) is false)
+            if (TryRefreshingToken is not false && string.IsNullOrWhiteSpace(refreshToken) is false)
             {
                 var accessToken = await AuthManager.RefreshToken(requestedBy: nameof(NotAuthorizedPage));
-                if (string.IsNullOrEmpty(accessToken) is false && ReturnUrl is not null)
+                if (string.IsNullOrWhiteSpace(accessToken) is false && ReturnUrl is not null)
                 {
                     var returnUrl = GetSafeReturnUrl();
                     var @char = returnUrl.Contains('?') ? '&' : '?'; // The RedirectUrl may already include a query string.

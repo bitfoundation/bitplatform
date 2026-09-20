@@ -32,9 +32,6 @@ public partial class AppAiChatPanel
     /// <summary>The take has been handed to the backend and the panel is waiting to hear what it said.</summary>
     private bool isTranscribing;
 
-    /// <summary>How much of <see cref="MaxDictationDuration"/> the open take has used, as the ring around the button.</summary>
-    private double dictationPercent;
-
     /// <summary>Whatever was already typed when dictation started; what is heard is appended to it, not written over it.</summary>
     private string? dictationPrefix;
 
@@ -65,6 +62,8 @@ public partial class AppAiChatPanel
                                   Localizer[nameof(AppStrings.AiChatPanelMicrophoneBlocked)]);
             return;
         }
+
+        await EndVoiceCall();
 
         // An open microphone and an answer being read talk over each other, and the recording would carry both. Read
         // aloud itself stays on: it is the next answer the user wants read, not this one.
@@ -129,34 +128,13 @@ public partial class AppAiChatPanel
     }
 
     /// <summary>
-    /// Ends the take once it reaches <see cref="MaxDictationDuration"/>, and on the way there fills the ring around
-    /// the microphone button, so the deadline is something the user can see coming rather than be surprised by.
+    /// Ends the take once it reaches <see cref="MaxDictationDuration"/>, counting it down on the speech timer on the way
+    /// there, so the deadline is something the user can see coming rather than be surprised by.
     /// </summary>
     private async Task StopDictationAfterMaxDuration(CancellationToken cancellationToken)
     {
-        var startedAt = TimeProvider.GetUtcNow();
-
-        try
-        {
-            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(500), TimeProvider);
-
-            while (await timer.WaitForNextTickAsync(cancellationToken))
-            {
-                var elapsed = TimeProvider.GetUtcNow() - startedAt;
-
-                if (elapsed >= MaxDictationDuration) break;
-
-                await InvokeAsync(() =>
-                {
-                    dictationPercent = elapsed / MaxDictationDuration * 100;
-                    StateHasChanged();
-                });
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            return; // The user stopped first, which is the ordinary case.
-        }
+        // The user stopped first, which is the ordinary case.
+        if (await CountDownSpeech(MaxDictationDuration, cancellationToken) is false) return;
 
         await InvokeAsync(async () =>
         {
@@ -231,7 +209,7 @@ public partial class AppAiChatPanel
             // The container is in the bytes as well, but the header is what a proxy or a server side format check
             // reads first. Only the media type is kept: MediaRecorder reports codecs alongside it ("audio/webm;
             // codecs=opus"), which is not a valid Content-Type parameter list for every server to parse.
-            audioContent.Headers.ContentType = new(string.IsNullOrEmpty(mimeType) ? "application/octet-stream" : mimeType.Split(';')[0]);
+            audioContent.Headers.ContentType = new(string.IsNullOrWhiteSpace(mimeType) ? "application/octet-stream" : mimeType.Split(';')[0]);
             form.Add(audioContent, name: "file", fileName: "recording");
 
             using var response = await httpClient.PostAsync("api/v1/Chatbot/TranscribeSpeech", form, CurrentCancellationToken);
@@ -276,7 +254,7 @@ public partial class AppAiChatPanel
     private async ValueTask ReleaseMicrophone()
     {
         isListening = false;
-        dictationPercent = 0;
+        speechPercent = 0;
 
         if (dictationTimeoutCts is not null)
         {

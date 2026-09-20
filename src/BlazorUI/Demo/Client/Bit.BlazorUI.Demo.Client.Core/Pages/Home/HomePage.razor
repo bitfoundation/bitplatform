@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages
 @inherits AppComponentBase
 
@@ -76,12 +76,13 @@
                 <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
                     Point your coding agent - GitHub Copilot, Cursor, Claude, Windsurf - at the official
                     bit BlazorUI MCP server and it discovers components, pulls accurate usage examples, and
-                    follows the library's conventions without being told twice.
+                    follows the library's conventions without being told twice. This very site is that
+                    server, so what the agent reads is what these pages render.
                 </BitText>
                 <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="split-actions">
-                    <BitButton Href="/getting-started#ai-mcp" Variant="BitVariant.Outline"
+                    <BitButton Href="/mcp-server" Variant="BitVariant.Outline"
                                IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
-                        Set up AI integration
+                        Explore the MCP server
                     </BitButton>
                 </BitStack>
             </div>

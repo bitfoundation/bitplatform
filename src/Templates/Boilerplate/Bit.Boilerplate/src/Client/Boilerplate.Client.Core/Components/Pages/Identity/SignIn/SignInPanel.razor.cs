@@ -57,13 +57,13 @@ public partial class SignInPanel
         model.Email = EmailQueryString;
         model.PhoneNumber = PhoneNumberQueryString;
 
-        if (string.IsNullOrEmpty(OtpQueryString) is false)
+        if (string.IsNullOrWhiteSpace(OtpQueryString) is false)
         {
             model.Otp = OtpQueryString;
 
             if (InPrerenderSession is false &&
-                (string.IsNullOrEmpty(model.Email) is false ||
-                 string.IsNullOrEmpty(model.PhoneNumber) is false))
+                (string.IsNullOrWhiteSpace(model.Email) is false ||
+                 string.IsNullOrWhiteSpace(model.PhoneNumber) is false))
             {
                 await DoSignIn();
 
@@ -75,7 +75,7 @@ public partial class SignInPanel
             }
         }
 
-        if (string.IsNullOrEmpty(ErrorQueryString) is false)
+        if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
             SnackBarService.Error(ErrorQueryString);
         }
@@ -153,7 +153,7 @@ public partial class SignInPanel
                 else
                 {
                     // Check out SignInModalService for more details
-                    var signInResponse = string.IsNullOrEmpty(model.Email) is false
+                    var signInResponse = string.IsNullOrWhiteSpace(model.Email) is false
                         ? await identityController.ConfirmEmail(new() { Token = model.Otp, Email = model.Email }, CurrentCancellationToken)
                         : await identityController.ConfirmPhone(new() { Token = model.Otp, PhoneNumber = model.PhoneNumber }, CurrentCancellationToken);
 
@@ -213,7 +213,7 @@ public partial class SignInPanel
                 {
                     var valueAsString = value?.ToString();
 
-                    return string.IsNullOrEmpty(valueAsString) ? null : valueAsString;
+                    return string.IsNullOrWhiteSpace(valueAsString) ? null : valueAsString;
                 }
 
                 queryParams.TryGetValue("return-url", out var returnUrl);

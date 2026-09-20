@@ -1,0 +1,11 @@
+﻿@* The content of a Modal shown through the service, with a Modal of its own declared inside it - the
+   confirmation a form asks for from the middle of itself. The inner one is a Modal in its own right: what
+   the container cascades belongs to the Modal that is rendering this content, and the inner one starts from
+   nothing but what it declares. *@
+<BitModal @bind-IsOpen="IsInnerOpen" Class="inner-modal">
+    <div class="inner-content">Inner</div>
+</BitModal>
+
+@code {
+    [Parameter] public bool IsInnerOpen { get; set; } = true;
+}

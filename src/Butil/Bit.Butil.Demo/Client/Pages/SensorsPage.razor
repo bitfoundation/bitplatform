@@ -1,0 +1,215 @@
+@page "/sensors"
+@implements IAsyncDisposable
+@inject Bit.Butil.Sensors sensors
+
+<PageTitle>Sensors - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Sensors"
+            Lead="The Generic Sensor API: accelerometer, gyroscope, magnetometer, the two orientation sensors, gravity, linear acceleration and ambient light - each with its own sample rate and permission."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Sensor_APIs"
+            InjectAs="Sensors sensors" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    The Generic Sensor API ships in Chromium-based browsers, mostly on mobile hardware. Support is
+    per sensor, not per API - a browser can ship <code>Accelerometer</code> and not
+    <code>Magnetometer</code>, and a device can ship neither. A <code>Permissions-Policy</code> on
+    the document can also block a sensor, which arrives on the error callback rather than as an
+    exception.
+</Callout>
+
+<Callout Type="info" Title="How this differs from DeviceOrientation">
+    The <a href="/device-orientation">DeviceOrientation</a> service wraps the legacy
+    <code>deviceorientation</code> / <code>devicemotion</code> events. What these sensors add is an
+    explicit frequency, a per-sensor permission model, an error channel, and hardware the legacy
+    events never exposed: magnetometer, gravity and ambient light.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Per-sensor support and permission"
+                 Api="IsSupported / QueryPermission"
+                 Description="IsSupported reports whether the constructor exists. QueryPermission reports the permission state - it is a query only, since sensor permissions cannot be requested on their own; the prompt, where an engine has one, happens on the first Subscribe."
+                 Code=@("""
+@inject Bit.Butil.Sensors sensors
+
+var supported = await sensors.IsSupported(SensorType.Accelerometer);
+PermissionState state = await sensors.QueryPermission(SensorType.Accelerometer);
+""")>
+        <div class="controls">
+            <button @onclick="CheckAll">Check every sensor</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Read a sensor"
+                 Api="Subscribe"
+                 Description="Starts a sensor and calls back on every reading. The eight sensors report different quantities, so a reading carries all of them and leaves the ones this sensor does not produce as null. Frequency is a hint the platform is free to ignore; MinIntervalMs is the rate limit that actually holds, applied in JS so a 60 Hz sensor does not spend 60 interop round-trips a second. Dispose the subscription to stop - a running sensor keeps hardware awake."
+                 Code=@("""
+await using var subscription = await sensors.Subscribe(
+    SensorType.Accelerometer,
+    reading => Console.WriteLine($"{reading.X}, {reading.Y}, {reading.Z}"),
+    new SensorOptions { Frequency = 10, MinIntervalMs = 100 },
+    onError: message => Console.WriteLine(message));
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Sensor</span>
+                <select @bind="_type">
+                    @foreach (var type in Enum.GetValues<SensorType>())
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Frequency (Hz, 0 = platform default)</span>
+                <input type="number" min="0" max="60" @bind="_frequency" />
+            </div>
+            <div class="field">
+                <span class="field-label">Min interval (ms, 0 = every reading)</span>
+                <input type="number" min="0" max="2000" @bind="_minIntervalMs" />
+            </div>
+            <div class="field">
+                <span class="field-label">Reference frame (every sensor but ambient light)</span>
+                <select @bind="_referenceFrame">
+                    <option value="@SensorReferenceFrame.Device">Device</option>
+                    <option value="@SensorReferenceFrame.Screen">Screen</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Start">Subscribe</button>
+            <button class="danger" @onclick="Stop">Stop</button>
+        </div>
+        @if (_latest is not null)
+        {
+            <div class="field">
+                <span class="field-label">Latest reading</span>
+                <span>@Format(_latest)</span>
+            </div>
+        }
+        <DemoConsole @ref="readingOutput" Title="reading output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported(SensorType type)"
+               Description="True when the runtime exposes the constructor behind the given sensor. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="QueryPermission"
+               Signature="ValueTask<PermissionState> QueryPermission(SensorType type)"
+               Description="The permission state - 'granted', 'denied' or 'prompt'. A query only; sensors that fuse several physical ones report the least-granted." />
+    <ApiMember Name="Subscribe"
+               Signature="ValueTask<ButilSubscription> Subscribe(SensorType type, Action<SensorReading> onReading, SensorOptions? options = null, Action<string>? onError = null)"
+               Description="Starts a sensor and calls back on each reading. Dispose the subscription to stop it." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops every sensor this instance started and releases the JS callback reference." />
+    <ApiMember Name="InvokeSensorReading"
+               Signature="void InvokeSensorReading(Guid id, SensorReading reading)"
+               Description="JSInvokable interop plumbing for readings - not intended for app code." />
+    <ApiMember Name="InvokeSensorError"
+               Signature="void InvokeSensorError(Guid id, string message)"
+               Description="JSInvokable interop plumbing for sensor errors - not intended for app code." />
+    <ApiMember Name="SensorType"
+               Signature="enum SensorType { Accelerometer, Gyroscope, Magnetometer, AbsoluteOrientation, RelativeOrientation, Gravity, LinearAcceleration, AmbientLight }"
+               Description="Which of the eight Generic Sensor classes to use." />
+    <ApiMember Name="SensorOptions"
+               Signature="class SensorOptions { double? Frequency; SensorReferenceFrame? ReferenceFrame; int MinIntervalMs = 100; }"
+               Description="Sample rate, the axes a spatial sensor reports against (every type but AmbientLight), and the shortest gap between two readings reaching .NET. Frequency is only a hint the platform may ignore; MinIntervalMs is the cap that holds, applied in JS before the interop round-trip is paid for. 0 forwards every reading." />
+    <ApiMember Name="SensorReferenceFrame"
+               Signature="enum SensorReferenceFrame { Device, Screen }"
+               Description="Device axes ignore screen rotation; screen axes follow it. Taken by every sensor but AmbientLight." />
+    <ApiMember Name="SensorReading"
+               Signature="class SensorReading { string Type; double Timestamp; double? X; double? Y; double? Z; double[]? Quaternion; double? Illuminance; }"
+               Description="One reading. Vector sensors fill X/Y/Z, orientation sensors fill Quaternion, the light sensor fills Illuminance." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole readingOutput = default!;
+
+    private ButilSubscription? _subscription;
+    private SensorReading? _latest;
+
+    private SensorType _type = SensorType.Accelerometer;
+    private int _frequency = 5;
+    private int _minIntervalMs = 100;
+    private SensorReferenceFrame _referenceFrame = SensorReferenceFrame.Device;
+
+    private async Task CheckAll()
+    {
+        try
+        {
+            foreach (var type in Enum.GetValues<SensorType>())
+            {
+                var supported = await sensors.IsSupported(type);
+                var permission = supported ? (await sensors.QueryPermission(type)).ToString() : "n/a";
+                await supportOutput.Log($"{type} →", $"supported={supported}, permission={permission}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task Start()
+    {
+        await Stop();
+
+        try
+        {
+            if (!await sensors.IsSupported(_type))
+            {
+                await readingOutput.Warn($"{_type} is not supported on this device or browser.");
+                return;
+            }
+
+            _subscription = await sensors.Subscribe(_type,
+                reading => _ = InvokeAsync(() =>
+                {
+                    _latest = reading;
+                    StateHasChanged();
+                    return readingOutput.Log("Reading →", Format(reading));
+                }),
+                new SensorOptions
+                {
+                    Frequency = _frequency > 0 ? _frequency : null,
+                    ReferenceFrame = _referenceFrame,
+                    MinIntervalMs = _minIntervalMs
+                },
+                onError: message => _ = InvokeAsync(() => readingOutput.Error("Sensor error →", message)));
+
+            await readingOutput.Log($"{_type} started - move the device.");
+        }
+        catch (Exception ex)
+        {
+            await readingOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task Stop()
+    {
+        if (_subscription is null) return;
+        await _subscription.DisposeAsync();
+        _subscription = null;
+        _latest = null;
+        await readingOutput.Log("Sensor stopped.");
+    }
+
+    private static string Format(SensorReading reading)
+    {
+        if (reading.Quaternion is { Length: 4 } q)
+            return $"quaternion [{q[0]:F3}, {q[1]:F3}, {q[2]:F3}, {q[3]:F3}]";
+
+        if (reading.Illuminance is { } lux) return $"{lux:F1} lux";
+
+        return $"x={reading.X:F3}, y={reading.Y:F3}, z={reading.Z:F3}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}

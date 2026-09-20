@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
+using Bit.BlazorUI.Demo.Server.Services.Mcp;
 
 namespace Bit.BlazorUI.Demo.Server.Startup;
 
@@ -70,6 +71,22 @@ public class Middlewares
         app.MapControllers();
 
         app.MapMcp("/mcp");
+
+        // Reflecting five assemblies, constructing 110 demo pages and building the search index
+        // takes long enough to be noticed, and the first MCP client to connect is the one who would
+        // wait for it. Off the startup path so it delays nothing, and swallowing its own failure so
+        // a catalog that cannot be built costs one tool call rather than the whole app.
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                BlazorUISearchIndex.Warm();
+            }
+            catch (Exception exception)
+            {
+                app.Logger.LogWarning(exception, "The MCP catalogs could not be warmed at startup.");
+            }
+        });
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 

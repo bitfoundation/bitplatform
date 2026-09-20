@@ -1,7 +1,7 @@
 @inherits AppComponentBase
 
 <div>
-    <BitProModal @bind-IsOpen="isOpen"
+    <BitModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
               OnDismiss="() => searchText = null"
@@ -19,21 +19,8 @@
                            IconName="@BitIconName.ChromeClose" />
             </BitStack>
 
-            <BitAccordion Title="Telemetry Context">
-                <BitButton IconOnly
-                           Title="Copy"
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Copy"
-                           OnClick="WrapHandled(CopyTelemetry)" />
-                <BitScrollablePane>
-                    <BitStack>
-                        @foreach (var (key, value) in telemetryContext.ToDictionary())
-                        {
-                            <BitText NoWrap><b>@key</b>: @value</BitText>
-                        }
-                    </BitStack>
-                </BitScrollablePane>
+            <BitAccordion Title="Diagnostic">
+                <DiagnosticReport AutoRun="false" />
             </BitAccordion>
 
             <BitStack Horizontal FitHeight Wrap>
@@ -100,12 +87,6 @@
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly AutoLoading
-                           Title="Call Diag API"
-                           Color="BitColor.SecondaryBackground"
-                           OnClick="WrapHandled(CallDiagnosticApi)"
-                           IconName="@BitIconName.DiagnosticDataViewerApp" />
-
-                <BitButton IconOnly AutoLoading
                            Title="Open dev tools"
                            Color="BitColor.SecondaryBackground"
                            OnClick="WrapHandled(OpenDevTools)"
@@ -142,8 +123,8 @@
                           Items="indexedFilteredLogs">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="logIndex.item.CreatedOn.ToLocalTime()" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{logIndex.item.CreatedOn.ToLocalTime().ToString("HH:mm:ss")}]")</BitText>
+                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
                                    Color="BitColor.Info"
@@ -171,7 +152,7 @@
                    Variant="BitVariant.Text"
                    OnClick="WrapHandled(GoTop)"
                    IconName="@BitIconName.Up" />
-    </BitProModal>
+    </BitModal>
 
     <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen"
                         OnNav="WrapHandled((bool isNext) => NavLog(isNext))"

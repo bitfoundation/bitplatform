@@ -69,7 +69,7 @@
                                             IsEnabled="currentTenant is not null"
                                             Title="@(currentTenant is null
                                                        ? Localizer[nameof(AppStrings.Invite)]
-                                                       : Localizer[nameof(AppStrings.InviteUserToTenant), string.IsNullOrEmpty(currentTenant.Title) ? currentTenant.Name : currentTenant.Title!])">
+                                                       : Localizer[nameof(AppStrings.InviteUserToTenant), string.IsNullOrWhiteSpace(currentTenant.Title) ? currentTenant.Name : currentTenant.Title!])">
                         <EditForm Model="inviteRequest" OnValidSubmit="WrapHandled(InviteUser)" Context="inviteFormContext" novalidate>
                             <AppDataAnnotationsValidator @ref="inviteValidatorRef" />
                             <BitStack Gap="0.5rem">
@@ -146,9 +146,9 @@
                                 }
 
                                 <BitStack Gap="0.125rem" Grows>
-                                    <BitText Typography="BitTypography.Subtitle1">@(string.IsNullOrEmpty(tenant.Title) ? tenant.Name : tenant.Title)</BitText>
+                                    <BitText Typography="BitTypography.Subtitle1">@(string.IsNullOrWhiteSpace(tenant.Title) ? tenant.Name : tenant.Title)</BitText>
                                     <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@tenant.Name</BitText>
-                                    @if (string.IsNullOrEmpty(tenant.Domain) is false)
+                                    @if (string.IsNullOrWhiteSpace(tenant.Domain) is false)
                                     {
                                         <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground">@tenant.Domain</BitText>
                                     }
@@ -200,5 +200,5 @@
            Message="@(tenantToLeave is null
                       ? ""
                       : IsDecliningInvitation(tenantToLeave)
-                        ? Localizer[nameof(AppStrings.DeclineInvitationConfirmMessage), string.IsNullOrEmpty(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!]
-                        : Localizer[nameof(AppStrings.LeaveTenantConfirmMessage), string.IsNullOrEmpty(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!])" />
+                        ? Localizer[nameof(AppStrings.DeclineInvitationConfirmMessage), string.IsNullOrWhiteSpace(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!]
+                        : Localizer[nameof(AppStrings.LeaveTenantConfirmMessage), string.IsNullOrWhiteSpace(tenantToLeave.Title) ? tenantToLeave.Name! : tenantToLeave.Title!])" />

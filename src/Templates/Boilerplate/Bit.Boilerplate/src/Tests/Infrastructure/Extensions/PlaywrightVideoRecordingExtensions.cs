@@ -11,12 +11,28 @@ public static class PlaywrightVideoRecordingExtensions
         //Pass full name of the test method to 'testMethodFullName' param or it will be inferred from the test context
         public async Task FinalizeVideoRecording(TestContext testContext, string? testMethodFullName = null)
         {
-            await browserContext.CloseAsync();
+            try
+            {
+                await browserContext.CloseAsync();
+            }
+            catch (PlaywrightException)
+            {
+                // Firefox intermittently fails Browser.removeBrowserContext while tearing its window down. A context
+                // that refuses to close is the driver's problem; failing the test it belonged to hides its real result.
+            }
+
             if (testContext.CurrentTestOutcome is not UnitTestOutcome.Failed)
             {
                 var directory = GetVideoDirectory(testContext, testMethodFullName);
-                if (Directory.Exists(directory))
-                    Directory.Delete(directory, true);
+                try
+                {
+                    if (Directory.Exists(directory))
+                        Directory.Delete(directory, true);
+                }
+                catch (IOException)
+                {
+                    // Housekeeping: a video the driver still holds must not turn a passing test into a failed one.
+                }
             }
         }
     }
@@ -43,8 +59,12 @@ public static class PlaywrightVideoRecordingExtensions
         return Path.GetFullPath(dir);
     }
 
+    /// <summary>
+    /// The display name, not the method name: the data rows of one method run in parallel, and sharing a folder let
+    /// one row's cleanup delete it under another row's recording.
+    /// </summary>
     private static string GetTestMethodName(TestContext testContext)
     {
-        return testContext.TestName!;
+        return testContext.TestDisplayName ?? testContext.TestName!;
     }
 }

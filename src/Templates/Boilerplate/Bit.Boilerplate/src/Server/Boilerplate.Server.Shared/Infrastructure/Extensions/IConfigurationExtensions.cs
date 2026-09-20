@@ -7,7 +7,7 @@ public static class IConfigurationExtensions
         public string GetRequiredConnectionString(string key)
         {
             var connectionString = configuration.GetConnectionString(key);
-            if (string.IsNullOrEmpty(connectionString))
+            if (string.IsNullOrWhiteSpace(connectionString))
                 throw new InvalidOperationException($"Connection string '{key}' is not found.");
             return connectionString;
         }

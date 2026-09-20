@@ -21,7 +21,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 request.Headers.Authorization is null)
             {
                 var accessToken = await tokenProvider.GetAccessToken();
-                if (string.IsNullOrEmpty(accessToken) is false && request.HasAuthorizedApiAttribute())
+                if (string.IsNullOrWhiteSpace(accessToken) is false && request.HasAuthorizedApiAttribute())
                 {
                     if (IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated() is false)
                     {
@@ -29,7 +29,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
                     }
                 }
-                request.Headers.Authorization = string.IsNullOrEmpty(accessToken) ? null : new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = string.IsNullOrWhiteSpace(accessToken) ? null : new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
             return await base.SendAsync(request, cancellationToken);
@@ -52,7 +52,7 @@ public partial class AuthDelegatingHandler(IJSRuntime jsRuntime,
                 throw; // To prevent refresh token loop
 
             var refreshToken = await storageService.GetItem("refresh_token");
-            if (string.IsNullOrEmpty(refreshToken)) throw;
+            if (string.IsNullOrWhiteSpace(refreshToken)) throw;
 
             var authManager = serviceProvider.GetRequiredService<AuthManager>();
 

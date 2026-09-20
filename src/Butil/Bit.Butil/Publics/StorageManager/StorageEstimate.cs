@@ -6,8 +6,10 @@ namespace Bit.Butil;
 /// </summary>
 public class StorageEstimate
 {
+    /// <summary>How many bytes the origin may use. A conservative figure, deliberately fuzzed.</summary>
     public long? Quota { get; set; }
 
+    /// <summary>How many bytes the origin is using, likewise fuzzed and rounded.</summary>
     public long? Usage { get; set; }
 
     /// <summary>
@@ -16,14 +18,4 @@ public class StorageEstimate
     /// "unknown", not "nothing stored".
     /// </summary>
     public StorageUsageDetail[] UsageDetails { get; set; } = [];
-}
-
-/// <summary>One entry of <see cref="StorageEstimate.UsageDetails"/>.</summary>
-public class StorageUsageDetail
-{
-    /// <summary>The storage API holding the bytes - e.g. <c>indexedDB</c>, <c>caches</c>, <c>serviceWorkerRegistrations</c>.</summary>
-    public string Api { get; set; } = string.Empty;
-
-    /// <summary>Bytes attributed to that API.</summary>
-    public long Bytes { get; set; }
 }

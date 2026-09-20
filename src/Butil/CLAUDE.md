@@ -1,0 +1,139 @@
+# Bit.Butil
+
+Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server, Hybrid, prerendering; net8.0/9.0/10.0).
+`README.md` in this folder is the reference guide and is also served by the MCP server - keep it accurate.
+
+## Layout
+
+| Path | What it is |
+| --- | --- |
+| `Bit.Butil/Publics/` | The public API: one injectable service class per browser API, plus its DTOs/enums in a same-named subfolder |
+| `Bit.Butil/Internals/` | Interop helpers, JS-callable relay classes, JS-shaped option types |
+| `Bit.Butil/Scripts/*.ts` | One TypeScript file = one JS module = one `BitButil.<module>` namespace |
+| `Bit.Butil/build.mjs` | Assembles `wwwroot/bit-butil.js`, `wwwroot/modules/*.js` and the packed chunks + manifest (run by MSBuild; outputs are generated and git-ignored). `minify-options.mjs` beside it holds the esbuild settings the benchmarks measure with |
+| `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
+| `Bit.Butil.Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
+| `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |
+| `tests/` | `Tests.E2E` (Playwright, against every host), `Tests.Hosting` (in-process HTTP against every render mode), `Tests.Harness.Web` (+ `.Client`) and `Tests.Harness.Hybrid` (the Blazor Web App and BlazorWebView hosts those two drive), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
+
+## Coding style
+
+Follow the `.editorconfig` at the root of `src`. Match the surrounding code: file-scoped namespaces, primary
+constructors, expression-bodied one-liners, `is null` / `is false` over `== null` / `!`. Comments explain *why*
+a thing is shaped the way it is (trimming, prerendering, browser quirks), not what the next line does.
+
+Every public type and member carries XML documentation ending in a link to its MDN page. That documentation is
+what IntelliSense and the MCP server hand out, so it is part of the feature, not decoration.
+
+Each top-level type lives in its own file, and the file is named after the type. No file declares more than
+one top-level type (nested types belong to their container, so they stay with it). The single exception is a
+generic type accompanying an existing non-generic one of the same name - those two may share a file.
+
+## Adding or changing an API
+
+1. **Service class** in `Publics/`, marked `[ButilService(typeof(TheClass))]` and taking `IJSRuntime` through a
+   primary constructor. The attribute is the only registration step - there is no list to update - and its type
+   argument is what preserves the constructor under trimming. Payload DTOs and enums go in `Publics/<Api>/`.
+2. **Interop identifiers must be literal strings** of the form `"BitButil.<module>.<function>"`. Never build one
+   by interpolation or concatenation: the string literals surviving trimming *are* the list of JS modules a
+   published app can still reach, and both the publish-time bundler and the `Bit.Butil.Build` scanner read them.
+3. **Call through the `Invoke` / `InvokeVoid` extensions** (`Extensions/JSRuntimeExtensions.cs`), not
+   `IJSRuntime` directly - they return safe defaults instead of throwing during prerender/SSR, and route through
+   the lazy-script loader.
+4. **JavaScript** in a `Scripts/<module>.ts` that attaches to `window.BitButil`, following the existing shape.
+   Expose an `isSupported()` where the API is not universally implemented. Modules must be safe to evaluate more
+   than once; cross-module references (`butil.utils.*`) are discovered by `build.mjs` as dependencies.
+   **One module is one small set of features**, because a module is the unit a trimmed app downloads: it is kept
+   whole or not at all, so anything parked in one is paid for by every app calling anything else in it.
+   `build.mjs` enforces a budget (warns over 250 lines, fails over 400) - split along the feature seams instead
+   of growing a module, the way `crypto*`, `webAudio*`, `element*`, `indexedDb*`, `css*` and `window*` are split.
+   A C# service may call several modules; that is normal and needs no registration. Shared state goes in a small
+   module of its own that the others depend on (`abortSignals`, `domHandles`, `cryptoKeyMaterial`), and where the
+   dependency would have to point back the other way, the owner exposes a hook the dependent registers with
+   (`webAudio.onDispose`, `webAudioNodes.onRelease`, `performance.onStopRetained`) - `build.mjs` rejects a cycle.
+5. **Types crossing the interop boundary** need `[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(T))]`
+   at the call site so trimming keeps what `System.Text.Json` reflects over. `[JSInvokable]` callbacks use the
+   explicit-identifier form (`[JSInvokable(InvokeMethodName)]`) and live on a **small internal relay class**, not
+   on the service or handle itself (`DomEventsInterop`, `PerformanceObserverInterop`, `WindowMediaQueryInterop`,
+   `IndexedDbCallbacksInterop`). `DotNetObjectReference.Create(x)` annotates `x` with `PublicMethods`, so handing
+   JavaScript a service preserves every method it has - and with them every interop identifier in the class, which
+   is what decides the JS a trimmed app downloads. That single line silently undoes a module split: it is how
+   `Window` used to ship four modules to a page that read `InnerWidth`. Create the relay lazily
+   (`DotNetObjectReferenceHelper.GetOrCreate`) so an app that never subscribes never has the code that hands it over.
+   For the same reason, a teardown call in `DisposeAsync` naming a module the feature's own methods name - a
+   `disposeAll` - belongs in a delegate armed by the call that created something (`Css.CreateStyleSheet`,
+   `Window.Open`, `Window.SubscribeMatchMedia`), or every consumer of the service downloads that module.
+   `tests/Bit.Butil.Tests.Manual` (`SplitModuleUse`) fails when either rule is broken.
+   A service's own `disposeAll`/`releaseAll` in `DisposeAsync` goes through `InvokeTeardown`, not `InvokeVoid`: a
+   scoped service is disposed with its scope whether or not it was used, and under lazy scripts an unconditional
+   teardown imports the module just to release nothing - every page reload in a BlazorWebView and every ended
+   circuit downloaded the module of every injected service. The hybrid run of `LazyScriptsTests` catches it.
+   The skip keys on which modules were *requested*, and a module that other modules fill through their own files
+   (`domHandles` via `dom`/`shadowDom`, `messageChannel` via `worker`/`windowMessaging`) is never requested itself -
+   so name those dependents in the `InvokeTeardown` call, or their state is never released.
+6. **Anything attaching a listener returns a `ButilSubscription`**; anything holding a browser resource open
+   (streams, recorders, handles) is `IAsyncDisposable`. Document the gesture/HTTPS/permission preconditions.
+   A listener for an event that fires **about once a frame** - a pointer move, a scroll, a resize, an
+   observer callback - takes a minimum interval and gates the dispatch through `butil.utils.throttle`
+   (`events`, `elementEvents`, the three observers and `visualViewport` are the shape to copy). Gate the
+   *dispatch*, not the handler, so `preventDefault` still runs on every event, and map the payload before
+   the gate so the trailing send never reads an event the browser has finished dispatching. Every one of
+   those events is otherwise a JSON serialization plus, on Blazor Server, a SignalR message and a network
+   hop - `Tests.Benchmarks` measures the difference and fails if it stops holding.
+7. Add the service to the **`README.md` "What's in the box"** table.
+
+## Showcases - the Demo and Samples projects
+
+Every feature has to be demonstrable, not merely documented. A new or extended API is not done until:
+
+- **`Bit.Butil.Demo/Client/Pages/<Api>Page.razor`** covers it: a `PageHeader` (category, lead, MDN link,
+  `InjectAs`), one `DemoSection` per public member or coherent group of members - each with a runnable control,
+  a `Code` snippet the reader can copy, and a `DemoConsole` for output - and an `ApiTable` row for every public
+  member with its signature. Wrap calls in try/catch and report failures through the console, since most of these
+  APIs fail by refusing rather than by throwing something meaningful.
+- **`Bit.Butil.Demo/Client/Docs/DocsNav.cs`** lists the page: title, slug (matching its `@page`), summary, page
+  type, `ApiSupport`, `ApiNeeds`, and `Services` when the type names are not the title. That list is the single
+  source of truth for the sidebar, the home grid, the browser-support matrix, the pager, the search index and the
+  MCP capability catalog - a page missing from it is invisible everywhere except its own URL.
+- **`Samples/Bit.Butil.Samples.Core/Pages/`** carries the smaller, hosting-model-neutral version (a `DemoCard`
+  per scenario) with an entry in `Shared/NavMenu.razor`, so the same code is exercised under WebAssembly, Server
+  and MAUI.
+- The extent of the showcase matches the extent of the API: a member with no way to exercise it in the Demo is a
+  member nobody can verify works.
+
+## MCP server
+
+The demo server hosts an MCP server (`Bit.Butil.Demo/Server/Controllers/McpController.cs`, seven tools, mirrored
+as plain GETs under `/api/mcp/...`). Every feature must be reachable through it, which in practice means:
+
+- Its answers are **derived, not hand-written**: the API reference is reflected out of the shipped assembly with
+  its XML docs, capabilities come from `DocsNav`, and the guide and sources are embedded files. So a new API
+  reaches the tools by having XML documentation, a `DocsNav` entry, and a page that renders **outside the router
+  and layout** (the tools render pages standalone - a page reading something from its surroundings breaks there).
+- New files under `Client/`, `Server/Components/` or `Samples/` are picked up by the `EmbeddedResource` globs in
+  `Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj`; a file outside them is a source the tools cannot serve.
+- Hand-maintained lists that reflection cannot reach - notably `_fastInvokeServices` in
+  `Server/Services/ButilCapabilityCatalog.cs` - must be updated along with the feature.
+- **Do not add tools.** The surface is deliberately seven: a tool description is paid for in every request of
+  every session. A listing is what a retrieval tool answers when called with no argument, not a tool of its own.
+  Adding one is a deliberate decision that also changes `tests/Bit.Butil.Tests.Mcp/Infrastructure/ButilMcp.cs`.
+- Tool, resource and prompt names are identifiers clients store: renaming one is a breaking change.
+
+## Tests
+
+Cover a feature in whichever of these it belongs to - in more than one, where it belongs to more than one:
+
+| Project | Covers | Run |
+| --- | --- | --- |
+| `tests/Bit.Butil.Tests.E2E` | Real browser behaviour, through the deterministic harness pages `Samples.Core/Pages/E2EPage.razor` and `E2EObserversPage.razor`, on every host: the standalone WebAssembly sample, each Blazor Web App render mode (`Tests.Harness.Web`) and BlazorWebView (`Tests.Harness.Hybrid`), picked with `BUTIL_E2E_HOST`. Give every control a stable `id`, write results to the single status element, avoid APIs that prompt, and write nothing that only works in one host (no `IJSInProcessRuntime`, no assumption the page is not prerendered), so the suite stays headless, flake-free and host-neutral. | `dotnet test tests/Bit.Butil.Tests.E2E` (see its README for the hosts and env vars) |
+| `tests/Bit.Butil.Tests.Hosting` | What only a server response shows, in every render mode on net8.0/9.0/10.0: the harness pages prerender, the scripts are served, every `Samples.Core` page renders statically without logging an error, and the prerender sweep - every public member of every `[ButilService]` called during a static render, which must neither throw (other than argument validation or a Butil-declared exception) nor hang. A new member is swept automatically; a failure there is a call site missing the prerender guard. | `dotnet test tests/Bit.Butil.Tests.Hosting` |
+| `tests/Bit.Butil.Tests.Mcp` | The MCP server against a real child-process deployment driven by a real MCP client: tool surface, behaviour, failures, search, resources, prompts, completions, the HTTP mirror, and cross-catalog consistency. | `dotnet test tests/Bit.Butil.Tests.Mcp` |
+| `tests/Bit.Butil.Tests.Manual` | Trimming, the interop contract, and script scanning/bundling/trimming/publishing. A console app because the subject is a *publish* output; it exits non-zero on failure. | See its README - run untrimmed then trimmed from that folder, sharing `interop-manifest.txt` |
+| `tests/Bit.Butil.Tests.Benchmarks` | Performance, held to budgets: per-module download weight off the build artifacts, and interop cost plus rate limiting in a real browser through `Samples.Core/Pages/BenchmarkPage.razor`. A console app for the same reason as the Manual harness - the subject is an artifact and a deployed app - and it exits non-zero when a measurement is outside its budget. | `dotnet run` from that folder (`--weight` / `--runtime` for one half) |
+
+`interop-manifest.txt` (this folder, and the Manual harness's copy) is generated from an untrimmed run and is the
+contract for `[JSInvokable]` identifiers, JSON payload members and the `[ButilService]` roster. Regenerate it
+deliberately when the surface changes; a diff in it is a real interop change, not noise.
+
+New JS modules, or new cross-module dependencies, change what `build.mjs` emits - the bundling checks in the
+Manual harness compare the shipped artifacts against the sources, so run that harness after touching `Scripts/`.

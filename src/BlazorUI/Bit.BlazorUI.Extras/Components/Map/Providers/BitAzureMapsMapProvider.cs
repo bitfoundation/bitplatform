@@ -28,6 +28,10 @@ public sealed class BitAzureMapsMapProvider : BitMapProviderBase
     public override IReadOnlyList<string> Stylesheets => ["https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css"];
 
     /// <inheritdoc />
+    /// <remarks>This backend renders through WebGL.</remarks>
+    public override BitMapWebGlRequirement WebGlRequirement => BitMapWebGlRequirement.WebGl;
+
+    /// <inheritdoc />
     public override object BuildOptionsPayload()
     {
         if (string.IsNullOrWhiteSpace(SubscriptionKey))

@@ -19,11 +19,7 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual string? PageUrl { get; set; }
 
-    public string? TimeZone { get; set; }
-
-    public string? Culture { get; set; }
-
-    public string? Environment { get; set; } = AppEnvironment.Current;
+    public virtual string? TimeZone { get; set; }
 
     public bool? IsOnline { get; set; }
 }

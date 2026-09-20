@@ -37,7 +37,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
                     response.IsSuccessStatusCode is false &&
-                    string.IsNullOrEmpty(requestIdValue) is false &&
+                    string.IsNullOrWhiteSpace(requestIdValue) is false &&
                     response.Content.Headers.ContentType?.MediaType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) is true)
                 {
                     var problemDetails = (await response.Content.ReadFromJsonAsync(jsonSerializerOptions.GetTypeInfo<AppProblemDetails>(), cancellationToken))!;

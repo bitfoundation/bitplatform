@@ -32,15 +32,36 @@ public partial class BitRichTextEditor
     // ---- image insertion ----
     private bool _showImageInput;
     private string _imageUrl = "";
+    private string _imageAlt = "";
+    private ElementReference _imageInputRef = default!;
 
-    private void ToggleImageInput()
+    private async Task ToggleImageInput()
     {
         _showImageInput = !_showImageInput;
-        _imageUrl = "";
+        // Opening the panel on a selected image edits that image: it starts out showing the source
+        // and the alternative text it already carries. Inserting is the only moment alt text would
+        // otherwise be written, which is how images end up published without any.
+        _imageUrl = _showImageInput && _state.ImageSelected ? _state.ImageSrc ?? "" : "";
+        _imageAlt = _showImageInput && _state.ImageSelected ? _state.ImageAlt ?? "" : "";
+        if (_showImageInput)
+        {
+            await CloseOtherPanels("image");
+            RequestPanelFocus(() => _imageInputRef);
+        }
         ClearInlineError();
     }
 
-    private async Task ApplyImageUrlAsync()
+    private async Task OnImageKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await ApplyImageAsync();
+        else if (e.Key == "Escape") await ToggleImageInput();
+    }
+
+    /// <summary>
+    /// Applies the panel: rewrites the selected image when there is one, otherwise inserts a new
+    /// one at the caret. Both paths go through the same URL validation.
+    /// </summary>
+    private async Task ApplyImageAsync()
     {
         if (ControlsDisabled) return;
 
@@ -50,9 +71,19 @@ public partial class BitRichTextEditor
             await RaiseErrorAsync(new BitRichTextEditorError("invalid-url", Label("image-url-invalid", "That image URL is not valid.")));
             return;
         }
-        await _js.BitRichTextEditorInsertImageUrl(_editorRef, url);
+
+        if (_state.ImageSelected)
+        {
+            await _js.BitRichTextEditorUpdateImage(_editorRef, url, _imageAlt.Trim());
+        }
+        else
+        {
+            await _js.BitRichTextEditorInsertImageUrl(_editorRef, url, _imageAlt.Trim());
+        }
+
         _showImageInput = false;
         _imageUrl = "";
+        _imageAlt = "";
         ClearInlineError();
     }
 
@@ -194,12 +225,34 @@ public partial class BitRichTextEditor
     public Task _OnClientError(string code, string message)
         => RaiseErrorAsync(new BitRichTextEditorError(code, message));
 
+    /// <summary>
+    /// The image alignment buttons only mean anything while an image is selected, so they stay
+    /// disabled until the bridge reports one.
+    /// </summary>
+    private bool ImageOpsDisabled => ControlsDisabled || _state.ImageSelected is false;
+
+    // Applies (or clears, when the same alignment is already active) the alignment of the selected
+    // image. Clicking the active alignment again is the natural way to get an image back inline.
+    private async Task AlignImageAsync(string align)
+    {
+        if (ImageOpsDisabled) return;
+        await _js.BitRichTextEditorAlignImage(_editorRef, _state.ImageAlign == align ? "none" : align);
+    }
+
     // ---- color ----
     private async Task ApplyColorAsync(string kind, ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
         if (ControlsDisabled || string.IsNullOrWhiteSpace(value)) return;
         await _js.BitRichTextEditorApplyColor(_editorRef, kind, value);
+    }
+
+    // Takes the text or highlight color back off the selection, which "clear formatting" can only
+    // do by removing every other inline style with it.
+    private async Task ClearColorAsync(string kind)
+    {
+        if (ControlsDisabled) return;
+        await _js.BitRichTextEditorClearColor(_editorRef, kind);
     }
 
     // ---- font ----

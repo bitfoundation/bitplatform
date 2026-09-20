@@ -1,0 +1,70 @@
+{
+    "activitycontinuation": {
+        "apps": [ "76WD644YU8.com.bitplatform.AdminPanel.Template", "76WD644YU8.com.bitplatform.Todo.Template" ]
+    },
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "76WD644YU8.com.bitplatform.AdminPanel.Template",
+                "paths": [
+                    "NOT /api/*",
+                    "NOT /odata/*",
+                    "NOT /jobs/*",
+                    "NOT /core/*",
+                    "NOT /signalr/*",
+                    "NOT /healthchecks-ui/*",
+                    "NOT /healthz",
+                    "NOT /healthz/*",
+                    "NOT /health",
+                    "NOT /alive",
+                    "NOT /hangfire",
+                    "NOT /hangfire/*",
+                    "NOT /swagger",
+                    "NOT /swagger/*",
+                    "NOT /scalar",
+                    "NOT /scalar/*",
+                    "NOT /signin-*",
+                    "NOT /oauth/*",
+                    "NOT /.well-known/*",
+                    "NOT /sitemap.xml",
+                    "NOT /sitemap_index.xml",
+                    "NOT /products.xml",
+                    "NOT /llms.txt",
+                    "NOT /web-interop-app.html",
+                    "*"
+                ]
+            },
+            {
+                "appID": "76WD644YU8.com.bitplatform.Todo.Template",
+                "paths": [
+                    "NOT /api/*",
+                    "NOT /odata/*",
+                    "NOT /jobs/*",
+                    "NOT /core/*",
+                    "NOT /signalr/*",
+                    "NOT /healthchecks-ui/*",
+                    "NOT /healthz",
+                    "NOT /healthz/*",
+                    "NOT /health",
+                    "NOT /alive",
+                    "NOT /hangfire",
+                    "NOT /hangfire/*",
+                    "NOT /swagger",
+                    "NOT /swagger/*",
+                    "NOT /scalar",
+                    "NOT /scalar/*",
+                    "NOT /signin-*",
+                    "NOT /oauth/*",
+                    "NOT /.well-known/*",
+                    "NOT /sitemap.xml",
+                    "NOT /sitemap_index.xml",
+                    "NOT /products.xml",
+                    "NOT /llms.txt",
+                    "NOT /web-interop-app.html",
+                    "*"
+                ]
+            }
+        ]
+    }
+}

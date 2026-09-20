@@ -34,11 +34,11 @@ public partial class PushNotificationJobRunner
             Detail = AdsPushText.CreateUsingString(request.Message ?? string.Empty)
         };
 
-        if (string.IsNullOrEmpty(request.Action) is false)
+        if (string.IsNullOrWhiteSpace(request.Action) is false)
         {
             payload.Parameters.Add("action", request.Action);
         }
-        if (string.IsNullOrEmpty(request.PageUrl) is false)
+        if (string.IsNullOrWhiteSpace(request.PageUrl) is false)
         {
             payload.Parameters.Add("pageUrl", request.PageUrl);
         }

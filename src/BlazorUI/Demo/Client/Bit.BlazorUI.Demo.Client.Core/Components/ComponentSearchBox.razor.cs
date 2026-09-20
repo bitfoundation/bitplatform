@@ -8,22 +8,25 @@
 /// aliases another library would use ("Select", "Switch", "Chip"), the category, and the one-line
 /// summary. Someone who knows what they want but not what bit calls it still lands on the page.
 /// </para>
+/// <para>
+/// The catalog also ranks what it matched, so the component whose own name the term names leads the
+/// list, then the ones it is also known by, then the ones it merely describes. With only eight rows
+/// in the callout, a Tag that arrives below the components tagged with it is a Tag nobody finds.
+/// </para>
 /// </summary>
 public partial class ComponentSearchBox
 {
     /// <summary>
-    /// The suggestion list is the component names; everything else the search matches on is reached
-    /// through the catalog by name (see <see cref="Matches"/>). Built once, statically: the list is
-    /// the same on every page and for every instance.
+    /// The suggestions are the component names, so everything a picked row needs - the route to
+    /// navigate to, the category shown under it - is looked up by name from here.
     /// </summary>
-    private static readonly string[] _names = [.. ComponentCatalog.Items.Select(i => i.Name)];
-
     private static readonly Dictionary<string, ComponentCatalogItem> _byName =
         ComponentCatalog.Items.ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Ties the keyboard shortcut to this instance's input. Unique per instance because the header
-    /// and the gallery can both be on screen; only the first one registered claims the shortcut.
+    /// Ties the keyboard shortcut to this instance's input. Unique per instance because the header,
+    /// the hero and the gallery can each have one on screen; the first one registered claims the
+    /// shortcut, and keeps it for as long as its element is in the DOM.
     /// </summary>
     private readonly string _rootId = $"cmp-search-{Guid.NewGuid():N}";
 
@@ -35,7 +38,16 @@ public partial class ComponentSearchBox
     [Parameter] public string Placeholder { get; set; } = "Search components";
 
     /// <summary>
-    /// Whether Ctrl/Cmd+K should put the caret in this box. Only the header's copy asks for it.
+    /// The size of the box. The header's copy takes the default that fits a toolbar row; the home
+    /// page's hero asks for the large one, where the box is a section of the page rather than a
+    /// control in a bar.
+    /// </summary>
+    [Parameter] public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Whether Ctrl/Cmd+K (and a bare "/") should put the caret in this box. The header's copy asks
+    /// for it on every page that has one, and the home page's hero asks for it there, where the
+    /// header hides its own copy.
     /// </summary>
     [Parameter] public bool RegisterShortcut { get; set; }
 
@@ -53,20 +65,18 @@ public partial class ComponentSearchBox
 
 
     /// <summary>
-    /// The catalog's prebuilt search text rather than the name alone, so "select" finds Dropdown and
-    /// "skeleton" finds Shimmer. Falls back to a plain name match for a suggestion the catalog has
-    /// no entry for, which cannot happen today but keeps the box working if it ever does.
+    /// The catalog ranks the matches (see <see cref="ComponentCatalog.Search"/>) and this hands the
+    /// best of them to the callout, which is why the box asks for a provider rather than filtering a
+    /// fixed list: a filter can only say whether a component matches, and the whole point here is
+    /// that "tag" puts Tag above TagsInput and "select" puts Dropdown above the components that
+    /// merely mention selection. Synchronous - the catalog is ~110 items already in memory, so the
+    /// callout never has to show a loading state.
     /// </summary>
-    private static bool Matches(string? search, string? name)
+    private static ValueTask<IEnumerable<string>> Suggest(BitSearchBoxSuggestItemsProviderRequest request)
     {
-        if (string.IsNullOrWhiteSpace(search)) return true;
-        if (name is null) return false;
+        var matches = ComponentCatalog.Search(request.SearchTerm, request.Take);
 
-        var term = search.Trim().ToLowerInvariant();
-
-        return _byName.TryGetValue(name, out var item)
-            ? item.SearchText.Contains(term, StringComparison.Ordinal)
-            : name.Contains(term, StringComparison.OrdinalIgnoreCase);
+        return ValueTask.FromResult<IEnumerable<string>>([.. matches.Select(i => i.Name)]);
     }
 
     private void GoToComponent(string name)
@@ -85,14 +95,19 @@ public partial class ComponentSearchBox
     {
         if (string.IsNullOrWhiteSpace(term)) return;
 
-        var matches = ComponentCatalog.Items.Where(i => Matches(term, i.Name)).ToArray();
+        var matches = ComponentCatalog.Search(term);
 
-        var exact = matches.FirstOrDefault(i => string.Equals(i.Name, term.Trim(), StringComparison.OrdinalIgnoreCase));
-
-        if (exact is not null || matches.Length == 1)
+        // The best match leads, so the name typed in full is the first of them when it is there at
+        // all, and there is no second list to search for it.
+        if (matches.Count > 0)
         {
-            NavigationManager.NavigateTo((exact ?? matches[0]).Url);
-            return;
+            var best = matches[0];
+
+            if (matches.Count == 1 || string.Equals(best.Name, term.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                NavigationManager.NavigateTo(best.Url);
+                return;
+            }
         }
 
         NavigationManager.NavigateTo($"/components?q={Uri.EscapeDataString(term.Trim())}");

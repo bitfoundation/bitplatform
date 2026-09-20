@@ -1,4 +1,5 @@
 ﻿declare var Prism: any;
+declare var katex: any;
 
 function scrollToElement(targetElementId: string) {
     const element = document.getElementById(targetElementId);
@@ -179,13 +180,26 @@ function registerSideRailScrollSpy(id: string, dotnetObj: any, activeItemMethodN
         listener();
     };
 
+    // A scroll is not what swaps the sections, though: clicking a pivot tab replaces them while the
+    // page stays exactly where it was, so a check that only ran on scroll would leave the rail listing
+    // the previous tab until the reader next moved. Watching the document for removals closes that
+    // gap. The callback only asks whether a measured section has left - no layout is read - so the
+    // mutations a live chart makes every second cost next to nothing, and the rAF gate is shared.
+    const observer = new MutationObserver(() => {
+        if (sections.some(section => section.element.isConnected === false)) {
+            listener();
+        }
+    });
+
     sideRailScrollSpies[id] = () => {
         window.removeEventListener('scroll', listener, true);
         window.removeEventListener('resize', resizeListener);
+        observer.disconnect();
         if (frame !== 0) cancelAnimationFrame(frame);
     };
     window.addEventListener('scroll', listener, true);
     window.addEventListener('resize', resizeListener);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     measure();
     listener();
@@ -215,6 +229,56 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
+// The KaTeX build the Markdown viewer's Mathematics example typesets with. It is fetched the first
+// time that example is shown, so no other page pays for it.
+const katexBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.6/';
+let katexLoading: Promise<void> | undefined;
+
+function loadKatex() {
+    katexLoading ??= new Promise<void>((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = katexBaseUrl + 'katex.min.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = katexBaseUrl + 'katex.min.js';
+        script.onload = () => resolve();
+        // Forgotten on failure, so a later call tries again instead of inheriting the rejection.
+        script.onerror = () => {
+            katexLoading = undefined;
+            reject(new Error('KaTeX could not be loaded.'));
+        };
+        document.head.appendChild(script);
+    });
+
+    return katexLoading;
+}
+
+// BitMarkdownViewer leaves math as the TeX it is, delimiters included, in .math-inline and
+// .math-display elements. The class is what is read rather than the delimiters: KaTeX's auto-render
+// does not take a single $ as one by default, and the viewer has already told math from prices. An
+// element is typeset once and marked, so calling this again only touches math drawn since.
+async function typesetMath(element: HTMLElement | null) {
+    if (element == null) return;
+
+    try {
+        await loadKatex();
+    } catch {
+        // With no typesetter the TeX still reads as itself, which is the viewer's own fallback.
+        return;
+    }
+
+    element.querySelectorAll<HTMLElement>('.math:not([data-typeset])').forEach(math => {
+        const display = math.classList.contains('math-display');
+        const delimiter = display ? 2 : 1;
+        const tex = (math.textContent ?? '').slice(delimiter, -delimiter);
+
+        katex.render(tex, math, { displayMode: display, throwOnError: false });
+        math.dataset.typeset = '';
+    });
+}
+
 const windowResizeListeners: { [key: string]: () => void } = {};
 
 function registerWindowResizeListener(id: string, dotnetObj: any, methodName: string) {
@@ -226,13 +290,21 @@ function registerWindowResizeListener(id: string, dotnetObj: any, methodName: st
 }
 
 // The first caller wins: the header's search box registers on every page, and a second copy of the
-// control (the gallery's) must not steal the shortcut from it.
+// control (the gallery's) must not steal the shortcut from it. A claim only lives as long as the
+// element that made it, though: the home page renders its finder in the hero instead of the header,
+// so navigating away from it leaves the claim pointing at an element that is gone, and the next box
+// to register takes over. The listener itself is attached once, whoever holds the claim.
 let searchShortcutRootId: string | null = null;
+let searchShortcutListening = false;
 
 function registerSearchShortcut(rootElementId: string) {
-    if (searchShortcutRootId != null) return;
+    if (searchShortcutRootId != null && document.getElementById(searchShortcutRootId) != null) return;
 
     searchShortcutRootId = rootElementId;
+
+    if (searchShortcutListening) return;
+
+    searchShortcutListening = true;
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
         const isCommandK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
@@ -296,6 +368,12 @@ function unobserveElementWidth(id: string) {
     delete elementWidthObservers[id];
 }
 
+// Keyed by a token the caller owns, not by the element id. Demo pages reuse the same ids from one
+// page to the next - every component page has an "example1", and one "api-tables" - and a page being
+// navigated away from tears its registrations down asynchronously, well after the page replacing it
+// has put its own in. Keyed by id, that teardown disconnects the observers of the page that replaced
+// it, and the examples they were watching never mount - not on scroll either, since nothing is
+// watching them any more. A per-instance token lets a component only ever unregister itself.
 const visibilityObservers: { [key: string]: IntersectionObserver } = {};
 
 // Reports - once, and then never again - that the element with the given id has come within reach of
@@ -310,32 +388,39 @@ const visibilityObservers: { [key: string]: IntersectionObserver } = {};
 // so mounting can never change the height of the page above the scroll position - which would slide
 // the page under them, and land a restored scroll position or an "#example12" deep link in the wrong
 // place.
-function observeVisibility(id: string, dotnetObj: any, methodName: string) {
-    unobserveVisibility(id);
+function observeVisibility(key: string, id: string, dotnetObj: any, methodName: string) {
+    unobserveVisibility(key);
 
+    // No element to watch means nothing will ever report - and the caller is holding a block of the
+    // page back until something does. Answering straight away is the only safe reading of that: the
+    // block gets built, rather than left empty for the life of the page with nothing left to trigger
+    // it and scrolling to it doing nothing.
     const element = document.getElementById(id);
-    if (element == null) return;
+    if (element == null) {
+        dotnetObj.invokeMethodAsync(methodName);
+        return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
         if (entries.some(entry => entry.isIntersecting) === false) return;
 
         // Before the callback, not after: invokeMethodAsync resolves on a later turn, and a second
         // entry arriving in the meantime would report the same element twice.
-        unobserveVisibility(id);
+        unobserveVisibility(key);
 
         dotnetObj.invokeMethodAsync(methodName);
     }, { rootMargin: '100000px 0px 1200px 0px' });
 
     observer.observe(element);
-    visibilityObservers[id] = observer;
+    visibilityObservers[key] = observer;
 }
 
-function unobserveVisibility(id: string) {
-    const observer = visibilityObservers[id];
+function unobserveVisibility(key: string) {
+    const observer = visibilityObservers[key];
     if (observer == null) return;
 
     observer.disconnect();
-    delete visibilityObservers[id];
+    delete visibilityObservers[key];
 }
 
 // The height the element with the given id takes in the document right now, or 0 when there is no
@@ -351,6 +436,10 @@ function getElementHeight(id: string) {
     return element == null ? 0 : element.getBoundingClientRect().height;
 }
 
+// Keyed by a per-instance token for the same reason the visibility observers are: the page being
+// left cancels its idle work asynchronously, and under a key shared by every demo page that
+// cancellation lands on the queue of the page that replaced it - which then never fills anything in,
+// because the chain that would have rescheduled it is exactly what was cancelled.
 const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = {};
 
 // Calls the named method the next time the browser has nothing better to do. It is how a demo page
@@ -360,27 +449,27 @@ const idleWorkHandles: { [key: string]: { handle: number, isIdle: boolean } } = 
 //
 // One call mounts one preview and then asks for the next slice, rather than draining the queue in a
 // single callback: the point is to leave the main thread between two of them.
-function requestIdleWork(id: string, dotnetObj: any, methodName: string) {
-    cancelIdleWork(id);
+function requestIdleWork(key: string, dotnetObj: any, methodName: string) {
+    cancelIdleWork(key);
 
     const run = () => {
-        delete idleWorkHandles[id];
+        delete idleWorkHandles[key];
         dotnetObj.invokeMethodAsync(methodName);
     };
 
     // Safari still has no requestIdleCallback; a short timeout is the same shape of promise, minus
     // the browser's opinion about when it is idle.
     const idle = (window as any).requestIdleCallback;
-    idleWorkHandles[id] = idle
+    idleWorkHandles[key] = idle
         ? { handle: idle(run, { timeout: 500 }), isIdle: true }
         : { handle: window.setTimeout(run, 32), isIdle: false };
 }
 
-function cancelIdleWork(id: string) {
-    const entry = idleWorkHandles[id];
+function cancelIdleWork(key: string) {
+    const entry = idleWorkHandles[key];
     if (entry == null) return;
 
-    delete idleWorkHandles[id];
+    delete idleWorkHandles[key];
 
     if (entry.isIdle) {
         (window as any).cancelIdleCallback?.(entry.handle);
@@ -394,8 +483,9 @@ declare namespace BitBlazorUI {
 }
 
 // Theme-dependent styling in the app keys off the bit-theme attribute the library script keeps on
-// the document element, so this callback only has to maintain what CSS cannot reach: the browser
-// chrome color.
+// the document element, and the browser chrome color - the one thing CSS cannot reach - is kept with
+// it by the library too: see bit-theme-color-meta on <html> in App.razor / the MAUI index.html,
+// pointed at the secondary surface the site is drawn on.
 BitBlazorUI.Theme.init({
     system: true,
     persist: true,
@@ -403,9 +493,4 @@ BitBlazorUI.Theme.init({
     // right theme into the prerendered markup (see App.razor). Without it the server would fall back
     // to following the OS and the app would flash the wrong theme for visitors who picked one.
     persistCookie: true,
-    onChange: (newTheme: string, oldTheme: string) => {
-        const name = (newTheme ?? '').toLowerCase();
-        const isDark = name === 'dark' || name.endsWith('-dark');
-        document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
-    }
 });

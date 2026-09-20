@@ -1,4 +1,4 @@
-(self as any)['bit-bswup.sw version'] = '10.6.0-pre-02';
+(self as any)['bit-bswup.sw version'] = '10.6.1';
 
 // This file (and bit-bswup.sw-cleanup.ts) is a classic service-worker script loaded via
 // importScripts - not an ES module - and is compiled against the "WebWorker" lib (see
@@ -914,17 +914,6 @@ async function applyRangeHeader(req: Request, response: Response) {
         if (!rangeHeader) return response;
         if (response.status !== 200) return response;
 
-        // A stored 200 that still declares a transfer Content-Encoding (gzip/br/...) cannot be
-        // byte-sliced: blob() yields the DECODED body, so a range computed over decoded bytes
-        // paired with the original encoded Content-Encoding header would tell the client to
-        // inflate raw slice bytes - a corrupt result, with Content-Range/Content-Length in the
-        // wrong units. Browsers normally strip Content-Encoding from a decoded Response so this
-        // rarely fires; when it does, fall back to the full response rather than emit a
-        // mislabeled 206.
-        const headerBag: any = (response as any).headers;
-        const contentEncoding = (headerBag && typeof headerBag.get === 'function' && headerBag.get('content-encoding') || '').trim().toLowerCase();
-        if (contentEncoding && contentEncoding !== 'identity') return response;
-
         // Clone before reading: on any fallback path the original response must still carry
         // an unconsumed body for the page. Read as a Blob, not an ArrayBuffer: browsers keep
         // cached-response blobs disk-backed, and blob.slice() is a lazy view - so serving a
@@ -937,6 +926,14 @@ async function applyRangeHeader(req: Request, response: Response) {
         if (!range) return response;
 
         const headers = new Headers((response as any).headers);
+        // blob() always yields the DECODED body, and the range is computed over and cut from those
+        // bytes - so the partial response must not declare a transfer encoding, or the client would
+        // try to inflate plain bytes. The header is routinely there: browsers keep the
+        // Content-Encoding of a decoded response (Chromium does for cached ones too), and a host
+        // that compresses its static files - MapStaticAssets does by default - leaves one on every
+        // cached asset. Earlier versions bailed out on the header instead, so on such hosts no ranged
+        // request was ever answered with a 206.
+        headers.delete('content-encoding');
         headers.set('content-range', `bytes ${range.start}-${range.end}/${size}`);
         headers.set('content-length', String(range.end - range.start + 1));
         return new Response(blob.slice(range.start, range.end + 1), { status: 206, statusText: 'Partial Content', headers });
@@ -1450,9 +1447,18 @@ async function createAssetsCache(ignoreProgressReport = false) {
                 // ('integrity' covers Chrome/Firefox wording, 'digest' Safari's; a previous
                 // revision also matched the string 'EPRPROTO' - a typo matching nothing any
                 // browser emits - which has been dropped.)
-                const isIntegrity =
+                let isIntegrity =
                     hasIntegrity &&
                     /integrity|digest/i.test(String(fetchErr && (fetchErr as any).message || fetchErr));
+
+                // Chromium rejects an SRI mismatch with the same bare "TypeError: Failed to fetch" it
+                // uses for a network failure, so the message check above never matched there: a
+                // tampered asset was retried, then reported as a 'fetch' failure - never 'integrity',
+                // never counted toward 'install-incomplete', and offered a Retry that cannot help.
+                // Tell the two apart by the bytes instead (see isIntegrityMismatch).
+                if (hasIntegrity && !isIntegrity) {
+                    isIntegrity = await isIntegrityMismatch(asset);
+                }
 
                 // A cross-origin host that sends no CORS headers rejects the cors-mode request
                 // with the same TypeError as a genuine network failure. Before classifying,
@@ -1619,7 +1625,9 @@ function normalizeNonNegativeInt(value: any, fallback: number) {
 // the hash is an SRI digest (sha*) and integrity checks are enabled, the request carries the
 // `integrity` attribute so the browser rejects tampered/mismatched bytes; enableCacheControl
 // adds no-store/no-cache headers to bypass the HTTP cache and force a fresh fetch.
-function createNewAssetRequest(asset: any, noCors = false) {
+// `skipIntegrity` builds the same request without the integrity attribute; only isIntegrityMismatch
+// uses it, and it never caches what that request returns.
+function createNewAssetRequest(asset: any, noCors = false, skipIntegrity = false) {
     // Global .replace() rather than .replaceAll(): identical result for these single-character
     // literals, but replaceAll is ES2021 and this bundle targets ES2019. (This call predates
     // the ES2019 target and silently raised the real runtime floor to Chrome 85 / Safari 13.4
@@ -1657,7 +1665,7 @@ function createNewAssetRequest(asset: any, noCors = false) {
     // serve assets byte-identical (the recommended setup) should enable it for tamper
     // protection; see the 'integrity' error path that reports the classic Blazor
     // "Failed to find a valid digest" failure.
-    if (asset.hash?.startsWith('sha') && self.enableIntegrityCheck) {
+    if (!skipIntegrity && asset.hash?.startsWith('sha') && self.enableIntegrityCheck) {
         requestInit.integrity = asset.hash;
     }
     if (self.enableCacheControl) {
@@ -1675,6 +1683,34 @@ function createNewAssetRequest(asset: any, noCors = false) {
     }
 
     return new Request(assetUrl, requestInit);
+}
+
+// Whether the bytes the host serves for an asset do not match its SRI hash. Called only after an
+// integrity-checked download was rejected with an error that does not say why: downloads the asset
+// once more WITHOUT the integrity attribute and compares the digest itself. A mismatch is
+// deterministic (identical bytes fail identically), so the caller reports 'integrity' and stops
+// retrying; anything else - the second download failing too, bytes that do match (the first failure
+// was a network blip), an algorithm or SubtleCrypto that is unavailable - answers false and leaves
+// the failure on the transient path it was on before. The unverified bytes are only hashed, never
+// cached or served.
+async function isIntegrityMismatch(asset: any) {
+    const sri = /^sha(256|384|512)-([A-Za-z0-9+\/]+=*)$/.exec(String((asset && asset.hash) || ''));
+    const subtle = (self as any).crypto && (self as any).crypto.subtle;
+    if (!sri || !subtle) return false;
+
+    try {
+        const response = await fetch(createNewAssetRequest(asset, false, true));
+        if (!response || !response.ok) return false;
+
+        const digest = new Uint8Array(await subtle.digest(`SHA-${sri[1]}`, await response.arrayBuffer()));
+        let binary = '';
+        for (let i = 0; i < digest.length; i++) binary += String.fromCharCode(digest[i]);
+
+        return btoa(binary) !== sri[2];
+    } catch (err) {
+        diag('*** isIntegrityMismatch - could not compare the served bytes:', err, asset && asset.reqUrl);
+        return false;
+    }
 }
 
 // The one gate every cache-pruning call site goes through. deleteOldCaches() spares only the

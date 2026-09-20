@@ -3,9 +3,12 @@
 // The app bar. One row, three jobs: get back to the top of the site, move between its five
 // sections, and reach for the controls that apply to every page (search, source, accent, theme).
 // It is translucent rather than opaque so the page keeps scrolling visibly underneath, which is
-// what tells the reader the bar is pinned rather than part of the page.
+// what tells the reader the bar is pinned rather than part of the page. The tint under the blur keeps
+// the page from showing through legibly where the blur misses it: some engines (e.g. WebKit on
+// Windows) leave out content on its own compositing layer, such as a BitVirtualize's rows.
 .app-header {
     width: 100%;
+    background-color: color-mix(in srgb, $bit-color-background-secondary 80%, transparent);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: rem2(1px) solid $bit-color-border-secondary;

@@ -21,7 +21,7 @@ public static class BitCountriesExtensions
 
                 var culture = CultureInfo.CurrentUICulture;
 
-                if (string.IsNullOrEmpty(culture.Name) || culture.IsNeutralCulture)
+                if (string.IsNullOrWhiteSpace(culture.Name) || culture.IsNeutralCulture)
                     return BitCountries.UnitedStates;
 
                 try

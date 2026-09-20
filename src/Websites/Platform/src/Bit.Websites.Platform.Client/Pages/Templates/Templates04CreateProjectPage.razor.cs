@@ -92,6 +92,19 @@ public partial class Templates04CreateProjectPage
         ]
     };
 
+    private Parameter<string> theme = new()
+    {
+        Value = "Fluent2",
+        Default = "Fluent2",
+        Items =
+        [
+            new() { Text = "Fluent2", Value = "Fluent2" },
+            new() { Text = "Fluent", Value = "Fluent" },
+            new() { Text = "Cupertino", Value = "Cupertino" },
+            new() { Text = "Material", Value = "Material" },
+        ]
+    };
+
     private string GetFinalCommand()
     {
         StringBuilder finalCommand = new($"dotnet new bit-bp {GetNameCommand()}");
@@ -184,6 +197,11 @@ public partial class Templates04CreateProjectPage
         if (brouter.IsModified)
         {
             finalCommand.Append(GetBrouterCommand());
+        }
+
+        if (theme.IsModified)
+        {
+            finalCommand.Append(GetThemeCommand());
         }
 
         return finalCommand.ToString();
@@ -282,6 +300,11 @@ public partial class Templates04CreateProjectPage
     private string GetBrouterCommand()
     {
         return $"--brouter{(brouter.Value ? string.Empty : " false")} ";
+    }
+
+    private string GetThemeCommand()
+    {
+        return $"--theme {theme.Value} ";
     }
 
     private class Parameter<T>

@@ -2,14 +2,24 @@
 
 <PageOutlet Url="components/label"
             Title="Label"
-            Description="Labels give a name or title to a control or group of controls, including text fields, check boxes, combo boxes, radio buttons, and drop-down menus." />
+            Description="Labels give a name or a title to a control or to a group of controls, including text fields, check boxes, combo boxes, radio buttons and drop-down menus." />
 
 <DemoPage Name="Label"
-          Description="Labels give a name or title to a control or group of controls, including text fields, check boxes, combo boxes, radio buttons, and drop-down menus."
+          Description="BitLabel renders a native label element, so the browser binds it to the control it names of itself: clicking the label focuses that control, and a screen reader announces the control by the label's text. The control is named either by For, which points at its id, or by putting it inside the label's own content. Required and Optional render the necessity of the field beside the caption - with the text of either indicator open to a string or to a template - and Element renders the caption as a plain tag for the groups of controls a single label may not name. Color, Size, NoWrap and the class and style parameters take care of how it looks, and VisuallyHidden keeps a caption for assistive technologies where the design has no room for one on the page."
+          Notes="A label names a control, it does not carry its state. The required asterisk is a decoration the component hides from assistive technologies, so the control itself still needs its own required (or aria-required) attribute for a screen reader to announce it as required; and IsEnabled only dims the caption, so it is the control that has to be disabled for a click on the caption to stop reaching it. A native label may also name a single control only: the caption of a group of controls belongs on another tag through Element, pointed at by the group's own aria-labelledby or rendered as the legend of a fieldset."
           Parameters="componentParameters"
-          GitHubUrl="Utilities/Label/BitLabel.razor"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubUrl="Utilities/Label/BitLabel.cs"
           GitHubDemoUrl="Utilities/Label/BitLabelDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div class="example-desc">
+            A label with nothing configured is a <code>label</code> element carrying the caption it is given, at the
+            same weight and size as the labels the input components of the library render of their own.
+            <b>IsEnabled</b> set to false dims it to the disabled foreground color of the theme. That is a look and not
+            a state: a label is never itself disabled, so it still names its control and a click on it still reaches
+            that control - disabling the control is what stops it from responding.
+        </div>
         <div>
             <BitLabel>I'm a Label</BitLabel>
             <br />
@@ -17,7 +27,141 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Visibility" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="For" RazorCode="@example2RazorCode" Id="example2">
+        <div class="example-desc">
+            <b>For</b> is the <code>for</code> attribute of the label element: the value is the <b>id</b> of the control
+            the label names, not its name, and that control may sit anywhere on the page. This is the explicit
+            association of HTML, and it is what makes clicking the caption focus the field and a screen reader read the
+            caption when the field takes focus. A control put inside the label's own content is associated implicitly
+            instead, which is the one way to name a control that has no id.
+        </div>
+        <div>
+            <BitLabel For="label-input">A Label for an input</BitLabel>
+            <input type="text" name="label-input" id="label-input" />
+            <br /><br />
+            <BitLabel><input type="checkbox" /> A Label wrapping its own control</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Required" RazorCode="@example3RazorCode" Id="example3">
+        <div class="example-desc">
+            <b>Required</b> renders an indicator after the caption. The default one is an asterisk in the theme's
+            required color, and it is hidden from assistive technologies: a star announced in the middle of a caption
+            says nothing about the field, while the <code>required</code> attribute of the control itself is what makes
+            it announced as required. <b>RequiredText</b> puts another mark or a word in the asterisk's place and
+            <b>RequiredTemplate</b> puts any markup there - and an indicator written by the page is left announced,
+            since a word put there deliberately is meant to be read.
+        </div>
+        <div>
+            <BitLabel Required>I'm a required Label</BitLabel>
+            <br />
+            <BitLabel Required RequiredText="(required)">A required Label with a word instead of the asterisk</BitLabel>
+            <br />
+            <BitLabel Required>
+                <ChildContent>A required Label with a custom template</ChildContent>
+                <RequiredTemplate>
+                    <BitIcon IconName="@BitIconName.Important" Color="BitColor.Error" Size="BitSize.Small" />
+                </RequiredTemplate>
+            </BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Optional" RazorCode="@example4RazorCode" Id="example4">
+        <div class="example-desc">
+            <b>Optional</b> is the other half of the same decision, for the forms where most of the fields are required
+            and it is the exceptions that are worth marking - marking every field of a form is noise whichever half is
+            marked. The indicator is the word "(optional)" in a lighter color and a regular weight, and unlike the
+            asterisk it is announced with the rest of the caption. <b>OptionalText</b> and <b>OptionalTemplate</b>
+            replace it, which is what a form in another language needs. A label asked for both renders the required
+            indicator, since a required field is not an optional one.
+        </div>
+        <div>
+            <BitLabel Optional>I'm an optional Label</BitLabel>
+            <br />
+            <BitLabel Optional OptionalText="- if you have one">An optional Label with its own text</BitLabel>
+            <br />
+            <BitLabel Optional>
+                <ChildContent>An optional Label with a custom template</ChildContent>
+                <OptionalTemplate>
+                    <BitTag Text="optional" Size="BitSize.Small" Color="BitColor.Tertiary" />
+                </OptionalTemplate>
+            </BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Element" RazorCode="@example5RazorCode" Id="example5">
+        <div class="example-desc">
+            A native label may only name a single form control, so the caption of a <i>group</i> of controls - a set of
+            radio buttons, a pair of inputs making up a range - must not be one: it would name only the first control in
+            the group. <b>Element</b> renders the caption as any other tag while keeping the same look, so the group can
+            point at it through its own <code>aria-labelledby</code> - or as the <code>legend</code> of a
+            <code>fieldset</code>, which is the same association written in plain HTML. The <b>For</b> parameter is
+            dropped along with the label element, since the <code>for</code> attribute belongs to that element alone. A
+            tag name that is not one a tag can have falls back to <code>label</code>.
+        </div>
+        <div>
+            <BitLabel Element="div" Id="favorite-color-label" Required>Favorite color</BitLabel>
+            <div role="radiogroup" aria-labelledby="favorite-color-label">
+                <label><input type="radio" name="favorite-color" /> Red</label>
+                <label><input type="radio" name="favorite-color" /> Green</label>
+                <label><input type="radio" name="favorite-color" /> Blue</label>
+            </div>
+            <br />
+            <fieldset>
+                <BitLabel Element="legend" Optional>Delivery notes</BitLabel>
+                <label><input type="checkbox" /> Leave with a neighbour</label>
+                <label><input type="checkbox" /> Ring the doorbell</label>
+            </fieldset>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Wrapping" RazorCode="@example6RazorCode" Id="example6">
+        <div class="example-desc">
+            A label wraps by default and breaks a word too long for its line rather than overflowing it. <b>NoWrap</b>
+            keeps it on one line and truncates what does not fit with an ellipsis. Truncation needs a width to overflow:
+            a label is a block element whichever tag <b>Element</b> renders, so it takes the width of its container, and
+            only a label given a display of its own needs a width of its own.
+        </div>
+        <div>
+            <BitLabel Style="width:220px">A caption long enough to need more than one line at this width</BitLabel>
+            <br />
+            <BitLabel Style="width:220px" NoWrap>A caption long enough to need more than one line at this width</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="NoSelect" RazorCode="@example7RazorCode" Id="example7">
+        <div class="example-desc">
+            A click on a label is forwarded to the control it names, so a double click on one - whose second click lands
+            on the label rather than on the control - selects the caption's text instead of doing anything to the
+            control. <b>NoSelect</b> turns that selection off, for the labels over a checkbox or a toggle where it is
+            only ever an accident. Try double clicking both captions below.
+        </div>
+        <div>
+            <BitLabel For="selectable-checkbox"><input type="checkbox" id="selectable-checkbox" /> Selectable caption</BitLabel>
+            <br />
+            <BitLabel NoSelect For="unselectable-checkbox"><input type="checkbox" id="unselectable-checkbox" /> Unselectable caption</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Visually hidden" RazorCode="@example8RazorCode" Id="example8">
+        <div class="example-desc">
+            <b>VisuallyHidden</b> clips the label out of the page while leaving it in the accessibility tree, so the
+            control it names is still announced by its caption. That is what separates it from <b>Visibility</b> below,
+            which takes the label away from assistive technologies along with the page. A visible caption is what most
+            users need, so this belongs to the places where the surrounding design already says what the control is.
+        </div>
+        <div>
+            <BitLabel VisuallyHidden For="search-input">Search the documentation</BitLabel>
+            <input type="search" id="search-input" placeholder="Search..." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Visibility" RazorCode="@example9RazorCode" Id="example9">
+        <div class="example-desc">
+            <b>Visibility</b> decides whether the label is rendered, invisible but still taking its space, or out of the
+            layout altogether. A hidden or a collapsed label is gone from the accessibility tree as well, so it no longer
+            names its control - <b>VisuallyHidden</b> above is the one that keeps naming it.
+        </div>
         <div>
             <div style="display:flex;align-items:center;">Visible: [ <BitLabel Visibility="BitVisibility.Visible">Visible Label</BitLabel> ]</div>
             <br />
@@ -27,31 +171,80 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style and Class" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+        <div class="example-desc">
+            A label inherits the color of its container while <b>Color</b> is not set, which is what keeps it in step
+            with the text around it. Setting it gives the caption a meaning of its own - an error color beside a field
+            that failed its validation, a secondary foreground for a caption that should sit back from the content it
+            names. The required indicator keeps the theme's required color whichever color the caption takes.
+        </div>
         <div>
-            <BitLabel Style="color: dodgerblue; font-weight:bold">I'm a Label with Style</BitLabel>
+            <BitLabel Color="BitColor.Primary">Primary</BitLabel>
+            <BitLabel Color="BitColor.Secondary">Secondary</BitLabel>
+            <BitLabel Color="BitColor.Tertiary">Tertiary</BitLabel>
+            <BitLabel Color="BitColor.Info">Info</BitLabel>
+            <BitLabel Color="BitColor.Success">Success</BitLabel>
+            <BitLabel Color="BitColor.Warning">Warning</BitLabel>
+            <BitLabel Color="BitColor.SevereWarning">SevereWarning</BitLabel>
+            <BitLabel Color="BitColor.Error">Error</BitLabel>
+            <BitLabel Color="BitColor.PrimaryForeground">PrimaryForeground</BitLabel>
+            <BitLabel Color="BitColor.SecondaryForeground">SecondaryForeground</BitLabel>
+            <BitLabel Color="BitColor.TertiaryForeground">TertiaryForeground</BitLabel>
+            <BitLabel Color="BitColor.PrimaryBorder">PrimaryBorder</BitLabel>
+            <BitLabel Color="BitColor.SecondaryBorder">SecondaryBorder</BitLabel>
+            <BitLabel Color="BitColor.TertiaryBorder">TertiaryBorder</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example11RazorCode" Id="example11">
+        <div class="example-desc">
+            <b>Size</b> moves the caption along the type ramp of the theme. The unset default is the medium size, which
+            is the one that matches the labels the input components render of their own, so a standalone label sits next
+            to them without being resized.
+        </div>
+        <div>
+            <BitLabel Size="BitSize.Small" Required>Small</BitLabel>
+            <BitLabel Size="BitSize.Medium" Required>Medium</BitLabel>
+            <BitLabel Size="BitSize.Large" Required>Large</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
+        <div class="example-desc">
+            <b>Style</b> and <b>Class</b> land on the root element of the label, and <b>Styles</b> and <b>Classes</b>
+            reach its parts one by one: the root, the required indicator and the optional indicator. That is how the
+            necessity mark is restyled - a color, a weight, a position - without a selector reaching into the library's
+            own class names.
+        </div>
+        <div>
+            <div>Component's Style & Class:</div><br />
+            <BitLabel Style="color: dodgerblue; font-weight: bold">I'm a Label with Style</BitLabel>
             <br />
             <BitLabel Class="custom-class">I'm a Label with Class</BitLabel>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Required" RazorCode="@example4RazorCode" Id="example4">
-        <div>
-            <BitLabel Required>I'm a required Label</BitLabel>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="For" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            <BitLabel For="label-input">A Label for An Input</BitLabel>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <BitLabel Required Styles="@(new() { Root = "font-style: italic", RequiredIndicator = "color: blueviolet; font-size: 1rem" })">
+                I'm a Label with Styles
+            </BitLabel>
             <br />
-            <input type="text" name="label-input" id="label-input" />
+            <BitLabel Optional Classes="@(new() { Root = "custom-root", OptionalIndicator = "custom-optional" })">
+                I'm a Label with Classes
+            </BitLabel>
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
+        <div class="example-desc">
+            Setting <b>Dir</b> to <b>BitDir.Rtl</b> lays the label out right to left. The gap between the caption and its
+            necessity indicator is a logical one, so the mark stays after the caption - on its left in this direction -
+            rather than jumping to the other side of it.
+        </div>
         <div>
             <BitLabel Dir="BitDir.Rtl">من یک برچسب هستم</BitLabel>
+            <br />
+            <BitLabel Dir="BitDir.Rtl" Required>من یک برچسب الزامی هستم</BitLabel>
+            <br />
+            <BitLabel Dir="BitDir.Rtl" Optional OptionalText="(اختیاری)">من یک برچسب اختیاری هستم</BitLabel>
         </div>
     </DemoExample>
 </DemoPage>

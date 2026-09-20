@@ -1,0 +1,165 @@
+@page "/websocket"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebSocket webSocket
+
+<PageTitle>Butil - WebSocket Samples</PageTitle>
+
+<PageHeader Category="Utilities"
+            Title="WebSocket"
+            Lead="A two-way connection that stays open - text and binary frames, close codes, sub-protocol negotiation and back-pressure."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket" />
+
+<pre>
+@@inject Bit.Butil.WebSocket webSocket
+
+var socket = await webSocket.Open("wss://…", onMessage: m => { /* m.Text or m.Data */ });
+await socket!.SendText("hello");
+await socket.Close(1000, "done");
+</pre>
+
+<div class="stack" style="margin-top:1.5rem">
+    <DemoCard Title="Open and echo" Api="Open / SendText / SendBytes"
+              Description="Talks to a public echo service by default. Sending before the connection is established fails rather than queueing, so SendText returns false until the socket is open.">
+        <div class="field">
+            <span class="field-label">URL</span>
+            <input @bind="_url" placeholder="wss://echo.websocket.events" />
+        </div>
+        <div class="controls">
+            <button @onclick="OpenSocket">Open</button>
+            <button @onclick="SendText" disabled="@(_socket is null)">Send text</button>
+            <button @onclick="SendBytes" disabled="@(_socket is null)">Send 4 bytes</button>
+            <button class="danger" @onclick="CloseSocket" disabled="@(_socket is null)">Close (4000)</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_outgoing" />
+        </div>
+        <p style="margin-top:0.75rem"><span class="result-pill">@_state</span></p>
+    </DemoCard>
+
+    <DemoCard Title="What the connection knows" Api="GetState / GetProtocol / GetExtensions / GetBufferedAmount"
+              Description="BufferedAmount is the only back-pressure signal a browser socket offers: sending never blocks and never fails for being too fast, so a producer that outruns the connection just grows this number.">
+        <button @onclick="ReadDetails" disabled="@(_socket is null)">Read</button>
+    </DemoCard>
+</div>
+
+<DemoConsole @ref="output" Title="web socket output" />
+
+@code {
+    private DemoConsole output = default!;
+
+    private WebSocketHandle? _socket;
+    // Which open a callback belongs to. A close event arrives after the socket that raised it has
+    // been replaced often enough - disposing one and opening another is two round trips - and a
+    // callback that cleared _socket unconditionally would clear the new socket on the old one's news.
+    private int _generation;
+    private string _url = "wss://echo.websocket.events";
+    private string _outgoing = "hello";
+    private string _state = "Not connected.";
+
+    private async Task OpenSocket()
+    {
+        await DisposeSocket();
+
+        if (string.IsNullOrWhiteSpace(_url))
+        {
+            await output.Warn("Enter a URL first.");
+            return;
+        }
+
+        var generation = ++_generation;
+
+        var opening = await webSocket.Open(_url.Trim(),
+            onMessage: m => InvokeAsync(async () =>
+            {
+                await output.Success("Received →", m.IsBinary ? $"binary [{string.Join(", ", m.Data ?? [])}]" : m.Text);
+            }),
+            onOpen: (protocol, extensions) => InvokeAsync(async () =>
+            {
+                if (generation == _generation) _state = "Open.";
+                await output.Success("Open. Protocol →", string.IsNullOrEmpty(protocol) ? "(none negotiated)" : protocol);
+                StateHasChanged();
+            }),
+            onClose: close => InvokeAsync(async () =>
+            {
+                // Only this open's own close touches the field: a later socket is already in it.
+                if (generation == _generation)
+                {
+                    _state = $"Closed ({close.Code}).";
+                    _socket = null;
+                }
+                await output.Warn($"Closed → code {close.Code}, clean {close.WasClean}.");
+                StateHasChanged();
+            }),
+            // The error event carries nothing by design - the close that follows has the detail.
+            onError: () => InvokeAsync(() => output.Error("Socket error.")));
+
+        if (opening is null)
+        {
+            _state = "Could not open.";
+            await output.Warn("Open returned null - the URL's scheme was refused, or mixed content blocked it.");
+            return;
+        }
+
+        // The same generation the callbacks check, for the same reason: opening a socket is
+        // asynchronous, so a second Open - or a Close - can happen while this one is still being
+        // made. A socket nobody is waiting for any more has to be closed rather than dropped, or it
+        // stays connected with nothing holding it.
+        if (generation != _generation)
+        {
+            await opening.DisposeAsync();
+            await output.Warn("A socket that was opened and then abandoned - closed it rather than leaving it connected.");
+            return;
+        }
+
+        _socket = opening;
+        _state = "Connecting...";
+    }
+
+    private async Task SendText()
+    {
+        if (_socket is null) return;
+        var sent = await _socket.SendText(_outgoing);
+        if (sent is false) await output.Warn("SendText returned false - the socket is not open yet.");
+    }
+
+    private async Task SendBytes()
+    {
+        if (_socket is null) return;
+        var sent = await _socket.SendBytes([1, 2, 3, 4]);
+        if (sent is false) await output.Warn("SendBytes returned false - the socket is not open yet.");
+    }
+
+    private async Task ReadDetails()
+    {
+        if (_socket is null) return;
+        await output.Success("GetState →", await _socket.GetState());
+        await output.Success("GetProtocol →", await _socket.GetProtocol());
+        await output.Success("GetExtensions →", await _socket.GetExtensions());
+        await output.Success("GetBufferedAmount →", $"{await _socket.GetBufferedAmount()} byte(s) queued");
+    }
+
+    private async Task CloseSocket()
+    {
+        if (_socket is null) return;
+        await _socket.Close(4000, "done");
+    }
+
+    private async Task DisposeSocket()
+    {
+        // Bumped before the null check, so this also invalidates a socket still being opened: on
+        // teardown there is nothing else that would ever close it.
+        _generation++;
+
+        if (_socket is null) return;
+        var socket = _socket;
+        _socket = null;
+        await socket.DisposeAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await DisposeSocket(); }
+        catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+}

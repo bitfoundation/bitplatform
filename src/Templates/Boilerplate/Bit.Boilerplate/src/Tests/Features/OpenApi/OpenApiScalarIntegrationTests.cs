@@ -39,19 +39,28 @@ public partial class OpenApiScalarIntegrationTests
         var openApiBody = await openApiResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, openApiResponse.StatusCode, $"The OpenAPI document endpoint must be mapped. Body: '{openApiBody}'.");
-        Assert.AreEqual("application/json", openApiResponse.Content.Headers.ContentType?.MediaType);
+        var openApiContentType = openApiResponse.Content.Headers.ContentType;
+
+        Assert.IsNotNull(openApiContentType);
+        Assert.AreEqual("application/json", openApiContentType.MediaType);
 
         using var openApiJson = JsonDocument.Parse(openApiBody);
         // Every OpenAPI 3.x document has a top-level "openapi" version string and a "paths" object.
         Assert.IsTrue(openApiJson.RootElement.TryGetProperty("openapi", out var openApiVersion), "The OpenAPI document must declare its 'openapi' version.");
-        Assert.IsTrue(openApiVersion.GetString()?.StartsWith("3.") is true, $"Unexpected OpenAPI version '{openApiVersion.GetString()}'.");
+        var openApiVersionText = openApiVersion.GetString();
+
+        Assert.IsNotNull(openApiVersionText);
+        Assert.StartsWith("3.", openApiVersionText, $"Unexpected OpenAPI version '{openApiVersionText}'.");
         Assert.IsTrue(openApiJson.RootElement.TryGetProperty("paths", out _), "The OpenAPI document must contain a 'paths' section.");
 
         // 2) The Scalar API reference UI (which renders the document above) must be served as an HTML page.
         using var scalarResponse = await httpClient.GetAsync("scalar", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, scalarResponse.StatusCode, "The Scalar API reference UI must be mapped.");
-        Assert.AreEqual("text/html", scalarResponse.Content.Headers.ContentType?.MediaType);
+        var scalarContentType = scalarResponse.Content.Headers.ContentType;
+
+        Assert.IsNotNull(scalarContentType);
+        Assert.AreEqual("text/html", scalarContentType.MediaType);
 
         var scalarBody = await scalarResponse.Content.ReadAsStringAsync(TestContext.CancellationToken);
         // The rendered reference page bootstraps the Scalar client, so its markup references "scalar".

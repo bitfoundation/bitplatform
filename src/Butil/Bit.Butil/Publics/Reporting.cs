@@ -67,6 +67,7 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
         });
     }
 
+    /// <summary>Disconnects every ReportingObserver started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

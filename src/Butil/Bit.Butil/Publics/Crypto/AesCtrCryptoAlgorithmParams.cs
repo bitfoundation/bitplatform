@@ -7,6 +7,7 @@
 /// </summary>
 public class AesCtrCryptoAlgorithmParams : ICryptoAlgorithmParams
 {
+    /// <summary>The Web Crypto algorithm identifier - always <c>"AES-CTR"</c>.</summary>
     public string Name => "AES-CTR";
 
     /// <summary>

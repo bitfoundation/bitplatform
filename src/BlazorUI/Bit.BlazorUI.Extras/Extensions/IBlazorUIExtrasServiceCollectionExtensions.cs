@@ -12,7 +12,7 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     /// <param name="trySingleton">
     /// Tries to register the eligible services as singleton instead of scoped.
     /// Only enable this for single-user hosting models (Blazor WebAssembly and Hybrid/MAUI).
-    /// Do NOT enable it on Blazor Server: services such as <see cref="BitProModalService"/> hold per-circuit
+    /// Do NOT enable it on Blazor Server: services such as <see cref="BitModalService"/> hold per-circuit
     /// rendering state (the active modal container), and a singleton would be shared across circuits,
     /// leaking modals between users.
     /// </param>
@@ -30,6 +30,11 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     {
         services.AddBitBlazorUIServices(trySingleton);
 
+        // Nothing to do here for the packaged theme presets: this method lives in the Extras assembly,
+        // so calling it is already the first touch that runs the module initializer behind
+        // BitExtraThemeRegistration - the presets are in BitThemePresetRegistry before this line is
+        // reached, and so before the first host page renders.
+
         if (accentColor is not null)
         {
             var accentColorConfig = new BitAccentColorConfig();
@@ -39,12 +44,10 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
 
         if (trySingleton)
         {
-            services.TryAddSingleton<BitProModalService>();
             services.TryAddSingleton<BitMessageBoxService>();
         }
         else
         {
-            services.TryAddScoped<BitProModalService>();
             services.TryAddScoped<BitMessageBoxService>();
         }
 

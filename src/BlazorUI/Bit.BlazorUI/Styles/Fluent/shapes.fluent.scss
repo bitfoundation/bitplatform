@@ -58,11 +58,23 @@
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
+}
 
-    //global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
-    //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
-    //The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
-    //In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
+//global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
+//Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
+//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element so per-call overrides apply.
+//In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
+//
+//It is a composite of four other tokens, so - exactly as in semantic-tokens.scss and
+//family-tokens.scss - it carries a scoped-preset twin: a custom property's var() references are
+//substituted at the element that DEFINES it. Declared on the palette selectors alone it would
+//freeze the DOCUMENT's background and focus color inside an element carrying a preset the list
+//does not name (bit-theme="material-dark" in a light page), drawing that region's separator ring
+//in the page's white rather than in the region's own surface.
+//The `prefers-contrast: more` block in forced-colors.fluent.scss promotes the ring's width and
+//offset at (0,3,0) on the very same elements, so the promoted values are what this substitutes.
+:root,
+:root [bit-theme] {
     --bit-shd-focus-ring:
         0 0 0 var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) var(--bit-clr-bg-pri),
         0 0 0 calc(var(--bit-focus-ring-offset, var(--bit-shp-focus-ring-offset)) + var(--bit-shp-focus-ring-width)) var(--bit-focus-ring-color, var(--bit-clr-pri-focus));

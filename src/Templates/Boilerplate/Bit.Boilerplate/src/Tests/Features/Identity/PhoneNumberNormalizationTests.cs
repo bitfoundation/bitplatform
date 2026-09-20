@@ -105,7 +105,7 @@ public partial class PhoneNumberNormalizationTests
         var tokens = await identityController.ConfirmPhone(
             new() { Token = otpCode, PhoneNumber = attempts[^1].Typed }, TestContext.CancellationToken);
 
-        Assert.IsFalse(string.IsNullOrEmpty(tokens.AccessToken),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(tokens.AccessToken),
             "Confirming with the code texted to the normalized number should have signed the account in.");
     }
 

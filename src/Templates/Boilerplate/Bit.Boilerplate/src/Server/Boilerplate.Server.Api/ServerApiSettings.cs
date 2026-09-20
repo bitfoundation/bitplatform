@@ -14,6 +14,17 @@ public partial class ServerApiSettings : ServerSharedSettings
     [Required]
     public EmailOptions Email { get; set; } = default!;
 
+    /// <summary>
+    /// Where the web app is served from when the request does not say. <c>GetWebAppUrl()</c> reads the <c>origin</c>
+    /// query parameter or the <c>X-Origin</c> header, then this, and otherwise assumes this server's own address - only
+    /// right when the api is hosted alongside the web app. An OAuth client always arrives with neither, so a standalone
+    /// deployment has to be told once. Null when they share a host.
+    /// </summary>
+    public string? WebAppUrl { get; set; }
+
+    /// <summary>Usable as is: most clients identify themselves with a metadata document, which needs no configuration.</summary>
+    public OAuthOptions OAuth { get; set; } = new();
+
     //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
     public AIOptions? AI { get; set; }
     //#endif
@@ -26,6 +37,12 @@ public partial class ServerApiSettings : ServerSharedSettings
     //#if (signalR == true)
     [Required]
     public string AiChatImagesDir { get; set; } = default!;
+
+    /// <summary>
+    /// How long an image attached to an AI chat message is kept before <c>AiChatImagesRetentionJobRunner</c> deletes it
+    /// and its blob.
+    /// </summary>
+    public TimeSpan AiChatImagesRetention { get; set; }
     //#endif
 
     //#if (captcha == "reCaptcha")
@@ -90,11 +107,31 @@ public partial class ServerApiSettings : ServerSharedSettings
             Validator.TryValidateObject(SupportedAppVersions, new ValidationContext(SupportedAppVersions), validationResults, true);
         }
 
+        //#if (signalR == true)
+        if (AiChatImagesRetention <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(AiChatImagesRetention)} must be greater than zero.", [nameof(AiChatImagesRetention)]));
+        }
+        //#endif
+
+        if (Identity.UnconfirmedUsersRetention <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(AppIdentityOptions.UnconfirmedUsersRetention)} must be greater than zero.", [nameof(Identity)]));
+        }
+
+        // Zero would expire every job the moment it finishes, taking the dashboard's history with it.
+        if (Hangfire is null || Hangfire.JobExpiration <= TimeSpan.Zero)
+        {
+            validationResults.Add(new ValidationResult($"{nameof(HangfireOptions.JobExpiration)} must be greater than zero.", [nameof(Hangfire)]));
+        }
+
         if (AppEnvironment.IsDevelopment() is false)
         {
-            if (ConnectionStrings?.GetValueOrDefault("smtp") is "Endpoint=smtp://smtp.ethereal.email:587;UserName=madisen7@ethereal.email;Password=QYcYfjBXjqxMAZfZya")
+            // Matched on the host, not on the shipped literal: editing the sample's user name or password still leaves
+            // every outgoing mail - confirmation codes and magic links included - in a public shared test mailbox.
+            if (ConnectionStrings?.GetValueOrDefault("smtp")?.Contains("ethereal.email", StringComparison.OrdinalIgnoreCase) is true)
             {
-                throw new InvalidOperationException("The smtp connection string is not set. Please set it in the server's appsettings.json file.");
+                throw new InvalidOperationException("The smtp connection string still points at the shared ethereal.email test mailbox. Please set it in the server's appsettings.json file.");
             }
 
             //#if (captcha == "reCaptcha")
@@ -124,8 +161,10 @@ public partial class AppIdentityOptions : IdentityOptions
     public TimeSpan BearerTokenExpiration { get; set; }
     public TimeSpan RefreshTokenExpiration { get; set; }
 
-    [Required]
-    public string Issuer { get; set; } = default!;
+    /// <summary>
+    /// How long an unconfirmed, never-signed-in account is kept (See <see cref="Features.Identity.UnconfirmedUsersRetentionJobRunner"/>).
+    /// </summary>
+    public TimeSpan UnconfirmedUsersRetention { get; set; }
 
     [Required]
     public string Audience { get; set; } = default!;
@@ -178,6 +217,20 @@ public class OpenAIOptions
     public Uri? TextToSpeechEndpoint { get; set; }
     public string? TextToSpeechApiKey { get; set; }
     public string? TextToSpeechVoice { get; set; }
+
+    public string? RealtimeModel { get; set; }
+    public Uri? RealtimeEndpoint { get; set; }
+    public string? RealtimeApiKey { get; set; }
+    public string? RealtimeVoice { get; set; }
+
+    /// <summary>The call's reasoning effort, such as minimal, low or high; empty keeps the model's default.</summary>
+    public string? RealtimeReasoningEffort { get; set; }
+
+    /// <summary>Transcribes the user's side of a call; empty shows only the assistant's.</summary>
+    public string? RealtimeTranscriptionModel { get; set; }
+
+    /// <summary>Calls are hung up after this; billed per minute.</summary>
+    public TimeSpan RealtimeMaxCallDuration { get; set; }
     //#endif
 }
 
@@ -196,6 +249,43 @@ public partial class EmailOptions
     public string DefaultFromEmail { get; set; } = default!;
 }
 
+/// <summary>
+/// This app as an OAuth 2.1 authorization server, for <c>/dev-mcp</c> and other external apps. Not used by this
+/// project's own clients, which sign in through <c>IdentityController</c> as they always have.
+/// </summary>
+public partial class OAuthOptions
+{
+    /// <summary>
+    /// How long a code stays exchangeable. It travels one redirect into a client already waiting for it, so this
+    /// allows for a slow redirect chain, not for a user.
+    /// </summary>
+    public TimeSpan AuthorizationCodeLifetime { get; set; } = TimeSpan.FromMinutes(2);
+
+    /// <summary>
+    /// Separate from <c>Identity:RefreshTokenExpiration</c>: a credential held by somebody else's software need not
+    /// last as long as this app's own sessions.
+    /// </summary>
+    public TimeSpan RefreshTokenExpiration { get; set; } = TimeSpan.FromDays(7);
+
+    /// <summary>Clients declared by an operator rather than self-describing. Most deployments need none.</summary>
+    public OAuthClientOptions[] Clients { get; set; } = [];
+}
+
+public partial class OAuthClientOptions
+{
+    [Required]
+    public string ClientId { get; set; } = default!;
+
+    public string? ClientName { get; set; }
+
+    /// <summary>
+    /// Compared to <c>redirect_uri</c> as an exact string, so list every form a client uses - <c>127.0.0.1</c> and
+    /// <c>localhost</c> are two entries, not one.
+    /// </summary>
+    [Required]
+    public string[] RedirectUris { get; set; } = default!;
+}
+
 //#if (cloudflare == true)
 public class CloudflareOptions
 {
@@ -208,7 +298,7 @@ public class CloudflareOptions
     /// </summary>
     public string[] ZoneIds { get; set; } = [];
 
-    public bool Configured => string.IsNullOrEmpty(ApiToken) is false &&
+    public bool Configured => string.IsNullOrWhiteSpace(ApiToken) is false &&
         ZoneIds.Length > 0;
 }
 //#endif
@@ -219,9 +309,9 @@ public partial class SmsOptions
     public string? TwilioAccountSid { get; set; }
     public string? TwilioAutoToken { get; set; }
 
-    public bool Configured => string.IsNullOrEmpty(FromPhoneNumber) is false &&
-                              string.IsNullOrEmpty(TwilioAccountSid) is false &&
-                              string.IsNullOrEmpty(TwilioAutoToken) is false;
+    public bool Configured => string.IsNullOrWhiteSpace(FromPhoneNumber) is false &&
+                              string.IsNullOrWhiteSpace(TwilioAccountSid) is false &&
+                              string.IsNullOrWhiteSpace(TwilioAutoToken) is false;
 }
 
 public class HangfireOptions
@@ -230,6 +320,13 @@ public class HangfireOptions
     /// Useful for testing or in production when managing multiple codebases with a single database.
     /// </summary>
     public bool UseIsolatedStorage { get; set; }
+
+    /// <summary>
+    /// How long a succeeded or deleted job is kept before Hangfire's expiration manager removes it, arguments and
+    /// all - a mail job's are the recipient's address and the rendered body. A Failed job never expires, which is why
+    /// the mail and SMS runners delete on exhausted retries.
+    /// </summary>
+    public TimeSpan JobExpiration { get; set; }
 }
 
 public class SupportedAppVersionsOptions

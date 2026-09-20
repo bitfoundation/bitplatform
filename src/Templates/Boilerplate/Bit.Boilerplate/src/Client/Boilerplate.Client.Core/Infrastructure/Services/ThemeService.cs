@@ -4,25 +4,40 @@ public partial class ThemeService
 {
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
+    [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IBitDeviceCoordinator bitDeviceCoordinator = default!;
 
+    /// <summary>
+    /// Read by the native heads at launch, before their WebView exists (See MauiProgram and Windows' Program).
+    /// </summary>
+    public const string THEME_STORAGE_KEY = "Theme";
 
     public async Task<AppThemeType> GetCurrentTheme()
     {
-        var theme = await bitThemeManager.GetCurrentThemeAsync();
-        return theme == "dark" ? AppThemeType.Dark : AppThemeType.Light;
+        return ToAppTheme(await bitThemeManager.GetCurrentThemeAsync());
     }
 
     public async Task<AppThemeType> ToggleTheme()
     {
-        var newThemeName = await bitThemeManager.ToggleDarkLightAsync();
+        var theme = ToAppTheme(await bitThemeManager.ToggleDarkLightAsync());
 
-        var isDark = newThemeName == "dark";
-        await bitDeviceCoordinator.ApplyTheme(isDark);
+        if (AppPlatform.IsBlazorHybrid)
+        {
+            // bit BlazorUI's own copy lives in the WebView, which isn't up yet when the native chrome is painted.
+            await storageService.SetItem(THEME_STORAGE_KEY, theme.ToString(), persistent: true);
+        }
 
-        var theme = isDark ? AppThemeType.Dark : AppThemeType.Light;
+        await bitDeviceCoordinator.ApplyTheme(theme is AppThemeType.Dark);
+
         pubSubService.Publish(ClientAppMessages.THEME_CHANGED, theme);
 
         return theme;
+    }
+
+    private static AppThemeType ToAppTheme(string? themeName)
+    {
+        return themeName?.EndsWith("dark", StringComparison.OrdinalIgnoreCase) is true
+            ? AppThemeType.Dark
+            : AppThemeType.Light;
     }
 }

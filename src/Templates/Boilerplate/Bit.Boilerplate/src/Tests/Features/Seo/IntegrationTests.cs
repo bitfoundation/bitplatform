@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Text.Json.Nodes;
 
 namespace Boilerplate.Tests.Features.Seo;
 
@@ -28,14 +29,22 @@ public partial class IntegrationTests
         var siteMap = await httpClient.GetStringAsync("sitemap.xml", TestContext.CancellationToken);
 
         Assert.Contains("<urlset", siteMap);
-        // Public (anonymous) pages are listed...
-        Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
-        Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
 
-        if (CultureInfoManager.InvariantGlobalization is false)
+        if (CultureInfoManager.InvariantGlobalization)
         {
-            // ...along with their culture-prefixed SEO variants.
-            Assert.Contains($"fa-IR{PageUrls.Terms}", siteMap);
+            // Public (anonymous) pages are listed under their bare urls.
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.PrivacyPolicy)}</loc>", siteMap);
+        }
+        else
+        {
+            // On a multilingual build a page is only ever served under its culture-prefixed url - the bare url 302s
+            // to it (See UseCultureUrlRedirection) - so public pages are listed once per supported culture and the
+            // always-redirecting bare form is not advertised at all.
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"en-US{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.Terms}")}</loc>", siteMap);
+            Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, $"fa-IR{PageUrls.PrivacyPolicy}")}</loc>", siteMap);
+            Assert.DoesNotContain($"<loc>{new Uri(server.WebAppServerAddress, PageUrls.Terms)}</loc>", siteMap);
         }
 
         // Authenticated pages are excluded because their type carries an [Authorize] attribute, which is an unwritten
@@ -80,7 +89,7 @@ public partial class IntegrationTests
         var strayText = XDocument.Parse(siteMapIndex).Root!.Nodes()
             .OfType<XText>()
             .Select(text => text.Value.Trim())
-            .Where(text => string.IsNullOrEmpty(text) is false)
+            .Where(text => string.IsNullOrWhiteSpace(text) is false)
             .ToArray();
 
         Assert.IsEmpty(strayText, $"<sitemapindex> may only contain <sitemap> elements, but it also carries: {string.Join(" | ", strayText)}");
@@ -110,6 +119,51 @@ public partial class IntegrationTests
 
         Assert.Contains(homeMessage, html);
     }
+
+    /// <summary>
+    /// A product page describes a Product; the home page is the one a crawler treats as the site itself, and until it
+    /// carries a WebSite and an Organization the site has no machine-readable identity at all. Read out of the
+    /// pre-rendered html, because that is the only version of the page a crawler is given.
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering")]
+    public async Task Prerendering_HomePage_Should_DescribeTheSiteAsJsonLd()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
+
+        var script = JsonLdScript().Match(html);
+
+        Assert.IsTrue(script.Success, "The home page carries no JSON-LD block.");
+
+        var graph = JsonNode.Parse(WebUtility.HtmlDecode(script.Groups["json"].Value))!["@graph"]!.AsArray();
+
+        var organization = graph.Single(node => node!["@type"]!.GetValue<string>() is "Organization")!;
+        var webSite = graph.Single(node => node!["@type"]!.GetValue<string>() is "WebSite")!;
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(organization["name"]?.GetValue<string>()), "The Organization has no name.");
+        Assert.IsTrue(Uri.IsWellFormedUriString(organization["logo"]?.GetValue<string>(), UriKind.Absolute), "The Organization's logo has to be an absolute url; a crawler does not resolve a relative one.");
+
+        Assert.AreEqual(organization["@id"]!.GetValue<string>(), webSite["publisher"]!["@id"]!.GetValue<string>(),
+            "The WebSite names a publisher that is not the Organization next to it, so the two nodes do not join up.");
+
+        Assert.IsTrue(Uri.IsWellFormedUriString(webSite["url"]?.GetValue<string>(), UriKind.Absolute), "The WebSite's url has to be absolute.");
+    }
+
+    /// <summary>
+    /// Razor writes the media type as <c>application/ld&amp;#x2B;json</c>, where <c>&amp;#x2B;</c> is a plus, and a
+    /// page with a scoped stylesheet also puts its CSS isolation attribute on the tag.
+    /// </summary>
+    [GeneratedRegex("""<script type="application/ld(\+|&#x2B;)json"[^>]*>(?<json>.*?)</script>""", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex JsonLdScript();
 
     /// <summary>
     /// Enabling output caching makes HttpRequestExtensions.IsStreamPrerenderingSuppressed() return true,
@@ -188,13 +242,26 @@ public partial class IntegrationTests
 
         Assert.DoesNotContain(defaultHomeMessage, html);
         Assert.Contains(faHomeMessage, html);
+
+        // The document must SAY it is Persian: without lang a screen reader guesses the voice for this fully
+        // pre-rendered page, and without dir the first paint lays the whole page out left-to-right until the Bit
+        // components' own dir attributes hydrate (See App.razor's html tag).
+        Assert.Contains("lang=\"fa-IR\"", html, "The pre-rendered document must declare the language it is rendered in.");
+        Assert.Contains("dir=\"rtl\"", html, "A right-to-left culture's document must declare its directionality.");
+
+        // hreflang: every culture of this page is advertised as a translation of one document, and x-default names
+        // the culture-less url whose 302 acts as the language chooser (See App.razor's alternate links).
+        Assert.Contains($"hreflang=\"en-US\" href=\"{new Uri(server.WebAppServerAddress, "en-US/")}\"", html,
+            "Each supported culture's url must be advertised as an alternate of this page.");
+        Assert.Contains($"hreflang=\"x-default\" href=\"{server.WebAppServerAddress}\"", html,
+            "The culture-less (redirecting) url must be advertised as the x-default alternate.");
     }
 
     /// <summary>
     /// A browser can advertise the <b>neutral</b> culture "fa" (rather than the specific "fa-IR") in its Accept-Language
     /// header. AppAcceptLanguageRequestCultureProvider maps that neutral name up to the supported specific culture
-    /// "fa-IR", so the (culture-less) home page must still be served in Persian - resolved purely from the header, with
-    /// no culture in the URL.
+    /// "fa-IR", so requesting the culture-less home page must still end in Persian: UseCultureUrlRedirection resolves
+    /// the redirect target from that very header, 302s onto /fa-IR/, and the followed redirect renders the Persian page.
     /// <para>
     /// <b>Why a bare <see cref="HttpClient"/> here</b>, unlike the tests above: the header IS the input, and the app's own
     /// <c>RequestHeadersDelegatingHandler</c> adds an Accept-Language of its own (from <c>CurrentUICulture</c>) to every

@@ -2,7 +2,7 @@
 // [mirror] IBitDeviceCoordinator - applying the theme to native chrome - keep in sync with:
 // - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsDeviceCoordinator.cs
 
-using Boilerplate.Client.Core.Styles;
+using Bit.BlazorUI;
 
 namespace Boilerplate.Client.Maui.Infrastructure.Services;
 
@@ -22,7 +22,8 @@ public partial class MauiDeviceCoordinator : IBitDeviceCoordinator
             window!.DecorView!.SystemUiFlags &= ~Android.Views.SystemUiFlags.LightStatusBar;
         }
 
-        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(isDark ? ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor));
+        // The theme's own page background, so the status bar and the WebView below it meet without a seam.
+        window.SetStatusBarColor(Android.Graphics.Color.ParseColor(AppThemePresets.Background(isDark)));
 #elif IOS
         var statusBarStyle = isDark ? UIKit.UIStatusBarStyle.LightContent : UIKit.UIStatusBarStyle.DarkContent;
         await Device.InvokeOnMainThreadAsync(() =>

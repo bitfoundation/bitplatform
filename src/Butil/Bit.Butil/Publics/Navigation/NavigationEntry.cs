@@ -28,31 +28,3 @@ public record NavigationEntry(
     string Url,
     int Index,
     bool SameDocument);
-
-/// <summary>How a <see cref="Navigation.Navigate"/> call should affect the history list.</summary>
-public enum NavigationHistoryBehavior
-{
-    /// <summary>Let the browser decide: push, unless the URL is unchanged, in which case replace.</summary>
-    Auto,
-
-    /// <summary>Always add a new entry.</summary>
-    Push,
-
-    /// <summary>Always overwrite the current entry, adding nothing to the back stack.</summary>
-    Replace,
-}
-
-/// <summary>What happened, delivered to a <see cref="Navigation"/> subscription.</summary>
-/// <param name="From">
-/// For <see cref="Navigation.SubscribeCurrentEntryChange"/>, the entry that was current before the
-/// change; null for the other events and for a change with no previous entry.
-/// </param>
-/// <param name="NavigationType">
-/// <c>push</c>, <c>replace</c>, <c>reload</c> or <c>traverse</c> - null when the change was an
-/// in-place state update rather than a navigation.
-/// </param>
-/// <param name="Message">The failure message, on <see cref="Navigation.SubscribeNavigateError"/> only.</param>
-public record NavigationEventInfo(
-    NavigationEntry? From,
-    string? NavigationType,
-    string? Message);

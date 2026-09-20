@@ -20,9 +20,9 @@ public partial class ODataQuery
     {
         set
         {
-            if (string.IsNullOrEmpty(value)) return;
+            if (string.IsNullOrWhiteSpace(value)) return;
 
-            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) and ({value})";
+            Filter = string.IsNullOrWhiteSpace(Filter) ? value : $"({Filter}) and ({value})";
         }
     }
 
@@ -33,9 +33,9 @@ public partial class ODataQuery
     {
         set
         {
-            if (string.IsNullOrEmpty(value)) return;
+            if (string.IsNullOrWhiteSpace(value)) return;
 
-            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) or ({value})";
+            Filter = string.IsNullOrWhiteSpace(Filter) ? value : $"({Filter}) or ({value})";
         }
     }
 
@@ -58,27 +58,27 @@ public partial class ODataQuery
             qs.Add("$skip", Skip.ToString()!);
         }
 
-        if (string.IsNullOrEmpty(Filter) is false)
+        if (string.IsNullOrWhiteSpace(Filter) is false)
         {
             qs.Add("$filter", Filter);
         }
 
-        if (string.IsNullOrEmpty(OrderBy) is false)
+        if (string.IsNullOrWhiteSpace(OrderBy) is false)
         {
             qs.Add("$orderby", OrderBy);
         }
 
-        if (string.IsNullOrEmpty(Select) is false)
+        if (string.IsNullOrWhiteSpace(Select) is false)
         {
             qs.Add("$select", Select);
         }
 
-        if (string.IsNullOrEmpty(Expand) is false)
+        if (string.IsNullOrWhiteSpace(Expand) is false)
         {
             qs.Add("$expand", Expand);
         }
 
-        if (string.IsNullOrEmpty(Search) is false)
+        if (string.IsNullOrWhiteSpace(Search) is false)
         {
             qs.Add("$search", Search);
         }

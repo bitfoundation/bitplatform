@@ -10,7 +10,7 @@ public partial class AccountSection
     [Parameter, SupplyParameterFromQuery(Name = "phoneToken")]
     public string? PhoneNumberTokenQueryString { get; set; }
 
-    private string? DefaultSelectedTab => string.IsNullOrEmpty(EmailTokenQueryString) is false ? nameof(AppStrings.Email)
-                                        : string.IsNullOrEmpty(PhoneNumberTokenQueryString) is false ? nameof(AppStrings.Phone)
+    private string? DefaultSelectedTab => string.IsNullOrWhiteSpace(EmailTokenQueryString) is false ? nameof(AppStrings.Email)
+                                        : string.IsNullOrWhiteSpace(PhoneNumberTokenQueryString) is false ? nameof(AppStrings.Phone)
                                         : null;
 }

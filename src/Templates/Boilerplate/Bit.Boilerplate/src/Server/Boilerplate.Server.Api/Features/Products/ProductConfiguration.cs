@@ -33,6 +33,8 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         void HasData(Product product)
         {
             product.TenantId = TenantConfiguration.FallbackTenantId;
+            product.CurrencyIso ??= "USD";
+            product.CurrencySymbol ??= "$";
             builder.HasData(product);
         }
         //#endif
@@ -42,6 +44,8 @@ public partial class ProductConfiguration : IEntityTypeConfiguration<Product>
         //#if (multitenant != true)
         void HasData(Product product)
         {
+            product.CurrencyIso ??= "USD";
+            product.CurrencySymbol ??= "$";
             builder.HasData(product);
         }
         //#endif

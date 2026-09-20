@@ -58,7 +58,7 @@ public partial class UserController
 
         var key = GetWebAuthnCacheKey(userId);
         await cache.SetAsync(key, options,
-            options => options.Duration = TimeSpan.FromMinutes(3),
+            options => options.SetDuration(TimeSpan.FromMinutes(3)).SetPriority(CacheItemPriority.NeverRemove),
             cancellationToken);
 
         return options;

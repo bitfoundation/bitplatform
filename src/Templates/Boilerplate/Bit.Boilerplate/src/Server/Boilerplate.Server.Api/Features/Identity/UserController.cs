@@ -1,7 +1,6 @@
 //+:cnd:noEmit
 using System.Text.Encodings.Web;
 using QRCoder;
-using Microsoft.AspNetCore.Cors;
 //#if (multitenant == true)
 using Boilerplate.Server.Api.Features.Tenants;
 using Boilerplate.Shared.Features.Tenants.Dtos;
@@ -24,6 +23,7 @@ public partial class UserController : AppControllerBase, IUserController
     [AutoInject] private IHostEnvironment hostEnvironment = default!;
     [AutoInject] private SignInManager<User> signInManager = default!;
     [AutoInject] private IUserEmailStore<User> userEmailStore = default!;
+    [AutoInject] private UserErasureService userErasureService = default!;
 
     //#if (notification == true)
     [AutoInject] private PushNotificationService pushNotificationService = default!;
@@ -55,7 +55,7 @@ public partial class UserController : AppControllerBase, IUserController
             .OrderByDescending(us => us.RenewedOn);
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Delete */)]
+    [HttpPost]
     public async Task SignOut(CancellationToken cancellationToken)
     {
         var currentSessionId = User.GetSessionId();
@@ -100,17 +100,23 @@ public partial class UserController : AppControllerBase, IUserController
         //#endif
     }
 
-    [HttpPost, EnableCors("CorsWithCredentials" /* Required for Cookies.Append */)]
+    [HttpPost]
     public async Task UpdateSession(UpdateUserSessionRequestDto request, CancellationToken cancellationToken)
     {
         // UpdateSession gets called after SignIn, Refresh and client app initialization to update user session info,
         // example scenario would be when user restarts the app after an update or after changing device settings like language.
         // so in server side, we always have the latest info about the user session.
 
+        // The client sends the version as text; anything unrepresentable becomes null.
+        var appVersionCode = AppVersionCodes.TryEncode(request.AppVersion);
+
         var affectedRows = await DbContext.UserSessions.Where(us => us.Id == User.GetSessionId()).ExecuteUpdateAsync(us =>
-            us.SetProperty(x => x.AppVersion, request.AppVersion)
+            us.SetProperty(x => x.AppVersionCode, appVersionCode)
                 .SetProperty(x => x.DeviceInfo, request.DeviceInfo)
                 .SetProperty(x => x.PlatformType, request.PlatformType)
+                //#if (signalR == true || notification == true)
+                .SetProperty(x => x.NotificationStatus, request.NotificationStatus)
+                //#endif
                 .SetProperty(x => x.CultureName, request.CultureName), cancellationToken);
 
         if (affectedRows == 0)
@@ -339,45 +345,9 @@ public partial class UserController : AppControllerBase, IUserController
     [HttpDelete, Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task Delete(CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString())
-                    ?? throw new ResourceNotFoundException();
-
-        var currentSessionId = User.GetSessionId();
-
-        //#if (signalR == true)
-        var userSessionConnectionIds = await DbContext.UserSessions
-            .Where(us => us.UserId == userId && us.Id != currentSessionId && us.SignalRConnectionId != null)
-            .Select(us => us.SignalRConnectionId!)
-            .ToArrayAsync(cancellationToken);
-        //#endif
-
-        await DbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            await DbContext.UserSessions.Where(us => us.UserId == userId).ExecuteDeleteAsync(cancellationToken);
-
-            // Re-read inside the delegate: on a retry the instance from the failed attempt is still tracked, already
-            // marked Deleted and carrying the concurrency stamp it was loaded with, so deleting it again would either
-            // fault or run against a stale stamp.
-            var userToDelete = await userManager.FindByIdAsync(userId.ToString()) ?? throw new ResourceNotFoundException();
-
-            var result = await userManager.DeleteAsync(userToDelete);
-
-            if (result.Succeeded is false)
-                throw new ResourceValidationException(result.Errors.Select(err => new LocalizedString(err.Code, err.Description)).ToArray());
-
-            await transaction.CommitAsync(cancellationToken);
-        });
+        await userErasureService.Erase(User.GetUserId(), exceptSessionId: User.GetSessionId(), cancellationToken);
 
         await signInManager.SignOutAsync();
-
-        //#if (signalR == true)
-        // Check out AppHub's comments for more info.
-        await appHubContext.Clients.Clients(userSessionConnectionIds).Publish(SharedAppMessages.SESSION_REVOKED, null, cancellationToken);
-        //#endif
 
         if (IsWebPlatformRequest() is false)
             return;
@@ -410,7 +380,7 @@ public partial class UserController : AppControllerBase, IUserController
         {
             if (request.ResetSharedKey)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaResetSharedKeyError)]);
-            else if (string.IsNullOrEmpty(request.TwoFactorCode))
+            else if (string.IsNullOrWhiteSpace(request.TwoFactorCode))
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaEmptyCodeError)]);
             else if (await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.TwoFactorCode) is false)
                 throw new BadRequestException(Localizer[nameof(AppStrings.TfaInvalidCodeError)]);
@@ -440,7 +410,7 @@ public partial class UserController : AppControllerBase, IUserController
         //}
 
         var unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
-        if (string.IsNullOrEmpty(unformattedKey))
+        if (string.IsNullOrWhiteSpace(unformattedKey))
         {
             IUserAuthenticatorKeyStore<User> userAuthenticatorKeyStore = (IUserAuthenticatorKeyStore<User>)userStore;
             await userAuthenticatorKeyStore.SetAuthenticatorKeyAsync(user,
@@ -448,7 +418,7 @@ public partial class UserController : AppControllerBase, IUserController
             await userStore.UpdateAsync(user, cancellationToken);
             unformattedKey = await userManager.GetAuthenticatorKeyAsync(user);
 
-            if (string.IsNullOrEmpty(unformattedKey))
+            if (string.IsNullOrWhiteSpace(unformattedKey))
             {
                 throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
             }
@@ -545,37 +515,43 @@ public partial class UserController : AppControllerBase, IUserController
     }
 
     //#if (signalR == true || notification == true)
-    [HttpPost("{userSessionId}")]
-    public async Task<UserSessionNotificationStatus> ToggleNotification(Guid userSessionId, CancellationToken cancellationToken)
+    [HttpPost("{enabled}")]
+    public async Task SetNotificationEnabled(bool enabled, CancellationToken cancellationToken)
     {
-        var userId = User.GetUserId();
+        var userSessionId = User.GetSessionId();
 
         var userSession = await DbContext.UserSessions
-            .FirstOrDefaultAsync(us => us.Id == userSessionId && us.UserId == userId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
+            .FirstOrDefaultAsync(us => us.Id == userSessionId, cancellationToken) ?? throw new ResourceNotFoundException().WithData("Reason", "User session not found.");
 
-        userSession.NotificationStatus = userSession.NotificationStatus is UserSessionNotificationStatus.NotConfigured ? UserSessionNotificationStatus.Allowed :
-            userSession.NotificationStatus is UserSessionNotificationStatus.Allowed ? UserSessionNotificationStatus.Muted : UserSessionNotificationStatus.Allowed;
+        var status = enabled ? UserSessionNotificationStatus.Allowed : UserSessionNotificationStatus.Muted;
+
+        // The welcome notification below follows the change, not the call, so re-storing Allowed sends nothing.
+        if (userSession.NotificationStatus == status)
+            return;
+
+        userSession.NotificationStatus = status;
 
         await DbContext.SaveChangesAsync(cancellationToken);
 
-        if (userSession.NotificationStatus is UserSessionNotificationStatus.Allowed)
+        if (enabled)
         {
             //#if (notification == true)
+            // The same welcome push PushNotificationController.TestPushNotificationSetup sends to signed out visitors.
             await pushNotificationService.RequestPush(new()
             {
-                Message = Localizer[nameof(AppStrings.TestNotificationMessage1)],
+                Title = Localizer[nameof(AppStrings.TestPushNotificationTitle)],
+                Message = Localizer[nameof(AppStrings.TestPushNotificationMessage)],
+                PageUrl = PageUrls.PrivacyPolicy,
                 UserRelatedPush = true
             }, customSubscriptionFilter: us => us.UserSessionId == userSessionId, cancellationToken: cancellationToken);
             //#endif
             //#if (signalR == true)
             if (userSession.SignalRConnectionId != null)
             {
-                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestNotificationMessage2)], null, cancellationToken);
+                await appHubContext.Clients.Client(userSession.SignalRConnectionId).SendAsync(SharedAppMessages.SHOW_MESSAGE, (string)Localizer[nameof(AppStrings.TestRealtimeConnectionMessage)], null, cancellationToken);
             }
             //#endif
         }
-
-        return userSession.NotificationStatus;
     }
     //#endif
 
@@ -690,15 +666,6 @@ public partial class UserController : AppControllerBase, IUserController
     /// PRE-RENDERING happens before any of that exists, so a cookie the browser attaches on its own is the only way
     /// <c>ServerSideAuthTokenProvider</c> can tell who the user is on the first response.
     /// <para>
-    /// That is also why the Domain is the WEB APP's host and not the api's - pre-rendering runs on the web app. Under
-    /// <c>api == Standalone</c> the two are different hosts, and a host-only cookie (no Domain) would stay on the api.
-    /// </para>
-    /// <para>
-    /// The constraint this puts on a deployment: the api host must domain-match the web app host, or the browser
-    /// DISCARDS the cookie (RFC 6265 5.3) and every page silently pre-renders as anonymous. Web <c>myapp.com</c> +
-    /// api <c>api.myapp.com</c> works; web <c>app.myapp.com</c> + api <c>app-api.myapp.com</c> does not, because those
-    /// two are siblings rather than parent and child. The accepted cost is that a cookie carrying a Domain also
-    /// reaches every OTHER subdomain of that host - there is no way to scope a cookie to two named hosts.
     /// </para>
     /// </remarks>
     private CookieOptions BuildAccessTokenCookieOptions()
@@ -709,7 +676,6 @@ public partial class UserController : AppControllerBase, IUserController
             SameSite = SameSiteMode.Strict,
             Secure = hostEnvironment.IsDevelopment() is false || Request.IsHttps,
             Path = "/",
-            Domain = HttpContext.Request.GetWebAppUrl().Host,
             IsEssential = true
         };
     }

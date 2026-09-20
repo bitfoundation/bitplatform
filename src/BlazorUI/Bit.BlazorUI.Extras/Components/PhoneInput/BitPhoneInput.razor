@@ -6,8 +6,9 @@
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     title="@Title"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(_isOpen ? _calloutId : null)">
+     aria-owns="@(IsOpen ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
     {
@@ -24,117 +25,311 @@
 
     <div id="@_fieldGroupId" style="@Styles?.FieldGroup" class="bit-phi-fgp @Classes?.FieldGroup">
 
-        <button @onclick="HandleOnDropdownClick"
-                @ref="_dropdownButtonRef"
-                @onkeydown="HandleOnKeyDown"
-                @onfocusin="HandleOnInputFocusIn"
-                @onfocusout="HandleOnInputFocusOut"
-                type="button"
-                id="@_dropdownId"
-                role="combobox"
-                aria-haspopup="listbox"
-                aria-expanded="@(_isOpen ? "true" : "false")"
-                aria-controls="@(_isOpen ? _calloutId : null)"
-                aria-activedescendant="@(_isOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
-                disabled="@(IsEnabled is false)"
-                tabindex="@(IsEnabled && ReadOnly is false ? 0 : -1)"
-                style="@Styles?.Dropdown"
-                class="bit-phi-drp @Classes?.Dropdown">
-            <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
-                @if (Country is not null)
-                {
-                    <img class="bit-phi-flg" src="@GetFlagUrl(Country)" alt="@Country.Name" loading="lazy" />
-                    <span class="bit-phi-cod">+@Country.Code</span>
-                }
-                else
-                {
-                    <span class="bit-phi-pls">@DropdownPlaceholder</span>
-                }
-            </span>
-            <span aria-hidden="true" class="bit-phi-car"></span>
-        </button>
+        @if (NoDropdown)
+        {
+            <div style="@Styles?.Dropdown" class="bit-phi-drp @Classes?.Dropdown">
+                <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+                    @if (DropdownTemplate is not null)
+                    {
+                        @DropdownTemplate(Country)
+                    }
+                    else if (Country is not null)
+                    {
+                        @if (NoFlags is false)
+                        {
+                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                        }
+                        @if (NoDialCode is false)
+                        {
+                            <span class="bit-phi-cod">+@Country.Code</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="bit-phi-pls">@DropdownPlaceholder</span>
+                    }
+                </span>
+            </div>
+        }
+        else
+        {
+            <button @onclick="HandleOnDropdownClick"
+                    @ref="_dropdownButtonRef"
+                    @onkeydown="HandleOnDropdownKeyDown"
+                    @onfocusin="HandleOnFocusIn"
+                    @onfocusout="HandleOnFocusOut"
+                    type="button"
+                    id="@_dropdownId"
+                    role="@(NoSearchBox ? "combobox" : null)"
+                    aria-haspopup="listbox"
+                    aria-expanded="@(IsOpen ? "true" : "false")"
+                    aria-controls="@(IsOpen ? _listId : null)"
+                    aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                    aria-label="@DropdownLabel"
+                    title="@(DropdownAriaLabel ?? Country?.Name)"
+                    disabled="@(IsEnabled is false)"
+                    tabindex="@(IsEnabled && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
+                    style="@Styles?.Dropdown"
+                    class="bit-phi-drp @Classes?.Dropdown">
+                <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
+                    @if (DropdownTemplate is not null)
+                    {
+                        @DropdownTemplate(Country)
+                    }
+                    else if (Country is not null)
+                    {
+                        @if (NoFlags is false)
+                        {
+                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                        }
+                        @if (NoDialCode is false)
+                        {
+                            <span class="bit-phi-cod">+@Country.Code</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="bit-phi-pls">@DropdownPlaceholder</span>
+                    }
+                </span>
+                <span aria-hidden="true" style="@Styles?.Caret" class="bit-phi-car @Classes?.Caret"></span>
+            </button>
+        }
 
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onchange="HandleOnStringValueChangeAsync"
                @oninput="HandleOnStringValueInputAsync"
-               @onfocusin="HandleOnInputFocusIn"
-               @onfocusout="HandleOnInputFocusOut"
+               @onfocusin="HandleOnFocusIn"
+               @onfocusout="HandleOnFocusOut"
+               @onfocus="HandleOnInputFocus"
+               @onblur="HandleOnInputBlur"
+               @onclick="HandleOnInputClick"
+               @onkeydown="HandleOnInputKeyDown"
                type="tel"
                id="@_inputId"
-               name="@Name"
                readonly="@ReadOnly"
                required="@Required"
                value="@Number"
-               placeholder="@Placeholder"
+               spellcheck="false"
+               tabindex="@TabIndex"
+               autocorrect="off"
+               autocapitalize="off"
                disabled="@(IsEnabled is false)"
+               placeholder="@InputPlaceholder"
+               inputmode="@InputModeValue"
+               enterkeyhint="@EnterKeyHint"
                maxlength="@(MaxLength >= 0 ? MaxLength : null)"
                style="@Styles?.Input"
                class="bit-phi-inp @Classes?.Input"
-               autocomplete="@AutoComplete"
-               aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)" />
+               autocomplete="@(AutoComplete ?? "tel")"
+               aria-label="@AriaLabel"
+               aria-invalid="@AriaInvalid"
+               aria-required="@(Required ? "true" : null)"
+               aria-describedby="@AriaDescribedBy"
+               aria-labelledby="@LabelledBy" />
+
+        @if (ShowClear)
+        {
+            <button @onclick="HandleOnClearButtonClick"
+                    @onfocusin="HandleOnFocusIn"
+                    @onfocusout="HandleOnFocusOut"
+                    type="button"
+                    tabindex="@TabIndex"
+                    style="@Styles?.ClearButton"
+                    class="bit-phi-cbt @Classes?.ClearButton"
+                    aria-label="@(ClearButtonAriaLabel ?? "Clear number")"
+                    disabled="@(IsEnabled is false || ReadOnly)">
+                @if (ClearButtonTemplate is not null)
+                {
+                    @ClearButtonTemplate
+                }
+                else
+                {
+                    var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+                    <i aria-hidden="true"
+                       style="@Styles?.ClearButtonIcon"
+                       class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" />
+                }
+            </button>
+        }
     </div>
-</div>
 
-<div @onclick="CloseCallout"
-     id="@_overlayId"
-     style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay"
-     class="bit-phi-ovl @Classes?.Overlay"></div>
-
-<div id="@_calloutId"
-     tabindex="0"
-     role="listbox"
-     style="@Styles?.Callout"
-     class="bit-phi-cal @Classes?.Callout"
-     aria-labelledby="@(Label.HasValue() || LabelTemplate is not null ? _labelId : null)">
-
-    @if (NoSearchBox is false)
+    @if (HasErrorMessage)
     {
-        <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
-            <input @ref="_searchInputRef"
-                   @oninput="HandleOnSearchInput"
-                   @onkeydown="HandleOnKeyDown"
-                   type="text"
-                   role="searchbox"
-                   id="@_searchId"
-                   autocomplete="off"
-                   value="@_searchText"
-                   aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
-                   class="bit-phi-srch"
-                   placeholder="@(SearchBoxPlaceholder ?? "Search")" />
+        @* What is wrong with the value is the first thing to read under the field, so the message sits
+           above the description rather than beside it. It carries no live role of its own: the region at
+           the end of the component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-phi-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
         </div>
     }
 
-    <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">
-        <div class="bit-phi-lst">
-            @{
-                var items = GetFilteredCountries();
-            }
-            @for (var i = 0; i < items.Count; i++)
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content, which is
+           not valid inside a span. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-phi-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
             {
-                var index = i;
-                var country = items[index];
-                var isSelected = country.Iso2 == Country?.Iso2;
-                var isActive = index == _activeIndex;
-                var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
-                <button @key="country.Iso2"
-                        id="@GetOptionId(index)"
-                        @onclick="() => HandleOnCountrySelect(country)"
-                        type="button"
-                        role="option"
-                        title="@country.Name"
-                        aria-selected="@(isSelected ? "true" : "false")"
-                        class="@itemClass">
-                    <img class="bit-phi-flg" src="@GetFlagUrl(country)" alt="@country.Name" loading="lazy" />
-                    <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
-                    <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>
-                </button>
+                @DescriptionTemplate
             }
-
-            @if (items.Count == 0)
+            else
             {
-                <div class="bit-phi-nor">@(NoResultsMessage ?? "No results found")</div>
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
             }
         </div>
-    </div>
+    }
+
+    @if (Name.HasValue())
+    {
+        @* The visible input holds the local part of the number, so the full E.164 value a form is
+           meant to post travels through a hidden field of its own instead. *@
+        <input type="hidden" name="@Name" value="@CurrentValue" />
+    }
+
+    @if (CountryName.HasValue())
+    {
+        @* The country is a selection rather than a text, so a form that needs to store it beside the
+           number is given its ISO code through a hidden field of its own. *@
+        <input type="hidden" name="@CountryName" value="@Country?.Iso2" />
+    }
+
+    @* The live region sits outside the callout on purpose: the content of a display:none callout is
+       never announced, so the result of a search made in it has to be reported from out here. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-phi-lvr">@_announcement</div>
 </div>
+
+@if (NoDropdown is false)
+{
+    <div @onclick="CloseCallout"
+         id="@_overlayId"
+         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         class="bit-phi-ovl @Classes?.Overlay"></div>
+
+    <div id="@_calloutId"
+         style="@Styles?.Callout"
+         class="bit-phi-cal @SizeClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-phi-rtl" : null) @Classes?.Callout">
+
+        @if (Responsive)
+        {
+            <div style="@Styles?.ResponsiveLabelContainer" class="bit-phi-rlc @Classes?.ResponsiveLabelContainer">
+                @if (LabelTemplate is not null)
+                {
+                    @LabelTemplate
+                }
+                else if (Label.HasValue())
+                {
+                    <label style="@Styles?.ResponsiveLabel" class="bit-phi-rlb @Classes?.ResponsiveLabel">@Label</label>
+                }
+
+                <button @onclick="CloseCallout"
+                        type="button"
+                        title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                        aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                        style="@Styles?.ResponsiveCloseButton"
+                        class="bit-phi-cls @Classes?.ResponsiveCloseButton">
+                    @{
+                        var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
+                    }
+                    <i aria-hidden="true"
+                       style="@Styles?.ResponsiveCloseIcon"
+                       class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
+                </button>
+            </div>
+        }
+
+        @if (NoSearchBox is false)
+        {
+            <div style="@Styles?.SearchBox" class="bit-phi-sbx @Classes?.SearchBox">
+                <input @ref="_searchInputRef"
+                       @oninput="HandleOnSearchInput"
+                       @onkeydown="HandleOnSearchKeyDown"
+                       type="text"
+                       role="combobox"
+                       id="@_searchId"
+                       autocomplete="off"
+                       value="@_searchText"
+                       aria-autocomplete="list"
+                       aria-haspopup="listbox"
+                       aria-expanded="@(IsOpen ? "true" : "false")"
+                       aria-controls="@(IsOpen ? _listId : null)"
+                       aria-activedescendant="@(IsOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                       aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
+                       class="bit-phi-srch"
+                       placeholder="@(SearchBoxPlaceholder ?? "Search")" />
+            </div>
+        }
+
+        <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">
+            <div id="@_listId"
+                 role="listbox"
+                 style="@Styles?.List"
+                 class="bit-phi-lst @Classes?.List"
+                 aria-label="@(DropdownAriaLabel ?? "Countries")">
+                @if (RenderList)
+                {
+                    var items = GetFilteredCountries();
+
+                    @for (var i = 0; i < items.Count; i++)
+                    {
+                        var index = i;
+                        var country = items[index];
+                        var isSelected = country.Iso2 == Country?.Iso2;
+                        var isActive = index == _activeIndex;
+                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}";
+                        <button @key="country.Iso2"
+                                id="@GetOptionId(index)"
+                                @onclick="() => HandleOnCountrySelect(country)"
+                                type="button"
+                                role="option"
+                                tabindex="-1"
+                                title="@country.Name"
+                                aria-selected="@(isSelected ? "true" : "false")"
+                                style="@Styles?.Item"
+                                class="@itemClass @Classes?.Item">
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(country)
+                            }
+                            else
+                            {
+                                @if (NoFlags is false)
+                                {
+                                    <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(country)" alt="" aria-hidden="true" loading="lazy" />
+                                }
+                                <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
+                                <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>
+                            }
+                        </button>
+                    }
+
+                    @if (items.Count == 0)
+                    {
+                        <div style="@Styles?.NoResults" class="bit-phi-nor @Classes?.NoResults">
+                            @if (NoResultsTemplate is not null)
+                            {
+                                @NoResultsTemplate
+                            }
+                            else
+                            {
+                                @(NoResultsMessage ?? "No results found")
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}

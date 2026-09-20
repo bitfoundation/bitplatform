@@ -7,6 +7,7 @@ namespace Bit.Butil;
 /// </summary>
 public class FileSystemFileInfo
 {
+    /// <summary>The file name, without any path: the browser never reveals where on disk it came from.</summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>Size in bytes.</summary>

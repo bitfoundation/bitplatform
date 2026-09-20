@@ -143,7 +143,7 @@ public partial class TenantController : AppControllerBase, ITenantController
     [Authorize(Policy = AppFeatures.Management.Tenant_Manage), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task InviteUser(InviteUserToTenantRequestDto request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(request.Email) && string.IsNullOrEmpty(request.PhoneNumber))
+        if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.PhoneNumber))
             throw new BadRequestException(Localizer[nameof(AppStrings.EitherProvideEmailOrPhoneNumber)]);
 
         request.PhoneNumber = phoneService.NormalizePhoneNumber(request.PhoneNumber);
@@ -181,12 +181,12 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         List<Task> sendMessagesTasks = [];
 
-        if (string.IsNullOrEmpty(user.Email) is false)
+        if (string.IsNullOrWhiteSpace(user.Email) is false)
         {
             sendMessagesTasks.Add(emailService.SendTenantInvitation(user, inviterDisplayName, tenantTitle, webAppUrl, cancellationToken));
         }
 
-        if (string.IsNullOrEmpty(user.PhoneNumber) is false)
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber) is false)
         {
             var smsMessage = Localizer[nameof(AppStrings.TenantInvitationShortText), inviterDisplayName, tenantTitle, webAppUrl.ToString()].ToString();
             sendMessagesTasks.Add(phoneService.SendSms(smsMessage, user.PhoneNumber!));

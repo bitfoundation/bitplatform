@@ -16,6 +16,11 @@
 //      ramp as the roles the seed itself produced.
 //   3. Every role's disabled pair overwritten with BitThemeColorDerivation.FillColorRoleFromMain's,
 //      which is the pair BitThemeColorDerivationTests holds every packaged palette to.
+//   4. The required-field marker set to the palette's own error main rather than left on the Fluent
+//      red the pipeline carries it at: M3 names one error color and the asterisk on a required
+//      field is that color, not a second red from another design system. It clears 4.5:1 on the
+//      page background, which is what the pipeline was solving for by darkening it in the first
+//      place.
 // The ":root [bit-theme=…]" descendant twins scope the palette to any element carrying the
 // attribute (see colors.fluent-light.scss).
 :root[bit-theme="material"],
@@ -239,7 +244,7 @@
     --bit-clr-brd-ter-dis-text: #82868A;
     --bit-clr-brd-ter-focus: #DCE1E5;
     --bit-clr-brd-dis: #DCE1E5;
-    --bit-clr-req: #A4262C;
+    --bit-clr-req: #B3261E;
     --bit-clr-ntr-white: #FFFFFF;
     --bit-clr-ntr-black: #000000;
     --bit-clr-ntr-gray10: #FCF9F6;

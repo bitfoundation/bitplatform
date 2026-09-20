@@ -1,3 +1,17 @@
+// Fluent - light elevation. Every value below is Fabric's own depth ramp: a KEY shadow that gives
+// the surface its height and a tighter AMBIENT one that seats it, both generated from the depth
+// number N as
+//   key     0 (N * 0.4)px   (N * 0.9)px   0 colorNeutralShadowKey
+//   ambient 0 (N * 0.075)px (N * 0.225)px 0 colorNeutralShadowAmbient
+// which reproduces the published depth4 / depth8 / depth16 / depth64 exactly and continues the ramp
+// at 2 and 32 where the library needs steps Fabric never named. The alphas are Fabric's .132 key
+// and .108 ambient; depth64 steps them up to .22 / .18, as Fabric does, because a surface that far
+// off the page has to carry the separation on its own.
+//
+// This replaced a generic ramp borrowed from Tailwind and a numbered 1..24 ladder borrowed from
+// Material 2 - two other design systems' elevation inside the Fluent theme, which is the one thing
+// the Material preset's own note calls out as being the wrong design system.
+//
 // Scoped-preset twins: see the note in colors.fluent-light.scss.
 :root,
 :root[bit-theme="light"],
@@ -6,40 +20,65 @@
 :root [bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
 :root [bit-theme="fluent-light"] {
-    // shadows-callout
-    --bit-shd-cal: 0px 0px 5px 0px rgba(0, 0, 0, 0.2), 0px 0px 2px 0px rgba(0, 0, 0, 0.1);
-    --bit-shd-cal2: 0px 0px 7px 0px rgba(0, 0, 0, 0.35), 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
-    // shadow sizes
-    --bit-shd-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --bit-shd-nm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --bit-shd-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --bit-shd-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --bit-shd-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --bit-shd-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-    --bit-shd-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-    // shadows
-    --bit-shd-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-3: 0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-5: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 5px 8px 0px rgba(0, 0, 0, 0.14), 0px 1px 14px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-6: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
-    --bit-shd-7: 0px 4px 5px -2px rgba(0, 0, 0, 0.2), 0px 7px 10px 1px rgba(0, 0, 0, 0.14), 0px 2px 16px 1px rgba(0, 0, 0, 0.12);
-    --bit-shd-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-    --bit-shd-9: 0px 5px 6px -3px rgba(0, 0, 0, 0.2), 0px 9px 12px 1px rgba(0, 0, 0, 0.14), 0px 3px 16px 2px rgba(0, 0, 0, 0.12);
-    --bit-shd-10: 0px 6px 6px -3px rgba(0, 0, 0, 0.2), 0px 10px 14px 1px rgba(0, 0, 0, 0.14), 0px 4px 18px 3px rgba(0, 0, 0, 0.12);
-    --bit-shd-11: 0px 6px 7px -4px rgba(0, 0, 0, 0.2), 0px 11px 15px 1px rgba(0, 0, 0, 0.14), 0px 4px 20px 3px rgba(0, 0, 0, 0.12);
-    --bit-shd-12: 0px 7px 8px -4px rgba(0, 0, 0, 0.2), 0px 12px 17px 2px rgba(0, 0, 0, 0.14), 0px 5px 22px 4px rgba(0, 0, 0, 0.12);
-    --bit-shd-13: 0px 7px 8px -4px rgba(0, 0, 0, 0.2), 0px 13px 19px 2px rgba(0, 0, 0, 0.14), 0px 5px 24px 4px rgba(0, 0, 0, 0.12);
-    --bit-shd-14: 0px 7px 9px -4px rgba(0, 0, 0, 0.2), 0px 14px 21px 2px rgba(0, 0, 0, 0.14), 0px 5px 26px 4px rgba(0, 0, 0, 0.12);
-    --bit-shd-15: 0px 8px 9px -5px rgba(0, 0, 0, 0.2), 0px 15px 22px 2px rgba(0, 0, 0, 0.14), 0px 6px 28px 5px rgba(0, 0, 0, 0.12);
-    --bit-shd-16: 0px 8px 10px -5px rgba(0, 0, 0, 0.2), 0px 16px 24px 2px rgba(0, 0, 0, 0.14), 0px 6px 30px 5px rgba(0, 0, 0, 0.12);
-    --bit-shd-17: 0px 8px 11px -5px rgba(0, 0, 0, 0.2), 0px 17px 26px 2px rgba(0, 0, 0, 0.14), 0px 6px 32px 5px rgba(0, 0, 0, 0.12);
-    --bit-shd-18: 0px 9px 11px -5px rgba(0, 0, 0, 0.2), 0px 18px 28px 2px rgba(0, 0, 0, 0.14), 0px 7px 34px 6px rgba(0, 0, 0, 0.12);
-    --bit-shd-19: 0px 9px 12px -6px rgba(0, 0, 0, 0.2), 0px 19px 29px 2px rgba(0, 0, 0, 0.14), 0px 7px 36px 6px rgba(0, 0, 0, 0.12);
-    --bit-shd-20: 0px 10px 13px -6px rgba(0, 0, 0, 0.2), 0px 20px 31px 3px rgba(0, 0, 0, 0.14), 0px 8px 38px 7px rgba(0, 0, 0, 0.12);
-    --bit-shd-21: 0px 10px 13px -6px rgba(0, 0, 0, 0.2), 0px 21px 33px 3px rgba(0, 0, 0, 0.14), 0px 8px 40px 7px rgba(0, 0, 0, 0.12);
-    --bit-shd-22: 0px 10px 14px -6px rgba(0, 0, 0, 0.2), 0px 22px 35px 3px rgba(0, 0, 0, 0.14), 0px 8px 42px 7px rgba(0, 0, 0, 0.12);
-    --bit-shd-23: 0px 11px 14px -7px rgba(0, 0, 0, 0.2), 0px 23px 36px 3px rgba(0, 0, 0, 0.14), 0px 9px 44px 8px rgba(0, 0, 0, 0.12);
-    --bit-shd-24: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+    // shadows-callout - the two legacy primitives: what a floating surface is lifted by, and what a
+    // heavier one is. Fabric's Callout sits at depth16 and its Modal and Panel at depth64.
+    --bit-shd-cal: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+    --bit-shd-cal2: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+
+    // Per surface family, at the depth Fabric's own component sits at: DocumentCard depth4, Callout
+    // and ContextualMenu depth16, Tooltip depth8, Modal/Dialog and Panel depth64. These override the
+    // aliases family-tokens.scss points at --bit-shd-cal, which is loaded before this file.
+    // A snackbar has no Fabric counterpart; it is a floating notification, so it takes the floating
+    // surface's own depth rather than the flat "none" the alias tier falls back to.
+    --bit-shd-card: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-popup: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+    --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+    --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+
+    // App bars cast towards the content they cover - downwards for the header, upwards for the
+    // footer - at the depth Fabric's own CommandBar sits at. They are declared here rather than
+    // left to family-tokens.scss, whose fallback tints them with the FOREGROUND color so that a
+    // theme which says nothing still gets a visible edge on a dark surface; a real Fluent shadow is
+    // black in both schemes, and the dark file pairs it with a hairline instead.
+    --bit-shd-appbar-top: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-appbar-bottom: 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4, mirrored
+
+    // shadow sizes - the generic ramp the .bit-css-shd-* utilities and a handful of components read,
+    // mapped onto six steps of the same depth formula.
+    --bit-shd-sm: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108); //depth2
+    --bit-shd-nm: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-md: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+    --bit-shd-lg: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+    --bit-shd-xl: 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.132), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.108); //depth32
+    --bit-shd-2xl: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-inner: inset 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), inset 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4, turned inward
+
+    // shadows - BitCard's Elevation (1..24) predates the family tier and is still a public API, so
+    // the numbered ramp stays, dealt out across the six depths in even bands of four.
+    --bit-shd-1: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108); //depth2
+    --bit-shd-2: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-3: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-4: 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.132), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-5: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-6: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-7: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-8: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-9: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+    --bit-shd-10: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-11: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-12: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-13: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+    --bit-shd-14: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-15: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-16: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-17: 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.132), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.108); //depth32
+    --bit-shd-18: 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.132), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-19: 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.132), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-20: 0 12.8px 28.8px 0 rgba(0, 0, 0, 0.132), 0 2.4px 7.2px 0 rgba(0, 0, 0, 0.108);
+    --bit-shd-21: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-22: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
+    --bit-shd-23: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
+    --bit-shd-24: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
 }

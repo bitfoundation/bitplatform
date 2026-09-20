@@ -127,7 +127,22 @@ public class AppInsightsReadinessTests
     {
         var jsRuntime = new FakeAppInsightsJsRuntime();
         var timeProvider = new FakeTimeProvider();
+
+        // Only UpdateCfg reads consent, and these tests are about readiness, so leaving the provider unset - which
+        // refuses - is fine.
         return (new AppInsightsJsSdkService(jsRuntime, timeProvider), jsRuntime, timeProvider);
+    }
+
+    /// <summary>An <see cref="IStorageService"/> that keeps the values in a dictionary, which is all a consent decision needs.</summary>
+    private sealed class FakeStorageService : IStorageService
+    {
+        private readonly Dictionary<string, string?> items = [];
+
+        public ValueTask SetItem(string key, string? value, bool persistent = true) { items[key] = value; return ValueTask.CompletedTask; }
+        public ValueTask<string?> GetItem(string key) => ValueTask.FromResult(items.GetValueOrDefault(key));
+        public ValueTask<bool> IsPersistent(string key) => ValueTask.FromResult(true);
+        public ValueTask RemoveItem(string key) { items.Remove(key); return ValueTask.CompletedTask; }
+        public ValueTask Clear() { items.Clear(); return ValueTask.CompletedTask; }
     }
 
     /// <summary>

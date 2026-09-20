@@ -72,6 +72,8 @@ public static class Services
 
         AddMcpServer(services);
 
+        services.AddHostedService<CodebaseMemoryIndexService>();
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
@@ -161,7 +163,7 @@ public static class Services
                 Title = "bit platform",
                 Version = typeof(Services).Assembly.GetName().Version!.ToString()
             };
-            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Brouter, Butil, Bswup and Motion documentation servers.";
+            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Brouter, Butil, Bswup and Motion documentation servers, plus a source code index of the bitfoundation/bitplatform repository.";
         })
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since

@@ -1,55 +1,367 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
+// The card is a surface: a corner, a paint, a rule and a shadow. Every one of those four is read through a
+// custom property rather than declared outright, because the parameters that set them are independent of one
+// another and a plain declaration would make the cascade order decide which of them wins. Elevation, NoShadow,
+// Outlined and Hoverable all write --bit-crd-shd; Border and Outlined both write --bit-crd-brd-clr; and the
+// value that lands is the one from the class the author actually asked for rather than the one that happens
+// to be written last in this file.
 .bit-crd {
-    border: none;
-    width: fit-content;
+    position: relative;
     color: $clr-fg-pri;
-    padding: spacing(2);
-    box-shadow: $box-shadow-card;
-    border-radius: $shp-radius-surface;
+    box-sizing: border-box;
+    width: fit-content;
+    padding: var(--bit-crd-pad, #{spacing(2)});
+    border-style: $shp-border-style;
+    border-width: var(--bit-crd-brd-wid, 0);
+    border-color: var(--bit-crd-brd-clr, transparent);
+    border-radius: var(--bit-crd-radius, #{$shp-radius-surface});
+    box-shadow: var(--bit-crd-shd, #{$box-shadow-card});
+    transition: box-shadow $mot-duration-short $mot-easing,
+                border-color $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing;
 
     &.bit-dis {
         color: $clr-fg-dis;
+        cursor: default;
+        user-select: none;
+        pointer-events: none;
     }
 }
 
 
-.bit-crd-pbg {
+// A sectioned card - one that carries a cover, a header or a footer - moves the padding off the root and onto
+// the parts, so the cover can run edge to edge while everything else stays inset. The clipping is what keeps
+// a full-bleed picture inside the corner the card draws.
+.bit-crd-sct {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+// Only a card with a cover is clipped, and only because a full-bleed picture would otherwise paint over the
+// corner the card draws. Clipping every sectioned card would cut off anything a card legitimately lets out of
+// itself - a focus ring drawn outside a control in the footer, a badge hung over an edge.
+.bit-crd-sct:has(> .bit-crd-cvr) {
+    overflow: hidden;
+}
+
+// Beside rather than above: the cover takes a share of the width and the rest of the card stacks next to it.
+.bit-crd-hrz {
+    flex-direction: row;
+}
+
+// After rather than before: the cover moves under the content of a vertical card and onto the trailing edge of a
+// horizontal one. Only the order of the two is reversed - the padding stays on the parts, the cover stays full-bleed
+// and the corner still clips it - and the two slots that position themselves over the surface, the stretched link
+// and the floating actions, are out of the flow and stay where they are. The pair is written after the horizontal
+// block above so the row-reverse of a card that is both wins over the plain row that one asks for.
+.bit-crd-rev {
+    flex-direction: column-reverse;
+}
+
+.bit-crd-hrz.bit-crd-rev {
+    flex-direction: row-reverse;
+}
+
+
+// Everything that is not the cover: the header, the body and the footer, stacked with the block padding on
+// this element and the inline padding on each part, so the gap between two parts is the gap and not the sum
+// of two paddings.
+.bit-crd-mai {
+    min-width: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--bit-crd-gap);
+    padding-block: var(--bit-crd-pad);
+    box-sizing: border-box;
+}
+
+.bit-crd-cvr {
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+// A cover with a height or a ratio of its own shows a crop of the picture rather than the whole of it, and the crop
+// is taken from the middle of the frame unless the card is told which part of it to keep.
+.bit-crd-img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    height: var(--bit-crd-img-height, auto);
+    object-position: var(--bit-crd-img-position, 50% 50%);
+}
+
+// A cover laid beside the content is sized by the width it is given rather than by the picture inside it, and
+// the picture then fills that box in both directions - a row of horizontal cards whose pictures have different
+// aspect ratios still reads as a row.
+.bit-crd-hrz > .bit-crd-cvr {
+    width: var(--bit-crd-cvr-width, 33%);
+
+    > .bit-crd-img {
+        height: var(--bit-crd-img-height, 100%);
+    }
+}
+
+// A cover given a ratio is sized by that ratio rather than by the picture inside it, which is what keeps a grid of
+// cards on one line whatever the pictures turn out to be - and keeps it there while the column narrows, which a
+// fixed height cannot do. The picture then fills the box it was given in both directions.
+.bit-crd-cra > .bit-crd-cvr {
+    aspect-ratio: var(--bit-crd-cvr-ratio);
+
+    > .bit-crd-img {
+        height: var(--bit-crd-img-height, 100%);
+    }
+}
+
+// Behind rather than above: the cover is taken out of the flow and stretched over the whole surface, and the
+// column of content is written on top of it. It is declared after the horizontal block so it wins over the
+// share of the width that one hands the cover - an absolutely positioned box with a left, a right and a width
+// drops one of the three, and the one it drops is not the width.
+//
+// The column is only made a positioned element, never given a z-index of its own: a z-index here would open a
+// stacking context, and the header actions and the footer inside it could then no longer be raised over the
+// stretched link of a linked card, which is the whole reason those two slots carry one. Painting order does
+// the work instead - the cover comes first in the DOM, so the column lands on top of it either way.
+.bit-crd-ovl {
+    > .bit-crd-cvr {
+        width: auto;
+        inset: 0;
+        position: absolute;
+        // a cover pinned on all four sides is already as tall as the card, so there is nothing left for a ratio to size.
+        aspect-ratio: auto;
+
+        > .bit-crd-img {
+            height: var(--bit-crd-img-height, 100%);
+        }
+    }
+
+    > .bit-crd-mai {
+        position: relative;
+    }
+}
+
+
+.bit-crd-hdr {
+    display: flex;
+    align-items: center;
+    gap: var(--bit-crd-gap);
+    padding-inline: var(--bit-crd-pad);
+}
+
+// The glyph beside the title is normalized back to the size of that title: an icon from an external library
+// brings a type size of its own, and inside a header it is the header that sets the scale.
+.bit-crd-hic {
+    flex: 0 0 auto;
+}
+
+// Only the glyph is pulled back to the type of the header: an icon from an external library brings a size of
+// its own and inside a header it is the header that sets the scale. An IconTemplate in the same slot renders
+// into a div rather than an i, and keeps whatever scale the avatar or the logo in it brought with it.
+i.bit-crd-hic {
+    line-height: 1;
+    font-size: var(--bit-crd-icn-fontsize);
+}
+
+.bit-crd-htx {
+    min-width: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--bit-crd-htx-gap);
+}
+
+.bit-crd-ttl {
+    overflow-wrap: break-word;
+    font-weight: $tg-fw-semibold;
+    font-size: var(--bit-crd-ttl-fontsize);
+}
+
+// The second line answers the first: one step smaller, at the regular weight and in the secondary foreground,
+// which is what keeps it read as a qualifier of the title rather than as a second title.
+.bit-crd-sub {
+    color: $clr-fg-sec;
+    overflow-wrap: break-word;
+    font-weight: $tg-fw-regular;
+    font-size: var(--bit-crd-sub-fontsize);
+}
+
+// The two slots that hold controls inside the column of parts. Both are raised over the stretched link of a linked
+// card, so a button in either of them still answers the pointer instead of being covered by the anchor over the whole
+// surface. The floating slot below is raised the same way, but positions itself rather than staying in the flow.
+.bit-crd-act,
+.bit-crd-ftr {
+    z-index: 2;
+    position: relative;
+}
+
+// The slot that floats over the surface itself rather than sitting in the column of parts: the corner a picture card
+// keeps its favourite toggle or its selection box in, which the header cannot hold because on such a card the header
+// is under the picture rather than over it. It is a child of the root rather than of the column, so it lands in the
+// same corner whether the card is sectioned or is still the plain padded box it starts as.
+//
+// It is inset by the gap rather than by the padding: a card asked to drop its padding has not asked for its floating
+// controls to be pushed flush against the corner it draws, where the ring around a focused one would be clipped by
+// the very clipping the cover needs.
+.bit-crd-fac {
+    z-index: 2;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: var(--bit-crd-gap);
+    inset-block-start: var(--bit-crd-gap);
+    inset-inline-end: var(--bit-crd-gap);
+}
+
+.bit-crd-act {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    margin-inline-start: auto;
+    gap: var(--bit-crd-gap);
+}
+
+.bit-crd-bdy {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding-inline: var(--bit-crd-pad);
+}
+
+// A card whose height is bounded and whose content is not: the body between the header and the footer takes the
+// scrollbar, so the two of them stay where the reader left them. The minimums are what let it: a flex item refuses
+// to shrink below its content until its own minimum is taken off, so without them the column would grow past the
+// card rather than scroll inside it, and there would be nothing for the overflow to do.
+.bit-crd-scb {
+    > .bit-crd-mai {
+        min-height: 0;
+
+        > .bit-crd-bdy {
+            min-height: 0;
+            overflow: auto;
+            overscroll-behavior: contain;
+        }
+    }
+}
+
+// A card that is still a plain padded box has no body of its own to hand the scrollbar to, so the box takes it.
+.bit-crd-scb:not(.bit-crd-sct) {
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+// The default placeholder of a loading card: three bars standing in for the lines of text that have not
+// arrived yet.
+.bit-crd-skl {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-crd-htx-gap);
+}
+
+.bit-crd-ftr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-crd-gap);
+    padding-inline: var(--bit-crd-pad);
+}
+
+
+// The block-link overlay. It is the anchor of the card stretched over the whole surface, which is how a card
+// leads somewhere without wrapping its content in a link - see the comment in BitCard.razor. It sits under
+// everything the card raises above it (the header actions and the footer) and over everything else.
+.bit-crd-lnk {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    color: inherit;
+    border-radius: inherit;
+    text-decoration: none;
+
+    // An inset outline rather than the shared focus ring: a sectioned card clips its content to the corner it
+    // draws, so a ring painted outside the element would be cut off by it.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid currentcolor;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+
+    &[aria-disabled="true"] {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+
+// A card that leads somewhere or does something answers the pointer and the keyboard like every other control
+// of the library, and says so with the cursor.
+.bit-crd-int {
+    cursor: pointer;
+}
+
+// Every card the keyboard can reach shows that it has been reached, whether it became focusable by being made a
+// button or a toggle or only because the page handed it a tab index of its own: a stop the keyboard can land on
+// without being able to see it is a WCAG failure whatever put it there. It is an inset outline rather than the
+// shared ring for the same reason the one on the stretched link is - a card that clips its cover to its corner
+// would clip a ring painted outside itself - and it wins over the selection ring further down, which is the right
+// way round: a focus indicator a state can hide is not a focus indicator.
+.bit-crd:focus-visible {
+    outline: $shp-focus-ring-width solid currentcolor;
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
+// The neutral surface paints. They are the background of a card with no Color of its own, and the Color
+// blocks further down override them.
+.bit-crd-bpg {
     background-color: $clr-bg-pri;
 }
 
-.bit-crd-sbg {
+.bit-crd-bsg {
     background-color: $clr-bg-sec;
 }
 
-.bit-crd-tbg {
+.bit-crd-btg {
     background-color: $clr-bg-ter;
 }
 
-.bit-crd-rbg {
+.bit-crd-brg {
     background-color: transparent;
 }
 
 
+// Outlined is a shorthand for "a rule instead of a shadow". It is written before the border-color classes so
+// that an explicit Border still decides the color of that rule.
+//
+// A card resting at no shadow at all still lifts under the pointer, but it must not lift when it is pressed: the
+// press level of the ramp is two steps below the rest level, and two steps below nothing is still nothing. Without
+// this the fallback of the :active block would give a flat card a shadow the moment it is held down, which reads
+// as the card rising rather than as the card being pressed.
+.bit-crd-otl {
+    --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
+    --bit-crd-brd-wid: #{$shp-border-width};
+    --bit-crd-brd-clr: #{$clr-brd-pri};
+}
+
+
 .bit-crd-brd {
-    border-width: $shp-border-width;
-    border-style: $shp-border-style;
+    --bit-crd-brd-wid: #{$shp-border-width};
 }
 
-.bit-crd-pbr {
-    border-color: $clr-brd-pri;
+.bit-crd-bpr {
+    --bit-crd-brd-clr: #{$clr-brd-pri};
 }
 
-.bit-crd-sbr {
-    border-color: $clr-brd-sec;
+.bit-crd-bsr {
+    --bit-crd-brd-clr: #{$clr-brd-sec};
 }
 
-.bit-crd-tbr {
-    border-color: $clr-brd-ter;
+.bit-crd-btr {
+    --bit-crd-brd-clr: #{$clr-brd-ter};
 }
 
-.bit-crd-rbr {
-    border-color: transparent;
+.bit-crd-brr {
+    --bit-crd-brd-clr: transparent;
 }
 
 
@@ -62,121 +374,250 @@
 }
 
 
-.bit-crd-e1 {
-    box-shadow: $box-shadow-1;
+// The elevation ramp. Every level of the theme shadow scale is a class, and 0 is the level that has no shadow
+// at all - which is what a "flat" card is in every library that counts elevation this way.
+// Level 0 names the same lift and the same press the rest of the ramp does - eight steps up under the pointer and
+// nothing at all under the press - so a flat card behaves like every other card on the ramp rather than falling back
+// to the fixed shadows the state blocks carry for cards that never named a level.
+.bit-crd-e0 {
+    --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
 }
 
-.bit-crd-e2 {
-    box-shadow: $box-shadow-2;
+// Each level also names the level it lifts to and the one it presses down to, so that a card given an elevation
+// of its own still moves the right way under the pointer. A single fixed hover shadow cannot do that: it is a
+// lift on a card resting near the bottom of the ramp and a drop on one resting above it.
+@for $i from 1 through 24 {
+    $hover: $i + 8;
+    @if $hover > 24 { $hover: 24; }
+
+    $active: $i - 2;
+    @if $active < 1 { $active: 0; }
+
+    .bit-crd-e#{$i} {
+        --bit-crd-shd: var(--bit-shd-#{$i});
+        --bit-crd-shd-hov: var(--bit-shd-#{$hover});
+
+        @if $active == 0 {
+            --bit-crd-shd-act: none;
+        }
+        @else {
+            --bit-crd-shd-act: var(--bit-shd-#{$active});
+        }
+    }
 }
 
-.bit-crd-e3 {
-    box-shadow: $box-shadow-3;
+
+// The three sizes set the inset, the gap between the parts and the type of the header together, so a card
+// stays in proportion at every one of them. Medium reproduces the values the card has always had.
+.bit-crd-sm {
+    --bit-crd-pad: #{spacing(1.5)};
+    --bit-crd-gap: #{spacing(1)};
+    --bit-crd-htx-gap: #{spacing(0.25)};
+    --bit-crd-ttl-fontsize: #{$tg-fs-sm};
+    --bit-crd-sub-fontsize: #{$tg-fs-xs};
+    --bit-crd-icn-fontsize: #{$siz-icon-sm};
 }
 
-.bit-crd-e4 {
-    box-shadow: $box-shadow-4;
+.bit-crd-md {
+    --bit-crd-pad: #{spacing(2)};
+    --bit-crd-gap: #{spacing(1.5)};
+    --bit-crd-htx-gap: #{spacing(0.5)};
+    --bit-crd-ttl-fontsize: #{$tg-fs-md};
+    --bit-crd-sub-fontsize: #{$tg-fs-sm};
+    --bit-crd-icn-fontsize: #{$siz-icon-md};
 }
 
-.bit-crd-e5 {
-    box-shadow: $box-shadow-5;
+.bit-crd-lg {
+    --bit-crd-pad: #{spacing(3)};
+    --bit-crd-gap: #{spacing(2)};
+    --bit-crd-htx-gap: #{spacing(0.5)};
+    --bit-crd-ttl-fontsize: #{$tg-fs-lg};
+    --bit-crd-sub-fontsize: #{$tg-fs-md};
+    --bit-crd-icn-fontsize: #{$siz-icon-lg};
 }
 
-.bit-crd-e6 {
-    box-shadow: $box-shadow-6;
+
+// The per-role color vocabulary of the theme. A card only wears one of these once a Color is asked for, and
+// what it does with it is the Variant's business.
+@each $role, $tokens in $bit-color-roles {
+    .bit-crd-#{$role} {
+        --bit-crd-clr: #{role($tokens, main)};
+        --bit-crd-clr-txt: #{role($tokens, on)};
+        --bit-crd-clr-dis: #{role($tokens, dis)};
+        --bit-crd-clr-dis-text: #{role($tokens, dis-text)};
+        --bit-crd-clr-light: #{role($tokens, light)};
+    }
 }
 
-.bit-crd-e7 {
-    box-shadow: $box-shadow-7;
+// Fill paints the whole card in the role and takes the text with it; Outline keeps the rule and the words in
+// the role over whatever background the card already had; Text drops the rule and the shadow and tints the
+// surface instead. The three are written after the neutral paints above so they win over them.
+.bit-crd-vfl {
+    color: var(--bit-crd-clr-txt);
+    background-color: var(--bit-crd-clr);
+    --bit-crd-brd-clr: var(--bit-crd-clr);
+    // the neutral rule color is chosen against the page, not against a card painted in a role, so the hairline
+    // between the parts follows the words the fill already picked for itself.
+    --bit-crd-dvd-clr: currentcolor;
+
+    &.bit-dis {
+        color: var(--bit-crd-clr-dis-text);
+        background-color: var(--bit-crd-clr-dis);
+        --bit-crd-brd-clr: var(--bit-crd-clr-dis);
+    }
 }
 
-.bit-crd-e8 {
-    box-shadow: $box-shadow-8;
+.bit-crd-vot {
+    color: var(--bit-crd-clr);
+    --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
+    --bit-crd-brd-wid: #{$shp-border-width};
+    --bit-crd-brd-clr: var(--bit-crd-clr);
+
+    &.bit-dis {
+        color: var(--bit-crd-clr-dis);
+        --bit-crd-brd-clr: var(--bit-crd-clr-dis);
+    }
 }
 
-.bit-crd-e9 {
-    box-shadow: $box-shadow-9;
+.bit-crd-vtx {
+    color: var(--bit-crd-clr);
+    background-color: var(--bit-crd-clr-light);
+    --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
+
+    &.bit-dis {
+        color: var(--bit-crd-clr-dis);
+    }
 }
 
-.bit-crd-e10 {
-    box-shadow: $box-shadow-10;
+// The subtitle is the one part of a painted card that must not keep its own foreground: the secondary text
+// color is chosen against the page, not against a card painted in a role color. The chain is written with >
+// all the way down because a card can hold another card, and a descendant selector here would reach into it.
+.bit-crd-vfl,
+.bit-crd-vot,
+.bit-crd-vtx {
+    > .bit-crd-mai > .bit-crd-hdr > .bit-crd-htx > .bit-crd-sub {
+        color: inherit;
+    }
 }
 
-.bit-crd-e11 {
-    box-shadow: $box-shadow-11;
-}
 
-.bit-crd-e12 {
-    box-shadow: $box-shadow-12;
-}
-
-.bit-crd-e13 {
-    box-shadow: $box-shadow-13;
-}
-
-.bit-crd-e14 {
-    box-shadow: $box-shadow-14;
-}
-
-.bit-crd-e15 {
-    box-shadow: $box-shadow-15;
-}
-
-.bit-crd-e16 {
-    box-shadow: $box-shadow-16;
-}
-
-.bit-crd-e17 {
-    box-shadow: $box-shadow-17;
-}
-
-.bit-crd-e18 {
-    box-shadow: $box-shadow-18;
-}
-
-.bit-crd-e19 {
-    box-shadow: $box-shadow-19;
-}
-
-.bit-crd-e20 {
-    box-shadow: $box-shadow-20;
-}
-
-.bit-crd-e21 {
-    box-shadow: $box-shadow-21;
-}
-
-.bit-crd-e22 {
-    box-shadow: $box-shadow-22;
-}
-
-.bit-crd-e23 {
-    box-shadow: $box-shadow-23;
-}
-
-.bit-crd-e24 {
-    box-shadow: $box-shadow-24;
+// The hairline that sets the header and the footer apart from the body. A card that stacks all three is often
+// read better as three parts than as one column, and the rule is what says so. It is a border rather than an
+// element of its own, and the part it opens is inset by the gap the parts already stand apart by, so the rule lands
+// halfway between the two blocks it separates.
+//
+// The rule belongs to the boundary between two parts rather than to either of them, so it is drawn on the leading
+// edge of every part that has one before it: exactly one rule lands between any two neighbours, and none on the
+// outer edge of the stack, where it would read as a stray line rather than as a separation. Hanging it off the end
+// of the header instead would draw two of them on a card that stacks a header straight onto a footer - one closing
+// the header and one opening the footer, with only the gap between them.
+.bit-crd-dvd > .bit-crd-mai > :not(:first-child) {
+    padding-block-start: var(--bit-crd-gap);
+    border-block-start: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, #{$clr-brd-sec});
 }
 
 
 .bit-crd-npd {
-    padding: 0;
+    --bit-crd-pad: 0;
 }
 
 
 .bit-crd-nsd {
-    box-shadow: none;
-}
-
-
-.bit-crd-otl {
-    box-shadow: none;
-    border-width: $shp-border-width;
-    border-style: $shp-border-style;
-    border-color: $clr-brd-pri;
+    --bit-crd-shd: none;
+    --bit-crd-shd-hov: #{$box-shadow-8};
+    --bit-crd-shd-act: none;
 }
 
 
 .bit-crd-sqr {
-    border-radius: 0;
+    --bit-crd-radius: #{$shp-radius-none};
+}
+
+
+// A disabled card dims every word on it, and the subtitle is the one line that carries a foreground of its own.
+// The chain is written with > all the way down because a card can hold another card.
+.bit-crd.bit-dis > .bit-crd-mai > .bit-crd-hdr > .bit-crd-htx > .bit-crd-sub {
+    color: inherit;
+}
+
+
+// The state blocks come last, after every static paint above them, because a state has to win over the paint it
+// is a state of: a selected card is still selected while it is outlined, painted in a role or wearing an
+// elevation, and a card the author asked to lift still lifts while it carries one of those.
+
+// A picked card. The ring is drawn in the primary color rather than the card being repainted: a state carried
+// by a fill alone is one that collides with every Color the card may already be wearing.
+//
+// It is an inset outline rather than a border, because a border is part of the box: thickening one from nothing
+// to two pixels on the way into the selected state moves everything the card holds by two pixels, and a grid of
+// cards visibly jumps as the reader picks through it. An outline is painted over the box without being part of
+// it, so the same cue costs no layout at all. It is offset inwards for the same reason the focus ring is - a
+// card that clips its cover to its corner would clip a ring painted outside itself.
+//
+// A card that is a control and has the focus keeps showing the focus ring instead: :focus-visible is the more
+// specific selector of the two, which is the right way round - a focus indicator that a state can hide is not
+// a focus indicator.
+.bit-crd-sel {
+    outline: $shp-border-width-thick $shp-border-style $clr-pri;
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
+}
+
+// A card painted in a role color is the one case where the primary ring above cannot be seen: on a filled
+// primary card it is the color the card is already painted in, and on any other filled role it is a second
+// color fighting the first. The ring is drawn in the foreground the fill already chose for its own words
+// instead, which is the one color guaranteed to read against that fill whatever the role is.
+.bit-crd-vfl.bit-crd-sel {
+    outline-color: var(--bit-crd-clr-txt);
+}
+
+// A selected card that is also disabled dims its ring along with its words, rather than keeping a live accent
+// on something that answers nothing. currentcolor is already the dimmed foreground by then - the neutral one
+// on a plain card, the disabled slot of the role on a painted one - so it is the one value that covers both.
+.bit-crd-sel.bit-dis {
+    outline-color: currentcolor;
+}
+
+// The lift. A card that is a control lifts on its own; Hoverable is for one that reacts to the pointer without
+// being a control. Only where hovering is a thing the input device does at all.
+@media (hover: hover) {
+    .bit-crd-int:hover,
+    .bit-crd-hov:hover {
+        --bit-crd-shd: var(--bit-crd-shd-hov, #{$box-shadow-8});
+    }
+}
+
+.bit-crd-int:active {
+    --bit-crd-shd: var(--bit-crd-shd-act, #{$box-shadow-2});
+}
+
+
+// A forced-colors mode throws away every color the card paints and every shadow it casts, which would leave a
+// card with no edge at all against the page behind it. A rule in the system border color is restored for all
+// of them, and the states that carry meaning - selected, focused, disabled - are re-established in the system
+// colors, which are the only ones such a mode keeps.
+@media (forced-colors: active) {
+    .bit-crd {
+        border-width: var(--bit-crd-brd-wid, #{$shp-border-width});
+        border-color: CanvasText;
+    }
+
+    .bit-crd-sel {
+        outline-color: Highlight;
+    }
+
+    .bit-crd.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
+
+    .bit-crd:focus-visible,
+    .bit-crd-lnk:focus-visible {
+        outline-color: Highlight;
+    }
 }

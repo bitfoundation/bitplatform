@@ -52,6 +52,6 @@ public partial class QuickSignInUITests : AppPageTest
 
         // Filling the last digit signs her in, which closes the modal and completes the purchase, so its success
         // snackbar appears (See ProductPage.Buy -> SnackBarService.Success).
-        await Expect(Page.GetByText(AppStrings.PurchaseSuccessful)).ToBeVisibleAsync();
+        await Expect(BitSnackBarUtils.GetSnackBar(Page, AppStrings.PurchaseSuccessful)).ToBeVisibleAsync();
     }
 }

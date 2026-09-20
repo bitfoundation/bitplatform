@@ -1,0 +1,14 @@
+﻿@* A BitLink written with raw HTML attributes beside its own parameters. BitLink collects what it was not
+   given a parameter for into HtmlAttributes itself rather than through CaptureUnmatchedValues, so splatting
+   is what a test has to go through to observe what the component does with an attribute it did not write.
+   The splat comes last because Blazor deduplicates the two case-insensitively: an unset Target written after
+   it would take a splatted target straight back off again, before BitLink ever saw it. *@
+<BitLink Href="@Href" Target="@Target" @attributes="Attributes">bit</BitLink>
+
+@code {
+    [Parameter] public Dictionary<string, object> Attributes { get; set; } = [];
+
+    [Parameter] public string? Href { get; set; }
+
+    [Parameter] public string? Target { get; set; }
+}

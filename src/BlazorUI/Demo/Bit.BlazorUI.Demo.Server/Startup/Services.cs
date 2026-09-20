@@ -1,6 +1,7 @@
 ﻿using System.ClientModel.Primitives;
 using System.IO.Compression;
 using Bit.BlazorUI.Demo.Server.Services;
+using Bit.BlazorUI.Demo.Server.Services.Mcp;
 using Microsoft.AspNetCore.Components.Web;
 using Bit.BlazorUI.Demo.Client.Core.Components;
 using Bit.BlazorUI.Demo.Client.Core.Services;
@@ -49,17 +50,44 @@ public static class Services
             options.EnableDetailedErrors = env.IsDevelopment();
         });
 
-        services.AddMcpServer()
-            .WithHttpTransport()
-            .WithToolsFromAssembly();
-
-        services.AddScoped<HtmlRenderer>();
-        services.AddCascadingValue("RenderForMcpClient", sp =>
+        // The MCP server - Controllers/McpController.cs for the tools, McpPrompts and McpResources
+        // beside it, and Services/Mcp for the catalogs they all answer from.
+        services.AddMcpServer(options =>
         {
-            var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            return httpContext?.Items?.ContainsKey("RenderForMcpClient") is true
-                || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
-        });
+            options.ServerInfo = new ModelContextProtocol.Protocol.Implementation
+            {
+                Name = "bit-blazorui",
+                Title = "bit BlazorUI - the Blazor component library",
+                Version = BlazorUIAssemblies.Version,
+                WebsiteUrl = BlazorUIMarkdown.SiteUrl
+            };
+
+            // The one field a server gets to write directly into the model's context, once, before
+            // it has called anything: which tool to reach for first, and the handful of facts that
+            // turn markup that compiles into markup that looks right. Deliberately short - it is
+            // paid for on every request of every session.
+            options.ServerInstructions = BlazorUIMcpInstructions.Text;
+        })
+            .WithHttpTransport()
+            .WithToolsFromAssembly()
+            .WithResourcesFromAssembly()
+            .WithPromptsFromAssembly()
+            // Argument autocompletion for the prompts and the resource templates. Their arguments
+            // are all drawn from closed sets this server already holds - the hosting models, the
+            // component names, the type names - and without this a person picking a prompt in their
+            // editor is asked to type one with nothing to type it from.
+            .WithCompleteHandler((context, _) => ValueTask.FromResult(BlazorUICompletions.Complete(context.Params)));
+
+        // Renders a page outside of a request's component hierarchy, so its content can be handed
+        // to an MCP client as text. Scoped: a renderer belongs to the request that asked for it.
+        services.AddScoped<HtmlRenderer>();
+
+        // The "print every example's source instead of running it" view of a demo page. The MCP
+        // server used to render pages through this and read the HTML back; it now answers from the
+        // demo sources and the page types directly, so ?showallcodes is the only thing that turns
+        // it on - the flag itself is still what DemoPage and DemoExample read.
+        services.AddCascadingValue("RenderForMcpClient", sp =>
+            sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request?.Query?.ContainsKey("showallcodes") is true);
 
         // The theme the visitor picked, from the cookie the client mirrors it into (App.razor reads
         // the same cookie to paint the first frame). Prerendered chrome that reflects the current

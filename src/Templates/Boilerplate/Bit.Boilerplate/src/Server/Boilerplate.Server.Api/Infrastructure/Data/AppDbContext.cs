@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 using Hangfire.EntityFrameworkCore;
+using Boilerplate.Server.Api.Features.Identity.OAuth.Models;
 using Boilerplate.Server.Api.Features.Attachments;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 //#if (offlineDb == true)
@@ -56,6 +57,12 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     //#endif
 
     public DbSet<Attachment> Attachments { get; set; } = default!;
+
+    /// <summary>The only state the OAuth authorization flow keeps.</summary>
+    public DbSet<OAuthAuthorizationCode> OAuthAuthorizationCodes { get; set; } = default!;
+
+    /// <summary>The OAuth half of a <see cref="UserSession"/>, for the few sessions an external application holds.</summary>
+    public DbSet<OAuthGrant> OAuthGrants { get; set; } = default!;
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = default!;
 
@@ -112,7 +119,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
 
         ConfigureConcurrencyToken(modelBuilder);
 
-        //#if (database != "SQLite")
+        //#if (database != "SQLite" && database != "MySql")
         ConfigureRowVersion(modelBuilder);
         //#endif
     }
@@ -176,7 +183,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
             // database, so a PUT carrying a stale Version is rejected with a ConflictException.
             entityEntry.OriginalValues["Version"] = currentVersion;
 
-            //#if (database == "Sqlite")
+            //#if (database == "Sqlite" || database == "MySql")
             // SQL Server (rowversion) and PostgreSQL (xmin) move the stored value themselves. Where they do not,
             // nothing else in the app ever writes Version, so the WHERE clause above would match forever and every
             // concurrent edit would be accepted. Advance it here so the token actually changes.
@@ -189,11 +196,15 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) ||
+            Database.ProviderName.Contains("MySql", StringComparison.OrdinalIgnoreCase))
         {
             //#endif
-            //#if (database == "Sqlite")
-            // SQLite does not support expressions of type 'DateTimeOffset' in ORDER BY clauses. Convert the values to a supported type:
+            //#if (database == "Sqlite" || database == "MySql")
+            // SQLite cannot ORDER BY a DateTimeOffset, and MySQL's datetime(6) drops the offset entirely. The binary
+            // converter packs UTC ticks and offset into one long, so the value returns unchanged and still sorts.
+            // Load-bearing: the identity token purposes embed the stored timestamp (See
+            // IdentityController.EmailConfirmation), so a lossy round trip invalidates every token.
             configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToBinaryConverter>();
             configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<DateTimeOffsetToBinaryConverter>();
             //#endif
@@ -310,11 +321,12 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
-    //#if (database != "SQLite")
+    //#if (database != "SQLite" && database != "MySql")
     private void ConfigureRowVersion(ModelBuilder modelBuilder)
     {
         //#if (IsInsideProjectTemplate == true)
-        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture))
+        if (Database.ProviderName!.EndsWith("Sqlite", StringComparison.InvariantCulture) ||
+            Database.ProviderName.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             return;
         //#endif
 
@@ -341,7 +353,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                     builder.HasConversion<uint>();
                 //#else
                 //#if (IsInsideProjectTemplate == true)
-                if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false) // SQL Server & MySQL
+                if (Database.ProviderName!.EndsWith("PostgreSQL", StringComparison.InvariantCulture) is false) // SQL Server
                                                                                                                //#endif
                     builder.HasConversion<byte[]>();
                 //#endif

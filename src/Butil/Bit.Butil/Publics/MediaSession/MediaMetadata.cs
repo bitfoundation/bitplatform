@@ -6,10 +6,13 @@ namespace Bit.Butil;
 /// </summary>
 public class MediaMetadata
 {
+    /// <summary>The track title.</summary>
     public string Title { get; set; } = string.Empty;
 
+    /// <summary>The performer.</summary>
     public string Artist { get; set; } = string.Empty;
 
+    /// <summary>The album or collection the track belongs to.</summary>
     public string Album { get; set; } = string.Empty;
 
     /// <summary>

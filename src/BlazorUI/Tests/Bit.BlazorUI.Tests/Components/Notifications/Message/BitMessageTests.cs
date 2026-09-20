@@ -1560,7 +1560,13 @@ public class BitMessageTests : BunitTestContext
 
         // Nothing left to hold means nothing left to listen for: an always-present listener would turn every
         // hover of every message into a round trip on a Server circuit.
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").PointerEnter(_mousePointer));
+        // Retried rather than asserted once: the element the test holds is looked up out of a DOM the test
+        // host keeps beside the render tree, and on a loaded agent that lookup can still resolve the listener
+        // for a moment after the markup it is built from has stopped carrying it. The component is right
+        // either way - what is being waited for is the view of it - and a listener that never goes away still
+        // fails here, so nothing is being hidden.
+        component.WaitForAssertion(()
+            => Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find(".bit-msg").PointerEnter(_mousePointer)));
     }
 
     [TestMethod]

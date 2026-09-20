@@ -21,14 +21,14 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private Notification notification = default!;
     [AutoInject] private ThemeService themeService = default!;
     [AutoInject] private HubConnection hubConnection = default!;
-    [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
+    [AutoInject] private CultureService cultureService = default!;
     //#if (appInsights == true)
     [AutoInject] private IApplicationInsights appInsights = default!;
+    [AutoInject] private ConsentService consentService = default!;
     //#endif
     [AutoInject] private UserAgent userAgent = default!;
-    [AutoInject] private IJSRuntime jsRuntime = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
@@ -36,6 +36,9 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private BitAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
+    //#endif
+    //#if (signalR == true || notification == true)
+    [AutoInject] private NotificationPreferenceService notificationPreferenceService = default!;
     //#endif
     //#if (brouter == true)
     [AutoInject] private IBrouter brouter = default!;
@@ -80,9 +83,9 @@ public partial class AppClientCoordinator : AppComponentBase
             {
                 var userAgentData = await userAgent.Extract();
                 TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
+                await cultureService.PersistCurrentCulture();
             }
-            TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
-            TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
+            await TimeZoneService.ApplyPreferredTimeZone();
             TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
@@ -92,9 +95,23 @@ public partial class AppClientCoordinator : AppComponentBase
                 {
                     ["ai.application.ver"] = TelemetryContext.AppVersion,
                     ["ai.session.id"] = TelemetryContext.AppSessionId,
-                    ["ai.device.locale"] = TelemetryContext.Culture
+                    ["ai.device.locale"] = CultureInfo.CurrentUICulture.Name
                 }
             });
+
+            if (appInsights is AppInsightsJsSdkService appInsightsJsSdk)
+            {
+                appInsightsJsSdk.AnalyticsConsentProvider = () => consentService.IsGranted(ConsentCategory.Analytics);
+            }
+
+            _ = appInsights.UpdateCfg(new());
+
+            // The empty config asks for nothing - the switches are filled in there.
+            unsubscribes.Add(PubSubService.Subscribe(ClientAppMessages.CONSENT_CHANGED, async _ =>
+            {
+                await appInsights.UpdateCfg(new());
+                await ApplyAuthenticatedUserContext(lastPropagatedUser);
+            }));
             //#endif
 
             await accentColorService.InitializeAsync();
@@ -132,14 +149,37 @@ public partial class AppClientCoordinator : AppComponentBase
 
         var remainingQuery = parsedQuery.ToString();
 
-        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrEmpty(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
+        return ($"{uriValue[..queryStartIndex]}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}", replace, forceLoad);
     }
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
         TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
+        //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
+        //#endif
     }
+
+    //#if (appInsights == true)
+    private async Task ApplyAuthenticatedUserContext(ClaimsPrincipal? user)
+    {
+        try
+        {
+            if (user?.IsAuthenticated() is true && await consentService.IsGranted(ConsentCategory.Analytics))
+            {
+                await appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
+            }
+            else
+            {
+                await appInsights.ClearAuthenticatedUserContext();
+            }
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+        }
+    }
+    //#endif
 
     private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
@@ -160,10 +200,7 @@ public partial class AppClientCoordinator : AppComponentBase
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 
             //#if (brouter == true)
-            // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
-            // principal the previous one's search text and grid filters. This is what makes a full page reload
-            // unnecessary after a tenant switch (see NavigationManagerExtensions.RefreshCurrentPage).
-            brouter.ClearKeepAlive();
+            brouter.TryClearKeepAlive();
             //#endif
 
             TelemetryContext.UserId = userId;
@@ -180,14 +217,7 @@ public partial class AppClientCoordinator : AppComponentBase
             // By leveraging this method during authentication state changes, we streamline the propagation of user-specific contexts across these systems.
 
             //#if (appInsights == true)
-            if (isAuthenticated)
-            {
-                _ = appInsights.SetAuthenticatedUserContext(user.GetUserId().ToString());
-            }
-            else
-            {
-                _ = appInsights.ClearAuthenticatedUserContext();
-            }
+            _ = ApplyAuthenticatedUserContext(user);
             //#endif
 
             var data = TelemetryContext.ToDictionary();
@@ -268,12 +298,6 @@ public partial class AppClientCoordinator : AppComponentBase
             });*/
 
             // You can also leverage IPubSubService to notify other components in the application.
-        }));
-
-        hubConnection.Remove(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-        signalROnDisposables.Add(hubConnection.On(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, async () =>
-        {
-            return DiagnosticLogger.Store.ToArray();
         }));
 
         hubConnection.Remove(SharedAppMessages.NAVIGATE_TO);
@@ -410,6 +434,9 @@ public partial class AppClientCoordinator : AppComponentBase
             AppVersion = TelemetryContext.AppVersion,
             DeviceInfo = TelemetryContext.Platform,
             CultureName = CultureInfoManager.InvariantGlobalization ? null : CultureInfo.CurrentUICulture.Name,
+            //#if (signalR == true || notification == true)
+            NotificationStatus = await notificationPreferenceService.GetSessionStatus(),
+            //#endif
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }

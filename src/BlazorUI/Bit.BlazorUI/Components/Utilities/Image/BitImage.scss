@@ -1,11 +1,17 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The frame. Everything inside it is positioned against it, which is what lets a centered fit and an
+// overlay be placed without either of them knowing what is around the component; and it clips, which
+// is what makes the rounded and circular shapes crop the image rather than just round its own corners.
 .bit-img {
     overflow: hidden;
     position: relative;
 
+    // The placeholder dims with the image it stands in for: it is the same picture, and one of the two
+    // at full strength would be brighter while it loads than once it is there.
     &.bit-dis {
-        .bit-img-img {
+        .bit-img-img,
+        .bit-img-plc {
             opacity: $opa-dis;
             user-select: none;
             pointer-events: none;
@@ -13,27 +19,100 @@
         }
     }
 
-    @keyframes image-opacity-anim {
-        0% {
-            opacity: 0;
-        }
-
-        100% {
-            opacity: 1;
-        }
+    // The ring is drawn on the frame rather than on the focused image: an element clips its
+    // descendants with overflow, never its own box-shadow, so a ring on the image itself would be cut
+    // off by the very frame that makes the shapes work. It is not tied to the clickable class either -
+    // an image made focusable by a TabIndex alone is reached by the same keyboard and needs the same
+    // indicator.
+    &:has(.bit-img-img:focus-visible) {
+        @include focus-ring;
     }
 }
 
-.bit-img-fde {
-    animation-fill-mode: both;
-    animation-duration: $mot-duration-long;
-    animation-name: image-opacity-anim;
-    animation-timing-function: $mot-easing;
+@keyframes image-opacity-anim {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .bit-img-img {
     opacity: 0;
     display: block;
+}
+
+// The low quality placeholder: it fills the frame from the first frame and is taken away the moment
+// the image itself arrives, so the frame is never empty and never changes size. The scale is what
+// keeps the blur from fading out at the edges of the frame.
+.bit-img-plc {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    position: absolute;
+    filter: blur(0.5rem);
+    transform: scale(1.1);
+    user-select: none;
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+// What stands in for the image while it loads or after it has failed. It is left in the normal flow
+// rather than laid over the frame, since the frame of an image that is not there has no size of its
+// own unless the page gave it one.
+.bit-img-tpl {
+    position: relative;
+}
+
+// The content laid over the image - a caption, a badge, a scrim. It fills the frame, and it lets the
+// pointer through to the image below except where the content itself takes it: an image that is also a
+// button would otherwise stop being clickable the moment a caption was laid over it.
+.bit-img-ovl {
+    inset: 0;
+    position: absolute;
+    pointer-events: none;
+
+    > * {
+        pointer-events: auto;
+    }
+}
+
+// The picture is a grouping element for the sources and lays nothing out of its own, so it is taken
+// out of the box tree altogether: the frame goes on sizing the img exactly as it does without it, and
+// every rule written against the two of them keeps matching.
+.bit-img-pic {
+    display: contents;
+}
+
+.bit-img-clk {
+    .bit-img-img {
+        cursor: pointer;
+    }
+}
+
+.bit-img-rnd {
+    border-radius: $shp-radius-surface;
+}
+
+.bit-img-cir {
+    border-radius: $shp-radius-full;
+}
+
+.bit-img-brd {
+    box-sizing: border-box;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: $clr-brd-sec;
+}
+
+// An element clips its descendants with overflow, never its own box-shadow, so the shadow of the frame
+// survives the very clipping that makes the shapes work.
+.bit-img-shd {
+    box-shadow: $box-shadow-card;
 }
 
 .bit-img-ihh {
@@ -54,6 +133,24 @@
     display: none;
 }
 
+// A lazily loaded image is only fetched once the browser expects it to be needed, and it works that
+// out from where the image sits in the page - which an element with no box does not. Taking it out of
+// the layout while it waits would therefore keep it waiting for good, so a hidden lazy image keeps its
+// box and is merely not painted.
+.bit-img-lzy.bit-img-hid {
+    display: block;
+    visibility: hidden;
+}
+
+// The fade is on the image and keyed to the class that makes it visible, so it runs at the moment the
+// image arrives rather than when the component was first rendered.
+.bit-img-img.bit-img-vis.bit-img-fde {
+    animation-fill-mode: both;
+    animation-duration: $mot-duration-long;
+    animation-name: image-opacity-anim;
+    animation-timing-function: $mot-easing;
+}
+
 .bit-img-max {
     width: 100%;
     height: 100%;
@@ -65,70 +162,85 @@
     }
 }
 
-.bit-img-non {
-    opacity: 1;
-    width: auto;
-    height: auto;
+// The fit classes are written against the image element as well, which is what gives them the same
+// specificity as the maximized frame's rule above - and, being written after it, the last word. An
+// explicit fit is a decision about this image; the frame's cover is only the default that comes with
+// filling the parent.
+.bit-img-img {
+    &.bit-img-non {
+        opacity: 1;
+        width: auto;
+        height: auto;
+        object-fit: none;
+    }
+
+    &.bit-img-cnt {
+        opacity: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    &.bit-img-cvr {
+        opacity: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &.bit-img-fil {
+        opacity: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+    }
+
+    &.bit-img-scd {
+        opacity: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: scale-down;
+    }
+
+    // The image keeps its natural size and is not scaled at all; it is the frame that centers it, and
+    // the overflow of the frame that crops it around its middle. Nothing shrinks it either: a centered
+    // fit that scaled the image to a narrow frame would be Contain rather than Center.
+    &.bit-img-ctr {
+        opacity: 1;
+        width: auto;
+        height: auto;
+        flex-shrink: 0;
+    }
 }
 
-.bit-img-cnt {
-    opacity: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.bit-img-cvr {
-    opacity: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.bit-img-ctr {
-    top: 50%;
-    left: 50%;
-    opacity: 1;
-    position: absolute;
-    transform: translate(-50%, -50%);
+// The frame of a centered fit. The image stays in the normal flow - which is what leaves the frame a
+// size to take from it - and the centering and the cropping are the frame's own doing.
+.bit-img-cen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bit-img-lan {
     &.bit-img-ccv {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-height: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 
     &.bit-img-cct {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-width: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 }
 
 .bit-img-por {
     &.bit-img-ccv {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-width: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 
     &.bit-img-cct {
-        top: 50%;
-        left: 50%;
         opacity: 1;
         max-height: 100%;
-        position: absolute;
-        transform: translate(-50%, -50%);
     }
 }

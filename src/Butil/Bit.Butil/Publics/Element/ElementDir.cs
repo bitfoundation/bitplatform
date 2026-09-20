@@ -1,5 +1,10 @@
 ﻿namespace Bit.Butil;
 
+/// <summary>
+/// An element's text direction.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/dir">dir</see>
+/// </summary>
 public enum ElementDir
 {
     /// <summary>

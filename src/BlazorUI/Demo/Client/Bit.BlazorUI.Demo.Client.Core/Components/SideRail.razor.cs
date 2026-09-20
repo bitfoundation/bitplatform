@@ -3,7 +3,6 @@
 public partial class SideRail
 {
     private bool _isPanelOpen;
-    private bool _hasPanelOpened;
     private bool _shouldScrollPanelToActiveItem;
     private bool _shouldScanSections = true;
     private string? _activeItemId;
@@ -89,7 +88,6 @@ public partial class SideRail
     private void OpenPanel()
     {
         _isPanelOpen = true;
-        _hasPanelOpened = true;
         _shouldScrollPanelToActiveItem = true;
     }
 

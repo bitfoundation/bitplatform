@@ -10,10 +10,11 @@ public partial class MainPage
     public MainPage()
     {
         InitializeComponent();
-        AppWebView.RootComponents.Add(new()
-        {
-            ComponentType = typeof(HeadOutlet),
-            Selector = "head::after"
-        });
+
+        // What shows before the WebView has painted anything, and on iOS through it, so it is the theme's background.
+        var light = Color.FromArgb(AppThemePresets.LightBackground);
+        var dark = Color.FromArgb(AppThemePresets.DarkBackground);
+        this.SetAppThemeColor(BackgroundColorProperty, light, dark);
+        AppWebView.SetAppThemeColor(BackgroundColorProperty, light, dark);
     }
 }

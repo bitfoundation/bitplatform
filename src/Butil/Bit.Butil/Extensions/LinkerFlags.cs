@@ -2,6 +2,10 @@
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The <see cref="DynamicallyAccessedMemberTypes"/> combinations this library annotates with, named
+/// once so a call site says what it is preserving rather than spelling out the flags again.
+/// </summary>
 public static class LinkerFlags
 {
     /// <summary>

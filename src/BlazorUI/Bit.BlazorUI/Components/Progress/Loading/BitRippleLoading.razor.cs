@@ -10,7 +10,6 @@ public partial class BitRippleLoading : BitLoadingBase
 
         StyleBuilder.Register(() => $"--bit-ldn-rpl-4:{Convert(4)}px");
         StyleBuilder.Register(() => $"--bit-ldn-rpl-8:{Convert(8)}px");
-        StyleBuilder.Register(() => $"--bit-ldn-rpl-36:{Convert(36)}px");
         StyleBuilder.Register(() => $"--bit-ldn-rpl-80:{Convert(80)}px");
     }
 }

@@ -1,8 +1,6 @@
 ﻿@{
     // NOTE: The literals below (cookie name, bit-theme* attributes, storage key) mirror the ones the
-    // Bit.BlazorUI theme runtime uses. The library's BitThemeSsr / BitThemeCookie /
-    // BitThemeAttributeNames helpers cover all of this; switch to them once a package version newer
-    // than 10.6.0-pre-02 is referenced (they are not part of that build).
+    // Bit.BlazorUI theme runtime uses.
 
     // The theme the visitor picked, mirrored into a cookie by the client (bit-theme-persist-cookie
     // below) because localStorage - where the client script keeps the same value - cannot be read
@@ -28,7 +26,7 @@
         _ => new Dictionary<string, object> { ["bit-theme"] = resolvedTheme }
     };
     // Dark is the guess while the visitor follows the OS; the inline script corrects it before first
-    // paint. Same dark-name predicate as app.ts's onChange.
+    // paint, and app.ts replaces it with the palette's own --bit-clr-bg-pri once the stylesheets are in.
     var isDarkTheme = resolvedTheme is null || resolvedTheme is "dark" || resolvedTheme.EndsWith("-dark", StringComparison.Ordinal);
     var themeColor = isDarkTheme ? DarkThemeColor : LightThemeColor;
 }
@@ -44,7 +42,7 @@
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color" content="@themeColor"><!-- Kept as a single tag: the inline script below corrects it pre-paint and app.ts (BitBlazorUI.Theme.init onChange) updates it on later toggles, both via querySelector. -->
+    <meta name="theme-color" content="@themeColor"><!-- Kept as a single tag: the inline script below corrects it pre-paint and app.ts (syncThemeColor) keeps it equal to the live --bit-clr-bg-pri on later toggles, both via querySelector. -->
     @* Runs while the browser is still parsing <head>, before anything is painted: re-resolves
        bit-theme from the OS preference / localStorage / the preference cookie (the server can only
        see the cookie, which may be stale or absent) and corrects the theme-color guess above.
@@ -111,7 +109,9 @@
 </html>
 
 @code {
-    // The two values of --bit-clr-bg-pri in app.scss's palettes (also repeated in app.ts's onChange).
+    // The two values of --bit-clr-bg-pri in app.scss's palettes. They are needed here (and in the
+    // inline bootstrap below) because both run before any stylesheet has loaded, so neither can read
+    // the real thing; from app.js onwards app.ts reads it off the page, so app.scss stays the source.
     private const string DarkThemeColor = "#060E2D";
     private const string LightThemeColor = "#FFFFFF";
 

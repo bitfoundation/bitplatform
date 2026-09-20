@@ -97,12 +97,18 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
     /// text <c>"123"</c> deserializes fine to <see cref="int"/>, but <c>"abc"</c> does not), in which
     /// case <see cref="JsonException"/> is thrown. Use <see cref="SetItem{T}(string, T, JsonSerializerOptions)"/>
     /// to write values you intend to read back with this overload.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c>, the same as for a missing key.
     /// </remarks>
     /// <exception cref="JsonException">The stored value is not valid JSON for <typeparamref name="T"/>.</exception>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
     public async Task<T?> GetItem<[DynamicallyAccessedMembers(JsonSerialized)] T>(string key, JsonSerializerOptions? options = null)
     {
+        // Checked here rather than left to the read: the untyped read's prerender default is an empty string,
+        // which is not JSON, so deserializing it would throw exactly where the library promises it will not.
+        if (js.IsJsRuntimeInvalid()) return default;
+
         var raw = await GetItem(key);
         if (raw is null) return default;
 
@@ -174,6 +180,7 @@ public class ButilStorage(IJSRuntime js, string storageName) : IAsyncDisposable
         });
     }
 
+    /// <summary>Unsubscribes every storage-event handler this instance registered and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

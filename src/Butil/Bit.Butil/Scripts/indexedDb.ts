@@ -3,6 +3,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 (function (butil: any) {
     const _dbs: { [id: string]: { db: IDBDatabase, ref: any } } = {};
 
+    // The connection and its schema. Reads and writes (indexedDbStore), index queries
+    // (indexedDbIndex), paged cursors (indexedDbCursor), metadata (indexedDbInfo) and batched
+    // transactions (indexedDbTransaction) are each their own module and reach the connection
+    // through the members below - so an app that only reads a key never downloads the cursor walk
+    // or the transaction batcher.
     butil.indexedDb = {
         isSupported() { return 'indexedDB' in window; },
         open,
@@ -10,31 +15,13 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         deleteDatabase,
         databases,
         cmp,
-        info,
-        storeInfo,
-        indexInfo,
-        put,
-        add,
-        putBytes,
-        getBytes,
-        get,
-        getKey,
-        getAll,
-        getAllKeys,
-        delete: del,
-        clear,
-        count,
-        getByIndex,
-        getKeyByIndex,
-        getAllByIndex,
-        getAllKeysByIndex,
-        countByIndex,
-        deleteByIndex,
-        getPage,
-        getKeyPage,
-        getPageByIndex,
-        getKeyPageByIndex,
-        transact
+
+        // For the modules layered on this one.
+        dbOf: getDb,
+        txStore,
+        awaitRequest,
+        awaitWrite,
+        toQuery
     };
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
@@ -200,46 +187,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function cmp(first: any, second: any) { return indexedDB.cmp(first, second); }
 
-    // ─── Metadata ───────────────────────────────────────────────────────────────
-
-    function info(id: string) {
-        const db = getDb(id);
-        return { name: db.name, version: db.version, storeNames: Array.from(db.objectStoreNames) };
-    }
-
-    function storeInfo(id: string, store: string) {
-        const db = getDb(id);
-        if (!db.objectStoreNames.contains(store)) return null;
-        const s = db.transaction(store, 'readonly').objectStore(store);
-        return {
-            name: s.name,
-            keyPath: normalizeKeyPath(s.keyPath),
-            autoIncrement: s.autoIncrement,
-            indexNames: Array.from(s.indexNames)
-        };
-    }
-
-    function indexInfo(id: string, store: string, indexName: string) {
-        const db = getDb(id);
-        if (!db.objectStoreNames.contains(store)) return null;
-        const s = db.transaction(store, 'readonly').objectStore(store);
-        if (!s.indexNames.contains(indexName)) return null;
-        const idx = s.index(indexName);
-        return {
-            name: idx.name,
-            keyPath: normalizeKeyPath(idx.keyPath),
-            unique: idx.unique,
-            multiEntry: idx.multiEntry
-        };
-    }
-
-    // A keypath is string | string[] | null; flatten to an array so .NET sees one shape
-    // (empty meaning out-of-line keys).
-    function normalizeKeyPath(keyPath: any): string[] {
-        if (keyPath === null || keyPath === undefined) return [];
-        return Array.isArray(keyPath) ? keyPath.slice() : [keyPath];
-    }
-
     // ─── Queries ────────────────────────────────────────────────────────────────
 
     // Every read/delete accepts either a plain key or a key-range descriptor built on the .NET
@@ -288,226 +235,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             req.onerror = () => { failed = true; reject(req.error); };
             tx.oncomplete = () => { if (!failed) resolve(result); };
             tx.onabort = () => { if (!failed) reject(tx.error ?? new Error('IndexedDB transaction aborted.')); };
-        });
-    }
-
-    // ─── CRUD ───────────────────────────────────────────────────────────────────
-
-    // put/add resolve with the record's key, which is the only way to learn the value an
-    // autoIncrement store generated.
-    function put(id: string, store: string, value: any, key: any) {
-        const s = txStore(id, store, 'readwrite');
-        return awaitWrite(s.transaction, (key !== null && key !== undefined) ? s.put(value, key) : s.put(value));
-    }
-
-    function add(id: string, store: string, value: any, key: any) {
-        const s = txStore(id, store, 'readwrite');
-        return awaitWrite(s.transaction, (key !== null && key !== undefined) ? s.add(value, key) : s.add(value));
-    }
-
-    // Stored as an ArrayBuffer so the structured clone keeps it binary; JSON interop would other-
-    // wise turn the bytes into a base64 string (or fail outright for large payloads).
-    function putBytes(id: string, store: string, data: Uint8Array, key: any) {
-        const buffer = butil.utils.arrayToBuffer(data) ?? new ArrayBuffer(0);
-        const s = txStore(id, store, 'readwrite');
-        return awaitWrite(s.transaction, (key !== null && key !== undefined) ? s.put(buffer, key) : s.put(buffer));
-    }
-
-    async function getBytes(id: string, store: string, query: any) {
-        const value = await awaitRequest(txStore(id, store, 'readonly').get(toQuery(query)));
-        if (value === null || value === undefined) return null;
-        if (value instanceof ArrayBuffer) return new Uint8Array(value);
-        if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-        if (value instanceof Blob) return new Uint8Array(await value.arrayBuffer());
-        return null;    // stored value isn't binary
-    }
-
-    function get(id: string, store: string, query: any) {
-        return awaitRequest(txStore(id, store, 'readonly').get(toQuery(query))).then(v => v ?? null);
-    }
-
-    function getKey(id: string, store: string, query: any) {
-        return awaitRequest(txStore(id, store, 'readonly').getKey(toQuery(query))).then(v => v ?? null);
-    }
-
-    function getAll(id: string, store: string, query: any, count: number | null) {
-        const s = txStore(id, store, 'readonly');
-        return awaitRequest(count != null ? s.getAll(toQuery(query), count) : s.getAll(toQuery(query)));
-    }
-
-    function getAllKeys(id: string, store: string, query: any, count: number | null) {
-        const s = txStore(id, store, 'readonly');
-        return awaitRequest(count != null ? s.getAllKeys(toQuery(query), count) : s.getAllKeys(toQuery(query)));
-    }
-
-    function del(id: string, store: string, query: any) {
-        const s = txStore(id, store, 'readwrite');
-        return awaitWrite(s.transaction, s.delete(toQuery(query)));
-    }
-
-    function clear(id: string, store: string) {
-        const s = txStore(id, store, 'readwrite');
-        return awaitWrite(s.transaction, s.clear());
-    }
-
-    function count(id: string, store: string, query: any) {
-        return awaitRequest(txStore(id, store, 'readonly').count(toQuery(query)));
-    }
-
-    // ─── Indexes ────────────────────────────────────────────────────────────────
-
-    function index(id: string, store: string, indexName: string, mode: IDBTransactionMode) {
-        return txStore(id, store, mode).index(indexName);
-    }
-
-    function getByIndex(id: string, store: string, indexName: string, query: any) {
-        return awaitRequest(index(id, store, indexName, 'readonly').get(toQuery(query))).then(v => v ?? null);
-    }
-
-    function getKeyByIndex(id: string, store: string, indexName: string, query: any) {
-        return awaitRequest(index(id, store, indexName, 'readonly').getKey(toQuery(query))).then(v => v ?? null);
-    }
-
-    function getAllByIndex(id: string, store: string, indexName: string, query: any, count: number | null) {
-        const idx = index(id, store, indexName, 'readonly');
-        return awaitRequest(count != null ? idx.getAll(toQuery(query), count) : idx.getAll(toQuery(query)));
-    }
-
-    function getAllKeysByIndex(id: string, store: string, indexName: string, query: any, count: number | null) {
-        const idx = index(id, store, indexName, 'readonly');
-        return awaitRequest(count != null ? idx.getAllKeys(toQuery(query), count) : idx.getAllKeys(toQuery(query)));
-    }
-
-    function countByIndex(id: string, store: string, indexName: string, query: any) {
-        return awaitRequest(index(id, store, indexName, 'readonly').count(toQuery(query)));
-    }
-
-    // An index has no delete() of its own, so this walks a key cursor and deletes each matching
-    // record by its primary key - all inside one transaction, so it's all-or-nothing.
-    function deleteByIndex(id: string, store: string, indexName: string, query: any): Promise<number> {
-        const s = txStore(id, store, 'readwrite');
-        const tx = s.transaction;
-        return new Promise<number>((resolve, reject) => {
-            let deleted = 0;
-            const req = s.index(indexName).openKeyCursor(toQuery(query));
-            req.onsuccess = () => {
-                const cursor = req.result;
-                if (!cursor) return;    // exhausted; the transaction completes on its own
-                s.delete(cursor.primaryKey);
-                deleted++;
-                cursor.continue();
-            };
-            req.onerror = () => reject(req.error);
-            tx.oncomplete = () => resolve(deleted);
-            tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted.'));
-        });
-    }
-
-    // ─── Cursors ────────────────────────────────────────────────────────────────
-
-    // A cursor can't be stepped from .NET one record at a time: an IDB transaction goes inactive
-    // as soon as control returns to the event loop, and every interop round-trip does exactly
-    // that. So the walk happens here in one task and hands back a materialized page - which is
-    // what skip/take/direction are for.
-    function cursorPage(source: IDBObjectStore | IDBIndex, tx: IDBTransaction, query: any,
-        direction: IDBCursorDirection, skip: number, take: number, keysOnly: boolean): Promise<any[]> {
-        return new Promise((resolve, reject) => {
-            const out: any[] = [];
-            let advanced = false;
-            const req = keysOnly
-                ? source.openKeyCursor(query, direction)
-                : source.openCursor(query, direction);
-
-            req.onsuccess = () => {
-                const cursor = req.result;
-                if (!cursor) { resolve(out); return; }
-
-                if (!advanced) {
-                    advanced = true;
-                    if (skip > 0) { cursor.advance(skip); return; }     // advance(0) throws
-                }
-
-                out.push(keysOnly
-                    ? { key: cursor.key, primaryKey: cursor.primaryKey }
-                    : { key: cursor.key, primaryKey: cursor.primaryKey, value: (cursor as IDBCursorWithValue).value });
-
-                if (take > 0 && out.length >= take) { resolve(out); return; }
-                cursor.continue();
-            };
-            req.onerror = () => reject(req.error);
-            tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted.'));
-        });
-    }
-
-    function getPage(id: string, store: string, query: any, direction: IDBCursorDirection, skip: number, take: number) {
-        const s = txStore(id, store, 'readonly');
-        return cursorPage(s, s.transaction, toQuery(query), direction, skip, take, false);
-    }
-
-    function getKeyPage(id: string, store: string, query: any, direction: IDBCursorDirection, skip: number, take: number) {
-        const s = txStore(id, store, 'readonly');
-        return cursorPage(s, s.transaction, toQuery(query), direction, skip, take, true);
-    }
-
-    function getPageByIndex(id: string, store: string, indexName: string, query: any, direction: IDBCursorDirection, skip: number, take: number) {
-        const s = txStore(id, store, 'readonly');
-        return cursorPage(s.index(indexName), s.transaction, toQuery(query), direction, skip, take, false);
-    }
-
-    function getKeyPageByIndex(id: string, store: string, indexName: string, query: any, direction: IDBCursorDirection, skip: number, take: number) {
-        const s = txStore(id, store, 'readonly');
-        return cursorPage(s.index(indexName), s.transaction, toQuery(query), direction, skip, take, true);
-    }
-
-    // ─── Transactions ───────────────────────────────────────────────────────────
-
-    // The whole batch runs in one transaction spanning every store it touches, so a failure
-    // anywhere rolls back the lot. Same reason as cursors: the transaction can't survive an
-    // interop round-trip, so the operations arrive together rather than being issued one by one.
-    function transact(id: string, operations: any[], mode: IDBTransactionMode, durability: string | null): Promise<any[]> {
-        const db = getDb(id);
-        const ops = operations || [];
-        const stores = Array.from(new Set(ops.map(o => o?.store).filter(Boolean)));
-        if (stores.length === 0) return Promise.resolve([]);
-
-        let tx: IDBTransaction;
-        try {
-            tx = db.transaction(stores, mode, durability ? { durability: durability as IDBTransactionDurability } : undefined);
-        } catch {
-            tx = db.transaction(stores, mode);  // browsers predating the options argument
-        }
-
-        return new Promise<any[]>((resolve, reject) => {
-            const results: any[] = new Array(ops.length).fill(null);
-
-            for (let i = 0; i < ops.length; i++) {
-                const op = ops[i];
-                const s = tx.objectStore(op.store);
-                let req: IDBRequest;
-                switch (op.type) {
-                    case 'put':
-                        req = (op.key !== null && op.key !== undefined) ? s.put(op.value, op.key) : s.put(op.value);
-                        break;
-                    case 'add':
-                        req = (op.key !== null && op.key !== undefined) ? s.add(op.value, op.key) : s.add(op.value);
-                        break;
-                    case 'delete':
-                        req = s.delete(toQuery(op.query));
-                        break;
-                    case 'clear':
-                        req = s.clear();
-                        break;
-                    default:
-                        try { tx.abort(); } catch { /* not started */ }
-                        reject(new Error(`Unknown IndexedDB operation '${op.type}'.`));
-                        return;
-                }
-                const slot = i;
-                req.onsuccess = () => { results[slot] = req.result ?? null; };
-            }
-
-            tx.oncomplete = () => resolve(results);
-            tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted.'));
         });
     }
 }(BitButil));

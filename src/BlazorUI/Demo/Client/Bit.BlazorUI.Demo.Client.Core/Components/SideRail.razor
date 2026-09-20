@@ -1,4 +1,4 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 @* The rail is built from the headings found in the DOM, so it is empty until after the first
    render. The <nav> is rendered regardless to hold the column open - dropping it would let the
@@ -27,17 +27,18 @@
                    OnClick="OpenPanel" />
     </div>
 
-    @* BitPanel renders its content whether it is open or not, so a second copy of the list would
-       otherwise sit in every page at every width - including the wide ones, where the panel can
-       never open. It is mounted on the first open and stays mounted from then on, so that closing
-       it still has something to slide out. *@
-    <BitPanel @bind-IsOpen="_isPanelOpen" Position="BitPanelPosition.End" Size="280">
-        @if (_hasPanelOpened)
-        {
-            <nav class="side-rail-panel" aria-label="On this page">
-                @_railContent
-            </nav>
-        }
+    @* LazyRender keeps the list out of the page until the panel is first opened, so a second copy of
+       it does not sit in every page at every width - including the wide ones, where the panel can
+       never open. It stays mounted from then on, so that closing the panel still has something to
+       slide out. *@
+    <BitPanel @bind-IsOpen="_isPanelOpen"
+              LazyRender
+              AriaLabel="On this page"
+              Position="BitPanelPosition.End"
+              Size="280">
+        <nav class="side-rail-panel" aria-label="On this page">
+            @_railContent
+        </nav>
     </BitPanel>
 }
 

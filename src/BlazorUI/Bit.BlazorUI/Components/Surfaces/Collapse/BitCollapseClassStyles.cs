@@ -8,12 +8,24 @@ public class BitCollapseClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the expanded state of the BitCollapse.
+    /// Custom CSS classes/styles for the root element of the BitCollapse in the expanded state.
     /// </summary>
     public string? Expanded { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the content of the BitCollapse.
+    /// Custom CSS classes/styles for the root element of the BitCollapse in the collapsed state.
+    /// </summary>
+    public string? Collapsed { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the content region of the BitCollapse, which is the element that fades
+    /// between the two states and clips what is outside the collapsed size.
     /// </summary>
     public string? Content { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the wrapper the BitCollapse puts around its content, which is the element
+    /// that carries the padding.
+    /// </summary>
+    public string? Wrapper { get; set; }
 }

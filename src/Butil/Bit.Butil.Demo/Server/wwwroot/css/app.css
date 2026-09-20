@@ -554,6 +554,7 @@ svg {
 .feature-card:focus-visible,
 .hero-actions a:focus-visible,
 .copy-btn:focus-visible,
+.code-tab:focus-visible,
 .anchor:focus-visible {
     outline: var(--strokeWidthThick) solid var(--colorStrokeFocus2);
     outline-offset: var(--strokeWidthThin);
@@ -585,6 +586,8 @@ svg {
 .app-root {
     width: 100%;
     min-height: 100%;
+    /* The header is fixed, so it is the shell that reserves its band. */
+    padding-top: var(--headerHeight);
     display: flex;
     flex-flow: column nowrap;
     color: var(--colorNeutralForeground1);
@@ -604,6 +607,12 @@ svg {
     display: flex;
     flex-flow: column nowrap;
     min-height: calc(100vh - var(--headerHeight));
+}
+
+/* The nav panel is out of flow, so the column it used to occupy is reserved here
+   instead - and only on the pages that have one, which the home page has not. */
+.layout:has(.nav-panel) .main {
+    padding-inline-start: var(--navWidth);
 }
 
 .site-content {
@@ -641,11 +650,19 @@ svg {
    rather than reading as a second page.
    --------------------------------------------------------------------------- */
 
+/* Fixed rather than sticky, which is the same band in the same place but not the
+   same thing to the engine: Chromium and WebKit ignore a sticky ancestor's offset
+   when they scroll a focused field into view, so every keystroke in the header's
+   search box scrolled the page towards where the bar would sit unstuck - the top
+   of the document. Firefox accounts for it; the other two walk the page up a step
+   per key. Out of flow the bar has no unstuck position to be scrolled to, and
+   .app-root pads for the height it no longer occupies. */
 .header {
     top: 0;
+    left: 0;
     z-index: 1000;
     width: 100%;
-    position: sticky;
+    position: fixed;
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     background-color: color-mix(in srgb, var(--colorNeutralBackground1) 80%, transparent);
@@ -1011,6 +1028,16 @@ svg {
     color: var(--colorNeutralForeground3);
 }
 
+/* The words the query matched, inside that one line. Fluent has no highlight token, and a filled
+   swatch behind two words in a list of ten rows is noise; weight and the brand hue say the same
+   thing without repainting the row. The default <mark> background has to go with it - it is a
+   yellow the dark theme has no answer for. */
+.header-search-result-summary mark {
+    background-color: transparent;
+    color: var(--colorBrandForeground1);
+    font-weight: var(--fontWeightSemibold);
+}
+
 .header-search-result-group {
     flex: none;
     font-size: var(--fontSizeBase100);
@@ -1036,11 +1063,16 @@ svg {
    6. Navigation panel
    --------------------------------------------------------------------------- */
 
+/* Fixed for the same reason the header is - the filter field in it is typed into,
+   and a sticky ancestor makes Chromium and WebKit walk the page up a step per
+   keystroke towards where the panel would sit unstuck. Below lg it is already
+   fixed, as the off-canvas drawer. */
 .nav-panel {
     z-index: 900;
     flex: none;
     display: flex;
-    position: sticky;
+    position: fixed;
+    inset-inline-start: 0;
     flex-flow: column nowrap;
     width: var(--navWidth);
     top: var(--headerHeight);
@@ -1602,6 +1634,60 @@ svg {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--colorNeutralForeground3);
+}
+
+/* A sample that spans several files puts a tab per file where the language name
+   would be. The names are paths, so the strip scrolls rather than wrapping: a bar
+   that grows to three rows on a narrow screen pushes the code itself off it. */
+.code-tabs {
+    display: flex;
+    min-width: 0;
+    gap: var(--spacingXS);
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The strip's own left padding, in place of the bar's - which the code below
+       is aligned to, and an active tab's background should start at. */
+    margin-inline-start: calc(-1 * var(--codePad) + var(--spacingXS));
+}
+
+.code-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.code-tab {
+    flex: none;
+    min-height: 1.75rem;
+    padding: 0 var(--spacingS);
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--fontFamilyMonospace);
+    font-size: var(--fontSizeBase200);
+    line-height: var(--lineHeightBase200);
+    border: none;
+    color: var(--colorNeutralForeground3);
+    background-color: transparent;
+    border-radius: var(--borderRadiusMedium);
+    transition: color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.code-tab:hover {
+    color: var(--colorNeutralForeground1);
+    background-color: var(--colorSubtleBackgroundHover);
+}
+
+.code-tab.active {
+    color: var(--colorNeutralForeground1);
+    font-weight: var(--fontWeightSemibold);
+    background-color: var(--colorCodeBackground);
+}
+
+/* The pane sets display on <pre> itself, which outruns the user agent's rule for
+   [hidden] - so the files behind the active tab would all render on top of each
+   other. They stay in the markup rather than being rendered on demand because
+   that markup is what the MCP server reads every file of the sample out of. */
+.code-holder pre[hidden] {
+    display: none;
 }
 
 .copy-btn {
@@ -2626,6 +2712,72 @@ label.check {
     border-color: var(--colorNeutralStroke1Hover);
 }
 
+/* The command bar hands its search field to the hero on the home page, so the box
+   is dressed as one of the hero's own controls instead of a utility squeezed in
+   among the icon buttons: the Large button height the two calls to action use, a
+   real border and the same float the code panes have. Every rule here carries the
+   wrapper as well as .header-search, which is what keeps the command bar's own
+   narrower widths - set in the lg and md media queries further down - from
+   winning on source order. */
+.hero-search {
+    max-width: 24rem;
+    margin-top: var(--spacingXL);
+}
+
+.hero-search .header-search {
+    display: flex;
+    width: 100%;
+    margin-inline-end: 0;
+}
+
+.hero-search .header-search-icon {
+    left: var(--spacingM);
+}
+
+.hero-search .header-search input,
+.hero-search .header-search input:focus {
+    width: 100%;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 4rem 0 2.75rem;
+    box-shadow: var(--shadow8);
+    border-color: var(--colorNeutralStroke1);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground1);
+    /* Nothing grows on focus here - the field is already the width it gets - so the
+       transition has nothing left to animate but the colours. */
+    transition: border-color var(--durationFaster) var(--curveEasyEase),
+                background-color var(--durationFaster) var(--curveEasyEase);
+}
+
+.hero-search .header-search input:hover {
+    border-color: var(--colorNeutralStroke1Hover);
+    border-bottom-color: var(--colorNeutralStrokeAccessible);
+    background-color: var(--colorNeutralBackground1);
+}
+
+/* The site draws a focused field's second pixel of brand rule as an inset shadow,
+   which the elevation this one carries would otherwise replace outright - so both
+   are declared together rather than one of them being lost. */
+.hero-search .header-search input:focus {
+    border-bottom-color: var(--colorBrandStroke1);
+    box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorBrandStroke1), var(--shadow8);
+}
+
+.hero-search .search-hint {
+    right: var(--spacingS);
+}
+
+/* Anchored to the start of the field rather than its end: in the bar the box sits
+   against the right edge of the window, here it sits against the left edge of the
+   pitch. It is allowed to be wider than the field so a hit still gets a readable
+   line of the sentence it matched. */
+.hero-search .header-search-results {
+    left: 0;
+    right: auto;
+    width: max(100%, 26rem);
+    max-width: 88vw;
+}
 .hero-install {
     max-width: 24rem;
 }
@@ -3414,6 +3566,12 @@ label.check {
         visibility: visible;
     }
 
+    /* A drawer covers the content rather than standing beside it, so nothing is
+       reserved for it here. */
+    .layout:has(.nav-panel) .main {
+        padding-inline-start: 0;
+    }
+
     .nav-scrim {
         display: block;
         position: fixed;
@@ -3462,6 +3620,14 @@ label.check {
     .header .brand-name,
     .header-nav {
         display: none;
+    }
+
+    /* Except on the home page, which has neither the menu button nor the search
+       field in the bar - its search lives in the hero - so the two section tabs
+       are what that room is spent on instead. They are the only way off this page
+       and into the documentation from the bar, since the nav panel is not here. */
+    .header .container.home-page .header-nav {
+        display: flex;
     }
 
     .header .brand {
@@ -3665,8 +3831,22 @@ label.check {
     .doc-pager,
     .footer,
     .copy-btn,
+    .code-tabs,
     #blazor-error-ui {
         display: none !important;
+    }
+
+    /* Paper has no tab to click, so a multi-file sample prints as all of its files,
+       each under the name its tab gave it. */
+    .code-holder pre[hidden] {
+        display: block !important;
+    }
+
+    .code-holder pre[data-file]::before {
+        content: attr(data-file);
+        display: block;
+        margin-bottom: var(--spacingS);
+        font-weight: var(--fontWeightSemibold);
     }
 
     .app-root,

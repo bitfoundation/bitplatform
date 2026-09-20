@@ -91,6 +91,7 @@ public class Nfc(IJSRuntime js) : IAsyncDisposable
     public ValueTask<bool> WriteUrl(string url, string? id = null)
         => js.Invoke<bool>("BitButil.nfc.writeUrl", url, id);
 
+    /// <summary>Stops every scan started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try

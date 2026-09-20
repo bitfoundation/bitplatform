@@ -5,8 +5,8 @@ public partial class ForceUpdateUITests : AppPageTest
 {
     /// <summary>
     /// Proves the Force Update system end-to-end for the Web platform: this test raises the server's
-    /// <c>SupportedAppVersions:MinimumSupportedWebAppVersion</c> to 2.0.0 - a version higher than the app's own
-    /// (1.0.0, See Directory.Build.props). Every internal API call carries an <c>X-App-Version</c> / <c>X-App-Platform</c>
+    /// <c>SupportedAppVersions:MinimumSupportedWebAppVersion</c> above the app's own version (whatever this build's
+    /// <c>Version</c> property made it). Every internal API call carries an <c>X-App-Version</c> / <c>X-App-Platform</c>
     /// header (See <c>RequestHeadersDelegatingHandler</c>), so the very next call the browser makes is rejected by
     /// <c>ForceUpdateMiddleware</c> with a <c>ClientNotSupportedException</c>. The client turns that into a persistent
     /// <c>FORCE_UPDATE</c> message (See <c>ExceptionDelegatingHandler</c>), which <c>ForceUpdateSnackBar</c> shows.
@@ -21,15 +21,20 @@ public partial class ForceUpdateUITests : AppPageTest
     {
         await using var server = new AppTestServer(Context);
 
-        // The app reports version 1.0.0, so requiring 2.0.0 makes every internal request from this browser unsupported.
+        // The browser reports the app's real assembly version (See AppTelemetryContext.AppVersion), so the minimum is
+        // derived from that same source rather than hard-coded - a literal like "2.0.0" would silently invert the test
+        // the day a generated project's Version property reaches it.
+        var appVersion = typeof(AppTelemetryContext).Assembly.GetName().Version ?? new Version(1, 0, 0);
+        var minimumBeyondAppVersion = new Version(appVersion.Major + 1, 0, 0).ToString();
+
         await server.Build(
-            configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = "2.0.0"
+            configureTestConfigurations: configuration => configuration["SupportedAppVersions:MinimumSupportedWebAppVersion"] = minimumBeyondAppVersion
         ).Start(TestContext.CancellationToken);
 
         var serverAddress = server.WebAppServerAddress;
 
         // Open the Sign in page and ask for a magic link. This is the first internal API call the browser makes; the
-        // server rejects it because the client version is below the (now 2.0.0) minimum supported web app version.
+        // server rejects it because the client version is below the raised minimum supported web app version.
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 

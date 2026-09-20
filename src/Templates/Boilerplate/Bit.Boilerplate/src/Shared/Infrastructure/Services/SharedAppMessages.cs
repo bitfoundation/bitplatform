@@ -21,17 +21,6 @@ public partial class SharedAppMessages
     public const string EXCEPTION_THROWN = nameof(EXCEPTION_THROWN);
 
     /// <summary>
-    /// A publisher that sends this message announces that the subscriber should upload its diagnostic logger store to the server.
-    /// 
-    /// This allows super admins and support staff to retrieve all diagnostic logs for active user sessions.
-    /// In contrast to production loggers (e.g., Sentry, AppInsights), which use a Warning level by default (except for specific categories at Information level) to reduce costs,
-    /// the diagnostic logger defaults to Information level to capture all logs, stored solely in the client device's memory.
-    /// Uploading these logs for display in the support staff's diagnostic modal log viewer aids in pinpointing the root cause of user issues during live troubleshooting.
-    /// Another benefit of having this feature is in dev environment when you wanna see your Android, iOS logs on your desktop wide screen.
-    /// </summary>
-    public const string UPLOAD_DIAGNOSTIC_LOGGER_STORE = nameof(UPLOAD_DIAGNOSTIC_LOGGER_STORE);
-
-    /// <summary>
     /// A publisher that sends this message announces that the subscriber should upload the last error that happened at client side to the server.
     /// </summary>
     public const string UPLOAD_LAST_ERROR = nameof(UPLOAD_LAST_ERROR);
@@ -60,6 +49,21 @@ public partial class SharedAppMessages
     /// A publisher that sends this message announces that the subscriber should show the sign-in modal dialog and wait for user sign-in or cancellation.
     /// </summary>
     public const string SHOW_SIGN_IN_MODAL = nameof(SHOW_SIGN_IN_MODAL);
+
+    /// <summary>
+    /// A publisher that sends this message announces that the subscriber should show an AiChatCard in the AI chat panel's conversation.
+    /// </summary>
+    public const string SHOW_AI_CHAT_CARD = nameof(SHOW_AI_CHAT_CARD);
+
+    /// <summary>
+    /// A publisher that sends this message asks the subscriber to show an AiChatCard the user has to answer, and to return that answer (See AiChatCardDecision).
+    /// </summary>
+    public const string AWAIT_AI_CHAT_CARD = nameof(AWAIT_AI_CHAT_CARD);
+
+    /// <summary>
+    /// A publisher that sends this message announces what the AI chat panel should offer the user to ask or do next.
+    /// </summary>
+    public const string SHOW_AI_CHAT_SUGGESTIONS = nameof(SHOW_AI_CHAT_SUGGESTIONS);
 
     #endregion
 
@@ -90,26 +94,6 @@ public partial class SharedAppMessages
 
     #endregion
 
-    #region AI Chatbot messages
-
-    /// <summary>
-    /// This would let the client know that a chat bot encountered an error while processing the user's message.
-    /// </summary>
-    public const string MESSAGE_PROCESS_ERROR = nameof(MESSAGE_PROCESS_ERROR);
-
-    /// <summary>
-    /// This would let the client know that a chat bot successfully processed the user's message.
-    /// </summary>
-    public const string MESSAGE_PROCESS_SUCCESS = nameof(MESSAGE_PROCESS_SUCCESS);
-
-    /// <summary>
-    /// The chat bot sends this message with the follow-up suggestions it wrote for the answer it has just given
-    /// (See <c>AppChatbot.SendFollowUpSuggestions</c>). The payload is an <c>AiChatFollowUpList</c>.
-    /// </summary>
-    public const string SHOW_FOLLOW_UP_SUGGESTIONS = nameof(SHOW_FOLLOW_UP_SUGGESTIONS);
-
-    #endregion
-
     #region Client commands to server
 
     /// <summary>
@@ -123,9 +107,10 @@ public partial class SharedAppMessages
     public const string ChangeAuthenticationState = nameof(ChangeAuthenticationState);
 
     /// <summary>
-    /// Using this message, the client (typically support staff device), asks the server to get another user (typically a customer that needs support) session logs and send them back to the requested device.
+    /// Using this message, the client asks for the same report the /diagnostic page gets over http, but about the
+    /// websocket connection it is asking over - so the two paths through the proxy can be compared.
     /// </summary>
-    public const string GetUserSessionLogs = nameof(GetUserSessionLogs);
+    public const string GetDiagnosticReport = nameof(GetDiagnosticReport);
 
     #endregion
 

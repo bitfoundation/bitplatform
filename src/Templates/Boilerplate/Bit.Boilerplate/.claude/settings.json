@@ -5,9 +5,8 @@
     },
     "permissions": {
         "allow": [
-            "mcp__DeepWiki",
-            "mcp__bitBlazorUI",
-            "mcp__MicrosoftLearn",
+            "mcp__bitplatform",
+            "mcp__aspire",
             "mcp__playwright"
         ]
     }

@@ -55,8 +55,18 @@ public partial class CultureInfoManager
     {
         var cultureInfo = GetCultureInfo(cultureName) ?? DefaultCulture;
 
-        CultureInfo.CurrentCulture = CultureInfo.DefaultThreadCurrentCulture = Thread.CurrentThread.CurrentCulture = cultureInfo;
-        CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = Thread.CurrentThread.CurrentUICulture = cultureInfo;
+        if (AppPlatform.IsBlazorHybridOrBrowser)
+        {
+            // Single-user process: the process-wide defaults ONLY
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+        }
+        else
+        {
+            // Blazor Server
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+        }
     }
 
     public static string? FindRegionIso2(string? cultureName)
@@ -78,6 +88,7 @@ public partial class CultureInfoManager
         cultureInfo.DateTimeFormat.AMDesignator = "ق.ظ";
         cultureInfo.DateTimeFormat.PMDesignator = "ب.ظ";
         cultureInfo.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        cultureInfo.DateTimeFormat.LongDatePattern = "yyyy MMMM d, dddd";
         cultureInfo.DateTimeFormat.AbbreviatedDayNames =
         [
             "ی", "د", "س", "چ", "پ", "ج", "ش"
@@ -85,6 +96,20 @@ public partial class CultureInfoManager
         cultureInfo.DateTimeFormat.ShortestDayNames =
         [
             "ی", "د", "س", "چ", "پ", "ج", "ش"
+        ];
+
+        string[] monthNames =
+        [
+            "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
+            "" // 13-month calendars reserve a 13th slot; it must exist even when unused.
+        ];
+        cultureInfo.DateTimeFormat.MonthNames = monthNames;
+        cultureInfo.DateTimeFormat.MonthGenitiveNames = monthNames;
+        cultureInfo.DateTimeFormat.AbbreviatedMonthNames = monthNames;
+        cultureInfo.DateTimeFormat.AbbreviatedMonthGenitiveNames = monthNames;
+        cultureInfo.DateTimeFormat.DayNames =
+        [
+            "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"
         ];
 
         return cultureInfo;

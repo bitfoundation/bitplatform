@@ -1,9 +1,21 @@
-﻿namespace Bit.Butil;
+namespace Bit.Butil;
 
+/// <summary>
+/// What the native share sheet is handed. At least one of the three has to be set, and a URL that
+/// is not a valid absolute URL makes the whole call fail rather than being dropped.
+/// <br/>
+/// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share">Navigator.share()</see>
+/// </summary>
 public class ShareData
 {
     // files?: File[];
+
+    /// <summary>The body text to share.</summary>
     public string? Text { get; set; }
-    public string? title { get; set; }
-    public string? url { get; set; }
+
+    /// <summary>The title to share.</summary>
+    public string? Title { get; set; }
+
+    /// <summary>The URL to share, absolute.</summary>
+    public string? Url { get; set; }
 }

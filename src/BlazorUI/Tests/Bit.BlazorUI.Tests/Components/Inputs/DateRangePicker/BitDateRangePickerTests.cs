@@ -1875,10 +1875,14 @@ public class BitDateRangePickerTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
+        // The range stays inside the month today falls in: the grid opens on the month of the start
+        // date, and a today cell belonging to an adjacent month renders as an outside day, which
+        // carries no today class to click.
+        var monthStart = FixedDate(DateTime.Now.Year, DateTime.Now.Month, 1);
         var boundValue = new BitDateRangePickerValue
         {
-            StartDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(-5), DateTimeOffset.Now.Offset),
-            EndDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(-1), DateTimeOffset.Now.Offset)
+            StartDate = monthStart,
+            EndDate = monthStart.AddDays(1)
         };
         var originalStart = boundValue.StartDate;
         var originalEnd = boundValue.EndDate;

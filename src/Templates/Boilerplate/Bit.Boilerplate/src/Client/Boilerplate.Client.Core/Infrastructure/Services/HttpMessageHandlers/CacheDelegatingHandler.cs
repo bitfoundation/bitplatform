@@ -1,6 +1,5 @@
 //+:cnd:noEmit
 using System.Net;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 

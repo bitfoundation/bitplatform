@@ -136,7 +136,8 @@ public class MediaDevices(IJSRuntime js) : IAsyncDisposable
         try
         {
             _displayEndedHandlers.Clear();
-            await js.InvokeVoid("BitButil.mediaDevices.disposeAll");
+            // webAudioMedia parks its destination streams in this registry from inside its own module file.
+            await js.InvokeTeardown("BitButil.mediaDevices.disposeAll", "webAudioMedia");
         }
         catch (Exception ex) when (ex.IsIgnorableDisposalException()) { } // teardown: circuit gone, cancelled, or already disposed
         finally

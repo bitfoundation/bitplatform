@@ -95,11 +95,11 @@ public partial class SignUpPage
         {
             { "return-url", ReturnUrlQueryString }
         };
-        if (string.IsNullOrEmpty(signUpModel.Email) is false)
+        if (string.IsNullOrWhiteSpace(signUpModel.Email) is false)
         {
             queryParams.Add("email", signUpModel.Email);
         }
-        if (string.IsNullOrEmpty(signUpModel.PhoneNumber) is false)
+        if (string.IsNullOrWhiteSpace(signUpModel.PhoneNumber) is false)
         {
             queryParams.Add("phoneNumber", signUpModel.PhoneNumber);
         }

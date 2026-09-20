@@ -139,10 +139,15 @@ The `AppResponseCachePolicy` class (located in `/src/Server/Boilerplate.Server.S
 - **Development Mode Handling**: Disables client cache in development for easier debugging
 - **Request Type Detection**: Different behavior for Blazor pages vs API requests
 
-Note: **Multi-Language Limitation**: For non-invariant globalization, client and edge caching are disabled for
-pre-rendered Blazor pages. Varying the edge cache on `Accept-Language` requires a custom cache key, which Cloudflare
-only offers on the Enterprise plan; AWS CloudFront allows it on any account (Azure Front Door does not - it drops the
-header when caching is on). Output cache is unaffected: it varies by culture itself.
+Note: **Multi-Language pages are cached by their culture-prefixed url**: for non-invariant globalization,
+`Server.Web`'s `UseCultureUrlRedirection` 302s every Blazor page request whose url does not carry its culture as the
+leading path segment onto `/{culture}/...` (resolving the target from the `culture` query string, the `{culture?}`
+route value, the culture cookie, then `Accept-Language`). The url alone then identifies the language variant, so
+pre-rendered pages are client and edge cacheable without varying any cache on `Accept-Language` or a cookie - a vary
+Cloudflare only offers on the Enterprise plan (AWS CloudFront allows it on any account; Azure Front Door drops the
+header when caching is on). The redirect itself is per-caller and `no-store`, and a page url that somehow still names
+no culture (the service worker's `no-prerender` app-shell request, or a deployment that removed the redirection) keeps
+client and edge caching disabled as a backstop. Output cache is unaffected either way: it varies by culture itself.
 
 **Cache Duration Logic:**
 
@@ -692,8 +697,8 @@ announced earlier in the request.
 
 ---
 
-### AI Wiki: Answered Questions
+### AI Wiki
 
-Ask your own question [here](https://wiki.bitplatform.dev)
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

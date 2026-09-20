@@ -52,7 +52,7 @@ public static partial class UriExtensions
 
             var culture = uri.GetCulture();
 
-            if (string.IsNullOrEmpty(culture))
+            if (string.IsNullOrWhiteSpace(culture))
                 return uri.ToString();
 
             // Only the leading path segment carries the culture. Replacing the culture everywhere in the url instead
@@ -66,6 +66,24 @@ public static partial class UriExtensions
             return new UriBuilder(uri)
             {
                 Path = string.Join('/', segments.Take(1).Concat(segments.Skip(2)))
+            }.Uri.ToString();
+        }
+
+        /// <summary>
+        /// The url re-addressed to <paramref name="cultureName"/>: an existing culture (leading path segment or
+        /// <c>?culture=</c>) is replaced by the new one as a leading path segment - the canonical form Server.Web
+        /// serves pages under (See its <c>UseCultureUrlRedirection</c>). A culture-less url is returned unchanged.
+        /// </summary>
+        public string GetUrlWithCulture(string cultureName)
+        {
+            if (uri.GetCulture() is null)
+                return uri.ToString();
+
+            var urlWithoutCulture = new Uri(uri.GetUrlWithoutCulture());
+
+            return new UriBuilder(urlWithoutCulture)
+            {
+                Path = $"/{cultureName}{urlWithoutCulture.AbsolutePath}"
             }.Uri.ToString();
         }
 
@@ -96,6 +114,12 @@ public static partial class UriExtensions
             return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{Uri.EscapeDataString(key)}=***"))}";
         }
 
+        /// <summary>
+        /// The absolute url without query or fragment. The culture segment is KEPT: each culture is a document of
+        /// its own, declared to the others through hreflang (See Server.Web's <c>App.razor</c>).
+        /// </summary>
+        public string GetCanonicalUrl() => uri.GetLeftPart(UriPartial.Path);
+
         public string GetPath()
         {
             var uriBuilder = new UriBuilder(uri.GetUrlWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };
@@ -123,7 +147,7 @@ public static partial class UriExtensions
         /// </param>
         public static bool IsAppRelativeUrl([NotNullWhen(true)] string? url, bool requireLeadingSlash = true)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrWhiteSpace(url))
                 return false;
 
             if (url[0] is '\\')

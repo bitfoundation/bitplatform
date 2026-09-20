@@ -111,7 +111,18 @@ public partial class CategoryController : AppControllerBase, ICategoryController
     {
         // Check out AppHub's comments for more info.
         // In order to exclude current user session, gets its signalR connection id from database and use GroupExcept instead.
+        //#if (multitenant == true)
+        // Only this tenant: "AuthenticatedClients" spans every tenant.
+        await appHubContext.Clients.Group(AppHub.TenantGroupName(TenantProvider.GetCurrentTenantId())).Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         await appHubContext.Clients.Group("AuthenticatedClients").Publish(SharedAppMessages.DASHBOARD_DATA_CHANGED, null, cancellationToken);
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
     }
     //#endif
 

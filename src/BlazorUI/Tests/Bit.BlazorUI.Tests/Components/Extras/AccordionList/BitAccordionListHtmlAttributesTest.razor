@@ -1,0 +1,9 @@
+@using Bit.BlazorUI
+
+@* A role the page sets itself is splatted through HtmlAttributes, which BitComponentBase only accepts from
+   markup - hence a component of its own rather than an unmatched parameter. *@
+<BitAccordionList TItem="BitAccordionListItem" Items="Items" AriaLabel="settings" role="region" />
+
+@code {
+    [Parameter] public List<BitAccordionListItem> Items { get; set; } = [];
+}

@@ -31,7 +31,75 @@ public partial class BitFcTimelineMonthView
     // The day cells exist only as add/drop targets, so a read-only timeline must not expose a
     // focusable no-op button per day and resource. A null attribute value is omitted from the markup.
     private string? _slotRole => State.ReadOnly ? null : "button";
-    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
+    // Roving tabindex: the whole grid is a single tab stop and the arrow keys move both the tabbable
+    // cell and the focus - a resource row per day would otherwise flood the tab order.
+    private List<string> _rowKeys = [];
+    private DateTime[] _monthDays = [];
+    private (string RowKey, DateTime Day)? _focusedCell;
+    private bool _pendingCellFocus;
+
+    private string SlotElementId(string rowKey, DateTime day)
+        => $"{_scrollContainerId}-cell-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{day:yyyyMMdd}";
+
+    private (string RowKey, DateTime Day) RovingCell
+    {
+        get
+        {
+            if (_focusedCell is { } cell
+                && _rowKeys.Contains(cell.RowKey)
+                && _monthDays.Any(d => d.Date == cell.Day.Date))
+                return cell;
+
+            return (
+                _rowKeys.Count > 0 ? _rowKeys[0] : _unassignedKey,
+                _monthDays.Length > 0 ? _monthDays[0] : State.SelectedDate.Date);
+        }
+    }
+
+    private string? SlotTabIndex(string rowKey, DateTime day)
+    {
+        if (State.ReadOnly)
+            return null;
+
+        var roving = RovingCell;
+        return roving.RowKey == rowKey && roving.Day.Date == day.Date ? "0" : "-1";
+    }
+
+    /// <summary>
+    /// Moves the roving cell by <paramref name="rowDelta"/> resource rows and
+    /// <paramref name="dayDelta"/> days, clamped to the rendered month.
+    /// </summary>
+    private void MoveRovingCell(int rowDelta, int dayDelta)
+    {
+        var (rowKey, day) = RovingCell;
+
+        var dayIndex = Math.Max(0, Array.FindIndex(_monthDays, d => d.Date == day.Date));
+        dayIndex = Math.Clamp(dayIndex + dayDelta, 0, Math.Max(0, _monthDays.Length - 1));
+
+        var rowIndex = Math.Max(0, _rowKeys.IndexOf(rowKey));
+        rowIndex = Math.Clamp(rowIndex + rowDelta, 0, Math.Max(0, _rowKeys.Count - 1));
+
+        _focusedCell = (
+            _rowKeys.Count > 0 ? _rowKeys[rowIndex] : rowKey,
+            _monthDays.Length > 0 ? _monthDays[dayIndex] : day);
+        _pendingCellFocus = true;
+    }
+
+    /// <summary>
+    /// Shades a day column that is not a business day, so the schedulable part of the month reads at
+    /// a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffDayClass(DateTime day)
+        => State.HighlightBusinessHours && State.IsBusinessDay(day.DayOfWeek) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
+    private void SetRovingCell(string rowKey, DateTime day)
+    {
+        _focusedCell = (rowKey, day);
+        _pendingCellFocus = true;
+    }
 
     private RenderFragment RenderLanes(List<List<BitFullCalendarEvent>> lanes, DateTime monthStart, int daysInMonth) => builder =>
     {
@@ -58,7 +126,9 @@ public partial class BitFcTimelineMonthView
                 var leftPx = startDayIdx * dayWidth;
                 var widthPx = (endExclusiveIdx - startDayIdx) * dayWidth - 2; // -2 for visual gap
 
-                var style = $"left:{leftPx.ToString("F2", inv)}px;width:{Math.Max(widthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
+                // Anchor with inset-inline-start (not left) so blocks and the row's day cells share
+                // the same axis in a right-to-left layout.
+                var style = $"inset-inline-start:{leftPx.ToString("F2", inv)}px;width:{Math.Max(widthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
                 // Key the per-event block by the event's stable identity so Blazor preserves the
                 // correct BitFcTimelineEventBlock instance (and its in-flight state) when lane ordering
                 // is recomputed, instead of reusing a sibling's component by position - matching the
@@ -100,7 +170,8 @@ public partial class BitFcTimelineMonthView
 
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(day, State.StartOfDayHour);
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
+                day, State.StartOfDayHour, 0, State.SlotDurationMinutes);
             draft.Resource = resourceId == _unassignedKey ? null : resourceId;
             await OnAddClick.InvokeAsync(draft);
             return;
@@ -114,10 +185,44 @@ public partial class BitFcTimelineMonthView
 
     private async Task OnSlotKeyDownAsync(KeyboardEventArgs e, string resourceId, DateTime day)
     {
-        // Ignore auto-repeat keydowns so a held Enter/Space only creates a single draft event,
-        // matching the day/week view behavior.
-        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
-            await OnSlotClickAsync(resourceId, day);
+        // The cell the key came from is the one the roving tabindex should sit on. The date axis runs
+        // along the reading direction, so left/right move by a day and up/down between resources.
+        switch (e.Key)
+        {
+            case "Enter" or " " or "Spacebar":
+                // Ignore auto-repeat so a held key only creates a single draft event.
+                if (e.Repeat is false)
+                    await OnSlotClickAsync(resourceId, day);
+                return;
+
+            case "ArrowRight":
+                SetRovingCell(resourceId, day);
+                MoveRovingCell(0, State.IsRtl ? -1 : 1);
+                return;
+
+            case "ArrowLeft":
+                SetRovingCell(resourceId, day);
+                MoveRovingCell(0, State.IsRtl ? 1 : -1);
+                return;
+
+            case "ArrowDown":
+                SetRovingCell(resourceId, day);
+                MoveRovingCell(1, 0);
+                return;
+
+            case "ArrowUp":
+                SetRovingCell(resourceId, day);
+                MoveRovingCell(-1, 0);
+                return;
+
+            case "Home":
+                SetRovingCell(resourceId, _monthDays.Length > 0 ? _monthDays[0] : day);
+                return;
+
+            case "End":
+                SetRovingCell(resourceId, _monthDays.Length > 0 ? _monthDays[^1] : day);
+                return;
+        }
     }
 
     private string? SlotAriaLabel(DateTime day, string rowLabel)
@@ -150,6 +255,15 @@ public partial class BitFcTimelineMonthView
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The arrow keys only moved the tabbable cell; the focus has to follow it here, once the
+        // new tabindex has actually been rendered.
+        if (_pendingCellFocus)
+        {
+            _pendingCellFocus = false;
+            var (rowKey, day) = RovingCell;
+            await BitFcFocusInterop.TryFocusAsync(JS, SlotElementId(rowKey, day));
+        }
+
         // Only the current month has a "today" scroll target; skip the interop entirely otherwise
         // so we don't make a JS round-trip on every render of a non-current month.
         // Compare using the active culture's calendar since the rendered month follows that

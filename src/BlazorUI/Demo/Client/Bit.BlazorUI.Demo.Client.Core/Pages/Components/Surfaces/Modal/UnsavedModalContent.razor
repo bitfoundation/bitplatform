@@ -1,0 +1,52 @@
+﻿@* The content of a modal with something to lose. It reports whether it is dirty, and the CanClose guard the
+   modal was shown with answers a dismissal with that - so Escape and the close button are turned down while
+   there is an unsaved change, and the two buttons here are the ways out. *@
+<BitStack Style="padding:1rem;min-width:18rem" Gap="1rem">
+    <BitTextField Label="Name" Value="@value" ValueChanged="OnValueChanged" Immediate />
+    @* The refusal is only visible as a modal that stays put, which reads as nothing having happened at all -
+       so the state the guard answers with is on the screen while it is what the guard answers with. *@
+    @if (hasChanges)
+    {
+        <BitMessage Color="BitColor.Warning">
+            Unsaved change: the close button, Escape and TryClose are turned down until you save or discard.
+        </BitMessage>
+    }
+    <BitStack Horizontal Gap="0.5rem" AutoHeight>
+        <BitButton OnClick="Save">Save</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="Discard">Discard</BitButton>
+    </BitStack>
+</BitStack>
+
+@code {
+    [CascadingParameter] private BitModalReference modalReference { get; set; } = default!;
+
+    [Parameter] public EventCallback<bool> HasChangesChanged { get; set; }
+
+    private string? value;
+    private bool hasChanges;
+
+    private async Task OnValueChanged(string? newValue)
+    {
+        value = newValue;
+        hasChanges = true;
+
+        await HasChangesChanged.InvokeAsync(true);
+    }
+
+    private async Task Save()
+    {
+        hasChanges = false;
+
+        await HasChangesChanged.InvokeAsync(false);
+        await modalReference.CloseWith(value);
+    }
+
+    // Discarding is the way out the guard leaves open: the changes are dropped first, so the close goes through.
+    private async Task Discard()
+    {
+        hasChanges = false;
+
+        await HasChangesChanged.InvokeAsync(false);
+        await modalReference.Dismiss();
+    }
+}

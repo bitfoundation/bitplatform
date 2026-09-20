@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -100,7 +100,7 @@ public sealed partial class BitMarkdownAutoLinkAstProcessor : BitMarkdownAstProc
 
             // Route through the shared sanitizer so autolinks get the same URL safety
             // treatment as explicit links/images.
-            var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false) };
+            var link = new BitMarkdownLinkNode { Url = BitMarkdownUrlSanitizer.Sanitize(href, isImage: false), IsAutoLink = true };
             link.Children.Add(new BitMarkdownTextNode(matched));
             result.Add(link);
             // Advance only past the characters kept in the link so any trimmed

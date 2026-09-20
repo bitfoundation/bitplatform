@@ -39,7 +39,9 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
         var webAppOrigin = clientWindowsSettings.WebAppUrl ?? absoluteServerAddressProvider.GetAddress();
 
-        var staticFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories);
+        string[] staticFiles = Directory.Exists(AppContext.BaseDirectory)
+            ? Directory.GetFiles(AppContext.BaseDirectory, "*.*", SearchOption.AllDirectories)
+            : [];
 
         async Task GoBackToApp()
         {
@@ -92,7 +94,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                     // no way to reach the app on Windows. TrySetResult so a replayed POST is a no-op rather than an
                     // InvalidOperationException.
                     var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
+                    if (string.IsNullOrWhiteSpace(error) is false)
                     {
                         WebAuthnService.GetWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
                     }
@@ -121,7 +123,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
                 try
                 {
                     var error = ctx.Request.QueryString["error"];
-                    if (string.IsNullOrEmpty(error) is false)
+                    if (string.IsNullOrWhiteSpace(error) is false)
                     {
                         WebAuthnService.CreateWebAuthnCredentialTcs.TrySetException(new UnknownException(error));
                     }

@@ -95,8 +95,8 @@ public class SpeakableTextTests
     [TestMethod]
     public void AnAnswerAProviderWillTake_Should_BeSpokenInOnePiece()
     {
-        CollectionAssert.AreEqual(new[] { "bit platform is a set of dotnet libraries." },
-                                  SpeakableText.Segment("bit platform is a set of dotnet libraries.").ToArray());
+        Assert.AreSequenceEqual(new[] { "bit platform is a set of dotnet libraries." },
+                                SpeakableText.Segment("bit platform is a set of dotnet libraries.").ToArray());
     }
 
     /// <summary>

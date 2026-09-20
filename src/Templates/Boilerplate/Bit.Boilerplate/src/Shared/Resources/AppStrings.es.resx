@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -965,9 +965,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>Código de verificación:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>Ingresa el código de verificación.</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>Verificar</value>
   </data>
@@ -1170,9 +1167,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Texto alternativo</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>Página</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>de</value>
   </data>
@@ -1182,9 +1176,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>Panel de administración</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} elementos</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>Conteo de productos de los últimos 30 días</value>
@@ -1222,9 +1213,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>Categorías con conteo de productos</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>Buscar por nombre</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>Gráfico de conteo de productos por categoría</value>
   </data>
@@ -1254,9 +1242,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>Eliminar producto</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>Selector de color predeterminado</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>Editar producto {0}</value>
@@ -1344,13 +1329,125 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>Aplicar el color de acento {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>Cancelado</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>Ninguna aplicación de este dispositivo puede abrir enlaces {0}.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>Llamada de voz</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>Iniciar llamada de voz</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>Finalizar llamada de voz</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>Volver a la llamada de voz</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>Tiempo restante de la llamada de voz</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>La llamada de voz ha finalizado.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>No se pudo enviar el mensaje a la llamada.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>El asistente está ocupado. Inténtalo de nuevo en {0} segundos.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>El asistente no pudo responder. Inténtalo de nuevo.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>Deja tus datos de contacto y un operador se pondrá en contacto contigo.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>Resumen de la conversación</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>Sesión iniciada como</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>Tu solicitud se envió correctamente. Un operador se pondrá en contacto contigo pronto.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>Qué pasará</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>Esperando tu respuesta</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>¿Borrar los archivos de la aplicación en este dispositivo?</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>Empezar de cero soluciona la mayoría de los problemas causados por datos locales dañados.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>Se cerrará tu sesión</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>Se eliminará esta conversación</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>La aplicación se reiniciará</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>La llamada de voz finalizará</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>Borrar archivos</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>Ahora no</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>Borrando los archivos de la aplicación</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>Conservaste los archivos de la aplicación.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>No se borró nada: la solicitud no obtuvo respuesta.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>¿Aprobar esto?</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>Aprobar</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>Rechazado.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>La solicitud no obtuvo respuesta.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>Mejor opción</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>También encajan bien</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>Preguntar</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>Cuéntame más sobre {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panel de chat con IA</value>
   </data>
@@ -1364,7 +1461,7 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Dictado</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>El acceso al micrófono está bloqueado. Permítelo para este sitio para poder dictar.</value>
+    <value>El acceso al micrófono está bloqueado. Permítelo en tu configuración para poder dictar.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>Dictado detenido: {0}</value>
@@ -1414,19 +1511,15 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>¿Cómo puedo instalar la versión PWA de la app?</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
-  </data>
+  <value>¡Tengo algunos comentarios que me gustaría compartir!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>Escribe un mensaje...</value>
   </data>
@@ -1463,9 +1556,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <value>Tengo problemas para ver los anuncios en la app.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>Por favor espera</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>Gestión</value>
   </data>
@@ -1518,17 +1608,29 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="SendRoleNotification" xml:space="preserve">
     <value>Enviar notificación</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>Habilitar notificaciones</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>Las notificaciones están habilitadas en esta sesión.</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>Deshabilitar notificaciones</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>Las notificaciones están silenciadas en esta sesión.</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>Notificación de prueba 1</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>Notificaciones</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>Notificación de prueba 2</value>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>Activar las notificaciones</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>Desactivar las notificaciones</value>
+  </data>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>Las notificaciones están activadas</value>
+  </data>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>Enviamos esta para que compruebes que las notificaciones llegan a este dispositivo. Tócala para leer nuestra política de privacidad.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>Tu conexión en vivo con el servidor está activa. Este mensaje llegó por ella, y los próximos cambios aparecerán igual, en el momento en que ocurran.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1744,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="ImageTooSmall" xml:space="preserve">
     <value>La imagen es demasiado pequeña. Las dimensiones mínimas requeridas son {0}x{1}, pero las dimensiones actuales son {2}x{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>El archivo subido no es una imagen compatible.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>La imagen proporcionada no contiene un automóvil.</value>
   </data>
@@ -1718,9 +1823,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>Leer los registros de la sesión del usuario</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
@@ -1752,9 +1854,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>¿Estás seguro de que quieres abandonar el inquilino {0}?</value>
-  </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>Has abandonado el inquilino correctamente.</value>
   </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>Cambiar de inquilino</value>
@@ -1831,8 +1930,230 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>¿Rechazar la invitación a {0}? Esto no se puede deshacer: necesitarás una nueva invitación para unirte.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>Invitación rechazada.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>Zona horaria</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>Seleccionar zona horaria</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>Buscar una zona horaria</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>Ninguna zona horaria coincide con tu búsqueda.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>Las notificaciones push están bloqueadas para esta aplicación. Permite las notificaciones en la configuración de tu navegador o sistema operativo e inténtalo de nuevo.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>Privacidad</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>Descargue una copia de sus datos</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>Sus opciones de privacidad</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>Iniciar su sesión, recordar su idioma e informar de errores no están en esta lista: la aplicación no puede funcionar sin los dos primeros, y los informes de errores no llevan ningún identificador de su dispositivo.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>Analítica de uso</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>Nos permite reconocer su dispositivo entre visitas para ver qué páginas se usan y cuánto tardan. Desactivarlo no detiene los informes de errores.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>Publicidad</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>Carga el script de publicidad, que establece identificadores propios. No se carga nada hasta que lo active.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>Su privacidad</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>Nos gustaría almacenar en su dispositivo cierta información que esta aplicación no necesita para funcionar. Iniciar su sesión, recordar su idioma e informar de errores ocurren de todos modos.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>Configuración de privacidad</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>Configuración de la cuenta</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>Descargue sus datos</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>Obtenga una copia de todo lo que esta aplicación guarda sobre usted: su cuenta, los dispositivos en los que ha iniciado sesión, su foto de perfil y el contenido que ha creado. Llega como un archivo zip con data.json y sus archivos.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>Cada parte del archivo indica además por qué se conserva, durante cuánto tiempo, quién más la recibe y si al eliminar su cuenta se elimina.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>Descargar mis datos</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>Si en cambio desea que se eliminen sus datos, elimine su cuenta desde</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>Exportar datos</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>Responde a una solicitud de datos que no llegó a través de la aplicación.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>Ver un anuncio carga el script de publicidad de Google, que establece identificadores propios en su dispositivo. No se carga nada hasta que acepte.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>Aceptar y continuar</value>
+  </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>Autorizar aplicación</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>Comprobando esta solicitud...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>Esta solicitud no se puede autorizar</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>No se ha compartido nada. Puede cerrar esta página e intentarlo de nuevo desde la aplicación.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>Ir a la página de inicio</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>Puede volver a la aplicación</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>El resultado se entregó a {0}. Si no ha pasado al frente por sí sola, cambie a ella.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>¿Autorizar {0}?</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>Está pidiendo actuar en su nombre. Continúe solo si usted inició esto desde una aplicación en la que confía.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>Aplicación</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>Puede acceder a</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>Le devuelve a</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>Podrá:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>Su cuenta no puede conceder todo lo que esta aplicación ha pedido, así que quedará fuera lo siguiente: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>Esta aplicación se describió a sí misma; nadie en {0} ha respondido por ella.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>Autorizar</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>No se pudo identificar la aplicación que hace esta solicitud.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>La dirección a la que esta aplicación quiere que se le devuelva no es una de las que ha registrado.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>Esta solicitud de autorización no es válida.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>Leer información de diagnóstico de este despliegue - configuración, esquema de base de datos, trabajos en segundo plano. No puede cambiar nada.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>Leer información de diagnóstico de este despliegue.</value>
+  </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>Leer el informe detallado de estado de este despliegue, incluidos los detalles de error de todo lo que esté fallando.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>Leer el informe de estado.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>Aplicación autorizada</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>Aplicaciones</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>Aplicaciones autorizadas</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>Operaciones</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>Aplicaciones externas que sus usuarios han autorizado mediante OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>Todavía no se ha autorizado ninguna aplicación.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>Las aplicaciones aparecen aquí en cuanto alguien autoriza una; no hace falta registrar nada de antemano.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>concesiones activas</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>Devuelve a los usuarios a:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>Revocar acceso</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>{0} tiene actualmente {1} concesión(es). Revocarlas la cierra para todos los que la autorizaron; pueden volver a autorizarla.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>Se revocaron {0} concesión(es).</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>Preconfigurada</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>Autodescrita</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>No se pudo identificar esta aplicación, así que no hay adónde volver.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>Esta solicitud de autorización no es válida ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>Su cuenta no tiene los permisos que esta aplicación está pidiendo.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>Esta aplicación requiere autenticación en dos pasos. Actívela en la configuración de su cuenta, inicie sesión de nuevo y vuelva a empezar desde la aplicación.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>Espacio de trabajo</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>No es miembro del espacio de trabajo que esta aplicación está pidiendo.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>Usar el asistente de esta app en su nombre - hacerle preguntas y buscar lo que él puede buscar. No puede actuar en su dispositivo.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>Usar el asistente de esta app en su nombre.</value>
+  </data>
+  <!--#endif -->
 </root>

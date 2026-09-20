@@ -29,8 +29,8 @@ public partial class PushNotificationService
         // missing its own platform's field either reaches SaveChangesAsync and comes back as a 500 + LogCritical from
         // an anonymous endpoint, or silently stores a subscription that can never be delivered to.
         var pushChannelIsMissing = dto.Platform is "browser"
-            ? string.IsNullOrEmpty(dto.Endpoint) || string.IsNullOrEmpty(dto.P256dh) || string.IsNullOrEmpty(dto.Auth)
-            : string.IsNullOrEmpty(dto.PushChannel);
+            ? string.IsNullOrWhiteSpace(dto.Endpoint) || string.IsNullOrWhiteSpace(dto.P256dh) || string.IsNullOrWhiteSpace(dto.Auth)
+            : string.IsNullOrWhiteSpace(dto.PushChannel);
 
         if (pushChannelIsMissing)
             throw new BadRequestException().WithData("Reason", $"A '{dto.Platform}' push subscription is missing its push channel.");
@@ -88,6 +88,14 @@ public partial class PushNotificationService
         subscription.TenantId = tenantProvider.GetCurrentTenantId();
         //#endif
 
+        // Kept on the row rather than read through UserSession, which an anonymous visitor has none of.
+        // Relying on Cloudflare cdn to retrieve address, same as UserSession's.
+        // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
+        var request = httpContextAccessor.HttpContext!.Request;
+        subscription.IP = httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+        subscription.Address = $"{request.Headers["cf-ipcountry"]}, {request.Headers["cf-ipcity"]}";
+        subscription.AppVersionCode = AppVersionCodes.TryEncode(request.Headers["X-App-Version"].FirstOrDefault());
+
         if (subscription.Platform is "browser")
         {
             subscription.PushChannel = VapidSubscription.FromParameters(subscription.Endpoint, subscription.P256dh, subscription.Auth).ToAdsPushToken();
@@ -101,6 +109,15 @@ public partial class PushNotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task Unsubscribe(string deviceId, CancellationToken cancellationToken)
+    {
+        // The same "DeviceId IS the device's credential" model as Subscribe (read the comment there): whoever presents
+        // a DeviceId gets that device's subscription removed, signed in or not.
+        await dbContext.PushNotificationSubscriptions
+            .Where(s => s.DeviceId == deviceId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
     public async Task RequestPush(PushNotificationRequest request,
         Expression<Func<PushNotificationSubscription, bool>>? customSubscriptionFilter = null,
         CancellationToken cancellationToken = default)
@@ -110,7 +127,7 @@ public partial class PushNotificationService
         // userRelatedPush: it's not practical to send a push notification carrying sensitive information, like an OTP
         // code, to a device the user hasn't opened the app on for longer than Identity:RefreshTokenExpiration (14 days
         // by default). Even if she opens the app, her session has expired and she is signed out right away.
-        // Same window, same setting as UserSessionsCleanupJobRunner, which deletes those sessions.
+        // Same window, same setting as UserSessionsRetentionJobRunner, which deletes those sessions.
 
         var query = dbContext.PushNotificationSubscriptions
             .Where(sub => sub.ExpirationTime > now)

@@ -4,6 +4,17 @@
     display: block;
     --bit-smr-bg-clr: #{$clr-bg-ter};
 
+    // The sizing properties are inherited, and a Template is built out of shimmers of its own - so a height,
+    // a gap, a last-line width, a corner or a show delay set on the outer one would otherwise land on every
+    // shimmer inside it that did not set its own. Resetting them to the guaranteed-invalid value here sends
+    // each var() back to its fallback on every nested root, while the inline style that publishes them still
+    // wins on the element that was actually given the parameter.
+    --bit-smr-hgt: initial;
+    --bit-smr-gap: initial;
+    --bit-smr-llw: initial;
+    --bit-smr-rad: initial;
+    --bit-smr-dly: initial;
+
     @keyframes bit-smr-anim-wave {
         0% {
             transform: translateX(-100%);
@@ -14,13 +25,27 @@
         }
     }
 
+    // The pulse breathes between full and reduced opacity and comes back to where it started, so the loop
+    // closes on itself; a keyframe pair that ran from 0 to 1 would snap back to invisible on every turn.
     @keyframes bit-smr-anim-pulse {
-        0% {
-            opacity: 0;
+        0%, 100% {
+            opacity: 1;
         }
 
-        100% {
+        50% {
+            opacity: 0.4;
+        }
+    }
+
+    // The fade is the same breath taken all the way out, which leaves the resting color of the placeholder
+    // showing at the bottom of each loop.
+    @keyframes bit-smr-anim-fade {
+        0%, 100% {
             opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
         }
     }
 
@@ -33,26 +58,149 @@
             opacity: 1;
         }
     }
+
+    // Holds the covered content on the page for as long as the animation runs, which is what lets the cover
+    // arrive over content that is still there instead of over a box that has already gone blank.
+    @keyframes bit-smr-anim-uncover {
+        0%, 100% {
+            visibility: visible;
+        }
+    }
+}
+
+// Size is the height of a line and the diameter of a circle. Both are published as custom properties so
+// that an explicit Height - which lands on the root as --bit-smr-hgt - wins over them wherever they are read.
+.bit-smr-sm {
+    --bit-smr-lnh: #{spacing(2)};
+    --bit-smr-crs: #{$siz-ctrl-sm};
+}
+
+.bit-smr-md {
+    --bit-smr-lnh: #{spacing(4)};
+    --bit-smr-crs: #{$siz-ctrl-md};
+}
+
+.bit-smr-lg {
+    --bit-smr-lnh: #{spacing(6)};
+    --bit-smr-crs: #{$siz-ctrl-lg};
 }
 
 .bit-smr-lin {
     width: 100%;
-    height: spacing(4);
-
-    .bit-smr-wrp {
-        border-radius: $shp-radius-sm;
-    }
+    height: var(--bit-smr-hgt, var(--bit-smr-lnh));
 }
 
+// A circle is as tall as it is wide, whichever of the two was given: a height sets both, and a width - which
+// lands as an inline style and so wins over the width below - leaves the height to the aspect ratio.
 .bit-smr-crl {
+    aspect-ratio: 1;
+    width: var(--bit-smr-hgt, var(--bit-smr-crs));
+    height: var(--bit-smr-hgt, auto);
+
     .bit-smr-wrp {
-        aspect-ratio: 1;
         border-radius: 50%;
     }
 }
 
+.bit-smr-sqr {
+    --bit-smr-rad: #{$shp-radius-none};
+}
+
+.bit-smr-pil {
+    --bit-smr-rad: #{$shp-radius-full};
+}
+
+// A stack of lines is sized line by line rather than as a block, so the root gives its height back to the
+// content and each line takes the one height instead. Declared after the shapes above, which is what lets it
+// take the height back from them.
+.bit-smr-mln {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-smr-gap, #{spacing(1)});
+
+    > .bit-smr-wrp {
+        flex: none;
+        height: var(--bit-smr-hgt, var(--bit-smr-lnh));
+    }
+
+    // The last line of a paragraph rarely reaches the end of its measure, so the last one is shortened -
+    // which is most of what makes a stack of bars read as text rather than as a table.
+    > .bit-smr-wrp:last-child {
+        width: var(--bit-smr-llw, 60%);
+    }
+}
+
+// An inline shimmer sits in the flow of a line of text, so it cannot take the full width of its container
+// the way a block one does; without a width of its own it falls back to the minimum width of a control.
+.bit-smr-inl {
+    display: inline-block;
+    vertical-align: middle;
+
+    // The boxes an inline shimmer is built out of are spans, so that a placeholder standing in a line of text
+    // is phrasing content from the root down. A span lays out inline, which a placeholder that has a height
+    // and a corner to draw cannot do, so the block layout the block version gets from its tag is given back
+    // here. The animated band is positioned absolutely and so is already blockified by that.
+    > .bit-smr-cnt,
+    > .bit-smr-cvd,
+    > .bit-smr-wrp {
+        display: block;
+    }
+}
+
+.bit-smr-lin.bit-smr-inl {
+    width: $siz-ctrl-min-width;
+}
+
+// A stack of lines laid out inline is still a stack: inline-block would take the flex container away from it
+// and with it the gap between the lines, so the inline one is an inline flex container instead.
+.bit-smr-mln.bit-smr-inl {
+    display: inline-flex;
+}
+
+// The cover is laid over content that is on the page but out of sight, so the box is the content's and not
+// the placeholder's: the width, the height and the aspect ratio the shape would have imposed are handed back,
+// and what is left of the shape is the corner the wrapper draws.
+.bit-smr-ovl {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+    position: relative;
+
+    > .bit-smr-wrp {
+        inset: 0;
+        height: auto;
+        position: absolute;
+    }
+}
+
+// The fallback width of an inline placeholder is one shape's answer to a question the cover no longer asks,
+// and it is written at two classes above, so taking it back takes two here as well.
+.bit-smr-ovl.bit-smr-inl {
+    width: auto;
+}
+
+// Out of sight, out of the tab order and out of the accessibility tree, but still taking up the room it will
+// take once it is shown - which is the whole point of covering content rather than standing in for it.
+// It is held visible for as long as the cover takes to arrive - a ShowDelay plus the fade of the cover
+// itself - so a response that lands inside that window never blanks the box it was refreshing.
+.bit-smr-cvd {
+    visibility: hidden;
+    animation: bit-smr-anim-uncover calc(var(--bit-smr-dly, 0ms) + #{$mot-duration-long}) linear;
+}
+
 .bit-smr-cnt {
     animation-fill-mode: both;
+    animation-duration: $mot-duration-long;
+    animation-timing-function: $mot-easing;
+    animation-name: bit-smr-anim-opacity;
+}
+
+// A template draws the placeholder itself, so the entry animation - and with it the ShowDelay that holds a
+// fast response back from ever showing one - moves onto the root, the one box the component still owns.
+.bit-smr-tpl {
+    animation-fill-mode: both;
+    animation-delay: var(--bit-smr-dly, 0ms);
     animation-duration: $mot-duration-long;
     animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
@@ -63,17 +211,33 @@
     overflow: hidden;
     position: relative;
     animation-fill-mode: both;
+
+    // Held at zero opacity for as long as ShowDelay asks for, so a call that finishes inside that window is
+    // never followed by a flash of grey. The fill mode is what keeps the box invisible during the wait.
+    animation-delay: var(--bit-smr-dly, 0ms);
     animation-duration: $mot-duration-long;
     background-color: $clr-bg-sec;
     animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
+    // A placeholder is drawn in the shape of the thing it is waiting for, and what it is usually waiting for
+    // is a surface - a card, an image, a row of a list - so the default corner is the surface family's rather
+    // than a step of the scale, which is what lets a design system that rounds its surfaces differently round
+    // the placeholders for them the same way.
+    border-radius: var(--bit-smr-rad, #{$shp-radius-surface});
 }
 
 .bit-smr-anm {
     inset: 0;
-    overflow: hidden;
     position: absolute;
     background: var(--bit-smr-bg-clr);
+}
+
+// A placeholder that does not animate has no animated part, and the animated part is what Color paints: left
+// on the page it would cover the wrapper edge to edge and leave Background - the resting color of the
+// placeholder, which is the only color a static block has - with nothing to show. The element itself stays so
+// that a class or a style given to it is still addressable.
+.bit-smr-non {
+    display: none;
 }
 
 // The wave and the pulse loop forever, so they keep literal durations rather than the
@@ -105,6 +269,53 @@
             animation: none;
         }
     }
+}
+
+.bit-smr-fad {
+    animation: bit-smr-anim-fade calc(1.6s * $mot-loop-factor) ease-in-out calc(0.5s * $mot-loop-factor) infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        &:not(.bit-fam):not(.bit-fam *) {
+            animation: none;
+        }
+    }
+}
+
+// The wave sweeps with the reading direction: on a right-to-left page it comes in from the right, the same
+// way BitTextShimmer turns its own sweep around.
+.bit-smr.bit-rtl .bit-smr-wav {
+    animation-direction: reverse;
+}
+
+// Windows High Contrast / forced-colors: author backgrounds are stripped to Canvas, which would leave the
+// placeholder as an empty gap and the page unreadable while it waits. Each box is outlined in the system
+// color for text that is not content, which keeps the shape of what is on its way without pretending the
+// placeholder is content; the animated band has nothing left to paint, so it is taken out. The outline is
+// drawn inside the box rather than as a border, so nothing about the layout moves.
+@media (forced-colors: active) {
+    .bit-smr-wrp {
+        outline: $shp-border-width $shp-border-style GrayText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-smr-anm {
+        display: none;
+    }
+}
+
+// What the shimmer says to a screen reader: read by assistive technologies, taken out of the layout for
+// everyone else. It stays in the render tree rather than being display:none, which would take it out of the
+// accessibility tree along with the layout and leave the live region with nothing to announce.
+.bit-smr-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 

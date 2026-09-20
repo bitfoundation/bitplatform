@@ -91,7 +91,7 @@ public static partial class ClaimsPrincipalExtensions
         {
             var tenantId = claimsPrincipal.FindFirst(AppClaimTypes.TENANT_ID)?.Value;
 
-            return string.IsNullOrEmpty(tenantId) ? null : Guid.Parse(tenantId);
+            return string.IsNullOrWhiteSpace(tenantId) ? null : Guid.Parse(tenantId);
         }
         //#endif
 
@@ -108,7 +108,7 @@ public static partial class ClaimsPrincipalExtensions
         {
             var value = claimsPrincipal.FindFirst(AppClaimTypes.ELEVATED_SESSION)?.Value;
 
-            return string.IsNullOrEmpty(value) ? null : DateTimeOffset.FromUnixTimeSeconds(long.Parse(value, CultureInfo.InvariantCulture));
+            return string.IsNullOrWhiteSpace(value) ? null : DateTimeOffset.FromUnixTimeSeconds(long.Parse(value, CultureInfo.InvariantCulture));
         }
 
         public T? GetClaimValue<T>(string claimType)

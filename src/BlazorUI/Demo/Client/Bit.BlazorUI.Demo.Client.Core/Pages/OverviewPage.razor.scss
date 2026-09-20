@@ -1,12 +1,12 @@
 @import '../Styles/abstracts/_docs.scss';
 
-// Four numbers, separated by hairlines rather than boxed individually: they are one statement about
-// the library, not four unrelated facts.
+// Six numbers, separated by hairlines rather than boxed individually: they are one statement about
+// the library, not six unrelated facts.
 .stat-row {
     display: grid;
     gap: rem2(1px);
     overflow: hidden;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     background-color: $bit-color-border-secondary;
     border-radius: $bit-shape-radius-surface;
     border: rem2(1px) solid $bit-color-border-secondary;
@@ -42,7 +42,208 @@
 }
 
 
-.reason-grid {
+// The library by category. The home page shows the same categories as a grid of tiles, which is a
+// way in; this is the inventory, so each row carries the line that says what the category is for
+// and the rows are stacked rather than tiled - a reader going down this list is reading, not
+// picking.
+.category-list {
+    display: grid;
+    gap: $doc-space-2xs;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @include lt-lg {
+        grid-template-columns: 1fr;
+    }
+}
+
+.category {
+    min-width: 0;
+    display: flex;
+    gap: $doc-space-xs;
+    align-items: flex-start;
+    text-decoration: none;
+    padding: $doc-space-xs;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface;
+    @include doc-surface-interactive;
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+.category-body {
+    min-width: 0;
+    display: flex;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+}
+
+.category-head {
+    display: flex;
+    gap: $doc-space-2xs;
+    align-items: baseline;
+}
+
+.category-name {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+// The count is the one number on the row, so it is a chip rather than another run of text: it has
+// to be readable as "how many" without being read as part of the name.
+.category-count {
+    flex: none;
+    line-height: 1.6;
+    padding: 0 rem2(6px);
+    color: $bit-color-primary;
+    font-size: $bit-typography-fs-2xs;
+    font-weight: $bit-typography-fw-semibold;
+    border-radius: $bit-shape-radius-full;
+    background-color: $bit-color-background-secondary;
+}
+
+.category-text {
+    line-height: 1.5;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+}
+
+
+// The package map: a spec sheet rather than a card grid. One column, hairline-separated, so the
+// package names line up and "which one do I actually need" is answered by scanning the tags.
+.package-list {
+    overflow: hidden;
+
+    @include doc-surface;
+}
+
+.package {
+    display: flex;
+    gap: rem2(6px);
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+
+    & + & {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+}
+
+.package-head {
+    display: flex;
+    flex-flow: row wrap;
+    gap: $doc-space-2xs;
+    align-items: center;
+}
+
+.package-name {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+    color: $bit-color-foreground-primary;
+    font-family: var(--demo-font-mono);
+}
+
+.package-text {
+    margin: 0;
+    line-height: 1.6;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+
+// Six numbered decisions. The numeral is what makes this a list of positions rather than another
+// grid of feature cards - and it is the counter rather than the browser's marker, so it can sit in
+// the accent color on its own line above the heading.
+.principle-list {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    list-style: none;
+    gap: $doc-space-sm;
+    counter-reset: principle;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @include lt-lg {
+        grid-template-columns: 1fr;
+    }
+}
+
+.principle {
+    margin: 0;
+    display: flex;
+    gap: $doc-space-3xs;
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+    counter-increment: principle;
+
+    @include doc-surface;
+
+    &::before {
+        content: counter(principle, decimal-leading-zero);
+        color: $bit-color-primary;
+        font-size: $bit-typography-fs-xs;
+        font-weight: $bit-typography-fw-bold;
+        font-family: var(--demo-font-mono);
+        letter-spacing: rem2(1px);
+    }
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+// Two short columns of numbers. A real table, because that is what it is - and its own borders,
+// because the docs layer gives a bare <table> none.
+.cost-table {
+    width: 100%;
+    text-align: start;
+    border-collapse: collapse;
+    font-size: $bit-typography-fs-xs;
+
+    @include doc-surface;
+
+    th, td {
+        text-align: start;
+        padding: $doc-space-2xs $doc-space-sm;
+    }
+
+    thead th {
+        color: $bit-color-foreground-tertiary;
+        font-size: $bit-typography-fs-2xs;
+        font-weight: $bit-typography-fw-semibold;
+        letter-spacing: rem2(1px);
+        text-transform: uppercase;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    tbody th {
+        font-weight: $bit-typography-fw-regular;
+        color: $bit-color-foreground-secondary;
+    }
+
+    tbody td {
+        color: $bit-color-primary;
+        font-weight: $bit-typography-fw-semibold;
+        font-family: var(--demo-font-mono);
+    }
+
+    tbody tr + tr th,
+    tbody tr + tr td {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+}
+
+
+// The four render modes, and the three facts about the license. Same card, two sections: both are
+// a short row of peers that are read rather than clicked. The four modes pair off into two rows;
+// the three facts are a single row, so they track the column count instead of leaving one card
+// stranded under the other two.
+.mode-grid {
     display: grid;
     gap: $doc-space-sm;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -52,13 +253,24 @@
     }
 }
 
-.reason {
+.fact-grid {
+    display: grid;
+    gap: $doc-space-sm;
+    grid-template-columns: repeat(auto-fit, minmax(rem2(260px), 1fr));
+}
+
+.mode,
+.fact {
     display: flex;
     gap: $doc-space-3xs;
     flex-flow: column nowrap;
     padding: $doc-space-sm;
 
     @include doc-surface;
+
+    code {
+        @include doc-code-inline;
+    }
 }
 
 
@@ -121,8 +333,17 @@
 // The glyphs are BitIcons, so their elements do not carry this file's scope attribute - and the
 // page's own root markup is all components, so the rule has to descend from a card rather than
 // from the page.
-.reason ::deep .reason-icon,
+.mode ::deep .mode-icon,
+.fact ::deep .fact-icon,
 .resource ::deep .resource-icon {
     font-size: rem2(20px);
     margin-bottom: $doc-space-3xs;
+}
+
+// The category row puts its glyph beside the text rather than above it, so it needs the line-height
+// of the name it sits next to instead of the bottom margin the stacked cards take.
+.category ::deep .category-icon {
+    flex: none;
+    line-height: 1.5;
+    font-size: rem2(18px);
 }

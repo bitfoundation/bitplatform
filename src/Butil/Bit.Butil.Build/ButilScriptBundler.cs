@@ -147,6 +147,102 @@ public static class ButilScriptBundler
     }
 
     /// <summary>
+    /// Turns the names a consumer wrote in their csproj into modules. Each one is either a module name as
+    /// the manifest spells it (<c>clipboard</c>) or the name of a Bit.Butil class (<c>Clipboard</c>,
+    /// or <c>Bit.Butil.Clipboard</c>) - a consumer thinks in the classes they inject, and a class is the
+    /// safer thing to name anyway, since one class can need more than one module.
+    /// </summary>
+    /// <remarks>
+    /// A name that is neither is an error rather than a shrug. MSBuild accepts a misspelled item silently,
+    /// and the cost of ignoring one here is a module missing from a bundle - which surfaces in a browser,
+    /// after publishing, as an API that does nothing.
+    /// </remarks>
+    /// <param name="names">What the consumer wrote.</param>
+    /// <param name="manifest">The module manifest, which is what makes a name a module name.</param>
+    /// <param name="types">The type map, when one could be built; without it only module names resolve.</param>
+    /// <param name="unresolved">The names that matched nothing, in the order they were given.</param>
+    public static SortedSet<string> ResolveNames(IEnumerable<string> names, ButilScriptManifest manifest, ButilTypeModules? types, out IReadOnlyList<string> unresolved)
+    {
+        var modules = new SortedSet<string>(StringComparer.Ordinal);
+        var missing = new List<string>();
+
+        foreach (var raw in names)
+        {
+            var name = (raw ?? string.Empty).Trim();
+            if (name.Length == 0) continue;
+
+            if (manifest.Dependencies.ContainsKey(name))
+            {
+                modules.Add(name);
+                continue;
+            }
+
+            var fromType = types is null ? [] : types.ForFullName(name);
+            if (fromType.Count == 0 && types is not null) fromType = types.ForName(name);
+
+            if (fromType.Count == 0)
+            {
+                // A last, case-insensitive pass, so that a consumer who wrote the module in the casing of the
+                // class (or the class in the casing of the module) is understood rather than corrected.
+                var module = manifest.Order.FirstOrDefault(candidate => string.Equals(candidate, name, StringComparison.OrdinalIgnoreCase));
+                if (module is not null)
+                {
+                    modules.Add(module);
+                    continue;
+                }
+
+                var type = types?.FullTypeNames.FirstOrDefault(candidate =>
+                    string.Equals(candidate, name, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(candidate.Substring(candidate.LastIndexOf('.') + 1), name, StringComparison.OrdinalIgnoreCase));
+
+                fromType = type is null ? [] : types!.ForFullName(type);
+            }
+
+            if (fromType.Count == 0) missing.Add(name);
+            else foreach (var module in fromType) modules.Add(module);
+        }
+
+        unresolved = missing;
+        return modules;
+    }
+
+    /// <summary>
+    /// The names in a consumer's list that name one module while a Bit.Butil class of the same name
+    /// needs more: <c>crypto</c> keeps the hashing module alone, and <c>Crypto</c> the class also calls
+    /// four others. Each result carries the class and the modules naming it would add.
+    /// </summary>
+    /// <remarks>
+    /// A module name meaning that one module is deliberate - it is the finer control a split family
+    /// offers - and a consumer who wrote <c>crypto</c> before the family was split is exactly who would
+    /// not know the name stopped covering it. The publish reports these so that consumer finds out in
+    /// the build output rather than in a browser.
+    /// </remarks>
+    /// <param name="names">What the consumer wrote.</param>
+    /// <param name="manifest">The module manifest.</param>
+    /// <param name="types">The type map; without it nothing can be said, and the result is empty.</param>
+    public static IReadOnlyList<(string Name, string ClassName, IReadOnlyList<string> Beyond)> NarrowerThanClass(
+        IEnumerable<string> names, ButilScriptManifest manifest, ButilTypeModules? types)
+    {
+        var hints = new List<(string, string, IReadOnlyList<string>)>();
+        if (types is null) return hints;
+
+        foreach (var raw in names)
+        {
+            var name = (raw ?? string.Empty).Trim();
+            if (manifest.Dependencies.ContainsKey(name) is false) continue;
+
+            var type = types.FullTypeNames.FirstOrDefault(candidate =>
+                string.Equals(candidate.Substring(candidate.LastIndexOf('.') + 1), name, StringComparison.OrdinalIgnoreCase));
+            if (type is null) continue;
+
+            var beyond = types.ForFullName(type).Where(module => module != name).OrderBy(module => module, StringComparer.Ordinal).ToArray();
+            if (beyond.Length > 0) hints.Add((name, type.Substring(type.LastIndexOf('.') + 1), beyond));
+        }
+
+        return hints;
+    }
+
+    /// <summary>
     /// Concatenates the chunks of the given modules, in the given order, into a bundle. Chunk files are
     /// <c>&lt;chunksDirectory&gt;/&lt;module&gt;.js</c>.
     /// </summary>
@@ -178,12 +274,4 @@ public static class ButilScriptBundler
             if (File.Exists(temporary)) File.Delete(temporary);
         }
     }
-}
-
-/// <summary>Module names in dependency-first order, and each module's direct dependencies.</summary>
-public sealed class ButilScriptManifest(IReadOnlyList<string> order, IReadOnlyDictionary<string, string[]> dependencies)
-{
-    public IReadOnlyList<string> Order { get; } = order;
-
-    public IReadOnlyDictionary<string, string[]> Dependencies { get; } = dependencies;
 }

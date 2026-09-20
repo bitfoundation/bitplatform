@@ -72,7 +72,7 @@ public static class TestAccountUtils
         var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
             .RefreshToken(requestedBy: nameof(MakeGlobalAdmin));
 
-        Assert.IsFalse(string.IsNullOrEmpty(accessToken), "Refreshing after the role grant should have produced a new access token.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "Refreshing after the role grant should have produced a new access token.");
 
         var principal = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: false);
 
@@ -102,8 +102,15 @@ public static class TestAccountUtils
             await using var scope = server.WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+            // The role id first, not ur.Role!.Name: a bulk delete whose predicate needs a join becomes a subquery over
+            // the table being deleted from, which MySQL refuses. MakeGlobalAdmin resolves it the same way.
+            var globalAdminRoleId = await dbContext.Roles
+                .Where(r => r.Name == AppRoles.GlobalAdmin)
+                .Select(r => r.Id)
+                .SingleAsync();
+
             await dbContext.UserRoles
-                .Where(ur => ur.UserId == userId && ur.Role!.Name == AppRoles.GlobalAdmin)
+                .Where(ur => ur.UserId == userId && ur.RoleId == globalAdminRoleId)
                 .ExecuteDeleteAsync();
         }
     }
@@ -124,7 +131,7 @@ public static class TestAccountUtils
         var accessToken = await scope.ServiceProvider.GetRequiredService<AuthManager>()
             .RefreshToken(requestedBy: nameof(Elevate), elevatedAccessToken: captured.Token);
 
-        Assert.IsFalse(string.IsNullOrEmpty(accessToken), "The elevation refresh should have produced a new access token.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(accessToken), "The elevation refresh should have produced a new access token.");
     }
 
     /// <summary>

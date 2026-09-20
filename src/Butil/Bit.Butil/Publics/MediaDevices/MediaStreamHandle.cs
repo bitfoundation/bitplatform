@@ -28,6 +28,7 @@ public sealed class MediaStreamHandle : IAsyncDisposable
     public ValueTask SetEnabled(bool enabled)
         => _js.InvokeVoid("BitButil.mediaDevices.setEnabled", _id, enabled);
 
+    /// <summary>Stops every track in the stream - what actually turns the camera light off. Calling it again does nothing.</summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;

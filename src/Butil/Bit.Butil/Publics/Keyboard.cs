@@ -40,6 +40,19 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         if (_handlers.TryGetValue(id, out var handler)) handler.Invoke();
     }
 
+    /// <summary>
+    /// Registers an app-wide shortcut and returns the id that removes it again. The match is on
+    /// <c>KeyboardEvent.code</c> - a physical key position, so the shortcut lands under the same
+    /// finger on every keyboard layout.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code">KeyboardEvent.code</see>
+    /// </summary>
+    /// <param name="code">The code to match, e.g. <see cref="ButilKeyCodes.KeyS"/>.</param>
+    /// <param name="handler">Called when the combination is pressed.</param>
+    /// <param name="modifiers">The modifiers that must be down. Matched exactly, so extra modifiers do not fire it.</param>
+    /// <param name="preventDefault">Suppress the browser's own action for the combination.</param>
+    /// <param name="stopPropagation">Stop the keydown travelling any further.</param>
+    /// <param name="repeat">Keep firing while the key is held, instead of once per press.</param>
     public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
     {
         var listenerId = Guid.NewGuid();
@@ -123,6 +136,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         return ids;
     }
 
+    /// <summary>Removes one shortcut, by the id <see cref="Add"/> returned.</summary>
     public async ValueTask Remove(Guid id)
     {
         await Remove([id]);
@@ -140,6 +154,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         await RemoveFromJs(ids);
     }
 
+    /// <summary>Removes every shortcut registered through this instance.</summary>
     public async ValueTask RemoveAll()
     {
         if (_handlers.Count == 0) return;
@@ -156,6 +171,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         await js.InvokeVoid("BitButil.keyboard.remove", ids);
     }
 
+    /// <summary>Removes every shortcut this instance registered and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
@@ -163,6 +179,10 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// The disposal body. <paramref name="disposing"/> is false only on a finalizer path, where
+    /// reaching back into JavaScript is not safe, so nothing is torn down then.
+    /// </summary>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (disposing is false) return;

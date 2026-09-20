@@ -37,14 +37,16 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
     /// Returns the device's current position once.
     /// </summary>
     /// <exception cref="GeolocationException">Thrown when permission is denied, the position
-    /// can't be determined, or the call times out.</exception>
+    /// can't be determined (which includes prerendering, where there is no browser to ask), or the call times out.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationPosition))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationCoordinates))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(GeolocationOptions))]
     public async Task<GeolocationPosition> GetCurrentPosition(GeolocationOptions? options = null)
     {
-        var result = await js.Invoke<GeolocationCallResult>("BitButil.geolocation.getCurrentPosition", options);
-        if (result.Position is not null) return result.Position;
+        var result = await js.Invoke<GeolocationCallResult?>("BitButil.geolocation.getCurrentPosition", options);
+        // No result at all is prerendering or static SSR, where there is no browser to ask: reported as the
+        // documented GeolocationException rather than a NullReferenceException from reading it.
+        if (result?.Position is not null) return result.Position;
 
         throw ToException(result);
     }
@@ -132,6 +134,7 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         }
     }
 
+    /// <summary>Clears every position watch started through this instance and releases its interop reference.</summary>
     public async ValueTask DisposeAsync()
     {
         try { await ClearAllWatches(); }
@@ -144,8 +147,11 @@ public class Geolocation(IJSRuntime js) : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
-    private static GeolocationException ToException(GeolocationCallResult result)
+    private static GeolocationException ToException(GeolocationCallResult? result)
     {
+        if (result is null)
+            return new GeolocationException(GeolocationErrorCode.PositionUnavailable, "No JavaScript runtime is available (prerendering or static rendering), so no position can be determined.");
+
         var code = result.ErrorCode switch
         {
             1 => GeolocationErrorCode.PermissionDenied,

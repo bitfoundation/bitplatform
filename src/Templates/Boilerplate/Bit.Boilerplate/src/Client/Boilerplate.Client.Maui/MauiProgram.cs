@@ -1,8 +1,8 @@
 //+:cnd:noEmit
+using Bit.BlazorUI;
 using Microsoft.Maui.Platform;
 using Microsoft.Extensions.Options;
 using Microsoft.Maui.LifecycleEvents;
-using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Maui.AppStores;
 //-:cnd:noEmit
@@ -30,6 +30,13 @@ public static partial class MauiProgram
         AppPlatform.IsIosOnMacOS = NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac;
 #endif
         ITelemetryContext.Current = new MauiTelemetryContext();
+
+        if (CultureInfoManager.InvariantGlobalization is false)
+        {
+            CultureInfoManager.SetCurrentCulture(
+                Preferences.Get("Culture", null) ?? // 1- User settings (the key MauiStorageService persists)
+                CultureInfo.CurrentUICulture.Name); // 2- OS settings
+        }
 
         var builder = MauiApp.CreateBuilder();
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Maui");
@@ -113,15 +120,23 @@ public static partial class MauiProgram
         return mauiApp;
     }
 
+    /// <summary>The theme to launch with: the user's own pick, which ThemeService mirrors into Preferences.</summary>
+    internal static bool IsDarkTheme()
+    {
+        return Preferences.Get(ThemeService.THEME_STORAGE_KEY, null) is { } theme
+            ? theme == nameof(AppThemeType.Dark) // 1- User settings
+            : AppInfo.Current.RequestedTheme is AppTheme.Dark; // 2- OS settings
+    }
+
     private static void SetupBlazorWebView()
     {
         BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("CustomBlazorWebViewMapper", static (handler, view) =>
         {
             var webView = handler.PlatformView;
-            var webViewBackgroundColor = AppInfo.Current.RequestedTheme == AppTheme.Dark ?
-                ThemeColors.PrimaryDarkBgColor : ThemeColors.PrimaryLightBgColor;
 #if Windows
-            webView.DefaultBackgroundColor = Color.FromArgb(webViewBackgroundColor).ToWindowsColor();
+            // MAUI's Background mapping only reaches the WinUI control WebView2 paints over, so this is the only way
+            // to set what WebView2 shows before the page has painted.
+            webView.DefaultBackgroundColor = Color.FromArgb(AppThemePresets.Background(IsDarkTheme())).ToWindowsColor();
 
             webView.EnsureCoreWebView2Async()
                 .AsTask()
@@ -154,8 +169,6 @@ public static partial class MauiProgram
                 webView.Inspectable = true;
             }
 #elif Android
-            webView.SetBackgroundColor(Android.Graphics.Color.ParseColor(webViewBackgroundColor));
-
             webView.OverScrollMode = Android.Views.OverScrollMode.Never;
 
             webView.HapticFeedbackEnabled = false;
@@ -230,7 +243,7 @@ public static partial class MauiProgram
     }
 #endif
 
-    private static void LogException(object? error, string reportedBy)
+    internal static void LogException(object? error, string reportedBy)
     {
         if (IPlatformApplication.Current?.Services is IServiceProvider services && error is Exception exp)
         {

@@ -1,0 +1,27 @@
+﻿@inject IConfiguration Configuration
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* An empty icon: the default /favicon.ico request would 404 and trip the suites' console-error check. *@
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Brouter.Tests.Harness/harness.css" />
+    <title>Brouter harness (@Mode)</title>
+</head>
+
+<body data-mode="@Mode">
+    <HarnessApp @rendermode="RenderMode" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    private string Mode => Configuration[HarnessRenderModes.ConfigurationKey] ?? HarnessRenderModes.Auto;
+
+    private IComponentRenderMode? RenderMode => HarnessRenderModes.Resolve(Mode);
+}

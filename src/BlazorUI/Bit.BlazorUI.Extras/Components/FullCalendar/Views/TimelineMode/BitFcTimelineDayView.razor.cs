@@ -31,9 +31,85 @@ public partial class BitFcTimelineDayView
     private int? _dragMinute;
 
     // The slots exist only as add/drop targets, so a read-only timeline must not expose a focusable
-    // no-op button per half hour and resource. A null attribute value is omitted from the markup.
+    // no-op button per slot and resource. A null attribute value is omitted from the markup.
     private string? _slotRole => State.ReadOnly ? null : "button";
-    private string? _slotTabIndex => State.ReadOnly ? null : "0";
+
+    // Roving tabindex: the whole grid is a single tab stop and the arrow keys move both the tabbable
+    // slot and the focus - a resource row per rendered slot would otherwise put hundreds of stops in
+    // the tab order.
+    private List<string> _rowKeys = [];
+    private (string RowKey, int Hour, int Minute)? _focusedSlot;
+    private bool _pendingSlotFocus;
+
+    private string SlotElementId(string rowKey, int hour, int minute)
+        => $"{_scrollContainerId}-slot-{Math.Max(0, _rowKeys.IndexOf(rowKey))}-{hour}-{minute}";
+
+    /// <summary>
+    /// True when a remembered slot still exists in the grid being rendered: its resource row, and
+    /// the hour and minute the visible hour window and the slot duration currently draw. Both are
+    /// settings the user can change while the view is open, which would otherwise leave the tab stop
+    /// on a slot the grid no longer has - and the grid with no tab stop at all.
+    /// </summary>
+    private bool IsSlotInGrid((string RowKey, int Hour, int Minute) slot)
+        => _rowKeys.Contains(slot.RowKey)
+           && slot.Hour >= State.VisibleStartHour
+           && slot.Hour < State.VisibleEndHour
+           && Array.IndexOf(State.SlotMinutes, slot.Minute) >= 0;
+
+    private (string RowKey, int Hour, int Minute) RovingSlot =>
+        _focusedSlot is { } slot && IsSlotInGrid(slot)
+            ? slot
+            : (_rowKeys.Count > 0 ? _rowKeys[0] : _unassignedKey, State.VisibleStartHour, State.SlotMinutes[0]);
+
+    private string? SlotTabIndex(string rowKey, int hour, int minute)
+    {
+        if (State.ReadOnly)
+            return null;
+
+        return RovingSlot == (rowKey, hour, minute) ? "0" : "-1";
+    }
+
+    /// <summary>
+    /// Moves the roving slot by <paramref name="rowDelta"/> resource rows and
+    /// <paramref name="slotDelta"/> slots along the time axis, clamped to the grid.
+    /// </summary>
+    private void MoveRovingSlot(int rowDelta, int slotDelta)
+    {
+        var slots = State.SlotMinutes;
+        var (rowKey, hour, minute) = RovingSlot;
+
+        var index = Array.IndexOf(slots, minute);
+        if (index < 0) index = 0;
+
+        var absolute = ((hour - State.VisibleStartHour) * slots.Length) + index + slotDelta;
+        var total = State.VisibleHourCount * slots.Length;
+        absolute = Math.Clamp(absolute, 0, Math.Max(0, total - 1));
+
+        var rowIndex = Math.Max(0, _rowKeys.IndexOf(rowKey));
+        rowIndex = Math.Clamp(rowIndex + rowDelta, 0, Math.Max(0, _rowKeys.Count - 1));
+
+        _focusedSlot = (
+            _rowKeys.Count > 0 ? _rowKeys[rowIndex] : rowKey,
+            State.VisibleStartHour + (absolute / slots.Length),
+            slots[absolute % slots.Length]);
+        _pendingSlotFocus = true;
+    }
+
+    /// <summary>
+    /// Shades a slot that falls outside the business hours, so the schedulable part of the row reads
+    /// at a glance. Off unless the consumer asked for it.
+    /// </summary>
+    private string? OffHoursClass(DateTime day, int hour, int minute)
+        => State.HighlightBusinessHours
+           && State.IsBusinessTime(day.Date.AddHours(hour).AddMinutes(minute)) is false
+            ? "bit-bfc-slot-off"
+            : null;
+
+    private void SetRovingSlot(string rowKey, int hour, int minute)
+    {
+        _focusedSlot = (rowKey, hour, minute);
+        _pendingSlotFocus = true;
+    }
 
     private RenderFragment RenderLanes(List<List<BitFullCalendarEvent>> lanes) => builder =>
     {
@@ -44,11 +120,14 @@ public partial class BitFcTimelineDayView
             var laneTop = _rowPadding + (li * (_laneHeight + _laneGap));
             foreach (var ev in lanes[li])
             {
-                var pos = BitFullCalendarHelpers.GetTimelineBlockPosition(ev, State.SelectedDate, hourWidth);
+                var pos = BitFullCalendarHelpers.GetTimelineBlockPosition(
+                    ev, State.SelectedDate, hourWidth, State.VisibleStartHour, State.VisibleEndHour);
                 if (pos is not { } p)
                     continue;
 
-                var style = $"left:{p.LeftPx.ToString("F2", inv)}px;width:{Math.Max(p.WidthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
+                // Anchor with inset-inline-start (not left): the row's drop cells are positioned the
+                // same way, so a right-to-left layout keeps blocks and cells on the same axis.
+                var style = $"inset-inline-start:{p.LeftPx.ToString("F2", inv)}px;width:{Math.Max(p.WidthPx, 12).ToString("F2", inv)}px;top:{laneTop}px;height:{_laneHeight}px;";
                 // Key the per-event block by the event's stable identity so Blazor preserves the
                 // correct BitFcTimelineEventBlock instance (and its in-flight drag/resize state) when
                 // lane ordering is recomputed, instead of reusing a sibling's component by position -
@@ -62,7 +141,7 @@ public partial class BitFcTimelineDayView
                 builder.AddAttribute(5, "OnSelected", EventCallback.Factory.Create<BitFullCalendarEvent>(this, SelectEvent));
                 builder.AddAttribute(6, "EventTemplate", EventTemplate);
                 builder.AddAttribute(7, "PixelsPerMinute", hourWidth / 60.0);
-                builder.AddAttribute(8, "SnapMinutes", 30);
+                builder.AddAttribute(8, "SnapMinutes", State.SlotDurationMinutes);
                 builder.CloseComponent();
                 builder.CloseElement();
             }
@@ -88,7 +167,8 @@ public partial class BitFcTimelineDayView
 
         if (OnAddClick.HasDelegate)
         {
-            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(State.SelectedDate, hour, minute);
+            var draft = BitFullCalendarHelpers.CreateDraftEventForTimeSlot(
+                State.SelectedDate, hour, minute, State.SlotDurationMinutes);
             draft.Resource = resourceId == _unassignedKey ? null : resourceId;
             await OnAddClick.InvokeAsync(draft);
             return;
@@ -103,10 +183,45 @@ public partial class BitFcTimelineDayView
 
     private async Task OnSlotKeyDownAsync(KeyboardEventArgs e, string resourceId, int hour, int minute)
     {
-        // Ignore auto-repeat keydowns so a held Enter/Space only creates a single draft event,
-        // matching the day/week view behavior.
-        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
-            await OnSlotClickAsync(resourceId, hour, minute);
+        // The slot the key came from is the one the roving tabindex should sit on, whatever the
+        // previous arrow keys had selected. The time axis runs along the reading direction here, so
+        // left/right move in time and up/down move between resource rows.
+        switch (e.Key)
+        {
+            case "Enter" or " " or "Spacebar":
+                // Ignore auto-repeat so a held key only creates a single draft event.
+                if (e.Repeat is false)
+                    await OnSlotClickAsync(resourceId, hour, minute);
+                return;
+
+            case "ArrowRight":
+                SetRovingSlot(resourceId, hour, minute);
+                MoveRovingSlot(0, State.IsRtl ? -1 : 1);
+                return;
+
+            case "ArrowLeft":
+                SetRovingSlot(resourceId, hour, minute);
+                MoveRovingSlot(0, State.IsRtl ? 1 : -1);
+                return;
+
+            case "ArrowDown":
+                SetRovingSlot(resourceId, hour, minute);
+                MoveRovingSlot(1, 0);
+                return;
+
+            case "ArrowUp":
+                SetRovingSlot(resourceId, hour, minute);
+                MoveRovingSlot(-1, 0);
+                return;
+
+            case "Home":
+                SetRovingSlot(resourceId, State.VisibleStartHour, State.SlotMinutes[0]);
+                return;
+
+            case "End":
+                SetRovingSlot(resourceId, State.VisibleEndHour - 1, State.SlotMinutes[^1]);
+                return;
+        }
     }
 
     private string? SlotAriaLabel(string rowLabel, int hour, int minute)
@@ -140,7 +255,16 @@ public partial class BitFcTimelineDayView
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var sig = $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}";
+        // The arrow keys only moved the tabbable slot; the focus has to follow it here, once the
+        // new tabindex has actually been rendered.
+        if (_pendingSlotFocus)
+        {
+            _pendingSlotFocus = false;
+            var (rowKey, hour, minute) = RovingSlot;
+            await BitFcFocusInterop.TryFocusAsync(JS, SlotElementId(rowKey, hour, minute));
+        }
+
+        var sig = $"{State.SelectedDate:yyyy-MM-dd}|{State.StartOfDayHour}|{State.VisibleStartHour}|{State.VisibleEndHour}";
         if (sig == _scrollSignature) return;
 
         if (await BitFcTimelineScrollInterop.TryScrollToTargetAsync(JS, _scrollContainerId))

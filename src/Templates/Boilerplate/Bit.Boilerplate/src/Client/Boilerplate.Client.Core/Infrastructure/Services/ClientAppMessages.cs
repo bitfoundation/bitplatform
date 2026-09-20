@@ -71,9 +71,16 @@ public partial class ClientAppMessages
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
 
     /// <summary>
-    /// A publisher that publishes this message notifies that the app culture has changed.
+    /// A publisher that sends this message announces that the whole app - the router, the layout, the app menu and
+    /// the current page - should be torn down and built again, so a change reaching all of them at once (a new
+    /// culture, time zone or tenant) lands everywhere without each of them listening for it.
+    /// <para>
+    /// SOFT: only the component tree is rebuilt, while the .NET and blazor webassembly/hybrid runtimes and every
+    /// service keep running - far cheaper than a <c>forceLoad</c> navigation. <c>Routes</c> is the one subscriber,
+    /// keying the tree on a counter this message increments (See <c>Routes.razor</c>).
+    /// </para>
     /// </summary>
-    public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);
+    public const string SOFT_RESTART = nameof(SOFT_RESTART);
 
     /// <summary>
     /// A publisher that publishes this message notifies that the online status of the app has changed.
@@ -115,11 +122,9 @@ public partial class ClientAppMessages
     /// </summary>
     public const string EXTERNAL_SIGN_IN_CALLBACK = nameof(EXTERNAL_SIGN_IN_CALLBACK);
 
-    //#if (multitenant == true)
     /// <summary>
-    /// A publisher that publishes this message notifies that the user's current tenant has changed (switched, renamed, created or left).
-    /// The payload is the new current tenant (a <c>TenantDto</c>) or null when the user no longer has a tenant selected.
+    /// A publisher that publishes this message notifies that the user's consent decisions have changed, so whatever
+    /// acted on them has to act again.
     /// </summary>
-    public const string CURRENT_TENANT_CHANGED = nameof(CURRENT_TENANT_CHANGED);
-    //#endif
+    public const string CONSENT_CHANGED = nameof(CONSENT_CHANGED);
 }

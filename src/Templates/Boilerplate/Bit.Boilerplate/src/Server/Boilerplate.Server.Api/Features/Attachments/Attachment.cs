@@ -9,4 +9,6 @@ public partial class Attachment
     public AttachmentKind Kind { get; set; }
 
     public string? Path { get; set; }
+
+    public DateTimeOffset CreatedOn { get; set; }
 }

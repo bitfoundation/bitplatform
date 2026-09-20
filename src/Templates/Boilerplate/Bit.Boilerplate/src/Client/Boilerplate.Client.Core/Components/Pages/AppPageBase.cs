@@ -4,6 +4,11 @@ public abstract partial class AppPageBase : AppComponentBase
 {
     [Parameter] public string? culture { get; set; }
 
+    /// <summary>
+    /// <inheritdoc cref="UriExtensions.GetCanonicalUrl"/>
+    /// </summary>
+    protected string CanonicalUrl => new Uri(NavigationManager.Uri).GetCanonicalUrl();
+
     protected BitDataGridStrings DataGridStrings { get; private set; } = default!;
 
     protected override async Task OnInitAsync()
@@ -71,7 +76,7 @@ public abstract partial class AppPageBase : AppComponentBase
 
         if (InPrerenderSession) return;
 
-        if (string.IsNullOrEmpty(culture)) return;
+        if (string.IsNullOrWhiteSpace(culture)) return;
 
         if (CultureInfoManager.InvariantGlobalization || CultureInfoManager.SupportedCultures.Any(sc => string.Equals(sc.Culture.Name, culture, StringComparison.InvariantCultureIgnoreCase)) is false)
         {

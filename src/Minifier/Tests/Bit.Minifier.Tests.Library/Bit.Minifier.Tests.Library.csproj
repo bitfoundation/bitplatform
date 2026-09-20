@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Fixture for Bit.Minifier.Tests: every construct whose metadata the minifier rewrites. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <DebugType>portable</DebugType>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.Minifier.Tests.Friend" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- named after Glossary, the way ResourceManager(typeof(Glossary)) finds it -->
+        <EmbeddedResource Include="Glossary.txt" LogicalName="Bit.Minifier.Tests.Library.Glossary.txt" />
+    </ItemGroup>
+
+</Project>

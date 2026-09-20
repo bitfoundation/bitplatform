@@ -16,6 +16,7 @@ public class GamepadState
     /// <summary>A device string chosen by the browser, e.g. the vendor and product name.</summary>
     public string Id { get; set; } = string.Empty;
 
+    /// <summary>True while the controller is attached. A snapshot taken after it was unplugged reads false.</summary>
     public bool Connected { get; set; }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using Bit.Butil;
+﻿using Bit.Butil;
 
 namespace Bit.Websites.Platform.Client.Pages.Templates;
 
@@ -91,12 +91,6 @@ public partial class Templates02GettingStartedPage
 
                 (text: @"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
                 command: "code --install-extension ms-dotnettools.csdevkit;"),
-
-                (text: @"echo 'Install the GitHub Copilot extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';",
-                command: "code --install-extension GitHub.copilot;"),
-
-                (text: @"echo 'Install the GitHub Copilot Chat extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat';",
-                command: "code --install-extension GitHub.copilot-chat;"),
 
                 (text: @"echo 'Install the C# extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp';",
                 command: "code --install-extension ms-dotnettools.csharp;"),

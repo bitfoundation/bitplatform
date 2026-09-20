@@ -74,6 +74,12 @@ public partial class MainLayout : IDisposable
     /// the API tables' #component-dir style links are exactly that. So is a navigation that carries a
     /// fragment of its own, which brings its own destination for the browser to scroll to.
     /// </para>
+    /// <para>
+    /// So is a change of query alone. A page that keeps its state in the address bar - the icon
+    /// browser's term, its category and the icon it has open - navigates on every keystroke and every
+    /// click, and each of those is the page already on screen rather than a new one to be started at
+    /// the top of.
+    /// </para>
     /// </summary>
     private void GoToTopOnPageChange(string location)
     {
@@ -105,9 +111,13 @@ public partial class MainLayout : IDisposable
         }
     }
 
+    /// <summary>
+    /// The address with everything that is not the page itself taken off it, so that two addresses
+    /// naming the same page compare equal however much state either of them is carrying.
+    /// </summary>
     private static string GetPath(string url)
     {
-        var index = url.IndexOf('#', StringComparison.Ordinal);
+        var index = url.IndexOfAny(['?', '#']);
 
         return index < 0 ? url : url[..index];
     }

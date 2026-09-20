@@ -29,7 +29,11 @@
             let startY = -1;
             let originalTransform: string;
             let orientation = BitSwipeOrientation.None;
-            const bcr = element.getBoundingClientRect();
+            // How far the surface has to be dragged is a fraction of how big it is, so the box is measured
+            // when the gesture starts rather than when it is registered: a surface that is resized while it
+            // is registered - a panel given a new size, a callout whose content grew - would otherwise be
+            // weighed against a box it no longer has.
+            let bcr = element.getBoundingClientRect();
             const isTouchDevice = Utils.isTouchDevice();
 
             const getX = (e: TouchEvent | PointerEvent) => isTouchDevice ? (e as TouchEvent).touches[0].screenX : (e as PointerEvent).screenX;
@@ -38,6 +42,8 @@
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 startX = getX(e);
                 startY = getY(e);
+
+                bcr = element.getBoundingClientRect();
 
                 element.style.transitionDuration = '0s';
                 originalTransform = element.style.transform;
@@ -100,7 +106,7 @@
                 }
 
                 if (position === BitSwipePosition.Top) {
-                    if (diffY < 0) {
+                    if (diffY < 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
                         element.style.transform = originalTransform;
@@ -108,7 +114,7 @@
                 }
 
                 if (position === BitSwipePosition.Bottom) {
-                    if (diffY > 0) {
+                    if (diffY > 0 && !canScrollAway()) {
                         element.style.transform = `translateY(${diffY}px)`;
                     } else {
                         element.style.transform = originalTransform;
@@ -116,6 +122,19 @@
                 }
 
                 await dotnetObj.invokeMethodAsync('OnMove', diffX, diffY);
+
+                // A surface that scrolls its own content is dragged away only from the end of that content:
+                // pulling a bottom sheet down while it is scrolled means scrolling it back up, and it is the
+                // gesture the finger is already making. The surfaces whose content scrolls in an element of
+                // their own never scroll themselves, so this leaves them where they were.
+                function canScrollAway() {
+                    const scrollable = element!.scrollHeight - element!.clientHeight;
+                    if (scrollable <= 1) return false;
+
+                    return position === BitSwipePosition.Bottom
+                        ? element!.scrollTop > 1
+                        : element!.scrollTop < scrollable - 1;
+                }
 
                 function cancel() {
                     if (!e.cancelable) return;
@@ -152,19 +171,32 @@
                         }
                     }
 
-                    if (position === BitSwipePosition.Top && diffY < 0) {
+                    // The two vertical edges weigh the drag against the same content scrolling the drag
+                    // itself was checked against, so a gesture that only scrolled the surface never ends by
+                    // throwing it away.
+                    const scrollable = element.scrollHeight - element.clientHeight;
+                    const scrolled = scrollable > 1 && (position === BitSwipePosition.Bottom
+                        ? element.scrollTop > 1
+                        : element.scrollTop < scrollable - 1);
+
+                    if (position === BitSwipePosition.Top && diffY < 0 && !scrolled) {
                         if ((Math.abs(diffY) / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
 
-                    if (position === BitSwipePosition.Bottom && diffY > 0) {
+                    if (position === BitSwipePosition.Bottom && diffY > 0 && !scrolled) {
                         if ((diffY / bcr.height) > trigger) {
                             return await dotnetObj.invokeMethodAsync('OnClose');
                         }
                     }
-                    element.style.transform = originalTransform;
                 } finally {
+                    // The transform the drag wrote onto the element is taken off again however the gesture
+                    // ended, the dismissal included: an inline transform left behind outlives the gesture and
+                    // overrides whatever the stylesheet has to say about where the surface sits, so the next
+                    // time it is shown it would come back offset by however far the last drag got.
+                    element.style.transform = originalTransform;
+
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                     diffX = diffY = 0;
                     orientation = BitSwipeOrientation.None;

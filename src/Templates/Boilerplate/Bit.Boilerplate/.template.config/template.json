@@ -29,7 +29,7 @@
             "generator": "guid",
             "replaces": "AC87AA5B-4B37-4E52-8468-2D5DF24AF256",
             "parameters": {
-                "defaultFormat": "D" //Guid format 
+                "defaultFormat": "D" //Guid format
             }
         },
         "SeedDataProductCreatedOn": {
@@ -60,7 +60,7 @@
                 },
                 {
                     "choice": "MySql",
-                    "description": "MySql - MariaDB"
+                    "description": "MySql - uses Oracle's Connector/NET EF Core provider, which is licensed GPL-2.0 with the Universal FOSS Exception, so a closed source application needs Oracle's commercial license."
                 },
                 {
                     "choice": "Other",
@@ -248,6 +248,173 @@
             "defaultValue": "false",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
+        "theme": {
+            "displayName": "Theme",
+            "type": "parameter",
+            "datatype": "choice",
+            "defaultValue": "Fluent2",
+            "choices": [
+                {
+                    "choice": "Fluent2",
+                    "description": "Fluent 2 design system"
+                },
+                {
+                    "choice": "Fluent",
+                    "description": "Fluent design system"
+                },
+                {
+                    "choice": "Cupertino",
+                    "description": "Cupertino design system (experimental)"
+                },
+                {
+                    "choice": "Material",
+                    "description": "Material design system (experimental)"
+                }
+            ],
+            "description": "The design system the app's UI ships with, powered by bit BlazorUI theming."
+        },
+        // The chosen design system is pinned in three spellings: as bit-theme-light / bit-theme-dark preset names in
+        // the index.html files, as the BitThemePresets / BitExtraThemePresets constants of AppThemePresets, which is
+        // where every head reads it from, and as the theme-color literal of the static index.html files, which have no
+        // C# to read AppThemePresets with. All three are rewritten here, so none needs a conditional directive.
+        "themeLightName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "fluent2-light",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "fluent-light"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "cupertino-light"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "material-light"
+                    },
+                    {
+                        "condition": "",
+                        "value": "fluent2-light"
+                    }
+                ]
+            }
+        },
+        "themeDarkName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "fluent2-dark",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "fluent-dark"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "cupertino-dark"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "material-dark"
+                    },
+                    {
+                        "condition": "",
+                        "value": "fluent2-dark"
+                    }
+                ]
+            }
+        },
+        // Only the dark literal is generated: the light background of every preset this template can pick is #FFFFFF.
+        // The content="..." is part of the match, because #FFFFFF alone also spells manifest.json's theme_color and a
+        // color in an email template, while #131313 occurs nowhere else.
+        "themeDarkBackground": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "content=\"#131313\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "content=\"#0F1318\""
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "content=\"#131313\""
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "content=\"#0C131B\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "content=\"#131313\""
+                    }
+                ]
+            }
+        },
+        "themeLightConstant": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "BitExtraThemePresets.Fluent2Light",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "BitThemePresets.FluentLight"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "BitExtraThemePresets.CupertinoLight"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "BitExtraThemePresets.MaterialLight"
+                    },
+                    {
+                        "condition": "",
+                        "value": "BitExtraThemePresets.Fluent2Light"
+                    }
+                ]
+            }
+        },
+        "themeDarkConstant": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "BitExtraThemePresets.Fluent2Dark",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "BitThemePresets.FluentDark"
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "BitExtraThemePresets.CupertinoDark"
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "BitExtraThemePresets.MaterialDark"
+                    },
+                    {
+                        "condition": "",
+                        "value": "BitExtraThemePresets.Fluent2Dark"
+                    }
+                ]
+            }
+        },
         "nameToLower": {
             "type": "generated",
             "generator": "casing",
@@ -365,6 +532,13 @@
                     {
                         "regex": "^(https|http):\/\/",
                         "replacement": ""
+                    },
+                    // A pasted url carries a trailing slash, and this value lands in bare-host positions
+                    // (iOS/MacCatalyst `applinks:` entitlements, Android `DataHosts`) where `host/` never matches.
+                    // Only the trailing slash is stripped - a base path is legitimate in ServerAddress.
+                    {
+                        "regex": "\/+$",
+                        "replacement": ""
                     }
                 ]
             },
@@ -386,6 +560,11 @@
                 "steps": [
                     {
                         "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    },
+                    // See normalizedServerUrl: a trailing slash breaks the bare-host call sites.
+                    {
+                        "regex": "\/+$",
                         "replacement": ""
                     }
                 ]
@@ -448,6 +627,11 @@
                         ".vs/**",
                         "**/[Bb]in/**",
                         "**/[Oo]bj/**",
+                        // Build / tooling output that a local `dotnet pack` would otherwise carry into the
+                        // nupkg (node_modules alone is ~50MB) and from there into every generated project.
+                        "**/node_modules/**",
+                        "**/[Tt]est[Rr]esults/**",
+                        ".playwright-mcp/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",
@@ -456,10 +640,15 @@
                         "**/*.nuspec",
                         "src/Server/**/Data/Migrations/**",
                         "src/**/App_Data/**",
+                        // E2E tests against the deployed demo apps (adminpanel/todo/sales.bitplatform.dev and friends),
+                        // which only exist for this repository - a generated project has no such deployments.
+                        "src/Internal/**",
                         // Needs ProductController (Admin module) and ProductViewController + the product page (Sales
                         // module) at once, and "module" is a single choice, so it can only ever run against the
                         // template's own source tree.
-                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs"
+                        "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        // Only that test uses it.
+                        "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs"
                     ]
                 },
                 {
@@ -489,7 +678,9 @@
                         // Drive ProductController / CategoryController, which this same rule removes.
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
-                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        // Renders Pages/Categories, which this same rule removes.
+                        "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs"
                     ]
                 },
                 {
@@ -503,6 +694,14 @@
                     ]
                 },
                 {
+                    // The product cards come with AppChatbot.ShowProducts, which only these configurations have.
+                    "condition": "(module != Sales || (database != PostgreSQL && database != SqlServer))",
+                    "exclude": [
+                        "src/Shared/Features/Products/ProductRecommendationDto.cs",
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/ProductsCard*"
+                    ]
+                },
+                {
                     "condition": "(module != Admin && module != Sales)",
                     "exclude": [
                         "src/Shared/Features/Categories/**",
@@ -513,7 +712,7 @@
                         // Covers ProductConfiguration's seed and ProductDto.FormattedPrice, both of which this rule removes.
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs"
                     ]
-                },
+                },  
                 {
                     "condition": "(sample != true && offlineDb != true)",
                     "exclude": [
@@ -526,15 +725,12 @@
                 {
                     "condition": "(offlineDb == true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*",
-                        "src/Shared/Features/Todo/ITodoItemController.cs",
-                        "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemController.cs"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/TodoPage.*"
                     ]
                 },
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Web/.config/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
@@ -547,11 +743,17 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/Tests/Features/ServerWeb/**",
+                        "src/Tests/Features/DevMcp/**",
+                        "src/Tests/Features/Versioning/**",
+                        "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
                         "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
+                        "src/Tests/Features/Identity/GetAccessTokenTests.cs",
+                        "src/Tests/Features/Identity/AccessTokenCookieTests.cs",
                         "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
+                        "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
@@ -560,16 +762,28 @@
                         "src/Tests/Features/Diagnostics/DiagnosticModalVirtualizationTests.cs",
                         "src/Tests/Features/TemplateConfig/SourceNameLeakTests.cs",
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
+                        "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
+                        "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
+                        "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
+                        "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
+                        "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
+                        "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
+                        "src/Tests/Features/Culture/ResxParityTests.cs",
+                        "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
                         "src/Tests/Features/TemplateConfig/BitComponentParameterTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        "src/Tests/Features/Categories/AddOrEditCategoryModalTests.cs",
                         "src/Tests/Features/Ads/AdsServiceTests.cs",
                         "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
+                        "src/Tests/Features/Identity/MagicLinkReplayTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
+                        "src/Tests/Features/Identity/TwoFactorAmrClaimTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
@@ -577,6 +791,10 @@
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
                         "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
+                        "src/Tests/Features/Identity/AccountErasureTests.cs",
+                        "src/Tests/Features/Identity/PersonalDataExportTests.cs",
+                        "src/Tests/Features/Identity/UnconfirmedUsersRetentionTests.cs",
+                        "src/Tests/Features/Attachments/AttachmentMetadataStrippingTests.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
@@ -587,14 +805,22 @@
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationEmailCultureTests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
                         "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/Configuration/ServiceRegistrationTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
+                        "src/Tests/Features/PubSub/SoftRestartTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
+                        "src/Tests/Features/Diagnostics/DeploymentConfigurationTests.cs",
+                        "src/Tests/Features/Diagnostics/HealthCheckRulesTests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticTestMessagesTests.cs",
+                        "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
+                        "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
+                        "src/Tests/Features/TimeZone/TimeZoneSelectionUITests.cs",
                         "src/Tests/Features/Culture/CultureSelectionUITests.cs",
                         "src/Tests/Features/Identity/PhoneNumberNormalizationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
@@ -603,6 +829,11 @@
                         "src/Tests/Features/OpenApi/OpenApiScalarIntegrationTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateUITests.cs",
                         "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
+                        "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs",
+                        "src/Tests/Features/Caching/ResponseCacheAttributeContractTests.cs",
+                        "src/Tests/Features/Jobs/RecurringJobPruningTests.cs",
+                        "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
+                        "src/Tests/Features/Caching/CultureCookieCacheabilityTests.cs",
                         "src/Tests/Features/Identity/TokenClassSeparationTests.cs",
                         "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
@@ -613,16 +844,27 @@
                         "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
                         "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",
+                        "src/Tests/Features/ErrorHandling/ErrorPageStatusCodeTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
+                        "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
+                        "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
+                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
                         "src/Tests/Features/RateLimiting/IdentityRateLimitTests.cs",
                         "src/Tests/Features/Identity/RoleQuotaClaimLifecycleTests.cs",
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs"
+                    ]
+                },
+                {
+                    // RequestHeadersDelegatingHandler sends UpdateSession to the page's own host only under a standalone api.
+                    "condition": "(advancedTests != true || api == Integrated)",
+                    "exclude": [
+                        "src/Tests/Features/Identity/AccessTokenCookieUITests.cs"
                     ]
                 },
                 {
@@ -635,6 +877,7 @@
                 {
                     "condition": "(advancedTests != true || module != Sales)",
                     "exclude": [
+                        "src/Tests/Features/Products/ProductNotFoundPreRenderTests.cs",
                         "src/Tests/Features/Identity/QuickSignInUITests.cs",
                         "src/Tests/Features/Identity/MagicLinkReturnUrlTests.cs"
                     ]
@@ -652,23 +895,38 @@
                     "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
+                        "src/Tests/Features/SignalR/SignalRInfiniteRetryPolicyTests.cs",
+                        "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
                         "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotVoiceCallTests.cs",
                         "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelAnswerRoutingTests.cs",
-                        "src/Tests/Features/Chatbot/TestChatClient.cs"
+                        "src/Tests/Features/Chatbot/AiChatPanelCardsUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelHistoryUITests.cs",
+                        "src/Tests/Features/Chatbot/PartialJsonReaderTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotConversationMetricsTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
+                        "src/Tests/Features/Chatbot/TestChatClient.cs",
+                        "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
+                        "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
+                        "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
                     ]
                 },
                 {
                     // The push notification feature, and therefore its dtos and entities, only exist under `notification`.
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
-                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs"
+                        "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs",
+                        "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
+                        "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
+                        "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
+                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs"
                     ]
                 },
                 {
@@ -677,8 +935,17 @@
                     "condition": "(advancedTests != true || module != Admin || multitenant != true)",
                     "exclude": [
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
                         "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                    ]
+                },
+                {
+                    // Needs all four at once: the hub that publishes DASHBOARD_DATA_CHANGED, the tenants it must be
+                    // scoped to, the category controller that publishes it and the seeded store-admin it signs in as.
+                    "condition": "(advancedTests != true || signalR != true || multitenant != true || module != Admin)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/DashboardBroadcastTenantScopeTests.cs"
                     ]
                 },
                 {
@@ -690,7 +957,8 @@
                 {
                     "condition": "(cloudflare != true)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs"
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/Services/CloudflarePurgeResponse.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/CloudflareHealthCheck.cs"
                     ]
                 },
                 {
@@ -700,8 +968,10 @@
                         "src/Shared/Infrastructure/Services/SharedAppMessages.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/**",
                         "src/Server/Boilerplate.Server.Api/Features/Chatbot/**",
+                        "src/Server/Boilerplate.Server.Api/Features/Attachments/AiChatImagesRetentionJobRunner.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
+                        "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs"
                     ]
@@ -711,6 +981,14 @@
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Products/ProductEmbeddingService.cs",
                         ".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md"
+                    ]
+                },
+                {
+                    // Microsoft.Extensions.AI.OpenAI is only referenced under these configurations.
+                    "condition": "(signalR != true && database != PostgreSQL && database != SqlServer)",
+                    "exclude": [
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/AIChatAgentHealthCheck.cs",
+                        "src/Server/Boilerplate.Server.Api/Infrastructure/HealthChecks/AIEmbeddingHealthCheck.cs"
                     ]
                 },
                 {
@@ -735,6 +1013,7 @@
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Extensions/NSDataExtensions.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/AppUNUserNotificationCenterDelegate.cs",
                         "src/Client/Boilerplate.Client.Maui/Platforms/iOS/Services/iOSPushNotificationService.cs",
+                        "src/Client/Boilerplate.Client.Web/AdsPushVapidOptions.cs",
                         "src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebPushNotificationService.cs",
                         "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsPushNotificationService.cs",
                         "src/Server/Boilerplate.Server.Api/Features/PushNotification/**",
@@ -751,6 +1030,8 @@
                     "condition": "(captcha != reCaptcha)",
                     "exclude": [
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/GoogleRecaptchaService.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/HealthChecks/GoogleRecaptchaHealthCheck.cs",
+                        "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignUp/GoogleRecaptcha.razor"
                     ]
                 },
@@ -758,6 +1039,7 @@
                     "condition": "(appInsights != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
+                        "src/Shared/ApplicationInsightsOptions.cs",
                         "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
@@ -805,10 +1087,12 @@
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationEmailCultureTests.cs",
                         "src/Tests/Features/Tenants/TenantMembershipStateTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
-                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
+                        "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs"
                     ]
                 },
                 {

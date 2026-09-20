@@ -39,15 +39,27 @@ builder.Services.AddBitButilServices();
     <DemoSection Title="The value is empty on the first render, correct afterwards"
                  Description="This is prerendering working as designed. There is no browser during the server pass, so Butil returns a safe default - an empty string, an empty array, false, zero - rather than throwing. Reading in OnInitializedAsync therefore gets you the default, and reading again in the browser gets the real value. Move any read whose answer you branch on into OnAfterRenderAsync guarded by firstRender, and call StateHasChanged afterwards because the first render has already happened."
                  Code=@("""
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender is false) return;
+@inject Bit.Butil.LocalStorage localStorage
 
-    _token = await localStorage.GetItem("token");
+<p>@_token</p>
 
-    StateHasChanged();
+@code {
+    private string? _token;
+
+    // Not OnInitialized: that runs on the server during the prerender pass, where there is no
+    // browser to ask. Butil answers with the default rather than throwing, which is why the value
+    // is empty rather than the page being broken.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _token = await localStorage.GetItem("token");
+
+        StateHasChanged();
+    }
 }
-""") />
+""")
+                 Language="razor" />
 
     <DemoSection Title="An event fires, the log shows it, but the UI does not update"
                  Description="The callback arrived from JavaScript rather than from Blazor's own event dispatch, so nothing told the renderer that state changed. Mutate your state in the handler and then ask for a re-render through InvokeAsync(StateHasChanged) - InvokeAsync, not StateHasChanged directly, because the callback may not be running on the renderer's synchronization context."
@@ -62,27 +74,45 @@ await box.SubscribeEvent<ButilMouseEventArgs>(js, ButilEvents.Click, args =>
     <DemoSection Title="NotAllowedError, or a call that silently does nothing"
                  Description="Three separate rules produce this, and the message rarely says which. The page may not be a secure context, so the API object does not exist at all. The user may have denied the permission, in which case it stays denied until they clear it in site settings. Or the call may have lost its user gesture - the window closes as soon as the handler yields to something slow, so a permission-gated call has to be the first await in a click handler, not the one after a server round trip."
                  Code=@("""
-// Check which of the three it is before guessing:
-var secure = await window.IsSecureContext();          // false → no API at all
-var state = await permissions.Query("clipboard-write"); // Denied → user said no
-// still failing → the gesture was gone by the time you called
-""") />
+@inject Bit.Butil.Window window
+@inject Bit.Butil.Permissions permissions
+
+@code {
+    // Check which of the three it is before guessing:
+    private async Task Diagnose()
+    {
+        var secure = await window.IsSecureContext();            // false → no API at all
+        var state = await permissions.Query("clipboard-write"); // Denied → user said no
+        // still failing → the gesture was gone by the time you called
+    }
+}
+""")
+                 Language="razor" />
 
     <DemoSection Title="JSDisconnectedException while navigating away"
                  Description="On Blazor Server the circuit can vanish before your teardown finishes, and an interop call in DisposeAsync then throws. Butil's own disposal paths already swallow the three exceptions that teardown legitimately produces - JSDisconnectedException, OperationCanceledException and ObjectDisposedException - so disposing a ButilSubscription or an AnimationHandle is safe. Your own interop in DisposeAsync is not covered by that and needs the same guard."
                  Code=@("""
-public async ValueTask DisposeAsync()
-{
-    try
+@implements IAsyncDisposable
+@inject IJSRuntime js
+@inject Bit.Butil.Keyboard keyboard
+
+@code {
+    private ButilSubscription? subscription;
+
+    public async ValueTask DisposeAsync()
     {
-        await subscription.DisposeAsync();   // already safe
-        await js.InvokeVoidAsync("myOwnCleanup");   // yours is not
+        try
+        {
+            if (subscription is not null) await subscription.DisposeAsync();   // already safe
+            await js.InvokeVoidAsync("myOwnCleanup");                          // yours is not
+        }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
     }
-    catch (JSDisconnectedException) { }
-    catch (OperationCanceledException) { }
-    catch (ObjectDisposedException) { }
 }
-""") />
+""")
+                 Language="razor" />
 
     <DemoSection Title="Handlers keep firing after the component is gone"
                  Description="A subscription that is never disposed keeps the JavaScript side holding a reference to your component's delegate, so it fires against a component that is no longer rendered - and the component cannot be collected. Every Butil subscription hands back a token for exactly this reason. Keep it, and dispose it. Watch out for the bulk removers too: Keyboard.RemoveAll clears every shortcut registered against that Keyboard instance, not only the ones your component added."
@@ -103,23 +133,54 @@ public async ValueTask DisposeAsync()
     <DemoSection Title="It works on localhost and breaks in production"
                  Description="Browsers treat localhost as a secure context so that development works over plain HTTP. The moment the app is served from a real host over HTTP, every secure-context API disappears - clipboard, crypto, geolocation, service workers, web locks, storage estimates and more. Serve over HTTPS. The browser-support page lists exactly which APIs are affected, and IsSupported() answers it per API: it probes for the object itself, which an insecure context does not have, so it reports false for exactly the reason you are chasing."
                  Code=@("""
-if (await window.IsSecureContext() is false)
-{
-    // this is the difference between your machine and production
-}
+@inject Bit.Butil.Window window
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Crypto crypto
 
-// per-API, and the same answer: false here means navigator.clipboard
-// does not exist, which over plain HTTP it never does
-if (await clipboard.IsSupported() is false) { /* ... */ }
-if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
-""") />
+@code {
+    private async Task Check()
+    {
+        if (await window.IsSecureContext() is false)
+        {
+            // this is the difference between your machine and production
+        }
+
+        // per-API, and the same answer: false here means navigator.clipboard
+        // does not exist, which over plain HTTP it never does
+        if (await clipboard.IsSupported() is false) { /* ... */ }
+        if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
+    }
+}
+""")
+                 Language="razor" />
 
     <DemoSection Title="One API stops working after publish, the rest are fine"
-                 Description="A published WebAssembly app rebuilds bit-butil.js from the modules its trimmed assembly still calls, so the JavaScript for an API the trimmer decided was unreachable is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which the trimmer cannot follow. Inject the service somewhere the trimmer can see, or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause."
+                 Description="A published app rebuilds bit-butil.js from the modules it can still reach, so the JavaScript for an API that neither the trimmer nor BitButilScriptScan could see is genuinely not in the bundle - and the symptom is the missing-bridge error above, for that one API. It is almost always correct: the API really is only reached from code that was trimmed away, or only through reflection, which neither can follow. Name the module - or the Bit.Butil class behind it - in BitButilScriptModule, which is added to whatever they concluded; or set BitButilTrimScripts to false to publish the whole bundle and confirm that is the cause first."
                  Code=@("""
+<!-- Keep this one whatever the publish concluded -->
+<ItemGroup>
+  <BitButilScriptModule Include="Clipboard" />
+</ItemGroup>
+
+<!-- Or rule trimming out as the cause entirely -->
 <PropertyGroup>
   <BitButilTrimScripts>false</BitButilTrimScripts>
 </PropertyGroup>
+""")
+                 Language="xml" />
+
+    <DemoSection Title="I set the trimming properties and the bundle is still the full one"
+                 Description="Start with which project BitButilTrimScripts is on in. It only ever trims in the one that publishes the app's static web assets - the WebAssembly head, or a Blazor Web App's server project - and a shared Directory.Build.props hands it to every Razor class library and every MAUI/Blazor Hybrid head as well, none of which publish anything. That is harmless: the switch is fine to share, and the scan it brings with it is read per project, so only the head acts on it. What is not harmless is the switch being nowhere near the head - it defaults to on in a WebAssembly project and off everywhere else, so a Blazor Server app or a Web App's server project has to turn it on. If it is on in the right project, look for a Bit.Butil message in the build output saying the trimming stood down, which means a scan or a BitButilScriptModule list was written out somewhere that is not the head. Two other explanations: BitButilScriptScan is set to None, which leaves the switch on with nothing to trim against on an untrimmed publish - or you are looking at a build. A build always keeps the full bundle, dotnet run and dotnet watch included, so the comparison to make is between two publishes."
+                 Code=@("""
+<!-- src/Directory.Build.props - the switch is fine to share, and brings the scan with it -->
+<PropertyGroup>
+  <BitButilTrimScripts>true</BitButilTrimScripts>
+</PropertyGroup>
+
+<!-- MyApp.Server.csproj - but what the app CALLS belongs to the head that publishes it -->
+<ItemGroup>
+  <BitButilScriptModule Include="WebAuthn" />
+</ItemGroup>
 """)
                  Language="xml" />
 
@@ -133,6 +194,12 @@ public class MyPayload
 }
 """) />
 </div>
+
+<Callout Type="info" Title="Anything to do with a published bundle">
+    The three sections above about trimming are the symptoms; <a href="javascript-trimming">JavaScript
+    trimming</a> is the feature they come from - the switch, the three signals it works from, where the
+    properties go, and a live check that reads back which modules the app you are looking at downloaded.
+</Callout>
 
 <Callout Type="info" Title="Narrowing it down quickly">
     Most reports resolve to one of three questions. Is the bridge loaded - does

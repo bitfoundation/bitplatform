@@ -51,7 +51,7 @@
                                                      Title="@Localizer[nameof(AppStrings.CurrentTenant)]"
                                                      Styles="@(new() { Content = "overflow:hidden;white-space:nowrap;text-overflow:ellipsis" })">
                                         <BitText Typography="BitTypography.Caption2">
-                                            @(string.IsNullOrEmpty(CurrentTenant.Title) ? CurrentTenant.Name : CurrentTenant.Title)
+                                            @(string.IsNullOrWhiteSpace(CurrentTenant.Title) ? CurrentTenant.Name : CurrentTenant.Title)
                                         </BitText>
                                     </BitActionButton>
                                 }

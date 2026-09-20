@@ -6,6 +6,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The entry point a consuming app touches directly: service registration, and the two global
+/// switches (script loading mode and fast invoke) that apply to every Butil service at once.
+/// </summary>
 public static class BitButil
 {
     /// <summary>
@@ -93,7 +97,7 @@ public static class BitButil
     /// Enables the synchronous in-process ("fast") invoke path for the APIs that opt into it.
     /// <br/>
     /// Only APIs backed by synchronous JavaScript functions (for example <see cref="LocalStorage"/>,
-    /// <see cref="SessionStorage"/>, <see cref="Cookie"/>, <see cref="Console"/> and <see cref="Location"/>)
+    /// <see cref="SessionStorage"/>, <see cref="Cookie"/>, <see cref="Console"/>, <see cref="Location"/> and <see cref="History"/>)
     /// use this path; everything that wraps an asynchronous (Promise-returning) browser API always runs
     /// asynchronously regardless of this setting, so enabling it can't break those calls.
     /// Only effective on Blazor WebAssembly (where an <see cref="Microsoft.JSInterop.IJSInProcessRuntime"/> is available).

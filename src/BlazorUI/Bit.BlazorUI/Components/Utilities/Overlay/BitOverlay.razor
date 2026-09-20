@@ -1,11 +1,39 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onclick="CloseOverlay"
+@* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and the layer
+   is the largest such thing on the screen while an Overlay is open. The press is left to do exactly that -
+   an input only commits what was typed into it once it loses the focus, and the handlers the click runs are
+   the ones that most need to see that value - and the layer is made programmatically focusable instead, so
+   the focus it moves lands here, inside the Overlay, rather than on the body, from where the next Tab would
+   walk into the page the Overlay is there to keep out of reach. The focus the layer took over is handed back
+   to where it came from as the Overlay closes (Utils.captureFocusOrigin / restoreFocusOrigin).
+   That is also why a layer hosting nothing is not marked aria-hidden, the way a backdrop that is only a
+   sibling of its surface is: an element that can take the focus cannot be hidden from assistive technology
+   at the same time, and an empty, unnamed layer is nothing to a screen reader either way.
+   The tabindex is written ahead of the attributes of the consumer so that one of their own is the one that
+   lands, as it is for every other attribute they pass. *@
+<div @ref="RootElement"
+     tabindex="@(TabIndex ?? "-1")"
+     @attributes="HtmlAttributes"
+     @onclick="HandleOnClick"
+     @onmousedown="HandleOnMouseDown"
      id="@_Id"
      aria-label="@AriaLabel"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
-    @ChildContent
+    @if (ChildContent is not null)
+    {
+        @* The content is given a box of its own so that a press and a click on it are told apart from the
+           ones on the layer around it: the layer is what a dismissal is aimed at, and every surveyed
+           backdrop is a sibling of the surface it dims rather than its parent for exactly that reason. The
+           box is laid out as display:contents, so it takes no part in the layout and what the consumer
+           wrote is still what the Overlay's own flex container lays out. *@
+        <div class="bit-ovl-cnt"
+             @onclick="HandleOnContentClick" @onclick:stopPropagation="true"
+             @onmousedown="HandleOnContentMouseDown" @onmousedown:stopPropagation="true">
+            @ChildContent
+        </div>
+    }
 </div>

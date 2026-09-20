@@ -73,11 +73,11 @@ public partial class ProductEmbeddingService
 
         inputs.Add(($"Id: {product.ShortId}", 0.9f));
         inputs.Add(($"Name: {product.Name}", 0.9f));
-        if (string.IsNullOrEmpty(product.DescriptionText) is false)
+        if (string.IsNullOrWhiteSpace(product.DescriptionText) is false)
         {
             inputs.Add((product.DescriptionText, 0.7f));
         }
-        if (string.IsNullOrEmpty(product.PrimaryImageAltText) is false)
+        if (string.IsNullOrWhiteSpace(product.PrimaryImageAltText) is false)
         {
             inputs.Add((product.PrimaryImageAltText, 0.5f));
         }

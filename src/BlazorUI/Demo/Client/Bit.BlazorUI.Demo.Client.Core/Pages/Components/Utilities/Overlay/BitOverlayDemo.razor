@@ -1,31 +1,88 @@
-﻿@page "/components/overlay"
+@page "/components/overlay"
 
 <PageOutlet Url="components/overlay"
             Title="Overlay"
-            Description="The Overlay component is used to provide emphasis on a particular element or parts of it." />
+            Description="Overlay is the layer that covers the page - or a container of it - to catch its clicks and host a loader or a dialog over it." />
 
 <DemoPage Name="Overlay"
-          Description="The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to the user of a state change within the application and can be used for creating loaders, dialogs and more."
+          SecondaryNames="@(["Backdrop", "Scrim"])"
+          Description="Overlay covers the page - or, positioned absolutely, the container it was declared inside of - to signal a state change and put whatever is placed in it over everything else: a loader, a message, a surface of the consumer's own. It catches the clicks meant for what it covers and closes itself on one unless it is told not to - a click on the content it hosts never closes it, only the layer around it does - it can dim what it covers with the theme's overlay color or stay transparent, it can hold the scroller behind it still while it is open and hand it back once it closes, and it can be driven by binding IsOpen or through its Open, Close and Toggle methods, reporting every opening and closing as it goes. It is the low-level layer the dialog surfaces of the library (Modal, Dialog, Panel) are built on; the dialog behaviors that follow from holding the keyboard - focus trapping, Escape dismissal - belong to those."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           GitHubUrl="Utilities/Overlay/BitOverlay.razor"
           GitHubDemoUrl="Utilities/Overlay/BitOverlayDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>
+            <b>IsOpen</b> is what shows the Overlay, and it is two-way bound so that the Overlay can close itself:
+            a click on the layer sets it back to false. The Overlay is transparent by default - it covers the
+            whole page and catches every click, but shows nothing of its own beyond the content it was given -
+            and it fades in and out rather than appearing in one frame. What it hosts stretches over the whole
+            layer, which is the layout a surface of the consumer's own wants; the layer is a flex container and
+            lays it out no further than that, so the loader below is centered by a class of this page's own.
+        </div>
+        <br />
+        <div>
+            <b>ModeFull</b> dims what the Overlay covers with the theme's overlay background color, so a backdrop
+            needs no stylesheet of the consumer's own - and follows the theme wherever it goes. Without it the
+            Overlay stays transparent, for the overlays that are a click catcher rather than a backdrop.
+        </div>
+        <br />
+        <div class="btn-container">
             <BitButton OnClick="() => BasicIsOpen = true">Show Overlay</BitButton>
-            <BitOverlay @bind-IsOpen="BasicIsOpen" Class="overlay">
+            <BitButton OnClick="() => ModeFullIsOpen = true">Show dimmed Overlay</BitButton>
+
+            <BitOverlay @bind-IsOpen="BasicIsOpen" Class="centered-overlay">
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
+
+            <BitOverlay @bind-IsOpen="ModeFullIsOpen" Class="centered-overlay" ModeFull>
                 <BitProgress Circular Indeterminate Thickness="10" />
             </BitOverlay>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Disabled AutoClose" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Use BitOverlay with NoAutoClose to disable automatic closing when clicking outside the overlay.</div>
+    <DemoExample Title="Hosting content" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <b>ChildContent</b> is what the Overlay puts over everything else, and the layer is what a dismissal
+            is aimed at: a click on the content never closes the Overlay, and neither does a press that began on
+            the content and ended on the layer - the last stretch of a selection dragged out of the box below.
+            Only the layer itself closes it. So a surface hosted in an Overlay keeps its own buttons, its own
+            text selection and its own scrolling, with nothing to switch off first.
+        </div>
         <br />
         <div>
-            <BitButton OnClick="() => AutoCloseIsOpen = true">Show Overlay</BitButton>
-            <BitOverlay @bind-IsOpen="AutoCloseIsOpen" Class="overlay" NoAutoClose>
+            <BitButton OnClick="() => ContentIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="ContentIsOpen" Class="centered-overlay" ModeFull>
                 <div class="content">
-                    <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => AutoCloseIsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
+                    <h3>Short story</h3>
+                    <div>
+                        Try it: select this text and let go of the button outside the box, or press one of the
+                        buttons below. The Overlay stays where it is. Clicking the dimmed layer around the box
+                        closes it.
+                    </div>
+                    <br />
+                    <div class="btn-container">
+                        <BitButton OnClick="() => ContentClickCount++">Clicked @ContentClickCount time(s)</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="() => ContentIsOpen = false">Close</BitButton>
+                    </div>
+                </div>
+            </BitOverlay>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Blocking" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>Blocking</b> takes the last dismissal away as well: a click on the layer no longer closes the
+            Overlay either, for the overlays whose content has to be dealt with before the page comes back -
+            so the Overlay here is closed only through its own close button. It is the name the whole library
+            gives the surface that refuses to be light dismissed by a click outside of it.
+        </div>
+        <br />
+        <div>
+            <BitButton OnClick="() => BlockingIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="BlockingIsOpen" Class="centered-overlay" ModeFull Blocking>
+                <div class="content">
+                    <BitButton Class="close-button" Variant="BitVariant.Text" OnClick=@(() => BlockingIsOpen = false) IconName="@BitIconName.ChromeClose" Title="Close" />
                     <h3>Short story</h3>
                     <div>
                         Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
@@ -38,13 +95,19 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Absolute Positioning" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>Overlay can be positioned abosolutely inside a conainter with a relative position.</div>
+    <DemoExample Title="Absolute Positioning" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>AbsolutePosition</b> lays the Overlay out against the container it was declared inside of rather
+            than against the screen, so only that container is covered. The container has to establish a
+            containing block of its own (<b>position: relative</b>) for the Overlay to be placed over it.
+        </div>
         <br />
+        <BitButton OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
+        <br /><br />
         <div class="container">
-            <BitButton Class="show-button" OnClick="() => AbsoluteIsOpen = true">Show Overlay</BitButton>
             <BitOverlay @bind-IsOpen="AbsoluteIsOpen"
-                        Class="overlay"
+                        Class="centered-overlay"
+                        ModeFull
                         AbsolutePosition>
                 <BitProgress Circular Indeterminate Thickness="10" />
             </BitOverlay>
@@ -52,15 +115,27 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="AutoToggleScroll" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Scrolling cannot be left enabled behind the Overlay</div>
+    <DemoExample Title="AutoToggleScroll" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>AutoToggleScroll</b> takes the scrollbar off the scroller behind the Overlay while it is open and
+            hands it back once it closes, so the page does not carry on scrolling behind a layer that covers it.
+            The room the scrollbar took is given back as padding for as long as it is held, so nothing shifts
+            sideways in the frame the Overlay appears in, and the holds are counted - two Overlays over the same
+            scroller both hold it, and it is handed back once the last of them closes. That is the whole of the
+            scroll locking the dialog surfaces do, asked for the other way round: an Overlay is a layer of the
+            consumer's own and holds nothing until it is told to, where a <b>BitModal</b> is a dialog and holds
+            the page unless it is told not to. The scroller is the one named by <b>ScrollerElement</b>,
+            then the one a <BitLink Href="#example6">selector</BitLink> names; with neither set it is the scroller
+            of the <b>BitAppShell</b> the Overlay is inside of, and the page (body) only when it is inside none.
+        </div>
         <br />
         <div>
             <BitButton OnClick="() => AutoToggleIsOpen = true">Show Overlay</BitButton>
             <BitOverlay @bind-IsOpen="AutoToggleIsOpen"
-                        Class="overlay"
+                        Class="centered-overlay"
+                        ModeFull
                         AutoToggleScroll>
-                <BitStack Alignment="BitAlignment.Center">
+                <BitStack FitSize Alignment="BitAlignment.Center">
                     <BitText Style="color: dodgerblue;" Typography="BitTypography.H3">Please wait...</BitText>
                     <BitProgress Indeterminate Thickness="10" Style="width: 19rem;" />
                 </BitStack>
@@ -68,19 +143,25 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Scroller Selector" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Set specific scroller element to toggle the scrollbar.</div>
+    <DemoExample Title="Scroller Selector" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>ScrollerSelector</b> names the element whose scrolling AutoToggleScroll takes away, for the layouts
+            whose scroller is not the page itself - here the green-bordered box. The first Overlay leaves the box
+            scrolling behind it; the second takes its scrollbar away until it closes. The room the scrollbar gave
+            back is what an absolutely positioned Overlay is pushed down by, so it stays where the eye left it.
+            The named scroller is also where the wheel and the touch drag go when an Overlay covering the screen
+            leaves it scrolling: a fixed layer hands those gestures to the document, which in a layout that
+            scrolls a region of its own is not the thing that moves, so they are handed to that region instead.
+        </div>
         <br />
         <div class="btn-container">
-
             <BitButton OnClick="() => EnabledScrollerIsOpen = true">Show with Enabled scrolling</BitButton>
             <BitButton OnClick="() => DisabledScrollerIsOpen = true">Show with Disabled scrolling</BitButton>
         </div>
 
         <div class="scroller">
             <BitOverlay @bind-IsOpen="EnabledScrollerIsOpen"
-                        Class="overlay"
-                        Style="background-color:unset"
+                        Class="centered-overlay"
                         ScrollerSelector=".scroller"
                         AbsolutePosition>
                 <div class="content">
@@ -95,7 +176,8 @@
             </BitOverlay>
 
             <BitOverlay @bind-IsOpen="DisabledScrollerIsOpen"
-                        Class="overlay"
+                        Class="centered-overlay"
+                        ModeFull
                         ScrollerSelector=".scroller"
                         AbsolutePosition
                         AutoToggleScroll>
@@ -145,19 +227,96 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>Use BitOverlay with event handlers to handle custom actions on user interactions, such as clicking outside to close.</div>
+    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            <b>OnClick</b> reports every click on an open Overlay - the ones on its content included, and the ones
+            a Blocking Overlay refuses to be closed by - which makes it the place to react to a click that was
+            turned down, or to close the Overlay on terms of the consumer's own, as this one does after three
+            clicks on the layer. <b>OnOpen</b> and <b>OnClose</b> report the state itself rather than the gesture
+            behind it, so they arrive however the Overlay was opened or closed - a binding, a click, one of the
+            methods - and only once the scroller it holds has been taken or handed back.
+        </div>
         <br />
         <div>
-            <BitButton OnClick="() => EventOnCloseIsOpen = true">Show Overlay</BitButton>
-            <BitOverlay @bind-IsOpen="EventOnCloseIsOpen" Class="overlay" OnClick=@(() => EventOnCloseIsOpen = false) NoAutoClose>
+            <BitButton OnClick="() => EventsIsOpen = true">Show Overlay</BitButton>
+            <BitOverlay @bind-IsOpen="EventsIsOpen"
+                        Class="centered-overlay"
+                        ModeFull
+                        Blocking
+                        OnClick="HandleOverlayClick"
+                        OnOpen="HandleOverlayOpen"
+                        OnClose="HandleOverlayClose">
                 <div class="content">
-                    <h3>Short story</h3>
+                    <h3>Click anywhere on the dimmed layer</h3>
+                    <div>The overlay has been clicked @EventsClickCount time(s). It closes on the third click.</div>
+                </div>
+            </BitOverlay>
+        </div>
+        <br />
+        <div>Opened @EventsOpenCount time(s), closed @EventsCloseCount time(s).</div>
+    </DemoExample>
+
+    <DemoExample Title="Programmatic control" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            An Overlay captured with <b>@@ref</b> can be driven through its <b>Open</b>, <b>Close</b> and
+            <b>Toggle</b> methods, which is the way to reach one from code that has no field to bind IsOpen to.
+            The methods and the binding are the same state, so an Overlay opened through Open still closes on a
+            click. <b>DefaultIsOpen</b> is the state such an uncontrolled Overlay starts in; it is read once, so
+            closing the Overlay is not undone by the next render.
+        </div>
+        <br />
+        <div>
+            <BitButton OnClick="() => overlayRef.Open()">Open</BitButton>
+            <BitOverlay @ref="overlayRef" Class="centered-overlay" ModeFull>
+                <div class="content">
+                    <h3>Driven by methods</h3>
+                    <div>This Overlay has no IsOpen binding of its own: it is opened through the reference to it, and a click on the layer around this box still closes it.</div>
+                </div>
+            </BitOverlay>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>Style</b> and <b>Class</b> land on the root element, and the root element is the scrim itself -
+            so a scrim of any color, a gradient, or a frosted-glass blur is one style away, with no parameter
+            in between. The styled Overlay here paints a gradient scrim of its own instead of ModeFull; the
+            classed one blurs what it covers with a backdrop-filter. The root element is also the flex container
+            the content is laid out by, so both of them center what they host from that same declaration.
+        </div>
+        <br />
+        <div class="btn-container">
+            <BitButton OnClick="() => StyledIsOpen = true">Show styled Overlay</BitButton>
+            <BitButton OnClick="() => ClassedIsOpen = true">Show classed Overlay</BitButton>
+
+            <BitOverlay @bind-IsOpen="StyledIsOpen"
+                        Style="align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(78, 0, 142, 0.55), rgba(255, 0, 96, 0.35));">
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
+
+            <BitOverlay @bind-IsOpen="ClassedIsOpen" Class="custom-overlay">
+                <BitProgress Circular Indeterminate Thickness="10" />
+            </BitOverlay>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            The Overlay itself has no left or right - it covers everything either way - so <b>Dir</b> is about
+            the content: <b>BitDir.Rtl</b> flows whatever the Overlay hosts right-to-left, for the apps written
+            in RTL languages.
+        </div>
+        <br />
+        <div>
+            <BitButton Dir="BitDir.Rtl" OnClick="() => RtlIsOpen = true">نمایش روکش</BitButton>
+            <BitOverlay @bind-IsOpen="RtlIsOpen" Class="centered-overlay" ModeFull Dir="BitDir.Rtl">
+                <div class="content">
+                    <h3>داستان کوتاه</h3>
                     <div>
-                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
-                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment
-                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth,
-                        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                        روزی روزگاری، داستان‌ها میان مردم پیوند می‌ساختند؛ هم‌نوایی صداهایی که رویاهای مشترک می‌آفریدند.
+                        هر واژه معنایی داشت و هر درنگ، فهمی تازه به همراه می‌آورد. این متن جای‌نگهدار، یادآور لحظه‌ای است
+                        که امکان‌ها بی‌پایان‌اند و در انتظار محتوایی هستند تا شکل بگیرد. این‌جا جایی است که سفر آغاز می‌شود؛
+                        واژه‌های شما راه را نشان خواهند داد.
                     </div>
                 </div>
             </BitOverlay>

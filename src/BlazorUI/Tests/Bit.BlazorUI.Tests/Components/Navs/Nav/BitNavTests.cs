@@ -693,6 +693,63 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldMoveOnlyTheChevronOfAReversedGroupHeader()
+    {
+        // One header of each shape: the one that carries a description renders through a branch of its own.
+        List<BitNavItem> items =
+        [
+            new() { Text = "Fruits", IconName = "Home", ChildItems = [new() { Text = "Apple" }] },
+            new() { Text = "Drinks", IconName = "Home", Description = "some drinks", ChildItems = [new() { Text = "Tea" }] },
+        ];
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.ReversedChevron, true);
+        });
+
+        // The row itself keeps its order, so the icon stays at the start beside the text it names; only the
+        // chevron is moved to the far end. Reversing the row would carry the icon along with it.
+        foreach (var row in component.FindAll(".bit-nav-gcb .bit-nav-iit"))
+        {
+            Assert.IsFalse((row.GetAttribute("style") ?? string.Empty).Contains("row-reverse"));
+
+            var parts = row.Children.Select(child => child.ClassList.Contains("bit-nav-rch") ? "chevron"
+                                                  : child.ClassList.Contains("bit-nav-iic") ? "icon"
+                                                  : child.ClassList.Contains("bit-nav-ghd") ? "text" : "?").ToArray();
+
+            CollectionAssert.AreEqual(new[] { "chevron", "icon", "text" }, parts);
+        }
+    }
+
+    [TestMethod]
+    public void BitNavShouldStripAGroupHeaderDownToItsIconInTheIconOnlyMode()
+    {
+        var component = RenderNav(PartsItems(), p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.IconOnly, true);
+        });
+
+        var header = component.Find(".bit-nav-gcb");
+
+        // The rail has room for the icon that stands for the group and nothing else: the chevron and the
+        // description are not rendered at all, and the name itself is what the icon-only styles hide.
+        Assert.AreEqual(0, header.QuerySelectorAll(".bit-nav-des").Length);
+        Assert.AreEqual(0, header.QuerySelectorAll(".bit-nav-exp, .bit-ico-r90").Length);
+        Assert.AreEqual(1, header.QuerySelectorAll(".bit-nav-iic").Length);
+        Assert.AreEqual(1, header.QuerySelectorAll(".bit-nav-ghd").Length);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotMarkTheChevronOfAGroupHeaderThatIsNotReversed()
+    {
+        var component = RenderNav(PartsItems(), p => p.Add(c => c.RenderType, BitNavRenderType.Grouped));
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-rch").Count);
+    }
+
+    [TestMethod]
     public void BitNavShouldDropTheIndentationInTheIconOnlyMode()
     {
         var component = RenderNav(TreeItems(), p =>
@@ -721,6 +778,55 @@ public class BitNavTests : BunitTestContext
 
         // 2 roots + the 2 children of the expanded one.
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheExpansionStateWhenItemsAreRebuiltWithNewInstances()
+    {
+        // A page that builds its items in a property hands the nav a fresh tree of fresh instances on every
+        // render, so an item the reader expanded has to be followed by its place in the tree, not by reference.
+        var component = RenderNav(TreeItems());
+
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, TreeItems()));
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+        Assert.AreEqual("true", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldFollowAKeyedItemAcrossARebuildThatReordersIt()
+    {
+        static List<BitNavItem> Items(bool reversed)
+        {
+            List<BitNavItem> items =
+            [
+                new() { Key = "fruits", Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
+                new() { Key = "drinks", Text = "Drinks", ChildItems = [new() { Text = "Tea" }, new() { Text = "Coffee" }] },
+            ];
+
+            if (reversed) items.Reverse();
+
+            return items;
+        }
+
+        var component = RenderNav(Items(reversed: false));
+
+        // Expand Fruits, the first item.
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, Items(reversed: true)));
+
+        // Fruits is now the second item and is still the one expanded, by its key rather than its place.
+        var headers = component.FindAll(".bit-nav-ict");
+        Assert.AreEqual(3, headers.Count);
+        Assert.AreEqual("false", headers[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", headers[1].GetAttribute("aria-expanded"));
     }
 
     [TestMethod]

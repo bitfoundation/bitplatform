@@ -28,7 +28,7 @@ Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Conte
 ```
 Or open a terminal in your Boilerplate.Server.Web project directory and run followings:
 ```bash
-dotnet tool restore && dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dnx dotnet-ef@10.0.12 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
@@ -53,7 +53,7 @@ Optimize-DbContext -Context AppOfflineDbContext -OutputDir Infrastructure/Data/C
 
 **OR** Run the following command in Boilerplate.Server.Web directory:
 ```bash
-dotnet tool restore && dotnet ef dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace Boilerplate.Client.Core.Infrastructure.Data --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dnx dotnet-ef@10.0.12 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace Boilerplate.Client.Core.Infrastructure.Data --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 By adhering to these steps, you leverage EF Core compiled models to boost the performance of your application, ensuring an optimized and efficient data access method.

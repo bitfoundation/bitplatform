@@ -1,78 +1,158 @@
 ﻿@page "/components/panel"
+@page "/components/propanel"
 
 <PageOutlet Url="components/panel"
             Title="Panel"
-            Description="Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences." />
+            Description="Panel is an overlay surface that slides in from an edge of the screen to host supplementary content - a form, a filter, a set of details - without taking the user away from the page behind it." />
 
 <div>
     <DemoPage Name="Panel"
-              Description="Panels are overlays that contain supplementary content and are used for complex creation, edit, or management experiences. For example, viewing details about an item in a list or editing settings."
+              SecondaryNames="@(["Drawer", "Sidebar", "Offcanvas"])"
+              Description="Panel is an overlay surface that slides in from an edge of the screen to host supplementary content - a form, a filter, a set of details, a navigation menu - without taking the user away from the page behind it. It slides in from any of the four edges, is sized along the axis it slides on, scrolls whatever it cannot fit, dims the page or leaves it usable, holds the page still while it is open, takes the keyboard over and hands it back, and is dismissed by a click on the overlay, the Escape key or a swipe of the finger - each of which it can be asked to refuse."
               Parameters="componentParameters"
+              PublicMembers="componentPublicMembers"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               GitHubUrl="Surfaces/Panel/BitPanel.razor"
               GitHubDemoUrl="Surfaces/Panel/BitPanelDemo.razor">
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-            <BitButton OnClick="() => isBasicPanelOpen = true">Open Panel</BitButton>
-            <BitPanel @bind-IsOpen="isBasicPanelOpen">
-                <div style="max-width:300px;padding:1rem">
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+            <div>
+                <b>IsOpen</b> is what shows and hides the panel, and binding to it is all a panel needs: the
+                panel writes the value back when it dismisses itself, so the flag stays right whichever side
+                closed it. The panel slides in from the end of the screen by default, sizes itself to its own
+                content and scrolls whatever will not fit, covers the page without dimming it, and is dismissed
+                by a click on the page behind it, the Escape key or a swipe towards the edge it came from.
+            </div>
+            <br />
+            <div>
+                The panel is also driveable through a reference to it: <b>Open</b>, <b>Close</b> and
+                <b>Toggle</b> do what binding the flag would, from code that has no flag of its own.
+            </div>
+            <br />
+            <div>
+                <b>ShowCloseButton</b> puts a close button at the edge the panel slid in from, which is what a
+                panel whose ways out have been taken away - a <b>Blocking</b> or a <b>Modeless</b> one - needs
+                to be closable with the pointer at all. It names itself "Close" to a screen reader unless
+                <b>CloseButtonTitle</b> says otherwise, and <b>CloseIconName</b> replaces the glyph in it.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isBasicPanelOpen = true">Open panel</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => basicPanelRef.Toggle()">Toggle panel</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => isCloseButtonPanelOpen = true">ShowCloseButton</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isBasicPanelOpen" @ref="basicPanelRef" AriaLabel="A basic panel">
+                <div class="panel-body">
+                    <h3>Basic</h3>
+                    <div>
+                        Once upon a time, stories wove connections between people, a symphony of voices crafting
+                        shared dreams. Each word carried meaning, each pause brought understanding. Placeholder
+                        text reminds us of that moment when possibilities are limitless, waiting for content to
+                        emerge.
+                    </div>
+                    <BitButton OnClick="() => isBasicPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isCloseButtonPanelOpen" ShowCloseButton AriaLabel="A panel with a close button">
+                <div class="panel-body">
+                    <h3>ShowCloseButton</h3>
+                    <div>
+                        The close button in the corner dismisses this panel the way a click on the page behind
+                        it, the Escape key or a swipe towards the edge would.
+                    </div>
                 </div>
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="Advanced options" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-            <div>BitPanel has some advanced options to be customized.</div>
-            <br /><br />
-            <div>Blocking:</div><br />
-            <BitButton OnClick="() => isBlockingPanelOpen = true">Open Panel</BitButton>
-            <BitPanel @bind-IsOpen="isBlockingPanelOpen" Blocking>
-                <div style="max-width:300px;padding:1rem">
-                    <h3>Blocking</h3>
-                    <div>
-                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
-                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
-                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-                        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
-                    </div>
-                    <BitButton OnClick="() => isBlockingPanelOpen = false">Close</BitButton>
+        <DemoExample Title="Header and footer" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A panel given a <b>Header</b>, a <b>Footer</b> or a <b>ShowCloseButton</b> builds the chrome
+                that goes with them: a header row at the edge it slid in from, a body that takes the
+                scrolling, and a footer at the far edge. The two parts around the body stay put however far
+                the content between them is scrolled, which is what a panel whose actions have to stay
+                reachable needs. A panel given none of the three is the plain surface of the section above,
+                and its content fills it however it likes.
+            </div>
+            <br />
+            <div>
+                <b>HeaderText</b> and <b>FooterText</b> are the shorthands for the header and the footer that
+                are nothing but a line of text, and the templates take precedence over them. <b>Body</b> is
+                the content that reads right beside them - it is the same slot as <b>ChildContent</b>, named
+                for what it becomes here, and it takes precedence when both are given.
+            </div>
+            <br />
+            <div>
+                The header also names the panel: a screen reader reads it out when the panel opens, without
+                <b>TitleAriaId</b> having to point anywhere.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isHeaderTextPanelOpen = true">HeaderText</BitButton>
+                <BitButton OnClick="() => isHeaderPanelOpen = true">Header &amp; Footer</BitButton>
+                <BitButton OnClick="() => isFooterTextPanelOpen = true">FooterText</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isHeaderTextPanelOpen" Size="320" HeaderText="A panel with a HeaderText" ShowCloseButton>
+                <div>
+                    Once upon a time, stories wove connections between people, a symphony of voices crafting
+                    shared dreams. Each word carried meaning, each pause brought understanding. Placeholder
+                    text reminds us of that moment when possibilities are limitless, waiting for content to
+                    emerge.
                 </div>
             </BitPanel>
-            <br /><br /><br />
-            <div>Modeless:</div><br />
-            <BitButton OnClick="() => isModelessPanelOpen = true">Open Panel</BitButton>
-            <BitPanel @bind-IsOpen="isModelessPanelOpen" @ref="modelessPanelRef" Modeless>
-                <div style="max-width:300px;padding:1rem">
-                    <h3>Modeless</h3>
+
+            <BitPanel @bind-IsOpen="isHeaderPanelOpen" Size="320" ShowCloseButton>
+                <Header>
+                    <BitStack Gap="0.5rem" FillContent>
+                        <div>A panel with a Header</div>
+                        <BitSearchBox Placeholder="Search here..." />
+                    </BitStack>
+                </Header>
+                <Body>
                     <div>
-                        Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
-                        Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
-                        when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-                        for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+                        Every story starts with a blank canvas, a quiet space waiting to be filled with ideas,
+                        emotions, and dreams. These placeholder words symbolize the beginning - a moment of
+                        possibility where creativity has yet to take shape.
                     </div>
-                    <BitButton OnClick="() => modelessPanelRef.Close()">Close</BitButton>
-                </div>
+                </Body>
+                <Footer>
+                    <BitStack Horizontal Gap="0.5rem">
+                        <BitButton OnClick="() => isHeaderPanelOpen = false">Save</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="() => isHeaderPanelOpen = false">Cancel</BitButton>
+                    </BitStack>
+                </Footer>
             </BitPanel>
-            <br /><br /><br />
-            <div>AutoToggleScroll:</div><br />
-            <BitButton OnClick="() => isAutoToggleScrollPanelOpen = true">Open Panel</BitButton>
-            <BitPanel @bind-IsOpen="isAutoToggleScrollPanelOpen" AutoToggleScroll>
-                <div style="max-width:300px;padding:1rem">
-                    <h3>AutoToggleScroll</h3>
-                    Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams. 
-                    Each word carried meaning, each pause brought understanding. Placeholder text reminds us of that moment 
-                    when possibilities are limitless, waiting for content to emerge. The spaces here are open for growth, 
-                    for ideas that change minds and spark emotions. This is where the journey begins your words will lead the way.
+
+            <BitPanel @bind-IsOpen="isFooterTextPanelOpen"
+                      Size="320"
+                      HeaderText="A panel with a FooterText"
+                      FooterText="This is a footer text!"
+                      ShowCloseButton>
+                <div>
+                    In the beginning, there is silence - a blank canvas yearning to be filled, a quiet space
+                    where creativity waits to awaken. These words are temporary, standing in place of ideas
+                    yet to come, a glimpse into the infinite possibilities that lie ahead.
                 </div>
             </BitPanel>
         </DemoExample>
 
         <DemoExample Title="Position and size" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div>To set the Panel position on the page you can use the Position parameter.</div>
-            <br /><br />
+            <div>
+                <b>Position</b> is the edge the panel slides in from. <b>Start</b> and <b>End</b> are the
+                logical edges, so they follow the direction of the panel and swap over in right-to-left, while
+                <b>Top</b> and <b>Bottom</b> are the same edges everywhere.
+            </div>
+            <br />
+            <div>
+                <b>Size</b> is the size of the panel in pixels along the axis it slides on - the width of a
+                panel at the start or the end, the height of one at the top or the bottom. Leaving it unset
+                sizes the panel to its own content, and either way a strip of the page stays visible beside it.
+                <b>FullSize</b> gives up that strip and takes the whole screen, which is what a panel holding a
+                page of its own needs on a small screen.
+            </div>
+            <br />
             <div class="position-btn">
                 <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 <div>
@@ -83,83 +163,616 @@
                     <BitButton OnClick="() => isOpenInPositionTop = true">Top</BitButton>
                     <BitButton OnClick="() => isOpenInPositionBottom = true">Bottom</BitButton>
                 </div>
+                <div>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => isFullSizePanelOpen = true">FullSize</BitButton>
+                </div>
             </div>
 
-            <BitPanel @bind-Size="customPanelSize"
+            <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenInPositionStart"
+                      AriaLabel="A panel at the start of the screen"
                       Position="BitPanelPosition.Start">
-                <div style="padding:1rem">
+                <div class="panel-body">
                     BitPanel with Start position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
-            <BitPanel @bind-Size="customPanelSize"
+            <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenPositionEnd"
+                      AriaLabel="A panel at the end of the screen"
                       Position="BitPanelPosition.End">
-                <div style="padding:1rem">
+                <div class="panel-body">
                     BitPanel with End position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
-            <BitPanel @bind-Size="customPanelSize" @bind-IsOpen="isOpenInPositionTop" Position="BitPanelPosition.Top">
-                <div style="padding:1rem">
+            <BitPanel Size="customPanelSize"
+                      @bind-IsOpen="isOpenInPositionTop"
+                      AriaLabel="A panel at the top of the screen"
+                      Position="BitPanelPosition.Top">
+                <div class="panel-body">
                     BitPanel with Top position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
 
-            <BitPanel @bind-Size="customPanelSize"
+            <BitPanel Size="customPanelSize"
                       @bind-IsOpen="isOpenInPositionBottom"
+                      AriaLabel="A panel at the bottom of the screen"
                       Position="BitPanelPosition.Bottom">
-                <div style="padding:1rem">
+                <div class="panel-body">
                     BitPanel with Bottom position and custom Size.
                     <BitNumberField @bind-Value="customPanelSize" Mode="BitSpinButtonMode.Inline" Label="Custom size" />
                 </div>
             </BitPanel>
-        </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>Explore styling and class customization for BitPanel, including component styles, custom classes, and detailed styles.</div>
-            <br /><br />
-            <div>Component's Style & Class:</div><br />
-            <BitButton OnClick="() => isStyledPanelOpen = true">Open Styled panel</BitButton>
-            <BitPanel @bind-IsOpen="isStyledPanelOpen" Style="font-size: 3rem;">
-                <div style="padding:1rem">
-                    BitPanel with custom style.
+            <BitPanel @bind-IsOpen="isFullSizePanelOpen" FullSize AriaLabel="A full size panel">
+                <div class="panel-body">
+                    BitPanel with <b>FullSize</b>, which takes the whole of the screen.
+                    <BitButton OnClick="() => isFullSizePanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
-            <br /><br />
-            <BitButton OnClick="() => isClassedPanelOpen = true">Open Classed panel</BitButton>
-            <BitPanel @bind-IsOpen="isClassedPanelOpen" Class="custom-class">
-                <div style="padding:1rem">
+        </DemoExample>
+
+        <DemoExample Title="Overlay and dismissal" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A panel covers the page with an overlay that takes the clicks meant for what is behind it, and
+                a click on that overlay dismisses the panel. <b>Blocking</b> keeps the overlay and takes away
+                the dismissal, for a panel whose content has to be completed or cancelled through the panel
+                itself, and <b>OnOverlayClick</b> still reports the click - which is how a blocking panel can
+                draw attention to itself instead of closing.
+            </div>
+            <br />
+            <div>
+                That overlay is a transparent catcher of clicks by default, so the page behind it is still read
+                at full strength. <b>ModeFull</b> gives it a background of its own, which is what a panel that
+                takes the work over rather than sitting beside it wants: the page underneath recedes and the
+                panel reads as the thing to deal with.
+            </div>
+            <br />
+            <div>
+                <b>Modeless</b> leaves the page its own clicks by rendering no overlay at all, so the panel sits
+                alongside the work rather than instead of it. <b>NoDismissOnEscape</b> takes the Escape key
+                away from a panel that is only meant to be closed by its own content, and
+                <b>OnEscapeKeyDown</b> still reports the key the way <b>OnOverlayClick</b> reports the click,
+                so a panel that turns the Escape down can answer it on terms of its own. <b>OnDismiss</b> is
+                called for every one of those closings - the overlay, the Escape key, a swipe, the Close and
+                Toggle methods and the flag being set from the outside - so it is the one place a panel has to
+                clean up in.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isBlockingPanelOpen = true">Blocking</BitButton>
+                <BitButton OnClick="() => isModeFullPanelOpen = true">ModeFull</BitButton>
+                <BitButton OnClick="() => isModelessPanelOpen = true">Modeless</BitButton>
+                <BitButton OnClick="() => isNoEscapePanelOpen = true">NoDismissOnEscape</BitButton>
+                <div>Dismissed <b>@dismissCount</b> times, last reason reported by OnDismissing: <b>@lastDismissReason</b></div>
+            </div>
+
+            <BitPanel @bind-IsOpen="isBlockingPanelOpen"
+                      Blocking
+                      AriaLabel="A blocking panel"
+                      OnDismiss="HandleOnDismiss"
+                      OnDismissing="HandleOnDismissing"
+                      OnOverlayClick="() => overlayClickCount++">
+                <div class="panel-body">
+                    <h3>Blocking</h3>
+                    <div>
+                        A click on the overlay does not dismiss this panel, but it is still reported:
+                        <b>@overlayClickCount</b> so far.
+                    </div>
+                    <BitButton OnClick="() => isBlockingPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isModeFullPanelOpen"
+                      ModeFull
+                      AriaLabel="A panel that dims the page"
+                      OnDismiss="HandleOnDismiss"
+                      OnDismissing="HandleOnDismissing">
+                <div class="panel-body">
+                    <h3>ModeFull</h3>
+                    <div>The page behind this panel is dimmed by the overlay instead of only being covered by it.</div>
+                    <BitButton OnClick="() => isModeFullPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isModelessPanelOpen"
+                      @ref="modelessPanelRef"
+                      Modeless
+                      AriaLabel="A modeless panel"
+                      OnDismiss="HandleOnDismiss"
+                      OnDismissing="HandleOnDismissing">
+                <div class="panel-body">
+                    <h3>Modeless</h3>
+                    <div>
+                        There is no overlay over the page, so everything behind this panel stays usable - and
+                        the keyboard is free to leave the panel too.
+                    </div>
+                    <BitButton OnClick="() => modelessPanelRef.Close()">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoEscapePanelOpen"
+                      NoDismissOnEscape
+                      AriaLabel="A panel that ignores the Escape key"
+                      OnDismiss="HandleOnDismiss"
+                      OnDismissing="HandleOnDismissing"
+                      OnEscapeKeyDown="() => escapeKeyCount++">
+                <div class="panel-body">
+                    <h3>NoDismissOnEscape</h3>
+                    <div>
+                        The Escape key does not dismiss this panel, but it is still reported:
+                        <b>@escapeKeyCount</b> so far. A click on the overlay still dismisses the panel.
+                    </div>
+                    <BitButton OnClick="() => isNoEscapePanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Refusing a dismissal" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>OnDismissing</b> is called before the panel closes and is allowed to refuse the closing: set
+                <b>Cancel</b> on the arguments it is handed and the panel stays where it is. It is awaited, so
+                the answer can come from work of its own - a confirmation, a save, a look at what the user has
+                typed so far.
+            </div>
+            <br />
+            <div>
+                Its <b>Reason</b> tells the closings apart: a click on the <b>Overlay</b>, the <b>Escape</b>
+                key, a <b>Swipe</b>, or a <b>Programmatic</b> call to Close or Toggle. That is what lets a panel
+                refuse the stray gesture that would throw away a half-filled form while still letting through
+                the Close its own content asked for. The <b>IsOpen</b> flag being set from the outside has
+                already happened by the time the panel sees it, so it never passes through here.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitToggle @bind-Value="guardPanel" Label="Refuse the dismissals the user asks for" />
+                <BitButton OnClick="() => isGuardedPanelOpen = true">Open guarded panel</BitButton>
+                <div>Last attempt: <b>@(guardedReason?.ToString() ?? "-")</b>, refused: <b>@guardedRefused</b></div>
+            </div>
+
+            <BitPanel @bind-IsOpen="isGuardedPanelOpen"
+                      @ref="guardedPanelRef"
+                      AriaLabel="A panel that can refuse to close"
+                      OnDismissing="HandleOnGuardedDismissing">
+                <div class="panel-body">
+                    <h3>OnDismissing</h3>
+                    <div>
+                        While the toggle is on, the overlay, the Escape key and a swipe are all turned down -
+                        only the button below gets this panel closed.
+                    </div>
+                    <BitButton OnClick="() => guardedPanelRef.Close()">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Focus and the keyboard" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A panel that opens takes the keyboard with it: the focus moves to the first focusable element
+                in it - or to the element marked <b>data-autofocus</b>, for the panels whose first one is not
+                the one worth starting at - Tab and Shift+Tab cycle inside it instead of running on into the
+                page behind it, and closing the panel hands the focus back to whatever opened it.
+                <b>NoAutoFocus</b> leaves the focus where it is, <b>NoFocusTrap</b> lets the keyboard walk
+                out of the panel, and <b>NoRestoreFocus</b> leaves the focus wherever the panel left it
+                instead of handing it back - for the panels whose closing is meant to move the keyboard on
+                somewhere else. A <b>Modeless</b> panel never traps the focus, since the page behind it is
+                meant to be reached. Escape reaches the panel from wherever the keyboard is inside it, so a
+                panel that never took the keyboard over is also one Escape does not reach until the user has
+                tabbed or clicked into it.
+            </div>
+            <br />
+            <div>
+                The panel reports itself to a screen reader as a dialog, which needs a name: give it one with
+                <b>AriaLabel</b>, or point <b>TitleAriaId</b> at the heading the panel already shows.
+                <b>SubtitleAriaId</b> points at what describes it, and <b>IsAlert</b> reports it as an alert
+                dialog instead, for a panel carrying something the user has to deal with before carrying on.
+            </div>
+            <br />
+            <div>
+                <b>Role</b> takes over from that dialog altogether, for the panel that is not one: a
+                <b>Modeless</b> panel left beside the page is better announced as a <b>complementary</b> or a
+                <b>region</b>, since a screen reader tells the user a dialog is something to deal with and
+                leave.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isFocusPanelOpen = true">Auto focus</BitButton>
+                <BitButton OnClick="() => isNoFocusPanelOpen = true">NoAutoFocus &amp; NoFocusTrap</BitButton>
+                <BitButton OnClick="() => isNoRestoreFocusPanelOpen = true">NoRestoreFocus</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isFocusPanelOpen"
+                      TitleAriaId="panel-focus-title"
+                      SubtitleAriaId="panel-focus-subtitle">
+                <div class="panel-body">
+                    <h3 id="panel-focus-title">Focus</h3>
+                    <div id="panel-focus-subtitle">
+                        The keyboard came in with the panel and cannot leave it. Closing hands it back to the
+                        button that opened the panel.
+                    </div>
+                    <BitTextField Label="First field" />
+                    <BitTextField Label="Second field" InputHtmlAttributes="@(new() { { "data-autofocus", "" } })" />
+                    <BitButton OnClick="() => isFocusPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoFocusPanelOpen" NoAutoFocus NoFocusTrap AriaLabel="A panel that leaves the focus alone">
+                <div class="panel-body">
+                    <h3>NoAutoFocus &amp; NoFocusTrap</h3>
+                    <div>The focus stayed on the button that opened this panel, and Tab walks out of it.</div>
+                    <BitButton OnClick="() => isNoFocusPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoRestoreFocusPanelOpen" NoRestoreFocus AriaLabel="A panel that does not hand the focus back">
+                <div class="panel-body">
+                    <h3>NoRestoreFocus</h3>
+                    <div>
+                        The keyboard came in with this panel as usual, but closing it leaves the focus where
+                        the panel left it rather than back on the button that opened it.
+                    </div>
+                    <BitButton OnClick="() => isNoRestoreFocusPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Page scrolling" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A panel that covers the page holds it still while it is open: a page that carried on scrolling
+                behind the panel would move what the user is coming back to out from under them. The scrollbar
+                comes back when the panel closes - including when the panel is taken off the page while it is
+                still open, so a navigation away from it never leaves the page stuck - and the room the
+                scrollbar took is added back as padding while it is held, so nothing shifts sideways. The holds
+                are counted: two panels open at once both hold the page, and it is handed back when the last of
+                them closes, not the first.
+            </div>
+            <br />
+            <div>
+                <b>ScrollerSelector</b> names the element that is held, for the layouts that scroll something
+                other than the document, and <b>ScrollerElement</b> hands one over directly where no selector
+                reaches it. A panel inside a <b>BitAppShell</b> holds the shell's scroller without being told
+                to, since the shell cascades it: the body of such a page never scrolls, so holding it would
+                hold nothing.
+            </div>
+            <br />
+            <div>
+                <b>NoScrollLock</b> gives that up, for the panel that is meant to leave the page moving. A
+                <b>Modeless</b> panel never holds the page in the first place. A panel that leaves the page
+                scrolling still covers it with an overlay, and that layer is fixed to the viewport - so the
+                wheel and the touch drag it catches are handed on to the scroller the panel names, and the page
+                moves under the gesture the way it would with no panel over it. Anything inside the panel that
+                scrolls itself takes its own gestures first.
+            </div>
+            <br />
+            <div>
+                <b>AutoToggleScroll</b> is the other way round: the panel takes the overflow off the scroller
+                itself instead of taking the counted hold, and the room that gave back is what an
+                <b>AbsolutePosition</b> panel is pushed down by so that it stays where the eye left it. The two
+                never both apply - a panel doing its own scroll handling stands the hold down.
+            </div>
+            <br />
+            <div>
+                The panel scrolls its own content whenever there is more of it than the panel is allowed to
+                take, and that scrolling stops at the panel: reaching the end of it does not carry on into the
+                page underneath. Holding the page still is about the wheel that never reaches the panel at all.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isScrollLockPanelOpen = true">Held page</BitButton>
+                <BitButton OnClick="() => isNoScrollLockPanelOpen = true">NoScrollLock</BitButton>
+                <BitButton OnClick="() => isAutoToggleScrollPanelOpen = true">AutoToggleScroll</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isScrollLockPanelOpen" AriaLabel="A panel that holds the page still">
+                <div class="panel-body">
+                    <h3>Held page</h3>
+                    <div>
+                        The page behind this panel cannot be scrolled while it is open, and nothing on it
+                        shifted sideways when the scrollbar went away. Close the panel and it comes back.
+                    </div>
+                    <BitButton OnClick="() => isScrollLockPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoScrollLockPanelOpen" NoScrollLock AriaLabel="A panel that leaves the page scrolling">
+                <div class="panel-body">
+                    <h3>NoScrollLock</h3>
+                    <div>The page behind this panel carries on scrolling while it is open.</div>
+                    <BitButton OnClick="() => isNoScrollLockPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isAutoToggleScrollPanelOpen" AutoToggleScroll AriaLabel="A panel that toggles the overflow of the page">
+                <div class="panel-body">
+                    <h3>AutoToggleScroll</h3>
+                    <div>
+                        This panel took the overflow off the page itself rather than taking the counted hold.
+                    </div>
+                    <BitButton OnClick="() => isAutoToggleScrollPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Swipe to dismiss" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                Dragging the panel towards the edge it slid in from follows the pointer, and letting go past a
+                quarter of the size of the panel dismisses it. <b>SwipeTrigger</b> moves that point - it is a
+                fraction of the size of the panel, so a smaller value dismisses on a shorter drag - and
+                <b>NoSwipe</b> turns the gesture off entirely, which is what a panel hosting something that is
+                itself dragged needs.
+            </div>
+            <br />
+            <div>
+                <b>OnSwipeStart</b>, <b>OnSwipeMove</b> and <b>OnSwipeEnd</b> report the gesture as it happens,
+                each with the distance along the axis the panel slides on.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitNumberField @bind-Value="swipeTrigger" Step="0.05" Min="0.05" Max="1" Mode="BitSpinButtonMode.Inline" Label="SwipeTrigger" />
+                <div>
+                    <BitButton OnClick="() => isSwipePanelOpen = true">Swipe</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => isNoSwipePanelOpen = true">NoSwipe</BitButton>
+                </div>
+            </div>
+
+            <BitPanel @bind-IsOpen="isSwipePanelOpen"
+                      Size="300"
+                      AriaLabel="A swipeable panel"
+                      SwipeTrigger="@((decimal)swipeTrigger)"
+                      OnSwipeStart="v => { swipeStart = v; swipeDiff = 0; }"
+                      OnSwipeMove="v => swipeDiff = v"
+                      OnSwipeEnd="v => swipeDiff = v">
+                <div class="panel-body">
+                    <h3>Swipe</h3>
+                    <div>Drag this panel towards the end of the screen and let go.</div>
+                    <div>Start: <b>@swipeStart</b></div>
+                    <div>Diff: <b>@swipeDiff</b></div>
+                    <BitButton OnClick="() => isSwipePanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isNoSwipePanelOpen" NoSwipe Size="300" AriaLabel="A panel that cannot be swiped away">
+                <div class="panel-body">
+                    <h3>NoSwipe</h3>
+                    <div>Dragging this panel does nothing - the gesture is left to whatever is inside it.</div>
+                    <BitButton OnClick="() => isNoSwipePanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Nested panels" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                A panel opened from inside another one sits at the same layer as the panel it came from, so its
+                overlay lands underneath that panel: a click there reaches the outer panel rather than
+                dismissing the inner one. <b>ZIndex</b> lifts the pair over it - the overlay takes the value
+                given and the panel itself sits one above it - and the inner panel behaves like any other from
+                there on.
+            </div>
+            <br />
+            <div>
+                The Escape key stops at the panel that acts on it, so the first press closes the inner panel
+                and the outer one is only reached once the inner one is gone. The same holds for the swipe and
+                for a click on the overlay.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isOuterPanelOpen = true">Open outer panel</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isOuterPanelOpen" Size="320" ModeFull AriaLabel="The outer panel">
+                <div class="panel-body">
+                    <h3>Outer</h3>
+                    <div>This panel sits at the layer every panel shares.</div>
+                    <BitButton OnClick="() => isInnerPanelOpen = true">Open inner panel</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => isOuterPanelOpen = false">Close</BitButton>
+
+                    <BitPanel @bind-IsOpen="isInnerPanelOpen"
+                              Size="240"
+                              ModeFull
+                              ZIndex="1310"
+                              AriaLabel="The inner panel"
+                              Position="BitPanelPosition.Start">
+                        <div class="panel-body">
+                            <h3>Inner</h3>
+                            <div>Lifted over the panel it was opened from, so its own overlay covers it.</div>
+                            <BitButton OnClick="() => isInnerPanelOpen = false">Close</BitButton>
+                        </div>
+                    </BitPanel>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Inside a container" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>AbsolutePosition</b> lays the panel out against the nearest positioned ancestor instead of
+                against the screen, so the panel and its overlay stay inside a container of the page rather
+                than covering all of it. The container needs a position of its own for the panel to be placed
+                against, and it clips the panel where it hides its overflow.
+            </div>
+            <br />
+            <div>
+                It leaves the page alone as well: the hold such a panel would otherwise take on the page is
+                stood down, since taking the scrollbar off the whole page for a panel that covers one box of
+                it moves the page around the very container being looked at. A scroller named by
+                <b>ScrollerSelector</b> or <b>ScrollerElement</b> is still held, so a contained panel that is
+                meant to hold the container it sits in names it there.
+            </div>
+            <br />
+            <div class="absolute-container">
+                <div>The panel below opens inside this box, not over the page.</div>
+                <BitButton OnClick="() => isAbsolutePanelOpen = true">Open</BitButton>
+
+                <BitPanel @bind-IsOpen="isAbsolutePanelOpen"
+                          AbsolutePosition
+                          Size="200"
+                          AriaLabel="A panel inside a container"
+                          ModeFull>
+                    <div class="panel-body">
+                        <h3>AbsolutePosition</h3>
+                        <BitButton OnClick="() => isAbsolutePanelOpen = false">Close</BitButton>
+                    </div>
+                </BitPanel>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Rendering and events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                A panel builds its content when it opens and takes it back out once it has finished sliding
+                away - it waits for the movement to end, so the closing is still seen with something in it.
+                Nothing of it is rendered until the first opening, so a panel that is never opened costs
+                nothing, and every opening starts over: a form inside one does not still hold the last thing
+                typed into it. Type into the field below, close the panel, and open it again.
+            </div>
+            <br />
+            <div>
+                <b>KeepMounted</b> keeps it instead: the content goes into the page on the first opening and
+                stays from then on, hidden while the panel is closed - which keeps it out of the tab order and
+                out of the reach of a screen reader - so whatever state it holds survives the closing.
+            </div>
+            <br />
+            <div>
+                <b>OnOpen</b> is called once the panel is open and the page shows it, and <b>OnToggle</b> is
+                called for both directions with the new state - which is the one callback a panel that only
+                needs to know it changed can use. Both are called on the frame the panel changed state on;
+                <b>OnTransitionEnd</b> waits until the panel has actually finished sliding, which is what
+                measuring it or scrolling something into view inside it has to wait for.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isUnrenderPanelOpen = true">Starts over</BitButton>
+                <BitButton OnClick="() => isKeptPanelOpen = true">KeepMounted</BitButton>
+                <div>Opened <b>@openCount</b> times, last toggled to <b>@lastToggleState</b>, settled at <b>@lastSettledState</b></div>
+            </div>
+
+            <BitPanel @bind-IsOpen="isUnrenderPanelOpen"
+                      AriaLabel="A panel that starts over every time"
+                      OnOpen="() => openCount++"
+                      OnToggle="v => lastToggleState = v"
+                      OnTransitionEnd="v => lastSettledState = v">
+                <div class="panel-body">
+                    <h3>Starts over</h3>
+                    <div>This content is built again from nothing every time the panel is opened.</div>
+                    <BitTextField Label="Type something, then close and reopen" />
+                    <BitButton OnClick="() => isUnrenderPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isKeptPanelOpen"
+                      KeepMounted
+                      AriaLabel="A panel that keeps its content"
+                      OnTransitionEnd="v => lastSettledState = v">
+                <div class="panel-body">
+                    <h3>KeepMounted</h3>
+                    <div>This content stays in the page once the panel has been opened for the first time.</div>
+                    <BitTextField Label="Type something, then close and reopen" />
+                    <BitButton OnClick="() => isKeptPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>CloseIcon</b> takes the glyph of the close button from an external icon library -
+                FontAwesome, Material Icons, Bootstrap Icons - through the CSS classes that library asks for,
+                and takes precedence over the <b>CloseIconName</b> that names a built-in Fluent icon.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <div class="btn-container">
+                <BitButton OnClick="() => isExternalIconPanelOpen = true">External close icon</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isExternalIconPanelOpen"
+                      Size="320"
+                      ShowCloseButton
+                      HeaderText="External close icon"
+                      CloseIcon="@BitIconInfo.Fa("solid xmark")">
+                <div>
+                    The close button of this panel is drawn by FontAwesome instead of by the built-in icon
+                    set.
+                </div>
+            </BitPanel>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root element of the panel, and <b>Styles</b> and
+                <b>Classes</b> reach every part it is made of - the <b>Root</b>, the <b>Overlay</b> that
+                covers the page, the <b>Container</b> that is the panel itself, and, on a panel that builds
+                the chrome, the <b>HeaderContainer</b>, the <b>Header</b>, the <b>CloseButton</b>, the
+                <b>CloseIcon</b>, the <b>Body</b> and the <b>Footer</b>. The <b>Container</b> is also how a
+                panel is given a size that is not a pixel value - a percentage, a rem - which <b>Size</b>
+                does not take.
+            </div>
+            <br />
+            <div>
+                The <b>Root</b> member is also where the panel's own custom properties are set:
+                <b>--bit-pnl-max</b> is how much of the screen a panel that is not <b>FullSize</b> may take
+                along the axis it slides on, and it defaults to 85%.
+            </div>
+            <br />
+            <div class="btn-container">
+                <BitButton OnClick="() => isStyledPanelOpen = true">Open Styled panel</BitButton>
+                <BitButton OnClick="() => isClassedPanelOpen = true">Open Classed panel</BitButton>
+                <BitButton OnClick="() => isPanelStylesOpen = true">Open panel Styles</BitButton>
+                <BitButton OnClick="() => isPanelClassesOpen = true">Open panel Classes</BitButton>
+            </div>
+
+            <BitPanel @bind-IsOpen="isStyledPanelOpen" Style="font-size: 3rem;" AriaLabel="A styled panel">
+                <div class="panel-body">
+                    BitPanel with custom style.
+                    <BitButton OnClick="() => isStyledPanelOpen = false">Close</BitButton>
+                </div>
+            </BitPanel>
+
+            <BitPanel @bind-IsOpen="isClassedPanelOpen" Class="custom-class" AriaLabel="A classed panel">
+                <div class="panel-body">
                     BitPanel with custom class:
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
+                    <BitButton OnClick="() => isClassedPanelOpen = false">Close</BitButton>
                 </div>
             </BitPanel>
-            <br /><br /><br /><br />
-            <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitButton OnClick="() => isPanelStylesOpen = true">Open panel Styles</BitButton>
+
             <BitPanel @bind-IsOpen="isPanelStylesOpen"
+                      AriaLabel="A panel with custom Styles"
                       Styles="@(new() { Overlay = "background-color: #4776f433;",
-                                            Container = "padding: 1rem; box-shadow: 0 0 1rem tomato;" })">
-                BitPanel with <b>Styles</b> to customize its elements.
+                                        Container = "padding: 1rem; box-shadow: 0 0 1rem tomato;" })">
+                <div>
+                    BitPanel with <b>Styles</b> to customize its elements.
+                    <BitButton OnClick="() => isPanelStylesOpen = false">Close</BitButton>
+                </div>
             </BitPanel>
-            <br /><br />
-            <BitButton OnClick="() => isPanelClassesOpen = true">Open panel Classes</BitButton>
+
             <BitPanel @bind-IsOpen="isPanelClassesOpen"
+                      ShowCloseButton
+                      HeaderText="Classes"
+                      FooterText="This is a footer text!"
+                      AriaLabel="A panel with custom Classes"
                       Classes="@(new() { Container = "custom-container",
-                                             Overlay = "custom-overlay" })">
-                BitPanel with <b>Classes</b> to customize its elements.
+                                         Overlay = "custom-overlay",
+                                         HeaderContainer = "custom-header-container",
+                                         Header = "custom-header",
+                                         Body = "custom-body",
+                                         Footer = "custom-footer" })">
+                <div>
+                    BitPanel with <b>Classes</b> to customize its elements.
+                    <BitButton OnClick="() => isPanelClassesOpen = false">Close</BitButton>
+                </div>
             </BitPanel>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div>Use BitPanel in right-to-left (RTL).</div>
-            <br /><br />
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>Dir</b> turns the panel right-to-left, which swaps the two logical edges over: a
+                <b>Start</b> panel now slides in from the right of the screen and an <b>End</b> one from the
+                left, and the swipe that dismisses them follows.
+            </div>
+            <br />
             <div>
                 <div class="position-btn" dir="rtl">
                     <div>
@@ -170,23 +783,23 @@
 
                 <BitPanel @bind-IsOpen="isRtlPanelOpenStart"
                           Dir="BitDir.Rtl"
+                          AriaLabel="پنل آغاز"
                           Position="BitPanelPosition.Start">
-                    <div style="max-width:300px;padding:1rem">
+                    <div class="panel-body">
                         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        <BitButton OnClick="() => isRtlPanelOpenStart = false">بستن</BitButton>
                     </div>
                 </BitPanel>
 
                 <BitPanel @bind-IsOpen="isRtlPanelOpenEnd"
                           Dir="BitDir.Rtl"
+                          AriaLabel="پنل پایان"
                           Position="BitPanelPosition.End">
-                    <div style="max-width:300px;padding:1rem">
+                    <div class="panel-body">
                         لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.
                         چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد.
-                        کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد تا با نرم افزارها شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی و فرهنگ پیشرو در زبان فارسی ایجاد کرد.
-                        در این صورت می توان امید داشت که تمام و دشواری موجود در ارائه راهکارها و شرایط سخت تایپ به پایان رسد وزمان مورد نیاز شامل حروفچینی دستاوردهای اصلی و جوابگوی سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
+                        <BitButton OnClick="() => isRtlPanelOpenEnd = false">بستن</BitButton>
                     </div>
                 </BitPanel>
             </div>

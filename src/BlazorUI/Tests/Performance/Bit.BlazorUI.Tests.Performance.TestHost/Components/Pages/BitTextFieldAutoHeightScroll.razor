@@ -1,0 +1,43 @@
+@page "/regression/textfield-autoheight-scroll"
+
+<PageTitle>BitTextField AutoHeight Scroll Regression</PageTitle>
+
+@* An AutoHeight field measures its content by collapsing itself first, which makes the scroll container around
+   it shorter for a moment. Firefox and WebKit clamp the container's scroll position to that shorter content,
+   so with the container scrolled to its end, the press on the Save button below the field - whose blur
+   commits the value and re-measures the field - would move the button away before the click lands. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitTextField AutoHeight Scroll Regression</h3>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Save count: <span id="save-count">@_saveCount</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<div id="scroller" style="height: 300px; overflow: auto; width: 400px;">
+    <div style="height: 600px; background: #eee;"></div>
+    <BitTextField @bind-Value="_value" Label="Notes" Multiline AutoHeight />
+    <button @onclick="Save" id="btn-save" style="display: block; height: 32px; margin-bottom: 16px;">Save</button>
+</div>
+
+@code {
+    private string? _value;
+    private int _saveCount;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void Save()
+    {
+        _saveCount++;
+        _status = "Saved";
+    }
+}

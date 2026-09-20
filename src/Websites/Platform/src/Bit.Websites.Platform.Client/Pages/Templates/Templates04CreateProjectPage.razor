@@ -77,7 +77,7 @@
                     break;
                 case "MySQL":
                     <div>
-                        Both <a href="https://mariadb.org/download" target="_blank" rel="noopener">MariaDB</a> and MySql are supported.
+                        Download and install @database.Value <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">here</a>.
                     </div>
                     break;
                 case "Other":
@@ -421,6 +421,27 @@
             <br />
             <br />
             It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
+        </BitGridItem>
+
+        <BitGridItem Class="grid-item md" ColumnSpan="2">
+            <div class="row">
+                <BitText Typography="BitTypography.H6" Gutter>Theme</BitText>
+                <BitDropdown Placeholder="Choose theme" Items="@theme.Items" @bind-Value="@theme.Value" />
+            </div>
+            <br />
+            <CodeBox>
+                @GetThemeCommand()
+            </CodeBox>
+            The design system the app's UI ships with, powered by bit BlazorUI theming.
+            Fluent 2 is the default; Fluent, Cupertino and Material are also available, and all of them come with light and dark modes out of the box.
+            @if (theme.Value is "Cupertino" or "Material")
+            {
+                <br />
+                <br />
+                <BitMessage Color="BitColor.Warning" Multiline>
+                    The @theme.Value theme is experimental and still under active development, so some components may not look fully polished yet.
+                </BitMessage>
+            }
         </BitGridItem>
 
     </BitGrid>

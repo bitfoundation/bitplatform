@@ -10,9 +10,14 @@ namespace Bit.BlazorUI.Tests.Performance;
 
 /// <summary>
 /// Base class for Playwright-based performance tests.
-/// Manages the test host application lifecycle.
+/// Manages the test host application lifecycle, and the browser with a fresh page for every test.
 /// </summary>
-public abstract class PerformanceTestBase : PageTest
+/// <remarks>
+/// The browser is picked from environment variables, which the Microsoft.Testing.Platform runner passes through
+/// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or
+/// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
+/// </remarks>
+public abstract class PerformanceTestBase
 {
     private static Process? _hostProcess;
     private static readonly object _lock = new();
@@ -20,8 +25,21 @@ public abstract class PerformanceTestBase : PageTest
     private static bool _isHostStarted;
     private static readonly HttpClient _sharedHttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
+    private static readonly SemaphoreSlim _browserLock = new(1, 1);
+    private static IPlaywright? _playwright;
+    private static IBrowser? _browser;
+    private IBrowserContext? _context;
+
     protected const string BaseUrl = "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
+
+    protected IPage Page { get; private set; } = null!;
+
+    /// <summary>
+    /// The browser context a test class needs, for the ones that cannot be driven in the default desktop one -
+    /// a test of behaviour that only runs on a touch device, or at a phone's viewport. Null takes the defaults.
+    /// </summary>
+    protected virtual BrowserNewContextOptions? ContextOptions => null;
 
     /// <summary>
     /// Performance thresholds in milliseconds.
@@ -60,6 +78,19 @@ public abstract class PerformanceTestBase : PageTest
             }
         }
 
+        await _browserLock.WaitAsync();
+        try
+        {
+            _browser ??= await LaunchBrowser();
+        }
+        finally
+        {
+            _browserLock.Release();
+        }
+
+        _context = await _browser.NewContextAsync(ContextOptions);
+        Page = await _context.NewPageAsync();
+
         // Wait for page to be ready.
         // NOTE: Do NOT use WaitForLoadStateAsync(NetworkIdle) here - Blazor Server keeps a
         // persistent SignalR WebSocket open, which Playwright counts as an active connection
@@ -68,21 +99,79 @@ public abstract class PerformanceTestBase : PageTest
     }
 
     [TestCleanup]
-    public void TestCleanupBase()
+    public async Task TestCleanupBase()
     {
+        if (_context is not null)
+        {
+            await _context.CloseAsync();
+            _context = null;
+        }
+
+        bool isLastTest;
         lock (_lock)
         {
             _testCount--;
+            isLastTest = _testCount == 0;
             // Stop host when no more tests are running
-            if (_testCount == 0)
+            if (isLastTest)
             {
                 StopTestHost();
             }
         }
+
+        if (isLastTest is false) return;
+
+        await _browserLock.WaitAsync();
+        try
+        {
+            if (_browser is not null) await _browser.CloseAsync();
+            _playwright?.Dispose();
+            _browser = null;
+            _playwright = null;
+        }
+        finally
+        {
+            _browserLock.Release();
+        }
+    }
+
+    private static async Task<IBrowser> LaunchBrowser()
+    {
+        // A launch that failed leaves the driver behind; the next test reuses it instead of starting
+        // another one that only the cleanup of the last test would dispose.
+        _playwright ??= await Microsoft.Playwright.Playwright.CreateAsync();
+
+        SetDefaultExpectTimeout(DefaultTimeout);
+
+        var browserName = Environment.GetEnvironmentVariable("BROWSER");
+        var options = new BrowserTypeLaunchOptions { Headless = Environment.GetEnvironmentVariable("HEADED") != "1" };
+
+        return browserName?.ToLowerInvariant() switch
+        {
+            null or "" or "chromium" => await _playwright.Chromium.LaunchAsync(new(options)
+            {
+                // performance.memory only reports real numbers with this flag.
+                Args = ["--enable-precise-memory-info"]
+            }),
+            // The installed Edge, for a machine that has no Playwright-managed Chromium downloaded.
+            "edge" or "msedge" => await _playwright.Chromium.LaunchAsync(new(options)
+            {
+                Channel = "msedge",
+                Args = ["--enable-precise-memory-info"]
+            }),
+            "firefox" => await _playwright.Firefox.LaunchAsync(options),
+            "webkit" => await _playwright.Webkit.LaunchAsync(options),
+            _ => throw new InvalidOperationException($"Unknown BROWSER '{browserName}'. Use chromium, edge, firefox or webkit.")
+        };
     }
 
     private static void StartTestHost()
     {
+        // A host already serving the URL is used as it is. It lets a run attach to one started by hand -
+        // in another configuration, or left running between runs so the implicit build is paid once - and
+        // it is what keeps a second run from launching a host that could only fail to take the port.
+        if (IsTestHostResponding()) return;
+
         var testHostPath = GetTestHostPath();
 
         // The test host project targets multiple frameworks (net8.0/net9.0/net10.0).
@@ -152,6 +241,19 @@ public abstract class PerformanceTestBase : PageTest
             _hostProcess = null;
         }
         _isHostStarted = false;
+    }
+
+    private static bool IsTestHostResponding()
+    {
+        try
+        {
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            return httpClient.GetAsync(BaseUrl).Result.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string GetTestHostPath()

@@ -27,9 +27,14 @@ public class AppQueryStringCollectionTests
     {
         var queryString = AppQueryStringCollection.Parse("?utm_source=a&utm_source=b&culture=fa-IR");
 
+        var utmSource = queryString["utm_source"];
+        var culture = queryString["culture"];
+
         Assert.HasCount(2, queryString, "A repeated key must collapse to one entry, not throw and not duplicate.");
-        Assert.AreEqual("b", queryString["utm_source"]?.ToString(), "The last occurrence in the url wins.");
-        Assert.AreEqual("fa-IR", queryString["culture"]?.ToString(), "The other keys must survive the collapse.");
+        Assert.IsNotNull(utmSource);
+        Assert.IsNotNull(culture);
+        Assert.AreEqual("b", utmSource.ToString(), "The last occurrence in the url wins.");
+        Assert.AreEqual("fa-IR", culture.ToString(), "The other keys must survive the collapse.");
     }
 
     /// <summary>
@@ -55,8 +60,13 @@ public class AppQueryStringCollectionTests
     {
         var queryString = AppQueryStringCollection.Parse("?q=100%20off&returnUrl=%2Fproducts%2F42");
 
-        Assert.AreEqual("100 off", queryString["q"]?.ToString());
-        Assert.AreEqual("/products/42", queryString["returnUrl"]?.ToString());
+        var q = queryString["q"];
+        var returnUrl = queryString["returnUrl"];
+
+        Assert.IsNotNull(q);
+        Assert.IsNotNull(returnUrl);
+        Assert.AreEqual("100 off", q.ToString());
+        Assert.AreEqual("/products/42", returnUrl.ToString());
     }
 
     /// <summary>
@@ -90,7 +100,10 @@ public class AppQueryStringCollectionTests
     {
         var written = new AppQueryStringCollection { ["$filter"] = value }.ToString();
 
-        Assert.AreEqual(value, AppQueryStringCollection.Parse(written!)["$filter"]?.ToString(),
+        var roundTripped = AppQueryStringCollection.Parse(written!)["$filter"];
+
+        Assert.IsNotNull(roundTripped);
+        Assert.AreEqual(value, roundTripped.ToString(),
             $"'{value}' did not survive the round trip; it was written as '{written}'.");
     }
 

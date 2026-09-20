@@ -40,35 +40,59 @@ public partial class UserProfilePictureWebPTests
 
         var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
-        var currentUser = await scope.ServiceProvider.GetRequiredService<IUserController>()
-            .GetCurrentUser(TestContext.CancellationToken);
+        // Only this test's own upload may be cleaned up below: the account is the shared seeded one, so an early
+        // failure - the download, the user lookup - must leave whatever picture it already had exactly as it was.
+        var pictureWasUploadedByThisTest = false;
 
-        // Real, non-webp repo image served at the web root (512x512 PNG >= the 256x256 minimum, so it is not rejected
-        // with ImageTooSmall). Downloading it through the running server avoids brittle on-disk asset paths.
-        var sourceImageBytes = await httpClient.GetByteArrayAsync("images/icons/bit-icon-512.png", TestContext.CancellationToken);
+        try
+        {
+            var currentUser = await scope.ServiceProvider.GetRequiredService<IUserController>()
+                .GetCurrentUser(TestContext.CancellationToken);
 
-        // Sanity: the source really is NOT WebP, otherwise the assertion below would be meaningless.
-        Assert.AreNotEqual(MagickFormat.WebP, new MagickImageInfo(sourceImageBytes).Format);
+            // Real, non-webp repo image served at the web root (512x512 PNG >= the 256x256 minimum, so it is not rejected
+            // with ImageTooSmall). Downloading it through the running server avoids brittle on-disk asset paths.
+            var sourceImageBytes = await httpClient.GetByteArrayAsync("images/icons/bit-icon-512.png", TestContext.CancellationToken);
 
-        using var form = new MultipartFormDataContent();
-        using var fileContent = new ByteArrayContent(sourceImageBytes);
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-        // The endpoint binds an IFormFile parameter named "file".
-        form.Add(fileContent, "file", "bit-icon-512.png");
+            // Sanity: the source really is NOT WebP, otherwise the assertion below would be meaningless.
+            Assert.AreNotEqual(MagickFormat.WebP, new MagickImageInfo(sourceImageBytes).Format);
 
-        using var uploadResponse = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
-        uploadResponse.EnsureSuccessStatusCode();
+            using var form = new MultipartFormDataContent();
+            using var fileContent = new ByteArrayContent(sourceImageBytes);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            // The endpoint binds an IFormFile parameter named "file".
+            form.Add(fileContent, "file", "bit-icon-512.png");
 
-        // Download the generated small (256x256) attachment. attachmentId for a profile picture is the user id.
-        var downloadedBytes = await httpClient.GetByteArrayAsync(
-            $"api/v1/Attachment/GetAttachment/{currentUser.Id}/{AttachmentKind.UserProfileImageSmall}",
-            TestContext.CancellationToken);
+            using var uploadResponse = await httpClient.PostAsync("api/v1/Attachment/UploadUserProfilePicture", form, TestContext.CancellationToken);
+            uploadResponse.EnsureSuccessStatusCode();
+            pictureWasUploadedByThisTest = true;
 
-        var downloadedInfo = new MagickImageInfo(downloadedBytes);
+            // Download the generated small (256x256) attachment. attachmentId for a profile picture is the user id.
+            var downloadedBytes = await httpClient.GetByteArrayAsync(
+                $"api/v1/Attachment/GetAttachment/{currentUser.Id}/{AttachmentKind.UserProfileImageSmall}",
+                TestContext.CancellationToken);
 
-        // The core assertion: the stored/served small profile image is genuinely WebP, regardless of the PNG we uploaded.
-        Assert.AreEqual(MagickFormat.WebP, downloadedInfo.Format);
-        Assert.AreEqual(256u, downloadedInfo.Width);
-        Assert.AreEqual(256u, downloadedInfo.Height);
+            var downloadedInfo = new MagickImageInfo(downloadedBytes);
+
+            // The core assertion: the stored/served small profile image is genuinely WebP, regardless of the PNG we uploaded.
+            Assert.AreEqual(MagickFormat.WebP, downloadedInfo.Format);
+            Assert.AreEqual(256u, downloadedInfo.Width);
+            Assert.AreEqual(256u, downloadedInfo.Height);
+        }
+        finally
+        {
+            // This test signs in as the SEEDED default account and the database outlives the run (all tests share one
+            // application database), so the uploaded picture must be removed again - otherwise the canonical account
+            // permanently carries HasProfilePicture=true pointing at a blob under this run's working directory.
+            // Best effort, mirroring AttachmentReplacementTests.DeleteProfilePicture: a test that fails early must not
+            // take the cleanup down with it.
+            if (pictureWasUploadedByThisTest)
+            {
+                try
+                {
+                    using var _ = await httpClient.DeleteAsync("api/v1/Attachment/DeleteUserProfilePicture", CancellationToken.None);
+                }
+                catch (Exception) { }
+            }
+        }
     }
 }

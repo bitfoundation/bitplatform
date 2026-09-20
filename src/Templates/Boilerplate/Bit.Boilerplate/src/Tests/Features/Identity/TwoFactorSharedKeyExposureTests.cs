@@ -34,7 +34,7 @@ public class TwoFactorSharedKeyExposureTests
         // Enrol for real: read the key while 2fa is off, compute a live code from it, and turn 2fa on with that code.
         // Enable is deliberately not gated by elevated access - it already requires a valid code, which is stronger proof.
         var enrolment = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
-        Assert.IsFalse(string.IsNullOrEmpty(enrolment.SharedKey), "Enrolment must be possible while 2fa is off.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(enrolment.SharedKey), "Enrolment must be possible while 2fa is off.");
 
         var enabled = await userController.TwoFactorAuth(
             new() { Enable = true, TwoFactorCode = ComputeTotp(enrolment.SharedKey) }, TestContext.CancellationToken);
@@ -71,9 +71,9 @@ public class TwoFactorSharedKeyExposureTests
         var read = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
 
         Assert.IsFalse(read.IsTwoFactorEnabled, "A fresh account has 2fa off.");
-        Assert.IsFalse(string.IsNullOrEmpty(read.SharedKey), "The enrolling user needs the key - this is how they get it.");
-        Assert.IsFalse(string.IsNullOrEmpty(read.AuthenticatorUri), "And the uri their authenticator app scans.");
-        Assert.IsFalse(string.IsNullOrEmpty(read.QrCode), "And the QR image the settings page renders.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(read.SharedKey), "The enrolling user needs the key - this is how they get it.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(read.AuthenticatorUri), "And the uri their authenticator app scans.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(read.QrCode), "And the QR image the settings page renders.");
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public class TwoFactorSharedKeyExposureTests
         var after = await userController.TwoFactorAuth(new() { ResetSharedKey = true }, TestContext.CancellationToken);
 
         Assert.IsFalse(after.IsTwoFactorEnabled, "Resetting the shared key also turns 2fa off.");
-        Assert.IsFalse(string.IsNullOrEmpty(after.SharedKey),
+        Assert.IsFalse(string.IsNullOrWhiteSpace(after.SharedKey),
             "Re-enrolment needs the new key in this very response, so the suppression must key off the POST-reset state.");
         Assert.AreNotEqual(before.SharedKey, after.SharedKey, "Resetting must actually produce a different key.");
     }

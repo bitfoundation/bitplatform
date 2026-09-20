@@ -27,7 +27,7 @@ namespace ButilTests.Manual;
 internal static class ScriptBundling
 {
     /// <summary>The script that evaluates an assembled bundle, copied next to the executable by the csproj.</summary>
-    private const string VerifierFileName = "verify-bundle.mjs";
+    internal const string VerifierFileName = "verify-bundle.mjs";
 
     /// <summary>
     /// An interop identifier naming a module Bit.Butil does not ship, present in this assembly for the
@@ -63,6 +63,7 @@ internal static class ScriptBundling
             return (checks.Passed, checks.Failed);
         }
 
+        CheckSplitModuleClosures(checks, butilRoot);
         CheckShippedArtifacts(checks, butilRoot, workspace, butilAssemblyPath);
         CheckAssembledBundlesRun(checks, butilRoot, workspace, butilAssemblyPath);
         CheckPackageLayout(checks, butilRoot);
@@ -239,6 +240,84 @@ internal static class ScriptBundling
         checks.That(included.SequenceEqual(["x", "y"], StringComparer.Ordinal),
             "a manifest with a dependency cycle resolves rather than looping forever",
             $"resolved to [{string.Join(", ", included)}]");
+    }
+
+    /// <summary>
+    /// What one split module actually drags in, taken from the manifest Bit.Butil ships rather than from a
+    /// hand-built one.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="CheckDependencyResolution"/> proves the resolver behaves; this proves the graph it walks
+    /// is the shape the library claims. Both halves of a split are asserted, because only the pair says
+    /// anything: what a module must bring (a shared registry it cannot work without) and what it must
+    /// <em>not</em> (the sibling it was split away from). A dependency added in passing - one
+    /// <c>butil.otherModule.helper()</c> in a TypeScript file - silently puts a whole module back into the
+    /// download of every app that uses this one, and nothing else in this harness would notice.
+    /// </remarks>
+    private static void CheckSplitModuleClosures(Checks checks, string butilRoot)
+    {
+        var manifestPath = Path.Combine(butilRoot, "obj", "butil-js", "chunks", "manifest.txt");
+        if (File.Exists(manifestPath) is false)
+        {
+            checks.That(false, "the shipped manifest was not read", $"{manifestPath} is missing - build Bit.Butil first");
+            return;
+        }
+
+        var manifest = ButilScriptBundler.ReadManifest(manifestPath);
+
+        // module -> what its closure must contain, what it must not, and why the "not" matters.
+        (string Module, string[] Required, string[] Forbidden, string Because)[] cases =
+        [
+            ("streams", ["fetchRequest", "abortSignals"], ["fetch", "abortController"],
+                "a stream builds its request through the shared fetchRequest module, not through the whole fetch module"),
+            ("fetch", ["fetchRequest", "abortSignals"], ["streams", "abortController"],
+                "fetch and streams share the request mapping rather than either owning it"),
+            ("scheduler", ["abortSignals"], ["abortController"],
+                "scheduling with a signal needs the signal registry, not the AbortController surface"),
+            ("shadowDom", ["domHandles"], ["dom"],
+                "a shadow root is registered in the node registry, which is why the registry is its own module"),
+            ("windowMessaging", ["windowRefs"], ["window", "windowSelection", "windowMediaQuery"],
+                "posting to a popup needs the popup registry, not the window API"),
+            ("webAudioAnalyser", ["webAudioNodes", "webAudio"], ["webAudioParams", "webAudioMedia", "webAudioWorklet"],
+                "reading an analyser needs the node registry and the context, and none of the rest of the graph"),
+            ("cryptoKeys", ["cryptoKeyMaterial"], ["crypto", "cryptoSign", "cryptoCipher", "cryptoDerive"],
+                "key management shares only the import helpers with derivation"),
+            ("cryptoDerive", ["cryptoKeyMaterial"], ["crypto", "cryptoKeys", "cryptoSign", "cryptoCipher"],
+                "the other half of that same sharing"),
+            ("indexedDbStore", ["indexedDb"], ["indexedDbIndex", "indexedDbCursor", "indexedDbTransaction", "indexedDbInfo"],
+                "a store read needs the connection, not the index, cursor and transaction layers"),
+            ("performanceVitals", ["performance"], [],
+                "the Web Vitals accumulator is layered on the timeline module"),
+            ("performance", [], ["performanceVitals"],
+                "and the timeline does not carry the accumulator back"),
+            ("userAgent", [], ["userAgentParser"],
+                "Client Hints must not drag the user-agent string parser, which is the biggest module Butil ships"),
+            ("elementState", [], ["element", "elementAria", "elementDom", "elementEvents", "events"],
+                "the reflected properties stand alone - the element families share nothing but the prelude"),
+            ("cssTypedOm", [], ["css", "cssStyleSheet", "cssHighlight", "cssWorklet"],
+                "so does the Typed OM"),
+        ];
+
+        foreach (var (module, required, forbidden, because) in cases)
+        {
+            var included = ButilScriptBundler.Resolve(manifest, [module], out var unknown);
+
+            if (unknown.Count > 0 || manifest.Dependencies.ContainsKey(module) is false)
+            {
+                checks.That(false, $"'{module}' is a module the split families claim exists", $"the manifest has no such module");
+                continue;
+            }
+
+            var absent = required.Where(name => included.Contains(name, StringComparer.Ordinal) is false).ToArray();
+            checks.That(absent.Length == 0,
+                $"resolving '{module}' brings [{string.Join(", ", required)}] with it",
+                $"it left out [{string.Join(", ", absent)}] - resolved to [{string.Join(", ", included)}]");
+
+            var dragged = forbidden.Where(name => included.Contains(name, StringComparer.Ordinal)).ToArray();
+            checks.That(dragged.Length == 0,
+                $"resolving '{module}' leaves [{string.Join(", ", forbidden)}] behind - {because}",
+                $"it dragged in [{string.Join(", ", dragged)}]");
+        }
     }
 
     /// <summary>
@@ -527,10 +606,10 @@ internal static class ScriptBundling
     }
 
     /// <summary>The <c>BitButil.&lt;key&gt;</c> namespaces a set of modules registers between them.</summary>
-    private static string Keys(IEnumerable<string> modules)
+    internal static string Keys(IEnumerable<string> modules)
         => string.Join(",", modules.Select(module => module == "butil" ? "version" : module));
 
-    private static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
+    internal static void RunVerifier(Checks checks, string verifier, string expectedKeys, params string[] scripts)
     {
         var what = string.Join(" + ", scripts.Select(Path.GetFileName));
         var process = new Process
@@ -620,6 +699,9 @@ internal static class ScriptBundling
         }
 
         var targets = File.ReadAllText(targetsPath);
+
+        CheckScriptAssetSelection(checks, targets);
+
         var packed = XDocument.Load(projectPath).Descendants()
             .Where(element => element.Name.LocalName is "TfmSpecificPackageFile" or "None")
             .Select(element => (Include: element.Attribute("Include")?.Value ?? string.Empty, PackagePath: element.Attribute("PackagePath")?.Value))
@@ -653,6 +735,68 @@ internal static class ScriptBundling
             "the targets are packed under both buildTransitive/ (what NuGet imports today) and build/ (older tooling)",
             $"packed to [{string.Join(", ", packedTargets.Select(entry => entry.PackagePath))}]");
     }
+
+    /// <summary>
+    /// The one piece of the consumer-side targets that exists twice: dropping the shape of the JavaScript an
+    /// app does not use, once for the build asset list and once for the publish one.
+    /// </summary>
+    /// <remarks>
+    /// The duplication is forced - a target runs at most once per project build, so a single target hooked
+    /// into both stages runs at the first and is skipped at the second - and it is the kind that rots: a fix
+    /// made to one body and not the other leaves a publish shipping all 171 module files an app never requests,
+    /// or a bundle a lazy-scripts app never loads, and neither shows up in a build. So the two bodies are
+    /// compared here, and each is checked to be hooked into the stage it exists for.
+    /// </remarks>
+    private static void CheckScriptAssetSelection(Checks checks, string targets)
+    {
+        const string build = "BitButilSelectScriptAssets";
+        const string publish = "BitButilSelectPublishScriptAssets";
+
+        var buildBody = TargetBody(targets, build);
+        var publishBody = TargetBody(targets, publish);
+
+        if (checks.That(buildBody.Length > 0 && publishBody.Length > 0,
+                "the JavaScript shape an app does not use is dropped at both the build and the publish stage",
+                $"{(buildBody.Length == 0 ? build : publish)} is not a target in the consumer-side targets file") is false)
+        {
+            return;
+        }
+
+        checks.That(string.Equals(buildBody, publishBody, StringComparison.Ordinal),
+            "the build-stage and publish-stage selections still do the same thing",
+            $"{build} and {publish} have drifted apart - the publish output no longer matches the build's idea of which scripts the app uses");
+
+        // Hooked into the right stage, and in the publish list ahead of the trimming, which only narrows what
+        // the selection leaves behind.
+        var publishHook = HookList(targets, "ResolvePublishStaticWebAssetsDependsOn");
+        var buildHook = HookList(targets, "ResolveCoreStaticWebAssetsDependsOn");
+
+        checks.That(buildHook.Contains(build, StringComparison.Ordinal), $"{build} runs at the build stage", $"it is not in ResolveCoreStaticWebAssetsDependsOn: '{buildHook}'");
+        checks.That(publishHook.Contains(publish, StringComparison.Ordinal), $"{publish} runs at the publish stage", $"it is not in ResolvePublishStaticWebAssetsDependsOn: '{publishHook}'");
+        checks.That(publishHook.Contains(build, StringComparison.Ordinal) is false,
+            $"{build} is not also hooked into the publish stage",
+            "a target runs once per build, so hooking the same one into both stages leaves the second with nothing to do");
+
+        var selection = publishHook.IndexOf(publish, StringComparison.Ordinal);
+        var trimming = publishHook.IndexOf("BitButilTrimScript", StringComparison.Ordinal);
+        checks.That(selection >= 0 && trimming > selection,
+            "the publish-stage selection runs before the trimming it feeds",
+            $"the publish hook list orders them '{publishHook}'");
+    }
+
+    /// <summary>A target's body, comments and layout removed, so two of them can be compared for what they do.</summary>
+    private static string TargetBody(string targets, string name)
+    {
+        var match = Regex.Match(targets, $"<Target Name=\"{Regex.Escape(name)}\"[^>]*>(?<body>.*?)</Target>", RegexOptions.Singleline);
+        if (match.Success is false) return string.Empty;
+
+        var body = Regex.Replace(match.Groups["body"].Value, "<!--.*?-->", " ", RegexOptions.Singleline);
+        return Regex.Replace(body, @"\s+", " ").Trim();
+    }
+
+    /// <summary>The value this targets file appends to one of the SDK's DependsOn properties.</summary>
+    private static string HookList(string targets, string property)
+        => Regex.Match(targets, $"<{property}>(?<value>[^<]*)</{property}>").Groups["value"].Value;
 
     /// <summary>The folders one pack item's PackagePath names - it may name several, separated by semicolons.</summary>
     private static string[] PackageFolders(string? packagePath)
@@ -695,7 +839,7 @@ internal static class ScriptBundling
     /// Counts what held and records what did not, in the harness's own terms - every failure ends up in the
     /// list the report prints and the exit code is read from.
     /// </summary>
-    private sealed class Checks(List<string> failures)
+    internal sealed class Checks(List<string> failures, string subject = "script bundling")
     {
         public int Passed { get; private set; }
 
@@ -710,7 +854,7 @@ internal static class ScriptBundling
             }
 
             Failed++;
-            failures.Add($"script bundling: {what}{(detail is null ? string.Empty : $" - {detail}")}.");
+            failures.Add($"{subject}: {what}{(detail is null ? string.Empty : $" - {detail}")}.");
             return false;
         }
 

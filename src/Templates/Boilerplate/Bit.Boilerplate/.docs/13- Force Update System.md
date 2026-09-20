@@ -269,7 +269,7 @@ public partial class WindowsAppUpdateService : IAppUpdateService
     public async Task ForceUpdate()
     {
         var windowsUpdateSettings = settings.WindowsUpdate;
-        if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
+        if (string.IsNullOrWhiteSpace(windowsUpdateSettings?.FilesUrl))
             return;
         windowsUpdateSettings.AutoReload = true; // Force update to reload the app after update
         await Update();
@@ -278,7 +278,7 @@ public partial class WindowsAppUpdateService : IAppUpdateService
     public async Task Update()
     {
         var windowsUpdateSettings = settings.WindowsUpdate;
-        if (string.IsNullOrEmpty(windowsUpdateSettings?.FilesUrl))
+        if (string.IsNullOrWhiteSpace(windowsUpdateSettings?.FilesUrl))
             return;
         var updateManager = new UpdateManager(windowsUpdateSettings.FilesUrl);
         var updateInfo = await updateManager.CheckForUpdatesAsync();
@@ -480,5 +480,11 @@ This allows you to:
 1. Deploy breaking changes to the web app first
 2. Test with web users before forcing mobile users to update
 3. Give mobile users more time to update (app store approval delays)
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
 
 ---

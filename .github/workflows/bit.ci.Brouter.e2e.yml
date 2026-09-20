@@ -1,0 +1,208 @@
+name: bit platform CI - Brouter E2E
+
+# Browser, hybrid and publish-gate coverage for Bit.Brouter, next to the unit/hosting tests in
+# bit.ci.Brouter.yml. See src/Brouter/Tests/Bit.Brouter.Tests.E2E/README.md for what each job proves
+# and how to run the same thing locally.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - 'src/Brouter/**'
+    - '.github/workflows/bit.ci.Brouter.e2e.yml'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # Every web render mode (static SSR, Server, WebAssembly, Auto, with and without prerendering) in
+  # Chromium, on each runtime the library ships for.
+  e2e-web:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: Brouter E2E - web render modes (${{ matrix.framework }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ net10.0, net9.0, net8.0 ]
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Build the web harness host
+      run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.Harness.Web/Bit.Brouter.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      env:
+        BROUTER_E2E_FRAMEWORK: ${{ matrix.framework }}
+        BROUTER_E2E_CONFIGURATION: Release
+        BROUTER_E2E_SKIP_BUILD: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Brouter &&
+        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        --filter "FullyQualifiedName!~HybridModeTests"
+        --report-trx --report-trx-filename brouter-e2e-web-${{ matrix.framework }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: brouter-e2e-web-${{ matrix.framework }}
+        path: '**/brouter-e2e-web-*.trx'
+        if-no-files-found: ignore
+
+  # Blazor Hybrid: the harness in a WinForms BlazorWebView, driven through WebView2's DevTools port.
+  e2e-hybrid:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: Brouter E2E - Blazor Hybrid (WebView2)
+    runs-on: windows-2025
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    - name: Install the WebView2 Runtime
+      shell: pwsh
+      run: |
+        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        if (-not $version -or $version -eq '0.0.0.0') {
+          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
+          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
+          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        }
+        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
+        Write-Host "WebView2 Runtime $version"
+
+    - name: Build the hybrid harness host
+      run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.Harness.Hybrid/Bit.Brouter.Tests.Harness.Hybrid.csproj -c Release
+
+    - name: Build the E2E suite
+      run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
+
+    # No Playwright browser download: it attaches to the WebView2 Runtime installed above.
+    - name: Run hybrid E2E tests
+      env:
+        BROUTER_E2E_CONFIGURATION: Release
+        BROUTER_E2E_SKIP_BUILD: 1
+      run: >
+        cd src/Brouter &&
+        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        --filter "FullyQualifiedName~HybridModeTests"
+        --report-trx --report-trx-filename brouter-e2e-hybrid.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: brouter-e2e-hybrid
+        path: '**/brouter-e2e-hybrid.trx'
+        if-no-files-found: ignore
+
+  # Publishes the harness the way a WebAssembly app ships - trimmed, and in a second leg AOT-compiled -
+  # failing on any trim analysis warning, then runs the browser suite against that published output.
+  # Trimming is where reflection-based parameter binding, route discovery and the prerender state
+  # bridge break, and none of it is visible in a Debug build.
+  publish-gate:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: Brouter publish gate (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: trimmed
+          properties: ''
+        - name: aot
+          properties: '-p:RunAOTCompilation=true'
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      if: matrix.name == 'aot'
+      run: dotnet workload install wasm-tools
+
+    - name: Publish the web harness host (fails on trim/AOT warnings from Bit.Brouter)
+      run: bash src/Brouter/Tests/Bit.Brouter.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/harness-${{ matrix.name }} ${{ matrix.properties }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests against the published host
+      env:
+        BROUTER_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/harness-${{ matrix.name }}
+      run: >
+        cd src/Brouter &&
+        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        --filter "FullyQualifiedName!~HybridModeTests"
+        --report-trx --report-trx-filename brouter-publish-${{ matrix.name }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: brouter-publish-${{ matrix.name }}
+        path: '**/brouter-publish-*.trx'
+        if-no-files-found: ignore

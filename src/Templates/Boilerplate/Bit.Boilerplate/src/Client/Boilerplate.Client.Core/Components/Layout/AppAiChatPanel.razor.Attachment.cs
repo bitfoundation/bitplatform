@@ -134,7 +134,7 @@ public partial class AppAiChatPanel
     private void HandleOnAttachmentUploadFailed(BitFileInfo fileInfo)
     {
         // The server says why it rejected the image, which is the point of showing its text rather than a generic one.
-        SnackBarService.Error(string.IsNullOrEmpty(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
+        SnackBarService.Error(string.IsNullOrWhiteSpace(fileInfo.Message) ? Localizer[nameof(AppStrings.FileUploadFailed)] : fileInfo.Message);
 
         attachmentUploadTcs?.TrySetResult(false);
     }

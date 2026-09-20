@@ -34,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.9.0" />
-        <PackageReference Include="MSTest" Version="4.3.3" />
+        <PackageReference Include="bunit" Version="2.11.3" />
+        <PackageReference Include="MSTest" Version="4.4.1" />
         <!-- Used by FastInvokeSyncContractTests to parse C# sources (Roslyn) when resolving the
              const-string identifiers passed to FastInvoke call sites. -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
@@ -47,12 +47,15 @@
          loudly on a .NET upgrade that reshapes them. -->
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.29" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.18" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.11" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.12" />
     </ItemGroup>
 
     <ItemGroup>
+        <!-- The Link and Script asset components ship in their own package; referenced here so the
+             duplicate-instance tests render the real components against the real BitAssetVersion. -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
@@ -68,7 +71,7 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <!-- The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras
-             (see BitExtraThemePresets), but they are stylesheets of the same theming system: the palette,
+             (see BitThemePresets), but they are stylesheets of the same theming system: the palette,
              contrast and token-contract tests read every packaged preset out of one theme-styles tree,
              so they are linked in beside the core ones. -->
         <None Include="..\..\Bit.BlazorUI.Extras\Styles\Fluent2\*.scss" Link="theme-styles\Fluent2\%(Filename)%(Extension)">
@@ -91,6 +94,45 @@
         <None Include="..\..\Bit.BlazorUI\Utils\Theme\BitTheme.ts" Link="ts-sources\BitTheme.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- The media query every BitScreenQuery member stands for is built on the JS side, and
+             nothing but a switch on the member's name ties the two together: a member without a case
+             there resolves to no query at all and the component silently never listens. The XML
+             documentation of each member is the third copy of the same fact, since it is what the
+             docs and the MCP server answer with. BitMediaQueryScreenQueryContractTests reads this
+             source to fail on a drift between the three. -->
+        <None Include="..\..\Bit.BlazorUI\Components\Utilities\MediaQuery\BitMediaQuery.ts" Link="ts-sources\BitMediaQuery.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The rich text editor's C# half and its JS bridge are wired together by nothing but
+             strings: the setup option names, the JSInvokable callback names, and the
+             BitBlazorUI.RichTextEditor.* function names the interop extensions call. A rename on
+             either side compiles and then silently does nothing at runtime, so
+             BitRichTextEditorBridgeContractTests reads this source to fail on the drift. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditor.ts" Link="ts-sources\BitRichTextEditor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The two C# halves of that same contract. They are internal types, so the test reads
+             them as source rather than referencing them. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorSetupOptions.cs" Link="cs-sources\BitRichTextEditorSetupOptions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorPolicyPayload.cs" Link="cs-sources\BitRichTextEditorPolicyPayload.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorJsRuntimeExtensions.cs" Link="cs-sources\BitRichTextEditorJsRuntimeExtensions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+
+    <!-- The flag images a BitFlag with an ImageSet points at ship in Bit.BlazorUI.Assets, tied to the
+         component by nothing but their file names. Rather than copying the 2390 images beside the tests,
+         their names are written out there, and BitFlagTests checks that every image a flag offers the
+         browser is one the package ships. -->
+    <Target Name="WriteAssetsFlagNames" AfterTargets="Build">
+        <ItemGroup>
+            <_AssetsFlagImage Include="..\..\Bit.BlazorUI.Assets\wwwroot\flags\*.webp" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(OutDir)assets-flags.txt" Lines="@(_AssetsFlagImage->'%(Filename)%(Extension)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    </Target>
 
 </Project>

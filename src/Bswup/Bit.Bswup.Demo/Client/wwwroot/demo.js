@@ -501,7 +501,7 @@
         if (hash.length < 2) return;
 
         let target = null;
-        // A fragment is not required to be a valid CSS selector (#10.6.0 is not), and
+        // A fragment is not required to be a valid CSS selector (#1.6.0 is not), and
         // querySelector throws on one that is not.
         try { target = document.querySelector(hash); } catch (err) { return; }
         if (!target) return;

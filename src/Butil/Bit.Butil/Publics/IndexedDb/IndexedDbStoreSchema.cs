@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// </remarks>
 public class IndexedDbStoreSchema
 {
+    /// <summary>The object store's name. It is the key the schema is matched on, so renaming one creates a second store rather than renaming the first.</summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>The keypath to use as the store's primary key. Null means out-of-line keys.</summary>
@@ -33,25 +34,4 @@ public class IndexedDbStoreSchema
 
     /// <summary>Indexes to create alongside the store.</summary>
     public IndexedDbIndexSchema[] Indexes { get; set; } = [];
-}
-
-/// <summary>Index schema inside an <see cref="IndexedDbStoreSchema"/>.</summary>
-public class IndexedDbIndexSchema
-{
-    public string Name { get; set; } = string.Empty;
-
-    public string KeyPath { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Compound index - two or more keypaths making up one index key. Takes precedence over
-    /// <see cref="KeyPath"/> when non-empty.
-    /// </summary>
-    public string[]? KeyPaths { get; set; }
-
-    public bool Unique { get; set; }
-
-    public bool MultiEntry { get; set; }
-
-    /// <summary>True to delete this index during the upgrade. Every other member is ignored when set.</summary>
-    public bool Drop { get; set; }
 }

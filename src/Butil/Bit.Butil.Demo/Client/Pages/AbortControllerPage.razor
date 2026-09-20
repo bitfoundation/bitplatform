@@ -1,0 +1,504 @@
+@page "/abort-controller"
+@implements IAsyncDisposable
+@inject Bit.Butil.AbortController abortController
+@inject Bit.Butil.Fetch fetch
+
+<PageTitle>AbortController - Bit.Butil</PageTitle>
+
+<PageHeader Category="Async &amp; Scheduling"
+            Title="AbortController"
+            Lead="A cancellation token the browser understands. Create one controller, hand its signal to as many operations as you like, and cancel all of them with a single Abort."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/AbortController"
+            InjectAs="AbortController abortController" />
+
+<Callout Type="info" Title="Why not just the per-call handle?">
+    <code>Fetch.Start</code> hands back an <code>AbortableFetch</code> that aborts <em>that one
+    request</em>. A shared <code>ButilAbortSignal</code> is the opposite: one signal, any number of
+    operations, one button that stops all of them. It is also the only way to give a request a
+    deadline and a Cancel button at the same time - see <code>Any</code> below.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsTimeoutSupported / IsAnySupported"
+                 Description="AbortController itself is supported by every current engine. AbortSignal.timeout and AbortSignal.any are newer - Any still works where the latter is missing, because it falls back to a hand-wired controller that behaves the same, but Timeout returns null. During prerender/SSR every check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.AbortController abortController
+
+var supported = await abortController.IsSupported();
+var hasTimeout = await abortController.IsTimeoutSupported();
+var hasAny = await abortController.IsAnySupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Create, abort, observe"
+                 Api="Create / Abort / GetAborted / GetReason / OnAbort"
+                 Description="Create returns a handle; keep the handle and hand out its Signal. Abort runs every listener attached to the signal, and the reason you pass is what each of them sees. A signal aborts once and keeps the first reason it was given - aborting twice does nothing the second time. Subscribing to a signal that has already aborted fires the callback immediately rather than never, so a race between the abort and the subscription cannot lose the event."
+                 Code=@("""
+private AbortControllerHandle? _handle;
+private ButilSubscription? _subscription;
+
+_handle = await abortController.Create();
+_subscription = await _handle!.Signal.OnAbort(reason => InvokeAsync(() =>
+{
+    // reason is the text passed to Abort, or the browser's own AbortError message
+    StateHasChanged();
+}));
+
+await _handle.Abort("the user changed their mind");
+
+var aborted = await _handle.Signal.GetAborted();  // true
+var reason = await _handle.Signal.GetReason();    // "the user changed their mind"
+
+// disposing releases the signal - it does NOT abort it
+await _handle.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="CreateController">Create</button>
+            <input @bind="_reason" placeholder="reason (optional)" aria-label="abort reason" />
+            <button class="danger" @onclick="AbortController_">Abort</button>
+            <button class="secondary" @onclick="ReadSignalState">Read state</button>
+            <button class="secondary" @onclick="ReleaseController">Dispose</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Controller</span>
+            <span>@_controllerState</span>
+        </div>
+        <DemoConsole @ref="controllerOutput" Title="controller output" />
+    </DemoSection>
+
+    <DemoSection Title="One signal, many operations"
+                 Api="FetchRequest.Signal"
+                 Description="This is the point of a standalone controller. The same signal goes onto three requests at once, and one Abort cancels all three - which three AbortableFetch handles could only do one at a time. The signal composes with a request's own abort paths rather than replacing them, so the CancellationToken overload of Send still cancels a single request on its own."
+                 Code=@("""
+var handle = await abortController.Create();
+
+var requests = Enumerable.Range(1, 3).Select(i => fetch.Send(new FetchRequest
+{
+    Url = $"/api/slow?seconds=10&id={i}",
+    Signal = handle!.Signal        // the same signal on every request
+}));
+
+await handle!.Abort("cancelled by the user");
+
+// every response comes back with Aborted = true
+var responses = await Task.WhenAll(requests);
+""")>
+        <div class="controls">
+            <button @onclick="StartShared">Start 3 requests</button>
+            <button class="danger" @onclick="AbortShared">Abort all</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Requests</span>
+            <span>@_sharedState</span>
+        </div>
+        <DemoConsole @ref="sharedOutput" Title="shared signal output" />
+    </DemoSection>
+
+    <DemoSection Title="Deadlines"
+                 Api="Timeout"
+                 Description="A signal that aborts itself after a delay, with a TimeoutError reason, and that nothing can abort early. The timer starts when the signal is created, not when it is first used - so create it next to the operation it guards, not ahead of time."
+                 Code=@("""
+var deadline = await abortController.Timeout(TimeSpan.FromSeconds(2));
+
+var response = await fetch.Send(new FetchRequest
+{
+    Url = "/api/slow?seconds=10",
+    Signal = deadline
+});
+
+// response.Aborted is true; deadline.GetReason() is the browser's TimeoutError message
+await deadline!.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="RunTimeout">Fetch with a 2s deadline</button>
+        </div>
+        <DemoConsole @ref="timeoutOutput" Title="timeout output" />
+    </DemoSection>
+
+    <DemoSection Title="Deadline plus a Cancel button"
+                 Api="Any"
+                 Description="Any composes signals: the result aborts as soon as the first source does, carrying that source's reason. A timeout signal cannot be cancelled by hand and a controller's signal has no deadline, so composing the two is how one operation gets both. The composite does not keep its sources alive - release a source and the composite is left watching a signal that can no longer fire, so dispose the composite first."
+                 Code=@("""
+var cancel = await abortController.Create();
+var deadline = await abortController.Timeout(TimeSpan.FromSeconds(5));
+var either = await abortController.Any(cancel!.Signal, deadline!);
+
+var response = await fetch.Send(new FetchRequest { Url = "/api/slow?seconds=10", Signal = either });
+
+// whichever fired first, its reason is what either.GetReason() reports
+await cancel.Abort("cancelled by the user");   // ... or wait 5s for the deadline
+""")>
+        <div class="controls">
+            <button @onclick="StartComposite">Fetch (5s deadline)</button>
+            <button class="danger" @onclick="CancelComposite">Cancel now</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Outcome</span>
+            <span>@_compositeState</span>
+        </div>
+        <DemoConsole @ref="compositeOutput" Title="composite signal output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Disposing is not aborting">
+    Letting a handle go out of scope cancels nothing, exactly as an unaborted
+    <code>AbortController</code> in JavaScript cancels nothing. <code>DisposeAsync</code> releases the
+    signal's JS entry and detaches its listeners; call <code>Abort</code> first if cancelling is what
+    you meant. As a safety net the <code>AbortController</code> service releases every signal left
+    behind when its scope is torn down - it does not abort them either.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes AbortController. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsTimeoutSupported"
+               Signature="ValueTask<bool> IsTimeoutSupported()"
+               Description="True when the runtime exposes AbortSignal.timeout." />
+    <ApiMember Name="IsAnySupported"
+               Signature="ValueTask<bool> IsAnySupported()"
+               Description="True when the runtime exposes AbortSignal.any. Any() still works when this is false, via an equivalent hand-wired controller." />
+    <ApiMember Name="Create"
+               Signature="ValueTask<AbortControllerHandle?> Create()"
+               Description="Creates a controller and its signal. Null when the runtime has no AbortController." />
+    <ApiMember Name="Timeout"
+               Signature="ValueTask<ButilAbortSignal?> Timeout(TimeSpan delay)"
+               Description="A signal that aborts itself after delay with a TimeoutError reason. Null where AbortSignal.timeout is missing. The timer starts immediately." />
+    <ApiMember Name="Any"
+               Signature="ValueTask<ButilAbortSignal?> Any(params ButilAbortSignal[] signals)"
+               Description="A signal that aborts when any source does, carrying that source's reason. Null when a source has already been released." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, releases every signal whose handle was never disposed. Does not abort them." />
+    <ApiMember Name="AbortControllerHandle.Signal"
+               Signature="ButilAbortSignal Signal"
+               Description="The signal this controller aborts. Pass it to anything that accepts one." />
+    <ApiMember Name="AbortControllerHandle.Abort"
+               Signature="ValueTask Abort(string? reason = null)"
+               Description="Aborts the signal. Left null, the browser's own AbortError message is used. A signal keeps the first reason it was given." />
+    <ApiMember Name="AbortControllerHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Releases the controller and its signal. Idempotent. Does not abort." />
+    <ApiMember Name="ButilAbortSignal.Id"
+               Signature="Guid Id"
+               Description="The signal's id - what crosses the interop boundary when a signal is passed to another API." />
+    <ApiMember Name="ButilAbortSignal.GetAborted"
+               Signature="ValueTask<bool> GetAborted()"
+               Description="Whether the signal has already aborted." />
+    <ApiMember Name="ButilAbortSignal.GetReason"
+               Signature="ValueTask<string> GetReason()"
+               Description="Why it aborted, flattened to text. Empty while it has not aborted." />
+    <ApiMember Name="ButilAbortSignal.OnAbort"
+               Signature="ValueTask<ButilSubscription?> OnAbort(Action<string> onAbort)"
+               Description="Runs onAbort with the reason. Fires at most once, and fires immediately when the signal has already aborted." />
+    <ApiMember Name="ButilAbortSignal.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Releases the signal's JS entry and detaches its listeners. Does not abort it." />
+    <ApiMember Name="FetchRequest.Signal"
+               Signature="ButilAbortSignal? Signal"
+               Description="Aborts this request when the shared signal aborts. Composes with the request's own AbortableFetch handle and CancellationToken rather than replacing them." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole controllerOutput = default!;
+    private DemoConsole sharedOutput = default!;
+    private DemoConsole timeoutOutput = default!;
+    private DemoConsole compositeOutput = default!;
+
+    private AbortControllerHandle? _handle;
+    private ButilSubscription? _subscription;
+    private string _controllerState = "None created.";
+    private string _reason = string.Empty;
+
+    private AbortControllerHandle? _sharedHandle;
+    private string _sharedState = "Idle.";
+
+    private AbortControllerHandle? _compositeCancel;
+    private ButilAbortSignal? _compositeDeadline;
+    private ButilAbortSignal? _composite;
+    private string _compositeState = "Idle.";
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await abortController.IsSupported());
+            await supportOutput.Success("IsTimeoutSupported →", await abortController.IsTimeoutSupported());
+            await supportOutput.Success("IsAnySupported →", await abortController.IsAnySupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateController()
+    {
+        await ReleaseController();
+
+        try
+        {
+            _handle = await abortController.Create();
+            if (_handle is null)
+            {
+                _controllerState = "Unavailable.";
+                await controllerOutput.Warn("Create returned null - the runtime has no AbortController.");
+                return;
+            }
+
+            _subscription = await _handle.Signal.OnAbort(reason => InvokeAsync(async () =>
+            {
+                _controllerState = $"Aborted: {reason}";
+                await controllerOutput.Warn("OnAbort →", reason);
+                StateHasChanged();
+            }));
+
+            _controllerState = $"Created ({_handle.Signal.Id}).";
+            await controllerOutput.Success("Create → signal", _handle.Signal.Id);
+        }
+        catch (Exception ex)
+        {
+            await controllerOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task AbortController_()
+    {
+        if (_handle is null)
+        {
+            await controllerOutput.Warn("Create a controller first.");
+            return;
+        }
+
+        try
+        {
+            await _handle.Abort(string.IsNullOrWhiteSpace(_reason) ? null : _reason);
+            await controllerOutput.Log("Abort →", string.IsNullOrWhiteSpace(_reason) ? "(no reason - the browser's AbortError)" : _reason);
+        }
+        catch (Exception ex)
+        {
+            await controllerOutput.Error("Abort failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadSignalState()
+    {
+        if (_handle is null)
+        {
+            await controllerOutput.Warn("Create a controller first.");
+            return;
+        }
+
+        try
+        {
+            await controllerOutput.Success("GetAborted →", await _handle.Signal.GetAborted());
+            await controllerOutput.Success("GetReason →", await _handle.Signal.GetReason());
+        }
+        catch (Exception ex)
+        {
+            await controllerOutput.Error("Read failed →", ex.Message);
+        }
+    }
+
+    private async Task ReleaseController()
+    {
+        if (_subscription is not null)
+        {
+            await _subscription.DisposeAsync();
+            _subscription = null;
+        }
+
+        if (_handle is null) return;
+
+        await _handle.DisposeAsync();
+        _handle = null;
+        _controllerState = "Released (not aborted).";
+        await controllerOutput.Log("DisposeAsync → the signal is gone, nothing was cancelled.");
+    }
+
+    private async Task StartShared()
+    {
+        await DisposeShared();
+
+        try
+        {
+            _sharedHandle = await abortController.Create();
+            if (_sharedHandle is null)
+            {
+                await sharedOutput.Warn("Create returned null - the runtime has no AbortController.");
+                return;
+            }
+
+            _sharedState = "3 requests in flight - press Abort all.";
+            await sharedOutput.Log("Started 3 requests sharing one signal.");
+
+            var signal = _sharedHandle.Signal;
+            var tasks = Enumerable.Range(1, 3)
+                .Select(i => fetch.Send(new FetchRequest { Url = $"/api/slow?seconds=10&id={i}", Signal = signal }))
+                .ToArray();
+
+            var responses = await Task.WhenAll(tasks);
+
+            _sharedState = $"{responses.Count(r => r.Aborted)} of {responses.Length} aborted.";
+            foreach (var (response, index) in responses.Select((r, i) => (r, i + 1)))
+            {
+                await sharedOutput.Success($"Request {index} →", response.Aborted ? "aborted" : $"status {response.Status}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await sharedOutput.Error("Shared-signal fetch failed →", ex.Message);
+        }
+    }
+
+    private async Task AbortShared()
+    {
+        if (_sharedHandle is null)
+        {
+            await sharedOutput.Warn("Start the requests first.");
+            return;
+        }
+
+        try
+        {
+            await _sharedHandle.Abort("cancelled by the user");
+            await sharedOutput.Log("Abort → one call, all three requests.");
+        }
+        catch (Exception ex)
+        {
+            await sharedOutput.Error("Abort failed →", ex.Message);
+        }
+    }
+
+    private async Task RunTimeout()
+    {
+        ButilAbortSignal? deadline = null;
+
+        try
+        {
+            deadline = await abortController.Timeout(TimeSpan.FromSeconds(2));
+            if (deadline is null)
+            {
+                await timeoutOutput.Warn("Timeout returned null - this engine has no AbortSignal.timeout.");
+                return;
+            }
+
+            await timeoutOutput.Log("Fetching a 10s endpoint behind a 2s deadline...");
+            var response = await fetch.Send(new FetchRequest { Url = "/api/slow?seconds=10", Signal = deadline });
+
+            if (response.Aborted)
+            {
+                await timeoutOutput.Success("Aborted by the deadline →", await deadline.GetReason());
+            }
+            else
+            {
+                await timeoutOutput.Warn("The request finished before the deadline - status", response.Status);
+            }
+        }
+        catch (Exception ex)
+        {
+            await timeoutOutput.Error("Timeout demo failed →", ex.Message);
+        }
+        finally
+        {
+            if (deadline is not null) await deadline.DisposeAsync();
+        }
+    }
+
+    private async Task StartComposite()
+    {
+        await DisposeComposite();
+
+        try
+        {
+            _compositeCancel = await abortController.Create();
+            _compositeDeadline = await abortController.Timeout(TimeSpan.FromSeconds(5));
+
+            // Either half can come back null on its own, so the giving-up paths release whatever the
+            // other half already allocated - a controller left behind here is a JS-side registry entry
+            // nothing will ever reach again, and every click would add another.
+            if (_compositeCancel is null || _compositeDeadline is null)
+            {
+                await DisposeComposite();
+                await compositeOutput.Warn("Unavailable - this engine has no AbortController or no AbortSignal.timeout.");
+                return;
+            }
+
+            _composite = await abortController.Any(_compositeCancel.Signal, _compositeDeadline);
+            if (_composite is null)
+            {
+                await DisposeComposite();
+                await compositeOutput.Warn("Any returned null.");
+                return;
+            }
+
+            _compositeState = "In flight - cancel it, or wait 5s for the deadline.";
+            await compositeOutput.Log("Fetching a 10s endpoint behind a 5s deadline and a Cancel button.");
+
+            var response = await fetch.Send(new FetchRequest { Url = "/api/slow?seconds=10", Signal = _composite });
+            var reason = await _composite.GetReason();
+
+            _compositeState = response.Aborted ? $"Aborted: {reason}" : $"Completed with status {response.Status}.";
+            await compositeOutput.Success("Outcome →", _compositeState);
+        }
+        catch (Exception ex)
+        {
+            await compositeOutput.Error("Composite demo failed →", ex.Message);
+        }
+    }
+
+    private async Task CancelComposite()
+    {
+        if (_compositeCancel is null)
+        {
+            await compositeOutput.Warn("Start the request first.");
+            return;
+        }
+
+        try
+        {
+            await _compositeCancel.Abort("cancelled by the user");
+        }
+        catch (Exception ex)
+        {
+            await compositeOutput.Error("Cancel failed →", ex.Message);
+        }
+    }
+
+    private async Task DisposeShared()
+    {
+        if (_sharedHandle is null) return;
+        await _sharedHandle.DisposeAsync();
+        _sharedHandle = null;
+    }
+
+    private async Task DisposeComposite()
+    {
+        // The composite first: it watches the other two, and releasing a source out from under it
+        // would leave it watching a signal that can no longer fire.
+        if (_composite is not null) { await _composite.DisposeAsync(); _composite = null; }
+        if (_compositeDeadline is not null) { await _compositeDeadline.DisposeAsync(); _compositeDeadline = null; }
+        if (_compositeCancel is not null) { await _compositeCancel.DisposeAsync(); _compositeCancel = null; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+            if (_handle is not null) await _handle.DisposeAsync();
+            await DisposeShared();
+            await DisposeComposite();
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

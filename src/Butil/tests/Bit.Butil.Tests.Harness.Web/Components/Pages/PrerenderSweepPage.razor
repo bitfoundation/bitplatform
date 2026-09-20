@@ -1,0 +1,41 @@
+@page "/prerender-sweep"
+@inject IServiceProvider Services
+@inject IJSRuntime JS
+
+@* Every public member of every Butil service, called during a static render. App.razor renders this page
+   outside Routes, so it is static in every mode; Bit.Butil.Tests.Hosting reads the result out of the HTML. *@
+
+<h1>Butil prerender sweep</h1>
+
+<p id="sweep-runtime">@JS.GetType().Name</p>
+
+@if (_entries is not null)
+{
+    <p id="sweep-summary"
+       data-services="@_entries.Select(e => e.Service).Distinct().Count()"
+       data-members="@_entries.Count"
+       data-completed="@Count(PrerenderSweepOutcome.Completed)"
+       data-rejected="@Count(PrerenderSweepOutcome.Rejected)"
+       data-skipped="@Count(PrerenderSweepOutcome.Skipped)"
+       data-failed="@Count(PrerenderSweepOutcome.Failed)"
+       data-hung="@Count(PrerenderSweepOutcome.Hung)">
+        @_entries.Count members
+    </p>
+
+    <ul id="sweep-entries">
+        @foreach (var entry in _entries)
+        {
+            <li data-outcome="@entry.Outcome" data-service="@entry.Service" data-member="@entry.Member">@entry.Detail</li>
+        }
+    </ul>
+}
+
+@code {
+    public const string Route = "/prerender-sweep";
+
+    private IReadOnlyList<PrerenderSweepEntry>? _entries;
+
+    protected override async Task OnInitializedAsync() => _entries = await PrerenderSweep.RunAsync(Services);
+
+    private int Count(PrerenderSweepOutcome outcome) => _entries!.Count(e => e.Outcome == outcome);
+}

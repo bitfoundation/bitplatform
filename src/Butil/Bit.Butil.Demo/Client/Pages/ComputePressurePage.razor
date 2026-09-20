@@ -1,0 +1,181 @@
+@page "/compute-pressure"
+@implements IAsyncDisposable
+@inject Bit.Butil.ComputePressure computePressure
+
+<PageTitle>ComputePressure - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="ComputePressure"
+            Lead="Learn when the machine is under CPU or thermal pressure, so the app can shed work before the user notices it stuttering."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Compute_Pressure_API"
+            InjectAs="ComputePressure computePressure" />
+
+<Callout Type="warning" Title="Chromium only, over HTTPS">
+    The Compute Pressure API ships in Chromium-based browsers. Firefox and Safari do not implement it.
+</Callout>
+
+<Callout Type="info" Title="Four states, not a number">
+    A precise load figure would be a timing side channel, so the API reports a coarse scale:
+    <code>nominal</code>, <code>fair</code>, <code>serious</code>, <code>critical</code>. Treat
+    <code>serious</code> as "shed optional work" - drop a video call's resolution, cut effect
+    quality - and <code>critical</code> as "shed everything you can".
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and sources"
+                 Api="IsSupported / GetKnownSources"
+                 Description="GetKnownSources lists what this browser can observe - ['cpu'] today. Worth reading before hard-coding a source, since observing an unknown one simply fails."
+                 Code=@("""
+@inject Bit.Butil.ComputePressure computePressure
+
+var supported = await computePressure.IsSupported();
+var sources = await computePressure.GetKnownSources();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Observe pressure"
+                 Api="Observe"
+                 Description="The callback fires when the state changes, not on a timer, so a machine sitting at 'nominal' costs nothing. Press the load button below to push this machine up the scale and watch the state follow."
+                 Code=@("""
+await using var observer = await computePressure.Observe(records =>
+{
+    foreach (var record in records)
+    {
+        // record.Source, record.State, record.Time
+    }
+}, source: "cpu", sampleIntervalMs: 1000);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Source</span>
+                <input type="text" @bind="_source" placeholder="cpu" />
+            </div>
+            <div class="field">
+                <span class="field-label">Sample interval (ms, 0 = browser's choice)</span>
+                <input type="number" min="0" step="100" @bind="_sampleInterval" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Start">Observe</button>
+            <button class="danger" @onclick="Stop">Disconnect</button>
+            <button class="secondary" @onclick="BurnCpu">Spin the CPU for 3s</button>
+        </div>
+        @if (_state is not null)
+        {
+            <div class="field">
+                <span class="field-label">Current state</span>
+                <span>@_state</span>
+            </div>
+        }
+        <DemoConsole @ref="pressureOutput" Title="pressure output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes PressureObserver. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetKnownSources"
+               Signature="ValueTask<string[]> GetKnownSources()"
+               Description="The pressure sources this browser can observe - ['cpu'] today." />
+    <ApiMember Name="Observe"
+               Signature="ValueTask<ButilSubscription> Observe(Action<PressureRecord[]> handler, string source = 'cpu', int sampleIntervalMs = 0)"
+               Description="Starts observing a source. Dispose the subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Disconnects every observer this instance started and releases the JS callback reference." />
+    <ApiMember Name="InvokePressureRecords"
+               Signature="void InvokePressureRecords(Guid id, PressureRecord[] records)"
+               Description="JSInvokable interop plumbing for pressure records - not intended for app code." />
+    <ApiMember Name="PressureRecord"
+               Signature="class PressureRecord { string Source; string State; double Time; }"
+               Description="One sample: the source, one of nominal/fair/serious/critical, and the time on the performance.now() clock." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole pressureOutput = default!;
+
+    private ButilSubscription? _observer;
+    private string _source = "cpu";
+    private int _sampleInterval = 1000;
+    private string? _state;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await computePressure.IsSupported());
+            var sources = await computePressure.GetKnownSources();
+            await supportOutput.Success("GetKnownSources →", sources.Length == 0 ? "(none)" : string.Join(", ", sources));
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task Start()
+    {
+        await Stop();
+
+        try
+        {
+            if (!await computePressure.IsSupported())
+            {
+                await pressureOutput.Warn("The Compute Pressure API is not supported in this browser.");
+                return;
+            }
+
+            _observer = await computePressure.Observe(records => _ = InvokeAsync(async () =>
+            {
+                foreach (var record in records)
+                {
+                    _state = record.State;
+                    await pressureOutput.Log($"{record.Source} →", $"{record.State} at {record.Time:F0}ms");
+                }
+                StateHasChanged();
+            }), _source, _sampleInterval);
+
+            await pressureOutput.Log("Observing - the first record arrives with the current state.");
+        }
+        catch (Exception ex)
+        {
+            await pressureOutput.Error("Observe failed →", ex.Message);
+        }
+    }
+
+    private async Task Stop()
+    {
+        if (_observer is null) return;
+        await _observer.DisposeAsync();
+        _observer = null;
+        _state = null;
+        await pressureOutput.Log("Observer disconnected.");
+    }
+
+    // Deliberately synchronous and deliberately blocking: the point is to make this machine's CPU
+    // busy enough that the observer reports something other than "nominal".
+    private async Task BurnCpu()
+    {
+        await pressureOutput.Log("Spinning the CPU for 3 seconds...");
+
+        var until = DateTime.UtcNow.AddSeconds(3);
+        var sink = 0d;
+        while (DateTime.UtcNow < until)
+        {
+            for (var i = 0; i < 200_000; i++) sink += Math.Sqrt(i);
+        }
+
+        await pressureOutput.Log("Done.", $"(checksum {sink:F0})");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_observer is not null) await _observer.DisposeAsync();
+    }
+}

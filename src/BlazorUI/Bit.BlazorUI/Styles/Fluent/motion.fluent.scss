@@ -2,14 +2,16 @@
 // below, so they stay the single place to theme a duration: overriding --bit-mot-duration-full
 // changes both the normal value and the one .bit-fam restores. Components always read the plain
 // --bit-mot-* tokens; only the reduced-motion opt-out (.bit-fam in general.scss) reads -full.
+//
+// The literals live here, on :root alone; the plain tokens that alias them live in the twinned
+// block below. A preset for another design system (the packaged Fluent 2 / Material / Cupertino
+// bundles) overrides only the -full literals and the easing curves, both of which are literals it
+// declares on its own :root[bit-theme="..."] / :root [bit-theme="..."] pair.
 :root {
     --bit-mot-duration-full: 200ms;
     --bit-mot-duration-short-full: 100ms;
     --bit-mot-duration-long-full: 300ms;
 
-    --bit-mot-duration: var(--bit-mot-duration-full);
-    --bit-mot-duration-short: var(--bit-mot-duration-short-full);
-    --bit-mot-duration-long: var(--bit-mot-duration-long-full);
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
     // Entry / exit curves for popups, callouts and sheets (Fluent's decelerate-max and
     // accelerate-max). Standard easing above is for state changes on an element that stays put.
@@ -27,6 +29,23 @@
     --bit-mot-duration-spinner-full: 1.3s;
     --bit-mot-easing-spinner-full: cubic-bezier(0.53, 0.21, 0.29, 0.67);
     --bit-mot-loop-factor-full: 1;
+}
+
+// The plain tokens every component reads. They are aliases, so - exactly as in semantic-tokens.scss
+// and family-tokens.scss - they need a scoped-preset twin: a custom property's var() references are
+// substituted at the element that DEFINES it, and descendants inherit the already-substituted value.
+// Declared on :root alone, --bit-mot-duration would freeze the DOCUMENT's 200ms inside an element
+// carrying bit-theme="material", whose own --bit-mot-duration-full says 250ms.
+//
+// The twin is wrapped in :where() so it contributes no specificity of its own: the reduced-motion
+// query below re-declares the same two selectors and wins on source order, and .bit-fam (0,1,0) -
+// the ForceAnimation opt-out in general.scss - still outranks both, including on an element that
+// carries bit-theme and bit-fam at once.
+:root,
+:where(:root [bit-theme]) {
+    --bit-mot-duration: var(--bit-mot-duration-full);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full);
 
     --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full);
     --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full);
@@ -35,8 +54,11 @@
 
 // 0.01ms instead of 0ms: a zero-duration transition/animation never fires its
 // transitionend/animationend event, which would hang any JS awaiting it.
+// Twinned like the block above, and for the same reason in reverse: without the twin the collapse
+// would never reach a scoped preset region, whose durations are re-substituted on its own element.
 @media (prefers-reduced-motion: reduce) {
-    :root {
+    :root,
+    :where(:root [bit-theme]) {
         --bit-mot-duration: 0.01ms;
         --bit-mot-duration-short: 0.01ms;
         --bit-mot-duration-long: 0.01ms;

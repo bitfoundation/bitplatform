@@ -23,13 +23,25 @@ public partial class AppDelegate : MauiUIApplicationDelegate
     public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
     {
         //#if (notification == true)
-        NotificationService.IsAvailable(default).ContinueWith(async task =>
+        NotificationService.IsAvailable(default).ContinueWith(task =>
         {
-            if (task.Result)
+            if (task.IsFaulted)
             {
-                await iOSPushNotificationService.Configure();
+                MauiProgram.LogException(task.Exception, reportedBy: nameof(NotificationService.IsAvailable));
+                return;
             }
-        });
+
+            if (task.Result is false)
+                return;
+
+            _ = iOSPushNotificationService.Configure().ContinueWith(configure =>
+            {
+                if (configure.IsFaulted)
+                {
+                    MauiProgram.LogException(configure.Exception, reportedBy: nameof(iOSPushNotificationService.Configure));
+                }
+            }, TaskScheduler.Default);
+        }, TaskScheduler.Default);
 
         // Use the following code the get the action value from the push notification when the app is launched by tapping on the push notification.
         using var userInfo = launchOptions?.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey) as NSDictionary;

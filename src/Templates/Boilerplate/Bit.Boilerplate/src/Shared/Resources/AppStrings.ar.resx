@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- +:cnd:noEmit -->
 <root>
   <!-- 
@@ -965,9 +965,6 @@
   <data name="TfaConfigureAutAppVerificationCodeLabel" xml:space="preserve">
     <value>كود التحقق:</value>
   </data>
-  <data name="TfaConfigureAutAppVerificationCodePlaceholder" xml:space="preserve">
-    <value>أدخل كود التحقق</value>
-  </data>
   <data name="TfaConfigureAutAppVerifyButtonText" xml:space="preserve">
     <value>التحقق</value>
   </data>
@@ -1170,9 +1167,6 @@
     <value>النص البديل</value>
   </data>
   <!--#endif -->
-    <data name="Page" xml:space="preserve">
-    <value>صفحة</value>
-  </data>
     <data name="Of" xml:space="preserve">
     <value>من</value>
   </data>
@@ -1182,9 +1176,6 @@
   <!--#if (module == "Admin") -->
   <data name="AdminPanel" xml:space="preserve">
     <value>لوحة الإدارة</value>
-  </data>
-  <data name="PaginatorSummary" xml:space="preserve">
-    <value>{0} عناصر</value>
   </data>
   <data name="Last30DaysProductCount" xml:space="preserve">
     <value>عدد المنتجات في آخر 30 يومًا</value>
@@ -1222,9 +1213,6 @@
   <data name="CategoriesWithProductCount" xml:space="preserve">
     <value>الفئات مع عدد المنتجات</value>
   </data>
-  <data name="SearchOnName" xml:space="preserve">
-    <value>البحث حسب الاسم</value>
-  </data>
   <data name="ProductsCountPerCategoryChart" xml:space="preserve">
     <value>مخطط عدد المنتجات لكل فئة</value>
   </data>
@@ -1254,9 +1242,6 @@
   </data>
   <data name="DeleteProduct" xml:space="preserve">
     <value>حذف المنتج</value>
-  </data>
-  <data name="DefaultColorPicker" xml:space="preserve">
-    <value>مختار اللون الافتراضي</value>
   </data>
   <data name="EditProduct" xml:space="preserve">
     <value>تعديل المنتج {0}</value>
@@ -1344,13 +1329,125 @@
   <data name="Send" xml:space="preserve">
     <value>إرسال</value>
   </data>
-  <data name="AccentColorApply" xml:space="preserve">
-    <value>تطبيق لون التمييز {0}</value>
-  </data>
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
   </data>
+  <data name="NoAppCanOpenLinksOfScheme" xml:space="preserve">
+    <value>لا يوجد تطبيق على هذا الجهاز يمكنه فتح روابط {0}.</value>
+  </data>
   <!--#if (signalR == true) -->
+  <data name="AiChatPanelVoiceCall" xml:space="preserve">
+    <value>مكالمة صوتية</value>
+  </data>
+  <data name="AiChatPanelStartVoiceCall" xml:space="preserve">
+    <value>بدء مكالمة صوتية</value>
+  </data>
+  <data name="AiChatPanelEndVoiceCall" xml:space="preserve">
+    <value>إنهاء المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelBackToVoiceCall" xml:space="preserve">
+    <value>العودة إلى المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelVoiceCallTimeLeft" xml:space="preserve">
+    <value>الوقت المتبقي للمكالمة الصوتية</value>
+  </data>
+  <data name="AiChatPanelVoiceCallEnded" xml:space="preserve">
+    <value>انتهت المكالمة الصوتية.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallMessageNotSent" xml:space="preserve">
+    <value>تعذّر إرسال الرسالة إلى المكالمة.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantBusy" xml:space="preserve">
+    <value>المساعد مشغول. حاول مرة أخرى بعد {0} ثانية.</value>
+  </data>
+  <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
+    <value>تعذّر على المساعد الرد. حاول مرة أخرى.</value>
+  </data>
+  <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
+    <value>اترك بيانات التواصل الخاصة بك وسيتواصل معك أحد موظفي الدعم.</value>
+  </data>
+  <data name="AiChatHumanFollowUpConversationSummary" xml:space="preserve">
+    <value>ملخص المحادثة</value>
+  </data>
+  <data name="AiChatHumanFollowUpSignedInAs" xml:space="preserve">
+    <value>تم تسجيل الدخول باسم</value>
+  </data>
+  <data name="AiChatHumanFollowUpSent" xml:space="preserve">
+    <value>تم إرسال طلبك بنجاح. سيتواصل معك أحد موظفي الدعم قريبًا.</value>
+  </data>
+  <data name="AiChatApprovalWhatHappens" xml:space="preserve">
+    <value>ما الذي سيحدث</value>
+  </data>
+  <data name="AiChatApprovalWaiting" xml:space="preserve">
+    <value>في انتظار ردك</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesTitle" xml:space="preserve">
+    <value>هل تريد مسح ملفات التطبيق على هذا الجهاز؟</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDescription" xml:space="preserve">
+    <value>البدء من جديد يحل معظم المشكلات الناتجة عن تلف البيانات المحلية.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesSignOut" xml:space="preserve">
+    <value>سيتم تسجيل خروجك</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeleteConversation" xml:space="preserve">
+    <value>سيتم حذف هذه المحادثة</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesRestart" xml:space="preserve">
+    <value>سيُعاد تشغيل التطبيق</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesEndVoiceCall" xml:space="preserve">
+    <value>ستنتهي المكالمة الصوتية</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApprove" xml:space="preserve">
+    <value>مسح الملفات</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDecline" xml:space="preserve">
+    <value>ليس الآن</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesApproved" xml:space="preserve">
+    <value>جارٍ مسح ملفات التطبيق</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesDeclined" xml:space="preserve">
+    <value>احتفظت بملفات التطبيق.</value>
+  </data>
+  <data name="AiChatApprovalClearAppFilesNoAnswer" xml:space="preserve">
+    <value>لم يُمسح أي شيء: لم يتم الرد على الطلب.</value>
+  </data>
+  <data name="AiChatApprovalTitle" xml:space="preserve">
+    <value>هل توافق على هذا؟</value>
+  </data>
+  <data name="AiChatApprovalApprove" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="AiChatApprovalDecline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="AiChatApprovalApproved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="AiChatApprovalDeclined" xml:space="preserve">
+    <value>تم الرفض.</value>
+  </data>
+  <data name="AiChatApprovalNoAnswer" xml:space="preserve">
+    <value>لم يتم الرد على الطلب.</value>
+  </data>
+  <!--#if (module == "Sales") -->
+  <!--#if (database == "PostgreSQL" || database == "SqlServer") -->
+  <data name="AiChatProductsBestMatch" xml:space="preserve">
+    <value>الأنسب</value>
+  </data>
+  <data name="AiChatProductsAlsoAGoodFit" xml:space="preserve">
+    <value>خيارات مناسبة أيضًا</value>
+  </data>
+  <data name="AiChatProductsAsk" xml:space="preserve">
+    <value>اسأل</value>
+  </data>
+  <data name="AiChatProductsTellMeMore" xml:space="preserve">
+    <value>أخبرني المزيد عن {0}</value>
+  </data>
+  <!--#endif -->
+  <!--#endif -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>لوحة الدردشة بالذكاء الاصطناعي</value>
   </data>
@@ -1364,7 +1461,7 @@
     <value>الإملاء</value>
   </data>
   <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
-    <value>تم حظر الوصول إلى الميكروفون. اسمح به لهذا الموقع لكي تتمكن من الإملاء.</value>
+    <value>تم حظر الوصول إلى الميكروفون. اسمح به من الإعدادات لكي تتمكن من الإملاء.</value>
   </data>
   <data name="AiChatPanelDictationStopped" xml:space="preserve">
     <value>توقف الإملاء: {0}</value>
@@ -1414,19 +1511,15 @@
   <data name="AiChatPanelPrompt2" xml:space="preserve">
     <value>كيف يمكنني تثبيت إصدار PWA من التطبيق؟</value>
   </data>
+  <data name="AiChatPanelPrompt3" xml:space="preserve">
   <!--#if (module == "Admin") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#elif (module == "Sales") -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#else -->
-  <data name="AiChatPanelPrompt3" xml:space="preserve">
-    <value>لدي بعض التعليقات أود مشاركتها!</value>
-  </data>
+  <value>لدي بعض التعليقات أود مشاركتها!</value>
   <!--#endif -->
+  </data>
   <data name="AiChatPanelPlaceholder" xml:space="preserve">
     <value>اكتب رسالة...</value>
   </data>
@@ -1463,9 +1556,6 @@
     <value>أواجه مشكلة في مشاهدة الإعلانات داخل التطبيق.</value>
   </data>
   <!--#endif -->
-  <data name="PleaseWait" xml:space="preserve">
-    <value>يرجى الانتظار</value>
-  </data>
   <data name="Management" xml:space="preserve">
     <value>إدارة</value>
   </data>
@@ -1518,17 +1608,29 @@
   <data name="SendRoleNotification" xml:space="preserve">
     <value>إرسال إشعار</value>
   </data>
-  <data name="EnableNotifications" xml:space="preserve">
-    <value>تمكين الإشعارات</value>
+  <data name="SessionNotificationsAllowedTitle" xml:space="preserve">
+    <value>الإشعارات مفعّلة في هذه الجلسة.</value>
   </data>
-  <data name="DisableNotifications" xml:space="preserve">
-    <value>تعطيل الإشعارات</value>
+  <data name="SessionNotificationsMutedTitle" xml:space="preserve">
+    <value>الإشعارات مكتومة في هذه الجلسة.</value>
   </data>
-  <data name="TestNotificationMessage1" xml:space="preserve">
-    <value>إشعار اختبار 1</value>
+  <data name="Notifications" xml:space="preserve">
+    <value>الإشعارات</value>
   </data>
-  <data name="TestNotificationMessage2" xml:space="preserve">
-    <value>إشعار اختبار 2</value>
+  <data name="TurnNotificationsOn" xml:space="preserve">
+    <value>تشغيل الإشعارات</value>
+  </data>
+  <data name="TurnNotificationsOff" xml:space="preserve">
+    <value>إيقاف الإشعارات</value>
+  </data>
+  <data name="TestPushNotificationTitle" xml:space="preserve">
+    <value>تم تفعيل الإشعارات</value>
+  </data>
+  <data name="TestPushNotificationMessage" xml:space="preserve">
+    <value>أرسلنا هذا الإشعار لتتأكد من وصول الإشعارات إلى هذا الجهاز. اضغط عليه لقراءة سياسة الخصوصية.</value>
+  </data>
+  <data name="TestRealtimeConnectionMessage" xml:space="preserve">
+    <value>اتصالك المباشر بالخادم يعمل؛ وصلت هذه الرسالة عبره، وستظهر التغييرات التالية بالطريقة نفسها لحظة حدوثها.</value>
   </data>
   <!--#endif -->
   <data name="UsersPageTitle" xml:space="preserve">
@@ -1642,6 +1744,9 @@
   <data name="ImageTooSmall" xml:space="preserve">
     <value>الصورة صغيرة جدًا. الأبعاد المطلوبة الدنيا هي {0}×{1}، لكن الأبعاد الحالية هي {2}×{3}.</value>
   </data>
+  <data name="UnsupportedImageFormat" xml:space="preserve">
+    <value>الملف المرفوع ليس صورة مدعومة.</value>
+  </data>
   <data name="ImageNotCarError" xml:space="preserve">
     <value>الصورة المقدمة لا تحتوي على سيارة.</value>
   </data>
@@ -1718,9 +1823,6 @@
   <data name="SignalRConnectionId" xml:space="preserve">
     <value>SignalRConnectionId</value>
   </data>
-  <data name="ReadUserSessionLogsTitle" xml:space="preserve">
-    <value>قراءة سجلات جلسة المستخدم</value>
-  </data>
   <!--#endif -->
   <!--#if (multitenant == true) -->
     <data name="Tenant" xml:space="preserve">
@@ -1752,9 +1854,6 @@
   </data>
     <data name="LeaveTenantConfirmMessage" xml:space="preserve">
     <value>هل أنت متأكد أنك تريد مغادرة المستأجر {0}؟</value>
-  </data>
-    <data name="LeftTenantSuccessfullyMessage" xml:space="preserve">
-    <value>لقد غادرت المستأجر بنجاح.</value>
   </data>
     <data name="SwitchTenant" xml:space="preserve">
     <value>تبديل المستأجر</value>
@@ -1831,8 +1930,230 @@
   <data name="DeclineInvitationConfirmMessage" xml:space="preserve">
     <value>رفض الدعوة إلى {0}؟ لا يمكن التراجع عن هذا الإجراء - ستحتاج إلى دعوة جديدة للانضمام.</value>
   </data>
-  <data name="DeclinedInvitationSuccessfullyMessage" xml:space="preserve">
-    <value>تم رفض الدعوة.</value>
+  <!--#endif-->
+    <data name="TimeZone" xml:space="preserve">
+    <value>المنطقة الزمنية</value>
+  </data>
+    <data name="SelectTimeZone" xml:space="preserve">
+    <value>اختر المنطقة الزمنية</value>
+  </data>
+    <data name="FindTimeZone" xml:space="preserve">
+    <value>ابحث عن منطقة زمنية</value>
+  </data>
+    <data name="NoTimeZoneMatchesSearchMessage" xml:space="preserve">
+    <value>لا توجد منطقة زمنية تطابق بحثك.</value>
+  </data>
+  <!--#if (notification == true) -->
+    <data name="PushNotificationsBlockedMessage" xml:space="preserve">
+    <value>الإشعارات الفورية محظورة لهذا التطبيق. اسمح بالإشعارات في إعدادات المتصفح أو نظام التشغيل ثم حاول مرة أخرى.</value>
   </data>
   <!--#endif-->
+    <data name="PrivacyTitle" xml:space="preserve">
+    <value>الخصوصية</value>
+  </data>
+    <data name="PrivacySubtitle" xml:space="preserve">
+    <value>تنزيل نسخة من بياناتك</value>
+  </data>
+    <data name="PrivacyChoicesTitle" xml:space="preserve">
+    <value>خيارات الخصوصية الخاصة بك</value>
+  </data>
+    <data name="PrivacyChoicesNote" xml:space="preserve">
+    <value>تسجيل الدخول وتذكّر لغتك والإبلاغ عن الأخطاء ليست ضمن هذه القائمة: لا يمكن للتطبيق العمل بدون الأولين، وتقارير الأخطاء لا تحمل أي معرّف لجهازك.</value>
+  </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+    <value>تحليلات الاستخدام</value>
+  </data>
+    <data name="ConsentAnalyticsDescription" xml:space="preserve">
+    <value>تتيح لنا التعرّف على جهازك بين الزيارات لنرى الصفحات المستخدمة والوقت الذي تستغرقه. إيقاف هذا الخيار لا يوقف تقارير الأخطاء.</value>
+  </data>
+    <data name="ConsentAdvertising" xml:space="preserve">
+    <value>الإعلانات</value>
+  </data>
+    <data name="ConsentAdvertisingDescription" xml:space="preserve">
+    <value>يحمّل نص الإعلانات البرمجي الذي يضع معرّفات خاصة به. لا يتم تحميل أي شيء حتى تُفعّل هذا الخيار.</value>
+  </data>
+    <data name="ConsentBannerTitle" xml:space="preserve">
+    <value>خصوصيتك</value>
+  </data>
+    <data name="ConsentBannerMessage" xml:space="preserve">
+    <value>نودّ تخزين بعض المعلومات على جهازك لا يحتاجها التطبيق للعمل. أما تسجيل دخولك وتذكّر لغتك والإبلاغ عن الأخطاء فتحدث في كل الأحوال.</value>
+  </data>
+    <data name="Accept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+    <data name="Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+    <data name="PrivacySettings" xml:space="preserve">
+    <value>إعدادات الخصوصية</value>
+  </data>
+    <data name="AccountSettingsLink" xml:space="preserve">
+    <value>إعدادات الحساب</value>
+  </data>
+    <data name="ExportPersonalDataTitle" xml:space="preserve">
+    <value>تنزيل بياناتك</value>
+  </data>
+    <data name="ExportPersonalDataMessage" xml:space="preserve">
+    <value>احصل على نسخة من كل ما يحتفظ به هذا التطبيق عنك: حسابك، والأجهزة التي سجّلت الدخول منها، وصورة ملفك الشخصي، والمحتوى الذي أنشأته. تصل على هيئة ملف zip يحتوي على data.json وملفاتك.</value>
+  </data>
+    <data name="ExportPersonalDataMetadataNote" xml:space="preserve">
+    <value>يوضّح كل جزء من الملف أيضًا سبب الاحتفاظ به، ومدته، ومن يتلقاه غيرنا، وما إذا كان حذف حسابك يزيله.</value>
+  </data>
+    <data name="ExportPersonalDataButton" xml:space="preserve">
+    <value>تنزيل بياناتي</value>
+  </data>
+    <data name="ExportPersonalDataDeleteHint" xml:space="preserve">
+    <value>لحذف بياناتك بدلًا من ذلك، احذف حسابك من</value>
+  </data>
+    <data name="ExportUserData" xml:space="preserve">
+    <value>تصدير البيانات</value>
+  </data>
+    <data name="ExportUserDataTitle" xml:space="preserve">
+    <value>للردّ على طلب بيانات لم يصل عبر التطبيق.</value>
+  </data>
+    <data name="AdsConsentMessage" xml:space="preserve">
+    <value>مشاهدة إعلان تُحمّل نص إعلانات Google البرمجي الذي يضع معرّفات خاصة به على جهازك. لا يتم تحميل أي شيء حتى توافق.</value>
+  </data>
+    <data name="AdsConsentAgree" xml:space="preserve">
+    <value>أوافق وأتابع</value>
+  </data>
+    <data name="OAuthConsentPageTitle" xml:space="preserve">
+    <value>منح إذن للتطبيق</value>
+  </data>
+    <data name="OAuthConsentChecking" xml:space="preserve">
+    <value>جارٍ فحص هذا الطلب...</value>
+  </data>
+    <data name="OAuthConsentRequestCannotBeAuthorized" xml:space="preserve">
+    <value>لا يمكن منح الإذن لهذا الطلب</value>
+  </data>
+    <data name="OAuthConsentNothingShared" xml:space="preserve">
+    <value>لم تتم مشاركة أي شيء. يمكنك إغلاق هذه الصفحة والمحاولة مرة أخرى من التطبيق.</value>
+  </data>
+    <data name="GoToHomePage" xml:space="preserve">
+    <value>الانتقال إلى الصفحة الرئيسية</value>
+  </data>
+    <data name="OAuthConsentLeftForApp" xml:space="preserve">
+    <value>يمكنك العودة إلى التطبيق</value>
+  </data>
+    <data name="OAuthConsentLeftForAppMessage" xml:space="preserve">
+    <value>تم تسليم النتيجة إلى {0}. إذا لم يظهر من تلقاء نفسه، فانتقل إليه.</value>
+  </data>
+    <data name="OAuthConsentAuthorizeTitle" xml:space="preserve">
+    <value>منح الإذن لـ {0}؟</value>
+  </data>
+    <data name="OAuthConsentActOnYourBehalfMessage" xml:space="preserve">
+    <value>إنه يطلب التصرف نيابةً عنك. تابع فقط إذا كنت قد بدأت هذا من تطبيق تثق به.</value>
+  </data>
+    <data name="OAuthConsentApplication" xml:space="preserve">
+    <value>التطبيق</value>
+  </data>
+    <data name="OAuthConsentCanAccess" xml:space="preserve">
+    <value>يمكنه الوصول إلى</value>
+  </data>
+    <data name="OAuthConsentSendsYouBackTo" xml:space="preserve">
+    <value>يعيدك إلى</value>
+  </data>
+    <data name="OAuthConsentItWillBeAbleTo" xml:space="preserve">
+    <value>سيكون بإمكانه:</value>
+  </data>
+    <data name="OAuthConsentDeniedScopesMessage" xml:space="preserve">
+    <value>لا يستطيع حسابك منح كل ما طلبه هذا التطبيق، لذا سيتم استبعاد ما يلي: {0}</value>
+  </data>
+    <data name="OAuthConsentSelfDescribedMessage" xml:space="preserve">
+    <value>هذا التطبيق وصف نفسه بنفسه؛ ولم يضمنه أحد في {0}.</value>
+  </data>
+    <data name="Authorize" xml:space="preserve">
+    <value>منح الإذن</value>
+  </data>
+    <data name="OAuthErrorInvalidClient" xml:space="preserve">
+    <value>تعذر التعرف على التطبيق الذي قدّم هذا الطلب.</value>
+  </data>
+    <data name="OAuthErrorInvalidRedirectUri" xml:space="preserve">
+    <value>العنوان الذي يريد هذا التطبيق أن يُعاد إليه ليس من العناوين التي سجّلها.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequest" xml:space="preserve">
+    <value>طلب منح الإذن هذا غير صالح.</value>
+  </data>
+    <data name="OAuthScopeDevMcpDescription" xml:space="preserve">
+    <value>قراءة معلومات تشخيصية عن هذا النشر - الإعدادات ومخطط قاعدة البيانات والمهام الخلفية. لا يمكنه تغيير أي شيء.</value>
+  </data>
+    <data name="OAuthScopeDevMcpShortDescription" xml:space="preserve">
+    <value>قراءة معلومات تشخيصية عن هذا النشر.</value>
+  </data>
+    <data name="OAuthScopeHealthzDescription" xml:space="preserve">
+    <value>قراءة تقرير الحالة التفصيلي لهذا النشر، بما في ذلك تفاصيل أخطاء كل ما هو معطّل.</value>
+  </data>
+    <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
+    <value>قراءة تقرير الحالة.</value>
+  </data>
+    <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
+    <value>تطبيق مصرّح له</value>
+  </data>
+    <data name="OAuthClients" xml:space="preserve">
+    <value>التطبيقات</value>
+  </data>
+    <data name="OAuthClientsPageTitle" xml:space="preserve">
+    <value>التطبيقات المصرّح لها</value>
+  </data>
+    <data name="Operations" xml:space="preserve">
+    <value>العمليات</value>
+  </data>
+    <data name="OAuthClientsSubtitle" xml:space="preserve">
+    <value>التطبيقات الخارجية التي صرّح لها مستخدموك عبر OAuth.</value>
+  </data>
+    <data name="OAuthClientsEmptyTitle" xml:space="preserve">
+    <value>لم يتم التصريح لأي تطبيق بعد.</value>
+  </data>
+    <data name="OAuthClientsEmptyMessage" xml:space="preserve">
+    <value>تظهر التطبيقات هنا بمجرد أن يصرّح أحدهم لأحدها؛ لا حاجة لتسجيل أي شيء مسبقًا.</value>
+  </data>
+    <data name="OAuthClientActiveGrants" xml:space="preserve">
+    <value>تصاريح نشطة</value>
+  </data>
+    <data name="OAuthClientRedirectUris" xml:space="preserve">
+    <value>يعيد المستخدمين إلى:</value>
+  </data>
+    <data name="OAuthClientRevokeAccess" xml:space="preserve">
+    <value>إلغاء الوصول</value>
+  </data>
+    <data name="OAuthClientRevokeConfirmMessage" xml:space="preserve">
+    <value>يملك {0} حاليًا {1} تصريح. الإلغاء يسجّل خروجه لكل من صرّح له؛ ويمكنهم التصريح له من جديد.</value>
+  </data>
+    <data name="OAuthClientRevokedMessage" xml:space="preserve">
+    <value>تم إلغاء {0} تصريح.</value>
+  </data>
+    <data name="OAuthClientKindConfigured" xml:space="preserve">
+    <value>مُهيّأ مسبقًا</value>
+  </data>
+    <data name="OAuthClientKindSelfDescribed" xml:space="preserve">
+    <value>معرّف لنفسه</value>
+  </data>
+    <data name="OAuthErrorClientNotIdentified" xml:space="preserve">
+    <value>تعذر التعرف على هذا التطبيق، لذا لا توجد جهة للعودة إليها.</value>
+  </data>
+    <data name="OAuthErrorInvalidRequestWithReason" xml:space="preserve">
+    <value>طلب منح الإذن هذا غير صالح ({0}).</value>
+  </data>
+    <data name="OAuthErrorInsufficientPermissions" xml:space="preserve">
+    <value>لا يملك حسابك الصلاحيات التي يطلبها هذا التطبيق.</value>
+  </data>
+    <data name="OAuthErrorTwoFactorRequired" xml:space="preserve">
+    <value>يتطلب هذا التطبيق المصادقة الثنائية. فعّلها في إعدادات حسابك، وسجّل الدخول مرة أخرى، ثم ابدأ من جديد من التطبيق.</value>
+  </data>
+  <!--#if (multitenant == true) -->
+    <data name="OAuthConsentWorkspace" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+    <data name="OAuthErrorNotAMemberOfWorkspace" xml:space="preserve">
+    <value>أنت لست عضوًا في مساحة العمل التي يطلبها هذا التطبيق.</value>
+  </data>
+  <!--#endif -->
+  <!--#if (signalR == true) -->
+    <data name="OAuthScopeChatDescription" xml:space="preserve">
+    <value>استخدام مساعد هذا التطبيق نيابةً عنك - طرح الأسئلة عليه والبحث فيما يمكنه البحث فيه. لا يمكنه التصرف على جهازك.</value>
+  </data>
+    <data name="OAuthScopeChatShortDescription" xml:space="preserve">
+    <value>استخدام مساعد هذا التطبيق نيابةً عنك.</value>
+  </data>
+  <!--#endif -->
 </root>

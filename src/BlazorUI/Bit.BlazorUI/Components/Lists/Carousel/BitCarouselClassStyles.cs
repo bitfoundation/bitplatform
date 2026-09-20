@@ -72,12 +72,6 @@ public class BitCarouselClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the current dot element of the BitCarousel.
     /// </summary>
-    [Obsolete($"This property is misspelled and will be removed in a future release. Use {nameof(CurrentDot)} instead.")]
-    public string? CurrectDot { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the current dot element of the BitCarousel.
-    /// </summary>
     public string? CurrentDot { get; set; }
 
     /// <summary>
@@ -89,17 +83,4 @@ public class BitCarouselClassStyles
     /// Custom CSS classes/styles for the icon of the play/pause button of the BitCarousel.
     /// </summary>
     public string? PlayPauseButtonIcon { get; set; }
-
-
-
-    /// <summary>
-    /// Resolves the current dot value, falling back to the misspelled property so the values
-    /// assigned to it before it was replaced keep being applied.
-    /// </summary>
-    internal string? GetCurrentDot()
-    {
-#pragma warning disable CS0618 // Type or member is obsolete
-        return CurrentDot ?? CurrectDot;
-#pragma warning restore CS0618
-    }
 }

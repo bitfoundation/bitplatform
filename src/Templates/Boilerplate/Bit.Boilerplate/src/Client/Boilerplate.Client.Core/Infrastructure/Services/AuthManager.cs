@@ -49,7 +49,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         // by the second factor it has no way to ask for. Not being signed in there is fine - the user signs in again -
         // but storing the empty response is not: on the Web client the null crosses JS interop as the string "null",
         // which is non-empty enough to get past the token provider's guard and then throws while being parsed.
-        if (string.IsNullOrEmpty(response.AccessToken))
+        if (string.IsNullOrWhiteSpace(response.AccessToken))
             return;
 
         rememberMe ??= await storageService.IsPersistent("refresh_token");
@@ -146,7 +146,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 string? refreshToken = await storageService.GetItem("refresh_token");
                 try
                 {
-                    if (string.IsNullOrEmpty(refreshToken))
+                    if (string.IsNullOrWhiteSpace(refreshToken))
                         throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);
 
                     var refreshTokenResponse = await identityController.Refresh(new()
@@ -236,11 +236,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         }
 
         var token = await promptService.Show(localizer[nameof(AppStrings.EnterElevatedAccessToken)], title: "Boilerplate", otpInput: true);
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrWhiteSpace(token))
             return false;
 
         var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
-        return string.IsNullOrEmpty(accessToken) is false;
+        return string.IsNullOrWhiteSpace(accessToken) is false;
     }
 
     //#if (multitenant == true)
@@ -252,7 +252,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         var accessToken = await RefreshToken(requestedBy: "SwitchTenant", requestedTenantId: tenantId);
 
-        return string.IsNullOrEmpty(accessToken) is false;
+        return string.IsNullOrWhiteSpace(accessToken) is false;
     }
     //#endif
 
@@ -260,7 +260,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         var accessToken = await tokenProvider.GetAccessToken();
 
-        if (string.IsNullOrEmpty(accessToken))
+        if (string.IsNullOrWhiteSpace(accessToken))
             return null;
 
         var isValid = IAuthTokenProvider.ParseAccessToken(accessToken, validateExpiry: true).IsAuthenticated();
