@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -344,7 +344,14 @@ private void HandleInvalidSubmit() { }";
 
 
 <BitCheckbox Label=""Item 3"" AriaSetSize=""10"" AriaPositionInSet=""3"" />
-<BitCheckbox Label=""Item 4"" AriaSetSize=""10"" AriaPositionInSet=""4"" />";
+<BitCheckbox Label=""Item 4"" AriaSetSize=""10"" AriaPositionInSet=""4"" />
+
+
+<BitCheckbox Label=""Select all fruits"" AriaControls=""fruits"" Indeterminate />
+<div id=""fruits"">
+    <BitCheckbox Label=""Apple"" Value />
+    <BitCheckbox Label=""Banana"" />
+</div>";
 
     private readonly string example12CsharpCode = @"
 private BitCheckbox checkboxRef = default!;
@@ -352,6 +359,27 @@ private BitCheckbox checkboxRef = default!;
 private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 
     private readonly string example13RazorCode = @"
+<BitCheckbox Label=""Busy"" Loading />
+<BitCheckbox Label=""Busy and checked"" Loading Value />
+<BitCheckbox Label=""Busy and mixed"" Loading Indeterminate />
+
+
+<BitCheckbox AutoLoading
+             Label=""Sync with the server""
+             OnChanging=""HandleSlowChanging"" />
+
+<div>Saved: <b>@savedCount</b> time(s)</div>";
+
+    private readonly string example13CsharpCode = @"
+private int savedCount;
+
+private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
+{
+    await Task.Delay(2000);
+    savedCount++;
+}";
+
+    private readonly string example14RazorCode = @"
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Value />
@@ -491,7 +519,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""fa-solid fa-house"")"" />
@@ -513,7 +541,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 
 <BitCheckbox Label=""Square (UncheckedIcon)"" UncheckedIcon=""@BitIconInfo.Bi(""app"")"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Value />
@@ -526,7 +554,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Value />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -601,7 +629,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
     <BitCheckbox Label=""Crash reports"" Description=""Stack traces only, never your data."" />
 </div>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";

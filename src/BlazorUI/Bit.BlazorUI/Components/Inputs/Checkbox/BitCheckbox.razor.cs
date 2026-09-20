@@ -4,11 +4,13 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options.
-/// It supports an indeterminate state, three-state cycling, per-state icons, a visible description, cancellable changes, read-only and
-/// required modes, and is keyboard accessible through its underlying native checkbox input.
+/// It supports an indeterminate state, three-state cycling, per-state icons, a visible description, cancellable changes, a busy state,
+/// read-only and required modes, and is keyboard accessible through its underlying native checkbox input.
 /// </summary>
 public partial class BitCheckbox : BitInputBase<bool>
 {
+    private bool _autoLoading;
+    private bool _isChanging;
     private string _inputId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _ariaDescriptionId = string.Empty;
@@ -25,6 +27,15 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// native <c>disabled</c> attribute, so the checkbox remains in the tab order while its toggling is suppressed.
     /// </summary>
     [Parameter] public bool AllowDisabledFocus { get; set; }
+
+    /// <summary>
+    /// The id of the element the checkbox controls, rendered as <c>aria-controls</c> on the checkbox input.
+    /// </summary>
+    /// <remarks>
+    /// The relationship a select-all checkbox has with the list it governs: it points at the container of
+    /// the items it checks and clears, so assistive technologies can offer the way from the one to the other.
+    /// </remarks>
+    [Parameter] public string? AriaControls { get; set; }
 
     /// <summary>
     /// The ids of the elements that describe the checkbox, rendered into <c>aria-describedby</c> beside the
@@ -73,6 +84,17 @@ public partial class BitCheckbox : BitInputBase<bool>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Turns the checkbox busy by itself for as long as the callbacks behind a change are still running.
+    /// </summary>
+    /// <remarks>
+    /// It is the <see cref="Loading"/> state in every respect - the glyph becomes a spinner and the checkbox
+    /// stops accepting clicks - only raised and cleared by the checkbox itself around the awaited
+    /// <see cref="OnClick"/>, <see cref="OnChanging"/> and <c>OnChange</c> callbacks. A <see cref="Loading"/>
+    /// set from the outside still applies on top of it, so the two can be mixed.
+    /// </remarks>
+    [Parameter] public bool AutoLoading { get; set; }
+
+    /// <summary>
     /// Gets or sets the check icon using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="CheckIconName"/> when both are set.
     /// </summary>
@@ -99,7 +121,9 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// The glyph inside the box is decorative by default - the state of the checkbox is already announced by
     /// the input itself - so it is hidden from assistive technologies. Setting this exposes it as an image
     /// with that name, read as part of the checkbox. Worth doing only where the glyph carries meaning the
-    /// label does not, such as a custom icon standing for the state rather than repeating the check mark.
+    /// label does not, such as a custom icon standing for the state rather than repeating the check mark. The name
+    /// takes hold only while there is a glyph to see: an empty box holds the check mark at zero opacity, to be
+    /// previewed on hover, and naming it there would have it read out while it is not on the screen.
     /// </remarks>
     [Parameter] public string? CheckIconAriaLabel { get; set; }
 
@@ -194,6 +218,21 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Turns the checkbox busy while the change it has just accepted is still being carried out.
+    /// </summary>
+    /// <remarks>
+    /// A busy checkbox keeps the state it is in and ignores clicks, but stays focusable and is announced as
+    /// busy and unavailable, so a change that is still in flight is not started a second time. The spinner
+    /// replaces the glyph inside the box and is drawn to the size the glyph would have been, so turning a
+    /// checkbox busy never resizes it. A <see cref="ChildContent"/> replaces that box along with the glyph,
+    /// so a custom face shows the state itself - the root still carries the <c>bit-chb-ldg</c> class to
+    /// style against. Use <see cref="AutoLoading"/> to have the checkbox raise this state itself around the
+    /// callbacks of a change.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Loading { get; set; }
 
     /// <summary>
     /// Keeps the label of the checkbox on a single line and ends it with an ellipsis where it does not fit.
@@ -312,7 +351,10 @@ public partial class BitCheckbox : BitInputBase<bool>
     {
         if (firstRender)
         {
-            await SetIndeterminate();
+            // A freshly rendered input already has its indeterminate property at false, so only a checkbox
+            // that starts out mixed has anything to push - which keeps a grid of selection checkboxes from
+            // opening with one interop call per row that changes nothing.
+            if (Indeterminate) await SetIndeterminate();
 
             // The autofocus attribute is only honoured while the browser is parsing the document, which is
             // never when the markup arrives from an interactive render - so the attribute alone covers the
@@ -385,6 +427,8 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-chb-rdl" : string.Empty);
 
+        ClassBuilder.Register(() => IsLoading ? "bit-chb-ldg" : string.Empty);
+
         // The asterisk hangs on the label, so a checkbox named only by an AriaLabel has nowhere to put one
         // and says it is required through the native attribute alone.
         ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-chb-req" : string.Empty);
@@ -431,6 +475,23 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// Whether the checkbox carries a visible description, which is what the extra line under it is rendered for.
     /// </summary>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// Whether the checkbox is busy, from the <see cref="Loading"/> parameter or from
+    /// <see cref="AutoLoading"/> having raised it around a change of its own.
+    /// </summary>
+    private bool IsLoading => Loading || _autoLoading;
+
+    /// <summary>
+    /// Whether the checkbox currently accepts a change from the user.
+    /// </summary>
+    /// <remarks>
+    /// A change that is still running its awaited callbacks also closes the checkbox to further clicks, so a
+    /// second click landing while the first one is in flight cannot start a competing change - which on a
+    /// three-state checkbox would skip a state, and on any of them would ask <see cref="OnChanging"/> about
+    /// a move from a state the checkbox is no longer in.
+    /// </remarks>
+    private bool IsInteractive => IsEnabled && ReadOnly is false && IsLoading is false && _isChanging is false;
 
     /// <summary>
     /// The value of an attribute the page wrote into <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>
@@ -512,36 +573,91 @@ public partial class BitCheckbox : BitInputBase<bool>
 
     private async Task HandleOnCheckboxClick(MouseEventArgs args)
     {
+        // A disabled or read-only checkbox never arrives here having let the browser change anything: the
+        // click is prevented in the markup, which is where a state known at render time belongs.
         if (IsEnabled is false || ReadOnly) return;
 
-        await OnClick.InvokeAsync(args);
-
-        var oldValue = CurrentValue;
-        var (newValue, newIndeterminate) = GetNextState();
-
-        if (OnChanging.HasDelegate)
+        // A change still running its awaited callbacks is only found out about here, after the browser has
+        // already toggled the element under the pointer - so what the checkbox still holds is put back.
+        if (IsInteractive is false)
         {
-            var changingArgs = new BitCheckboxChangeArgs(newValue, newIndeterminate);
+            await RestoreInputState();
+            return;
+        }
 
-            await OnChanging.InvokeAsync(changingArgs);
+        // Held for the whole handler rather than only around the change itself, so a click landing while an
+        // awaited OnClick or OnChanging is still running is dropped instead of racing the change it precedes.
+        _isChanging = true;
 
-            if (changingArgs.Cancel)
+        // read once, so the flag that is cleared in the end is the one that was raised in the beginning
+        // even if the parameter is swapped while the change is still running
+        var autoLoading = AutoLoading;
+
+        if (autoLoading) SetAutoLoading(true);
+
+        try
+        {
+            await OnClick.InvokeAsync(args);
+
+            var oldValue = CurrentValue;
+            var (newValue, newIndeterminate) = GetNextState();
+
+            if (OnChanging.HasDelegate)
             {
-                await SyncInputCheckedProperty(oldValue);
-                // the browser also clears the native indeterminate property on every click, so it gets put back too
-                await SetIndeterminate();
-                return;
+                var changingArgs = new BitCheckboxChangeArgs(newValue, newIndeterminate);
+
+                await OnChanging.InvokeAsync(changingArgs);
+
+                if (changingArgs.Cancel)
+                {
+                    await SyncInputCheckedProperty(oldValue);
+                    // the browser also clears the native indeterminate property on every click, so it gets put back too
+                    await SetIndeterminate();
+                    return;
+                }
             }
-        }
 
-        if (newIndeterminate != Indeterminate)
+            if (newIndeterminate != Indeterminate)
+            {
+                await SetIndeterminate(newIndeterminate);
+            }
+
+            CurrentValue = newValue;
+
+            await SyncInputCheckedProperty(oldValue);
+        }
+        finally
         {
-            await SetIndeterminate(newIndeterminate);
+            _isChanging = false;
+
+            if (autoLoading) SetAutoLoading(false);
         }
+    }
 
-        CurrentValue = newValue;
+    private void SetAutoLoading(bool value)
+    {
+        if (_autoLoading == value) return;
 
-        await SyncInputCheckedProperty(oldValue);
+        _autoLoading = value;
+
+        ClassBuilder.Reset();
+
+        // The spinner has to show up while the callbacks behind the change are still running rather than
+        // after they are done, so the render is asked for here instead of being left to the handler.
+        // Skipped once the checkbox is gone, which an awaited callback leaves room for it to be by now.
+        if (IsDisposed) return;
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Puts back onto the element the two native properties a click changes behind the component's back,
+    /// for a click the component then refuses outright.
+    /// </summary>
+    private async Task RestoreInputState()
+    {
+        await _js.BitUtilsSetProperty(InputElement, "checked", CurrentValue);
+        await SetIndeterminate();
     }
 
     private async Task SyncInputCheckedProperty(bool oldValue)

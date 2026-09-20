@@ -13,6 +13,13 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "AriaControls",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the element the checkbox controls - the list a select-all checkbox governs - rendered as aria-controls on the checkbox input.",
+        },
+        new()
+        {
             Name = "AriaDescribedby",
             Type = "string?",
             DefaultValue = "null",
@@ -52,6 +59,13 @@ public partial class BitCheckboxDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, the checkbox input automatically receives focus when the page renders.",
+        },
+        new()
+        {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the checkbox busy by itself for as long as the awaited callbacks behind a change are still running. A Loading set from the outside still applies on top of it.",
         },
         new()
         {
@@ -177,6 +191,13 @@ public partial class BitCheckboxDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Used to customize the label for the checkbox.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the checkbox busy: the glyph becomes a spinner, clicks are turned away and the checkbox is announced as busy, while it keeps the state it is in and stays focusable.",
         },
         new()
         {
@@ -375,6 +396,13 @@ public partial class BitCheckboxDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label of the BitCheckbox."
+               },
+               new()
+               {
+                   Name = "Spinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner rendered inside the box while the BitCheckbox is busy."
                }
             ]
         },
@@ -462,6 +490,12 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "--bit-Checkbox-hover-background",
+            DefaultValue = "--bit-Checkbox-background",
+            Description = "Fill of the box while unchecked and hovered (pointer devices only).",
+        },
+        new()
+        {
             Name = "--bit-Checkbox-hover-border-color",
             DefaultValue = "--bit-Checkbox-border-color",
             Description = "Stroke of the box while unchecked and hovered (pointer devices only).",
@@ -540,9 +574,21 @@ public partial class BitCheckboxDemo
         },
         new()
         {
+            Name = "--bit-Checkbox-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Font weight of the label.",
+        },
+        new()
+        {
             Name = "--bit-Checkbox-description-font-size",
             DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
             Description = "Font size of the description, one step below the label on the type ramp.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-description-gap",
+            DefaultValue = "spacing(0.25)",
+            Description = "Room between the label and the description under it.",
         },
         new()
         {
@@ -763,6 +809,8 @@ public partial class BitCheckboxDemo
     private string SuccessMessage = string.Empty;
     private BitCheckboxValidationModel validationModel = new();
 
+    private int savedCount;
+
 
 
     private void HandleSelectAllChange(bool value)
@@ -828,6 +876,12 @@ public partial class BitCheckboxDemo
     }
 
     private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();
+
+    private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
+    {
+        await Task.Delay(2000);
+        savedCount++;
+    }
 
     private async Task HandleValidSubmit()
     {

@@ -10,6 +10,7 @@
 //   --bit-Checkbox-required-color            the asterisk of a required checkbox          (default: $clr-req)
 //   --bit-Checkbox-background                box fill while unchecked                     (default: transparent)
 //   --bit-Checkbox-border-color              box stroke while unchecked                   (default: $clr-brd-pri)
+//   --bit-Checkbox-hover-background          box fill on hover while unchecked            (default: the rest fill)
 //   --bit-Checkbox-hover-border-color        box stroke on hover while unchecked          (default: the rest stroke)
 //   --bit-Checkbox-checked-background        box fill while checked                       (default: the role's main color)
 //   --bit-Checkbox-checked-hover-background  box fill while checked and hovered           (default: the role's hover color)
@@ -23,7 +24,9 @@
 //   --bit-Checkbox-radius                    corner radius of the box                     (default: $shp-radius-selection)
 //   --bit-Checkbox-gap                       room between the box and the label           (default: spacing(1))
 //   --bit-Checkbox-font-size                 the label                                    (default: per size, from the type ramp)
+//   --bit-Checkbox-font-weight               the label                                    (default: $tg-fw-regular)
 //   --bit-Checkbox-description-font-size     the description                              (default: per size, one step below the label)
+//   --bit-Checkbox-description-gap           room between the label and the description   (default: spacing(0.25))
 //   --bit-Checkbox-min-height                smallest height and width of the click target(default: the box, never below spacing(3))
 
 .bit-chb {
@@ -43,6 +46,10 @@
     // 9/16 of it, which leaves a stroke's worth of room around a check mark on every size.
     --bit-chb-ind-size: calc(var(--bit-chb-box-size) / 2);
     --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, calc(var(--bit-chb-box-size) * 0.5625));
+    --bit-chb-spn-size: calc(var(--bit-chb-box-size) * 0.625);
+    // The spinner takes the color the glyph it replaces would have had. Resolved here, on the root, where
+    // every state that recolors the glyph declares its own value.
+    --bit-chb-spn-clr: var(--bit-chb-ico-clr);
     --bit-chb-des-indent: calc(var(--bit-chb-box-size) + var(--bit-Checkbox-gap, #{spacing(1)}));
     --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
     --bit-chb-box-clr-brd: var(--bit-Checkbox-border-color, #{$clr-brd-pri});
@@ -147,8 +154,36 @@
     clip-path: inset(50%);
 }
 
-.bit-chb-rdl {
+.bit-chb-rdl,
+.bit-chb-ldg {
     cursor: default;
+}
+
+// The spinner stands in for the glyph while a change is in flight, drawn in the color the glyph would have
+// had so it reads as part of the box rather than as something laid over it, and sized off the box so a
+// busy checkbox keeps the footprint it had. It carries its own opacity: the unchecked box hides its glyph
+// until hover, which is not a thing to do to the one mark saying the change is still running.
+.bit-chb-spn {
+    opacity: 1;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-style: $shp-border-style;
+    border-width: $siz-spinner-stroke;
+    border-color: translucent(var(--bit-chb-spn-clr), 30%);
+    border-top-color: var(--bit-chb-spn-clr);
+    width: var(--bit-chb-spn-size);
+    height: var(--bit-chb-spn-size);
+    animation: bit-chb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-chb-spinner-animation {
+    from {
+        rotate: 0deg;
+    }
+
+    to {
+        rotate: 360deg;
+    }
 }
 
 // The asterisk hangs on whichever label the checkbox carries - a plain one or a template - since both
@@ -214,7 +249,7 @@
     width: 100%;
     display: flex;
     cursor: inherit;
-    font-weight: $tg-fw-regular;
+    font-weight: var(--bit-Checkbox-font-weight, #{$tg-fw-regular});
     user-select: none;
     position: relative;
     align-items: center;
@@ -241,6 +276,7 @@
     cursor: auto;
     color: var(--bit-Checkbox-description-color, #{$clr-fg-sec});
     margin-inline-start: var(--bit-chb-des-indent);
+    margin-block-start: var(--bit-Checkbox-description-gap, #{spacing(0.25)});
     font-size: var(--bit-Checkbox-description-font-size, var(--bit-chb-des-fontsize));
 }
 
@@ -314,6 +350,9 @@
 
 .bit-chb-ind {
     --bit-chb-ico-opa: 1;
+    // The mixed state paints its mark with the FILL rather than with the on-color the other two states
+    // draw their glyph in, since the box under it stays transparent - so the spinner follows the fill too.
+    --bit-chb-spn-clr: var(--bit-chb-ico-clr-bg);
     --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
     --bit-chb-box-clr-brd: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr));
     --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt));
@@ -342,14 +381,14 @@
 }
 
 // The whole checkbox is the hover target, not only the box, because the label is part of the click
-// target too. The states that cannot be clicked into another one are left out of it: on a read-only
-// checkbox a highlight - and the ghost check the empty box previews - would promise a change no click
-// can make, and on an invalid one it would paint over the error color that is the point of the state.
-// A disabled checkbox never matches, since it takes no pointer events at all.
+// target too. The states that cannot be clicked into another one are left out of it: on a read-only or a
+// busy checkbox a highlight - and the ghost check the empty box previews - would promise a change no
+// click can make, and on an invalid one it would paint over the error color that is the point of the
+// state. A disabled checkbox never matches, since it takes no pointer events at all.
 @media (hover: hover) {
-    .bit-chb:hover:not(.bit-chb-rdl):not(.bit-inv) {
+    .bit-chb:hover:not(.bit-chb-rdl):not(.bit-chb-ldg):not(.bit-inv) {
         --bit-chb-ico-opa: 1;
-        --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
+        --bit-chb-box-clr-bg: var(--bit-Checkbox-hover-background, var(--bit-Checkbox-background, transparent));
         --bit-chb-box-clr-brd: var(--bit-Checkbox-hover-border-color, var(--bit-Checkbox-border-color, #{$clr-brd-pri}));
 
         &.bit-chb-ckd {
@@ -375,9 +414,10 @@
 // A press dips the box, so the checkbox answers the pointer before the state it is about to move to
 // lands. Left off wherever a click cannot change anything, where it would promise a change that never
 // comes, and off the custom face of a ChildContent, which has no box of ours to dip. The scale rides on
-// the same transition as the colors, so it eases back - and collapses to nothing under reduced motion,
-// where the motion tokens are zeroed.
-.bit-chb:not(.bit-dis):not(.bit-chb-rdl) .bit-chb-lbl:active .bit-chb-box {
+// the same transition as the colors, so it eases back - and under reduced motion, where the motion tokens
+// collapse, it stops easing and becomes what a hover color change already is: a state the box is in for
+// as long as the pointer is held, arrived at and left instantly.
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-lbl:active .bit-chb-box {
     scale: 0.9;
 }
 
@@ -658,6 +698,19 @@
             forced-color-adjust: none;
             background-color: Highlight;
         }
+    }
+
+    // The ring of the spinner is drawn entirely in border colors, which are forced to a single system
+    // color here - leaving a static circle with nothing to say it is turning. The two ends are pinned
+    // apart instead, so the rotation stays readable.
+    .bit-chb-spn {
+        forced-color-adjust: none;
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
+
+    .bit-chb-ckd .bit-chb-spn {
+        border-top-color: HighlightText;
     }
 
     .bit-chb.bit-dis {
