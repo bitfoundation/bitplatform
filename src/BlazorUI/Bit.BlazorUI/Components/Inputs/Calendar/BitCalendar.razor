@@ -49,218 +49,234 @@
 
         @if (DayPickerIsVisible())
         {
-            <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
-                <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
-                    @if (ShowMonthPicker && (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false)))
-                    {
-                        var title = string.Format(MonthPickerToggleTitle, _monthTitle);
-                        <button @onclick="@ToggleMonthPickerOverlay"
-                                type="button"
-                                title="@title"
-                                aria-live="polite"
-                                aria-atomic="true"
-                                aria-label="@title"
-                                style="@Styles?.DayPickerMonth"
-                                disabled="@(IsEnabled is false)"
-                                class="bit-cal-ptb @Classes?.DayPickerMonth">
-                            @_monthTitle
-                        </button>
-                    }
-                    else
-                    {
-                        <div aria-live="polite"
-                             aria-atomic="true"
-                             style="@Styles?.DayPickerMonth"
-                             class="bit-cal-pkt @Classes?.DayPickerMonth">
-                            @_monthTitle
-                        </div>
-                    }
-                    @{
-                        var prevDisabled = CanChangeMonth(false) is false;
-                        var nextDisabled = CanChangeMonth(true) is false;
-                    }
-                    <div style="@Styles?.DayPickerNavWrapper" class="bit-cal-nbc @Classes?.DayPickerNavWrapper">
-                        <button @onclick="() => HandleMonthChange(false)"
-                                type="button"
-                                title="@GoToPrevMonthTitle"
-                                aria-label="@GoToPrevMonthTitle"
-                                style="@Styles?.PrevMonthNavButton"
-                                class="bit-cal-nbt @Classes?.PrevMonthNavButton"
-                                disabled="@prevDisabled">
-                            <i aria-hidden="true"
-                               style="@Styles?.PrevMonthNavIcon"
-                               class="bit-cal-ico @prevMonthNavIconCss @Classes?.PrevMonthNavIcon" />
-                        </button>
-                        @if (ShowGoToToday && (ShowMonthPickerAsOverlay || ShowMonthPicker is false))
-                        {
-                            var goToTodayDisabled = IsGoToTodayButtonDisabled(todayYear, todayMonth);
+            var prevDisabled = CanChangeMonth(false) is false;
+            var nextDisabled = CanChangeMonth(true) is false;
 
-                            <button @onclick="HandleGoToToday"
-                                    type="button"
-                                    title="@GoToTodayTitle"
-                                    aria-label="@GoToTodayTitle"
-                                    disabled="@goToTodayDisabled"
-                                    style="@Styles?.GoToTodayButton"
-                                    class="bit-cal-gtb @Classes?.GoToTodayButton">
-                                <i aria-hidden="true"
-                                   style="@Styles?.GoToTodayIcon"
-                                   class="bit-cal-ico @goToTodayIconCss @Classes?.GoToTodayIcon" />
-                            </button>
-                        }
-                        <button @onclick="() => HandleMonthChange(true)"
-                                type="button"
-                                style="@Styles?.NextMonthNavButton"
-                                class="bit-cal-nbt @Classes?.NextMonthNavButton"
-                                title="@GoToNextMonthTitle"
-                                aria-label="@GoToNextMonthTitle"
-                                disabled="@nextDisabled">
-                            <i aria-hidden="true"
-                               style="@Styles?.NextMonthNavIcon"
-                               class="bit-cal-ico @nextMonthNavIconCss @Classes?.NextMonthNavIcon" />
-                        </button>
-                        @if (ShowTimePicker && ShowTimePickerAsOverlay && (ShowMonthPicker is false || ShowMonthPickerAsOverlay))
+            @* A calendar showing more than one month is the same day picker once per month, side by side:
+               only the first of them heads the navigation backwards and the month picker's toggle, and only
+               the last the navigation forwards, so the strip reads as one calendar rather than three. *@
+            @for (var monthIndex = 0; monthIndex < _monthCount; monthIndex++)
+            {
+                var index = monthIndex;
+                var isFirstMonth = index == 0;
+                var isLastMonth = index == _monthCount - 1;
+                var monthTitle = _monthTitles[index];
+
+                <div style="@Styles?.DayPickerWrapper" class="bit-cal-dwp @Classes?.DayPickerWrapper">
+                    <div style="@Styles?.DayPickerHeader" class="bit-cal-pkh @Classes?.DayPickerHeader">
+                        @if (isFirstMonth && ShowMonthPicker && (ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false)))
                         {
-                            <button @onclick="@ToggleTimePickerOverlay"
+                            var title = string.Format(MonthPickerToggleTitle, monthTitle);
+                            <button @onclick="@ToggleMonthPickerOverlay"
                                     type="button"
-                                    title="@ShowTimePickerTitle"
+                                    title="@title"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    aria-label="@title"
+                                    style="@Styles?.DayPickerMonth"
                                     disabled="@(IsEnabled is false)"
-                                    aria-label="@ShowTimePickerTitle"
-                                    style="@Styles?.ShowTimePickerButton"
-                                    class="bit-cal-nbt @Classes?.ShowTimePickerButton">
-                                <i aria-hidden="true"
-                                   style="@Styles?.ShowTimePickerIcon"
-                                   class="bit-cal-ico @showTimePickerIconCss @Classes?.ShowTimePickerIcon" />
+                                    class="bit-cal-ptb @Classes?.DayPickerMonth">
+                                @monthTitle
                             </button>
                         }
-                    </div>
-                </div>
-                <div role="grid"
-                     aria-label="@_monthTitle"
-                     aria-readonly="@(ReadOnly ? "true" : null)"
-                     aria-disabled="@(IsEnabled is false ? "true" : null)"
-                     aria-required="@(Required ? "true" : null)"
-                     aria-invalid="@(isInvalid ? "true" : null)"
-                     style="@Styles?.DaysGrid"
-                     class="bit-cal-grd @Classes?.DaysGrid">
-                    <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
-                        @if (ShowWeekNumbers)
+                        else
                         {
-                            @* The corner above the week numbers is empty, so it is named rather than read out
-                               as a blank column header before the first weekday of every row. *@
-                            <div role="columnheader"
-                                 aria-label="@WeekNumbersHeaderTitle"
-                                 style="@Styles?.WeekNumbersHeader"
-                                 class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
-                        }
-
-                        @for (var index = 0; index < 7; index++)
-                        {
-                            var dayOfWeek = GetDayOfWeek(index);
-                            var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(dayOfWeek);
-                            <div role="columnheader"
-                                 title="@dayOfWeekName"
-                                 aria-label="@_culture.DateTimeFormat.GetDayName(dayOfWeek)"
-                                 style="@Styles?.DayNameHeader"
-                                 class="bit-cal-wlb @Classes?.DayNameHeader">
-                                @GetNarrowDayName(dayOfWeekName)
+                            <div aria-live="polite"
+                                 aria-atomic="true"
+                                 style="@Styles?.DayPickerMonth"
+                                 class="bit-cal-pkt @Classes?.DayPickerMonth">
+                                @monthTitle
                             </div>
                         }
-                    </div>
-
-                    @for (var week = 0; week < 6; week++)
-                    {
-                        @* The weeks past the end of the month (FixedWeeks off) hold no days at all. The check
-                           spans the whole row: at the very edge of the calendar's supported range a row can
-                           start with empty cells and still hold days to show. *@
-                        if (IsWeekRowEmpty(week)) continue;
-
-                        <div role="row" style="@Styles?.DaysRow" class="bit-cal-dgr @Classes?.DaysRow">
-                            @if (ShowWeekNumbers)
+                        <div style="@Styles?.DayPickerNavWrapper" class="bit-cal-nbc @Classes?.DayPickerNavWrapper">
+                            @if (isFirstMonth)
                             {
-                                var weekNumber = GetWeekNumber(week);
-                                var title = string.Format(WeekNumberTitle, weekNumber);
-                                <div role="rowheader"
-                                     title="@title"
-                                     aria-label="@title"
-                                     style="@Styles?.WeekNumber"
-                                     class="bit-cal-wnm @Classes?.WeekNumber">
-                                    @weekNumber
-                                </div>
-                            }
-                            @for (var day = 0; day < 7; day++)
-                            {
-                                var nullableDate = _daysOfCurrentMonth[week, day];
-
-                                @* A day out of the calendar's supported range has no date to offer, so it
-                                   stays an empty cell keeping the columns of the week aligned, exactly like
-                                   an outside day hidden by ShowOutsideDays. *@
-                                if (nullableDate.HasValue is false ||
-                                    (ShowOutsideDays is false && IsInCurrentMonth(nullableDate.Value) is false))
-                                {
-                                    <div role="gridcell" style="@Styles?.DayButton" class="bit-cal-dbe @Classes?.DayButton"></div>
-                                    continue;
-                                }
-
-                                var date = nullableDate.Value;
-
-                                var disabled = IsEnabled is false || IsDayDisabled(date);
-                                var isSelected = IsSelectedDate(date);
-                                var isToday = IsInCurrentMonth(date) && date == today.Date;
-                                var (style, klass) = GetDayButtonCss(date);
-                                var dayEvents = GetDayEvents(date);
-                                var opensEventDialog = ShowEventDetails && dayEvents.Count > 0;
-                                @* A read-only calendar still browses, so its days stay focusable - but they no
-                                   longer select anything, which aria-disabled is what reports. *@
-                                <button @onclick="() => HandleDayClick(date, dayEvents)"
-                                        @onkeydown="e => HandleDayKeyDown(e, date)"
+                                <button @onclick="() => HandleMonthChange(false)"
                                         type="button"
-                                        role="gridcell"
-                                        id="@GetDayButtonId(date)"
-                                        disabled="@disabled"
-                                        aria-readonly="@(ReadOnly ? "true" : null)"
-                                        aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
-                                        aria-label="@GetDayAriaLabel(date, dayEvents)"
-                                        aria-current="@(isToday ? "date" : null)"
-                                        aria-haspopup="@(opensEventDialog ? "dialog" : null)"
-                                        title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
-                                        style="@style"
-                                        class="bit-cal-dbt@(klass) @Classes?.DayButton"
-                                        tabindex="@(date == focusableDay ? 0 : -1)"
-                                        @* Only the selected cell carries the state, the way the APG's own date
-                                           picker does: an explicit false on the other forty-one would have a
-                                           screen reader say "not selected" on every day arrowed over. *@
-                                        aria-selected="@(isSelected ? "true" : null)">
-                                    @if (DayCellTemplate is not null)
-                                    {
-                                        @DayCellTemplate(GetDateTimeOfDayCell(date))
-                                    }
-                                    else
-                                    {
-                                        @GetDayOfCurrentMonth(date)
-                                    }
-                                    @if (dayEvents.Count > 0)
-                                    {
-                                        @* One dot per event rather than one dot per day, so a day with three
-                                           things on it does not look like a day with one - capped, since past
-                                           a few the row of dots says no more than "several" and the count is
-                                           in the label a screen reader is given and in the tooltip. *@
-                                        <span aria-hidden="true"
-                                              style="@Styles?.EventIndicators"
-                                              class="bit-cal-evc @Classes?.EventIndicators">
-                                            @foreach (var evt in GetIndicatorEvents(dayEvents))
-                                            {
-                                                <span style="@Styles?.EventIndicator"
-                                                      class="bit-cal-evi @GetEventIndicatorColorClass(evt) @Classes?.EventIndicator">
-                                                </span>
-                                            }
-                                        </span>
-                                    }
+                                        title="@GoToPrevMonthTitle"
+                                        aria-label="@GoToPrevMonthTitle"
+                                        style="@Styles?.PrevMonthNavButton"
+                                        class="bit-cal-nbt @Classes?.PrevMonthNavButton"
+                                        disabled="@prevDisabled">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.PrevMonthNavIcon"
+                                       class="bit-cal-ico @prevMonthNavIconCss @Classes?.PrevMonthNavIcon" />
+                                </button>
+                            }
+                            @if (isLastMonth && ShowGoToToday && (ShowMonthPickerAsOverlay || ShowMonthPicker is false))
+                            {
+                                var goToTodayDisabled = IsGoToTodayButtonDisabled(todayYear, todayMonth);
+
+                                <button @onclick="HandleGoToToday"
+                                        type="button"
+                                        title="@GoToTodayTitle"
+                                        aria-label="@GoToTodayTitle"
+                                        disabled="@goToTodayDisabled"
+                                        style="@Styles?.GoToTodayButton"
+                                        class="bit-cal-gtb @Classes?.GoToTodayButton">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.GoToTodayIcon"
+                                       class="bit-cal-ico @goToTodayIconCss @Classes?.GoToTodayIcon" />
+                                </button>
+                            }
+                            @if (isLastMonth)
+                            {
+                                <button @onclick="() => HandleMonthChange(true)"
+                                        type="button"
+                                        style="@Styles?.NextMonthNavButton"
+                                        class="bit-cal-nbt @Classes?.NextMonthNavButton"
+                                        title="@GoToNextMonthTitle"
+                                        aria-label="@GoToNextMonthTitle"
+                                        disabled="@nextDisabled">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.NextMonthNavIcon"
+                                       class="bit-cal-ico @nextMonthNavIconCss @Classes?.NextMonthNavIcon" />
+                                </button>
+                            }
+                            @if (isLastMonth && ShowTimePicker && ShowTimePickerAsOverlay && (ShowMonthPicker is false || ShowMonthPickerAsOverlay))
+                            {
+                                <button @onclick="@ToggleTimePickerOverlay"
+                                        type="button"
+                                        title="@ShowTimePickerTitle"
+                                        disabled="@(IsEnabled is false)"
+                                        aria-label="@ShowTimePickerTitle"
+                                        style="@Styles?.ShowTimePickerButton"
+                                        class="bit-cal-nbt @Classes?.ShowTimePickerButton">
+                                    <i aria-hidden="true"
+                                       style="@Styles?.ShowTimePickerIcon"
+                                       class="bit-cal-ico @showTimePickerIconCss @Classes?.ShowTimePickerIcon" />
                                 </button>
                             }
                         </div>
-                    }
+                    </div>
+                    <div role="grid"
+                         aria-label="@monthTitle"
+                         aria-readonly="@(ReadOnly ? "true" : null)"
+                         aria-disabled="@(IsEnabled is false ? "true" : null)"
+                         aria-required="@(Required ? "true" : null)"
+                         aria-invalid="@(isInvalid ? "true" : null)"
+                         style="@Styles?.DaysGrid"
+                         class="bit-cal-grd @Classes?.DaysGrid">
+                        <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
+                            @if (ShowWeekNumbers)
+                            {
+                                @* The corner above the week numbers is empty, so it is named rather than read out
+                                   as a blank column header before the first weekday of every row. *@
+                                <div role="columnheader"
+                                     aria-label="@WeekNumbersHeaderTitle"
+                                     style="@Styles?.WeekNumbersHeader"
+                                     class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
+                            }
+
+                            @for (var dayIndex = 0; dayIndex < 7; dayIndex++)
+                            {
+                                var dayOfWeek = GetDayOfWeek(dayIndex);
+                                var dayOfWeekName = _culture.DateTimeFormat.GetShortestDayName(dayOfWeek);
+                                <div role="columnheader"
+                                     title="@dayOfWeekName"
+                                     aria-label="@_culture.DateTimeFormat.GetDayName(dayOfWeek)"
+                                     style="@Styles?.DayNameHeader"
+                                     class="bit-cal-wlb @Classes?.DayNameHeader">
+                                    @GetNarrowDayName(dayOfWeekName)
+                                </div>
+                            }
+                        </div>
+
+                        @for (var week = 0; week < 6; week++)
+                        {
+                            @* The weeks past the end of the month (FixedWeeks off) hold no days at all. The check
+                               spans the whole row: at the very edge of the calendar's supported range a row can
+                               start with empty cells and still hold days to show. *@
+                            if (IsWeekRowEmpty(index, week)) continue;
+
+                            <div role="row" style="@Styles?.DaysRow" class="bit-cal-dgr @Classes?.DaysRow">
+                                @if (ShowWeekNumbers)
+                                {
+                                    var weekNumber = GetWeekNumber(index, week);
+                                    var title = string.Format(WeekNumberTitle, weekNumber);
+                                    <div role="rowheader"
+                                         title="@title"
+                                         aria-label="@title"
+                                         style="@Styles?.WeekNumber"
+                                         class="bit-cal-wnm @Classes?.WeekNumber">
+                                        @weekNumber
+                                    </div>
+                                }
+                                @for (var day = 0; day < 7; day++)
+                                {
+                                    var nullableDate = _daysOfMonths[index][week, day];
+
+                                    @* A day out of the calendar's supported range has no date to offer, so it
+                                       stays an empty cell keeping the columns of the week aligned, exactly like
+                                       an outside day hidden by ShowOutsideDays. *@
+                                    if (nullableDate.HasValue is false ||
+                                        (ShowOutsideDaysOfMonth() is false && IsInMonth(nullableDate.Value, index) is false))
+                                    {
+                                        <div role="gridcell" style="@Styles?.DayButton" class="bit-cal-dbe @Classes?.DayButton"></div>
+                                        continue;
+                                    }
+
+                                    var date = nullableDate.Value;
+
+                                    var disabled = IsEnabled is false || IsDayDisabled(date);
+                                    var isSelected = IsSelectedDate(date);
+                                    var isToday = IsInMonth(date, index) && date == today.Date;
+                                    var (style, klass) = GetDayButtonCss(date, index);
+                                    var dayEvents = GetDayEvents(date);
+                                    var opensEventDialog = ShowEventDetails && dayEvents.Count > 0;
+                                    @* A read-only calendar still browses, so its days stay focusable - but they no
+                                       longer select anything, which aria-disabled is what reports. *@
+                                    <button @onclick="() => HandleDayClick(date, dayEvents)"
+                                            @onkeydown="e => HandleDayKeyDown(e, date)"
+                                            type="button"
+                                            role="gridcell"
+                                            id="@GetDayButtonId(date)"
+                                            disabled="@disabled"
+                                            aria-readonly="@(ReadOnly ? "true" : null)"
+                                            aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
+                                            aria-label="@GetDayAriaLabel(date, dayEvents)"
+                                            aria-current="@(isToday ? "date" : null)"
+                                            aria-haspopup="@(opensEventDialog ? "dialog" : null)"
+                                            title="@(dayEvents.Count > 0 ? GetEventTooltip(dayEvents) : null)"
+                                            style="@style"
+                                            class="bit-cal-dbt@(klass) @Classes?.DayButton"
+                                            tabindex="@(date == focusableDay ? 0 : -1)"
+                                            @* Only the selected cell carries the state, the way the APG's own date
+                                               picker does: an explicit false on the other forty-one would have a
+                                               screen reader say "not selected" on every day arrowed over. *@
+                                            aria-selected="@(isSelected ? "true" : null)">
+                                        @if (DayCellTemplate is not null)
+                                        {
+                                            @DayCellTemplate(GetDateTimeOfDayCell(date))
+                                        }
+                                        else
+                                        {
+                                            @GetDayOfCurrentMonth(date)
+                                        }
+                                        @if (dayEvents.Count > 0)
+                                        {
+                                            @* One dot per event rather than one dot per day, so a day with three
+                                               things on it does not look like a day with one - capped, since past
+                                               a few the row of dots says no more than "several" and the count is
+                                               in the label a screen reader is given and in the tooltip. *@
+                                            <span aria-hidden="true"
+                                                  style="@Styles?.EventIndicators"
+                                                  class="bit-cal-evc @Classes?.EventIndicators">
+                                                @foreach (var evt in GetIndicatorEvents(dayEvents))
+                                                {
+                                                    <span style="@Styles?.EventIndicator"
+                                                          class="bit-cal-evi @GetEventIndicatorColorClass(evt) @Classes?.EventIndicator">
+                                                    </span>
+                                                }
+                                            </span>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
-            </div>
+            }
         }
 
         @if (MonthPickerIsVisible())
@@ -712,6 +728,12 @@
                     {
                         <li class="bit-cal-emi @Classes?.EventItem"
                             style="@Styles?.EventItem">
+                            @if (EventTemplate is not null)
+                            {
+                                @EventTemplate(evt)
+                            }
+                            else
+                            {
                             <div class="bit-cal-eit @Classes?.EventItemTitle"
                                  style="@Styles?.EventItemTitle">@evt.Title</div>
                             @if (evt.StartTime.HasValue || evt.EndTime.HasValue)
@@ -736,6 +758,7 @@
                             {
                                 <div class="bit-cal-eib @Classes?.EventItemBody"
                                      style="@Styles?.EventItemBody">@evt.Body</div>
+                            }
                             }
                         </li>
                     }

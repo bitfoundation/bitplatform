@@ -173,7 +173,9 @@
             <b>ShowTimePickerAsOverlay</b>. <b>TimeFormat</b> switches between the 24-hour and 12-hour clocks,
             <b>ShowNowButton</b> hides the button that jumps to the current time, and <b>HourStep</b> /
             <b>MinuteStep</b> lay a grid over the day and the hour that everything the picker produces lands on —
-            the spin buttons, the arrow and page keys, and what is typed.
+            the spin buttons, the arrow and page keys, and what is typed. A <b>MinDate</b> or <b>MaxDate</b>
+            carrying a time of day bounds the hours of the very day it falls on, so the picker cannot produce
+            an instant outside of them.
         </div>
         <br /><br />
         <div class="example-content">
@@ -189,6 +191,11 @@
             <br /><br />
             <div>HourStep = 3, MinuteStep = 15:</div>
             <BitCalendar ShowTimePicker HourStep="3" MinuteStep="15" />
+            <br /><br />
+            <div>MinDate / MaxDate with a time of day (from 09:30 today, until 17:00 in two days):</div>
+            <BitCalendar ShowTimePicker @bind-Value="@boundedDateTime"
+                         MinDate="boundedMinDate" MaxDate="boundedMaxDate" />
+            <div>Selected: @boundedDateTime.ToString()</div>
         </div>
     </DemoExample>
 
@@ -198,8 +205,9 @@
             opens a modal dialog listing the title, time and description of each of them, all-day first. An event
             can name its own <b>Color</b>; the rest take the calendar's. The dialog is dismissed with Escape or
             its close button and hands the keyboard back to the day it came from. <b>ShowEventDetails</b> false
-            keeps the dots and the tooltip but leaves the day's events to the page, and <b>EventTimeFromText</b> /
-            <b>EventTimeUntilText</b> localize the one-sided time rows.
+            keeps the dots and the tooltip but leaves the day's events to the page, <b>EventTemplate</b> renders
+            an event's row in the dialog itself, and <b>EventTimeFromText</b> / <b>EventTimeUntilText</b>
+            localize the one-sided time rows.
         </div>
         <br /><br />
         <div class="example-content">
@@ -213,6 +221,20 @@
             <BitCalendar Events="@calendarEvents" ShowEventDetails="false"
                          OnSelectDate="HandleOnEventDayClick" />
             <div>Events of the selected day: @eventsOfSelectedDay</div>
+            <br /><br />
+            <div>EventTemplate:</div>
+            <BitCalendar Events="@calendarEvents">
+                <EventTemplate>
+                    <BitStack Horizontal AutoHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center">
+                        <b>@context.Title</b>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text"
+                                   OnClick="() => openedEvent = context.Title">
+                            Open
+                        </BitButton>
+                    </BitStack>
+                </EventTemplate>
+            </BitCalendar>
+            <div>Opened: @(openedEvent ?? "-")</div>
         </div>
     </DemoExample>
 
@@ -401,7 +423,26 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Multiple months" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            <b>MonthCount</b> renders up to three consecutive months side by side, which browses a whole season
+            at once — the arrow keys, the selection and the events carry on across them. Such a strip always
+            draws six week rows, never draws the days of the adjacent months (each of them is a day of the pane
+            beside it), and wraps onto the next line when it is given less width than it asks for.
+            <b>PagedNavigation</b> makes the arrows move a whole page of months instead of one.
+        </div>
+        <br /><br />
+        <div class="example-content">
+            <div>MonthCount = 2:</div>
+            <BitCalendar MonthCount="2" ShowMonthPicker="false" @bind-Value="@seasonDate" />
+            <div>Selected: @(seasonDate.HasValue ? seasonDate.Value.ToString("d") : "-")</div>
+            <br /><br />
+            <div>MonthCount = 3, paged navigation, month picker as an overlay:</div>
+            <BitCalendar MonthCount="3" PagedNavigation ShowMonthPickerAsOverlay Events="@calendarEvents" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Color</b> paints today, the highlighted current month, the event indicators and the AM/PM button
             that is in force.
@@ -463,7 +504,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             Every icon of the calendar has an <b>*Icon</b> parameter taking a
             <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> from an external library
@@ -496,7 +537,7 @@
                      TimePickerDecreaseMinuteIcon="@BitIconInfo.Bi("chevron-down")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Size</b> scales the cells and their text together, so the whole calendar keeps its proportions.
             The smallest cell still clears the 24&nbsp;px minimum pointer target.
@@ -514,7 +555,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root, while <b>Styles</b> and <b>Classes</b> reach every
             part of the calendar on its own — see
@@ -586,7 +627,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Dir</b> Rtl mirrors the calendar, and the left and right arrow keys swap with it. A culture that
             reads right to left turns it on by itself.

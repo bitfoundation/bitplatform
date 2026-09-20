@@ -2401,4 +2401,287 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.AreEqual(day, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
     }
+
+    [TestMethod,
+        DataRow(1, 1),
+        DataRow(2, 2),
+        DataRow(3, 3),
+        DataRow(7, 3),
+        DataRow(0, 1)]
+    public void BitCalendarMonthCountShouldRenderConsecutiveMonths(int monthCount, int expectedCount)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, monthCount);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        var titles = component.FindAll(".bit-cal-pkt");
+
+        Assert.AreEqual(expectedCount, component.FindAll(".bit-cal-dwp").Count);
+        Assert.AreEqual(expectedCount, titles.Count);
+
+        var expectedTitles = new[] { "January 2026", "February 2026", "March 2026" };
+        for (var i = 0; i < expectedCount; i++)
+        {
+            Assert.AreEqual(expectedTitles[i], titles[i].TextContent.Trim());
+        }
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldNotRenderTheDaysOfTheAdjacentMonthsTwice()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.ShowOutsideDays, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // January, February and March of 2026, each day of them once: a day of the adjacent months would
+        // be a day of the pane beside it, so the grids render nothing but their own months.
+        Assert.AreEqual(31 + 28 + 31, component.FindAll(".bit-cal-dbt").Count);
+
+        // And the months keep an even height beside one another, whatever FixedWeeks says.
+        Assert.AreEqual(3 * 6, component.FindAll(".bit-cal-dgr").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldNavigateAcrossItsMonthsWithoutPagingThem()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        component.Find(".bit-cal-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        // The last day of the first month is next to the first day of the second, which the view already
+        // shows - so the focus crosses into it and the calendar stays where it is.
+        Assert.IsTrue(component.Find(".bit-cal-dbt[tabindex='0']").Id!.EndsWith("day-2026-02-01"));
+        Assert.AreEqual("January 2026", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+        Assert.AreEqual("February 2026", component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldScrollTheViewOntoADayBeyondIt()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 2, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        component.Find(".bit-cal-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+
+        // March is past the end of the view, so it scrolls by the least that brings it in - which leaves
+        // the day the keyboard landed on in the pane it was reached from, the last one.
+        Assert.AreEqual("February 2026", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+        Assert.AreEqual("March 2026", component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-cal-dbt[tabindex='0']").Id!.EndsWith("day-2026-03-15"));
+    }
+
+    [TestMethod,
+        DataRow(false, "February 2026", "March 2026"),
+        DataRow(true, "March 2026", "April 2026")]
+    public void BitCalendarPagedNavigationShouldMoveAWholePageOfMonths(bool pagedNavigation, string firstTitle, string secondTitle)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.PagedNavigation, pagedNavigation);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The first pane heads the navigation backwards and the last one forwards, so the next button is
+        // the last of them.
+        component.FindAll(".bit-cal-dwp .bit-cal-nbt").Last().Click();
+
+        Assert.AreEqual(firstTitle, component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+        Assert.AreEqual(secondTitle, component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldStopTheNavigationAtTheBoundOfItsLastMonth()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MaxDate, new DateTimeOffset(2026, 2, 20, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The bound is already in view - in the second of the two months - so there is nowhere to go next.
+        Assert.IsTrue(component.FindAll(".bit-cal-dwp .bit-cal-nbt").Last().HasAttribute("disabled"));
+        Assert.IsFalse(component.FindAll(".bit-cal-dwp .bit-cal-nbt").First().HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldKeepTheViewWhenADayOfAnotherOfItsMonthsIsSelected()
+    {
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.Id!.EndsWith("day-2026-02-10")).Click();
+
+        Assert.AreEqual(new DateTime(2026, 2, 10), value!.Value.DateTime);
+        Assert.AreEqual("January 2026", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+        Assert.AreEqual("February 2026", component.FindAll(".bit-cal-pkt")[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldFollowTheMonthsOfTheCultureOwnCalendar()
+    {
+        // The thirteenth month of a Hebrew leap year is a month like any other, so the strip walks through
+        // it rather than over it: the last month of 5784 is followed by the first of 5785.
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!
+               .SetValue(culture, new HebrewCalendar());
+        culture.DateTimeFormat.Calendar = new HebrewCalendar();
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2024, 3, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        var titles = component.FindAll(".bit-cal-pkt").Select(t => t.TextContent.Trim()).ToArray();
+
+        Assert.AreEqual(3, titles.Length);
+        Assert.AreEqual(3, titles.Distinct().Count());
+
+        // Every pane holds its own month from end to end, whatever its length.
+        var days = component.FindAll(".bit-cal-dbt").Count;
+        Assert.AreEqual(days, component.FindAll(".bit-cal-dbt").Select(b => b.Id).Distinct().Count());
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthCountShouldNotRepeatTheLastMonthOfTheSupportedRange()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MonthCount, 3);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(9999, 12, 31, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The months after the last one the calendar can represent do not exist, so the view holds the last
+        // three rather than the last one three times - which would repeat the ids of its days.
+        var titles = component.FindAll(".bit-cal-pkt").Select(t => t.TextContent.Trim()).ToArray();
+
+        Assert.AreEqual(3, titles.Distinct().Count());
+        Assert.AreEqual("October 9999", titles[0]);
+        Assert.AreEqual("December 9999", titles[2]);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventTemplateShouldReplaceTheRowsOfTheDetailsDialog()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var day = DateTime.Today;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitCalendarEvent { Title = "Retro", Body = "Sprint retrospective.", Date = DateOnly.FromDateTime(day) }
+            ]);
+            parameters.Add(p => p.EventTemplate, (BitCalendarEvent evt) => builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-event");
+                builder.AddContent(2, evt.Title);
+                builder.CloseElement();
+            });
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.Id!.EndsWith($"day-{day:yyyy-MM-dd}")).Click();
+
+        Assert.AreEqual("Retro", component.Find(".bit-cal-emi .custom-event").TextContent.Trim());
+
+        // The template is the whole of the row, so the default title and body it replaces are gone.
+        Assert.IsEmpty(component.FindAll(".bit-cal-eit"));
+        Assert.IsEmpty(component.FindAll(".bit-cal-eib"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerShouldStayInsideTheBoundsOfTheSelectedDay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 14, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MinDate, new DateTimeOffset(2026, 1, 15, 9, 30, 0, TimeSpan.Zero));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A bound carrying a time of day bounds the hours of the very day it falls on, so an hour typed
+        // below it lands on it rather than producing an instant the bound rules out.
+        var hourInput = component.FindAll(".bit-cal-tin")[0];
+        hourInput.Input("3");
+        hourInput.Change("3");
+
+        Assert.AreEqual(9, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+
+        // And the minute is bounded alongside it, but only within the hour the bound falls in.
+        var minuteInput = component.FindAll(".bit-cal-tin")[1];
+        minuteInput.Input("5");
+        minuteInput.Change("5");
+
+        Assert.AreEqual(9, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerShouldBringTheCarriedTimeIntoTheBoundsOfTheDayPicked()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 18, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MaxDate, new DateTimeOffset(2026, 1, 20, 10, 0, 0, TimeSpan.Zero));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The evening the picker is holding is past what the last allowed day allows, so it arrives at the
+        // bound instead of pushing the value beyond it.
+        component.FindAll(".bit-cal-dbt").First(b => b.Id!.EndsWith("day-2026-01-20")).Click();
+
+        Assert.AreEqual(new DateTime(2026, 1, 20, 10, 0, 0), value!.Value.DateTime);
+    }
 }

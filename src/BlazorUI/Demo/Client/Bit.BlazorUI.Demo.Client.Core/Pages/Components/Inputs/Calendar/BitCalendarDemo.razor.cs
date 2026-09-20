@@ -69,14 +69,14 @@ public partial class BitCalendarDemo
             Name = "DisableFuture",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
+            Description = "Disables every day after today, exactly as a MaxDate of now would. When both are set, the earlier of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it up to this very minute.",
         },
         new()
         {
             Name = "DisablePast",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
+            Description = "Disables every day before today, exactly as a MinDate of now would. When both are set, the later of the two bounds wins. Today stays selectable, and a time picker on screen is held to the hours of it from this very minute on.",
         },
         new()
         {
@@ -110,6 +110,15 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "EventTemplate",
+            Type = "RenderFragment<BitCalendarEvent>?",
+            DefaultValue = "null",
+            Description = "Used to customize how an event is rendered in the details dialog, in place of its title, its time and its body - the place for a link to whatever the event stands for in the application.",
+            Href = "#calendar-event",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "EventTimeFromText",
             Type = "string",
             DefaultValue = "From",
@@ -134,7 +143,7 @@ public partial class BitCalendarDemo
             Name = "FixedWeeks",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months."
+            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months. It is always on when MonthCount renders more than one month, so the months keep an even height next to each other."
         },
         new()
         {
@@ -328,14 +337,14 @@ public partial class BitCalendarDemo
             Name = "MaxDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The maximum allowable date of the calendar."
+            Description = "The maximum allowable date of the calendar. The days after it are ruled out as a whole, and the day it itself falls on stays selectable; where a time picker is on screen, the time the bound carries bounds the hours of that day too."
         },
         new()
         {
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The minimum allowable date of the calendar."
+            Description = "The minimum allowable date of the calendar. The days before it are ruled out as a whole, and the day it itself falls on stays selectable; where a time picker is on screen, the time the bound carries bounds the hours of that day too."
         },
         new()
         {
@@ -350,6 +359,13 @@ public partial class BitCalendarDemo
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the month cell is rendered."
+        },
+        new()
+        {
+            Name = "MonthCount",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3), which turns the calendar into a view of a whole season - the arrow keys, the selection and the events carry on across the months of it. More than one month always renders six week rows and never the days of the adjacent months, and the months stack instead of overflowing when the width they are given cannot fit them.",
         },
         new()
         {
@@ -423,6 +439,13 @@ public partial class BitCalendarDemo
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
             Description = "Callback for when the user selects a date."
+        },
+        new()
+        {
+            Name = "PagedNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
         },
         new()
         {
@@ -525,7 +548,7 @@ public partial class BitCalendarDemo
             Name = "ShowOutsideDays",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the days of the previous and next months should be shown in the day picker."
+            Description = "Whether the days of the previous and next months should be shown in the day picker. It has no effect when MonthCount renders more than one month, since those days would then show up in two grids at once."
         },
         new()
         {
@@ -1826,6 +1849,7 @@ public partial class BitCalendarDemo
         onSelectDate = date;
     }
 
+    private string? openedEvent;
     private string eventsOfSelectedDay = "-";
 
     private void HandleOnEventDayClick(DateTimeOffset? date)
@@ -1895,7 +1919,11 @@ public partial class BitCalendarDemo
     private bool showMonthPicker = true;
     private bool showMonthPickerAsOverlay;
 
+    private DateTimeOffset? seasonDate;
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
+    private DateTimeOffset? boundedDateTime = DateTime.Today.AddHours(12);
+    private DateTimeOffset boundedMinDate = DateTime.Today.AddHours(9).AddMinutes(30);
+    private DateTimeOffset boundedMaxDate = DateTime.Today.AddDays(2).AddHours(17);
     private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 0, DateTimeOffset.Now.Offset);
     private DateTimeOffset? customToday = new DateTimeOffset(2021, 3, 15, 0, 0, 0, DateTimeOffset.Now.Offset);
 

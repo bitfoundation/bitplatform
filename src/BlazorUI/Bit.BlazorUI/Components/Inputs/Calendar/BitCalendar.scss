@@ -165,6 +165,13 @@
     padding: var(--bit-Calendar-padding, #{spacing(1.5)});
 }
 
+// A strip of months is wider than a single one, and what holds it is not always as wide as it asks for -
+// a phone, a column of a form - so the months wrap onto the next line instead of overflowing it. Each of
+// them keeps its own padding, which is what leaves them evenly apart however they end up laid out.
+.bit-cal-mcv .bit-cal-cnt {
+    flex-wrap: wrap;
+}
+
 .bit-cal-grd {
     display: flex;
     flex-flow: column nowrap;
@@ -849,10 +856,13 @@
 // longest month name already overruns that floor at the Fluent 14px base ("September 2024" wants 125px
 // of the 124px the arrows leave it) and overruns it further under a preset that sets a larger one, so
 // the label was silently ellipsised. The button therefore carries its own floor in em: it is read
-// against the button's own font, so it tracks whatever step the active ramp puts here, and the day
+// against the label's own font, so it tracks whatever step the active ramp puts here, and the day
 // rows distribute the few extra pixels evenly (space-evenly) rather than leaving a gap at one end.
-// Only the day view takes it - the month view's header is a bare year and needs none of the room.
-.bit-cal-dwp .bit-cal-ptb {
+// Both spellings of the header take it - the button that opens the month picker and the plain label
+// standing in for it - since either of them can be the one naming the month. Only the day view does:
+// the month view's header is a bare year and needs none of the room.
+.bit-cal-dwp .bit-cal-ptb,
+.bit-cal-dwp .bit-cal-pkt {
     min-width: 8.75em;
 }
 
