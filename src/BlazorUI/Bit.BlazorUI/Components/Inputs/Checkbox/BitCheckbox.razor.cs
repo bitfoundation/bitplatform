@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -62,8 +62,14 @@ public partial class BitCheckbox : BitInputBase<bool>
     [Parameter] public int? AriaSetSize { get; set; }
 
     /// <summary>
-    /// If true, the checkbox input automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
+    /// Moves the focus onto the checkbox when it first renders.
     /// </summary>
+    /// <remarks>
+    /// The <c>autofocus</c> attribute is rendered for a statically rendered page, where the browser acts on
+    /// it while parsing the document; an interactively rendered one is focused from code after the first
+    /// render instead, since by then the parse the attribute belongs to is long over. A disabled checkbox
+    /// is skipped either way unless <see cref="AllowDisabledFocus"/> keeps it focusable.
+    /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
@@ -307,6 +313,20 @@ public partial class BitCheckbox : BitInputBase<bool>
         if (firstRender)
         {
             await SetIndeterminate();
+
+            // The autofocus attribute is only honoured while the browser is parsing the document, which is
+            // never when the markup arrives from an interactive render - so the attribute alone covers the
+            // statically rendered page and nothing else. The focus is moved here for the rest.
+            if (AutoFocus && (IsEnabled || AllowDisabledFocus))
+            {
+                try
+                {
+                    await InputElement.FocusAsync();
+                }
+                catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
+                catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
+                catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -468,6 +488,10 @@ public partial class BitCheckbox : BitInputBase<bool>
         return (CurrentValue is false, false);
     }
 
+    /// <summary>
+    /// Pushes the mixed state the component holds onto the <c>indeterminate</c> property of the element,
+    /// which is a DOM property rather than an attribute and so cannot be rendered.
+    /// </summary>
     private async Task SetIndeterminate()
     {
         await _js.BitUtilsSetProperty(InputElement, "indeterminate", Indeterminate);
@@ -537,9 +561,17 @@ public partial class BitCheckbox : BitInputBase<bool>
 
     private async Task SetIndeterminate(bool value)
     {
-        if (await AssignIndeterminate(value) is false) return;
+        // A one-way bound Indeterminate refuses the change and keeps the state it was given. The browser
+        // has already cleared the native property on the click that got here, so what the parameter still
+        // says is put back rather than left contradicting the box on the screen.
+        if (await AssignIndeterminate(value) is false)
+        {
+            await SetIndeterminate();
+            return;
+        }
 
-        await _js.BitUtilsSetProperty(InputElement, "indeterminate", value);
+        // A change that was taken has already run OnSetIndeterminate, which pushed the property to the
+        // element; pushing it a second time here would be an interop call for nothing.
     }
 
 

@@ -995,6 +995,116 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(expected, component.Find("input").GetAttribute("value"));
     }
 
+    /// <summary>
+    /// The mixed state of a native checkbox is a DOM property that no markup can carry, so it is pushed
+    /// from JavaScript once the element exists. aria-checked="mixed" is the same state in markup, which is
+    /// what a statically rendered page - and a screen reader reading before that push lands - has to go on.
+    /// </summary>
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCheckboxIndeterminateIsAnnouncedAsMixedTest(bool indeterminate)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Indeterminate, indeterminate);
+        });
+
+        var chbInput = component.Find("input");
+
+        if (indeterminate)
+        {
+            Assert.AreEqual("mixed", chbInput.GetAttribute("aria-checked"));
+        }
+        else
+        {
+            Assert.IsFalse(chbInput.HasAttribute("aria-checked"));
+        }
+    }
+
+    /// <summary>
+    /// The mixed state a three-state cycle reaches is announced the same way the one set from outside is.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxThreeStateAnnouncesTheMixedStateTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.ThreeState, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("aria-checked"));
+
+        chbInput.Click(); // checked
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-checked"));
+
+        chbInput.Click(); // indeterminate
+        Assert.AreEqual("mixed", component.Find("input").GetAttribute("aria-checked"));
+
+        chbInput.Click(); // unchecked
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-checked"));
+    }
+
+    /// <summary>
+    /// An aria-checked written by hand is left alone while the checkbox is not in the mixed state, the same
+    /// way the other aria-* attributes a page can splat onto the input are.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxKeepsTheAriaCheckedWrittenByHandTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-checked", "false" } });
+        });
+
+        Assert.AreEqual("false", component.Find("input").GetAttribute("aria-checked"));
+    }
+
+    /// <summary>
+    /// A read-only checkbox drops the native required for the same reason a disabled one does: an unchecked
+    /// box nobody is allowed to check would refuse the submit over a click that does nothing. The
+    /// requirement is still announced, and the asterisk on the label stays.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxReadOnlyIsNotNativelyRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "I accept the terms");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsFalse(chbInput.HasAttribute("required"));
+        Assert.AreEqual("true", chbInput.GetAttribute("aria-required"));
+        Assert.AreEqual("true", chbInput.GetAttribute("aria-readonly"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
+    }
+
+    /// <summary>
+    /// An editable required checkbox is required natively, and says so without a second aria-* attribute
+    /// repeating what the attribute already carries.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxEditableRequiredKeepsTheNativeAttributeTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "I accept the terms");
+            parameters.Add(p => p.Required, true);
+        });
+
+        var chbInput = component.Find("input");
+
+        Assert.IsTrue(chbInput.HasAttribute("required"));
+        Assert.IsFalse(chbInput.HasAttribute("aria-required"));
+    }
+
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;
 
     private void HandleIsIndeterminateChanged(bool isIndeterminate) => BitCheckBoxIsIndeterminate = isIndeterminate;

@@ -1,4 +1,4 @@
-@page "/components/checkbox"
+﻿@page "/components/checkbox"
 @page "/components/check-box"
 
 <PageOutlet Url="components/checkbox"
@@ -40,7 +40,9 @@
             which by default only previews the check mark on hover - and <b>IndeterminateIconName</b> replaces the
             filled square of the indeterminate state. For icons from external libraries, the
             <BitLink Href="#example14">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
-            these parameters.
+            these parameters. The glyph is hidden from screen readers - the checkbox already announces its own
+            state - unless <b>CheckIconAriaLabel</b> names it, which is worth doing only where a custom icon
+            says something the label does not.
         </div>
         <br />
         <BitCheckbox Label="Custom check icon" CheckIconName="@BitIconName.Heart" />
@@ -157,6 +159,17 @@
                      @bind-Indeterminate="threeStateIndeterminate" />
         <br />
         <div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>
+        <br /><br /><br />
+        <div>
+            A model that keeps all three answers in one <b>bool?</b> - yes, no and not answered - binds to the two
+            parameters through a pair of one-line handlers, so the nullable stays the single source of truth:
+        </div>
+        <br />
+        <BitCheckbox Label="Subscribe to the newsletter" ThreeState
+                     Value="subscribed is true" ValueChanged="HandleSubscribedValueChanged"
+                     Indeterminate="subscribed is null" IndeterminateChanged="HandleSubscribedIndeterminateChanged" />
+        <br />
+        <div>subscribed: <b>@(subscribed?.ToString() ?? "null")</b></div>
     </DemoExample>
 
     <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
@@ -289,7 +302,9 @@
         <br /><br /><br />
         <div>
             <b>Required</b> renders the native <b>required</b> attribute on the checkbox input and marks the label
-            with an asterisk - a templated label as well as a plain one:
+            with an asterisk - a templated label as well as a plain one. A read-only or disabled checkbox keeps
+            the asterisk but drops the native attribute, which would otherwise refuse the submit over a box
+            nobody is allowed to check:
         </div><br />
         <BitCheckbox Label="I accept the terms" Required />
         <br />
@@ -718,6 +733,8 @@
             The checkbox also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
             root for what no parameter covers. They inherit, so a value on <code>:root</code> or any ancestor re-skins
             every checkbox below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            <b>--bit-Checkbox-box-size</b> is the one to reach for first: the glyph and the filled square of the
+            mixed state are proportions of the box, so resizing the box carries the whole face with it.
         </div>
         <br />
         <div>CSS variables:</div>
@@ -726,9 +743,9 @@
             <BitCheckbox Label="Rounded, thick, custom fill" Value
                          Style="--bit-Checkbox-radius: 50%; --bit-Checkbox-border-width: 2px; --bit-Checkbox-checked-background: rebeccapurple; --bit-Checkbox-check-color: white;" />
             <BitCheckbox Label="Bigger box, wider gap" Value
-                         Style="--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-icon-size: 1.25rem; --bit-Checkbox-gap: 1rem;" />
+                         Style="--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-gap: 1rem;" />
             <BitCheckbox Label="Mixed state in its own color" Indeterminate
-                         Style="--bit-Checkbox-indeterminate-color: darkorange; --bit-Checkbox-indeterminate-size: 0.5rem;" />
+                         Style="--bit-Checkbox-indeterminate-color: darkorange;" />
         </div>
         <br />
         <div>Set once on an ancestor, inherited by every checkbox inside it:</div>

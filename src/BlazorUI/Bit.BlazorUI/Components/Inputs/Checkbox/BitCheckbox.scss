@@ -16,9 +16,9 @@
 //   --bit-Checkbox-checked-border-color      box stroke while checked                     (default: the checked fill)
 //   --bit-Checkbox-check-color               the glyph drawn on the checked box           (default: the role's on-color)
 //   --bit-Checkbox-indeterminate-color       the mark and stroke of the mixed state       (default: the role's main color)
-//   --bit-Checkbox-indeterminate-size        side of the filled square of the mixed state (default: per size)
+//   --bit-Checkbox-indeterminate-size        side of the filled square of the mixed state (default: half the box)
 //   --bit-Checkbox-box-size                  side of the box                              (default: per size, $siz-sel-*)
-//   --bit-Checkbox-icon-size                 the glyph inside the box                     (default: per size)
+//   --bit-Checkbox-icon-size                 the glyph inside the box                     (default: 9/16 of the box)
 //   --bit-Checkbox-border-width              thickness of the box stroke                  (default: $shp-border-width)
 //   --bit-Checkbox-radius                    corner radius of the box                     (default: $shp-radius-selection)
 //   --bit-Checkbox-gap                       room between the box and the label           (default: spacing(1))
@@ -37,6 +37,12 @@
     font-family: $tg-font-family;
     color: var(--bit-Checkbox-color, inherit);
     --bit-chb-ico-opa: 0;
+    // Both sizes inside the box are a proportion of the box rather than a per-size length, so the one
+    // number a size class or a theme sets carries the whole face. The square of the mixed state is
+    // exactly half the box - the Fluent sizes it used to be written out as, to the pixel - and the glyph
+    // 9/16 of it, which leaves a stroke's worth of room around a check mark on every size.
+    --bit-chb-ind-size: calc(var(--bit-chb-box-size) / 2);
+    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, calc(var(--bit-chb-box-size) * 0.5625));
     --bit-chb-des-indent: calc(var(--bit-chb-box-size) + var(--bit-Checkbox-gap, #{spacing(1)}));
     --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
     --bit-chb-box-clr-brd: var(--bit-Checkbox-border-color, #{$clr-brd-pri});
@@ -165,7 +171,8 @@
     background-color: var(--bit-chb-box-clr-bg);
     border-width: var(--bit-Checkbox-border-width, #{$shp-border-width});
     border-radius: var(--bit-Checkbox-radius, #{$shp-radius-selection});
-    transition: background-color $mot-duration-short $mot-easing,
+    transition: scale $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing,
                 border-color $mot-duration-short $mot-easing;
 
     .bit-chb-ico {
@@ -333,6 +340,15 @@
             --bit-chb-ico-clr: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));
         }
     }
+}
+
+// A press dips the box, so the checkbox answers the pointer before the state it is about to move to
+// lands. Left off wherever a click cannot change anything, where it would promise a change that never
+// comes, and off the custom face of a ChildContent, which has no box of ours to dip. The scale rides on
+// the same transition as the colors, so it eases back - and collapses to nothing under reduced motion,
+// where the motion tokens are zeroed.
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl) .bit-chb-lbl:active .bit-chb-box {
+    scale: 0.9;
 }
 
 .bit-chb-rvs {
@@ -562,30 +578,28 @@
     --bit-chb-clr-focus: #{$clr-brd-ter-focus};
 }
 
-// The box takes the theme's selection size for its class, the glyph inside it and the filled square of the
-// mixed state are derived from that size, and the description sits one step below the label on the type ramp.
+// A size class picks nothing but the side of the box - the theme's selection size for that class - and the
+// two font sizes, with the description one step below the label on the type ramp. Everything that lives
+// inside the box is a proportion of it (see .bit-chb for the two derived sizes), so a theme that retunes
+// $siz-sel-* - as the packaged Fluent 2, Material and Cupertino presets all do - or a page that sets
+// --bit-Checkbox-box-size, moves the glyph and the mixed-state square with it instead of leaving them
+// behind at the size the Fluent default box happened to be.
 .bit-chb-sm {
     --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-sm});
-    --bit-chb-ind-size: #{spacing(0.875)};
     --bit-chb-lbl-fontsize: #{$tg-fs-xs};
     --bit-chb-des-fontsize: #{$tg-fs-2xs};
-    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1)});
 }
 
 .bit-chb-md {
     --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-md});
-    --bit-chb-ind-size: #{spacing(1.25)};
     --bit-chb-lbl-fontsize: #{$tg-fs-sm};
     --bit-chb-des-fontsize: #{$tg-fs-xs};
-    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1.375)});
 }
 
 .bit-chb-lg {
     --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-lg});
-    --bit-chb-ind-size: #{spacing(1.625)};
     --bit-chb-lbl-fontsize: #{$tg-fs-md};
     --bit-chb-des-fontsize: #{$tg-fs-sm};
-    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1.875)});
 }
 
 

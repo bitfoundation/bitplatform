@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -99,7 +99,14 @@ public partial class BitCheckboxDemo
              @bind-Value=""threeStateValue""
              @bind-Indeterminate=""threeStateIndeterminate"" />
 
-<div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>";
+<div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>
+
+
+<BitCheckbox Label=""Subscribe to the newsletter"" ThreeState
+             Value=""subscribed is true"" ValueChanged=""HandleSubscribedValueChanged""
+             Indeterminate=""subscribed is null"" IndeterminateChanged=""HandleSubscribedIndeterminateChanged"" />
+
+<div>subscribed: <b>@(subscribed?.ToString() ?? ""null"")</b></div>";
 
     private readonly string example6CsharpCode = @"
 private bool apple;
@@ -122,8 +129,18 @@ private void RefreshSelectAll()
     selectAll = checkedCount == 3;
     selectAllIndeterminate = checkedCount is > 0 and < 3;
 }
+
 private bool threeStateValue;
-private bool threeStateIndeterminate;";
+private bool threeStateIndeterminate;
+
+private bool? subscribed = false;
+
+// A click reports the mixed state before the value, so the mixed one has the last word: the value that
+// follows a ""no answer"" is not an answer either, which is what keeps the null from being overwritten
+// with the false underneath it.
+private void HandleSubscribedIndeterminateChanged(bool indeterminate) => subscribed = indeterminate ? null : subscribed is true;
+
+private void HandleSubscribedValueChanged(bool value) => subscribed = subscribed is null ? null : value;";
 
     private readonly string example7RazorCode = @"
 <BitCheckbox Label=""One-way checked (Fixed)"" Value=""true"" />
@@ -554,10 +571,10 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
              Style=""--bit-Checkbox-radius: 50%; --bit-Checkbox-border-width: 2px; --bit-Checkbox-checked-background: rebeccapurple; --bit-Checkbox-check-color: white;"" />
 
 <BitCheckbox Label=""Bigger box, wider gap"" Value
-             Style=""--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-icon-size: 1.25rem; --bit-Checkbox-gap: 1rem;"" />
+             Style=""--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-gap: 1rem;"" />
 
 <BitCheckbox Label=""Mixed state in its own color"" Indeterminate
-             Style=""--bit-Checkbox-indeterminate-color: darkorange; --bit-Checkbox-indeterminate-size: 0.5rem;"" />
+             Style=""--bit-Checkbox-indeterminate-color: darkorange;"" />
 
 
 <div style=""--bit-Checkbox-border-color: var(--bit-clr-suc); --bit-Checkbox-checked-background: var(--bit-clr-suc); --bit-Checkbox-checked-hover-background: var(--bit-clr-suc-hover); --bit-Checkbox-focus-color: var(--bit-clr-suc-focus); --bit-Checkbox-description-color: var(--bit-clr-suc);"">

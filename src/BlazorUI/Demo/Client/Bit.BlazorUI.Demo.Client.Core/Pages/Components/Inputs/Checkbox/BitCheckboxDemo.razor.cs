@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -499,20 +499,20 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-indeterminate-size",
-            DefaultValue = "Per Size: 7px / 10px / 13px",
-            Description = "Side of the filled square the mixed state draws in the middle of the box. It has no effect where an IndeterminateIcon replaces the square.",
+            DefaultValue = "Half the box",
+            Description = "Side of the filled square the mixed state draws in the middle of the box. It follows the box size on its own, so set it only to change that proportion. It has no effect where an IndeterminateIcon replaces the square.",
         },
         new()
         {
             Name = "--bit-Checkbox-box-size",
             DefaultValue = "Per Size: --bit-siz-sel-sm / -md / -lg",
-            Description = "Side of the box. The indent of the description follows it, so the second line stays lined up with the label.",
+            Description = "Side of the box, and the one number the rest of the face follows: the glyph, the filled square of the mixed state and the indent that keeps the description lined up with the label all scale with it.",
         },
         new()
         {
             Name = "--bit-Checkbox-icon-size",
-            DefaultValue = "Per Size: 8px / 11px / 15px",
-            Description = "Font size of the glyph inside the box.",
+            DefaultValue = "9/16 of the box",
+            Description = "Font size of the glyph inside the box. It follows the box size on its own, so set it only for a glyph that needs more or less room than a check mark - a wide external icon, say.",
         },
         new()
         {
@@ -738,6 +738,8 @@ public partial class BitCheckboxDemo
     private bool threeStateValue;
     private bool threeStateIndeterminate;
 
+    private bool? subscribed = false;
+
     private bool oneWayValue;
     private bool twoWayValue;
     private bool oneWayIndeterminate = true;
@@ -768,6 +770,13 @@ public partial class BitCheckboxDemo
         selectAllIndeterminate = false;
         apple = banana = orange = value;
     }
+
+    // A click reports the mixed state before the value, so the mixed one has the last word: the value that
+    // follows a "no answer" is not an answer either, which is what keeps the null from being overwritten
+    // with the false underneath it.
+    private void HandleSubscribedIndeterminateChanged(bool indeterminate) => subscribed = indeterminate ? null : subscribed is true;
+
+    private void HandleSubscribedValueChanged(bool value) => subscribed = subscribed is null ? null : value;
 
     private void RefreshSelectAll()
     {
