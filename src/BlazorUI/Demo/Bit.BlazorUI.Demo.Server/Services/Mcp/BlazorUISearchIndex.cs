@@ -352,6 +352,20 @@ public static class BlazorUISearchIndex
                 type.Clr.IsEnum ? string.Join(' ', Enum.GetNames(type.Clr)) : string.Empty));
         }
 
+        // A name one package adds to another package's type is written on the type it extends and
+        // stored nowhere near it, so a search for "material dark" has to be told about it here or
+        // it lands on the theming chapter that merely mentions it. Indexed under the name it is
+        // read by - BitThemePresets.MaterialDark - which is also what a query is likely to type.
+        foreach (var group in BlazorUIExtensionMembers.All)
+        {
+            foreach (var member in group.Members)
+            {
+                entries.Add(new Entry("Extension member", $"{group.ReceiverName}.{member.Name}", group.Package.PackageId,
+                    $"GetBitBlazorUIType(typeName: \"{group.ReceiverName}\")",
+                    member.Summary ?? string.Empty, member.Value ?? string.Empty));
+            }
+        }
+
         entries.AddRange(ThemingChapters());
 
         foreach (var model in BlazorUISetupGuide.HostingModels)

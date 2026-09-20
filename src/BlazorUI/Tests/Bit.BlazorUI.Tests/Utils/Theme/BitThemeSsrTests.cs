@@ -220,8 +220,8 @@ public sealed class BitThemeSsrTests
             PersistCookie = true,
             ViewTransition = true,
             ThemeColorMeta = "--bit-clr-bg-sec",
-            LightTheme = BitExtraThemePresets.Fluent2Light,
-            DarkTheme = BitExtraThemePresets.Fluent2Dark,
+            LightTheme = BitThemePresets.Fluent2Light,
+            DarkTheme = BitThemePresets.Fluent2Dark,
         });
 
         Assert.AreEqual("dark", map[BitThemeAttributeNames.Theme]);
@@ -229,8 +229,8 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersistCookie]);
         Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeViewTransition]);
         Assert.AreEqual("--bit-clr-bg-sec", map[BitThemeAttributeNames.ThemeColorMeta]);
-        Assert.AreEqual(BitExtraThemePresets.Fluent2Light, map[BitThemeAttributeNames.ThemeLight]);
-        Assert.AreEqual(BitExtraThemePresets.Fluent2Dark, map[BitThemeAttributeNames.ThemeDark]);
+        Assert.AreEqual(BitThemePresets.Fluent2Light, map[BitThemeAttributeNames.ThemeLight]);
+        Assert.AreEqual(BitThemePresets.Fluent2Dark, map[BitThemeAttributeNames.ThemeDark]);
     }
 
     [TestMethod]

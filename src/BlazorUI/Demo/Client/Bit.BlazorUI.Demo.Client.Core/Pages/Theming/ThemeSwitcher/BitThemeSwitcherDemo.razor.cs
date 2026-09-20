@@ -209,7 +209,7 @@ public partial class BitThemeSwitcherDemo
     private readonly List<BitThemeSwitcherItem> customDesignSystems =
     [
         new() { Text = "Fluent", Value = "fluent", LightTheme = BitThemePresets.Light, DarkTheme = BitThemePresets.Dark },
-        new() { Text = "Cupertino", Value = BitExtraThemePresets.Cupertino },
+        new() { Text = "Cupertino", Value = BitThemePresets.Cupertino },
     ];
 
 
@@ -224,7 +224,7 @@ public partial class BitThemeSwitcherDemo
     private readonly List<BitThemeSwitcherItem> customDesignSystems =
     [
         new() { Text = ""Fluent"", Value = ""fluent"", LightTheme = BitThemePresets.Light, DarkTheme = BitThemePresets.Dark },
-        new() { Text = ""Cupertino"", Value = BitExtraThemePresets.Cupertino },
+        new() { Text = ""Cupertino"", Value = BitThemePresets.Cupertino },
     ];
 }";
 
