@@ -34,8 +34,8 @@ public partial class BitToggleButtonDemo
 <BitToggleButton OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton IconPosition=""BitIconPosition.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
-<BitToggleButton IconPosition=""BitIconPosition.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconPlacement=""BitPlacement.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
 
 <BitToggleButton IconName=""@BitIconName.Microphone"" />
 <BitToggleButton OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
@@ -173,10 +173,10 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton AutoLoading OnChange=""HandleAutoLoadingChange""
                  OnText=""Muted"" OffText=""Unmuted"" />
 
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.End"" Text=""End"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Start"" Text=""Start"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
-<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Bottom"" Text=""Bottom"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.End"" Text=""End"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Start"" Text=""Start"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Top"" Text=""Top"" />
+<BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPlacement=""BitPlacement.Bottom"" Text=""Bottom"" />
 
 <BitToggleButton IsLoading Text=""Muted"">
     <LoadingTemplate>

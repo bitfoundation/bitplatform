@@ -29,7 +29,7 @@ public sealed partial class BitChartRenderer
             DrawValueAxis(scene, plot, axis, ZeroLineAlong(indexScale, plot), isRight: false, drawArea: false);
 
         // Index axis. It too can sit on the value axis' zero line rather than along the edge.
-        double indexBaseline = PositionOf(indexScale.Options, IsVertical ? BitChartPosition.Bottom : BitChartPosition.Left) == BitChartPosition.Center
+        double indexBaseline = PlacementOf(indexScale.Options, IsVertical ? BitPlacement.Bottom : BitPlacement.Left) == BitPlacement.Center
             ? ZeroLineAcross(leftAxes.Concat(rightAxes).Concat(centerAxes).FirstOrDefault(), plot)
             : IsVertical ? plot.Bottom : plot.Left;
         DrawIndexAxis(scene, plot, indexScale, indexBaseline);
@@ -271,8 +271,8 @@ public sealed partial class BitChartRenderer
     /// <summary>Text anchor for a tick label honoring <see cref="BitChartTickOptions.Align"/>.</summary>
     private static string TickAnchor(BitChartTickOptions tk) => tk.Align switch
     {
-        BitChartAlign.Start => "start",
-        BitChartAlign.End => "end",
+        BitPlacement.Start => "start",
+        BitPlacement.End => "end",
         _ => "middle"
     };
 

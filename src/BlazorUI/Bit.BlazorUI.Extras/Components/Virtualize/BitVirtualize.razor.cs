@@ -87,7 +87,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // Dynamic ScrollToIndex precision: re-align once the target region is measured.
     private int _pendingScrollIndex = -1;
     private int _pendingScrollBatches;
-    private BitVirtualizeScrollAlignment _pendingScrollAlignment;
+    private BitScrollAlignment _pendingScrollAlignment = BitScrollAlignment.Nearest;
 
     // The options last sent to the browser, to only send them again when they change.
     private bool _sentHorizontal;
@@ -296,7 +296,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     /// <param name="index">The zero-based index of the target item.</param>
     /// <param name="alignment">Where the item should be positioned within the viewport.</param>
     /// <param name="smooth">Whether to animate the scroll.</param>
-    public Task ScrollToIndexAsync(int index, BitVirtualizeScrollAlignment alignment = BitVirtualizeScrollAlignment.Start, bool smooth = false)
+    public Task ScrollToIndexAsync(int index, BitScrollAlignment alignment = BitScrollAlignment.Start, bool smooth = false)
         => ScrollToIndexCoreAsync(index, alignment, smooth, markPending: Dynamic);
 
     /// <summary>
@@ -511,7 +511,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
         // Dynamic offsets are estimates until measured: keep the target in view once its real size is known.
         _pendingScrollIndex = Dynamic ? target : -1;
-        _pendingScrollAlignment = BitVirtualizeScrollAlignment.Auto;
+        _pendingScrollAlignment = BitScrollAlignment.Nearest;
         _pendingScrollBatches = 0;
 
         // Bring the target into view (and into the rendered window) before focusing it.
@@ -773,7 +773,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         return _renderStart != prevRenderStart || _renderEnd != prevRenderEnd;
     }
 
-    private async Task ScrollToIndexCoreAsync(int index, BitVirtualizeScrollAlignment alignment, bool smooth, bool markPending)
+    private async Task ScrollToIndexCoreAsync(int index, BitScrollAlignment alignment, bool smooth, bool markPending)
     {
         if (_initialized is false || _itemCount == 0)
         {
@@ -786,9 +786,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var size = GetItemSize(index);
         var target = alignment switch
         {
-            BitVirtualizeScrollAlignment.Start => offset,
-            BitVirtualizeScrollAlignment.Center => offset - (_viewportSize - size) / 2d,
-            BitVirtualizeScrollAlignment.End => offset - (_viewportSize - size),
+            BitScrollAlignment.Start => offset,
+            BitScrollAlignment.Center => offset - (_viewportSize - size) / 2d,
+            BitScrollAlignment.End => offset - (_viewportSize - size),
             _ => ResolveAutoAlignment(offset, size)
         };
 

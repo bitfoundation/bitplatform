@@ -42,7 +42,7 @@ public partial class _BitChartLiveDemo
 
     private readonly BitChartOptions _visibilityOptions = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     protected override void OnInitialized()
@@ -159,7 +159,7 @@ private readonly BitChartData _revenue = Revenue();
 
 private readonly BitChartOptions _visibilityOptions = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 // The same state the legend drives:

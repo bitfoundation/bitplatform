@@ -41,9 +41,9 @@ public sealed class BitChartTooltipOptions
     /// <summary>Size of the caret in pixels.</summary>
     public double CaretSize { get; set; } = 6;
     /// <summary>Text alignment of the title (left/center/right).</summary>
-    public BitChartAlign TitleAlign { get; set; } = BitChartAlign.Start;
+    public BitPlacement TitleAlign { get; set; } = BitPlacement.Start;
     /// <summary>Text alignment of the body (left/center/right).</summary>
-    public BitChartAlign BodyAlign { get; set; } = BitChartAlign.Start;
+    public BitPlacement BodyAlign { get; set; } = BitPlacement.Start;
     /// <summary>Rich text/styling callbacks.</summary>
     public BitChartTooltipCallbacks Callbacks { get; set; } = new();
     /// <summary>Optional label formatter: (datasetLabel, value) => text. Shorthand for <c>Callbacks.Label</c>.</summary>

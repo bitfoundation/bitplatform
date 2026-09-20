@@ -9,7 +9,7 @@ public partial class _BitChartTrendlinesDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
             Custom = { new BitChartTrendlinePlugin(new BitChartTrendline { DatasetIndex = 0 }) }
         }
     };
@@ -18,7 +18,7 @@ public partial class _BitChartTrendlinesDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
             Custom =
             {
                 new BitChartTrendlinePlugin(new BitChartTrendline
@@ -36,7 +36,7 @@ public partial class _BitChartTrendlinesDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
             Custom =
             {
                 new BitChartTrendlinePlugin(
@@ -100,7 +100,7 @@ private readonly BitChartOptions _linear = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
         Custom = { new BitChartTrendlinePlugin(new BitChartTrendline { DatasetIndex = 0 }) }
     }
 };
@@ -127,7 +127,7 @@ private readonly BitChartOptions _extended = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
         Custom =
         {
             new BitChartTrendlinePlugin(new BitChartTrendline
@@ -147,7 +147,7 @@ private readonly BitChartOptions _averages = new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom },
         Custom =
         {
             new BitChartTrendlinePlugin(

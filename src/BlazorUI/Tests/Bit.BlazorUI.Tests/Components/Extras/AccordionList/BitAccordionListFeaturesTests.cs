@@ -166,12 +166,12 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListShouldApplyTheExpanderIconPositionToEveryItem()
+    public void BitAccordionListShouldApplyTheExpanderIconPlacementToEveryItem()
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters =>
         {
             parameters.Add(p => p.Items, GetItems());
-            parameters.Add(p => p.ExpanderIconPosition, BitIconPosition.Start);
+            parameters.Add(p => p.ExpanderIconPlacement, BitPlacement.Start);
         });
 
         Assert.AreEqual(3, component.FindAll(".bit-acd.bit-acd-sei").Count);

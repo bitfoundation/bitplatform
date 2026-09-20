@@ -11,7 +11,7 @@
 <DemoExample Title="Dual axis" RazorCode="@dualAxisRazorCode" CsharpCode="@dualAxisCsharpCode" Id="mixed-dual-axis">
     <div class="example-desc">
         Two measures with unrelated units get their own value axes: <code>YAxisID</code> binds a dataset to a
-        scale, and a scale with <code>Position = BitChartPosition.Right</code> is drawn on the other side.
+        scale, and a scale with <code>Placement = BitPlacement.Right</code> is drawn on the other side.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Bar" Data="@DualAxis()" Options="@_dual" /></div></div>
 </DemoExample>

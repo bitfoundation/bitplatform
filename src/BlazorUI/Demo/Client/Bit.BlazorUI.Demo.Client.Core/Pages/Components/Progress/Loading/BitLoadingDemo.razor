@@ -130,9 +130,9 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="LabelPosition" RazorCode="@example3RazorCode" Id="example3">
+        <DemoExample Title="LabelPlacement" RazorCode="@example3RazorCode" Id="example3">
             <div>
-                <b>LabelPosition</b> puts the label on any of the four sides of the drawing. <b>Top</b> is the
+                <b>LabelPlacement</b> puts the label on any of the four sides of the drawing. <b>Top</b> is the
                 default. <b>Start</b> and <b>End</b> follow the direction of the writing and swap sides in a
                 <BitLink Href="#example14">right-to-left</BitLink> layout, while <b>Top</b> and <b>Bottom</b>
                 stay where they are.
@@ -140,16 +140,16 @@
             <br /><br />
             <div class="container">
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Top" LabelPosition="BitLabelPosition.Top" />
+                    <BitDotsRingLoading Label="Top" LabelPlacement="BitPlacement.Top" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
+                    <BitDotsRingLoading Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="Start" LabelPosition="BitLabelPosition.Start" />
+                    <BitDotsRingLoading Label="Start" LabelPlacement="BitPlacement.Start" />
                 </div>
                 <div class="wrapper">
-                    <BitDotsRingLoading Label="End" LabelPosition="BitLabelPosition.End" />
+                    <BitDotsRingLoading Label="End" LabelPlacement="BitPlacement.End" />
                 </div>
             </div>
         </DemoExample>
@@ -158,7 +158,7 @@
             <div>
                 <b>LabelTemplate</b> replaces the label with markup of your own - a second line, a link, an
                 elapsed-time counter - and it takes the place of <b>Label</b> when both are given. It sits in the
-                same slot, so <b>LabelPosition</b> still decides which side of the drawing it lands on, and it
+                same slot, so <b>LabelPlacement</b> still decides which side of the drawing it lands on, and it
                 counts as a visible label, so the loader stops rendering its hidden fallback text and announces
                 the template instead.
             </div>
@@ -172,7 +172,7 @@
                     </BitEllipsisLoading>
                 </div>
                 <div class="wrapper">
-                    <BitRollerLoading LabelPosition="BitLabelPosition.Bottom">
+                    <BitRollerLoading LabelPlacement="BitPlacement.Bottom">
                         <LabelTemplate>
                             <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
                                 Restoring your session
@@ -533,13 +533,13 @@
             <br /><br />
             <div class="container" dir="rtl">
                 <div class="wrapper">
-                    <BitRingLoading Dir="BitDir.Rtl" Label="شروع" LabelPosition="BitLabelPosition.Start" />
+                    <BitRingLoading Dir="BitDir.Rtl" Label="شروع" LabelPlacement="BitPlacement.Start" />
                 </div>
                 <div class="wrapper">
-                    <BitRingLoading Dir="BitDir.Rtl" Label="پایان" LabelPosition="BitLabelPosition.End" />
+                    <BitRingLoading Dir="BitDir.Rtl" Label="پایان" LabelPlacement="BitPlacement.End" />
                 </div>
                 <div class="wrapper">
-                    <BitRingLoading Dir="BitDir.Rtl" Label="در حال بارگذاری" LabelPosition="BitLabelPosition.Bottom" />
+                    <BitRingLoading Dir="BitDir.Rtl" Label="در حال بارگذاری" LabelPlacement="BitPlacement.Bottom" />
                 </div>
                 <div class="wrapper">
                     <BitEllipsisLoading Dir="BitDir.Rtl" Label="نقطه‌ها" />

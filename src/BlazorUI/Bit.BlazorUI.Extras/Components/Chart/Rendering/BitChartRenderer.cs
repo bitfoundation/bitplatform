@@ -249,7 +249,7 @@ public sealed partial class BitChartRenderer
     private bool PointLabelsVisible(BitChartScaleOptions o) => o.PointLabels.Display && !_options.Sparkline;
 
     /// <summary>Effective position of a scale, without writing the default back onto the caller's object.</summary>
-    private static BitChartPosition PositionOf(BitChartScaleOptions o, BitChartPosition fallback) => o.Position ?? fallback;
+    private static BitPlacement PlacementOf(BitChartScaleOptions o, BitPlacement fallback) => o.Placement ?? fallback;
 
     /// <summary>Returns the caller's scale for an id, or a fresh default one - added to the local map only.</summary>
     private BitChartScaleOptions GetOrAddScale(string id, BitChartScaleType type)
@@ -307,8 +307,8 @@ public sealed partial class BitChartRenderer
         var legend = new BitChartLegendModel
         {
             // The legend only has four sides to live on; anything else would silently render nowhere.
-            Position = lo.Position is BitChartPosition.Bottom or BitChartPosition.Left or BitChartPosition.Right
-                ? lo.Position : BitChartPosition.Top,
+            Placement = lo.Placement is BitPlacement.Bottom or BitPlacement.Left or BitPlacement.Right
+                ? lo.Placement : BitPlacement.Top,
             Align = lo.Align,
             Labels = lo.Labels,
             Title = lo.Title,
@@ -366,7 +366,7 @@ public sealed partial class BitChartRenderer
         {
             Text = o.Text,
             Color = o.Color,
-            Position = o.Position,
+            Placement = o.Placement,
             Align = o.Align,
             Font = o.Font,
             Padding = o.Padding

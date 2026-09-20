@@ -222,7 +222,7 @@ public partial class BitVirtualizeDemo
          new()
          {
             Name = "ScrollToIndexAsync",
-            Type = "Func<int, BitVirtualizeScrollAlignment, bool, Task>",
+            Type = "Func<int, BitScrollAlignment, bool, Task>",
             DefaultValue = "",
             Description = "Scrolls the viewport so that the item at the provided index becomes visible. A call made before the component is ready (for example, before its data arrives) gets applied once it is.",
             LinkType = LinkType.Link,
@@ -401,34 +401,34 @@ public partial class BitVirtualizeDemo
         new()
         {
             Id = "scroll-alignment-enum",
-            Name = "BitVirtualizeScrollAlignment",
+            Name = "BitScrollAlignment",
             Description = "Determines where a target item is positioned within the viewport when scrolling to it.",
             Items =
             [
                 new()
                 {
-                    Name = "Auto",
-                    Value = "0",
-                    Description = "Scroll the minimum amount required to bring the item fully into view.",
-                },
-                new()
-                {
                     Name = "Start",
-                    Value = "1",
-                    Description = "Align the item to the start (top/left) of the viewport.",
+                    Value = "0",
+                    Description = "The element is brought to the start of the pane: its top edge to the top of the pane, and its leading edge to the leading edge of the pane."
                 },
                 new()
                 {
                     Name = "Center",
-                    Value = "2",
-                    Description = "Center the item within the viewport.",
+                    Value = "1",
+                    Description = "The element is centered in the pane along both axes."
                 },
                 new()
                 {
                     Name = "End",
-                    Value = "3",
-                    Description = "Align the item to the end (bottom/right) of the viewport.",
+                    Value = "2",
+                    Description = "The element is brought to the end of the pane: its bottom edge to the bottom of the pane, and its trailing edge to the trailing edge of the pane."
                 },
+                new()
+                {
+                    Name = "Nearest",
+                    Value = "3",
+                    Description = "The pane moves as little as it can: an element that is already fully in view is not moved to at all, and one that is not is brought to whichever edge it is nearest."
+                }
             ]
         },
     ];
@@ -474,7 +474,7 @@ public partial class BitVirtualizeDemo
     private bool scrollSmooth = true;
     private (int Start, int End) visibleRange;
 
-    private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
+    private async Task ScrollToTarget(BitScrollAlignment alignment)
     {
         await scrollRef.ScrollToIndexAsync(scrollTargetIndex, alignment, scrollSmooth);
     }
@@ -791,10 +791,10 @@ private readonly int[] horizontalItems = Enumerable.Range(0, 100_000).ToArray();
 
 <div class=""toolbar"">
     <BitNumberField @bind-Value=""scrollTargetIndex"" Min=""0"" Max=""99999"" Style=""max-width:9rem"" />
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)"">Start</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)"">Center</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.End)"">End</BitButton>
-    <BitButton OnClick=""() => ScrollToTarget(BitVirtualizeScrollAlignment.Auto)"">Auto</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Start)"">Start</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Center)"">Center</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.End)"">End</BitButton>
+    <BitButton OnClick=""() => ScrollToTarget(BitScrollAlignment.Nearest)"">Auto</BitButton>
     <BitToggle @bind-Value=""scrollSmooth"" Label=""Smooth"" Inline />
 </div>
 
@@ -822,7 +822,7 @@ private int scrollTargetIndex = 5_000;
 private bool scrollSmooth = true;
 private (int Start, int End) visibleRange;
 
-private async Task ScrollToTarget(BitVirtualizeScrollAlignment alignment)
+private async Task ScrollToTarget(BitScrollAlignment alignment)
 {
     await scrollRef.ScrollToIndexAsync(scrollTargetIndex, alignment, scrollSmooth);
 }";

@@ -67,7 +67,7 @@
         its own. <code>ExpandedExpanderIconName</code> swaps the icon while the panel is open - which reports the
         state on its own, so the rotation is dropped along with it - while <code>NoExpanderRotation</code> keeps
         the icon still without swapping it and <code>HideExpanderIcon</code> removes it altogether (an item can opt
-        back in with <code>HideExpanderIcon="false"</code>). <code>ExpanderIconPosition</code> moves the expander to
+        back in with <code>HideExpanderIcon="false"</code>). <code>ExpanderIconPlacement</code> moves the expander to
         the start of the header, and each item can carry an <code>IconName</code> of its own, drawn ahead of the
         title.
     </div>
@@ -86,8 +86,8 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div>At the start of the header (ExpanderIconPosition):</div>
-        <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" ExpanderIconPosition="BitIconPosition.Start" />
+        <div>At the start of the header (ExpanderIconPlacement):</div>
+        <BitAccordionList Items="basicItems" TItem="BitAccordionListItem" ExpanderIconPlacement="BitPlacement.Start" />
     </div>
     <br /><br />
     <div class="example-content">

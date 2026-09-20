@@ -2156,7 +2156,7 @@ public class BitMapTests : BunitTestContext
             Position = new(0, 0),
             TooltipText = "Plain text",
             TooltipPermanent = true,
-            TooltipDirection = BitMapTooltipDirection.Right,
+            TooltipPlacement = BitPlacement.Right,
         });
 
         var payload = (Dictionary<string, object?>)Context.JSInterop.Invocations

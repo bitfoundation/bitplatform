@@ -6,7 +6,7 @@
 
 <DemoPage Name="Swiper"
           SecondaryNames="@(["TouchSlider"])"
-          Description="Swiper (touch slider) lets people show their items in a swiping row. Unlike the Carousel, which pages through its slides, the swiper is a real scrolling region: the items sit side by side and the row scrolls freely through them, so a touch swipe carries the momentum of the platform and nothing crosses over to .NET while a finger is on the screen. It can be moved with its next/prev buttons and dots, by dragging it, with the keyboard or the mouse wheel, programmatically, or on its own with autoplay; it can settle on an item instead of stopping anywhere (Snap), size its items to a number that fit at a time (adapting that to its own width), scroll vertically, and it follows the carousel pattern of the ARIA authoring practices: a labelled region of labelled items, real buttons for every control, and a rotation that stops as soon as the pointer or the keyboard focus reaches it."
+          Description="Swiper (touch slider) lets people show their items in a swiping row. Unlike the Carousel, which pages through its slides, the swiper is a real scrolling region: the items sit side by side and the row scrolls freely through them, so a touch swipe carries the momentum of the platform and nothing crosses over to .NET while a finger is on the screen. It can be moved with its next/prev buttons and dots, by dragging it, with the keyboard or the mouse wheel, programmatically, or on its own with autoplay; it can settle on an item instead of stopping anywhere (SnapAlign), size its items to a number that fit at a time (adapting that to its own width), scroll vertically, and it follows the carousel pattern of the ARIA authoring practices: a labelled region of labelled items, real buttons for every control, and a rotation that stops as soon as the pointer or the keyboard focus reaches it."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -82,9 +82,9 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Snap" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="SnapAlign" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            The Snap parameter makes the swiper settle on an item instead of stopping wherever the scrolling ran out,
+            The SnapAlign parameter makes the swiper settle on an item instead of stopping wherever the scrolling ran out,
             and chooses where that item comes to rest: at the Start of the swiper, in its Center, or at its End. The
             snapping itself is the browser's (CSS scroll snapping), so a touch swipe settles exactly the way a
             navigation does. Without it the swiper scrolls freely, which is what a rail of items that are read side by
@@ -94,7 +94,7 @@
         <div>Start: each item comes to rest against the leading edge of the swiper.</div>
         <br />
         <div>
-            <BitSwiper Snap="BitSwiperSnap.Start" Gap="0.5rem" VisibleItemsCount="3">
+            <BitSwiper SnapAlign="BitScrollSnapAlign.Start" Gap="0.5rem" VisibleItemsCount="3">
                 @for (int i = 1; i <= 12; i++)
                 {
                     var index = i;
@@ -106,7 +106,7 @@
         <div>Center: the item settles in the middle of the swiper.</div>
         <br />
         <div>
-            <BitSwiper Snap="BitSwiperSnap.Center" Gap="0.5rem" VisibleItemsCount="3">
+            <BitSwiper SnapAlign="BitScrollSnapAlign.Center" Gap="0.5rem" VisibleItemsCount="3">
                 @for (int i = 1; i <= 12; i++)
                 {
                     var index = i;
@@ -118,7 +118,7 @@
         <div>End: each item comes to rest against the trailing edge of the swiper.</div>
         <br />
         <div>
-            <BitSwiper Snap="BitSwiperSnap.End" Gap="0.5rem" VisibleItemsCount="3">
+            <BitSwiper SnapAlign="BitScrollSnapAlign.End" Gap="0.5rem" VisibleItemsCount="3">
                 @for (int i = 1; i <= 12; i++)
                 {
                     var index = i;
@@ -140,7 +140,7 @@
         <div>Four at a time, moved two at a time:</div>
         <br />
         <div>
-            <BitSwiper VisibleItemsCount="4" ScrollItemsCount="2" Gap="0.5rem" Snap="BitSwiperSnap.Start">
+            <BitSwiper VisibleItemsCount="4" ScrollItemsCount="2" Gap="0.5rem" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -153,7 +153,7 @@
         <br />
         <div>
             <BitSwiper VisibleItemsCount="1" VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="5"
-                       Gap="0.5rem" Snap="BitSwiperSnap.Start">
+                       Gap="0.5rem" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -190,7 +190,7 @@
         </div>
         <br />
         <div>
-            <BitSwiper Vertical Style="height: 200px" Gap="0.5rem" Snap="BitSwiperSnap.Start" AriaLabel="Vertical items">
+            <BitSwiper Vertical Style="height: 200px" Gap="0.5rem" SnapAlign="BitScrollSnapAlign.Start" AriaLabel="Vertical items">
                 @for (int i = 1; i <= 12; i++)
                 {
                     var index = i;
@@ -210,7 +210,7 @@
         </div>
         <br />
         <div>
-            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -222,7 +222,7 @@
         <div>Numbered dots:</div>
         <br />
         <div>
-            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper ShowDots Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 <DotTemplate Context="index"><span>@(index + 1)</span></DotTemplate>
                 <ChildContent>
                     @for (int i = 1; i <= 16; i++)
@@ -244,7 +244,7 @@
         </div>
         <br />
         <div>
-            <BitSwiper AutoPlay AutoPlayInterval="2000" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper AutoPlay AutoPlayInterval="2000" Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -263,7 +263,7 @@
         <br />
         <div>
             <BitSwiper AutoPlay AutoPlayInterval="1500" ShowDots ShowPlayPause StopOnInteraction
-                       Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+                       Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -285,7 +285,7 @@
         <div>This swiper is navigated with the mouse wheel and cannot be dragged:</div>
         <br />
         <div>
-            <BitSwiper Wheel NoDrag Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper Wheel NoDrag Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -319,7 +319,7 @@
         <div>Slow (1.5 seconds):</div>
         <br />
         <div>
-            <BitSwiper AnimationDuration="1.5" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper AnimationDuration="1.5" Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -331,7 +331,7 @@
         <div>No animation (0 seconds):</div>
         <br />
         <div>
-            <BitSwiper AnimationDuration="0" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper AnimationDuration="0" Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -350,7 +350,7 @@
         </div>
         <br />
         <div>
-            <BitSwiper DefaultItem="7" Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper DefaultItem="7" Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -373,7 +373,7 @@
         <br />
         <div>
             <BitSwiper @ref="swiper" HideNextPrev Gap="0.5rem" VisibleItemsCount="4"
-                       Snap="BitSwiperSnap.Start" OnChange="v => currentIndex = v">
+                       SnapAlign="BitScrollSnapAlign.Start" OnChange="v => currentIndex = v">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;
@@ -423,7 +423,7 @@
                        ShowPlayPause
                        Gap="0.5rem"
                        VisibleItemsCount="3"
-                       Snap="BitSwiperSnap.Start"
+                       SnapAlign="BitScrollSnapAlign.Start"
                        AriaLabel="Landscape photos"
                        ItemAriaLabelFormat="Photo {0} of {1}"
                        DotAriaLabel="Photo group"
@@ -454,7 +454,7 @@
         <div class="colors-container">
             <div>
                 <BitLabel>Primary</BitLabel>
-                <BitSwiper ShowDots Color="BitColor.Primary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Color="BitColor.Primary" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -464,7 +464,7 @@
             </div>
             <div>
                 <BitLabel>Success</BitLabel>
-                <BitSwiper ShowDots Color="BitColor.Success" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Color="BitColor.Success" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -474,7 +474,7 @@
             </div>
             <div>
                 <BitLabel>Warning</BitLabel>
-                <BitSwiper ShowDots Color="BitColor.Warning" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Color="BitColor.Warning" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -484,7 +484,7 @@
             </div>
             <div>
                 <BitLabel>Error</BitLabel>
-                <BitSwiper ShowDots Color="BitColor.Error" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Color="BitColor.Error" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -499,7 +499,7 @@
         <div class="colors-container">
             <div>
                 <BitLabel>Secondary</BitLabel>
-                <BitSwiper ShowDots Accent="BitColorKind.Secondary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Accent="BitColorKind.Secondary" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -509,7 +509,7 @@
             </div>
             <div>
                 <BitLabel>Tertiary</BitLabel>
-                <BitSwiper ShowDots Accent="BitColorKind.Tertiary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Accent="BitColorKind.Tertiary" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -571,7 +571,7 @@
         <div class="colors-container">
             <div>
                 <BitLabel>Small</BitLabel>
-                <BitSwiper ShowDots Size="BitSize.Small" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Size="BitSize.Small" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -581,7 +581,7 @@
             </div>
             <div>
                 <BitLabel>Medium</BitLabel>
-                <BitSwiper ShowDots Size="BitSize.Medium" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Size="BitSize.Medium" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -591,7 +591,7 @@
             </div>
             <div>
                 <BitLabel>Large</BitLabel>
-                <BitSwiper ShowDots Size="BitSize.Large" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                <BitSwiper ShowDots Size="BitSize.Large" Gap="0.5rem" VisibleItemsCount="2" SnapAlign="BitScrollSnapAlign.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;
@@ -614,7 +614,7 @@
             <BitSwiper ShowDots
                        Gap="0.5rem"
                        VisibleItemsCount="4"
-                       Snap="BitSwiperSnap.Start"
+                       SnapAlign="BitScrollSnapAlign.Start"
                        Style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(128,128,128,0.15)"
                        Classes="@(new() { CurrentItem = "custom-item" })"
                        Styles="@(new() { Buttons = "color: white; background-color: rgba(0,0,0,0.35); width: 2.5rem;",
@@ -636,7 +636,7 @@
         </div>
         <br />
         <div>
-            <BitSwiper Dir="BitDir.Rtl" ShowDots Gap="0.5rem" VisibleItemsCount="4" Snap="BitSwiperSnap.Start">
+            <BitSwiper Dir="BitDir.Rtl" ShowDots Gap="0.5rem" VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start">
                 @for (int i = 1; i <= 16; i++)
                 {
                     var index = i;

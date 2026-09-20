@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -108,7 +108,7 @@ public partial class BitActionButton : BitComponentBase
 
     /// <summary>
     /// Stretches the action button across the full available width. The icon and the content stay next to each other
-    /// with <see cref="BitIconPosition.Start"/>; <see cref="BitIconPosition.End"/> reverses the inner wrapper, so the
+    /// with <see cref="BitPlacement.Start"/>; <see cref="BitPlacement.End"/> reverses the inner wrapper, so the
     /// growing content pushes them to the opposite edges.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -169,8 +169,13 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitIconPosition? IconPosition { get; set; }
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
@@ -346,7 +351,7 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => Underlined ? "bit-acb-und" : string.Empty);
 
-        ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-acb-eni" : string.Empty);
+        ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-acb-eni" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

@@ -128,7 +128,7 @@
         reports the state on its own, so the rotation is dropped along with it - while
         <code>NoExpanderRotation</code> keeps the icon still without swapping it and <code>HideExpanderIcon</code>
         removes it altogether (an option can opt back in with <code>HideExpanderIcon="false"</code>).
-        <code>ExpanderIconPosition</code> moves the expander to the start of the header, and each option can carry
+        <code>ExpanderIconPlacement</code> moves the expander to the start of the header, and each option can carry
         an <code>IconName</code> of its own, drawn ahead of the title.
     </div>
     <br /><br />
@@ -163,8 +163,8 @@
     </div>
     <br /><br />
     <div class="example-content">
-        <div>At the start of the header (ExpanderIconPosition):</div>
-        <BitAccordionList TItem="BitAccordionListOption" ExpanderIconPosition="BitIconPosition.Start">
+        <div>At the start of the header (ExpanderIconPlacement):</div>
+        <BitAccordionList TItem="BitAccordionListOption" ExpanderIconPlacement="BitPlacement.Start">
             <BitAccordionListOption Title="General settings" Description="The general settings of the application">
                 Once upon a time, stories wove connections between people, a symphony of voices crafting shared dreams.
             </BitAccordionListOption>

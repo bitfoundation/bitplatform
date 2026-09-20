@@ -228,34 +228,34 @@
 
 <DemoExample Title="Line variant" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        LineVariant paints the connecting line solid (default), dashed or dotted, and an option can override
+        LineStyle paints the connecting line solid (default), dashed or dotted, and an option can override
         it for its own stretch of the line. That is the usual way to separate the part of a timeline that has
         already happened from the part that is still expected.
     </div>
     <br /><br /><br />
     <div>Dashed</div><br />
-    <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dashed">
+    <BitTimeline TItem="BitTimelineOption" LineStyle="BitLineStyle.Dashed">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
     <div>Dotted</div><br />
-    <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dotted">
+    <BitTimeline TItem="BitTimelineOption" LineStyle="BitLineStyle.Dotted">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />
     </BitTimeline>
     <br /><br /><br />
-    <div>Option's LineVariant</div><br />
+    <div>Option's LineStyle</div><br />
     <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Both">
         <BitTimelineOption PrimaryText="Ordered" IconName="@BitIconName.Accept" Color="BitColor.Success" />
-        <BitTimelineOption PrimaryText="Shipped" IconName="@BitIconName.Accept" Color="BitColor.Success" LineVariant="BitTimelineLineVariant.Dashed" />
-        <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" LineVariant="BitTimelineLineVariant.Dashed" />
+        <BitTimelineOption PrimaryText="Shipped" IconName="@BitIconName.Accept" Color="BitColor.Success" LineStyle="BitLineStyle.Dashed" />
+        <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" LineStyle="BitLineStyle.Dashed" />
     </BitTimeline>
     <br /><br /><br />
     <div>Horizontal (Dashed)</div><br />
-    <BitTimeline TItem="BitTimelineOption" Horizontal LineVariant="BitTimelineLineVariant.Dashed">
+    <BitTimeline TItem="BitTimelineOption" Horizontal LineStyle="BitLineStyle.Dashed">
         <BitTimelineOption PrimaryText="Option 1" />
         <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
         <BitTimelineOption PrimaryText="Option 3" />

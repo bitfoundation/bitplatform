@@ -48,7 +48,7 @@
     <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
         <div>
             The <b>IconName</b> parameter puts a glyph beside the link text, normalized back to the size of that
-            text so the two sit on the same line. <b>IconPosition</b> moves it from the front of the text to after
+            text so the two sit on the same line. <b>IconPlacement</b> moves it from the front of the text to after
             it, which is where the two glyphs a link carries most often, the arrow of a link opening a new tab and
             the tray of a download, belong. The glyph is drawn as decoration and hidden from screen readers, so
             whatever it says has to be in the link text as well.
@@ -56,7 +56,7 @@
         <br />
         <BitLink IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Link with a leading icon</BitLink>
         <br /><br />
-        <BitLink IconName="@BitIconName.NavigateExternalInline" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">Link with a trailing icon</BitLink>
+        <BitLink IconName="@BitIconName.NavigateExternalInline" IconPlacement="BitPlacement.End" Href="https://github.com/bitfoundation/bitplatform">Link with a trailing icon</BitLink>
         <br /><br />
         <BitLink IconName="@BitIconName.Download" Underlined Href="https://github.com/bitfoundation/bitplatform">Icon on an underlined link</BitLink>
     </DemoExample>
@@ -96,7 +96,7 @@
         <br /><br />
         <BitLink Target="_blank" NewTabHint="(در زبانه جدید باز می‌شود)" Href="https://github.com/bitfoundation/bitplatform">Announced with a translated sentence</BitLink>
         <br /><br />
-        <BitLink Target="_blank" NoNewTabHint IconName="@BitIconName.OpenInNewWindow" IconPosition="BitIconPosition.End" Href="https://github.com/bitfoundation/bitplatform">
+        <BitLink Target="_blank" NoNewTabHint IconName="@BitIconName.OpenInNewWindow" IconPlacement="BitPlacement.End" Href="https://github.com/bitfoundation/bitplatform">
             Opens in a new tab (said in the text already)
         </BitLink>
     </DemoExample>
@@ -395,7 +395,7 @@
         <br />
         <BitLink Icon="@BitIconInfo.Fa("brands github")" Href="https://github.com/bitfoundation/bitplatform">bit platform on GitHub</BitLink>
         <br /><br />
-        <BitLink Icon="@BitIconInfo.Fa("solid arrow-up-right-from-square")" IconPosition="BitIconPosition.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
+        <BitLink Icon="@BitIconInfo.Fa("solid arrow-up-right-from-square")" IconPlacement="BitPlacement.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
 
         <br /><br /><br />
 
@@ -405,7 +405,7 @@
         <br />
         <BitLink Icon="@BitIconInfo.Bi("github")" Href="https://github.com/bitfoundation/bitplatform">bit platform on GitHub</BitLink>
         <br /><br />
-        <BitLink Icon="@BitIconInfo.Bi("box-arrow-up-right")" IconPosition="BitIconPosition.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
+        <BitLink Icon="@BitIconInfo.Bi("box-arrow-up-right")" IconPlacement="BitPlacement.End" Target="_blank" Href="https://github.com/bitfoundation/bitplatform">Opens in a new tab</BitLink>
     </DemoExample>
 
     <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">

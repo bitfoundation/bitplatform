@@ -45,9 +45,14 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// The position of the icon relative to the link content.
     /// <br />
-    /// <see cref="BitLink.IconPosition"/>.
+    /// <see cref="BitLink.IconPlacement"/>.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// Replaces the text a new-tab link is announced with, for translating it or for saying it another way.
@@ -143,9 +148,9 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.ClassBuilder.Reset();
         }
 
-        if (IconPosition.HasValue && bitLink.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitLink.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitLink.IconPosition = IconPosition.Value;
+            bitLink.IconPlacement = IconPlacement.Value;
 
             bitLink.ClassBuilder.Reset();
         }

@@ -23,7 +23,7 @@ public class BitTimelineTests : BunitTestContext
         public BitColor? DotColor { get; set; }
         public BitSize? DotSize { get; set; }
         public BitVariant? DotVariant { get; set; }
-        public BitTimelineLineVariant? LineStyle { get; set; }
+        public BitLineStyle? LineStyle { get; set; }
         public string? Label { get; set; }
         public string? Tooltip { get; set; }
         public Action<TimelineEvent>? Select { get; set; }
@@ -33,7 +33,7 @@ public class BitTimelineTests : BunitTestContext
     private class TimelineRecord
     {
         public string? PrimaryText { get; set; }
-        public BitTimelineLineVariant? LineVariant { get; set; }
+        public BitLineStyle? LineStyle { get; set; }
         public bool HideDot { get; set; }
     }
 
@@ -63,7 +63,7 @@ public class BitTimelineTests : BunitTestContext
         Color = { Selector = i => i.DotColor },
         Size = { Selector = i => i.DotSize },
         Variant = { Selector = i => i.DotVariant },
-        LineVariant = { Selector = i => i.LineStyle },
+        LineStyle = { Selector = i => i.LineStyle },
         AriaLabel = { Selector = i => i.Label },
         Title = { Selector = i => i.Tooltip },
         OnClick = { Selector = i => i.Select },
@@ -371,14 +371,14 @@ public class BitTimelineTests : BunitTestContext
     [TestMethod,
         // A solid line is the default paint of the stylesheet, so it carries no class of its own.
         DataRow(null, null),
-        DataRow(BitTimelineLineVariant.Solid, null),
-        DataRow(BitTimelineLineVariant.Dashed, "bit-tln-ldd"),
-        DataRow(BitTimelineLineVariant.Dotted, "bit-tln-ldt")]
-    public void BitTimelineShouldApplyTheLineVariantClass(BitTimelineLineVariant? lineVariant, string? expectedClass)
+        DataRow(BitLineStyle.Solid, null),
+        DataRow(BitLineStyle.Dashed, "bit-tln-ldd"),
+        DataRow(BitLineStyle.Dotted, "bit-tln-ldt")]
+    public void BitTimelineShouldApplyTheLineVariantClass(BitLineStyle? lineVariant, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineOption>>(parameters =>
         {
-            parameters.Add(p => p.LineVariant, lineVariant);
+            parameters.Add(p => p.LineStyle, lineVariant);
             TwoOptions()(parameters);
         });
 
@@ -442,15 +442,15 @@ public class BitTimelineTests : BunitTestContext
         // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own so that
         // it can win over a dashed or a dotted timeline.
         DataRow(null, null),
-        DataRow(BitTimelineLineVariant.Solid, "bit-tln-ils"),
-        DataRow(BitTimelineLineVariant.Dashed, "bit-tln-ild"),
-        DataRow(BitTimelineLineVariant.Dotted, "bit-tln-ilt")]
-    public void BitTimelineShouldApplyTheLineVariantClassOfTheItem(BitTimelineLineVariant? lineVariant, string? expectedClass)
+        DataRow(BitLineStyle.Solid, "bit-tln-ils"),
+        DataRow(BitLineStyle.Dashed, "bit-tln-ild"),
+        DataRow(BitLineStyle.Dotted, "bit-tln-ilt")]
+    public void BitTimelineShouldApplyTheLineVariantClassOfTheItem(BitLineStyle? lineVariant, string? expectedClass)
     {
         var component = RenderComponent<BitTimeline<BitTimelineItem>>(parameters =>
         {
-            parameters.Add(p => p.LineVariant, BitTimelineLineVariant.Dashed);
-            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", LineVariant = lineVariant }]);
+            parameters.Add(p => p.LineStyle, BitLineStyle.Dashed);
+            parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One", LineStyle = lineVariant }]);
         });
 
         var item = component.Find(".bit-tln-itm");
@@ -473,7 +473,7 @@ public class BitTimelineTests : BunitTestContext
             {
                 builder.OpenComponent<BitTimelineOption>(0);
                 builder.AddAttribute(1, nameof(BitTimelineOption.PrimaryText), "First");
-                builder.AddAttribute(2, nameof(BitTimelineOption.LineVariant), BitTimelineLineVariant.Dotted);
+                builder.AddAttribute(2, nameof(BitTimelineOption.LineStyle), BitLineStyle.Dotted);
                 builder.CloseComponent();
             });
         });
@@ -1109,7 +1109,7 @@ public class BitTimelineTests : BunitTestContext
                     DotColor = BitColor.Error,
                     DotSize = BitSize.Small,
                     DotVariant = BitVariant.Text,
-                    LineStyle = BitTimelineLineVariant.Dashed,
+                    LineStyle = BitLineStyle.Dashed,
                     Label = "The label",
                     Tooltip = "The tooltip"
                 }
@@ -1140,7 +1140,7 @@ public class BitTimelineTests : BunitTestContext
             parameters.Add(p => p.NameSelectors, new BitTimelineNameSelectors<TimelineRecord>());
             parameters.Add(p => p.Items,
             [
-                new TimelineRecord { PrimaryText = "One", LineVariant = BitTimelineLineVariant.Dotted },
+                new TimelineRecord { PrimaryText = "One", LineStyle = BitLineStyle.Dotted },
                 new TimelineRecord { PrimaryText = "Two", HideDot = true }
             ]);
         });

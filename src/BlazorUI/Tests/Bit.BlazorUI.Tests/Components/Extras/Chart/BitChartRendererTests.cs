@@ -42,7 +42,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Scales = { ["y"] = scale } };
         Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
-        Assert.IsNull(scale.Position, "an unset position must stay unset; the default is applied per render");
+        Assert.IsNull(scale.Placement, "an unset position must stay unset; the default is applied per render");
     }
 
     [TestMethod]
@@ -565,16 +565,16 @@ public class BitChartRendererTests
     [TestMethod]
     public void DataLabelAnchorShouldMoveTheLabelBetweenTipAndBaseline()
     {
-        double LabelY(BitChartAlign anchor)
+        double LabelY(BitPlacement anchor)
         {
-            var options = new BitChartOptions { Plugins = { DataLabels = { Display = true, Anchor = anchor, Align = BitChartAlign.Center } } };
+            var options = new BitChartOptions { Plugins = { DataLabels = { Display = true, Anchor = anchor, Align = BitPlacement.Center } } };
             var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(10, 20, 30), options));
             return scene.Foreground.OfType<BitChartSvgText>().First().Y;
         }
 
-        double tip = LabelY(BitChartAlign.End);
-        double middle = LabelY(BitChartAlign.Center);
-        double baseline = LabelY(BitChartAlign.Start);
+        double tip = LabelY(BitPlacement.End);
+        double middle = LabelY(BitPlacement.Center);
+        double baseline = LabelY(BitPlacement.Start);
 
         Assert.IsTrue(tip < middle && middle < baseline, $"tip {tip}, middle {middle}, baseline {baseline}");
     }
@@ -778,7 +778,7 @@ public class BitChartRendererTests
         };
         var options = new BitChartOptions
         {
-            Scales = { ["y2"] = new BitChartScaleOptions { Id = "y2", Position = BitChartPosition.Right } }
+            Scales = { ["y2"] = new BitChartScaleOptions { Id = "y2", Placement = BitPlacement.Right } }
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data, options));
 
@@ -973,10 +973,10 @@ public class BitChartRendererTests
     [TestMethod]
     public void ALegendPositionWithNowhereToGoShouldFallBackToTheTop()
     {
-        var options = new BitChartOptions { Plugins = { Legend = { Position = BitChartPosition.Center } } };
+        var options = new BitChartOptions { Plugins = { Legend = { Placement = BitPlacement.Center } } };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(BitChartPosition.Top, scene.Legend!.Position,
+        Assert.AreEqual(BitPlacement.Top, scene.Legend!.Placement,
             "the legend renders on one of four sides; anything else would silently disappear");
     }
 
@@ -1073,8 +1073,8 @@ public class BitChartRendererTests
         {
             Scales =
             {
-                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center },
-                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Position = BitChartPosition.Center }
+                ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center },
+                ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Placement = BitPlacement.Center }
             }
         };
         var scene = Render(new BitChartConfig(BitChartType.Scatter, data, options));
@@ -1091,16 +1091,16 @@ public class BitChartRendererTests
     [TestMethod]
     public void ACenteredAxisShouldReserveNoLayoutSpace()
     {
-        BitChartArea Plot(BitChartPosition position)
+        BitChartArea Plot(BitPlacement position)
         {
             var options = new BitChartOptions
             {
-                Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Position = position } }
+                Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Placement = position } }
             };
             return Render(new BitChartConfig(BitChartType.Line, Bars(1000, 2000, 3000), options)).PlotArea!.Value;
         }
 
-        Assert.IsTrue(Plot(BitChartPosition.Center).Left < Plot(BitChartPosition.Left).Left,
+        Assert.IsTrue(Plot(BitPlacement.Center).Left < Plot(BitPlacement.Left).Left,
             "a centered axis lives inside the plot, so it must not push the plot inwards");
     }
 
@@ -1202,7 +1202,7 @@ public class BitChartRendererTests
     {
         var options = new BitChartOptions
         {
-            Plugins = { DataLabels = { Display = true, Anchor = BitChartAlign.End, Align = BitChartAlign.End, Offset = 40 } },
+            Plugins = { DataLabels = { Display = true, Anchor = BitPlacement.End, Align = BitPlacement.End, Offset = 40 } },
             Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Display = false } }
         };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(100, 100, 100), options));

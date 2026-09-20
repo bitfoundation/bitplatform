@@ -128,10 +128,10 @@
                 <br />
                 <div class="toolbar">
                     <BitNumberField @bind-Value="scrollTargetIndex" Min="0" Max="99999" Style="max-width:9rem" />
-                    <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.Start)">Start</BitButton>
-                    <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.Center)">Center</BitButton>
-                    <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.End)">End</BitButton>
-                    <BitButton OnClick="() => ScrollToTarget(BitVirtualizeScrollAlignment.Auto)">Auto</BitButton>
+                    <BitButton OnClick="() => ScrollToTarget(BitScrollAlignment.Start)">Start</BitButton>
+                    <BitButton OnClick="() => ScrollToTarget(BitScrollAlignment.Center)">Center</BitButton>
+                    <BitButton OnClick="() => ScrollToTarget(BitScrollAlignment.End)">End</BitButton>
+                    <BitButton OnClick="() => ScrollToTarget(BitScrollAlignment.Nearest)">Auto</BitButton>
                     <BitToggle @bind-Value="scrollSmooth" Label="Smooth" Inline />
                 </div>
                 <br />

@@ -1342,25 +1342,32 @@ public partial class BitChart : ComponentBase, IAsyncDisposable
     /// The side a title actually renders on. Left and right titles run down the side of the plot
     /// (rotated); anything that is not one of the four sides falls back to the top.
     /// </summary>
-    private static BitChartPosition TitleSide(BitChartTitleModel title) => title.Position switch
+    private static BitPlacement TitleSide(BitChartTitleModel title) => title.Placement switch
     {
-        BitChartPosition.Bottom => BitChartPosition.Bottom,
-        BitChartPosition.Left => BitChartPosition.Left,
-        BitChartPosition.Right => BitChartPosition.Right,
-        _ => BitChartPosition.Top
+        BitPlacement.Bottom => BitPlacement.Bottom,
+        BitPlacement.Left => BitPlacement.Left,
+        BitPlacement.Right => BitPlacement.Right,
+        _ => BitPlacement.Top
     };
 
-    private static string AlignToFlex(BitChartAlign a) => a switch
+    // Each value is written as the CSS keyword that means what it says: the logical pair as the keywords that
+    // follow the reading direction, the physical pair as the ones that never move. Every value without an edge
+    // of its own centers.
+    private static string AlignToFlex(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "flex-start",
-        BitChartAlign.End => "flex-end",
+        BitPlacement.Start => "flex-start",
+        BitPlacement.End => "flex-end",
+        BitPlacement.Left => "left",
+        BitPlacement.Right => "right",
         _ => "center"
     };
 
-    private static string TextAlign(BitChartAlign a) => a switch
+    private static string TextAlign(BitPlacement a) => a switch
     {
-        BitChartAlign.Start => "left",
-        BitChartAlign.End => "right",
+        BitPlacement.Start => "start",
+        BitPlacement.End => "end",
+        BitPlacement.Left => "left",
+        BitPlacement.Right => "right",
         _ => "center"
     };
 

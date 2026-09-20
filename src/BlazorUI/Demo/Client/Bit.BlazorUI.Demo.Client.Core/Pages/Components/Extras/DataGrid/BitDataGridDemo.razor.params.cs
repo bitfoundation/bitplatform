@@ -55,7 +55,7 @@ public partial class BitDataGridDemo
         new() { Name = "ClipboardCopy", Type = "bool", DefaultValue = "false", Description = "Enables copying to the system clipboard with Ctrl/⌘+C on a focused cell (requires CellNavigation) and through CopyToClipboardAsync. Copies the selected rows - or the focused one - as tab-separated text with a header line, so it pastes into a spreadsheet as columns." },
         new() { Name = "RowReorderable", Type = "bool", DefaultValue = "false", Description = "Enables drag-and-drop row reordering (mouse, touch and pen; plus keyboard via the drag handle's arrow keys)." },
         new() { Name = "OnRowReorder", Type = "EventCallback<BitDataGridRowReorderEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a row is dropped onto another row during reordering.", LinkType = LinkType.Link, Href = "#BitDataGridRowReorderEventArgs" },
-        new() { Name = "SelectionMode", Type = "BitDataGridSelectionMode", DefaultValue = "BitDataGridSelectionMode.None", Description = "How rows can be selected (None/Single/Multiple).", LinkType = LinkType.Link, Href = "#BitDataGridSelectionMode" },
+        new() { Name = "SelectionMode", Type = "BitSelectionMode", DefaultValue = "BitSelectionMode.None", Description = "How rows can be selected (None/Single/Multiple).", LinkType = LinkType.Link, Href = "#selection-mode-enum" },
         new() { Name = "SelectedItems", Type = "IReadOnlyList<TItem>?", DefaultValue = "null", Description = "The selected items (supports two-way binding)." },
         new() { Name = "SelectedItemsChanged", Type = "EventCallback<IReadOnlyList<TItem>>", DefaultValue = "", Description = "Raised when the selection changes." },
         new() { Name = "OnRowClick", Type = "EventCallback<TItem>", DefaultValue = "", Description = "Raised when a row is clicked." },
@@ -67,7 +67,7 @@ public partial class BitDataGridDemo
         new() { Name = "Pageable", Type = "bool", DefaultValue = "false", Description = "Enables paging with a pager UI." },
         new() { Name = "PageSize", Type = "int", DefaultValue = "20", Description = "The number of rows per page." },
         new() { Name = "PageSizeOptions", Type = "int[]", DefaultValue = "{ 10, 20, 50, 100 }", Description = "The page-size options offered in the pager dropdown." },
-        new() { Name = "PagerPosition", Type = "BitDataGridPagerPosition", DefaultValue = "BitDataGridPagerPosition.Bottom", Description = "Where the pager renders relative to the grid.", LinkType = LinkType.Link, Href = "#BitDataGridPagerPosition" },
+        new() { Name = "PagerPlacement", Type = "BitPlacement", DefaultValue = "BitPlacement.Bottom", Description = "Where the pager renders relative to the grid. Only Top, Bottom and TopAndBottom are meaningful; any other side leaves the pager under the grid.", LinkType = LinkType.Link, Href = "#placement-enum" },
         new() { Name = "Virtualize", Type = "bool", DefaultValue = "false", Description = "Renders only the visible rows for large datasets. Requires a fixed Height and RowHeight. In server mode (OnRead) with paging off, row windows are fetched on demand as the user scrolls; with OnLoadMore, the accumulated batches are virtualized so the DOM stays bounded. Requires a uniform row height, so RowHeightSelector and WrapCellText are ignored while it is on and expanded DetailTemplate rows are not accounted for - pair master-detail with paging instead." },
         new() { Name = "RowHeight", Type = "float", DefaultValue = "36", Description = "Uniform row height in pixels (required when virtualizing)." },
         new() { Name = "RowHeightSelector", Type = "Func<TItem, float>?", DefaultValue = "null", Description = "Optional per-row height selector (ignored while virtualizing)." },
@@ -184,7 +184,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Group", Type = "string?", DefaultValue = "null", Description = "Optional header group name. Consecutive columns sharing the same value render under a single spanning header cell." },
                 new() { Name = "ColSpan", Type = "Func<TItem, int?>?", DefaultValue = "null", Description = "Optional per-row column span." },
                 new() { Name = "Visible", Type = "bool", DefaultValue = "true", Description = "Whether the column is visible." },
-                new() { Name = "Align", Type = "BitDataGridColumnAlign", DefaultValue = "BitDataGridColumnAlign.Left", Description = "Horizontal alignment of cell content.", LinkType = LinkType.Link, Href = "#BitDataGridColumnAlign" },
+                new() { Name = "Align", Type = "BitTextAlign", DefaultValue = "BitTextAlign.Start", Description = "Horizontal alignment of cell content. Only Start, Center, End, Left and Right are honoured: Start and End follow the reading direction, Left and Right stay on the same side of the screen in both, and every other value leaves the column at its leading edge.", LinkType = LinkType.Link, Href = "#BitTextAlign" },
                 new() { Name = "Format", Type = "string?", DefaultValue = "null", Description = "A .NET format string applied to the value (e.g. \"C2\", \"yyyy-MM-dd\")." },
                 new() { Name = "DataType", Type = "BitDataGridColumnDataType", DefaultValue = "BitDataGridColumnDataType.Auto", Description = "The data type used to pick the editor/filter.", LinkType = LinkType.Link, Href = "#BitDataGridColumnDataType" },
                 new() { Name = "Aggregate", Type = "BitDataGridAggregateType", DefaultValue = "BitDataGridAggregateType.None", Description = "The footer/group aggregate function.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
@@ -367,14 +367,24 @@ public partial class BitDataGridDemo
     [
         new()
         {
-            Id = "BitDataGridColumnAlign",
-            Name = "BitDataGridColumnAlign",
+            Id = "BitTextAlign",
+            Name = "BitTextAlign",
             Description = "Horizontal alignment of cell content.",
             Items =
             [
-                new() { Name = "Left", Value = "0" },
-                new() { Name = "Center", Value = "1" },
-                new() { Name = "Right", Value = "2" },
+                new() { Name = "Start", Description = "Aligns to the leading edge of the text, whichever direction it runs in.", Value = "0" },
+                new() { Name = "End", Description = "Aligns to the trailing edge of the text, whichever direction it runs in.", Value = "1" },
+                new() { Name = "Left", Description = "Aligns to the left edge, whichever direction the text runs in.", Value = "2" },
+                new() { Name = "Right", Description = "Aligns to the right edge, whichever direction the text runs in.", Value = "3" },
+                new() { Name = "Center", Description = "Centers the lines inside the box.", Value = "4" },
+                new() { Name = "Justify", Description = "Spaces the words of every line but the last so that both edges line up.", Value = "5" },
+                new() { Name = "JustifyAll", Description = "Justifies the last line as well. No browser engine implements it yet.", Value = "6" },
+                new() { Name = "MatchParent", Description = "Inherits the alignment, resolving a start or an end against the direction of the parent.", Value = "7" },
+                new() { Name = "Inherit", Description = "Takes the alignment of the parent.", Value = "8" },
+                new() { Name = "Initial", Description = "Takes the initial value of the property.", Value = "9" },
+                new() { Name = "Revert", Description = "Reverts to the value the user agent or the user stylesheet sets.", Value = "10" },
+                new() { Name = "RevertLayer", Description = "Reverts to the value of the previous cascade layer.", Value = "11" },
+                new() { Name = "Unset", Description = "Inherits the alignment, or takes the initial value where it is not inherited.", Value = "12" },
             ]
         },
         new()
@@ -389,18 +399,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Descending", Value = "2" },
             ]
         },
-        new()
-        {
-            Id = "BitDataGridSelectionMode",
-            Name = "BitDataGridSelectionMode",
-            Description = "How rows can be selected in the grid.",
-            Items =
-            [
-                new() { Name = "None", Value = "0" },
-                new() { Name = "Single", Value = "1" },
-                new() { Name = "Multiple", Value = "2" },
-            ]
-        },
+        SharedSubEnums.BitSelectionMode,
         new()
         {
             Id = "BitDataGridAggregateType",
@@ -417,18 +416,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Custom", Value = "6", Description = "The value was produced by the column's custom AggregateBy delegate rather than a built-in function." },
             ]
         },
-        new()
-        {
-            Id = "BitDataGridPagerPosition",
-            Name = "BitDataGridPagerPosition",
-            Description = "Where the pager is rendered relative to the grid.",
-            Items =
-            [
-                new() { Name = "Bottom", Value = "0" },
-                new() { Name = "Top", Value = "1" },
-                new() { Name = "TopAndBottom", Value = "2" },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "BitDir",

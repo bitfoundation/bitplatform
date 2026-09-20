@@ -225,7 +225,7 @@
     --bit-chb-lbl-flex-direction: row-reverse;
 }
 
-// label position classes come after the reversed one, so an explicit LabelPosition wins over Reversed
+// label position classes come after the reversed one, so an explicit LabelPlacement wins over Reversed
 
 .bit-chb-ltp {
     --bit-chb-lbl-justify-content: flex-start;

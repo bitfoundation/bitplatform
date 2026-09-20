@@ -180,21 +180,21 @@ private readonly Dictionary<BitPersonaPresence, string> _presenceTitles = new()
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona Shape=""BitPersonaShape.Rounded""
+<BitPersona Shape=""BitShape.Rounded""
             PrimaryText=""Xafan Salina""
             SecondaryText=""Rounded""
             Presence=""BitPersonaPresence.Online""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona Shape=""BitPersonaShape.Square""
+<BitPersona Shape=""BitShape.Square""
             PrimaryText=""Xafan Salina""
             SecondaryText=""Square""
             Presence=""BitPersonaPresence.Online""
             Size=""BitPersonaSize.Size72""
             ImageUrl=""/images/persona/persona-female.png"" />
 
-<BitPersona Shape=""BitPersonaShape.Square""
+<BitPersona Shape=""BitShape.Square""
             PrimaryText=""Design Team""
             SecondaryText=""A coin that is not a face""
             CoinColor=""BitColor.Tertiary""

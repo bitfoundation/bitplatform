@@ -657,23 +657,23 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitIconPosition.Start),
-        DataRow(BitIconPosition.End),
+        DataRow(BitPlacement.Start),
+        DataRow(BitPlacement.End),
         DataRow(null)
     ]
-    public void BitActionButtonIconPositionClassTest(BitIconPosition? iconPosition)
+    public void BitActionButtonIconPlacementClassTest(BitPlacement? iconPosition)
     {
         var com = RenderComponent<BitActionButton>(parameters =>
         {
             if (iconPosition.HasValue)
             {
-                parameters.Add(p => p.IconPosition, iconPosition.Value);
+                parameters.Add(p => p.IconPlacement, iconPosition.Value);
             }
         });
 
         var bitButton = com.Find(".bit-acb");
 
-        var expectedClassPresence = iconPosition == BitIconPosition.End;
+        var expectedClassPresence = iconPosition == BitPlacement.End;
 
         Assert.AreEqual(expectedClassPresence, bitButton.ClassList.Contains("bit-acb-eni"));
     }
@@ -1258,7 +1258,7 @@ public class BitActionButtonTests : BunitTestContext
             IconName = "Share",
             IconUrl = "/images/icon.svg",
             IconOnly = true,
-            IconPosition = BitIconPosition.End,
+            IconPlacement = BitPlacement.End,
             NoWrap = true,
             Underlined = true,
             Rel = BitLinkRels.NoOpener,
@@ -1295,7 +1295,7 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual("Share", instance.IconName);
         Assert.AreEqual("/images/icon.svg", instance.IconUrl);
         Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
         Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Underlined);
         Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
@@ -1599,11 +1599,11 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIconPositionEndShouldApplyClass()
+    public void BitActionButtonIconPlacementEndShouldApplyClass()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
-            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
             parameters.Add(p => p.IconName, "Add");
             parameters.AddChildContent("Content");
         });
@@ -1665,12 +1665,12 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonFullWidthWithIconPositionEndShouldWork()
+    public void BitActionButtonFullWidthWithIconPlacementEndShouldWork()
     {
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.FullWidth, true);
-            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
             parameters.Add(p => p.IconName, "Forward");
             parameters.AddChildContent("Full width");
         });
@@ -2148,14 +2148,14 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonIconAndContentShouldSitInsideInnerWrapperForIconPositionEnd()
+    public void BitActionButtonIconAndContentShouldSitInsideInnerWrapperForIconPlacementEnd()
     {
         // The end position is a flex-direction flip on the inner wrapper, so the icon and the content have to
         // be its direct children for the flip to reorder them.
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.IconName, "Forward");
-            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
             parameters.AddChildContent("Next");
         });
 

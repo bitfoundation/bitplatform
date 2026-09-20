@@ -152,9 +152,9 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <summary>
     /// Gets or sets the side of the header the expander icon of all the items sits on.
     /// <br />
-    /// The default value is <see cref="BitIconPosition.End"/>.
+    /// The default value is <see cref="BitPlacement.End"/>.
     /// </summary>
-    [Parameter] public BitIconPosition? ExpanderIconPosition { get; set; }
+    [Parameter] public BitPlacement? ExpanderIconPlacement { get; set; }
 
     /// <summary>
     /// The custom template to render in place of the expander icon of each item, leaving the rest of the header

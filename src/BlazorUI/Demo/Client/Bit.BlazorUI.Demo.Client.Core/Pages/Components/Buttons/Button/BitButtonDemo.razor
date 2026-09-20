@@ -108,10 +108,10 @@
         <div>
             BitButton has an icon slot that renders an icon alongside the label, or on its own for an icon-only button.
             Set a built-in Fluent icon with <b>IconName</b>, or render a custom image with <b>IconUrl</b>. The icon sits
-            at the start by default and can move to the end via the <b>IconPosition</b> parameter.
+            at the start by default and can move to the end via the <b>IconPlacement</b> parameter.
         </div>
         <div>
-            Using the <b>IconPosition</b> parameter and <BitLink Href="#icon-position-enum">BitIconPosition</BitLink>
+            Using the <b>IconPlacement</b> parameter and <BitLink Href="#placement-enum">BitPlacement</BitLink>
             enum as its value:
         </div>
         <br />
@@ -137,24 +137,24 @@
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Fill" IconPlacement="BitPlacement.End">
                 End
             </BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Outline" IconPlacement="BitPlacement.End">
                 End
             </BitButton>
-            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPosition="BitIconPosition.End">
+            <BitButton IconName="@BitIconName.Emoji2" Variant="BitVariant.Text" IconPlacement="BitPlacement.End">
                 End
             </BitButton>
         </div>
         <br />
         <div class="example-content">
             <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
-                       Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Fill" IconPlacement="BitPlacement.End">End</BitButton>
             <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
-                       Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Outline" IconPlacement="BitPlacement.End">End</BitButton>
             <BitButton IconName="@BitIconName.Emoji2" SecondaryText="this is the secondary text"
-                       Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Text" IconPlacement="BitPlacement.End">End</BitButton>
         </div>
         <br /><br />
         <div class="example-content">
@@ -168,11 +168,11 @@
         <br />
         <div class="example-content">
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
-                       Variant="BitVariant.Fill" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Fill" IconPlacement="BitPlacement.End">End</BitButton>
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
-                       Variant="BitVariant.Outline" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Outline" IconPlacement="BitPlacement.End">End</BitButton>
             <BitButton IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" SecondaryText="IconUrl"
-                       Variant="BitVariant.Text" IconPosition="BitIconPosition.End">End</BitButton>
+                       Variant="BitVariant.Text" IconPlacement="BitPlacement.End">End</BitButton>
         </div>
     </DemoExample>
 
@@ -254,33 +254,33 @@
     <DemoExample Title="Loading Label" RazorCode="@example9RazorCode" Id="example9">
         <div>
             Set <b>LoadingLabel</b> to show a text next to the spinner during the loading state, and place it relative
-            to the spinner (start, end, top, or bottom) with <b>LoadingLabelPosition</b>.
+            to the spinner (start, end, top, or bottom) with <b>LoadingLabelPlacement</b>.
         </div>
         <div>
-            Using the <b>LoadingLabelPosition</b> parameter and its value of type <BitLink Href="#label-position-enum">
-            BitLabelPosition</BitLink> enum:
+            Using the <b>LoadingLabelPlacement</b> parameter and its value of type <BitLink Href="#placement-enum">
+            BitPlacement</BitLink> enum:
         </div>
         <br />
         <div class="example-content">
             <BitButton IsLoading="true" LoadingLabel="End..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.End">
+                       LoadingLabelPlacement="BitPlacement.End">
                 End
             </BitButton>
 
             <BitButton IsLoading="true" LoadingLabel="Start..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Start">
+                       LoadingLabelPlacement="BitPlacement.Start">
                 Start
             </BitButton>
         </div>
         <br />
         <div class="example-content">
             <BitButton IsLoading="true" LoadingLabel="Bottom..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Bottom">
+                       LoadingLabelPlacement="BitPlacement.Bottom">
                 Bottom
             </BitButton>
 
             <BitButton IsLoading="true" LoadingLabel="Top..." Style="min-width: 6.5rem;" Variant="BitVariant.Outline"
-                       LoadingLabelPosition="BitLabelPosition.Top">
+                       LoadingLabelPlacement="BitPlacement.Top">
                 Top
             </BitButton>
         </div>
@@ -356,7 +356,7 @@
         </div>
         <div>
             Using the <b>FloatPosition</b> parameter and its value of type
-            <BitLink Href="#button-position">BitPosition</BitLink> enum:
+            <BitLink Href="#position-enum">BitPosition</BitLink> enum:
         </div>
         <br />
         <div class="example-content">

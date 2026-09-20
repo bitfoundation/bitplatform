@@ -101,7 +101,7 @@ private readonly List<Section> keyedItems =
                   ExpanderIconName=""@BitIconName.Add""
                   ExpandedExpanderIconName=""@BitIconName.Remove"" />
 
-<BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" ExpanderIconPosition=""BitIconPosition.Start"" />
+<BitAccordionList Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" ExpanderIconPlacement=""BitPlacement.Start"" />
 
 <BitAccordionList HideExpanderIcon Items=""basicItems"" TItem=""Section"" NameSelectors=""nameSelectors"" />";
     private readonly string example5CsharpCode = @"

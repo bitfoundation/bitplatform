@@ -7,14 +7,18 @@ internal static class SwipesJsRuntimeExtensions
     internal static ValueTask BitSwipesSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(this IJSRuntime js,
              string id,
              decimal trigger,
-             BitPanelPosition position,
+             BitPlacement position,
              bool isRtl,
              BitSwipeOrientation orientationLock,
              DotNetObjectReference<T>? dotnetObj,
              bool isResponsive = true,
              string scrollContainerId = "") where T : class
     {
-        return js.InvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, position, isRtl, orientationLock, dotnetObj, isResponsive, scrollContainerId);
+        // A caller resolves its placement to one of the four edges a swipe can be set up for first (ToPanelSide),
+        // so the fallback is only ever the default edge that resolution would have produced anyway.
+        var edge = position.ToEdgeName(fallback: "end");
+
+        return js.InvokeVoid("BitBlazorUI.Swipes.setup", id, trigger, edge, isRtl, orientationLock, dotnetObj, isResponsive, scrollContainerId);
     }
 
     internal static ValueTask BitSwipesDispose(this IJSRuntime jsRuntime, string id)

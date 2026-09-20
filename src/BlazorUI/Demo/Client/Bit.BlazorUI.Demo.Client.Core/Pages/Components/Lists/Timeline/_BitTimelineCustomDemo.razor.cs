@@ -18,7 +18,7 @@ public partial class _BitTimelineCustomDemo
         Color = { Selector = i => i.DotColor },
         Size = { Selector = i => i.DotSize },
         Variant = { Selector = i => i.DotVariant },
-        LineVariant = { Selector = i => i.LineStyle },
+        LineStyle = { Selector = i => i.LineStyle },
         HideDot = { Selector = i => i.NoDot },
         Template = { Selector = i => i.Content },
         OnClick = { Selector = i => i.OnSelect },
@@ -63,8 +63,8 @@ public partial class _BitTimelineCustomDemo
     private List<Event> lineVariantCustoms =
     [
         new() { FirstText = "Ordered", Icon = BitIconName.Accept, DotColor = BitColor.Success },
-        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitTimelineLineVariant.Dashed },
-        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitTimelineLineVariant.Dashed }
+        new() { FirstText = "Shipped", Icon = BitIconName.Accept, DotColor = BitColor.Success, LineStyle = BitLineStyle.Dashed },
+        new() { FirstText = "Delivered", DotVariant = BitVariant.Outline, LineStyle = BitLineStyle.Dashed }
     ];
 
     private List<Event> customizedCustoms =

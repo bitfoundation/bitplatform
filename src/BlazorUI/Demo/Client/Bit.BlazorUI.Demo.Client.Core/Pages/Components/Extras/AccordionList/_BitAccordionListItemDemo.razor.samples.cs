@@ -64,7 +64,7 @@ private static RenderFragment<BitAccordionListItem> BodyFor(string? text) => ite
                   ExpanderIconName=""@BitIconName.Add""
                   ExpandedExpanderIconName=""@BitIconName.Remove"" />
 
-<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" ExpanderIconPosition=""BitIconPosition.Start"" />
+<BitAccordionList Items=""basicItems"" TItem=""BitAccordionListItem"" ExpanderIconPlacement=""BitPlacement.Start"" />
 
 <BitAccordionList HideExpanderIcon Items=""basicItems"" TItem=""BitAccordionListItem"" />";
     private readonly string example5CsharpCode = @"

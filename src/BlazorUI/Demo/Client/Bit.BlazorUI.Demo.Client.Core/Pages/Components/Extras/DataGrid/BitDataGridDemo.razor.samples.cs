@@ -134,7 +134,7 @@ public static class FileSystemData
                     File(""BitDataGrid.razor"", 24_500),
                     File(""BitDataGrid.razor.cs"", 41_200),
                     Folder(""Models"",
-                        File(""BitDataGridColumnAlign.cs"", 320),
+                        File(""BitTextAlign.cs"", 320),
                         File(""BitDataGridSortDescriptor.cs"", 540),
                         File(""BitDataGridFilterOperator.cs"", 610)),
                     Folder(""Infrastructure"",
@@ -176,12 +176,12 @@ public sealed class SupplierModel
    of the grid's child content. *@
 <BitDataGrid Items=""@products"" Height=""430px"" MultiSort=""true"">
     <Columns>
-        <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitDataGridColumnAlign.Right"" />
+        <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" />
         <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
         <BitDataGridColumn Property=""p => p.Category"" />
-        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
-        <BitDataGridColumn Property=""p => p.Stock"" Align=""BitDataGridColumnAlign.Right"" />
-        <BitDataGridColumn Property=""p => p.Rating"" Format=""N1"" Align=""BitDataGridColumnAlign.Right"" />
+        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
+        <BitDataGridColumn Property=""p => p.Stock"" Align=""BitTextAlign.End"" />
+        <BitDataGridColumn Property=""p => p.Rating"" Format=""N1"" Align=""BitTextAlign.End"" />
     </Columns>
 </BitDataGrid>";
     private readonly string example1CsharpCode = @"
@@ -190,26 +190,26 @@ private List<Product> products = SampleData.Generate(50);" + ProductModelCode + 
     private readonly string example2RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""430px""
              Filterable=""true"" Pageable=""true"" PageSize=""10""
-             PagerPosition=""BitDataGridPagerPosition.Bottom""
+             PagerPlacement=""BitPlacement.Bottom""
              ShowToolbar=""true"" ShowCsvExport=""true"">
     <BitDataGridColumn Field=""Id"" Title=""ID"" Filterable=""false"" />
     <BitDataGridColumn Field=""Name"" />
     <BitDataGridColumn Field=""Category"" />
     <BitDataGridColumn Field=""Supplier"" />
-    <BitDataGridColumn Field=""Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
-    <BitDataGridColumn Field=""Stock"" Align=""BitDataGridColumnAlign.Right"" />
+    <BitDataGridColumn Field=""Price"" Format=""C2"" Align=""BitTextAlign.End"" />
+    <BitDataGridColumn Field=""Stock"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
     private readonly string example2CsharpCode = @"
 private List<Product> products = SampleData.Generate(200);" + ProductModelCode + SampleDataCode;
 
     private readonly string example3RazorCode = @"
 <BitDataGrid Items=""@products"" Height=""420px"" KeyField=""p => p.Id""
-             SelectionMode=""BitDataGridSelectionMode.Multiple"" @bind-SelectedItems=""selected""
+             SelectionMode=""BitSelectionMode.Multiple"" @bind-SelectedItems=""selected""
              Pageable=""true"" PageSize=""10"">
-    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Align=""BitDataGridColumnAlign.Right"" />
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Align=""BitTextAlign.End"" />
     <BitDataGridColumn Property=""p => p.Name"" />
     <BitDataGridColumn Property=""p => p.Category"" />
-    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
     private readonly string example3CsharpCode = @"
 private List<Product> products = SampleData.Generate(60);
@@ -264,9 +264,9 @@ private void OnDelete(Product p) => products.RemoveAll(x => x.Id == p.Id);" + Pr
     <BitDataGridColumn Property=""p => p.Name"" Groupable=""false"" />
     <BitDataGridColumn Property=""p => p.Category"" />
     <BitDataGridColumn Property=""p => p.Supplier"" AggregateBy=""rows => DistinctSuppliers(rows)"" />
-    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right""
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End""
                        Aggregate=""BitDataGridAggregateType.Sum"" Groupable=""false"" />
-    <BitDataGridColumn Property=""p => p.Stock"" Align=""BitDataGridColumnAlign.Right""
+    <BitDataGridColumn Property=""p => p.Stock"" Align=""BitTextAlign.End""
                        Aggregate=""BitDataGridAggregateType.Average"" AggregateFormat=""N0"" Groupable=""false"" />
 </BitDataGrid>";
     private readonly string example5CsharpCode = @"
@@ -290,16 +290,16 @@ private async Task CollapseAllGroups() => await grid!.CollapseAllGroupsAsync();"
         <BitDataGridColumn Property=""p => p.Name"">
             <HeaderTemplate>📦 Product</HeaderTemplate>
         </BitDataGridColumn>
-        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitDataGridColumnAlign.Right""
+        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End""
                            Aggregate=""BitDataGridAggregateType.Sum"">
             <FooterTemplate Context=""agg"">Total: @agg.FormattedValue</FooterTemplate>
         </BitDataGridColumn>
         @* Comparer replaces the ordering rule itself, where SortBy only replaces the key. *@
-        <BitDataGridColumn Property=""p => p.Stock"" Align=""BitDataGridColumnAlign.Right"" Comparer=""stockComparer"">
+        <BitDataGridColumn Property=""p => p.Stock"" Align=""BitTextAlign.End"" Comparer=""stockComparer"">
             <Template Context=""p"">@p.Stock in stock</Template>
         </BitDataGridColumn>
         @* A template-only column (no Field) becomes sortable through its SortBy key selector. *@
-        <BitDataGridColumn ColumnId=""Value"" Title=""Value"" Align=""BitDataGridColumnAlign.Right""
+        <BitDataGridColumn ColumnId=""Value"" Title=""Value"" Align=""BitTextAlign.End""
                            SortBy=""@(p => p.Price * p.Stock)"">
             <Template Context=""p"">@((p.Price * p.Stock).ToString(""C0""))</Template>
         </BitDataGridColumn>
@@ -329,7 +329,7 @@ private sealed class StockComparer : IComparer<object?>
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""80px"" Frozen=""true"" />
     <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" Frozen=""true"" />
     <BitDataGridColumn Property=""p => p.Category"" Width=""160px"" />
-    <BitDataGridColumn Property=""p => p.Price"" Width=""160px"" Format=""C2"" Align=""BitDataGridColumnAlign.Right"" />
+    <BitDataGridColumn Property=""p => p.Price"" Width=""160px"" Format=""C2"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
     private readonly string example7CsharpCode = @"
 private List<Product> products = SampleData.Generate(40);" + ProductModelCode + SampleDataCode;
@@ -550,7 +550,7 @@ private async Task<BitDataGridReadResult<Product>> LoadMore(BitDataGridReadReque
              KeyField=""n => n.Id"" @ref=""grid"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""320px"" />
     <BitDataGridColumn Property=""p => p.Kind"" Title=""Type"" />
-    <BitDataGridColumn Property=""p => p.Size"" Format=""N0"" Align=""BitDataGridColumnAlign.Right"" />
+    <BitDataGridColumn Property=""p => p.Size"" Format=""N0"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
     private readonly string example13CsharpCode = @"
 private List<FileNode> roots = FileSystemData.Build();
@@ -1128,7 +1128,7 @@ private void OnPageChange(int page) => log = $""Moved to page {page}."";
              ExpandDetailOnRowClick=""true""
              CellNavigation=""true""
              OnDetailToggle=""OnDetailToggled""
-             SelectionMode=""BitDataGridSelectionMode.Single""
+             SelectionMode=""BitSelectionMode.Single""
              KeyField=""p => p.Id"">
     <DetailTemplate Context=""p"">
         <BitStack Horizontal Wrap Gap=""2rem"">
@@ -1238,7 +1238,7 @@ private static string? RowStyleFor(Product p) => p.Price > 800 ? ""font-weight:6
 @* Shift+click a second checkbox to select the run between it and the last one clicked.
    With CellNavigation on, a focused cell answers Space, Ctrl+A and Ctrl/Cmd+C. *@
 <BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px"" ExportFileName=""selection""
-             SelectionMode=""BitDataGridSelectionMode.Multiple"" @bind-SelectedItems=""selection""
+             SelectionMode=""BitSelectionMode.Multiple"" @bind-SelectedItems=""selection""
              CellNavigation=""true"" ClipboardCopy=""true"" Sortable=""true"" KeyField=""p => p.Id"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" />
     <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />

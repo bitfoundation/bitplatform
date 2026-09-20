@@ -10,8 +10,8 @@ public partial class _BitChartDataLabelsDemo
             DataLabels = new BitChartDataLabelOptions
             {
                 Display = true,
-                Anchor = BitChartAlign.End,
-                Align = BitChartAlign.End,
+                Anchor = BitPlacement.End,
+                Align = BitPlacement.End,
                 Font = new BitChartFont { Weight = "bold" }
             }
         },
@@ -26,8 +26,8 @@ public partial class _BitChartDataLabelsDemo
             DataLabels = new BitChartDataLabelOptions
             {
                 Display = true,
-                Anchor = BitChartAlign.End,
-                Align = BitChartAlign.Start,
+                Anchor = BitPlacement.End,
+                Align = BitPlacement.Start,
                 Color = "#fff",
                 BackgroundColor = "rgba(0,0,0,0.35)",
                 Padding = 3,
@@ -56,11 +56,11 @@ public partial class _BitChartDataLabelsDemo
         CutoutPercentage = 55,
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
             DataLabels = new BitChartDataLabelOptions
             {
                 Display = true,
-                Anchor = BitChartAlign.Center,
+                Anchor = BitPlacement.Center,
                 Color = "#fff",
                 Font = new BitChartFont { Weight = "bold" },
                 FormatterCtx = (v, _, _) => $"{v / 1340d * 100:N0}%"
@@ -99,8 +99,8 @@ private readonly BitChartOptions _outside = new()
         DataLabels = new BitChartDataLabelOptions
         {
             Display = true,
-            Anchor = BitChartAlign.End,
-            Align = BitChartAlign.End,
+            Anchor = BitPlacement.End,
+            Align = BitPlacement.End,
             Font = new BitChartFont { Weight = ""bold"" }
         }
     },
@@ -127,8 +127,8 @@ private readonly BitChartOptions _inside = new()
         DataLabels = new BitChartDataLabelOptions
         {
             Display = true,
-            Anchor = BitChartAlign.End,
-            Align = BitChartAlign.Start,
+            Anchor = BitPlacement.End,
+            Align = BitPlacement.Start,
             Color = ""#fff"",
             BackgroundColor = ""rgba(0,0,0,0.35)"",
             Padding = 3,
@@ -171,11 +171,11 @@ private readonly BitChartOptions _doughnut = new()
     CutoutPercentage = 55,
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Right },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
         DataLabels = new BitChartDataLabelOptions
         {
             Display = true,
-            Anchor = BitChartAlign.Center,
+            Anchor = BitPlacement.Center,
             Color = ""#fff"",
             Font = new BitChartFont { Weight = ""bold"" },
             FormatterCtx = (v, _, _) => $""{v / 1340d * 100:N0}%""

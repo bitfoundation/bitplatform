@@ -108,11 +108,14 @@ public partial class BitProgress : BitComponentBase
 
     /// <summary>
     /// Where the <see cref="GapDegree"/> gap sits, which is also where the stroke of the gauge begins
-    /// and ends. <see cref="Reversed"/> mirrors the gauge, so it swaps a Start gap with an End one and
-    /// leaves a Top or a Bottom one where it is.
+    /// and ends (default is the bottom, which is where a gauge is normally opened). <see cref="Reversed"/>
+    /// mirrors the gauge, so it swaps a Start gap with an End one and leaves a Top or a Bottom one where it is.
     /// </summary>
+    /// <remarks>
+    /// Only Top, Bottom, Start and End are meaningful here; any other side leaves the gap at the bottom.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitProgressGapPosition GapPosition { get; set; }
+    public BitPlacement GapPlacement { get; set; } = BitPlacement.Bottom;
 
     /// <summary>
     /// Reports that something is running without saying how far along it is: the bar sweeps and the ring spins
@@ -313,11 +316,11 @@ public partial class BitProgress : BitComponentBase
 
         ClassBuilder.Register(() => _HasSegments ? "bit-prb-seg" : string.Empty);
 
-        ClassBuilder.Register(() => _HasGap is false ? string.Empty : GapPosition switch
+        ClassBuilder.Register(() => _HasGap is false ? string.Empty : GapPlacement switch
         {
-            BitProgressGapPosition.Top => "bit-prb-gap bit-prb-gpt",
-            BitProgressGapPosition.Start => "bit-prb-gap bit-prb-gps",
-            BitProgressGapPosition.End => "bit-prb-gap bit-prb-gpe",
+            BitPlacement.Top => "bit-prb-gap bit-prb-gpt",
+            BitPlacement.Start => "bit-prb-gap bit-prb-gps",
+            BitPlacement.End => "bit-prb-gap bit-prb-gpe",
             _ => "bit-prb-gap"
         });
 

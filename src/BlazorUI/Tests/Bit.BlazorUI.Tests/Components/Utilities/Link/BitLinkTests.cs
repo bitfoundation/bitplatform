@@ -1005,7 +1005,7 @@ public class BitLinkTests : BunitTestContext
         {
             parameters.Add(p => p.Href, "https://bitplatform.dev");
             parameters.Add(p => p.IconName, "Link");
-            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
             parameters.AddChildContent("bit");
         });
 

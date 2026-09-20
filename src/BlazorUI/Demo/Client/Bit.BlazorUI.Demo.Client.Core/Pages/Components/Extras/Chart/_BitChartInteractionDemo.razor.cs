@@ -7,19 +7,19 @@ public partial class _BitChartInteractionDemo
 
     private readonly BitChartOptions _default = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private readonly BitChartOptions _intersect = new()
     {
         Interaction = new BitChartInteractionOptions { Intersect = true },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private BitChartOptions ModeOptions() => new()
     {
         Interaction = new BitChartInteractionOptions { Mode = _mode },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private BitChartData Series() => new()
@@ -56,7 +56,7 @@ public partial class _BitChartInteractionDemo
 // Intersect is false by default, so no extra configuration is needed.
 private readonly BitChartOptions _default = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 private BitChartData Series() => new()
@@ -76,7 +76,7 @@ private BitChartData Series() => new()
 private readonly BitChartOptions _intersect = new()
 {
     Interaction = new BitChartInteractionOptions { Intersect = true },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
     private readonly string modesRazorCode = @"<select @bind=""_mode"">
@@ -92,7 +92,7 @@ private BitChartInteractionMode _mode = BitChartInteractionMode.Index;
 private BitChartOptions ModeOptions() => new()
 {
     Interaction = new BitChartInteractionOptions { Mode = _mode },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
     private readonly string emptyRazorCode = @"<BitButton Variant=""BitVariant.Outline"" OnClick=""ToggleEmpty"">Clear the data</BitButton>
@@ -110,7 +110,7 @@ private BitChartData EmptyDemoData() => _hasData ? Revenue() : new BitChartData(
     private readonly BitChartOptions _linkedOptions = new()
     {
         Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     /// <summary>Both charts report through here; a null context means the pointer has left.</summary>
@@ -129,7 +129,7 @@ private string? _linked;
 private readonly BitChartOptions _linkedOptions = new()
 {
     Interaction = new BitChartInteractionOptions { Mode = BitChartInteractionMode.Index },
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };
 
 // Both charts report through here; a null context means the pointer has left.

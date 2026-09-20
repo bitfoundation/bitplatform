@@ -11,7 +11,7 @@ public partial class _BitChartExportDemo
         Plugins = new BitChartPluginOptions
         {
             Title = new BitChartTitleOptions { Display = true, Text = "Revenue by product" },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
         }
     };
 
@@ -33,7 +33,7 @@ public partial class _BitChartExportDemo
         Plugins = new BitChartPluginOptions
         {
             Title = new BitChartTitleOptions { Display = true, Text = "Traffic by source" },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Right }
         }
     };
 
@@ -63,7 +63,7 @@ private readonly BitChartOptions _options = new()
     Plugins = new BitChartPluginOptions
     {
         Title = new BitChartTitleOptions { Display = true, Text = ""Revenue by product"" },
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     }
 };
 

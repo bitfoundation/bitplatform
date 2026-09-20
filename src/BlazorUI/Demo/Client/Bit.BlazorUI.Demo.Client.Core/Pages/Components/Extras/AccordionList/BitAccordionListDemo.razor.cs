@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class BitAccordionListDemo
 {
@@ -119,12 +119,12 @@ public partial class BitAccordionListDemo
         },
         new()
         {
-            Name = "ExpanderIconPosition",
-            Type = "BitIconPosition?",
+            Name = "ExpanderIconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the header the expander icon of all the items sits on. The default value is End.",
+            Description = "The side of the header the expander icon of all the items sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -570,17 +570,7 @@ public partial class BitAccordionListDemo
                 new() { Name = "Transparent", Description = "The transparent color kind.", Value = "3" },
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new() { Name = "Start", Description = "Icon renders before the content.", Value = "0" },
-                new() { Name = "End", Description = "Icon renders after the content (default).", Value = "1" },
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "accordion-toggle-reason-enum",

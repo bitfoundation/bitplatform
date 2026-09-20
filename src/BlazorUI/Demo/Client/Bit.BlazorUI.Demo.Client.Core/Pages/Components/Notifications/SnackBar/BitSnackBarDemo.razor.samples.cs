@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Notifications.SnackBar;
 
 public partial class BitSnackBarDemo
 {
@@ -16,13 +16,22 @@ private async Task OpenBasicSnackBar()
 <BitSnackBar @ref=""positionRef"" Position=""position"" Offset=""@offset"" />
 
 <BitChoiceGroup @bind-Value=""position"" Label=""Position"" Horizontal
-                TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
-    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
-    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
-    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
+                TItem=""BitChoiceGroupOption<BitPosition>"" TValue=""BitPosition"">
+    <BitChoiceGroupOption Text=""TopStart"" Value=""BitPosition.TopStart"" />
+    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitPosition.TopCenter"" />
+    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitPosition.TopEnd"" />
+    <BitChoiceGroupOption Text=""TopLeft"" Value=""BitPosition.TopLeft"" />
+    <BitChoiceGroupOption Text=""TopRight"" Value=""BitPosition.TopRight"" />
+    <BitChoiceGroupOption Text=""CenterStart"" Value=""BitPosition.CenterStart"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitPosition.Center"" />
+    <BitChoiceGroupOption Text=""CenterEnd"" Value=""BitPosition.CenterEnd"" />
+    <BitChoiceGroupOption Text=""CenterLeft"" Value=""BitPosition.CenterLeft"" />
+    <BitChoiceGroupOption Text=""CenterRight"" Value=""BitPosition.CenterRight"" />
+    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitPosition.BottomStart"" />
+    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitPosition.BottomCenter"" />
+    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitPosition.BottomEnd"" />
+    <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitPosition.BottomLeft"" />
+    <BitChoiceGroupOption Text=""BottomRight"" Value=""BitPosition.BottomRight"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""offset"" Label=""Offset"" Horizontal
@@ -36,7 +45,7 @@ private async Task OpenBasicSnackBar()
     private readonly string example2CsharpCode = @"
 private string offset = ""8px"";
 private BitSnackBar positionRef = default!;
-private BitSnackBarPosition position = BitSnackBarPosition.BottomEnd;
+private BitPosition position = BitPosition.BottomEnd;
 private async Task OpenPositionSnackBar()
 {
     await positionRef.Info($""{position}"", $""Pinned to the selected position, {offset} from the edges."");
@@ -532,13 +541,22 @@ private async Task FocusSnackBars() => await hotkeyRef.FocusAsync();";
     <BitChoiceGroupOption Text=""TertiaryBorder"" Value=""BitColor.TertiaryBorder"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitSnackBarPosition>"" TValue=""BitSnackBarPosition"">
-    <BitChoiceGroupOption Text=""TopStart"" Value=""BitSnackBarPosition.TopStart"" />
-    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitSnackBarPosition.TopCenter"" />
-    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitSnackBarPosition.TopEnd"" />
-    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitSnackBarPosition.BottomStart"" />
-    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitSnackBarPosition.BottomCenter"" />
-    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitSnackBarPosition.BottomEnd"" />
+<BitChoiceGroup @bind-Value=""basicSnackBarPosition"" Label=""Position"" TItem=""BitChoiceGroupOption<BitPosition>"" TValue=""BitPosition"">
+    <BitChoiceGroupOption Text=""TopStart"" Value=""BitPosition.TopStart"" />
+    <BitChoiceGroupOption Text=""TopCenter"" Value=""BitPosition.TopCenter"" />
+    <BitChoiceGroupOption Text=""TopEnd"" Value=""BitPosition.TopEnd"" />
+    <BitChoiceGroupOption Text=""TopLeft"" Value=""BitPosition.TopLeft"" />
+    <BitChoiceGroupOption Text=""TopRight"" Value=""BitPosition.TopRight"" />
+    <BitChoiceGroupOption Text=""CenterStart"" Value=""BitPosition.CenterStart"" />
+    <BitChoiceGroupOption Text=""Center"" Value=""BitPosition.Center"" />
+    <BitChoiceGroupOption Text=""CenterEnd"" Value=""BitPosition.CenterEnd"" />
+    <BitChoiceGroupOption Text=""CenterLeft"" Value=""BitPosition.CenterLeft"" />
+    <BitChoiceGroupOption Text=""CenterRight"" Value=""BitPosition.CenterRight"" />
+    <BitChoiceGroupOption Text=""BottomStart"" Value=""BitPosition.BottomStart"" />
+    <BitChoiceGroupOption Text=""BottomCenter"" Value=""BitPosition.BottomCenter"" />
+    <BitChoiceGroupOption Text=""BottomEnd"" Value=""BitPosition.BottomEnd"" />
+    <BitChoiceGroupOption Text=""BottomLeft"" Value=""BitPosition.BottomLeft"" />
+    <BitChoiceGroupOption Text=""BottomRight"" Value=""BitPosition.BottomRight"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup @bind-Value=""direction"" Label=""Direction"" TItem=""BitChoiceGroupOption<BitDir>"" TValue=""BitDir"">
@@ -581,7 +599,7 @@ private BitVariant customVariant = BitVariant.Fill;
 private string basicSnackBarBody = ""This is body"";
 private string basicSnackBarTitle = ""This is title"";
 private BitColor basicSnackBarColor = BitColor.Info;
-private BitSnackBarPosition basicSnackBarPosition = BitSnackBarPosition.BottomEnd;
+private BitPosition basicSnackBarPosition = BitPosition.BottomEnd;
 
 private async Task OpenCustomizationSnackBar()
 {
@@ -740,7 +758,7 @@ private async Task OpenSnackBarClasses()
 }";
 
     private readonly string example19RazorCode = @"
-<BitSnackBar @ref=""rtlRef"" Dir=""BitDir.Rtl"" ShowIcon Position=""BitSnackBarPosition.BottomStart""
+<BitSnackBar @ref=""rtlRef"" Dir=""BitDir.Rtl"" ShowIcon Position=""BitPosition.BottomStart""
              AutoDismiss AutoDismissTime=""TimeSpan.FromSeconds(5)"" />
 <BitButton Dir=""BitDir.Rtl"" OnClick=""OpenRtl"">نمایش پیام</BitButton>";
     private readonly string example19CsharpCode = @"

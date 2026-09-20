@@ -206,7 +206,7 @@ private string? clickedOption;";
     private readonly string example10RazorCode = @"
 <BitButtonGroup Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 @bind-ToggleKeys=""formatKeys"">
     <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
     <BitButtonGroupOption Key=""italic"" Text=""Italic"" IconName=""@BitIconName.Italic"" />
@@ -216,7 +216,7 @@ private string? clickedOption;";
 
 <BitButtonGroup Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 MaxToggles=""2""
                 DefaultToggleKeys=""@defaultKeys"">
     <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
@@ -226,7 +226,7 @@ private string? clickedOption;";
 
 <BitButtonGroup Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 FixedToggle
                 DefaultToggleKeys=""@defaultKeys"">
     <BitButtonGroupOption Key=""bold"" Text=""Bold"" IconName=""@BitIconName.Bold"" />
@@ -297,7 +297,7 @@ private IEnumerable<string>? formatKeys = [""bold""];";
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 DefaultToggleKey=""list"">
     <BitButtonGroupOption Key=""list"" Text=""List"" IconName=""@BitIconName.BulletedList"" />
     <BitButtonGroupOption Key=""grid"" Text=""Grid"" IconName=""@BitIconName.GridViewMedium"" />
@@ -307,7 +307,7 @@ private IEnumerable<string>? formatKeys = [""bold""];";
 <BitButtonGroup ShowSelectionIndicator
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Multiple""
+                SelectionMode=""BitSelectionMode.Multiple""
                 DefaultToggleKeys=""@indicatorDefaultKeys"">
     <BitButtonGroupOption Key=""name"" Text=""Name"" />
     <BitButtonGroupOption Key=""size"" Text=""Size"" />
@@ -423,7 +423,7 @@ private async Task HandleLoadingClick(string key)
 <BitButtonGroup AriaLabel=""Text alignment""
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 DefaultToggleKey=""start"">
     <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
     <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />
@@ -434,7 +434,7 @@ private async Task HandleLoadingClick(string key)
                 SelectOnFocus
                 Variant=""BitVariant.Outline""
                 TItem=""BitButtonGroupOption""
-                SelectionMode=""BitButtonGroupSelectionMode.Single""
+                SelectionMode=""BitSelectionMode.Single""
                 DefaultToggleKey=""start"">
     <BitButtonGroupOption Key=""start"" Text=""Start"" IconName=""@BitIconName.AlignLeft"" AriaLabel=""Align start"" />
     <BitButtonGroupOption Key=""center"" Text=""Center"" IconName=""@BitIconName.AlignCenter"" AriaLabel=""Align center"" />

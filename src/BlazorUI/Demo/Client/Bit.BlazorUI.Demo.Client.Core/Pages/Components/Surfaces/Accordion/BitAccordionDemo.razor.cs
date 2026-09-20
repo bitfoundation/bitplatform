@@ -103,12 +103,12 @@ public partial class BitAccordionDemo
         },
         new()
         {
-            Name = "ExpanderIconPosition",
-            Type = "BitIconPosition?",
+            Name = "ExpanderIconPlacement",
+            Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End.",
+            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
-            Href = "#icon-position-enum",
+            Href = "#placement-enum",
         },
         new()
         {
@@ -358,27 +358,7 @@ public partial class BitAccordionDemo
                 },
             ]
         },
-        new()
-        {
-            Id = "icon-position-enum",
-            Name = "BitIconPosition",
-            Description = "Describes the placement of an icon relative to other content.",
-            Items =
-            [
-                new()
-                {
-                    Name = "Start",
-                    Description = "Icon renders before the content.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "End",
-                    Description = "Icon renders after the content (default).",
-                    Value = "1",
-                }
-            ]
-        },
+        SharedSubEnums.BitPlacement,
         new()
         {
             Id = "accordion-toggle-reason-enum",
@@ -670,10 +650,10 @@ public partial class BitAccordionDemo
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
-<BitAccordion Title=""Start"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""Start"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Start with an icon"" IconName=""@BitIconName.Settings"" ExpanderIconPosition=""BitIconPosition.Start"">
+<BitAccordion Title=""Start with an icon"" IconName=""@BitIconName.Settings"" ExpanderIconPlacement=""BitPlacement.Start"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 

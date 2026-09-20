@@ -515,7 +515,7 @@ public class BitChartTests : BunitTestContext
             Plugins =
             {
                 Title = { Display = true, Text = "Main" },
-                Subtitle = { Display = true, Text = "Sub", Position = BitChartPosition.Bottom }
+                Subtitle = { Display = true, Text = "Sub", Placement = BitPlacement.Bottom }
             }
         };
         var component = RenderChart(options: options);
@@ -766,7 +766,7 @@ public class BitChartTests : BunitTestContext
     {
         var options = new BitChartOptions
         {
-            Plugins = { Title = { Display = true, Text = "Down the side", Position = BitChartPosition.Left } }
+            Plugins = { Title = { Display = true, Text = "Down the side", Placement = BitPlacement.Left } }
         };
         var component = RenderChart(options: options);
 
@@ -780,12 +780,45 @@ public class BitChartTests : BunitTestContext
     {
         var options = new BitChartOptions
         {
-            Plugins = { Title = { Display = true, Text = "Fallback", Position = BitChartPosition.Chart } }
+            Plugins = { Title = { Display = true, Text = "Fallback", Placement = BitPlacement.Center } }
         };
         var component = RenderChart(options: options);
 
         Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-ttl").Count);
         StringAssert.Contains(component.Find(".bit-cht > .bit-cht-ttl").TextContent, "Fallback");
+    }
+
+    // ---- legend placement ----
+
+    private IRenderedComponent<BitChart> RenderLegendAt(BitPlacement placement)
+        => RenderChart(options: new BitChartOptions { Plugins = { Legend = { Placement = placement } } });
+
+    [TestMethod]
+    [DataRow(BitPlacement.Left)]
+    [DataRow(BitPlacement.Right)]
+    public void AnInlineLegendShouldRenderBesideThePlotAndStackItsItems(BitPlacement placement)
+    {
+        var legend = RenderLegendAt(placement).Find(".bit-cht-mid > .bit-cht-lgd");
+
+        Assert.IsTrue(legend.ClassList.Contains("bit-cht-lgd-v"));
+    }
+
+    [TestMethod]
+    [DataRow(BitPlacement.Top)]
+    [DataRow(BitPlacement.Bottom)]
+    // A chart is laid out physically, so the logical pair, the two combined values and Center have no edge of
+    // their own here: they leave the legend where an unset placement would, at the top, rather than dropping it.
+    [DataRow(BitPlacement.Start)]
+    [DataRow(BitPlacement.End)]
+    [DataRow(BitPlacement.Center)]
+    [DataRow(BitPlacement.TopAndBottom)]
+    [DataRow(BitPlacement.StartAndEnd)]
+    public void ABlockLegendShouldRenderAboveOrBelowThePlotInARow(BitPlacement placement)
+    {
+        var component = RenderLegendAt(placement);
+
+        Assert.AreEqual(0, component.FindAll(".bit-cht-mid > .bit-cht-lgd").Count);
+        Assert.IsTrue(component.Find(".bit-cht > .bit-cht-lgd").ClassList.Contains("bit-cht-lgd-h"));
     }
 
     // ---- crosshair ----

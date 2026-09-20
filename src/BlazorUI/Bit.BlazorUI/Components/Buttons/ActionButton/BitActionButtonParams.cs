@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitActionButton"/> component.
@@ -78,7 +78,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Stretches the action button across the full available width. The icon and the content stay next to each other
-    /// with <see cref="BitIconPosition.Start"/>; <see cref="BitIconPosition.End"/> reverses the inner wrapper, so the
+    /// with <see cref="BitPlacement.Start"/>; <see cref="BitPlacement.End"/> reverses the inner wrapper, so the
     /// growing content pushes them to the opposite edges.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -127,7 +127,12 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
-    public BitIconPosition? IconPosition { get; set; }
+    /// <remarks>
+    /// Only <see cref="BitPlacement.Start"/> and <see cref="BitPlacement.End"/> mean anything here, and they
+    /// follow the reading direction: Start puts the icon before the content in an LTR component and after it
+    /// in an RTL one. Every other placement leaves the icon where Start would put it.
+    /// </remarks>
+    public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
     /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
@@ -320,9 +325,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.ClassBuilder.Reset();
         }
 
-        if (IconPosition.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPosition)))
+        if (IconPlacement.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPlacement)))
         {
-            bitActionButton.IconPosition = IconPosition.Value;
+            bitActionButton.IconPlacement = IconPlacement.Value;
 
             bitActionButton.ClassBuilder.Reset();
         }

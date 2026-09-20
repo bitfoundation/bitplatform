@@ -1033,7 +1033,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         if (IsOpen is false) return;
 
         // The swipe that closes the drawer goes towards the edge the drawer came from.
-        if (args.Direction == (_IsDockedAtEnd ? BitSwipeDirection.Right : BitSwipeDirection.Left))
+        if (args.Direction == (_IsDockedAtEnd ? BitPlacement.Right : BitPlacement.Left))
         {
             _diffXPanel = 0;
             await ClosePanel();

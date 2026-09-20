@@ -9,13 +9,13 @@ public partial class _BitChartLocalizationDemo
     private BitChartOptions CultureOptions() => new()
     {
         Culture = CultureInfo.GetCultureInfo(_culture),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
     };
 
     private readonly BitChartOptions _currency = new()
     {
         Culture = CultureInfo.GetCultureInfo("en-US"),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales = { ["y"] = new BitChartScaleOptions { Id = "y", Ticks = new BitChartTickOptions { Format = "C0" } } }
     };
 
@@ -24,14 +24,14 @@ public partial class _BitChartLocalizationDemo
     private BitChartOptions DateOptions() => new()
     {
         Culture = CultureInfo.GetCultureInfo(_dateCulture),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Time } }
     };
 
     private readonly BitChartOptions _wide = new()
     {
         Culture = CultureInfo.GetCultureInfo("ja-JP"),
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales =
         {
             ["y"] = new BitChartScaleOptions
@@ -62,7 +62,7 @@ public partial class _BitChartLocalizationDemo
         Plugins = new BitChartPluginOptions
         {
             Title = new BitChartTitleOptions { Display = true, Text = "فروش فصلی" },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
         },
         Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Reverse = true } }
     };
@@ -95,7 +95,7 @@ private string _culture = ""de-DE"";
 private BitChartOptions CultureOptions() => new()
 {
     Culture = CultureInfo.GetCultureInfo(_culture),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } }
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } }
 };";
 
     private readonly string currencyRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""Revenue()"" Options=""_currency"" />";
@@ -103,7 +103,7 @@ private BitChartOptions CultureOptions() => new()
 private readonly BitChartOptions _currency = new()
 {
     Culture = CultureInfo.GetCultureInfo(""en-US""),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales = { [""y""] = new BitChartScaleOptions { Id = ""y"", Ticks = new BitChartTickOptions { Format = ""C0"" } } }
 };";
 
@@ -114,7 +114,7 @@ private readonly BitChartOptions _rtl = new()
     Plugins = new BitChartPluginOptions
     {
         Title = new BitChartTitleOptions { Display = true, Text = ""فروش فصلی"" },
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     },
     Scales = { [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Category, Reverse = true } }
 };
@@ -137,7 +137,7 @@ private string _dateCulture = ""fr-FR"";
 private BitChartOptions DateOptions() => new()
 {
     Culture = CultureInfo.GetCultureInfo(_dateCulture),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales = { [""x""] = new BitChartScaleOptions { Id = ""x"", Type = BitChartScaleType.Time } }
 };";
 
@@ -146,7 +146,7 @@ private BitChartOptions DateOptions() => new()
 private readonly BitChartOptions _wide = new()
 {
     Culture = CultureInfo.GetCultureInfo(""ja-JP""),
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales =
     {
         [""y""] = new BitChartScaleOptions

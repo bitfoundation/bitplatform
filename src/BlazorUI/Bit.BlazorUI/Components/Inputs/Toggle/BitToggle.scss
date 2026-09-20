@@ -117,7 +117,7 @@
 
     // Only the single-line shape ends the label, where it is the far side of the row that the knob has left.
     // Stacked, the label is still a line of its own above or below the knob, and stays where reading starts -
-    // the same way LabelPosition.Bottom, which reaches the very same layout, keeps it.
+    // the same way LabelPlacement.Bottom, which reaches the very same layout, keeps it.
     &.bit-tgl-inl {
         flex-direction: row-reverse;
         --bit-tgl-des-order: 1;
@@ -131,7 +131,7 @@
 }
 
 // The label position classes come after the inline and reversed ones and carry the root class along, so an
-// explicit LabelPosition wins over either of them whichever way they were combined - including over the two
+// explicit LabelPlacement wins over either of them whichever way they were combined - including over the two
 // of them together, which on its own would outweigh a single class.
 
 .bit-tgl.bit-tgl-ltp {

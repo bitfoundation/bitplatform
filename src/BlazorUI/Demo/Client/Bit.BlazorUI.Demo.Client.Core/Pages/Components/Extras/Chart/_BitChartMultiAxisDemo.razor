@@ -19,7 +19,7 @@
 <DemoExample Title="Two x-axes" RazorCode="@dualXRazorCode" CsharpCode="@dualXCsharpCode" Id="multiaxis-two-x-axes">
     <div class="example-desc">
         Secondary x axes work the same way, through <code>XAxisID</code>. They stack outside the plot -
-        <code>Position = BitChartPosition.Top</code> puts this one above it - and only the primary axis
+        <code>Placement = BitPlacement.Top</code> puts this one above it - and only the primary axis
         draws the chart-area grid.
     </div>
     <div class="chart-wrapper"><div class="chart-container"><BitChart Type="BitChartType.Scatter" Data="DualX()" Options="_dualX" /></div></div>

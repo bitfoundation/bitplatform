@@ -431,12 +431,16 @@ public partial class BitTag : BitComponentBase
     /// The corner shape of the tag.
     /// </summary>
     /// <remarks>
+    /// A tag takes its box from its own content, so <see cref="BitShape.Circle"/> has no dimension to build a
+    /// circle from; it rounds the ends fully, the same as <see cref="BitShape.Pill"/>, which is what the value
+    /// draws on every other component that takes it.
+    /// <br />
     /// The default follows the chip corner of the current theme, which is what keeps a tag in the same visual
     /// language as the rest of the library; the other two pin it to a pill or to a rectangle whatever the
     /// theme says.
     /// </remarks>
     [Parameter, ResetClassBuilder]
-    public BitTagShape? Shape { get; set; }
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// The size of the tag.
@@ -548,9 +552,9 @@ public partial class BitTag : BitComponentBase
 
         ClassBuilder.Register(() => Shape switch
         {
-            BitTagShape.Rounded => "bit-tag-rnd",
-            BitTagShape.Circular => "bit-tag-cir",
-            BitTagShape.Square => "bit-tag-sqr",
+            BitShape.Rounded => "bit-tag-rnd",
+            BitShape.Pill or BitShape.Circle => "bit-tag-cir",
+            BitShape.Square => "bit-tag-sqr",
             _ => "bit-tag-rnd"
         });
 

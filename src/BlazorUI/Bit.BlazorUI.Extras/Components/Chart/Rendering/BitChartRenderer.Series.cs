@@ -794,8 +794,8 @@ public sealed partial class BitChartRenderer
             double outward = sign >= 0 ? -1 : 1;
             y = dl.Anchor switch
             {
-                BitChartAlign.Start => baseline,
-                BitChartAlign.Center => rect.Y + rect.Height / 2,
+                BitPlacement.Start => baseline,
+                BitPlacement.Center => rect.Y + rect.Height / 2,
                 _ => tip
             };
             y += AlignShift(dl, outward);
@@ -808,8 +808,8 @@ public sealed partial class BitChartRenderer
             double outward = sign >= 0 ? 1 : -1;
             x = dl.Anchor switch
             {
-                BitChartAlign.Start => baseline,
-                BitChartAlign.Center => rect.X + rect.Width / 2,
+                BitPlacement.Start => baseline,
+                BitPlacement.Center => rect.X + rect.Width / 2,
                 _ => tip
             };
             x += AlignShift(dl, outward);
@@ -824,11 +824,11 @@ public sealed partial class BitChartRenderer
         var dl = _options.Plugins.DataLabels;
         double anchorY = dl.Anchor switch
         {
-            BitChartAlign.Start => y + radius,
-            BitChartAlign.Center => y,
+            BitPlacement.Start => y + radius,
+            BitPlacement.Center => y,
             _ => y - radius
         };
-        double outward = dl.Anchor == BitChartAlign.Start ? 1 : -1;
+        double outward = dl.Anchor == BitPlacement.Start ? 1 : -1;
         AddDataLabel(scene, value, x, anchorY + AlignShift(dl, outward), dsIndex, dataIndex);
     }
 
@@ -838,8 +838,8 @@ public sealed partial class BitChartRenderer
         double dist = dl.Offset + dl.Font.Size * 0.5 + dl.Padding;
         return dl.Align switch
         {
-            BitChartAlign.End => outward * dist,
-            BitChartAlign.Start => -outward * dist,
+            BitPlacement.End => outward * dist,
+            BitPlacement.Start => -outward * dist,
             _ => 0
         };
     }

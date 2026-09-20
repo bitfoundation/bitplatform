@@ -43,17 +43,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="IconPosition" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="IconPlacement" RazorCode="@example2RazorCode" Id="example2">
         <div>
-            <b>IconPosition</b> moves the icon to the other side of the content. End suits forward actions like Next or Open, and the spinner takes the same side while loading.
+            <b>IconPlacement</b> moves the icon to the other side of the content. End suits forward actions like Next or Open, and the spinner takes the same side while loading.
         </div>
         <br />
         <div class="example-content">
-            <BitActionButton IconPosition="BitIconPosition.Start" IconName="@BitIconName.AddFriend">
+            <BitActionButton IconPlacement="BitPlacement.Start" IconName="@BitIconName.AddFriend">
                 Start (default)
             </BitActionButton>
 
-            <BitActionButton IconPosition="BitIconPosition.End" IconName="@BitIconName.Forward">
+            <BitActionButton IconPlacement="BitPlacement.End" IconName="@BitIconName.Forward">
                 End
             </BitActionButton>
         </div>
@@ -170,11 +170,11 @@
                 Settings
             </BitActionButton>
 
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Notifications
             </BitActionButton>
 
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Privacy
             </BitActionButton>
         </div>
@@ -189,12 +189,12 @@
         </div>
         <br />
         <div class="full-width-container">
-            <BitActionButton FullWidth IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+            <BitActionButton FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                 Notifications, sounds and background activity
             </BitActionButton>
 
             <BitTooltip Relationship="BitTooltipRelationship.None" Text="Notifications, sounds and background activity">
-                <BitActionButton FullWidth NoWrap IconPosition="BitIconPosition.End" IconName="@BitIconName.ChevronRight">
+                <BitActionButton FullWidth NoWrap IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
                     Notifications, sounds and background activity
                 </BitActionButton>
             </BitTooltip>
@@ -213,7 +213,7 @@
                 Save changes
             </BitActionButton>
 
-            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPosition="BitIconPosition.End">
+            <BitActionButton IsLoading="isLoading" IconName="@BitIconName.Send" Color="BitColor.Success" IconPlacement="BitPlacement.End">
                 Send message
             </BitActionButton>
         </div>
@@ -758,7 +758,7 @@
                 ساخت حساب
             </BitActionButton>
 
-            <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.ChevronLeft" IconPosition="BitIconPosition.End">
+            <BitActionButton Dir="BitDir.Rtl" IconName="@BitIconName.ChevronLeft" IconPlacement="BitPlacement.End">
                 ادامه
             </BitActionButton>
         </div>

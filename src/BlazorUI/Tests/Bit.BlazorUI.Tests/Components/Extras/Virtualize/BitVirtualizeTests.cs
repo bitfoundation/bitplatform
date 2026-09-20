@@ -602,25 +602,25 @@ public class BitVirtualizeTests : BunitTestContext
 
         var component = RenderList(100, 50);
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Start));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Start));
         Assert.AreEqual(1000, LastScrollToOffset());
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Center));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Center));
         Assert.AreEqual(875, LastScrollToOffset());
 
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.End));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.End));
         Assert.AreEqual(750, LastScrollToOffset());
 
         // Auto: already fully visible (750..1050 shows 15..20) -> stays.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(20, BitScrollAlignment.Nearest));
         Assert.AreEqual(750, LastScrollToOffset());
 
         // Auto: above the viewport -> aligned to the start.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(2, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(2, BitScrollAlignment.Nearest));
         Assert.AreEqual(100, LastScrollToOffset());
 
         // Auto: below the viewport -> aligned to the end.
-        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30, BitVirtualizeScrollAlignment.Auto));
+        await component.InvokeAsync(() => component.Instance.ScrollToIndexAsync(30, BitScrollAlignment.Nearest));
         Assert.AreEqual(1250, LastScrollToOffset());
     }
 

@@ -248,7 +248,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
 
     // ------------------------------------------------------------- Selection
-    [Parameter] public BitDataGridSelectionMode SelectionMode { get; set; } = BitDataGridSelectionMode.None;
+    [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
     [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
@@ -280,7 +280,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public bool Pageable { get; set; }
     [Parameter] public int PageSize { get; set; } = 20;
     [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 20, 50, 100 };
-    [Parameter] public BitDataGridPagerPosition PagerPosition { get; set; } = BitDataGridPagerPosition.Bottom;
+    [Parameter] public BitPlacement PagerPlacement { get; set; } = BitPlacement.Bottom;
 
     // --------------------------------------------------------- Virtualization
     /// <summary>
@@ -479,7 +479,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private bool _dataInitialized;
     private IEnumerable<TItem>? _lastItems;
     private int _lastPageSize;
-    private BitDataGridSelectionMode? _lastSelectionMode;
+    private BitSelectionMode? _lastSelectionMode;
 
     // editing
     private TItem? _editItem;
@@ -2190,7 +2190,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private void ResetGroupExpansionState() => _groupStateOverrides.Clear();
 
     // ---------------------------------------------------------- Selection
-    internal bool SelectionEnabled => SelectionMode != BitDataGridSelectionMode.None;
+    internal bool SelectionEnabled => SelectionMode != BitSelectionMode.None;
 
     /// <summary>True when the given row is allowed to be selected.</summary>
     internal bool CanSelectRow(TItem item) => IsRowSelectionDisabled is null || !IsRowSelectionDisabled(item);
@@ -2219,10 +2219,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         _rangeSelectPendingKey = null;
         range ??= pendingKey is not null && Equals(pendingKey, GetKey(item));
 
-        if (SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectionMode == BitSelectionMode.None) return;
         if (!CanSelectRow(item)) return;
         var selected = value ?? !_selected.Contains(item);
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
         {
             _selected.Clear();
             if (selected) _selected.Add(item);
@@ -2274,7 +2274,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// the loaded rows in server, queryable and infinite modes).</summary>
     public async Task SelectAllAsync()
     {
-        if (SelectionMode != BitDataGridSelectionMode.Multiple) return;
+        if (SelectionMode != BitSelectionMode.Multiple) return;
         foreach (var item in _view)
         {
             if (CanSelectRow(item)) _selected.Add(item);
@@ -2395,11 +2395,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     private void ApplyControlledSelection()
     {
         _selected.Clear();
-        if (SelectedItems is null || SelectionMode == BitDataGridSelectionMode.None) return;
+        if (SelectedItems is null || SelectionMode == BitSelectionMode.None) return;
         foreach (var i in SelectedItems)
         {
             _selected.Add(i);
-            if (SelectionMode == BitDataGridSelectionMode.Single) break;
+            if (SelectionMode == BitSelectionMode.Single) break;
         }
     }
 
@@ -2411,7 +2411,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // expanding a detail row would shift the editors out from under the pointer mid-edit.
         if (_editItem is not null) return;
 
-        if (SelectionMode == BitDataGridSelectionMode.Single)
+        if (SelectionMode == BitSelectionMode.Single)
             await ToggleRowSelectionAsync(item, true);
 
         if (ExpandDetailOnRowClick)
@@ -3062,7 +3062,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 await CopyToClipboardAsync(item);
                 return;
             }
-            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitDataGridSelectionMode.Multiple)
+            if ((e.Key == "a" || e.Key == "A") && SelectionMode == BitSelectionMode.Multiple)
             {
                 await SelectAllAsync();
                 return;
@@ -3963,7 +3963,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     }
 
     // ----------------------------------------------------- Layout helpers
-    internal bool HasSelectColumn => SelectionMode == BitDataGridSelectionMode.Multiple;
+    internal bool HasSelectColumn => SelectionMode == BitSelectionMode.Multiple;
 
     /// <summary>True when rows can render expandable detail content.</summary>
     internal bool HasDetailTemplate => DetailTemplate is not null;
@@ -4070,10 +4070,14 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         return c;
     }
 
-    internal static string AlignClass(BitDataGridColumnAlign a) => a switch
+    // Start needs no class: a cell is laid out from its leading edge already. Everything the column cannot
+    // express - the justification and cascade keywords of BitTextAlign - falls through to that same default.
+    internal static string AlignClass(BitTextAlign a) => a switch
     {
-        BitDataGridColumnAlign.Center => "bit-dtg-center",
-        BitDataGridColumnAlign.Right => "bit-dtg-right",
+        BitTextAlign.Center => "bit-dtg-center",
+        BitTextAlign.End => "bit-dtg-end",
+        BitTextAlign.Left => "bit-dtg-left",
+        BitTextAlign.Right => "bit-dtg-right",
         _ => ""
     };
 

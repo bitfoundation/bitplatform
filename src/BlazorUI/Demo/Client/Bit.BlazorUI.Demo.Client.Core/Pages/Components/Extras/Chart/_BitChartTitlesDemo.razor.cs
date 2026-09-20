@@ -2,8 +2,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartTitlesDemo
 {
-    private BitChartPosition _position = BitChartPosition.Left;
-    private BitChartAlign _align = BitChartAlign.Center;
+    private BitPlacement _position = BitPlacement.Left;
+    private BitPlacement _align = BitPlacement.Center;
 
     private readonly BitChartOptions _titled = new()
     {
@@ -17,7 +17,7 @@ public partial class _BitChartTitlesDemo
                 Font = new BitChartFont { Size = 12 },
                 Color = "var(--bit-clr-fg-sec)"
             },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
         }
     };
 
@@ -25,14 +25,14 @@ public partial class _BitChartTitlesDemo
     {
         Plugins = new BitChartPluginOptions
         {
-            Title = new BitChartTitleOptions { Display = true, Text = "Monthly sales", Position = _position, Align = _align },
-            Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+            Title = new BitChartTitleOptions { Display = true, Text = "Monthly sales", Placement = _position, Align = _align },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
         }
     };
 
     private readonly BitChartOptions _axisTitles = new()
     {
-        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
         Scales =
         {
             ["x"] = new BitChartScaleOptions
@@ -63,21 +63,21 @@ private readonly BitChartOptions _titled = new()
             Font = new BitChartFont { Size = 12 },
             Color = ""var(--bit-clr-fg-sec)""
         },
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     }
 };";
 
     private readonly string placementRazorCode = @"<BitChart Type=""BitChartType.Line"" Data=""MonthlySales()"" Options=""Placement()"" />";
     private readonly string placementCsharpCode = @"
-private BitChartPosition _position = BitChartPosition.Left;
-private BitChartAlign _align = BitChartAlign.Center;
+private BitPlacement _position = BitPlacement.Left;
+private BitPlacement _align = BitPlacement.Center;
 
 private BitChartOptions Placement() => new()
 {
     Plugins = new BitChartPluginOptions
     {
-        Title = new BitChartTitleOptions { Display = true, Text = ""Monthly sales"", Position = _position, Align = _align },
-        Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom }
+        Title = new BitChartTitleOptions { Display = true, Text = ""Monthly sales"", Placement = _position, Align = _align },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom }
     }
 };";
 
@@ -85,7 +85,7 @@ private BitChartOptions Placement() => new()
     private readonly string axisCsharpCode = @"
 private readonly BitChartOptions _axisTitles = new()
 {
-    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Position = BitChartPosition.Bottom } },
+    Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = BitPlacement.Bottom } },
     Scales =
     {
         [""x""] = new BitChartScaleOptions

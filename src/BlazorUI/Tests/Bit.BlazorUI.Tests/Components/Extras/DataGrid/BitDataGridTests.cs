@@ -201,7 +201,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow>? selected = null;
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -220,7 +220,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow>? selected = null;
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -1085,7 +1085,7 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(items, parameters =>
         {
             parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => selected = v));
         });
 
@@ -1414,6 +1414,37 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitPlacement.Bottom, 0, 1)]
+    [DataRow(BitPlacement.Top, 1, 0)]
+    [DataRow(BitPlacement.TopAndBottom, 1, 1)]
+    // A side the grid has no physical place for still leaves the pager under the grid,
+    // rather than dropping it from a pageable grid altogether.
+    [DataRow(BitPlacement.Start, 0, 1)]
+    [DataRow(BitPlacement.End, 0, 1)]
+    [DataRow(BitPlacement.Left, 0, 1)]
+    [DataRow(BitPlacement.Right, 0, 1)]
+    [DataRow(BitPlacement.StartAndEnd, 0, 1)]
+    public void PagerPlacementFallsBackToUnderTheGrid(BitPlacement position, int expectedAbove, int expectedBelow)
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.PagerPlacement, position);
+        });
+
+        // Both matches in document order, so the viewport's index says which side each pager is on.
+        var parts = component.FindAll(".bit-dtg-pager, .bit-dtg-viewport")
+            .Select(e => e.ClassList.Contains("bit-dtg-pager") ? "pager" : "viewport")
+            .ToList();
+        var viewportIndex = parts.IndexOf("viewport");
+
+        Assert.AreEqual(expectedAbove + expectedBelow + 1, parts.Count);
+        Assert.AreEqual(expectedAbove, viewportIndex);
+        Assert.AreEqual(expectedBelow, parts.Count - viewportIndex - 1);
+    }
+
+    [TestMethod]
     public void ColumnsParameterAliasesChildContent()
     {
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
@@ -1729,7 +1760,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
         });
 
@@ -1751,7 +1782,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
         });
 
@@ -1773,7 +1804,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
         });
@@ -1800,7 +1831,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
         });
@@ -1817,7 +1848,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.CellNavigation, true);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
         });
@@ -1837,7 +1868,7 @@ public class BitDataGridTests : BunitTestContext
         IReadOnlyList<TestRow> selected = [];
         var component = RenderGrid(configure: parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.Pageable, true);
             parameters.Add(p => p.PageSize, 2);
             parameters.Add(p => p.SelectedItemsChanged, (IReadOnlyList<TestRow> s) => selected = s);
@@ -1854,10 +1885,10 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public void MultipleSelectionIsAnnouncedThroughAriaMultiselectable()
     {
-        var single = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Single));
+        var single = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Single));
         Assert.IsNull(single.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
 
-        var multiple = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple));
+        var multiple = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
         Assert.AreEqual("true", multiple.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
     }
 
@@ -1871,7 +1902,7 @@ public class BitDataGridTests : BunitTestContext
         var items = CreateRows();
         var component = RenderGrid(items, parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.ClipboardCopy, true);
             parameters.Add(p => p.SelectedItems, new List<TestRow> { items[0], items[2] });
         });
@@ -2523,7 +2554,7 @@ public class BitDataGridTests : BunitTestContext
         var rows = CreateRows();
         var component = RenderGrid(rows, parameters =>
         {
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
             parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
         });
 
@@ -2818,7 +2849,7 @@ public class BitDataGridTests : BunitTestContext
     public async Task BulkClearsAndSelectionsAreAnnounced()
     {
         var component = RenderGrid(configure: parameters =>
-            parameters.Add(p => p.SelectionMode, BitDataGridSelectionMode.Multiple));
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
 
         await component.InvokeAsync(() => component.Instance.SelectAllAsync());
         StringAssert.Contains(component.Find("[aria-live]").TextContent, "5 rows selected");

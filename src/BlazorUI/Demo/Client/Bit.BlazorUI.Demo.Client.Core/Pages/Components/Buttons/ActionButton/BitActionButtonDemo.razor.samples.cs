@@ -22,11 +22,11 @@ public partial class BitActionButtonDemo
 </BitActionButton>";
 
     private readonly string example2RazorCode = @"
-<BitActionButton IconPosition=""BitIconPosition.Start"" IconName=""@BitIconName.AddFriend"">
+<BitActionButton IconPlacement=""BitPlacement.Start"" IconName=""@BitIconName.AddFriend"">
     Start (default)
 </BitActionButton>
 
-<BitActionButton IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.Forward"">
+<BitActionButton IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.Forward"">
     End
 </BitActionButton>";
 
@@ -123,23 +123,23 @@ private void HandleInvalidSubmit()
         Settings
     </BitActionButton>
 
-    <BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+    <BitActionButton FullWidth IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.ChevronRight"">
         Notifications
     </BitActionButton>
 
-    <BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+    <BitActionButton FullWidth IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.ChevronRight"">
         Privacy
     </BitActionButton>
 </div>
 
 
 <div style=""max-width: 18rem; display: flex; flex-direction: column;"">
-    <BitActionButton FullWidth IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+    <BitActionButton FullWidth IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.ChevronRight"">
         Notifications, sounds and background activity
     </BitActionButton>
 
     <BitTooltip Relationship=""BitTooltipRelationship.None"" Text=""Notifications, sounds and background activity"">
-        <BitActionButton FullWidth NoWrap IconPosition=""BitIconPosition.End"" IconName=""@BitIconName.ChevronRight"">
+        <BitActionButton FullWidth NoWrap IconPlacement=""BitPlacement.End"" IconName=""@BitIconName.ChevronRight"">
             Notifications, sounds and background activity
         </BitActionButton>
     </BitTooltip>
@@ -152,7 +152,7 @@ private void HandleInvalidSubmit()
     Save changes
 </BitActionButton>
 
-<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"" IconPosition=""BitIconPosition.End"">
+<BitActionButton IsLoading=""isLoading"" IconName=""@BitIconName.Send"" Color=""BitColor.Success"" IconPlacement=""BitPlacement.End"">
     Send message
 </BitActionButton>
 
@@ -573,7 +573,7 @@ private BitActionButton focusTargetRef = default!;";
         ساخت حساب
     </BitActionButton>
 
-    <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.ChevronLeft"" IconPosition=""BitIconPosition.End"">
+    <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.ChevronLeft"" IconPlacement=""BitPlacement.End"">
         ادامه
     </BitActionButton>
 </div>";

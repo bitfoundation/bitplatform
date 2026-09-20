@@ -136,8 +136,8 @@ public sealed partial class BitChartRenderer
                     var dl = _options.Plugins.DataLabels;
                     double lr = dl.Anchor switch
                     {
-                        BitChartAlign.Start => inner + (inner > 0 ? 0 : 0.35 * outer),
-                        BitChartAlign.End => outer,
+                        BitPlacement.Start => inner + (inner > 0 ? 0 : 0.35 * outer),
+                        BitPlacement.End => outer,
                         _ => (inner + outer) / 2
                     };
                     lr += AlignShift(dl, 1);
@@ -249,8 +249,8 @@ public sealed partial class BitChartRenderer
                 var dl = _options.Plugins.DataLabels;
                 double lr = dl.Anchor switch
                 {
-                    BitChartAlign.Start => 0.35 * r,
-                    BitChartAlign.End => r,
+                    BitPlacement.Start => 0.35 * r,
+                    BitPlacement.End => r,
                     _ => r / 2
                 };
                 lr += AlignShift(dl, 1);

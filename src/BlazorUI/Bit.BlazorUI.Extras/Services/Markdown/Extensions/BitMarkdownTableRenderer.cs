@@ -65,9 +65,9 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
         if (col >= table.Alignments.Count) return;
         string? align = table.Alignments[col] switch
         {
-            BitMarkdownColumnAlignment.Left => "bit-mdv-align-left",
-            BitMarkdownColumnAlignment.Center => "bit-mdv-align-center",
-            BitMarkdownColumnAlignment.Right => "bit-mdv-align-right",
+            BitTextAlign.Left => "bit-mdv-align-left",
+            BitTextAlign.Center => "bit-mdv-align-center",
+            BitTextAlign.Right => "bit-mdv-align-right",
             _ => null
         };
         if (align is not null)

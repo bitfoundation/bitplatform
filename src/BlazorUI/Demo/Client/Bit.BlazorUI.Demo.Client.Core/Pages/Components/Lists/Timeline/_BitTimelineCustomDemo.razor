@@ -131,22 +131,22 @@
 
 <DemoExample Title="Line variant" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        LineVariant paints the connecting line solid (default), dashed or dotted, and the LineVariant selector
+        LineStyle paints the connecting line solid (default), dashed or dotted, and the LineStyle selector
         overrides it for a single item's stretch of the line. That is the usual way to separate the part of a
         timeline that has already happened from the part that is still expected.
     </div>
     <br /><br /><br />
     <div>Dashed</div><br />
-    <BitTimeline LineVariant="BitTimelineLineVariant.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline LineStyle="BitLineStyle.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
     <div>Dotted</div><br />
-    <BitTimeline LineVariant="BitTimelineLineVariant.Dotted" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline LineStyle="BitLineStyle.Dotted" Items="basicCustoms" NameSelectors="nameSelectors" />
     <br /><br /><br />
-    <div>Item's LineVariant</div><br />
+    <div>Item's LineStyle</div><br />
     <BitTimeline Items="lineVariantCustoms" NameSelectors="nameSelectors" TruncateLine="BitTimelineTruncateLine.Both" />
     <br /><br /><br />
     <div>Horizontal (Dashed)</div><br />
-    <BitTimeline Horizontal LineVariant="BitTimelineLineVariant.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
+    <BitTimeline Horizontal LineStyle="BitLineStyle.Dashed" Items="basicCustoms" NameSelectors="nameSelectors" />
 </DemoExample>
 
 <DemoExample Title="Item customization" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>

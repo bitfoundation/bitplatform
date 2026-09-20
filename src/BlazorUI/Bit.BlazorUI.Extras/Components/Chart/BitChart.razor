@@ -1,26 +1,26 @@
 @namespace Bit.BlazorUI
 
 <div class="@RootClass" style="@RootStyle" dir="@Dir?.ToString().ToLowerInvariant()" id="@Id" @attributes="HtmlAttributes">
-    @if (_scene.Title is { } title && TitleSide(title) == BitChartPosition.Top)
+    @if (_scene.Title is { } title && TitleSide(title) == BitPlacement.Top)
     {
         @RenderTitle(title, "bit-cht-ttl")
     }
-    @if (_scene.Subtitle is { } sub && TitleSide(sub) == BitChartPosition.Top)
+    @if (_scene.Subtitle is { } sub && TitleSide(sub) == BitPlacement.Top)
     {
         @RenderTitle(sub, "bit-cht-sub")
     }
 
-    @if (_scene.Legend is { Position: BitChartPosition.Top })
+    @if (_scene.Legend is { Placement: BitPlacement.Top })
     {
         @RenderLegend(_scene.Legend)
     }
 
     <div class="bit-cht-mid">
-        @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) == BitChartPosition.Left)
+        @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) == BitPlacement.Left)
         {
             @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v")
         }
-        @if (_scene.Legend is { Position: BitChartPosition.Left })
+        @if (_scene.Legend is { Placement: BitPlacement.Left })
         {
             @RenderLegend(_scene.Legend)
         }
@@ -204,26 +204,26 @@
             }
         </div>
 
-        @if (_scene.Legend is { Position: BitChartPosition.Right })
+        @if (_scene.Legend is { Placement: BitPlacement.Right })
         {
             @RenderLegend(_scene.Legend)
         }
-        @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) == BitChartPosition.Right)
+        @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) == BitPlacement.Right)
         {
             @RenderTitle(rightTitle, "bit-cht-ttl bit-cht-ttl-v")
         }
     </div>
 
-    @if (_scene.Legend is { Position: BitChartPosition.Bottom })
+    @if (_scene.Legend is { Placement: BitPlacement.Bottom })
     {
         @RenderLegend(_scene.Legend)
     }
 
-    @if (_scene.Subtitle is { } subBottom && TitleSide(subBottom) == BitChartPosition.Bottom)
+    @if (_scene.Subtitle is { } subBottom && TitleSide(subBottom) == BitPlacement.Bottom)
     {
         @RenderTitle(subBottom, "bit-cht-sub")
     }
-    @if (_scene.Title is { } titleBottom && TitleSide(titleBottom) == BitChartPosition.Bottom)
+    @if (_scene.Title is { } titleBottom && TitleSide(titleBottom) == BitPlacement.Bottom)
     {
         @RenderTitle(titleBottom, "bit-cht-ttl")
     }
@@ -297,7 +297,7 @@
 
     private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
     {
-        bool vertical = legend.Position is BitChartPosition.Left or BitChartPosition.Right;
+        bool vertical = legend.Placement is BitPlacement.Left or BitPlacement.Right;
         <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h")"
              role="group" aria-label="@(legend.Title ?? "Chart legend")"
              style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "")">

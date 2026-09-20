@@ -3,6 +3,23 @@
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
 
+## Never edit outside this folder
+
+**`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
+Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
+here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`,
+`Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
+change in here does to them.
+
+This bites hardest on a rename or a deletion in the public API: the Boilerplate consumes bit BlazorUI,
+so retiring a type leaves it referencing something that no longer exists. That is still not a reason
+to edit it. **Report what broke and where, and leave the fix to the maintainer** - the templates are
+versioned and released on their own schedule, and a BlazorUI branch that carries template changes is a
+branch that cannot be merged on its own.
+
+So: grep the whole repo to *find out* what a change reaches, and say so. Only write inside
+`src/BlazorUI`.
+
 ## Demo pages
 
 A component's demo page is
@@ -22,6 +39,12 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 - **A section only uses what has already been introduced.** A demo page is read from the top down, so
   a section may only use the parameters and the features its own section, or an earlier one, has
   introduced.
+- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
+  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are written once in
+  `Models/SharedSubEnums.cs`; a page adds the one it needs to its sub-enum list and points its row at
+  the table's stable id (`Href="#placement-enum"`). Which of the values a particular parameter honours
+  is the row's own `Description` - it is what the site renders and what the MCP server hands an agent,
+  and a component honouring four of nine values says nothing without it.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
@@ -123,7 +146,7 @@ all it takes for it to appear in the catalog, the search index and the completio
   cannot read a schema).
 - **The server's `instructions`** (`BlazorUIMcpInstructions`) are all it says before being asked
   anything, so they carry only what a per-tool description cannot: which tool to call first, and the
-  six rules that decide whether markup that compiles also looks right. Nothing else on the server
+  seven rules that decide whether markup that compiles also looks right. Nothing else on the server
   restates them - the prompts point at them - and their counts are interpolated from the catalogs,
   never typed.
 - **Redundancy is designed out of the answers too.** A component's own types are documented in full;
