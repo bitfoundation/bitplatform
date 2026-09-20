@@ -307,7 +307,7 @@ public partial class BitCalendarDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the picker produces sits on. The buttons, the keys and what is typed into the hour are all held to it.",
         },
         new()
         {
@@ -342,7 +342,7 @@ public partial class BitCalendarDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the picker produces sits on - which is what turns it into a five-minute or quarter-hour picker. The buttons, the keys and what is typed into the minute are all held to it.",
         },
         new()
         {
