@@ -226,7 +226,26 @@ public class BitActionButtonTests : BunitTestContext
 
         var button = component.Find(".bit-acb");
 
-        Assert.IsTrue(button?.GetAttribute("aria-describedby")?.Contains(ariaDescription));
+        // aria-describedby takes an id, never the text itself: the description lives in a visually hidden
+        // sibling the attribute points at, so it is read after the name without becoming part of it.
+        var describedBy = button.GetAttribute("aria-describedby");
+        Assert.AreEqual($"{button.Id}-dsc", describedBy);
+
+        var description = component.Find($"[id='{describedBy}']");
+        Assert.AreEqual(ariaDescription, description.TextContent);
+        Assert.IsTrue(description.ClassList.Contains("bit-acb-dsc"));
+        Assert.IsFalse(button.Contains(description), "The description must not sit inside the button, or it would leak into its accessible name.");
+    }
+
+    [TestMethod]
+    public void BitActionButtonWithoutAriaDescriptionShouldRenderNoDescription()
+    {
+        var component = RenderComponent<BitActionButton>();
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsFalse(button.HasAttribute("aria-describedby"));
+        Assert.AreEqual(0, component.FindAll(".bit-acb-dsc").Count);
     }
 
     [TestMethod,
@@ -258,7 +277,174 @@ public class BitActionButtonTests : BunitTestContext
 
         var button = component.Find(".bit-acb");
 
+        // A valueless aria-hidden is not "true" to assistive technologies, so the attribute is either "true" or absent.
         Assert.AreEqual(ariaHidden, button.HasAttribute("aria-hidden"));
+        Assert.AreEqual(ariaHidden ? "true" : null, button.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(true, null),
+        DataRow(false, null),
+        DataRow(true, "https://bitplatform.dev"),
+        DataRow(false, "https://bitplatform.dev")
+    ]
+    public void BitActionButtonAutoFocusTest(bool autoFocus, string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+            parameters.Add(p => p.Href, href);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(autoFocus, button.HasAttribute("autofocus"));
+    }
+
+    // Autofocus pulls the focus on the first render, so it follows the same rule as the tab order: a button hidden
+    // from assistive technologies, or a disabled one that is not kept focusable, must not take it.
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonAriaHiddenShouldSuppressAutoFocus(string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.IsFalse(button.HasAttribute("autofocus"));
+        Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(null, false, false),
+        DataRow(null, true, true),
+        DataRow("https://bitplatform.dev", false, false),
+        DataRow("https://bitplatform.dev", true, true)
+    ]
+    public void BitActionButtonDisabledShouldSuppressAutoFocusUnlessDisabledFocusIsAllowed(string? href, bool allowDisabledFocus, bool expectedAutoFocus)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(expectedAutoFocus, button.HasAttribute("autofocus"));
+    }
+
+    // A false the component writes over a splatted attribute removes it, so the suppression reaches a hand-written
+    // autofocus as well.
+    [TestMethod]
+    public void BitActionButtonShouldRemoveTheSplattedAutoFocusWhenAriaHidden()
+    {
+        var button = RenderSplatted(new() { ["autofocus"] = true, ["AriaHidden"] = true }).Find(".bit-acb");
+
+        Assert.IsFalse(button.HasAttribute("autofocus"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("my-form")
+    ]
+    public void BitActionButtonFormIdTest(string? formId)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.FormId, formId);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(formId, button.GetAttribute("form"));
+    }
+
+    // A null or false the component writes over a splatted attribute removes that attribute rather than
+    // leaving it alone, so form and autofocus are resolved against what the page wrote by hand.
+    [TestMethod]
+    public void BitActionButtonShouldKeepTheSplattedFormAndAutoFocus()
+    {
+        var button = RenderSplatted(new() { ["form"] = "outer-form", ["autofocus"] = true }).Find(".bit-acb");
+
+        Assert.AreEqual("outer-form", button.GetAttribute("form"));
+        Assert.IsTrue(button.HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonFormIdShouldWinOverTheSplattedForm()
+    {
+        var button = RenderSplatted(new() { ["form"] = "outer-form", ["FormId"] = "my-form" }).Find(".bit-acb");
+
+        Assert.AreEqual("my-form", button.GetAttribute("form"));
+    }
+
+    // The attributes a page writes by hand reach the component the way @attributes sends them, which is the
+    // only path a lowercase name matching a parameter of the component can take.
+    private IRenderedComponent<BitActionButton> RenderSplatted(Dictionary<string, object> attributes)
+    {
+        return Context.Render<BitActionButton>(builder =>
+        {
+            builder.OpenComponent<BitActionButton>(0);
+            builder.AddMultipleAttributes(1, attributes);
+            builder.CloseComponent();
+        });
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconUrlShouldRenderImageIcon()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/icon.svg");
+            parameters.Add(p => p.Classes, new BitActionButtonClassStyles { Icon = "custom-icon" });
+            parameters.Add(p => p.Styles, new BitActionButtonClassStyles { Icon = "width: 2rem;" });
+            parameters.AddChildContent("Content");
+        });
+
+        var image = component.Find("img.bit-acb-icu");
+
+        Assert.AreEqual("/images/icon.svg", image.GetAttribute("src"));
+        Assert.AreEqual("", image.GetAttribute("alt"));
+        Assert.AreEqual("true", image.GetAttribute("aria-hidden"));
+        Assert.IsTrue(image.ClassList.Contains("custom-icon"));
+        Assert.AreEqual("width: 2rem;", image.GetAttribute("style"));
+        Assert.AreEqual(0, component.FindAll(".bit-acb-ico").Count);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconNameShouldTakePrecedenceOverIconUrl()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.IconUrl, "/images/icon.svg");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-acb-ico").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconUrlShouldBeReplacedBySpinnerWhileLoading()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/icon.svg");
+            parameters.Add(p => p.IsLoading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-acb-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
     }
 
     [TestMethod,
@@ -508,6 +694,64 @@ public class BitActionButtonTests : BunitTestContext
         var button = component.Find(".bit-acb");
 
         Assert.AreEqual(underlined, button.ClassList.Contains("bit-acb-und"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitActionButtonIconOnlyClassTest(bool iconOnly)
+    {
+        // The class is what squares the box off, so it has to follow the parameter at runtime too.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, iconOnly);
+            parameters.Add(p => p.IconName, "Phone");
+            parameters.Add(p => p.AriaLabel, "Call");
+            parameters.AddChildContent("Call");
+        });
+
+        Assert.AreEqual(iconOnly, component.Find(".bit-acb").ClassList.Contains("bit-acb-ion"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, iconOnly is false);
+            parameters.Add(p => p.IconName, "Phone");
+            parameters.Add(p => p.AriaLabel, "Call");
+            parameters.AddChildContent("Call");
+        });
+
+        Assert.AreEqual(iconOnly is false, component.Find(".bit-acb").ClassList.Contains("bit-acb-ion"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitActionButtonNoWrapClassTest(bool noWrap)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, noWrap);
+            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("A label longer than the room it has been given");
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual(noWrap, button.ClassList.Contains("bit-acb-nwr"));
+
+        // The class is registered on the builder, so flipping the parameter has to re-render it.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoWrap, noWrap is false);
+            parameters.Add(p => p.FullWidth, true);
+            parameters.Add(p => p.IconName, "Add");
+            parameters.AddChildContent("A label longer than the room it has been given");
+        });
+
+        Assert.AreEqual(noWrap is false, component.Find(".bit-acb").ClassList.Contains("bit-acb-nwr"));
     }
 
     [TestMethod,
@@ -1005,13 +1249,17 @@ public class BitActionButtonTests : BunitTestContext
             AllowDisabledFocus = true,
             AriaDescription = "Test description",
             AriaHidden = true,
+            AutoFocus = true,
             ButtonType = BitButtonType.Reset,
             Color = BitColor.Warning,
+            FormId = "my-form",
             FullWidth = true,
             Href = "https://bitplatform.dev",
             IconName = "Share",
+            IconUrl = "/images/icon.svg",
             IconOnly = true,
             IconPosition = BitIconPosition.End,
+            NoWrap = true,
             Underlined = true,
             Rel = BitLinkRels.NoOpener,
             Size = BitSize.Small,
@@ -1038,13 +1286,17 @@ public class BitActionButtonTests : BunitTestContext
         Assert.IsTrue(instance.AllowDisabledFocus);
         Assert.AreEqual("Test description", instance.AriaDescription);
         Assert.IsTrue(instance.AriaHidden);
+        Assert.IsTrue(instance.AutoFocus);
         Assert.AreEqual(BitButtonType.Reset, instance.ButtonType);
         Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual("my-form", instance.FormId);
         Assert.IsTrue(instance.FullWidth);
         Assert.AreEqual("https://bitplatform.dev", instance.Href);
         Assert.AreEqual("Share", instance.IconName);
+        Assert.AreEqual("/images/icon.svg", instance.IconUrl);
         Assert.IsTrue(instance.IconOnly);
         Assert.AreEqual(BitIconPosition.End, instance.IconPosition);
+        Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Underlined);
         Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
         Assert.AreEqual(BitSize.Small, instance.Size);
@@ -1706,8 +1958,10 @@ public class BitActionButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitActionButtonStatusRegionShouldAlwaysExistAndBeEmptyWhenNotLoading()
+    public void BitActionButtonStatusRegionShouldExistBeforeTheLoadingStarts()
     {
+        // A live region only announces what changes inside one already in the document, so the region is rendered
+        // from the first render - and left out altogether for a button whose loading has nothing to announce.
         var component = RenderComponent<BitActionButton>(parameters =>
         {
             parameters.Add(p => p.LoadingLabel, "Saving...");
@@ -1717,6 +1971,14 @@ public class BitActionButtonTests : BunitTestContext
         var status = component.Find(".bit-acb-sts");
 
         Assert.AreEqual(string.Empty, status.TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.LoadingLabel, null);
+            parameters.AddChildContent("Save");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-acb-sts"));
     }
 
     [TestMethod]
@@ -1819,6 +2081,218 @@ public class BitActionButtonTests : BunitTestContext
         var spinner = component.Find(".bit-acb-spn");
 
         Assert.AreEqual("true", spinner.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, null, "-1"),
+        DataRow(false, true, null, "0"),
+        DataRow(false, true, "3", "3"),
+        DataRow(true, false, null, null),
+        DataRow(true, false, "3", "3")
+    ]
+    public void BitActionButtonDisabledAnchorShouldOnlyBeFocusableWithAllowDisabledFocus(bool isEnabled, bool allowDisabledFocus, string? tabIndex, string? expectedTabIndex)
+    {
+        // A disabled anchor has no href, and an anchor without one is only focusable through an explicit tabindex.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var anchor = component.Find("a.bit-acb");
+
+        Assert.AreEqual(expectedTabIndex, anchor.GetAttribute("tabindex"));
+        Assert.AreEqual(isEnabled, anchor.HasAttribute("href"));
+    }
+
+    [TestMethod,
+        DataRow(null, "0"),
+        DataRow("3", "3")
+    ]
+    public void BitActionButtonLoadingAnchorShouldStayFocusable(string? tabIndex, string expectedTabIndex)
+    {
+        // The href is dropped while loading, so without an explicit tabindex the focus a keyboard user gave the
+        // link would jump to the document the moment the click started the loading state.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.TabIndex, tabIndex);
+        });
+
+        var anchor = component.Find("a.bit-acb");
+
+        Assert.IsFalse(anchor.HasAttribute("href"));
+        Assert.AreEqual("true", anchor.GetAttribute("aria-busy"));
+        Assert.AreEqual(expectedTabIndex, anchor.GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonAriaHiddenShouldRemoveTheButtonFromTheTabOrder(string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        var button = component.Find(".bit-acb");
+
+        Assert.AreEqual("true", button.GetAttribute("aria-hidden"));
+        Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconAndContentShouldSitInsideInnerWrapperForIconPositionEnd()
+    {
+        // The end position is a flex-direction flip on the inner wrapper, so the icon and the content have to
+        // be its direct children for the flip to reorder them.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Forward");
+            parameters.Add(p => p.IconPosition, BitIconPosition.End);
+            parameters.AddChildContent("Next");
+        });
+
+        var inner = component.Find(".bit-acb-eni > .bit-acb-inn");
+
+        Assert.IsNotNull(inner);
+        Assert.AreEqual(2, inner.Children.Length);
+        Assert.IsTrue(inner.Children[0].ClassList.Contains("bit-acb-ico"));
+        Assert.IsTrue(inner.Children[1].ClassList.Contains("bit-acb-con"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonStatusRegionShouldSitOutsideTheControl()
+    {
+        // The live region carries the loading label for screen readers, and the button already shows it. Inside the
+        // control the two would concatenate into its accessible name ("Saving... Saving..."), so it is a sibling.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+            parameters.AddChildContent("Save");
+        });
+
+        var control = component.Find(".bit-acb");
+        var status = component.Find(".bit-acb-sts");
+
+        Assert.IsFalse(control.Contains(status));
+        Assert.AreEqual("Saving...", control.TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonDescriptionShouldSitOutsideTheControl(string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.Add(p => p.AriaDescription, "SVG, 12 kilobytes");
+            parameters.AddChildContent("Download");
+        });
+
+        var control = component.Find(".bit-acb");
+        var description = component.Find(".bit-acb-dsc");
+
+        Assert.IsFalse(control.Contains(description));
+        Assert.AreEqual(description.Id, control.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Download", control.TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonShouldKeepTheSplattedAriaAttributes(string? href)
+    {
+        // A hyphenated aria-* name never reaches the parameter that mirrors it, so it arrives as a splatted attribute -
+        // which the component's own null would silently remove rather than leave alone.
+        var control = RenderSplatted(new()
+        {
+            ["Href"] = href!,
+            ["aria-label"] = "Splatted label",
+            ["aria-describedby"] = "page-hint",
+            ["aria-disabled"] = "true",
+            ["aria-busy"] = "true"
+        }).Find(".bit-acb");
+
+        Assert.AreEqual("Splatted label", control.GetAttribute("aria-label"));
+        Assert.AreEqual("page-hint", control.GetAttribute("aria-describedby"));
+        Assert.AreEqual("true", control.GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", control.GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonAriaDescriptionShouldJoinTheSplattedDescribedBy()
+    {
+        // aria-describedby is a list of ids, so the component's description is added to the page's rather than replacing it.
+        var component = RenderSplatted(new()
+        {
+            ["AriaDescription"] = "SVG, 12 kilobytes",
+            ["aria-describedby"] = "page-hint"
+        });
+
+        var describedBy = component.Find(".bit-acb").GetAttribute("aria-describedby");
+
+        Assert.AreEqual($"page-hint {component.Find(".bit-acb-dsc").Id}", describedBy);
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public void BitActionButtonSplattedAriaHiddenShouldRemoveTheControlFromTheTabOrder(string? href)
+    {
+        var control = RenderSplatted(new()
+        {
+            ["Href"] = href!,
+            ["AutoFocus"] = true,
+            ["aria-hidden"] = "true"
+        }).Find(".bit-acb");
+
+        Assert.AreEqual("true", control.GetAttribute("aria-hidden"));
+        Assert.AreEqual("-1", control.GetAttribute("tabindex"));
+        Assert.IsFalse(control.HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonSplattedRoleShouldSurviveTheDisabledAnchorsLinkRole()
+    {
+        var control = RenderSplatted(new()
+        {
+            ["Href"] = "https://bitplatform.dev",
+            ["IsEnabled"] = false,
+            ["role"] = "menuitem"
+        }).Find(".bit-acb");
+
+        Assert.AreEqual("menuitem", control.GetAttribute("role"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("https://bitplatform.dev")
+    ]
+    public async Task BitActionButtonFocusAsyncShouldFocusTheRootElement(string? href)
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.Href, href);
+            parameters.AddChildContent("Focus me");
+        });
+
+        await component.Instance.FocusAsync();
+
+        var invocation = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.HasCount(1, invocation);
     }
 
     private static string GetColorClass(BitColor? color) => color switch
