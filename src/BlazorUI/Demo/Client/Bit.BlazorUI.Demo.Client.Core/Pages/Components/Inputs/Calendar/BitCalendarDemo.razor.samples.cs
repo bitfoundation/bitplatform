@@ -251,6 +251,11 @@ private void HandleOnEventDayClick(DateTimeOffset? date)
 </BitCalendar>
 <div>Selected: @(footerDate.HasValue ? footerDate.Value.ToString(""d"") : ""-"")</div>";
 
+    private readonly string example10CsharpCode = @"
+private CultureInfo culture = CultureInfo.CurrentUICulture;
+
+private DateTimeOffset? footerDate;";
+
     private readonly string example11RazorCode = @"
 <BitCalendar GoToTodayTitle=""برو به امروز"" Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
 
@@ -501,6 +506,30 @@ private void HandleInvalidSubmit()
             --bit-Calendar-event-size: 0.375rem;"">
     <BitCalendar Events=""@calendarEvents"" />
 </div>";
+
+    private readonly string example18CsharpCode = @"
+private DateTimeOffset? cssVarsDate = DateTimeOffset.Now.AddDays(2);
+
+private List<BitCalendarEvent> calendarEvents =
+[
+    new() { Title = ""Team standup"",
+            Body = ""Daily sync with the engineering team."",
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            StartTime = new TimeOnly(9, 0),
+            EndTime = new TimeOnly(9, 30) },
+    new() { Title = ""Product review"",
+            Body = ""Quarterly product review — prepare slides beforehand."",
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(15, 0) },
+    new() { Title = ""All-day workshop"",
+            Body = ""Full-day frontend architecture workshop."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+    new() { Title = ""Client call"",
+            Body = ""Introductory call with the new client."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
+            StartTime = new TimeOnly(11, 30) }
+];";
 
     private readonly string example19RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" ShowTimePicker ShowWeekNumbers />";
