@@ -57,6 +57,10 @@ public partial class BitToggleButton : BitComponentBase
     /// The default <see cref="BitToggleButtonAriaMode.Auto"/> drops <c>aria-pressed</c> when the accessible name
     /// of the toggle button changes between the two states, since a changing name already conveys the state and
     /// announcing both makes the toggle button ambiguous.
+    /// <br />
+    /// <c>aria-pressed</c> is a state of the button role alone, so a <c>role</c> written on the component by hand -
+    /// a <c>menuitemcheckbox</c> in a menu, an <c>option</c> in a listbox - takes it with it whatever this mode says,
+    /// and the state that pattern reads (an <c>aria-checked</c>) is then the page's to write.
     /// </remarks>
     [Parameter] public BitToggleButtonAriaMode? AriaMode { get; set; }
 
@@ -777,8 +781,10 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     private bool AccessibleNameChanges()
     {
-        // aria-labelledby wins the accessible name computation, so a stable value there pins the name for both states
-        if (AriaLabelledBy.HasValue()) return false;
+        // aria-labelledby wins the accessible name computation, so a stable value there pins the name for both states.
+        // The hyphenated name arrives as a splatted attribute rather than as the parameter (see the razor), and the
+        // name a screen reader computes does not care which of the two the page reached for.
+        if ((AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby")).HasValue()) return false;
 
         return AccessibleName(true) != AccessibleName(false);
     }
@@ -796,6 +802,13 @@ public partial class BitToggleButton : BitComponentBase
             : (OffAriaLabel.HasValue() ? OffAriaLabel : AriaLabel);
 
         if (ariaLabel.HasValue()) return ariaLabel;
+
+        // An aria-label written by hand outranks the content and the title here exactly as the parameter does, and
+        // being the same in both states it is what keeps the name - and with it aria-pressed - stable over a pair of
+        // per-state texts.
+        var splattedAriaLabel = GetSplattedAttribute("aria-label");
+
+        if (splattedAriaLabel.HasValue()) return splattedAriaLabel;
 
         // A template is content this cannot read, and it is never empty, so the walk stops here rather than
         // falling through to the title. Both states answer the same, which is what leaves aria-pressed in place

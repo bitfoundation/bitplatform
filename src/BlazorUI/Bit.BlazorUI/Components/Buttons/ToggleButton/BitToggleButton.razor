@@ -17,16 +17,22 @@
     var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
     var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
     var ariaLabelledBy = AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby");
-    // The state attribute is the component's own, so it wins where it has one to write; where AriaMode leaves it out
-    // altogether, a value the page wrote by hand is what is left and is kept.
-    var ariaPressed = GetAriaPressed() ?? GetSplattedAttribute("aria-pressed");
-    var ariaChecked = GetAriaChecked() ?? GetSplattedAttribute("aria-checked");
-    var ariaExpanded = GetAriaExpanded() ?? GetSplattedAttribute("aria-expanded");
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
     // The toggle button pattern is a button unless AriaMode asks for a switch, but a page that gave it a role of its
     // own - a menuitemcheckbox in a menu, an option in a listbox - means that one and keeps it.
-    var role = GetSplattedAttribute("role") ?? GetRole();
+    var pageRole = GetSplattedAttribute("role");
+    var role = pageRole ?? GetRole();
+    // aria-pressed is a state of the button role alone, so a page that named a pattern of its own takes the state
+    // with it: the checked state a menu understands is aria-checked, and writing aria-pressed beside its role names
+    // nothing. The other two are not the button's own - aria-checked and aria-expanded are read on the roles a toggle
+    // button is given by hand as well - so an explicit AriaMode still writes them there.
+    var ownPattern = pageRole is null || pageRole == (GetRole() ?? "button");
+    // The state attribute is the component's own, so it wins where it has one to write; where AriaMode leaves it out
+    // altogether, a value the page wrote by hand is what is left and is kept.
+    var ariaPressed = (ownPattern ? GetAriaPressed() : null) ?? GetSplattedAttribute("aria-pressed");
+    var ariaChecked = GetAriaChecked() ?? GetSplattedAttribute("aria-checked");
+    var ariaExpanded = GetAriaExpanded() ?? GetSplattedAttribute("aria-expanded");
     // Autofocus follows the same rule as the tab order below: a control hidden from assistive technologies, or a
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.

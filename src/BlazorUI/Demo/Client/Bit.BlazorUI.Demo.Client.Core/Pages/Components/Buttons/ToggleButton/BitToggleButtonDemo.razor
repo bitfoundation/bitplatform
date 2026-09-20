@@ -1,4 +1,4 @@
-@page "/components/togglebutton"
+﻿@page "/components/togglebutton"
 @page "/components/toggle-button"
 
 <PageOutlet Url="components/togglebutton"
@@ -521,10 +521,13 @@
             Underneath all of it is a real <b>&lt;button&gt;</b>, so Enter and Space toggle it, Tab reaches it, and the
             focus ring is drawn for the keyboard and not for the mouse. Where the toggle button belongs to a larger
             pattern, a <b>role</b> or an <b>aria-*</b> attribute written on it by hand is kept beside what it writes
-            itself - here a menu item that carries its own checked state:
+            itself, and naming a pattern of its own takes the state attribute with it: <b>aria-pressed</b> is a state
+            of the button role alone, so a menu item writes the state a menu reads instead - here <b>aria-checked</b>:
         </div><br />
         <div class="example-box">
             <BitToggleButton role="menuitemcheckbox" Variant="BitVariant.Text"
+                             aria-checked="@statusBarVisible.ToString().ToLower()"
+                             @bind-IsChecked="statusBarVisible"
                              AriaLabel="Show the status bar" ShowCheckMark FixedCheckMark Text="Status bar" />
         </div>
     </DemoExample>

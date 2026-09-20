@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
 
 public partial class BitToggleButtonDemo
 {
@@ -996,6 +996,7 @@ public partial class BitToggleButtonDemo
     private int blockedClickCounter;
 
     private bool detailsVisible;
+    private bool statusBarVisible;
 
 
 

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ToggleButton;
 
 public partial class BitToggleButtonDemo
 {
@@ -287,6 +287,8 @@ private async Task HandleAutoLoadingChange()
 <div id=""accessibility-details"">@(detailsVisible ? ""The details panel is visible."" : ""The details panel is hidden."")</div>
 
 <BitToggleButton role=""menuitemcheckbox"" Variant=""BitVariant.Text""
+                 aria-checked=""@statusBarVisible.ToString().ToLower()""
+                 @bind-IsChecked=""statusBarVisible""
                  AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 
     private readonly string example14RazorCode = @"

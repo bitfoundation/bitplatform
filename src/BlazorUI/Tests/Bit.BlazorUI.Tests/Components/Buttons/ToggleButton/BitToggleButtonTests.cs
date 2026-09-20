@@ -905,6 +905,55 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitToggleButtonAnAriaLabelWrittenByHandShouldKeepAriaPressed()
+    {
+        // The accessible name is what is rendered rather than what the parameters alone say: a hand-written
+        // aria-label outranks the two texts and reads the same in both states, so the name does not change with
+        // the state and the state attribute stays.
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["OnText"] = "Muted",
+            ["OffText"] = "Unmuted",
+            ["aria-label"] = "Mute"
+        }).Find(".bit-tgb");
+
+        Assert.AreEqual("Mute", bitToggleButton.GetAttribute("aria-label"));
+        Assert.AreEqual("false", bitToggleButton.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonAnAriaLabelledByWrittenByHandShouldKeepAriaPressed()
+    {
+        // aria-labelledby wins the name computation outright, so wherever it points the name is pinned for both states
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["OnText"] = "Muted",
+            ["OffText"] = "Unmuted",
+            ["aria-labelledby"] = "microphone-label"
+        }).Find(".bit-tgb");
+
+        Assert.AreEqual("microphone-label", bitToggleButton.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("false", bitToggleButton.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonARoleWrittenByHandShouldTakeTheStateAttributeWithIt()
+    {
+        // aria-pressed is a state of the button role alone, so a page that named a pattern of its own writes the
+        // state that pattern reads - the aria-checked of a menu item here - and the component writes none of its own.
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["Text"] = "Status bar",
+            ["role"] = "menuitemcheckbox",
+            ["aria-checked"] = "true"
+        }).Find(".bit-tgb");
+
+        Assert.AreEqual("menuitemcheckbox", bitToggleButton.GetAttribute("role"));
+        Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-checked"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
     public void BitToggleButtonSplattedAriaHiddenShouldRemoveItFromTheTabOrder()
     {
         var bitToggleButton = RenderSplatted(new()
