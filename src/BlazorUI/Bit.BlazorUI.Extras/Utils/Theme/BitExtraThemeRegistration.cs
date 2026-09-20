@@ -30,17 +30,25 @@ public static class BitExtraThemeRegistration
     /// Registers this package's presets. Runs automatically when the assembly loads; safe to call
     /// again, and safe to call from several threads.
     /// </summary>
+    // CA2255 says a library should not use a module initializer, because the consumer cannot see
+    // when it runs. That is the point here: what runs is one idempotent dictionary fill with no
+    // ordering requirement of its own, and running it at load is what lets naming a preset be all an
+    // app has to do. The method is public and callable for the case the attribute does not cover -
+    // an app that links a bundle but never touches this assembly - which is the alternative CA2255
+    // would push us to, offered rather than imposed.
+#pragma warning disable CA2255
     [ModuleInitializer]
+#pragma warning restore CA2255
     public static void Register()
     {
         BitThemePresetRegistry.Register(
         [
-            new() { Name = BitExtraThemeTokens.Fluent2Light, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
-            new() { Name = BitExtraThemeTokens.Fluent2Dark, BackgroundPrimary = "#131313", BackgroundSecondary = "#1F1F1F" },
-            new() { Name = BitExtraThemeTokens.MaterialLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F1F6FA" },
-            new() { Name = BitExtraThemeTokens.MaterialDark, BackgroundPrimary = "#0C131B", BackgroundSecondary = "#182029" },
-            new() { Name = BitExtraThemeTokens.CupertinoLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
-            new() { Name = BitExtraThemeTokens.CupertinoDark, BackgroundPrimary = "#131313", BackgroundSecondary = "#202020" },
+            new() { Name = BitExtraThemePresets.Fluent2Light, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
+            new() { Name = BitExtraThemePresets.Fluent2Dark, BackgroundPrimary = "#131313", BackgroundSecondary = "#1F1F1F" },
+            new() { Name = BitExtraThemePresets.MaterialLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F1F6FA" },
+            new() { Name = BitExtraThemePresets.MaterialDark, BackgroundPrimary = "#0C131B", BackgroundSecondary = "#182029" },
+            new() { Name = BitExtraThemePresets.CupertinoLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
+            new() { Name = BitExtraThemePresets.CupertinoDark, BackgroundPrimary = "#131313", BackgroundSecondary = "#202020" },
         ]);
     }
 }

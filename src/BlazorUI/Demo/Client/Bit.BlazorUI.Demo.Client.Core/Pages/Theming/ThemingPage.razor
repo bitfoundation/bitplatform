@@ -1,4 +1,4 @@
-﻿@page "/theming"
+@page "/theming"
 @inherits AppComponentBase
 
 @code {
@@ -597,6 +597,10 @@ public static class BitThemePresetsExtensions
                 </BitText>
 
                 <BitText>
+                    An extension member needs C#&nbsp;14 on the reading side too, and it is a property rather than a <code>const</code>. So for a project that compiles at an older language version - the default on <code>net8.0</code> and <code>net9.0</code>, both of which <code>Bit.BlazorUI.Extras</code> still targets, where reading one is <code>CS9202</code> - and for a <code>case</code> label or an attribute argument on any target, the same nine presets are also on <code>BitExtraThemePresets</code> (<code>const</code>s), <code>BitExtraThemeName</code> and <code>BitExtraThemeSurfaces</code>. They say exactly what the extension members say.
+                </BitText>
+
+                <BitText>
                     <b>What C# needs to know about a preset before its CSS can answer</b> - today the two first-paint surfaces - is registered with <code>BitThemePresetRegistry</code>. <code>BitThemeSurfaces</code> is a live view over that registry, so a preset registered by anyone is immediately part of the one table <code>BitThemeHead</code> reads:
                 </BitText>
 
@@ -617,7 +621,11 @@ BitThemePresetRegistry.All;                        // every preset, yours and th
                 </BitText>
 
                 <BitText>
-                    <b>When a package's presets register.</b> A package registers from a module initializer, which the runtime runs before the first access to anything in its assembly - so naming one of its presets in C# is itself what wires it up, and there is no setup call to forget. The one gap is an app that links an Extras bundle and writes the <code>bit-theme</code> token as a bare string, never mentioning the package in C#: nothing loads the assembly, so the first-paint color falls back to the scheme's light/dark surface (everything else is CSS and unaffected). Name the preset through <code>BitThemePresets</code> rather than as a string, or call <code>BitExtraThemeRegistration.Register()</code> once at startup.
+                    <b>When a package's presets register.</b> A package registers from a module initializer, which the runtime runs before the first access to anything in its assembly - so naming one of its presets in C# is itself what wires it up, and there is no setup call to forget. <code>AddBitBlazorUIExtrasServices</code> also calls <code>BitExtraThemeRegistration.Register()</code>, so an app that sets its services up has the packaged surfaces before its first host page renders rather than from whenever something first touches the assembly.
+                </BitText>
+
+                <BitText>
+                    The one gap is an app that does neither - links an Extras bundle, writes the <code>bit-theme</code> token as a bare string, and never mentions the package in C# - where nothing loads the assembly and the first-paint color falls back to the scheme's light/dark surface (everything else is CSS and unaffected). Note that a <code>const</code> from <code>BitExtraThemePresets</code> is inlined by the compiler and so does not load it either. Name the preset through <code>BitThemePresets</code> / <code>BitExtraThemeName</code>, read the surfaces through <code>BitExtraThemeSurfaces</code>, or call <code>BitExtraThemeRegistration.Register()</code> once at startup.
                 </BitText>
             </DocSection>
 
@@ -1700,7 +1708,8 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 <li><code>BitThemeAttributeNames</code></li>
                 <li><code>BitThemePresets</code></li>
                 <li><code>BitThemeName</code></li>
-                <li><code>BitThemePreset</code> / <code>BitThemePresetRegistry</code>: <code>Register</code>, <code>Find</code>, <code>Contains</code>, <code>All</code></li>
+                <li><code>BitThemePreset</code> / <code>BitThemePresetRegistry</code>: <code>Register</code>, <code>Remove</code>, <code>Find</code>, <code>Contains</code>, <code>All</code></li>
+                <li><code>BitExtraThemePresets</code> / <code>BitExtraThemeName</code> / <code>BitExtraThemeSurfaces</code> (the same Extras presets without extension members)</li>
             </ul>
 
             <BitText Element="h4" Typography="BitTypography.H5">Runtime</BitText>

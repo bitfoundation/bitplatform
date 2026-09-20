@@ -66,12 +66,40 @@ public class BitThemeHeadTests : BunitTestContext
     [TestMethod]
     public void BitThemeHeadShouldCarryNoLookupTableWhenTheSchemeFallbackAlreadyCoversTheMap()
     {
-        // The default map's four names share two colors with the light / dark pair, so naming them
+        // The core family's four names share two colors with the light / dark pair, so naming them
         // would put bytes in front of every first paint that resolve to what the fallback already says.
+        // Handed in explicitly rather than left to default: the default is BitThemeSurfaces, a live
+        // view over the process-global registry, which Bit.BlazorUI.Extras has put six presets of its
+        // own into by the time this runs - so taking the default here would assert nothing.
+        var colors = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [BitThemePresets.Light] = BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light],
+            [BitThemePresets.Dark] = BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark],
+            [BitThemePresets.FluentLight] = BitThemeSurfaces.BackgroundPrimary[BitThemePresets.FluentLight],
+            [BitThemePresets.FluentDark] = BitThemeSurfaces.BackgroundPrimary[BitThemePresets.FluentDark],
+        };
+
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.ThemeColors, colors));
+
+        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex(@"\}\[t\]"),
+            "No entry of this map needs naming; the scheme fallback resolves all four, so no lookup object is emitted at all.");
+        StringAssert.Contains(component.Markup, "var c=/dark$/.test(t)?", StringComparison.Ordinal,
+            "What is left is the scheme test alone.");
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldNameThePresetsTheSchemeFallbackWouldGetWrong()
+    {
+        // The other side of the test above, and the default map's actual case: the registry carries
+        // the packaged design systems, whose surfaces are not the core light / dark pair, so those
+        // names - and only those - have to be carried by name in front of the fallback.
         var component = RenderComponent<BitThemeHead>();
 
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex($"'{BitThemePresets.FluentDark}'"),
-            "No entry of the default map needs naming; the scheme fallback resolves all four.");
+        StringAssert.Contains(component.Markup, $"'{BitThemePresets.MaterialDark}':'{BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark]}'", StringComparison.OrdinalIgnoreCase,
+            "material-dark's page surface is not the core dark one, so the fallback would paint the chrome wrong for it.");
+        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex($"'{BitThemePresets.FluentDark}':"),
+            "fluent-dark shares the core dark surface, so naming it would be dead weight in front of every first paint.");
     }
 
     [TestMethod]

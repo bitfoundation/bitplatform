@@ -81,6 +81,24 @@ public static class BitThemePresetRegistry
         }
     }
 
+    /// <summary>
+    /// Removes the preset registered under a name, and reports whether there was one. The name is
+    /// normalized as <see cref="Register(BitThemePreset)"/> normalizes it, so a preset is removed by
+    /// whatever spelling registered it; a name that is not a valid token was never in the table and
+    /// is answered with <see langword="false"/> rather than an exception.
+    /// </summary>
+    /// <remarks>
+    /// The counterpart to registration, for an app that offers a subset of the packaged presets and
+    /// does not want the rest in its picker or its first-paint table - and for a test that registers
+    /// a preset of its own and has to leave the process-global table as it found it.
+    /// </remarks>
+    public static bool Remove(string? name)
+    {
+        var token = BitThemeName.NormalizeToken(name, out _);
+
+        return token is not null && _presets.TryRemove(token, out _);
+    }
+
     /// <summary>The preset registered under a name, or <see langword="null"/> when none is.</summary>
     public static BitThemePreset? Find(string? name)
     {

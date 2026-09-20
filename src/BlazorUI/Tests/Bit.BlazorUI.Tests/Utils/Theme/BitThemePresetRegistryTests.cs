@@ -14,6 +14,21 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 [TestClass]
 public sealed class BitThemePresetRegistryTests
 {
+    /// <summary>
+    /// The registry is process-global, and BitThemeSurfaces - a live view over it - is the map every
+    /// BitThemeHead render defaults to. A preset left behind here would be in another test's markup,
+    /// and in a lookup table the tests above assert the contents of, so every name these tests add is
+    /// taken back out. They all share the acme- prefix for that.
+    /// </summary>
+    [TestCleanup]
+    public void RemoveThePresetsTheseTestsRegistered()
+    {
+        foreach (var preset in BitThemePresetRegistry.All.Where(preset => preset.Name.StartsWith("acme-", StringComparison.Ordinal)))
+        {
+            BitThemePresetRegistry.Remove(preset.Name);
+        }
+    }
+
     [TestMethod]
     public void AnAppRegisteredPresetReachesTheSurfacesTable()
     {
@@ -89,10 +104,30 @@ public sealed class BitThemePresetRegistryTests
     }
 
     [TestMethod]
+    public void RemovingAPresetTakesItOutOfTheSurfacesTable()
+    {
+        BitThemePresetRegistry.Register(new BitThemePreset { Name = "acme-removed-dark", BackgroundPrimary = "#0B0B0B" });
+
+        // By whatever spelling registered it, since that is how Register itself reads a name.
+        Assert.IsTrue(BitThemePresetRegistry.Remove("  ACME-Removed-Dark  "));
+        Assert.IsFalse(BitThemePresetRegistry.Contains("acme-removed-dark"));
+        Assert.IsFalse(BitThemeSurfaces.BackgroundPrimary.ContainsKey("acme-removed-dark"));
+
+        // A name that was never there, and one no token could be made of, are both answered rather
+        // than thrown at - removal is how a caller ensures absence, not how it asserts presence.
+        Assert.IsFalse(BitThemePresetRegistry.Remove("acme-removed-dark"));
+        Assert.IsFalse(BitThemePresetRegistry.Remove("acme theme"));
+        Assert.IsFalse(BitThemePresetRegistry.Remove(null));
+    }
+
+    [TestMethod]
     public void IsDarkFollowsTheSameEndsWithDarkRuleAsEveryOtherLayer()
     {
         Assert.IsTrue(new BitThemePreset { Name = "acme-dark" }.IsDark);
         Assert.IsFalse(new BitThemePreset { Name = "acme-light" }.IsDark);
+        // An instance that has not been through the registry carries the name as written, and
+        // registering it would lower-case that to one every other layer calls dark.
+        Assert.IsTrue(new BitThemePreset { Name = "Acme-Dark" }.IsDark);
         Assert.IsTrue(BitThemePresetRegistry.Find(BitThemePresets.MaterialDark)!.IsDark);
         Assert.IsFalse(BitThemePresetRegistry.Find(BitThemePresets.MaterialLight)!.IsDark);
     }
@@ -117,6 +152,24 @@ public sealed class BitThemePresetRegistryTests
         Assert.AreEqual("material-dark", material);
         Assert.IsTrue(BitThemePresetRegistry.Contains(material));
         Assert.AreEqual(material, BitThemeName.MaterialDark.Value);
+    }
+
+    [TestMethod]
+    public void TheExtrasPresetsAreAlsoReachableWithoutExtensionMembers()
+    {
+        // Extension members are a C# 14 feature on the reading side too, and Bit.BlazorUI.Extras
+        // still targets net8.0 and net9.0, whose consumers compile at C# 12 / 13 by default and are
+        // handed CS9202 for one. BitExtraThemePresets / BitExtraThemeName / BitExtraThemeSurfaces are
+        // what those consumers name, so they have to say exactly what the extension members say - and
+        // BitExtraThemePresets has to stay const, which is the other thing a property cannot be.
+        Assert.AreEqual(BitThemePresets.MaterialDark, BitExtraThemePresets.MaterialDark);
+        Assert.AreEqual(BitThemeName.MaterialDark, BitExtraThemeName.MaterialDark);
+        Assert.AreEqual(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark], BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.MaterialDark]);
+        Assert.AreEqual(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialDark], BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialDark]);
+
+        // const, not static readonly: a case label is the use the extension members cannot serve.
+        const string materialDark = BitExtraThemePresets.MaterialDark;
+        Assert.AreEqual("material-dark", materialDark);
     }
 
     [TestMethod]

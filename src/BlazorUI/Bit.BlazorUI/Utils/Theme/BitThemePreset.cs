@@ -49,11 +49,19 @@ public sealed class BitThemePreset
     public string? BackgroundSecondary { get; init; }
 
     /// <summary>
-    /// Whether this preset paints a dark page, by the "ends with dark" (ordinal) rule the packaged
-    /// stylesheets, the first-paint script and the runtime client all classify names with - so every
-    /// layer puts a given name on the same side of light / dark.
+    /// Whether this preset paints a dark page, by the "ends with dark" rule the packaged stylesheets,
+    /// the first-paint script and the runtime client all classify names with - so every layer puts a
+    /// given name on the same side of light / dark.
     /// </summary>
-    public bool IsDark => Name.EndsWith("dark", StringComparison.Ordinal);
+    /// <remarks>
+    /// Case-insensitive, while those other layers test the attribute value with an ordinal
+    /// <c>/dark$/</c>. They only ever see a name that has been through
+    /// <see cref="BitThemeName.NormalizeToken"/> and so is already lower-case; this property can be
+    /// read off an instance that has not been registered yet, whose <see cref="Name"/> is whatever
+    /// was written - <c>"Acme-Dark"</c> - and which normalization would lower-case to a name those
+    /// layers do call dark. Ignoring case is what keeps the two answers the same.
+    /// </remarks>
+    public bool IsDark => Name.EndsWith("dark", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>The theme name, for the APIs that take one.</summary>
     public BitThemeName ThemeName => BitThemeName.Custom(Name);
