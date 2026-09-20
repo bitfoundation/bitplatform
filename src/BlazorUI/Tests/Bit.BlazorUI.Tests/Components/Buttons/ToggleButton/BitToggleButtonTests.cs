@@ -1158,4 +1158,128 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-sm"));
         Assert.AreEqual(iconOnly, bitToggleButton.ClassList.Contains("bit-tgb-ntx"));
     }
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(true, true),
+        DataRow(false, false)
+    ]
+    public void BitToggleButtonShouldRenderAriaDisabledWhileItIsRefusingClicks(bool isLoading, bool reclickable)
+    {
+        // aria-busy says that something is happening, not that pressing the toggle button now does nothing - so the
+        // loading state that swallows clicks is announced as disabled for as long as it lasts. Reclickable is the
+        // loading state that still takes them, and it is left alone.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Reclickable, reclickable);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual(isLoading && reclickable is false, bitToggleButton.HasAttribute("aria-disabled"));
+
+        // and the button is still enabled, so it keeps the native attribute off and stays in the tab order
+        Assert.IsFalse(bitToggleButton.HasAttribute("disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonIconOnlyShouldTakeItsAccessibleNameFromTheText(bool isChecked)
+    {
+        // An icon-only toggle button renders no wording, so a Text it was given would otherwise be dropped on the
+        // floor and leave a screen reader announcing the button as nothing at all.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Text, "Bold");
+            parameters.Add(p => p.IconName, "Bold");
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("Bold", bitToggleButton.GetAttribute("aria-label"));
+        Assert.IsEmpty(component.FindAll(".bit-tgb-btx"));
+
+        // the name is the same in both states, which is what keeps the state on aria-pressed
+        Assert.AreEqual(isChecked.ToString().ToLower(), bitToggleButton.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonIconOnlyShouldGiveWayToTheNamesWrittenBesideIt()
+    {
+        // The text is read off what was rendered rather than asked for, so anything that names the toggle button
+        // outright wins: the AriaLabel parameter, and an aria-label the page wrote by hand.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.Text, "Bold");
+            parameters.Add(p => p.AriaLabel, "Bold text");
+        });
+
+        Assert.AreEqual("Bold text", component.Find(".bit-tgb").GetAttribute("aria-label"));
+
+        var splatted = RenderSplatted(new()
+        {
+            ["IconOnly"] = true,
+            ["Text"] = "Bold",
+            ["aria-label"] = "Bold text"
+        });
+
+        Assert.AreEqual("Bold text", splatted.Find(".bit-tgb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonIconOnlyShouldNotBorrowTheTextOverATemplate()
+    {
+        // A template is rendered whether or not IconOnly is set, and its own content is what names the toggle
+        // button - so the text is neither rendered nor borrowed there.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.Text, "Bold");
+            parameters.Add(p => p.ChildContent, "<span>B</span>");
+        });
+
+        Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonIconOnlyShouldDropAriaPressedWhenTheBorrowedNameChanges()
+    {
+        // The borrowed name is a name like any other: a per-state text carries the state in it, which is exactly
+        // the case aria-pressed becomes ambiguous in.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.OnText, "Muted");
+            parameters.Add(p => p.OffText, "Unmuted");
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("Unmuted", bitToggleButton.GetAttribute("aria-label"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonIconOnlyShouldAnnounceTheLoadingLabelWithoutShowingIt()
+    {
+        // A word beside the spinner would stretch a square of one glyph into something else for as long as the
+        // loading lasts, so the label an icon-only toggle button shows is the announcement alone.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconName, "Save");
+            parameters.Add(p => p.Text, "Save");
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-tgb-lbl"));
+        Assert.AreEqual(1, component.FindAll(".bit-tgb-spn").Count);
+        Assert.AreEqual("Saving...", component.Find(".bit-tgb-sts").TextContent.Trim());
+    }
 }

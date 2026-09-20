@@ -89,8 +89,8 @@
         <div>
             Icons follow the same shape as the text: <b>IconName</b> for both states, <b>OnIconName</b> and
             <b>OffIconName</b> for one each. <b>IconPosition</b> moves the icon after the content, and <b>IconOnly</b>
-            drops the text and squares up the padding for a compact, toolbar-style button - which leaves nothing behind
-            to name it, so give an icon-only BitToggleButton an <b>AriaLabel</b>.
+            drops the text and squares up the padding for a compact, toolbar-style button - the wording is not thrown
+            away with it, since the <b>Text</b> of a button that renders none becomes its accessible name.
         </div><br />
         <div>IconName:</div><br />
         <BitToggleButton Text="Microphone" IconName="@BitIconName.Microphone" />
@@ -107,8 +107,9 @@
         <br /><br /><br />
         <div>
             A BitToggleButton with no text squares up either way - because none was supplied, or because
-            <b>IconOnly</b> drops the one that was. Both leave nothing behind to name the button, hence the
-            <b>AriaLabel</b> on every one of these:
+            <b>IconOnly</b> drops the one that was. The first two below have nothing left to name them, which is what
+            their <b>AriaLabel</b> is for; the third is announced by the <b>Text</b> it does not render, and the last
+            pins a stable name over a pair of per-state texts:
         </div><br />
         <div class="example-box">
             <BitToggleButton AriaLabel="Mute" IconName="@BitIconName.Microphone" />
@@ -116,7 +117,7 @@
             <BitToggleButton AriaLabel="Mute"
                              OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
 
-            <BitToggleButton IconOnly AriaLabel="Mute" IconName="@BitIconName.Microphone" Text="Microphone" />
+            <BitToggleButton IconOnly IconName="@BitIconName.Microphone" Text="Microphone" />
 
             <BitToggleButton IconOnly AriaLabel="Mute"
                              OnText="Muted" OnIconName="@BitIconName.MicOff"
@@ -320,7 +321,10 @@
         <div>
             A toggle that has to reach a server is not really toggled until the server says so, and clicking it three
             more times in the meantime helps nobody. <b>IsLoading</b> covers the content with a spinner and blocks
-            further clicks for exactly that window; <b>Reclickable</b> lifts the block if the extra clicks are harmless.
+            further clicks for exactly that window. A blocked BitToggleButton stops responding to the pointer with
+            it - no hover shade, no pressed shade, no pointer cursor - and renders <b>aria-disabled</b> beside
+            <b>aria-busy</b>, which says that something is happening rather than that pressing it now does nothing.
+            <b>Reclickable</b> lifts the block, and all of that with it, where the extra clicks are harmless.
         </div><br />
         <div class="example-box">
             <BitToggleButton IsLoading="isLoading" OnText="Muted" OffText="Unmuted" />
@@ -364,6 +368,14 @@
             <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Start" Text="Start" />
             <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Top" Text="Top" />
             <BitToggleButton IsLoading LoadingLabel="Saving..." LoadingLabelPosition="BitLabelPosition.Bottom" Text="Bottom" />
+        </div>
+        <br /><br /><br />
+        <div>
+            On an <b>IconOnly</b> BitToggleButton the label is announced but not shown, so the square keeps its shape
+            while it loads:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IsLoading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
         </div>
         <br /><br /><br />
         <div><b>LoadingTemplate</b> replaces the spinner and the label altogether:</div><br />
@@ -494,12 +506,16 @@
         </div>
         <br /><br /><br />
         <div>
-            An icon-only BitToggleButton has no visible wording at all, so its <b>AriaLabel</b> is its whole name.
-            <b>OnAriaLabel</b> and <b>OffAriaLabel</b> let that name change with the state - useful when the name is
-            better phrased as the action the click performs than as the state it is in. Being a changing name, it
-            drops <b>aria-pressed</b> for the same reason the changing text does:
+            An icon-only BitToggleButton has no visible wording at all, so its <b>Text</b> is read as its name
+            instead of being dropped - the first one below is announced as "Bold". An <b>AriaLabel</b> replaces it
+            where the spoken name should differ from the written one, and <b>OnAriaLabel</b>/<b>OffAriaLabel</b> let
+            that name change with the state - useful when it is better phrased as the action the click performs than
+            as the state it is in. Being a changing name, it drops <b>aria-pressed</b> for the same reason the
+            changing text does:
         </div><br />
         <div class="example-box">
+            <BitToggleButton IconOnly Text="Bold" IconName="@BitIconName.Bold" />
+
             <BitToggleButton IconOnly
                              OnAriaLabel="Unmute" OnIconName="@BitIconName.MicOff"
                              OffAriaLabel="Mute" OffIconName="@BitIconName.Microphone" />

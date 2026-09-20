@@ -11,7 +11,7 @@
     // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
     // by hand is a real thing to do, and losing it would take a control's name or state with it.
     var title = GetTitle() ?? GetSplattedAttribute("title");
-    var ariaLabel = GetAriaLabel() ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = GetAriaLabel() ?? GetSplattedAttribute("aria-label") ?? GetIconOnlyAriaLabel();
     // aria-hidden is both written out and read back - the tab order, the autofocus and the live region below all turn
     // on whether this button is hidden from assistive technologies - so the two are kept apart: what is read back is
     // what the value means, and what is written is the value itself, since anything else written over the page's own
@@ -21,7 +21,13 @@
     var ariaHidden = AriaHidden || splattedAriaHidden is "" || string.Equals(splattedAriaHidden, "true", StringComparison.OrdinalIgnoreCase);
     var ariaHiddenValue = ariaHidden ? "true" : splattedAriaHidden;
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
-    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    // The one condition the click guard is written from, so that what the button refuses, what it says it refuses
+    // and what it looks like never come apart: it is announced as aria-disabled, the default is prevented below and
+    // the class builder takes the pointer affordance away by the same rule. A loading toggle button is disabled for
+    // exactly as long as that lasts and says so, since aria-busy announces that something is happening and not that
+    // activating it now does nothing. Reclickable is the loading state that still takes clicks, and it is left alone.
+    var clickRefused = IsEnabled is false || (IsLoading && Reclickable is false);
+    var ariaDisabled = clickRefused ? "true" : GetSplattedAttribute("aria-disabled");
     var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
     var ariaLabelledBy = AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby");
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
@@ -79,7 +85,7 @@
 
 <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
         @onclick:stopPropagation="StopPropagation"
-        @onclick:preventDefault="@(IsEnabled is false || (IsLoading && Reclickable is false))"
+        @onclick:preventDefault="clickRefused"
         id="@_Id"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
@@ -119,7 +125,10 @@
         {
             <div aria-hidden="true" style="@Styles?.LoadingContainer" class="bit-tgb-ldg @GetLoadingLabelPositionClass() @Classes?.LoadingContainer">
                 <div style="@Styles?.Spinner" class="bit-tgb-spn @Classes?.Spinner"></div>
-                @if (LoadingLabel.HasValue())
+                @* An icon-only toggle button is a square of one glyph, and a word beside the spinner would stretch it
+                   into something else for as long as the loading lasts. The label is still announced by the live
+                   region below, which is where an icon-only button was getting it from in the first place. *@
+                @if (LoadingLabel.HasValue() && IconOnly is false)
                 {
                     <div style="@Styles?.LoadingLabel" class="bit-tgb-lbl @Classes?.LoadingLabel">
                         @LoadingLabel

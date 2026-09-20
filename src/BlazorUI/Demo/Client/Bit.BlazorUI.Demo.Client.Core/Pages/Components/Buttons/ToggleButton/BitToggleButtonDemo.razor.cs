@@ -127,7 +127,7 @@ public partial class BitToggleButtonDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Expands the toggle button width to 100% of the available width.",
+            Description = "Expands the toggle button width to 100% of the available width. The minimum width of the size class goes with it, so the toggle button is never pushed out of a container narrower than the minimum.",
         },
         new()
         {
@@ -148,7 +148,7 @@ public partial class BitToggleButtonDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines that only the icon should be rendered and changes the styles accordingly.",
+            Description = "Determines that only the icon should be rendered and changes the styles accordingly. The wording is not thrown away with the text: where no AriaLabel is given, the Text of the state becomes the accessible name, and a LoadingLabel is announced rather than shown beside the spinner.",
         },
         new()
         {
@@ -171,7 +171,7 @@ public partial class BitToggleButtonDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the toggle button is in the loading state, which covers its content with a spinner and prevents subsequent clicks unless Reclickable is enabled. The content stays in place behind the spinner, so the accessible name does not disappear while the toggle button is busy.",
+            Description = "Determines whether the toggle button is in the loading state, which covers its content with a spinner and prevents subsequent clicks unless Reclickable is enabled. While the clicks are refused the toggle button renders aria-disabled beside aria-busy, and the content stays in place behind the spinner, so the accessible name does not disappear while it is busy.",
         },
         new()
         {
@@ -185,7 +185,7 @@ public partial class BitToggleButtonDemo
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The loading label text to show next to the spinner icon. It is also announced by a live region beside the toggle button when the loading state begins.",
+            Description = "The loading label text to show next to the spinner icon. It is also announced by a live region beside the toggle button when the loading state begins. On an IconOnly toggle button the announcement is all of it: the label is not shown, since it would stretch the square while it lasts.",
         },
         new()
         {
@@ -586,7 +586,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-min-width",
             DefaultValue = "--bit-siz-ctrl-min-width",
-            Description = "Smallest width of the box. An icon-only toggle button falls back to its minimum height rather than to the control minimum, which is what keeps it square.",
+            Description = "Smallest width of the box. An icon-only toggle button falls back to its minimum height rather than to the control minimum, which is what keeps it square, and a FullWidth one drops the minimum altogether, since a button measured by its container should not be pushed out of one narrower than it. A value set here is honoured in both cases.",
         },
         new()
         {

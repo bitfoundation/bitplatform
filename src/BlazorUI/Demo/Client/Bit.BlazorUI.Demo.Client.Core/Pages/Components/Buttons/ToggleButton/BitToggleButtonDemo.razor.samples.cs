@@ -41,7 +41,7 @@ public partial class BitToggleButtonDemo
 <BitToggleButton AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton AriaLabel=""Mute""
                  OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
-<BitToggleButton IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
+<BitToggleButton IconOnly IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
 <BitToggleButton IconOnly AriaLabel=""Mute""
                  OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
@@ -201,6 +201,8 @@ private void HandleOnChanging(BitToggleButtonChangeArgs args)
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Top"" Text=""Top"" />
 <BitToggleButton IsLoading LoadingLabel=""Saving..."" LoadingLabelPosition=""BitLabelPosition.Bottom"" Text=""Bottom"" />
 
+<BitToggleButton IsLoading IconOnly Text=""Save"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving..."" />
+
 <BitToggleButton IsLoading Text=""Muted"">
     <LoadingTemplate>
         <div class=""custom-template"">
@@ -279,6 +281,8 @@ private async Task HandleAutoLoadingChange()
 <BitToggleButton AriaMode=""BitToggleButtonAriaMode.None""
                  OnText=""Pause"" OnIconName=""@BitIconName.Pause""
                  OffText=""Play"" OffIconName=""@BitIconName.Play"" />
+
+<BitToggleButton IconOnly Text=""Bold"" IconName=""@BitIconName.Bold"" />
 
 <BitToggleButton IconOnly
                  OnAriaLabel=""Unmute"" OnIconName=""@BitIconName.MicOff""

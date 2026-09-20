@@ -143,6 +143,10 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Expands the toggle button width to 100% of the available width.
     /// </summary>
+    /// <remarks>
+    /// The minimum width of the size class goes with it: a toggle button measured by its container should not be
+    /// pushed out of one narrower than the minimum, which some design systems set as high as 96px.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
 
@@ -169,6 +173,12 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Determines that only the icon should be rendered and changes the styles accordingly.
     /// </summary>
+    /// <remarks>
+    /// The wording is not thrown away with the text: where no <see cref="BitComponentBase.AriaLabel"/> is given,
+    /// the <see cref="Text"/> of the state becomes the accessible name of the toggle button, and a
+    /// <see cref="LoadingLabel"/> is announced rather than shown beside the spinner, which would stretch the
+    /// square out of shape.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IconOnly { get; set; }
 
@@ -208,7 +218,8 @@ public partial class BitToggleButton : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is also announced by a live region beside the toggle button when the loading state begins, since the
-    /// spinner itself conveys nothing to a screen reader.
+    /// spinner itself conveys nothing to a screen reader. On an <see cref="IconOnly"/> toggle button the
+    /// announcement is all of it: the label is not shown, since it would stretch the square while it lasts.
     /// </remarks>
     [Parameter] public string? LoadingLabel { get; set; }
 
@@ -782,6 +793,14 @@ public partial class BitToggleButton : BitComponentBase
         return AriaLabel;
     }
 
+    /// <summary>
+    /// The accessible name an icon-only toggle button takes from its text, which it renders nowhere: a name the
+    /// page did write would otherwise be dropped on the floor and leave a screen reader announcing the button as
+    /// nothing at all. Being read off the text rather than asked for, it gives way to an <c>aria-label</c> the page
+    /// wrote by hand (see the razor), and it is not applied over a template, whose own content names the button.
+    /// </summary>
+    private string? GetIconOnlyAriaLabel() => IconOnly && GetTemplate() is null ? GetText() : null;
+
     private string? GetRole() => AriaMode is BitToggleButtonAriaMode.Switch ? "switch" : null;
 
     private string? GetAriaPressed()
@@ -852,14 +871,15 @@ public partial class BitToggleButton : BitComponentBase
         // for a pair of templates - the remarks on OnTemplate say to pin the name down where they read apart.
         if ((((isChecked ? OnTemplate : OffTemplate) ?? ChildContent)) is not null) return null;
 
-        if (IconOnly is false)
-        {
-            var text = isChecked
-                ? (OnText.HasValue() ? OnText : Text)
-                : (OffText.HasValue() ? OffText : Text);
+        // The text names the button in both of the ways it can be reached: rendered beside the icon where there is
+        // room for it, and read as the aria-label of an icon-only one, which renders none. So it is walked here
+        // whether or not IconOnly is set - the walk has already returned for a template, which is the one case
+        // where the text is neither rendered nor borrowed.
+        var text = isChecked
+            ? (OnText.HasValue() ? OnText : Text)
+            : (OffText.HasValue() ? OffText : Text);
 
-            if (text.HasValue()) return text;
-        }
+        if (text.HasValue()) return text;
 
         return isChecked
             ? (OnTitle.HasValue() ? OnTitle : Title)

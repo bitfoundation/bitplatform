@@ -30,8 +30,9 @@
 //   --bit-ToggleButton-focus-color                    focus ring color                        (default: the role's focus color)
 //   --bit-ToggleButton-radius                         corner radius of the box and its ring   (default: $shp-radius-button)
 //   --bit-ToggleButton-border-width                   thickness of the border                 (default: $shp-border-width)
-//   --bit-ToggleButton-min-width                      smallest width of the box, falling back
-//                                                     to the min-height when icon-only            (default: $siz-ctrl-min-width)
+//   --bit-ToggleButton-min-width                      smallest width of the box, falling back to
+//                                                     the min-height when icon-only, dropped
+//                                                     altogether when full width              (default: $siz-ctrl-min-width)
 //   --bit-ToggleButton-min-height                     smallest height of the box, and the
 //                                                     smallest width of an icon-only one      (default: per size, $siz-ctrl-*)
 //   --bit-ToggleButton-padding                        padding of the box                      (default: per size)
@@ -96,9 +97,9 @@
     // Left able to receive the pointer, unlike most inert things: the title is what a toggle button has to say
     // why it is off with, and pointer-events: none takes the tooltip and the cursor with it - a disabled button
     // would show the cursor of whatever sits behind it. Nothing is lost by it, since the click is already
-    // refused twice over, in the handler and in preventDefault. The hover and active rules of the variants are
-    // written before the disabled ones and lose to them on source order; the one rule that is written after
-    // them, the FixedColor pin at the end of the file, excludes this state by name.
+    // refused twice over, in the handler and in preventDefault. Every rule that paints a pointer state excludes
+    // this one by name rather than by being written before it, so the inert look does not depend on where in the
+    // file it happens to sit - the FixedColor pin at the end of the file included.
     &.bit-dis {
         cursor: default;
 
@@ -160,6 +161,11 @@
 
 .bit-tgb-flw {
     width: 100%;
+    // The control minimum keeps a button from becoming a sliver beside its neighbours; one told to take the whole
+    // width of its container is measured by the container instead, and the minimum would only push it out of one
+    // narrower than itself - which is a real width under the presets that mandate a minimum for buttons (96px in
+    // Fluent 2, 64px in Material). A minimum set by hand is still honoured, since that one was asked for.
+    min-width: var(--bit-ToggleButton-min-width, 0);
 }
 
 // A toggle button with a width of its own to protect keeps its label on one line and ends it with an
@@ -173,13 +179,14 @@
     }
 }
 
-// A loading toggle button whose clicks are being swallowed says so with the pointer: the pointer cursor
-// belongs to a control that takes clicks, and this one is ignoring every one of them until the work finishes.
-// Reclickable is the loading state that still reacts, and it keeps it. Left able to receive the pointer for
-// the same reason as the disabled state above - pointer-events: none would take the title tooltip and this
-// very cursor with it, and would drop the button out of hit testing, so a click meant for it would fall
-// through to whatever sits behind and StopPropagation would never run. The click is already refused in the
-// handler and in preventDefault.
+// A loading toggle button whose clicks are being swallowed says so with the pointer: the pointer cursor and the
+// hover shade belong to a control that takes clicks, and this one is ignoring every one of them until the work
+// finishes - so the variant and checked rules exclude this class from their hover and active states by name, the
+// way they exclude the disabled one, and the cursor goes with them. Reclickable is the loading state that still
+// reacts, and it keeps both. Left able to receive the pointer for the same reason as the disabled state above -
+// pointer-events: none would take the title tooltip and this very cursor with it, and would drop the button out
+// of hit testing, so a click meant for it would fall through to whatever sits behind and StopPropagation would
+// never run. The click is already refused in the handler and in preventDefault.
 .bit-tgb-lod {
     cursor: default;
 }
@@ -262,14 +269,14 @@
     background-color: var(--bit-ToggleButton-background, var(--bit-tgb-clr));
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis):not(.bit-tgb-lod):hover {
             color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg));
             border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
             background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
         }
     }
 
-    &:active {
+    &:not(.bit-dis):not(.bit-tgb-lod):active {
         color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg)));
         border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
         background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
@@ -288,14 +295,14 @@
     background-color: var(--bit-ToggleButton-background, transparent);
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis):not(.bit-tgb-lod):hover {
             color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt));
             border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
             background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
         }
     }
 
-    &:active {
+    &:not(.bit-dis):not(.bit-tgb-lod):active {
         color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt)));
         border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
         background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
@@ -314,14 +321,14 @@
     background-color: var(--bit-ToggleButton-background, transparent);
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis):not(.bit-tgb-lod):hover {
             color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt));
             border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
             background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
         }
     }
 
-    &:active {
+    &:not(.bit-dis):not(.bit-tgb-lod):active {
         color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt)));
         border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
         background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
@@ -347,14 +354,14 @@
     background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
 
     @media (hover: hover) {
-        &:hover {
+        &:not(.bit-dis):not(.bit-tgb-lod):hover {
             color: var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg));
             border-color: var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover)));
             background-color: var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover));
         }
     }
 
-    &:active {
+    &:not(.bit-dis):not(.bit-tgb-lod):active {
         color: var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg)));
         border-color: var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active)));
         background-color: var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active));
@@ -434,19 +441,30 @@
         border-color: ButtonText;
     }
 
-    // The hovered and pressed selectors are spelled out because this is the one state that opts out of the
-    // forced palette: with forced-color-adjust off the author's colors are used again, and the checked
-    // hover/active rules - two classes to this one - would otherwise paint the theme's dark shade over the
-    // system Highlight the user chose. The FixedColor pair is listed for the same reason, one class further up.
+    // The hovered and pressed selectors are spelled out, exactly as the rules they have to beat spell them,
+    // because this is the one state that opts out of the forced palette: with forced-color-adjust off the
+    // author's colors are used again, and the checked hover/active rules would otherwise paint the theme's dark
+    // shade over the system Highlight the user chose. The FixedColor pair is listed for the same reason, one
+    // class further up. The two states that take no clicks paint no pointer state to undo: a disabled checked
+    // button is handled on its own below, and a loading one keeps the resting Highlight of this rule.
     .bit-tgb-chk,
-    .bit-tgb-chk:hover,
-    .bit-tgb-chk:active,
-    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):hover,
-    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):active {
+    .bit-tgb-chk:not(.bit-dis):not(.bit-tgb-lod):hover,
+    .bit-tgb-chk:not(.bit-dis):not(.bit-tgb-lod):active,
+    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):not(.bit-tgb-lod):hover,
+    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):not(.bit-tgb-lod):active {
         forced-color-adjust: none;
         color: HighlightText;
         border-color: Highlight;
         background-color: Highlight;
+    }
+
+    // The focus ring is a box-shadow, which this mode discards - and which forced-color-adjust: none above hands
+    // back to the checked state alone, in the theme's own colors, over a canvas the user chose. The focus-ring
+    // mixin already restores a real Highlight outline here, so the shadow is dropped and that outline is the whole
+    // indicator, as it is on every other toggle button. Spelled with the pseudo-class because .bit-tgb:focus-visible
+    // would otherwise outrank a bare class and keep it.
+    .bit-tgb-chk:focus-visible {
+        box-shadow: none;
     }
 
     .bit-tgb.bit-dis {
@@ -490,19 +508,19 @@
 // through the two states that would otherwise repaint it. The hovered and pressed selectors are spelled out
 // because a bare .bit-tgb-fxc is outranked by .bit-tgb-otl:hover whatever the source order: it happens to paint
 // the same color there by default, so the pin only came apart once a --bit-ToggleButton-color was set with it.
-// Written this way it ties with the variant and checked rules and wins on being last in the file. The disabled
-// rules stay ahead of it, since their two-class selectors outrank a single-class one and an inert control keeps
-// its inert color.
+// Spelled the same way as the rules it has to beat, it ties with them and wins on being last in the file. Both
+// of the states that take no clicks are named out of it: the disabled one keeps its inert color, and the loading
+// one is not painting a pointer state to pin in the first place.
 .bit-tgb-fxc {
     color: var(--bit-tgb-fg);
 
     @media (hover: hover) {
-        &:not(.bit-dis):hover {
+        &:not(.bit-dis):not(.bit-tgb-lod):hover {
             color: var(--bit-tgb-fg);
         }
     }
 
-    &:not(.bit-dis):active {
+    &:not(.bit-dis):not(.bit-tgb-lod):active {
         color: var(--bit-tgb-fg);
     }
 }
