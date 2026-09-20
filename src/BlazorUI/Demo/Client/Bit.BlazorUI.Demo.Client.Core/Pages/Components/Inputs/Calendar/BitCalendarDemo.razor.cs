@@ -6,6 +6,13 @@ public partial class BitCalendarDemo
     [
         new()
         {
+            Name = "AllowDeselect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether selecting the already selected day deselects it, clearing the value. The calendar stays on the month the day was deselected in.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitCalendarClassStyles",
             DefaultValue = "null",
@@ -90,9 +97,16 @@ public partial class BitCalendarDemo
             Name = "Events",
             Type = "IEnumerable<BitCalendarEvent>?",
             DefaultValue = "null",
-            Description = "The list of events to display on calendar days. Days with events show an indicator dot that reveals a tooltip on hover and a detail modal on click.",
+            Description = "The list of events to display on calendar days. Days with events show an indicator dot that reveals a tooltip on hover and a details dialog on click. The events of a day are ordered the way an agenda of it is: the all-day ones first, then the rest by the time they start at.",
             Href = "#calendar-event",
             LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "EventDetailsCloseButtonTitle",
+            Type = "string",
+            DefaultValue = "Close",
+            Description = "The title (tooltip) and the accessible name of the close button of the event details dialog."
         },
         new()
         {
@@ -121,6 +135,13 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months."
+        },
+        new()
+        {
+            Name = "FooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Rendered under the pickers, inside the root of the calendar: the place for the actions a calendar is often given of its own, such as a Clear button or a summary of the selection."
         },
         new()
         {
@@ -223,6 +244,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "HeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Rendered above the pickers, inside the root of the calendar: the place for a caption or a legend of its own, before the day, month and year grids."
+        },
+        new()
+        {
             Name = "HideTimePickerIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -266,6 +294,13 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
+        },
+        new()
+        {
+            Name = "HighlightToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the day picker should highlight today's day. It only affects the visual style of the day cell; the accessibility attributes still report the day as the current date."
         },
         new()
         {
@@ -448,7 +483,14 @@ public partial class BitCalendarDemo
             Name = "SelectedDateAriaAtomic",
             Type = "string",
             DefaultValue = "Selected date {0}",
-            Description = "The text of selected date aria-atomic of the calendar."
+            Description = "The template of the text a screen reader is given when the selection changes, where {0} is the selected date written with the DateFormat. Nothing is announced while no date is selected."
+        },
+        new()
+        {
+            Name = "ShowEventDetails",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether clicking a day that carries events opens the modal dialog listing them. The day is selected either way; turning this off leaves the events to the indicator, the tooltip and whatever the page itself shows for the selected day."
         },
         new()
         {
@@ -530,6 +572,15 @@ public partial class BitCalendarDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the week number (weeks 1 to 53) should be shown before each week row."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the calendar, which scales its cells and their text.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -627,6 +678,48 @@ public partial class BitCalendarDemo
             Description = "Gets or sets the name of the icon to display in the increase-minute button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-hour button."
+        },
+        new()
+        {
+            Name = "TimePickerDecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease minute",
+            Description = "The title (tooltip) and the accessible name of the time-picker's decrease-minute button."
+        },
+        new()
+        {
+            Name = "TimePickerHourTitle",
+            Type = "string",
+            DefaultValue = "Hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's hour input."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase hour",
+            Description = "The title (tooltip) and the accessible name of the time-picker's increase-hour button."
+        },
+        new()
+        {
+            Name = "TimePickerIncreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Increase minute",
+            Description = "The title (tooltip) and the accessible name of the time-picker's increase-minute button."
+        },
+        new()
+        {
+            Name = "TimePickerMinuteTitle",
+            Type = "string",
+            DefaultValue = "Minute",
+            Description = "The title (tooltip) and the accessible name of the time-picker's minute input."
         },
         new()
         {
@@ -839,6 +932,33 @@ public partial class BitCalendarDemo
                     Value="1"
                 }
         ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size calendar.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size calendar.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size calendar.",
+                    Value="2",
+                }
+            ]
         }
     ];
 
@@ -863,6 +983,20 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the main container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "Header",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the HeaderTemplate of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "Footer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the FooterTemplate of the BitCalendar."
                 },
                 new()
                 {
@@ -919,6 +1053,34 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Go to today icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "NowButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to now button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "NowButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the Go to now icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "HideTimePickerButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hide time-picker button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "HideTimePickerIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the hide time-picker icon of the BitCalendar."
                 },
                 new()
                 {
@@ -1006,10 +1168,24 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
-                    Name = "TimePickerContainer",
+                    Name = "TimeInputContainer",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the time-picker's main container of the BitCalendar."
+                    Description = "Custom CSS classes/styles for the time-picker's input container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "HourInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's hour input container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "MinuteInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's minute input container of the BitCalendar."
                 },
                 new()
                 {
@@ -1041,6 +1217,83 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "TimePickerIncreaseHourButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase hour button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerIncreaseHourIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase hour icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseHourButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease hour button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseHourIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease hour icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerIncreaseMinuteButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase minute button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerIncreaseMinuteIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's increase minute icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseMinuteButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease minute button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerDecreaseMinuteIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's decrease minute icon of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerAmPmContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Am Pm container of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerAmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Am button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerPmButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's Pm button of the BitCalendar."
+                },
+                new()
+                {
                     Name = "Divider",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1062,6 +1315,13 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "TimePickerHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the time-picker's header of the BitCalendar."
+                },
+                new()
+                {
                     Name = "YearPickerToggleButton",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1069,10 +1329,31 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "ShowTimePickerButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the show time-picker button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "ShowTimePickerIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the show time-picker icon of the BitCalendar."
+                },
+                new()
+                {
                     Name = "MonthPickerNavWrapper",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the wrapper of the month-picker's nav buttons of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "TimePickerNavWrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the time-picker's nav buttons of the BitCalendar."
                 },
                 new()
                 {
@@ -1321,13 +1602,198 @@ public partial class BitCalendarDemo
 
 
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives focus to the calendar: the day of the day grid that is in the tab sequence, or the month, the year or the hour input when the day grid is not the picker on screen.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Calendar-background",
+            DefaultValue = "transparent",
+            Description = "Background behind the whole calendar, including the area around the pickers.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the calendar, which the overlay of the event details dialog follows.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-padding",
+            DefaultValue = "8px * 1.5 (the spacing unit)",
+            Description = "Padding of each picker pane - the day grid, the month and year grids, the time picker - and of the HeaderTemplate and FooterTemplate wrappers.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the cells, the headers and the navigation buttons. The selected day, today and a disabled cell paint their own through the variables below.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-divider-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Color of the rule between the panes, of the one beside the week numbers, and of the borders inside the event details dialog.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-focus-color",
+            DefaultValue = "The Color role's focus color (--bit-clr-err-focus while the value is invalid)",
+            Description = "Color of the keyboard focus ring drawn around every cell and button of the calendar.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text color of a disabled cell, and of every part of a calendar whose IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of a cell or button on hover (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Background of a cell or button while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-day-size",
+            DefaultValue = "Per Size: 24px / 28px / 34px at the Fluent defaults",
+            Description = "Width and height of a day cell. The week numbers, the weekday headers, the empty cells and the navigation buttons all take it, so the whole day grid stays in step.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-day-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -xs / -sm",
+            Description = "Text size of the day cells and of the headers and week numbers that line up with them.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-day-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of a day cell, which the month, year, navigation and time-picker buttons share. Set it to 999px for round days.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-outside-day-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of a day of the previous or next month while ShowOutsideDays is on.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-selected-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the selected day, and of the displayed month while HighlightSelectedMonth is on.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-selected-color",
+            DefaultValue = "--bit-Calendar-color",
+            Description = "Text color of the selected day, for a filled selection that needs its own contrast.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-selected-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the ring drawn around the selected day. Set it to transparent for a selection carried by its background alone.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-today-background",
+            DefaultValue = "The Color role's main color",
+            Description = "Background of today, of the current month while HighlightCurrentMonth is on, and of the AM/PM button that is in force.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-today-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Text color of today, of the highlighted current month and of the AM/PM button that is in force.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-today-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of today, which is a circle by default.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-highlighted-background",
+            DefaultValue = "--bit-clr-bg-ter",
+            Description = "Background of a day listed in HighlightedDates.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-week-number-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of a week number.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-week-number-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the week-number column.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-event-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Color of the indicator dot on a day that carries events.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-event-size",
+            DefaultValue = "8px * 0.5 (the spacing unit)",
+            Description = "Diameter of the indicator dot on a day that carries events.",
+        },
+    ];
+
+
+
+
     private DateTimeOffset? selectedDate = new DateTimeOffset(2023, 8, 19, 0, 0, 0, DateTimeOffset.Now.Offset);
+
+    private DateTimeOffset? deselectableDate = DateTimeOffset.Now;
+
+    private DateTimeOffset? footerDate;
+
+    // Two days on from today, so the sample below shows the filled selection and the square today as two
+    // different cells rather than as one cell wearing both.
+    private DateTimeOffset? cssVarsDate = DateTimeOffset.Now.AddDays(2);
 
     private DateTimeOffset? onSelectDate;
 
     private void HandleOnSelectDate(DateTimeOffset? date)
     {
         onSelectDate = date;
+    }
+
+    private string eventsOfSelectedDay = "-";
+
+    private void HandleOnEventDayClick(DateTimeOffset? date)
+    {
+        if (date is null)
+        {
+            eventsOfSelectedDay = "-";
+            return;
+        }
+
+        var day = DateOnly.FromDateTime(date.Value.DateTime);
+        var titles = calendarEvents.Where(e => e.Date == day).Select(e => e.Title).ToArray();
+
+        eventsOfSelectedDay = titles.Length == 0 ? "none" : string.Join(", ", titles);
     }
 
     private List<BitCalendarEvent> calendarEvents =
