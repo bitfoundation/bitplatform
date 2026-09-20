@@ -591,6 +591,34 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitButtonGroupNavigableShouldMoveTheTabStopBetweenKeylessItems()
+    {
+        // An item type without a key has none written back to it by the group either, so the tab stop it is
+        // given can only be remembered by the item itself: held by the key alone it would never leave the
+        // first item, and every arrow key would carry on from there rather than from the focused button.
+        var items = new List<KeylessButtonGroupItem> { new(), new(), new() };
+
+        var comp = RenderComponent<BitButtonGroup<KeylessButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        comp.FindAll("button")[2].Click();
+
+        var buttons = comp.FindAll("button");
+        Assert.AreEqual("-1", buttons[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", buttons[1].GetAttribute("tabindex"));
+        Assert.AreEqual("0", buttons[2].GetAttribute("tabindex"));
+
+        comp.Find(".bit-btg").KeyDown("ArrowLeft");
+
+        buttons = comp.FindAll("button");
+        Assert.AreEqual("-1", buttons[0].GetAttribute("tabindex"));
+        Assert.AreEqual("0", buttons[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", buttons[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitButtonGroupNavigableShouldMarkTheRootForTheKeyGuard()
     {
         // The capture-phase guard in BitButtonGroup.ts cancels the page scroll of the keys the group

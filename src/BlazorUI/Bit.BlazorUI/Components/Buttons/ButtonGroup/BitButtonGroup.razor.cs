@@ -16,6 +16,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 {
     private int _optionKeySeed;
     private TItem? _toggleItem;
+    private TItem? _focusedItem;
     private string? _focusedKey;
     private List<TItem> _items = [];
     private string? _internalToggleKey;
@@ -505,6 +506,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 AssignItemKeys();
                 RemapToggledItems();
                 PruneItemElements();
+
+                // A keyless item is the tab stop by reference, and a rebuilt list replaces the instance it
+                // points at; left behind, it would match nothing and hold on to an item no longer rendered.
+                if (_focusedItem is not null && _items.Contains(_focusedItem) is false) _focusedItem = null;
             }
         }
 
@@ -628,10 +633,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // The click arrives on the clicked button's own renderer, and moving the tab stop changes the tabindex of
         // two buttons, so the group is re-rendered here rather than left to whatever the click goes on to do -
         // a plain action toolbar toggles nothing and would otherwise be left with two tab stops in it.
+        // The key is what the tab stop is remembered by, so that a page handing over a fresh list on every
+        // render keeps it on the item the user left it on. An item of a custom type can have no key to be
+        // remembered by at all - one whose Key selector reads a property AssignItemKeys cannot write back to -
+        // and is followed by reference instead, which is all such an item has to be told apart by.
         var key = GetItemKey(item);
-        if (key != _focusedKey)
+        if (key != _focusedKey || IsFocusedItem(item) is false)
         {
             _focusedKey = key;
+            _focusedItem = item;
 
             RefreshOptions();
             StateHasChanged();
@@ -721,6 +731,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         var item = focusables[next];
 
         _focusedKey = GetItemKey(item);
+        _focusedItem = item;
 
         if (_itemElements.TryGetValue(item, out var element))
         {
@@ -832,13 +843,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         {
             if (IsItemFocusable(item) is false) continue;
 
-            if (hasFocusedKey && GetItemKey(item) == _focusedKey) return item;
+            if (hasFocusedKey ? GetItemKey(item) == _focusedKey : IsFocusedItem(item)) return item;
 
             first ??= item;
             if (toggled is null && IsItemToggled(item)) toggled = item;
         }
 
         return toggled ?? first;
+    }
+
+    // Whether an item is the one the focus was last put on, for the items there is no key to compare.
+    private bool IsFocusedItem(TItem item)
+    {
+        return _focusedItem is not null && EqualityComparer<TItem>.Default.Equals(item, _focusedItem);
     }
 
     // Disabled items stay focusable in the DisabledInteractive mode, which the WAI-ARIA toolbar
