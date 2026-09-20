@@ -8,6 +8,13 @@ public partial class BitDropdownDemo
     [
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the dropdown for the benefit of screen readers. It is rendered into a visually hidden element that the dropdown references through its aria-describedby attribute, which is what lets a field carry an instruction too long to show next to it. It is read after Description, so the two can be used together.",
+        },
+        new()
+        {
             Name = "AutoClearSearch",
             Type = "bool",
             DefaultValue = "false",
@@ -279,6 +286,20 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the dropdown when the selection was rejected, which is what turns a red frame into something the user can act on. Setting it marks the dropdown invalid on its own - the same look and the same aria-invalid attribute Invalid gives it - and the message is referenced by the dropdown through its aria-describedby attribute and announced by its live region, so it reaches a screen reader the moment it shows up rather than only on the next focus. A dropdown inside an EditForm already gets its messages from the cascading EditContext through the ValidationMessage component.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the dropdown invalid in the same way. Only the plain text is announced by the live region, since a template is free to render anything at all.",
+        },
+        new()
+        {
             Name = "ExistsSelectedItemFunction",
             Type = "Func<ICollection<TItem>, string, bool>?",
             DefaultValue = "null",
@@ -332,6 +353,13 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Searches the items as the user types in the search box (based on the 'oninput' HTML event) instead of waiting for the search box to be committed. The ComboBox input always searches as it is typed, so there it only decides whether DebounceTime and ThrottleTime apply.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the dropdown as invalid without an EditContext having said so, which is what a rejection the app decided on its own (a server response, a rule spanning two fields) needs. It gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does. Setting ErrorMessage implies it.",
         },
         new()
         {
@@ -863,7 +891,7 @@ public partial class BitDropdownDemo
             Name = "TextTemplate",
             Type = "RenderFragment<BitDropdown<TItem, TValue>>?",
             DefaultValue = "null",
-            Description = "The custom template for the text of the dropdown.",
+            Description = "The custom template for the text of the dropdown, which replaces the selection it shows once something is selected. It has no effect with Chips enabled, where the selection is drawn as one chip per item and ChipTemplate is what renders each of them.",
         },
         new()
         {
@@ -1362,6 +1390,20 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the label of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ErrorMessageContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message container of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "ErrorMessage",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message of the BitDropdown."
                },
                new()
                {
@@ -1965,6 +2007,12 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ClearAsync",
+            Type = "Task ClearAsync()",
+            Description = "Clears the whole selection exactly as the clear button does, so the same events fire: it reports itself through OnClear and empties the typed text of the ComboBox mode along with the selection. It is refused in the same places that button is - a read-only dropdown, a one-way binding.",
+        },
+        new()
+        {
             Name = "RefreshItemsAsync",
             Type = "Task RefreshItemsAsync()",
             Description = "Discards the items loaded so far and asks the ItemsProvider for them again, which is what makes a change outside of the dropdown (a filter of the page, a record added elsewhere) reach a list the dropdown only ever loads on demand. It does nothing without an ItemsProvider, where the Items collection is the source of truth and is re-read on its own.",
@@ -2060,7 +2108,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-invalid-color",
             DefaultValue = "--bit-clr-err, and --bit-clr-err-focus for the ring",
-            Description = "Border and focus indicator while the bound value fails validation.",
+            Description = "Border and focus indicator while the value is rejected - by the EditContext, by Invalid or by an ErrorMessage - and the text of that message.",
         },
         new()
         {
@@ -2102,13 +2150,13 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-icon-color",
             DefaultValue = "--bit-clr-fg-sec",
-            Description = "The caret, the clear button and the affix glyphs. The search glyph and the check mark take the accent instead.",
+            Description = "The caret, the clear button glyph and the add button glyph of the responsive ComboBox panel. The search glyph and the check mark take the accent instead, and the Prefix and Suffix addons their own colors.",
         },
         new()
         {
             Name = "--bit-Dropdown-icon-size",
             DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of those glyphs.",
+            Description = "Size of every glyph of the component, including the ones in the search box and in the responsive panel.",
         },
         new()
         {
@@ -2180,13 +2228,13 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-description-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Description text. It reaches the default rendering only, not a DescriptionTemplate.",
+            Description = "Description text. It reaches the default rendering only, not a DescriptionTemplate. The ErrorMessage above it takes the invalid color instead.",
         },
         new()
         {
             Name = "--bit-Dropdown-description-font-size",
             DefaultValue = "--bit-tpg-fs-2xs",
-            Description = "Description text size.",
+            Description = "Text size of the description and of the ErrorMessage.",
         },
         new()
         {
@@ -2294,7 +2342,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-divider-color",
             DefaultValue = "--bit-clr-bg-sec",
-            Description = "The rule a Divider item draws between two groups.",
+            Description = "The rule a Divider item draws between two groups, and the one under the select all row. The two differ in their defaults only (--bit-clr-bg-sec for the filled rule, --bit-clr-brd-sec for the border).",
         },
     ];
 }

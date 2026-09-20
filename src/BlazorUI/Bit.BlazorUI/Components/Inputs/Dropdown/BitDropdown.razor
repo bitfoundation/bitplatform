@@ -130,12 +130,12 @@
          aria-haspopup="@(comboboxOnField ? "listbox" : null)"
          aria-required="@(comboboxOnField && Required ? "true" : null)"
          aria-readonly="@(comboboxOnField && ReadOnly ? "true" : null)"
-         aria-invalid="@(comboboxOnField && ValueInvalid is true ? "true" : null)"
+         aria-invalid="@(comboboxOnField && IsInvalid ? "true" : null)"
          aria-disabled="@(comboboxOnField && IsEnabled is false ? "true" : null)"
          aria-expanded="@(comboboxOnField ? (IsOpen ? "true" : "false") : null)"
          aria-label="@(comboboxOnField ? AriaLabel : null)"
          aria-labelledby="@(comboboxOnField && AriaLabel.HasNoValue() ? GetDropdownAriaLabelledby() : null)"
-         aria-describedby="@(comboboxOnField && HasDescription ? _descriptionId : null)"
+         aria-describedby="@(comboboxOnField ? DescribedBy : null)"
          aria-controls="@(comboboxOnField && IsOpen ? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
@@ -218,6 +218,16 @@
                     {
                         @TextTemplate(this)
                     }
+                    else if (GetOverflowItemsCount() > 0)
+                    {
+                        @* Past the display limit the text is a count of the selection, which is all a
+                           screen reader would otherwise be told the field holds - and the names of what
+                           is selected are exactly what it is for. They are rendered in its place the
+                           same way the overflow chip renders the ones it stands for, and the pointer
+                           gets them from the title. *@
+                        <span aria-hidden="true" title="@GetSelectedItemsText()">@GetText()</span>
+                        <span class="bit-drp-vhd">@GetSelectedItemsText()</span>
+                    }
                     else
                     {
                         @GetText()
@@ -245,7 +255,7 @@
                    aria-labelledby is read whatever its hidden state, so it names the combobox while
                    staying out of the content a screen reader walks through - where the chips already
                    carry the same text. *@
-                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetChipsAriaText()</span>
+                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetSelectedItemsText()</span>
             }
 
             @if (Combo)
@@ -271,11 +281,11 @@
                        tabindex="@(comboboxOnFieldInput ? TabIndex : "-1")"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
-                       aria-describedby="@(HasDescription ? _descriptionId : null)"
+                       aria-describedby="@DescribedBy"
                        aria-haspopup="@(comboboxOnFieldInput ? "listbox" : null)"
                        aria-autocomplete="@(comboboxOnFieldInput ? "list" : null)"
                        aria-required="@(Required ? "true" : null)"
-                       aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                       aria-invalid="@(IsInvalid ? "true" : null)"
                        aria-expanded="@(comboboxOnFieldInput ? (IsOpen ? "true" : "false") : null)"
                        aria-activedescendant="@(comboboxOnFieldInput && IsOpen ? GetCommitTargetId() : null)"
                        aria-controls="@(comboboxOnFieldInput && IsOpen ? _scrollContainerId : null)"
@@ -346,6 +356,27 @@
         }
     </select>
 
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the selection is the first thing to read under the field, so it comes
+           before the description. It carries no live role of its own - the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-drp-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">
+                    @ErrorMessage
+                </span>
+            }
+        </div>
+    }
+
     @if (HasDescription)
     {
         @* Named by the combobox through aria-describedby, so it is read as part of the dropdown
@@ -366,6 +397,13 @@
         </span>
     }
 
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text written for a screen reader alone has to
+           live in an element of its own. It is only ever read as part of the dropdown. *@
+        <span id="@_ariaDescriptionId" class="bit-drp-vhd">@AriaDescription</span>
+    }
+
     @* A search silently changes the length of a list a screen reader user cannot see, so the new
        result count is announced. The container is always rendered because a live region has to be in
        the accessibility tree before its text changes for the change to be announced; only the text
@@ -374,7 +412,14 @@
        live region inside a hidden element announces nothing - which the loading state, the one state
        that changes while the callout may well be closed, depends on. *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
-        @if (IsLoading)
+        @* The rejection wins over everything else here: the rest say what the dropdown is doing, this
+           says what is wrong with what it holds. Text only, never ErrorMessageTemplate, for the same
+           reason LoadingTemplate is left out below. *@
+        @if (ErrorMessage.HasValue())
+        {
+            @ErrorMessage
+        }
+        else if (IsLoading)
         {
             @* Text only, never LoadingTemplate: the template is arbitrary markup meant to be seen -
                a spinner, an image, something interactive - and rendering it a second time here would
@@ -516,11 +561,11 @@
                    readonly="@ReadOnly"
                    aria-label="@AriaLabel"
                    aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
-                   aria-describedby="@(HasDescription ? _descriptionId : null)"
+                   aria-describedby="@DescribedBy"
                    aria-haspopup="listbox"
                    aria-autocomplete="list"
                    aria-required="@(Required ? "true" : null)"
-                   aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                   aria-invalid="@(IsInvalid ? "true" : null)"
                    aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
                    aria-controls="@(IsOpen ? _scrollContainerId : null)"
@@ -563,7 +608,10 @@
                         style="@Styles?.SelectAllButton"
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                         disabled="@(IsEnabled is false || ReadOnly)"
-                        aria-checked="@selectAllAriaChecked">
+                        aria-checked="@selectAllAriaChecked"
+                        @* It sits outside the listbox it commands, so nothing but this says which list
+                           it is the select all of. *@
+                        aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"
                          class="bit-drp-chb @Classes?.SelectAllCheckBox">
                         <i aria-hidden="true"

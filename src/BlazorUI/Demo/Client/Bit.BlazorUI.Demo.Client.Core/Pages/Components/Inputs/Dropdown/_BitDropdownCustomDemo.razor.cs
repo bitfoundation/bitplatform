@@ -251,6 +251,10 @@ public partial class _BitDropdownCustomDemo
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
 
+    private string? stockValue;
+    // A rule no EditContext knows about: what is in stock is only known once the item has been picked.
+    private string? StockError => stockValue?.StartsWith("v-") is true ? "Vegetables are out of stock right now." : null;
+
     private string? closeOnSelectValue;
     private IEnumerable<string?> closeOnSelectValues = [];
 

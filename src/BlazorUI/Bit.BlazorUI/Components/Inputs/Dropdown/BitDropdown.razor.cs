@@ -69,6 +69,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
     private string _labelId = string.Empty;
+    private string _errorId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
     private string _descriptionId = string.Empty;
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
@@ -88,6 +90,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Detailed description of the dropdown for the benefit of screen readers. It is rendered into a
+    /// visually hidden element that the dropdown references through its aria-describedby attribute,
+    /// which is what lets a field carry an instruction too long to show next to it. It is read after
+    /// <see cref="Description"/>, so the two can be used together.
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// Clears the typed search text after each selection in the multi select ComboBox mode, so the next
@@ -343,6 +353,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
+    /// The message shown under the dropdown when the selection was rejected, which is what turns a red
+    /// frame into something the user can act on. Setting it marks the dropdown invalid on its own - the
+    /// same look and the same aria-invalid attribute <see cref="Invalid"/> gives it - and the message is
+    /// referenced by the dropdown through its aria-describedby attribute and announced by its live
+    /// region, so it reaches a screen reader the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
+    /// fields). A dropdown inside an <c>EditForm</c> already gets its messages from the cascading
+    /// EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text
+    /// and marks the dropdown invalid in the same way. Only the plain text is announced by the live
+    /// region, since a template is free to render anything at all.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Decides whether the text committed in the ComboBox mode already stands for one of the selected
     /// items, in place of the default comparison of that text with the item texts, ignoring case. It
     /// receives the selected items and the committed text, and returning true stops the commit, so the
@@ -381,6 +414,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// only decides whether <see cref="DebounceTime"/> and <see cref="ThrottleTime"/> apply.
     /// </summary>
     [Parameter] public bool Immediate { get; set; }
+
+    /// <summary>
+    /// Marks the dropdown as invalid without an <c>EditContext</c> having said so, which is what a
+    /// rejection the app decided on its own (a server response, a rule spanning two fields) needs. It
+    /// gives the dropdown the same look and the same aria-invalid attribute an invalid bound value does.
+    /// Setting <see cref="ErrorMessage"/> implies it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Shows a loading indicator in the callout (and in place of the caret down element) while the items are being fetched.
@@ -831,7 +873,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
-    /// The custom template for the text of the dropdown.
+    /// The custom template for the text of the dropdown, which replaces the selection it shows once
+    /// something is selected. It has no effect with <see cref="Chips"/> enabled, where the selection is
+    /// drawn as one chip per item and <see cref="ChipTemplate"/> is what renders each of them.
     /// </summary>
     [Parameter] public RenderFragment<BitDropdown<TItem, TValue>>? TextTemplate { get; set; }
 
@@ -1014,6 +1058,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await HandleOnItemClick(item);
     }
+
+    /// <summary>
+    /// Clears the whole selection exactly as the clear button does, so the same events fire: it reports
+    /// itself through <see cref="OnClear"/> and empties the typed text of the ComboBox mode along with
+    /// the selection. It is refused in the same places that button is - a read-only dropdown, a one-way
+    /// binding - which is what unselecting the items one by one cannot express.
+    /// </summary>
+    public Task ClearAsync() => HandleOnClearClick();
 
     /// <summary>
     /// Unselects the given item exactly as picking an already selected one in the callout would (or, in
@@ -1691,6 +1743,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         ClassBuilder.Register(() => GetSizeClass());
 
+        // The base class marks the root invalid from the EditContext alone, which knows nothing about a
+        // rejection the app itself decided on; it is registered separately rather than folded into that
+        // one so the two cannot both add the class to the same element.
+        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
         ClassBuilder.Register(() => Required ? "bit-drp-req" : string.Empty);
 
         ClassBuilder.Register(() => ReadOnly ? "bit-drp-rol" : string.Empty);
@@ -1723,6 +1780,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _footerId = $"{_dropdownId}-footer";
 
         _labelId = $"{_dropdownId}-label";
+        _errorId = $"{_dropdownId}-error";
+        _ariaDescriptionId = $"{_dropdownId}-aria-description";
         _descriptionId = $"{_dropdownId}-description";
         _dropdownTextContainerId = $"{_dropdownId}-text-container";
 
@@ -3135,6 +3194,34 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // The same, for the description element carrying _descriptionId.
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
+    // The same, for the error element carrying _errorId.
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A rejection the app decided on its own, which the EditContext knows nothing about. A message is
+    // one: a field that says what is wrong with its value is a field saying the value is wrong.
+    private bool HasError => Invalid || HasErrorMessage;
+
+    // What the dropdown reports to assistive technologies as the state of its value: either the
+    // rejection the EditContext produced or the one the app asserted here.
+    private bool IsInvalid => ValueInvalid is true || HasError;
+
+    // Every piece of text that describes the field rather than names it, in reading order: what is wrong
+    // with the value first, then the visible helper text, then the one written for a screen reader alone.
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
     private string GetDropdownAriaLabelledby()
     {
         return HasLabel ? $"{_labelId} {_dropdownTextContainerId}" : _dropdownTextContainerId;
@@ -3963,10 +4050,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return string.Join(MultiSelectDelimiter, _selectedItems.Skip(GetDisplayedItemsCount()).Select(GetText));
     }
 
-    // The whole selection as one piece of text, which is what the chips and the overflow indicator show
-    // between them, so the combobox can be named after it instead of after the display that also holds
-    // the remove button of every chip.
-    private string GetChipsAriaText()
+    // The whole selection as one piece of text: what the chips and the overflow indicator show between
+    // them, so the combobox can be named after it instead of after the display that also holds the
+    // remove button of every chip - and what the text display stands for once it has collapsed into a
+    // count of the selection.
+    private string GetSelectedItemsText()
     {
         return string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
     }

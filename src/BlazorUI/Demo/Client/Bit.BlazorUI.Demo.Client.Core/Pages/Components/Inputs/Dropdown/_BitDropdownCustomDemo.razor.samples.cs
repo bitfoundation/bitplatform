@@ -896,7 +896,21 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     <ValidationMessage For=""@(() => validationModel.Products)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+</EditForm>
+
+<BitDropdown @bind-Value=""stockValue""
+             Label=""Category""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             ErrorMessage=""@StockError"" />
+
+<BitDropdown Invalid
+             Label=""Invalid with no message""
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"" />";
     private readonly string example12CsharpCode = @"
 public class FormValidationDropdownModel
 {
@@ -913,6 +927,11 @@ private FormValidationDropdownModel validationModel = new();
 private async Task HandleValidSubmit() { }
 
 private void HandleInvalidSubmit() { }
+
+private string? stockValue;
+
+// A rule no EditContext knows about: what is in stock is only known once the item has been picked.
+private string? StockError => stockValue?.StartsWith(""v-"") is true ? ""Vegetables are out of stock right now."" : null;
 
 public class Product
 {
@@ -2695,7 +2714,8 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              NameSelectors=""nameSelectors""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
-             Description=""Only the categories you have access to are listed."" />
+             Description=""Only the categories you have access to are listed.""
+             AriaDescription=""The list is refreshed every morning; ask an administrator for access to the rest."" />
 
 <BitDropdown Combo
              Label=""ComboBox""

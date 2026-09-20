@@ -780,7 +780,29 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     <ValidationMessage For=""@(() => validationModel.Products)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+</EditForm>
+
+<BitDropdown @bind-Value=""stockValue""
+             Label=""Category""
+             Placeholder=""Select an item""
+             ErrorMessage=""@StockError""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Invalid
+             Label=""Invalid with no message""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>";
     private readonly string example12CsharpCode = @"
 public class FormValidationDropdownModel
 {
@@ -797,6 +819,11 @@ private FormValidationDropdownModel validationModel = new();
 private async Task HandleValidSubmit() { }
 
 private void HandleInvalidSubmit() { }
+
+private string? stockValue;
+
+// A rule no EditContext knows about: what is in stock is only known once the item has been picked.
+private string? StockError => stockValue?.StartsWith(""v-"") is true ? ""Vegetables are out of stock right now."" : null;
 
 private readonly List<BitDropdownItem<string>> basicItems =
 [
@@ -2140,6 +2167,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              Description=""Only the categories you have access to are listed.""
+             AriaDescription=""The list is refreshed every morning; ask an administrator for access to the rest.""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {

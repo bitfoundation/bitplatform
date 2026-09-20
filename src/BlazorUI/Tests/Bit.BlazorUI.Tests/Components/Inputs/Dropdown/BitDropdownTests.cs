@@ -4463,6 +4463,160 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll("[role=option]").Count);
     }
 
+    [TestMethod]
+    public void BitDropdownShouldRenderErrorMessageAndMarkItselfInvalid()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+        });
+
+        var error = component.Find(".bit-drp-erm");
+        Assert.AreEqual("Pick a fruit.", error.TextContent.Trim());
+
+        // A message is a rejection, so it gives the dropdown the same look and the same attribute the
+        // EditContext would.
+        Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-inv"));
+
+        var trigger = component.Find(".bit-drp-wrp");
+        Assert.AreEqual("true", trigger.GetAttribute("aria-invalid"));
+        Assert.AreEqual(error.GetAttribute("id"), trigger.GetAttribute("aria-describedby"));
+
+        // Announced the moment it shows up rather than only on the next focus.
+        Assert.AreEqual("Pick a fruit.", component.Find(".bit-drp-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownInvalidShouldMarkItselfInvalidWithoutAMessage()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-invalid"));
+        Assert.AreEqual(0, component.FindAll(".bit-drp-erm").Count);
+        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldDescribeItselfByEveryDescriptionItCarries()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+            parameters.Add(p => p.Description, "Only what is in season.");
+            parameters.Add(p => p.AriaDescription, "The list is refreshed every morning.");
+        });
+
+        // In reading order: what is wrong with the value, the visible helper text, then the text
+        // written for a screen reader alone.
+        var expected = string.Join(' ',
+            component.Find(".bit-drp-erm").GetAttribute("id"),
+            component.Find(".bit-drp-des").GetAttribute("id"),
+            component.Find(".bit-drp-vhd").GetAttribute("id"));
+
+        Assert.AreEqual(expected, component.Find(".bit-drp-wrp").GetAttribute("aria-describedby"));
+        Assert.AreEqual("The list is refreshed every morning.", component.Find(".bit-drp-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownComboInputShouldCarryTheDescriptionsAndTheInvalidState()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.ErrorMessage, "Pick a fruit.");
+            parameters.Add(p => p.AriaDescription, "The list is refreshed every morning.");
+        });
+
+        // The combobox role sits on the input in this mode, so it is the element that has to report
+        // both of them - the field around it is out of the tab order and out of the accessibility tree.
+        var input = component.Find(".bit-drp-inp");
+        var expected = string.Join(' ',
+            component.Find(".bit-drp-erm").GetAttribute("id"),
+            component.Find(".bit-drp-vhd").GetAttribute("id"));
+
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual(expected, input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownCollapsedTextDisplayShouldStillNameEverySelectedItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.MaxDisplayedItems, 1);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, new[] { "f-app", "f-ora" });
+        });
+
+        // What is on the screen is a count of the selection, which is all a screen reader would be told
+        // the field holds; the names are rendered in its place instead.
+        var summary = component.Find(".bit-drp-tdp > [aria-hidden=true]");
+        Assert.AreEqual("2 items selected", summary.TextContent.Trim());
+        Assert.AreEqual("Apple, Orange", summary.GetAttribute("title"));
+        Assert.AreEqual("Apple, Orange", component.Find(".bit-drp-tdp .bit-drp-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitDropdownClearAsyncShouldClearTheWholeSelection()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var cleared = 0;
+        var values = new List<string?> { "f-app", "f-ora" };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, values);
+            parameters.Add(p => p.ValuesChanged, v => values = v?.ToList() ?? []);
+            parameters.Add(p => p.OnClear, () => cleared++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ClearAsync());
+
+        Assert.AreEqual(0, values.Count);
+        Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownClearAsyncShouldBeRefusedByAReadOnlyDropdown()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var values = new List<string?> { "f-app" };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.Values, values);
+            parameters.Add(p => p.ValuesChanged, v => values = v?.ToList() ?? []);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ClearAsync());
+
+        Assert.AreEqual(1, values.Count);
+    }
+
     private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()
     {
         new() { Text = "Apple", Value = "f-app" },

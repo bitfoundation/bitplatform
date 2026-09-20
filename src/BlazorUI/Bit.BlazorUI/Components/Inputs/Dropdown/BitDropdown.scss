@@ -15,16 +15,19 @@
 //   --bit-Dropdown-border-color            border at rest                           (default: $clr-brd-pri)
 //   --bit-Dropdown-hover-border-color      border on hover                          (default: $clr-brd-pri-hover)
 //   --bit-Dropdown-focus-color             focus indicator color                    (default: the role's focus color)
-//   --bit-Dropdown-invalid-color           border and focus indicator while the
-//                                          bound value fails validation             (default: $clr-err / $clr-err-focus)
+//   --bit-Dropdown-invalid-color           border, focus indicator and ErrorMessage
+//                                          text while the value is rejected         (default: $clr-err / $clr-err-focus)
 //   --bit-Dropdown-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
 //   --bit-Dropdown-disabled-background     background when disabled                 (default: $clr-bg-dis)
 //   --bit-Dropdown-disabled-border-color   border when disabled                     (default: $clr-brd-dis)
 //   --bit-Dropdown-radius                  corner radius of the field               (default: $shp-radius-control)
 //   --bit-Dropdown-min-height              smallest height of the field             (default: per size, $siz-ctrl-*)
 //   --bit-Dropdown-font-size               text size of the field                   (default: per size, from the type ramp)
-//   --bit-Dropdown-icon-color              caret and affix glyphs                   (default: $clr-fg-sec)
-//   --bit-Dropdown-icon-size               size of the glyphs of the component      (default: per size, $siz-icon-*)
+//   --bit-Dropdown-icon-color              the caret, the clear button glyph and
+//                                          the responsive add button glyph          (default: $clr-fg-sec)
+//   --bit-Dropdown-icon-size               size of every glyph of the component,
+//                                          including the search box's and the
+//                                          responsive panel's                       (default: per size, $siz-icon-*)
 //
 //   PREFIX AND SUFFIX (the two addons flush with the ends of the field)
 //   --bit-Dropdown-prefix-color            text of the prefix addon                 (default: $clr-fg-pri)
@@ -46,7 +49,7 @@
 //   --bit-Dropdown-label-font-weight       label weight                             (default: $tg-fw-semibold)
 //   --bit-Dropdown-required-color          the asterisk a Required field carries    (default: $clr-req)
 //   --bit-Dropdown-description-color       description text                         (default: $clr-fg-pri)
-//   --bit-Dropdown-description-font-size   description text size                    (default: $tg-fs-2xs)
+//   --bit-Dropdown-description-font-size   description and error message text size  (default: $tg-fs-2xs)
 //
 //   CHIPS (the multi select Chips display)
 //   --bit-Dropdown-chip-background         background of a chip                     (default: $clr-bg-sec)
@@ -75,7 +78,8 @@
 //                                          is repainted                             (default: --bit-Dropdown-item-color)
 //   --bit-Dropdown-item-disabled-color     text of a row that cannot be picked      (default: $clr-fg-dis)
 //   --bit-Dropdown-header-color            text of a group header                   (default: the accent)
-//   --bit-Dropdown-divider-color           the rule a Divider item draws            (default: $clr-bg-sec)
+//   --bit-Dropdown-divider-color           the rule a Divider item draws, and the
+//                                          one under the select all row             (default: $clr-bg-sec / $clr-brd-sec)
 
 
 // The size of the control and of its callout is driven by these variables so a single size class,
@@ -310,6 +314,21 @@
 // public --bit-Dropdown-background set on a transparent dropdown still wins the way it does everywhere else.
 .bit-drp.bit-drp-trn {
     --bit-drp-bg: transparent;
+}
+
+// The rejection is colored like every other rejected value of the library - and like the border it sits
+// under, so the two follow one variable - and it keeps that color while the dropdown is disabled: a
+// message that goes grey with the rest of the field stops reading as the reason the value was refused.
+.bit-drp-erm {
+    display: block;
+    overflow-wrap: break-word;
+    padding-top: spacing(0.5);
+    font-size: var(--bit-Dropdown-description-font-size, #{$tg-fs-2xs});
+    color: var(--bit-Dropdown-invalid-color, #{$clr-err});
+
+    span {
+        color: inherit;
+    }
 }
 
 .bit-drp-des {
