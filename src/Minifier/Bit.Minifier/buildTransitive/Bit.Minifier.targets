@@ -95,9 +95,10 @@
              rewritten assemblies still resolves, so the app then ships what ILLink produced. An assembly it had to
              leave alone to keep the rest is a warning too - BITMIN001 either way. -->
         <Delete Files="$(IntermediateOutputPath)bit-minifier.map" />
+        <!-- high, so the publish says how much smaller it got at the verbosity dotnet publish runs at -->
         <Exec Command="&quot;$(_BitMinifyDotNetHost)&quot; &quot;$(_BitMinifierPath)&quot; $(_BitMinifyArgs)"
               ContinueOnError="WarnAndContinue"
-              StandardOutputImportance="normal" />
+              StandardOutputImportance="high" />
         <!-- runs again only when ILLink rewrote the folder, so nothing is minified twice. The tool writes the map only
              along with the assemblies, so a folder it left as it was is tried again (and warned about) next time. -->
         <Touch Files="$(IntermediateOutputPath)bit-minifier.stamp" AlwaysCreate="true" Condition="Exists('$(IntermediateOutputPath)bit-minifier.map')" />
