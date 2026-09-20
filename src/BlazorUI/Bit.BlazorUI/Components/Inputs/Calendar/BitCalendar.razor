@@ -145,7 +145,12 @@
                     <div role="row" style="@Styles?.DaysHeaderRow" class="bit-cal-dgh @Classes?.DaysHeaderRow">
                         @if (ShowWeekNumbers)
                         {
-                            <div role="columnheader" style="@Styles?.WeekNumbersHeader" class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
+                            @* The corner above the week numbers is empty, so it is named rather than read out
+                               as a blank column header before the first weekday of every row. *@
+                            <div role="columnheader"
+                                 aria-label="@WeekNumbersHeaderTitle"
+                                 style="@Styles?.WeekNumbersHeader"
+                                 class="bit-cal-wlb @Classes?.WeekNumbersHeader"></div>
                         }
 
                         @for (var index = 0; index < 7; index++)
@@ -157,9 +162,7 @@
                                  aria-label="@_culture.DateTimeFormat.GetDayName(dayOfWeek)"
                                  style="@Styles?.DayNameHeader"
                                  class="bit-cal-wlb @Classes?.DayNameHeader">
-                                @* A culture is free to leave the shortest day names empty, and the header of
-                                   the column would then be an index out of range. *@
-                                @(dayOfWeekName.HasValue() ? dayOfWeekName[0].ToString() : string.Empty)
+                                @GetNarrowDayName(dayOfWeekName)
                             </div>
                         }
                     </div>
@@ -223,7 +226,10 @@
                                         style="@style"
                                         class="bit-cal-dbt@(klass) @Classes?.DayButton"
                                         tabindex="@(date == focusableDay ? 0 : -1)"
-                                        aria-selected="@(isSelected ? "true" : "false")">
+                                        @* Only the selected cell carries the state, the way the APG's own date
+                                           picker does: an explicit false on the other forty-one would have a
+                                           screen reader say "not selected" on every day arrowed over. *@
+                                        aria-selected="@(isSelected ? "true" : null)">
                                     @if (DayCellTemplate is not null)
                                     {
                                         @DayCellTemplate(GetDateTimeOfDayCell(date))
@@ -234,9 +240,19 @@
                                     }
                                     @if (dayEvents.Count > 0)
                                     {
+                                        @* One dot per event rather than one dot per day, so a day with three
+                                           things on it does not look like a day with one - capped, since past
+                                           a few the row of dots says no more than "several" and the count is
+                                           in the label a screen reader is given and in the tooltip. *@
                                         <span aria-hidden="true"
-                                              style="@Styles?.EventIndicator"
-                                              class="bit-cal-evi @Classes?.EventIndicator">
+                                              style="@Styles?.EventIndicators"
+                                              class="bit-cal-evc @Classes?.EventIndicators">
+                                            @foreach (var evt in GetIndicatorEvents(dayEvents))
+                                            {
+                                                <span style="@Styles?.EventIndicator"
+                                                      class="bit-cal-evi @GetEventIndicatorColorClass(evt) @Classes?.EventIndicator">
+                                                </span>
+                                            }
                                         </span>
                                     }
                                 </button>
@@ -358,10 +374,14 @@
                                             aria-label="@monthName"
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
+                                            @* The current month and year are reported whether or not they are
+                                               painted: HighlightCurrentMonth decides how the grid looks, not
+                                               what a screen reader is able to find in it. *@
+                                            aria-current="@((todayYear == _currentYear && month == todayMonth) ? "date" : null)"
                                             tabindex="@(month == focusableMonth ? 0 : -1)"
-                                            aria-selected="@(selected ? "true" : "false")"
                                             style="@Styles?.MonthButton"
-                                            class="bit-cal-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
+                                            class="bit-cal-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton"
+                                            aria-selected="@(selected ? "true" : null)">
                                         @if (MonthCellTemplate is not null)
                                         {
                                             @MonthCellTemplate(GetDateTimeOfMonthCell(month))
@@ -457,10 +477,11 @@
                                             aria-label="@year"
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
+                                            aria-current="@(year == todayYear ? "date" : null)"
                                             tabindex="@(year == focusableYear ? 0 : -1)"
                                             style="@Styles?.YearButton"
                                             class="bit-cal-pkb @Classes?.YearButton"
-                                            aria-selected="@(selected ? "true" : "false")">
+                                            aria-selected="@(selected ? "true" : null)">
                                         @if (YearCellTemplate is not null)
                                         {
                                             @YearCellTemplate(year)
@@ -485,17 +506,23 @@
                 <div style="@Styles?.Divider" class="bit-cal-dvd @Classes?.Divider"></div>
             }
 
-            <div style="@Styles?.TimePickerWrapper" class="bit-cal-twp @Classes?.TimePickerWrapper">
+            <div @onkeydown="HandleTimePickerKeyDown"
+                 style="@Styles?.TimePickerWrapper"
+                 class="bit-cal-twp @Classes?.TimePickerWrapper">
                 <div style="@Styles?.TimePickerHeader" class="bit-cal-pkh bit-cal-tph @Classes?.TimePickerHeader">
                     <div style="@Styles?.TimePickerNavWrapper" class="bit-cal-nbc @Classes?.TimePickerNavWrapper">
                         @if (ShowNowButton)
                         {
+                            @* A read-only calendar browses but does not change: the buttons that would set the
+                               time stay focusable, and say that they are unavailable rather than looking
+                               pressable and doing nothing. *@
                             <button @onclick="HandleNowButtonClick"
                                     type="button"
                                     title="@NowButtonTitle"
                                     aria-label="@NowButtonTitle"
                                     style="@Styles?.NowButton"
                                     disabled="@(IsEnabled is false)"
+                                    aria-disabled="@(ReadOnly ? "true" : null)"
                                     class="bit-cal-gtn @Classes?.NowButton">
                                 <i aria-hidden="true"
                                    style="@Styles?.NowButtonIcon"
@@ -527,6 +554,7 @@
                                 title="@TimePickerIncreaseHourTitle"
                                 aria-label="@TimePickerIncreaseHourTitle"
                                 disabled="@(IsEnabled is false)"
+                                aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerIncreaseHourButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseHourButton">
                             <i aria-hidden="true"
@@ -537,7 +565,8 @@
                                @bind="@_hourView"
                                @bind:event="oninput"
                                @onfocus="HandleOnTimeHourFocus"
-                               min="0"
+                               @onkeydown="e => HandleOnTimeInputKeyDown(e, true)"
+                               min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
                                max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                type="number"
                                inputmode="numeric"
@@ -555,6 +584,7 @@
                                 title="@TimePickerDecreaseHourTitle"
                                 aria-label="@TimePickerDecreaseHourTitle"
                                 disabled="@(IsEnabled is false)"
+                                aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerDecreaseHourButton"
                                 class="bit-cal-tbt @Classes?.TimePickerDecreaseHourButton">
                             <i aria-hidden="true"
@@ -571,6 +601,7 @@
                                 title="@TimePickerIncreaseMinuteTitle"
                                 aria-label="@TimePickerIncreaseMinuteTitle"
                                 disabled="@(IsEnabled is false)"
+                                aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerIncreaseMinuteButton"
                                 class="bit-cal-tbt @Classes?.TimePickerIncreaseMinuteButton">
                             <i aria-hidden="true"
@@ -581,6 +612,7 @@
                                @bind="@_minuteView"
                                @bind:event="oninput"
                                @onfocus="HandleOnTimeMinuteFocus"
+                               @onkeydown="e => HandleOnTimeInputKeyDown(e, false)"
                                min="0"
                                max="59"
                                type="number"
@@ -599,6 +631,7 @@
                                 title="@TimePickerDecreaseMinuteTitle"
                                 aria-label="@TimePickerDecreaseMinuteTitle"
                                 disabled="@(IsEnabled is false)"
+                                aria-disabled="@(ReadOnly ? "true" : null)"
                                 style="@Styles?.TimePickerDecreaseMinuteButton"
                                 class="bit-cal-tbt @Classes?.TimePickerDecreaseMinuteButton">
                             <i aria-hidden="true"
@@ -615,6 +648,7 @@
                             <button @onclick="HandleOnAmClick"
                                     type="button"
                                     disabled="@(IsEnabled is false)"
+                                    aria-disabled="@(ReadOnly ? "true" : null)"
                                     aria-pressed="@(IsAm() is true ? "true" : "false")"
                                     style="@Styles?.TimePickerAmButton"
                                     class="bit-cal-tbt bit-cal-bam @(IsAm() is true ? "bit-cal-bns" : string.Empty) @Classes?.TimePickerAmButton">
@@ -624,6 +658,7 @@
                             <button @onclick="HandleOnPmClick"
                                     type="button"
                                     disabled="@(IsEnabled is false)"
+                                    aria-disabled="@(ReadOnly ? "true" : null)"
                                     aria-pressed="@(IsAm() is false ? "true" : "false")"
                                     style="@Styles?.TimePickerPmButton"
                                     class="bit-cal-tbt bit-cal-bpm @(IsAm() is false ? "bit-cal-bns" : string.Empty) @Classes?.TimePickerPmButton">
@@ -670,7 +705,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <ul class="bit-cal-eml">
+                <ul style="@Styles?.EventList" class="bit-cal-eml @Classes?.EventList">
                     @foreach (var evt in GetEventModalEvents())
                     {
                         <li class="bit-cal-emi @Classes?.EventItem"

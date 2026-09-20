@@ -73,18 +73,27 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         }
         set
         {
-            if (value > 23)
+            if (IsEnabled is false || ReadOnly) return;
+
+            int candidate;
+
+            if (TimeFormat == BitTimeFormat.TwelveHours)
             {
-                _hour = 23;
-            }
-            else if (value < 0)
-            {
-                _hour = 0;
+                // A value typed into the hour is an hour of the clock face (1-12), so it lands in the half of
+                // the day the picker is already on: typing 5 into an afternoon time means 17:00, not a silent
+                // flip to the morning - which half the time is in is what the AM/PM pair is there to change.
+                // Both 12 and 0 mean the top of the clock, which is hour zero of the half.
+                candidate = BitTimeSteps.Wrap(value, 12) + (_hour >= 12 ? 12 : 0);
             }
             else
             {
-                _hour = value;
+                candidate = Math.Clamp(value, 0, 23);
             }
+
+            // What the spin buttons produce is held to the HourStep grid, so what is typed - and what the
+            // arrow keys of the number input produce, which is a typed value of one more or one less - is
+            // held to it too, instead of the two halves of the same control disagreeing about the same hour.
+            _hour = BitTimeSteps.FindAllowedNear(candidate, _hour, 24, IsHourOnGrid) ?? _hour;
 
             UpdateTime();
         }
@@ -96,18 +105,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         get => _minute;
         set
         {
-            if (value > 59)
-            {
-                _minute = 59;
-            }
-            else if (value < 0)
-            {
-                _minute = 0;
-            }
-            else
-            {
-                _minute = value;
-            }
+            if (IsEnabled is false || ReadOnly) return;
+
+            // Held to the MinuteStep grid for the same reason the hour above is held to its own.
+            _minute = BitTimeSteps.FindAllowedNear(Math.Clamp(value, 0, 59), _minute, 60, IsMinuteOnGrid) ?? _minute;
 
             UpdateTime();
         }
@@ -347,9 +348,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The step, in hours, the spin buttons of the time picker move the hour by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the day that every hour the buttons produce sits on, starting at
-    /// midnight, so a picker that only accepts times on a three-hour grid can say so. A time entered as text is
-    /// not held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at
+    /// midnight, so a picker that only accepts times on a three-hour grid can say so. The buttons, the keys and
+    /// what is typed into the hour are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
 
@@ -381,9 +382,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The step, in minutes, the spin buttons of the time picker move the minute by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 lays a grid over the hour that every minute the buttons produce sits on, starting
-    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. A time entered
-    /// as text is not held to it. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting
+    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. The buttons,
+    /// the keys and what is typed into the minute are all held to it. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
@@ -660,6 +661,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule.
     /// </summary>
     [Parameter] public CalendarWeekRule? WeekNumberRule { get; set; }
+
+    /// <summary>
+    /// The accessible name of the empty column header above the week numbers.
+    /// </summary>
+    [Parameter] public string WeekNumbersHeaderTitle { get; set; } = "Week";
 
     /// <summary>
     /// The title of the week number (tooltip).
@@ -1349,6 +1355,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return (DayOfWeek)dayOfWeek;
     }
 
+    // The single letter each weekday column is headed with, taken off the culture's shortest day name. A
+    // culture is free to leave those empty, which would be an index out of range, and the first character of
+    // one that is written as a surrogate pair is two of them - half of it is not a character at all.
+    private static string GetNarrowDayName(string name)
+    {
+        if (name.HasNoValue()) return string.Empty;
+
+        return char.IsHighSurrogate(name[0]) && name.Length > 1 ? name[..2] : name[..1];
+    }
+
     private int GetWeekNumber(int weekIndex)
     {
         // The first cells of the week can be empty at the very edge of the calendar's supported range, so the
@@ -1379,6 +1395,26 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         _showTimePicker = !_showTimePicker;
 
         MoveFocusToTheVisiblePicker();
+    }
+
+    // A picker laid over the day grid is a surface the keyboard was sent into, so Escape is what leaves it -
+    // the same way it leaves every other dismissible surface in the library - and the day grid underneath
+    // takes the focus back. A picker that sits beside the day grid is not covering anything and stays put.
+    private void DismissMonthPickerOverlay()
+    {
+        if (ShowMonthPickerAsOverlay is false && (ShowTimePicker && ShowTimePickerAsOverlay is false) is false) return;
+
+        ToggleMonthPickerOverlay();
+    }
+
+    /// <inheritdoc cref="DismissMonthPickerOverlay"/>
+    private void HandleTimePickerKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+        if (e.Key is not "Escape") return;
+        if (ShowTimePickerAsOverlay is false) return;
+
+        ToggleTimePickerOverlay();
     }
 
     private void MoveFocusToTheVisiblePicker()
@@ -1835,6 +1871,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return;
 
+        if (e.Key is "Escape")
+        {
+            DismissMonthPickerOverlay();
+            return;
+        }
+
         if (e.Key is "PageUp" or "PageDown")
         {
             var isNext = e.Key is "PageDown";
@@ -1906,6 +1948,15 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private void HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
         if (IsEnabled is false) return;
+
+        // Escape leaves the year grid the way it was reached: back to the months of the year it is showing,
+        // and from there - a second Escape - out of the overlay entirely.
+        if (e.Key is "Escape")
+        {
+            ToggleBetweenMonthAndYearPicker();
+            FocusMonthCell(GetFocusableMonth());
+            return;
+        }
 
         if (e.Key is "PageUp" or "PageDown")
         {
@@ -1985,9 +2036,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             "ArrowUp" => FindEnabledDay(date, -7),
             "ArrowDown" => FindEnabledDay(date, 7),
             "Home" => FindEnabledDayTowards(GetStartOfWeek(date), date),
-            "End" => FindEnabledDayTowards(GetStartOfWeek(date).AddDays(6), date),
-            "PageUp" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, -1) : _culture.Calendar.AddMonths(date, -1), date),
-            "PageDown" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, 1) : _culture.Calendar.AddMonths(date, 1), date),
+            "End" => FindEnabledDayTowards(GetEndOfWeek(date), date),
+            "PageUp" => FindEnabledDayTowards(e.ShiftKey ? TryAddYears(date, -1) : TryAddMonths(date, -1), date),
+            "PageDown" => FindEnabledDayTowards(e.ShiftKey ? TryAddYears(date, 1) : TryAddMonths(date, 1), date),
             _ => null
         };
 
@@ -1996,13 +2047,57 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await MoveFocusToDay(target.Value);
     }
 
+    // A step that runs off the end of what a DateTime, or of what the culture's own calendar, can represent
+    // has nowhere to land - so it is refused rather than thrown, and the key simply moves the focus nowhere.
+    // The days at the very edge of the range are reachable all the same: every step that does land is taken.
+    private static DateTime? TryAddDays(DateTime date, int days)
+    {
+        try
+        {
+            return date.AddDays(days);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc cref="TryAddDays"/>
+    private DateTime? TryAddMonths(DateTime date, int months)
+    {
+        try
+        {
+            return _culture.Calendar.AddMonths(date, months);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc cref="TryAddDays"/>
+    private DateTime? TryAddYears(DateTime date, int years)
+    {
+        try
+        {
+            return _culture.Calendar.AddYears(date, years);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
     private DateTime? FindEnabledDay(DateTime from, int stepDays)
     {
         var date = from;
 
         for (var i = 0; i < 366; i++)
         {
-            date = date.AddDays(stepDays);
+            var next = TryAddDays(date, stepDays);
+            if (next.HasValue is false) return null;
+
+            date = next.Value;
 
             if (IsWeekDayOutOfMinAndMaxDate(date)) return null;
 
@@ -2012,11 +2107,14 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return null;
     }
 
-    private DateTime? FindEnabledDayTowards(DateTime target, DateTime origin)
+    private DateTime? FindEnabledDayTowards(DateTime? target, DateTime origin)
     {
-        var step = target < origin ? 1 : -1;
-        var date = target;
+        if (target.HasValue is false) return null;
 
+        var step = target.Value < origin ? 1 : -1;
+        var date = target.Value;
+
+        // Both ends are days the calendar can represent, so every day walked between them is one too.
         while (date != origin)
         {
             if (IsDayDisabled(date) is false) return date;
@@ -2027,11 +2125,19 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return null;
     }
 
-    private DateTime GetStartOfWeek(DateTime date)
+    private DateTime? GetStartOfWeek(DateTime date)
     {
         var diff = ((int)date.DayOfWeek - (int)GetFirstDayOfWeek() + 7) % 7;
 
-        return date.AddDays(-diff);
+        return TryAddDays(date, -diff);
+    }
+
+    /// <inheritdoc cref="GetStartOfWeek"/>
+    private DateTime? GetEndOfWeek(DateTime date)
+    {
+        var start = GetStartOfWeek(date);
+
+        return start.HasValue ? TryAddDays(start.Value, 6) : null;
     }
 
     private async Task MoveFocusToDay(DateTime target)
@@ -2064,6 +2170,21 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var date = GetFirstDayOfMonthOrClamp(_currentYear, _currentMonth);
 
         await OnMonthChange.InvokeAsync(new(date, _timeZone.GetUtcOffset(date)));
+    }
+
+    // How many dots a day can wear before the row of them stops saying anything a shorter row does not.
+    private const int MAX_EVENT_INDICATORS = 3;
+
+    private static IEnumerable<BitCalendarEvent> GetIndicatorEvents(IReadOnlyList<BitCalendarEvent> events)
+    {
+        return events.Take(MAX_EVENT_INDICATORS);
+    }
+
+    // An event of its own color paints its dot with it; one without takes whatever the calendar's event color
+    // is, which is the Color role unless --bit-Calendar-event-color says otherwise.
+    private static string? GetEventIndicatorColorClass(BitCalendarEvent evt)
+    {
+        return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-evi") : null;
     }
 
     private IReadOnlyList<BitCalendarEvent> GetDayEvents(DateTime date)
@@ -2348,7 +2469,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // one, and a step that does not divide the day wraps to the top of the grid instead of drifting off it.
     private void ChangeHour(bool isNext)
     {
-        _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, h => BitTimeSteps.IsOnGrid(h, HourStep, 0, 24)) ?? _hour;
+        _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, IsHourOnGrid) ?? _hour;
 
         UpdateTime();
     }
@@ -2356,9 +2477,29 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="ChangeHour"/>
     private void ChangeMinute(bool isNext)
     {
-        _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, m => BitTimeSteps.IsOnGrid(m, MinuteStep, 0, 60)) ?? _minute;
+        _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, IsMinuteOnGrid) ?? _minute;
 
         UpdateTime();
+    }
+
+    // The grid HourStep and MinuteStep lay over the day and over the hour, which everything that moves the
+    // time - the spin buttons, the keys, what is typed - is held to, so no two of them can disagree about
+    // which times the picker offers.
+    private bool IsHourOnGrid(int hour) => BitTimeSteps.IsOnGrid(hour, HourStep, 0, 24);
+
+    /// <inheritdoc cref="IsHourOnGrid"/>
+    private bool IsMinuteOnGrid(int minute) => BitTimeSteps.IsOnGrid(minute, MinuteStep, 0, 60);
+
+    // The hour and the minute answer PageUp and PageDown with the same step the spin buttons next to them
+    // move by, so the time can be set without leaving the keyboard or the field. (The arrow keys are the
+    // number input's own, and the setter above snaps the one-step move they make onto the grid.)
+    private void HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        if (e.Key is not ("PageUp" or "PageDown")) return;
+
+        ChangeTime(e.Key is "PageUp", isHour);
     }
 
     public bool DayPickerIsVisible()

@@ -744,6 +744,13 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "WeekNumbersHeaderTitle",
+            Type = "string",
+            DefaultValue = "Week",
+            Description = "The accessible name of the empty column header above the week numbers."
+        },
+        new()
+        {
             Name = "WeekNumberTitle",
             Type = "string",
             DefaultValue = "Week number {0}",
@@ -1462,10 +1469,17 @@ public partial class BitCalendarDemo
                 },
                 new()
                 {
+                    Name = "EventIndicators",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the row of event indicator dots on a day of the BitCalendar."
+                },
+                new()
+                {
                     Name = "EventIndicator",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the event indicator dot of the BitCalendar."
+                    Description = "Custom CSS classes/styles for each event indicator dot of the BitCalendar."
                 },
                 new()
                 {
@@ -1494,6 +1508,13 @@ public partial class BitCalendarDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the event modal close button of the BitCalendar."
+                },
+                new()
+                {
+                    Name = "EventList",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the list of events in the event modal of the BitCalendar."
                 },
                 new()
                 {
@@ -1551,6 +1572,13 @@ public partial class BitCalendarDemo
                     Type = "DateOnly",
                     DefaultValue = "default",
                     Description = "The date on which the event occurs."
+                },
+                new()
+                {
+                    Name = "Color",
+                    Type = "BitColor?",
+                    DefaultValue = "null",
+                    Description = "The color of the indicator dot the event puts on its day. Without one the dot takes the color of the calendar itself."
                 },
                 new()
                 {
@@ -1750,13 +1778,19 @@ public partial class BitCalendarDemo
         {
             Name = "--bit-Calendar-event-color",
             DefaultValue = "The Color role's main color",
-            Description = "Color of the indicator dot on a day that carries events.",
+            Description = "Color of an indicator dot whose event named no Color of its own. On today it falls to the on-color instead, which is what reads against the cell.",
         },
         new()
         {
             Name = "--bit-Calendar-event-size",
             DefaultValue = "8px * 0.5 (the spacing unit)",
-            Description = "Diameter of the indicator dot on a day that carries events.",
+            Description = "Diameter of each indicator dot on a day that carries events.",
+        },
+        new()
+        {
+            Name = "--bit-Calendar-event-gap",
+            DefaultValue = "8px * 0.25 (the spacing unit)",
+            Description = "Space between the dots of a day that carries more than one event.",
         },
     ];
 
@@ -1811,10 +1845,37 @@ public partial class BitCalendarDemo
         new() { Title = "All-day workshop",
                 Body = "Full-day frontend architecture workshop.",
                 Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+        new() { Title = "Retro",
+                Body = "Sprint retrospective.",
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
+                StartTime = new TimeOnly(16, 0),
+                EndTime = new TimeOnly(17, 0) },
         new() { Title = "Client call",
                 Body = "Introductory call with the new client.",
                 Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
                 StartTime = new TimeOnly(11, 30) }
+    ];
+
+    // The same week seen through a page that sorts its events by kind, so each dot says which kind it is.
+    private List<BitCalendarEvent> coloredEvents =
+    [
+        new() { Title = "Release 2.4",
+                Body = "Ship the release once the pipeline is green.",
+                Color = BitColor.Success,
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)) },
+        new() { Title = "On-call handover",
+                Color = BitColor.Warning,
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                StartTime = new TimeOnly(10, 0) },
+        new() { Title = "Incident review",
+                Color = BitColor.Error,
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                StartTime = new TimeOnly(15, 0),
+                EndTime = new TimeOnly(16, 0) },
+        new() { Title = "Design sync",
+                Color = BitColor.Info,
+                Date = DateOnly.FromDateTime(DateTime.Today.AddDays(4)),
+                StartTime = new TimeOnly(13, 0) }
     ];
 
     private CultureInfo culture = CultureInfo.CurrentUICulture;

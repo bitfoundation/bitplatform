@@ -126,6 +126,8 @@ private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
     private readonly string example9RazorCode = @"
 <BitCalendar Events=""@calendarEvents"" />
 
+<BitCalendar Events=""@coloredEvents"" />
+
 <BitCalendar Events=""@calendarEvents"" ShowEventDetails=""false"" OnSelectDate=""HandleOnEventDayClick"" />
 <div>Events of the selected day: @eventsOfSelectedDay</div>";
     private readonly string example9CsharpCode = @"
@@ -144,10 +146,36 @@ private List<BitCalendarEvent> calendarEvents =
     new() { Title = ""All-day workshop"",
             Body = ""Full-day frontend architecture workshop."",
             Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+    new() { Title = ""Retro"",
+            Body = ""Sprint retrospective."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
+            StartTime = new TimeOnly(16, 0),
+            EndTime = new TimeOnly(17, 0) },
     new() { Title = ""Client call"",
             Body = ""Introductory call with the new client."",
             Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
             StartTime = new TimeOnly(11, 30) }
+];
+
+private List<BitCalendarEvent> coloredEvents =
+[
+    new() { Title = ""Release 2.4"",
+            Body = ""Ship the release once the pipeline is green."",
+            Color = BitColor.Success,
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)) },
+    new() { Title = ""On-call handover"",
+            Color = BitColor.Warning,
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            StartTime = new TimeOnly(10, 0) },
+    new() { Title = ""Incident review"",
+            Color = BitColor.Error,
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            StartTime = new TimeOnly(15, 0),
+            EndTime = new TimeOnly(16, 0) },
+    new() { Title = ""Design sync"",
+            Color = BitColor.Info,
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(4)),
+            StartTime = new TimeOnly(13, 0) }
 ];
 
 private string eventsOfSelectedDay = ""-"";
@@ -503,7 +531,8 @@ private void HandleInvalidSubmit()
             --bit-Calendar-radius: 1rem;
             --bit-Calendar-hover-background: var(--bit-clr-bg-ter);
             --bit-Calendar-event-color: var(--bit-clr-suc);
-            --bit-Calendar-event-size: 0.375rem;"">
+            --bit-Calendar-event-size: 0.375rem;
+            --bit-Calendar-event-gap: 0.1875rem;"">
     <BitCalendar Events=""@calendarEvents"" />
 </div>";
 
@@ -525,6 +554,11 @@ private List<BitCalendarEvent> calendarEvents =
     new() { Title = ""All-day workshop"",
             Body = ""Full-day frontend architecture workshop."",
             Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)) },
+    new() { Title = ""Retro"",
+            Body = ""Sprint retrospective."",
+            Date = DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
+            StartTime = new TimeOnly(16, 0),
+            EndTime = new TimeOnly(17, 0) },
     new() { Title = ""Client call"",
             Body = ""Introductory call with the new client."",
             Date = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),

@@ -172,7 +172,8 @@
             <b>ShowTimePicker</b> adds an hour and minute picker beside the day grid, or on top of it with
             <b>ShowTimePickerAsOverlay</b>. <b>TimeFormat</b> switches between the 24-hour and 12-hour clocks,
             <b>ShowNowButton</b> hides the button that jumps to the current time, and <b>HourStep</b> /
-            <b>MinuteStep</b> lay a grid over the day and the hour that the spin buttons land on.
+            <b>MinuteStep</b> lay a grid over the day and the hour that everything the picker produces lands on —
+            the spin buttons, the arrow and page keys, and what is typed.
         </div>
         <br /><br />
         <div class="example-content">
@@ -193,16 +194,20 @@
 
     <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            <b>Events</b> marks days with an indicator dot and a tooltip, and clicking such a day opens a modal
-            dialog listing the title, time and description of each of them, all-day first. The dialog is
-            dismissed with Escape or its close button and hands the keyboard back to the day it came from.
-            <b>ShowEventDetails</b> false keeps the indicator and the tooltip but leaves the day's events to the
-            page, and <b>EventTimeFromText</b> / <b>EventTimeUntilText</b> localize the one-sided time rows.
+            <b>Events</b> marks a day with one dot per event (up to three) and a tooltip, and clicking such a day
+            opens a modal dialog listing the title, time and description of each of them, all-day first. An event
+            can name its own <b>Color</b>; the rest take the calendar's. The dialog is dismissed with Escape or
+            its close button and hands the keyboard back to the day it came from. <b>ShowEventDetails</b> false
+            keeps the dots and the tooltip but leaves the day's events to the page, and <b>EventTimeFromText</b> /
+            <b>EventTimeUntilText</b> localize the one-sided time rows.
         </div>
         <br /><br />
         <div class="example-content">
             <div>Events (click a marked day):</div>
             <BitCalendar Events="@calendarEvents" />
+            <br /><br />
+            <div>Color per event:</div>
+            <BitCalendar Events="@coloredEvents" />
             <br /><br />
             <div>ShowEventDetails = false:</div>
             <BitCalendar Events="@calendarEvents" ShowEventDetails="false"
@@ -376,13 +381,18 @@
                     grid, year range in the year grid</li>
                 <li><b>Shift+PageUp</b> / <b>Shift+PageDown</b>: same day of the previous/next year</li>
                 <li><b>Enter</b> / <b>Space</b>: activate the focused cell</li>
-                <li><b>Escape</b>: close the event details dialog</li>
+                <li><b>Escape</b>: leave the event details dialog, the year grid, or a picker laid over the
+                    day grid</li>
             </ul>
+            In the time picker the arrow keys move the hour and the minute by one step of the grid and
+            <b>PageUp</b> / <b>PageDown</b> do the same from anywhere in the field.
+            <br /><br />
             Crossing a month, year or range boundary navigates the calendar and keeps the focus on the cell, and
             disabled cells are skipped. Beyond that: <b>AriaLabel</b> names the whole calendar for a screen
-            reader, each day is announced with its full date and its events, today carries
-            <code>aria-current="date"</code>, and every button — the arrows, the spin buttons, the AM/PM pair —
-            has a name and a state of its own, all of them overridable through the <b>*Title</b> parameters.
+            reader, each day is announced with its full date and its events, today and the current month and
+            year carry <code>aria-current="date"</code>, and every button — the arrows, the spin buttons, the
+            AM/PM pair — has a name and a state of its own, all of them overridable through the <b>*Title</b>
+            parameters.
         </div>
         <br /><br />
         <div class="example-content">
@@ -570,7 +580,7 @@
             <br /><br />
             <div>Set once on an ancestor, inherited by every calendar inside it:</div>
             <br />
-            <div class="example-content" style="--bit-Calendar-background: var(--bit-clr-bg-sec); --bit-Calendar-radius: 1rem; --bit-Calendar-hover-background: var(--bit-clr-bg-ter); --bit-Calendar-event-color: var(--bit-clr-suc); --bit-Calendar-event-size: 0.375rem;">
+            <div class="example-content" style="--bit-Calendar-background: var(--bit-clr-bg-sec); --bit-Calendar-radius: 1rem; --bit-Calendar-hover-background: var(--bit-clr-bg-ter); --bit-Calendar-event-color: var(--bit-clr-suc); --bit-Calendar-event-size: 0.375rem; --bit-Calendar-event-gap: 0.1875rem;">
                 <BitCalendar Events="@calendarEvents" />
             </div>
         </div>

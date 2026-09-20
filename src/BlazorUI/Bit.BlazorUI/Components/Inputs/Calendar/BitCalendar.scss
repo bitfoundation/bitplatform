@@ -32,8 +32,11 @@
 //   --bit-Calendar-highlighted-background    background of a HighlightedDates day          (default: $clr-bg-ter)
 //   --bit-Calendar-week-number-color         text color of a week number                   (default: $clr-fg-sec)
 //   --bit-Calendar-week-number-background    background of a week number                   (default: $clr-bg-sec)
-//   --bit-Calendar-event-color               color of the event indicator dot              (default: the Color role's main color)
-//   --bit-Calendar-event-size                diameter of the event indicator dot           (default: spacing(0.5))
+//   --bit-Calendar-event-color               color of an event indicator dot the event
+//                                            itself named no color for                    (default: the Color role's main color)
+//   --bit-Calendar-event-size                diameter of an event indicator dot            (default: spacing(0.5))
+//   --bit-Calendar-event-gap                 space between the dots of a day carrying
+//                                            more than one event                          (default: spacing(0.25))
 
 // The default size, declared as a mixin so the root can fall back to it without a size class. The two values
 // an author can override are named apart from the ones they feed (see the indirection on .bit-cal below), so
@@ -204,6 +207,10 @@
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
     font-size: var(--bit-cal-cell-fs);
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    // Only what a state actually changes is transitioned, so the cell that is hovered or selected eases
+    // rather than snapping - and collapses to nothing under prefers-reduced-motion, which the duration
+    // token carries on its own.
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -337,6 +344,7 @@
 
 .bit-cal-ptb {
     cursor: pointer;
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -375,6 +383,7 @@
     font-size: var(--bit-cal-cell-fs);
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -417,6 +426,7 @@
     font-size: var(--bit-cal-cell-fs);
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -491,6 +501,7 @@
     font-size: var(--bit-cal-cell-fs);
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -594,7 +605,9 @@
     font-weight: $tg-font-weight;
     width: var(--bit-cal-tcell-size);
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
-    background-color: $clr-bg-pri;
+    // Transparent like every other part of the calendar, so the two number inputs sit on whatever surface
+    // the calendar itself is painted with rather than punching two opaque squares through a tinted one.
+    background-color: transparent;
 
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
@@ -613,10 +626,14 @@
     }
 }
 
+// The two halves of the day are labelled buttons, so they carry the tracking and the case a design system
+// gives the label of an interactive control (Material upper-cases them; Fluent leaves both alone).
 .bit-cal-bam,
 .bit-cal-bpm {
     font-size: $tg-fs-sm;
     font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 }
 
 .bit-cal-bns {
@@ -648,16 +665,31 @@
     padding: var(--bit-Calendar-padding, #{spacing(1.5)});
 }
 
-.bit-cal-evi {
+// The dots of a day sit in a row of their own along the bottom of its cell, so a second and a third stay
+// centered under the number instead of each having to know where the others are.
+.bit-cal-evc {
     left: 50%;
+    display: flex;
     position: absolute;
-    border-radius: $shp-radius-full;
+    pointer-events: none;
+    gap: var(--bit-Calendar-event-gap, #{spacing(0.25)});
     bottom: spacing(0.125);
     transform: translateX(-50%);
+}
+
+.bit-cal-evi {
+    flex: none;
+    border-radius: $shp-radius-full;
     width: var(--bit-Calendar-event-size, #{spacing(0.5)});
     height: var(--bit-Calendar-event-size, #{spacing(0.5)});
-    background-color: var(--bit-Calendar-event-color, var(--bit-cal-clr));
-    transition: transform $mot-duration $mot-easing;
+    background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr)));
+}
+
+// Today is painted with the Color role's main color, which is what a dot of no color of its own is painted
+// with too - so on today the dot falls back to the color that reads against it instead of disappearing into
+// it. An event that named a color keeps it, here as everywhere else.
+.bit-cal-dtd .bit-cal-evi {
+    background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr-txt)));
 }
 
 .bit-cal-eov {
@@ -701,12 +733,19 @@
 
 .bit-cal-emx {
     border: none;
+    display: flex;
     cursor: pointer;
+    align-items: center;
     color: $clr-fg-sec;
     font-size: $tg-fs-sm;
+    justify-content: center;
     background-color: transparent;
     padding: spacing(0.25) spacing(1);
+    // The 24px floor of WCAG 2.2's target-size minimum: the glyph alone is a few pixels short of it.
+    min-width: spacing(3);
+    min-height: spacing(3);
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
+    transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -764,6 +803,11 @@
         --bit-cal-clr-hover: #{role($tokens, hover)};
         --bit-cal-clr-active: #{role($tokens, active)};
         --bit-cal-clr-focus: #{role($tokens, focus)};
+    }
+
+    // The color of a single event, set on its own dot, so a day can carry dots of several colors at once.
+    .bit-cal-evi-#{$role} {
+        --bit-cal-evt-clr: #{role($tokens, main)};
     }
 }
 
@@ -837,6 +881,11 @@
     .bit-cal-evi {
         background-color: CanvasText;
         forced-color-adjust: none;
+    }
+
+    // Today is painted Highlight in this palette, which CanvasText does not have to read against.
+    .bit-cal-dtd .bit-cal-evi {
+        background-color: HighlightText;
     }
 
     // An outline rather than a border: it gives the calendar an edge in a palette that strips every

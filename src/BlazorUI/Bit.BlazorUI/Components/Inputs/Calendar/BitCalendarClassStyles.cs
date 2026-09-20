@@ -353,7 +353,12 @@ public class BitCalendarClassStyles
     public string? YearButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the event indicator dot of the BitCalendar.
+    /// Custom CSS classes/styles for the row of event indicator dots on a day of the BitCalendar.
+    /// </summary>
+    public string? EventIndicators { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each event indicator dot of the BitCalendar.
     /// </summary>
     public string? EventIndicator { get; set; }
 
@@ -376,6 +381,11 @@ public class BitCalendarClassStyles
     /// Custom CSS classes/styles for the event modal close button of the BitCalendar.
     /// </summary>
     public string? EventModalCloseButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the list of events in the event modal of the BitCalendar.
+    /// </summary>
+    public string? EventList { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each event item in the event modal of the BitCalendar.

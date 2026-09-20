@@ -1788,8 +1788,8 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.Contains("Standup", label!);
         Assert.AreEqual("dialog", day.GetAttribute("aria-haspopup"));
-        // The indicator dot says the same thing to everyone else, so it is not read out a second time.
-        Assert.AreEqual("true", component.Find(".bit-cal-evi").GetAttribute("aria-hidden"));
+        // The indicator dots say the same thing to everyone else, so they are not read out a second time.
+        Assert.AreEqual("true", component.Find(".bit-cal-evc").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]
@@ -1970,5 +1970,310 @@ public class BitCalendarTests : BunitTestContext
         });
 
         Assert.AreEqual(7, component.FindAll(".bit-cal-dgh .bit-cal-wlb").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldShowOneIndicatorPerEventUpToThree()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "One", Date = new DateOnly(2026, 1, 15) },
+                new BitCalendarEvent { Title = "Two", Date = new DateOnly(2026, 1, 15) },
+                new BitCalendarEvent { Title = "Three", Date = new DateOnly(2026, 1, 16) },
+                new BitCalendarEvent { Title = "Four", Date = new DateOnly(2026, 1, 16) },
+                new BitCalendarEvent { Title = "Five", Date = new DateOnly(2026, 1, 16) },
+                new BitCalendarEvent { Title = "Six", Date = new DateOnly(2026, 1, 16) }
+            ]);
+        });
+
+        var two = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("15"));
+        var six = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("16"));
+
+        Assert.AreEqual(2, two.QuerySelectorAll(".bit-cal-evi").Length);
+        // Past three the row of dots says no more than "several"; the count stays in the label and the tooltip.
+        Assert.AreEqual(3, six.QuerySelectorAll(".bit-cal-evi").Length);
+    }
+
+    [TestMethod]
+    public void BitCalendarEventShouldPaintItsIndicatorWithItsOwnColor()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Colored", Date = new DateOnly(2026, 1, 15), Color = BitColor.Success },
+                new BitCalendarEvent { Title = "Plain", Date = new DateOnly(2026, 1, 16) }
+            ]);
+        });
+
+        var colored = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("15"));
+        var plain = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim().StartsWith("16"));
+
+        Assert.IsTrue(colored.QuerySelector(".bit-cal-evi")!.ClassList.Contains("bit-cal-evi-suc"));
+        // An event of no color of its own takes the calendar's, which is a fallback rather than a class.
+        Assert.IsFalse(plain.QuerySelector(".bit-cal-evi")!.ClassList.Any(c => c.StartsWith("bit-cal-evi-")));
+    }
+
+    [TestMethod]
+    public void BitCalendarTypedHourShouldStayInTheHalfOfTheDayItIsIn()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 15, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // 4 typed into an afternoon time is 16:00, not a silent flip to the morning: which half of the day
+        // the time is in is what the AM/PM pair is there to change.
+        component.Find(".bit-cal-tin").Input("4");
+
+        Assert.AreEqual(16, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitCalendarTypedTimeShouldBeHeldToTheStepGrid()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 9, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // What the spin buttons produce is on the grid, so what is typed is held to it too - 20 is nearer to
+        // 15 than to 30.
+        component.FindAll(".bit-cal-tin")[1].Input("20");
+
+        Assert.AreEqual(15, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitCalendarTimeInputShouldStepWithPageKeys()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 9, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.HourStep, 3);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-cal-tin").KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+
+        Assert.AreEqual(12, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitCalendarEscapeShouldLeaveTheMonthPickerOverlay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        component.Find(".bit-cal-ptb").Click();
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+
+        component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-dbt"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEscapeShouldLeaveTheYearGridForTheMonthGrid()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The year toggle of the month pane, which swaps the months for the years of the range.
+        component.FindAll(".bit-cal-ptb").Last().Click();
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.Contains("Jan", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldReportTheCurrentMonthAndYearToScreenReaders()
+    {
+        var today = new DateTimeOffset(2026, 5, 20, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.StartingValue, today);
+            // The current month is reported whether or not it is painted.
+            parameters.Add(p => p.HighlightCurrentMonth, false);
+        });
+
+        var months = component.FindAll(".bit-cal-pkb");
+        Assert.AreEqual("date", months[4].GetAttribute("aria-current"));
+        Assert.IsNull(months[3].GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldNameTheWeekNumbersColumnHeader()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowWeekNumbers, true);
+            parameters.Add(p => p.WeekNumbersHeaderTitle, "Wk");
+        });
+
+        Assert.AreEqual("Wk", component.Find(".bit-cal-dgh .bit-cal-wlb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldMarkOnlyTheSelectedCellAsSelected()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        var selected = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+        var other = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16");
+
+        Assert.AreEqual("true", selected.GetAttribute("aria-selected"));
+        // An explicit false on the other forty-one would be read out on every day arrowed over.
+        Assert.IsNull(other.GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void BitCalendarReadOnlyShouldReportItsTimeControlsAsUnavailable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 9, 0, 0, TimeSpan.Zero));
+        });
+
+        // Every control that would set the time - the spin buttons, the meridiem pair, the now button - says
+        // it is unavailable rather than looking pressable and doing nothing.
+        foreach (var button in component.FindAll(".bit-cal-tbt, .bit-cal-gtn"))
+        {
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        }
+
+        Assert.IsTrue(component.FindAll(".bit-cal-tin").All(i => i.HasAttribute("readonly")));
+    }
+
+    [TestMethod]
+    public void BitCalendarReadOnlyTimeInputShouldNotChangeTheValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 9, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-cal-tin").Input("11");
+        component.Find(".bit-cal-tin").KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+
+        Assert.AreEqual(9, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldNotCutASurrogatePairOutOfADayNameHeader()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        // A name whose first character is written as a surrogate pair: half of it is not a character at all.
+        culture.DateTimeFormat.ShortestDayNames = ["\U0001D400a", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
+        });
+
+        Assert.AreEqual("\U0001D400", component.FindAll(".bit-cal-dgh .bit-cal-wlb")[0].TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("ArrowLeft"),
+        DataRow("ArrowUp"),
+        DataRow("Home"),
+        DataRow("PageUp")]
+    public void BitCalendarKeyboardNavigationShouldStopAtTheEdgeOfTheSupportedRange(string key)
+    {
+        // The first day a DateTime can represent: every one of these keys steps off the end of the range,
+        // which has to leave the focus where it is rather than throw.
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(1, 1, 1, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        var focused = component.Find(".bit-cal-dbt[tabindex='0']");
+        var day = focused.TextContent.Trim();
+
+        focused.KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(day, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarShiftPageUpShouldStopAtTheEdgeOfTheSupportedRange()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(1, 1, 1, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        var focused = component.Find(".bit-cal-dbt[tabindex='0']");
+        var day = focused.TextContent.Trim();
+
+        focused.KeyDown(new KeyboardEventArgs { Key = "PageUp", ShiftKey = true });
+
+        Assert.AreEqual(day, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
     }
 }
