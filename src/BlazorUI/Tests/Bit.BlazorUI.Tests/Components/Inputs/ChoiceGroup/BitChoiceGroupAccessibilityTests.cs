@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -355,6 +355,100 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
         Assert.AreEqual(2, ids.Length);
         Assert.AreEqual("consumer-hint", ids[0]);
         Assert.AreEqual("desc A", component.Find($"#{ids[1]}").TextContent);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameAnItemWithADescriptionByItsTextAlone()
+    {
+        // The description is rendered inside the label, so without a name of its own the input would be
+        // named "A desc A" and then have "desc A" announced a second time through aria-describedby.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+            new() { Text = "B", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+
+        Assert.AreEqual("A", inputs[0].GetAttribute("aria-label"));
+
+        // An item without a description is named by its label, so it needs no aria-label at all.
+        Assert.IsFalse(inputs[1].HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameAnItemWithADescriptionByItsWholeVisibleText()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A", Prefix = "1.", Suffix = "(free)" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("1. A (free)", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPreferTheAriaLabelOfAnItemOverItsDerivedName()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A", AriaLabel = "the first option" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("the first option", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotDeriveANameForATemplatedItem()
+    {
+        // A template renders neither the built-in description nor the built-in text, so there is nothing
+        // to derive a name from and nothing announced twice.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, item.Text));
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg-icn input").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotDeriveANameThatWouldDropATemplatedAffix()
+    {
+        // The suffix template renders inside the label, so a name built from the text alone would leave it
+        // out. The label keeps naming the input instead, description and all.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Description = "desc A" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemSuffixTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddContent(0, "$10"));
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg-icn input").HasAttribute("aria-label"));
     }
 
     [TestMethod]

@@ -19,6 +19,12 @@
                       && ChoiceGroup.ItemTemplate is null
                       && ChoiceGroup.ItemLabelTemplate is null;
 
+    // A prefix or suffix template only renders when the item has no plain text for that end, and whatever
+    // it renders is part of the label, so naming the input from the text alone would drop it. The name is
+    // therefore only derived for a label this component wrote in full - then it can be reproduced exactly.
+    var hasTemplatedAffix = (prefix.HasValue() is false && ChoiceGroup.ItemPrefixTemplate is not null)
+                         || (suffix.HasValue() is false && ChoiceGroup.ItemSuffixTemplate is not null);
+
     // The explicit attributes sit after the InputHtmlAttributes splat, so they are what ends up rendered no
     // matter what (a null even removes the splatted value); the aria values a consumer splatted have to be
     // carried over here to survive. aria-describedby is a space separated list of IDREFs, so a splatted
@@ -33,7 +39,12 @@
 
     object? splattedAriaLabel = null;
     ChoiceGroup.InputHtmlAttributes?.TryGetValue("aria-label", out splattedAriaLabel);
-    var ariaLabel = ChoiceGroup.GetAriaLabel(Item) ?? splattedAriaLabel?.ToString();
+
+    // Last in the chain because it is derived rather than given: an AriaLabel on the item and an
+    // aria-label the consumer splatted are both names someone wrote for this input and win over it.
+    var ariaLabel = ChoiceGroup.GetAriaLabel(Item)
+                 ?? splattedAriaLabel?.ToString()
+                 ?? (hasDescription && hasTemplatedAffix is false ? ChoiceGroup.GetItemAccessibleName(Item) : null);
 }
 
 <div title="@ChoiceGroup.GetTitle(Item)"

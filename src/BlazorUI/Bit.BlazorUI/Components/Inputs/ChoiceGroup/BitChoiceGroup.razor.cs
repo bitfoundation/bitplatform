@@ -64,6 +64,15 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The comparer that decides which item carries the current value, and which item the DefaultValue
+    /// seeds the selection with. It defaults to <see cref="EqualityComparer{TValue}.Default"/>, which is
+    /// all a value type, a string or an enum needs; supply one when TValue is a class whose instances are
+    /// equal by their content rather than by reference, so that a value coming back from a service selects
+    /// the matching item instead of no item at all.
+    /// </summary>
+    [Parameter] public IEqualityComparer<TValue>? Comparer { get; set; }
+
+    /// <summary>
     /// The description (helper text) of the ChoiceGroup, rendered under its label. The group references it
     /// through its aria-describedby, so screen readers announce it along with the name of the group.
     /// </summary>
@@ -334,7 +343,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         RefreshOptions();
 
         // A new DefaultValue has to be applied again, the previous one has already had its chance.
-        if (EqualityComparer<TValue>.Default.Equals(DefaultValue, _appliedDefaultValue) is false)
+        if (AreValuesEqual(DefaultValue, _appliedDefaultValue) is false)
         {
             _appliedDefaultValue = DefaultValue;
             _defaultValueApplied = false;
@@ -432,7 +441,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-item-gap:{Gap}" : string.Empty);
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-gap:{Gap}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -446,7 +455,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (ValueHasBeenSet || _defaultValueApplied || DefaultValue is null) return;
 
-        var item = _items.FirstOrDefault(item => EqualityComparer<TValue>.Default.Equals(GetValue(item), DefaultValue));
+        var item = _items.FirstOrDefault(item => AreValuesEqual(GetValue(item), DefaultValue));
         if (item is null) return;
 
         _defaultValueApplied = true;
@@ -587,7 +596,18 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     {
         if (CurrentValue is null) return false;
 
-        return EqualityComparer<TValue>.Default.Equals(GetValue(item), CurrentValue);
+        return AreValuesEqual(GetValue(item), CurrentValue);
+    }
+
+    // A Comparer is supplied for the values of the group, not necessarily for the null an item without a
+    // value carries, so the nulls are decided here and only two real values are handed to it. The result
+    // matches what EqualityComparer<TValue>.Default answers for the same pair, which is what runs when no
+    // Comparer is set.
+    private bool AreValuesEqual(TValue? left, TValue? right)
+    {
+        if (left is null || right is null) return left is null && right is null;
+
+        return (Comparer ?? EqualityComparer<TValue>.Default).Equals(left, right);
     }
 
     // The parts are joined with a semicolon: they are separate declaration lists and a value that does not
@@ -673,6 +693,19 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     internal string GetName()
     {
         return Name.HasValue() ? Name! : _name;
+    }
+
+    // The built-in description is rendered inside the <label for> of the item, so it is already part of
+    // the accessible name that label computes - and it is referenced by aria-describedby as well, which
+    // has a screen reader announce it twice, once as the name of the option and once as its description.
+    // Naming the input with what the label shows beside the description keeps the name to the option
+    // itself and leaves the description to aria-describedby alone. Composed from the same parts the label
+    // renders, and in the same order, so the name still matches the visible text (WCAG 2.5.3).
+    internal string? GetItemAccessibleName(TItem item)
+    {
+        var name = string.Join(' ', new[] { GetPrefix(item), GetText(item), GetSuffix(item) }.Where(part => part.HasValue()));
+
+        return name.HasValue() ? name : null;
     }
 
     internal string? GetAriaLabel(TItem item)

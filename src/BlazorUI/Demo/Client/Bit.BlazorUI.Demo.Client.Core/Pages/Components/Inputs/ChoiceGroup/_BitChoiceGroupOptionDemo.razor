@@ -283,7 +283,7 @@
 </DemoExample>
 
 <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-    <div>Binds the selected value in three ways. DefaultValue only seeds the initial selection and then leaves the ChoiceGroup to own its value, reporting every change through OnChange; this uncontrolled mode is how most of the examples on this page are set up. Value alone is one-way: the model drives the ChoiceGroup and a click cannot write back, so editing the text box below moves the selection but clicking an option does not change the text box. @@bind-Value is two-way and keeps the model and the ChoiceGroup in sync in both directions.</div>
+    <div>Binds the selected value in three ways. DefaultValue only seeds the initial selection and then leaves the ChoiceGroup to own its value, reporting every change through OnChange; this uncontrolled mode is how most of the examples on this page are set up. Value alone is one-way: the model drives the ChoiceGroup and a click cannot write back, so editing the text box below moves the selection but clicking an option does not change the text box. @@bind-Value is two-way and keeps the model and the ChoiceGroup in sync in both directions. Values are matched with the default equality comparer of TValue, which is all a string, a number or an enum needs; a TValue that is a class needs a Comparer to recognize a value that is equal to an item's without being the same instance.</div>
     <br />
     <div class="example-content">
         <div>
@@ -353,7 +353,7 @@
 </DemoExample>
 
 <DemoExample Title="Item descriptions" RazorCode="@example10RazorCode" Id="example10">
-    <div>Adds secondary text under each option using the Description parameter. The description is automatically linked to its input via aria-describedby, so screen readers announce it along with the option label.</div>
+    <div>Adds secondary text under each option using the Description parameter. The description is automatically linked to its input via aria-describedby, so screen readers announce it along with the option label. The input is named by the text of the option alone, so the description is announced as a description and not a second time as part of the name.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="Backup frequency" DefaultValue="@("Daily")" TItem="BitChoiceGroupOption<string>" TValue="string">
@@ -1123,7 +1123,7 @@
         <BitChoiceGroup Label="Recolored, and without the bold checked text"
                         DefaultValue="@("B")"
                         TItem="BitChoiceGroupOption<string>" TValue="string"
-                        Style="--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-item-checked-font-weight: 400;">
+                        Style="--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-circle-hover-color: rebeccapurple; --bit-ChoiceGroup-item-checked-font-weight: 400;">
             <BitChoiceGroupOption Text="Option A" Value="@("A")" />
             <BitChoiceGroupOption Text="Option B" Value="@("B")" />
             <BitChoiceGroupOption Text="Option C" Value="@("C")" />

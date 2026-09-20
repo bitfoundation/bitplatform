@@ -1450,7 +1450,7 @@ private readonly List<Order> iconCustoms =
                 Items=""basicCustoms""
                 DefaultValue=""@(""B"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })""
-                Style=""--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-item-checked-font-weight: 400;"" />
+                Style=""--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-circle-hover-color: rebeccapurple; --bit-ChoiceGroup-item-checked-font-weight: 400;"" />
 
 
 <div style=""--bit-ChoiceGroup-color: seagreen; --bit-ChoiceGroup-item-checked-background: #2e8b5724; --bit-ChoiceGroup-item-border-color: #2e8b5766;"">

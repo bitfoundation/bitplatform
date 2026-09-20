@@ -124,7 +124,7 @@
 </DemoExample>
 
 <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
-    <div>Binds the selected value in three ways. DefaultValue only seeds the initial selection and then leaves the ChoiceGroup to own its value, reporting every change through OnChange; this uncontrolled mode is how most of the examples on this page are set up. Value alone is one-way: the model drives the ChoiceGroup and a click cannot write back, so editing the text box below moves the selection but clicking an item does not change the text box. @@bind-Value is two-way and keeps the model and the ChoiceGroup in sync in both directions.</div>
+    <div>Binds the selected value in three ways. DefaultValue only seeds the initial selection and then leaves the ChoiceGroup to own its value, reporting every change through OnChange; this uncontrolled mode is how most of the examples on this page are set up. Value alone is one-way: the model drives the ChoiceGroup and a click cannot write back, so editing the text box below moves the selection but clicking an item does not change the text box. @@bind-Value is two-way and keeps the model and the ChoiceGroup in sync in both directions. Values are matched with the default equality comparer of TValue, which is all a string, a number or an enum needs; a TValue that is a class needs a Comparer to recognize a value that is equal to an item's without being the same instance.</div>
     <br />
     <div class="example-content">
         <div>
@@ -173,7 +173,7 @@
 </DemoExample>
 
 <DemoExample Title="Item descriptions" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-    <div>Adds secondary text under each item using the Description property. The description is automatically linked to its input via aria-describedby, so screen readers announce it along with the item label.</div>
+    <div>Adds secondary text under each item using the Description property. The description is automatically linked to its input via aria-describedby, so screen readers announce it along with the item label. The input is named by the text of the item alone, so the description is announced as a description and not a second time as part of the name.</div>
     <br />
     <div class="example-content">
         <BitChoiceGroup Label="Backup frequency" Items="descriptionItems" DefaultValue="@("Daily")" />
@@ -777,7 +777,7 @@
         <BitChoiceGroup Label="Recolored, and without the bold checked text"
                         Items="basicItems"
                         DefaultValue="@("B")"
-                        Style="--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-item-checked-font-weight: 400;" />
+                        Style="--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-circle-hover-color: rebeccapurple; --bit-ChoiceGroup-item-checked-font-weight: 400;" />
     </div>
     <br />
     <div>Set once on an ancestor, inherited by every ChoiceGroup inside it:</div>

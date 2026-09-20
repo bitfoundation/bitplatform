@@ -1032,7 +1032,7 @@ private readonly List<BitChoiceGroupItem<string>> iconItems =
 <BitChoiceGroup Label=""Recolored, and without the bold checked text""
                 Items=""basicItems""
                 DefaultValue=""@(""B"")""
-                Style=""--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-item-checked-font-weight: 400;"" />
+                Style=""--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-circle-hover-color: rebeccapurple; --bit-ChoiceGroup-item-checked-font-weight: 400;"" />
 
 
 <div style=""--bit-ChoiceGroup-color: seagreen; --bit-ChoiceGroup-item-checked-background: #2e8b5724; --bit-ChoiceGroup-item-border-color: #2e8b5766;"">

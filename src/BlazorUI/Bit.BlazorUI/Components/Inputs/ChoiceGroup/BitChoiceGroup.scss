@@ -21,18 +21,24 @@
 //   --bit-ChoiceGroup-description-font-size      text size of the group helper text            (default: per size, from the type ramp)
 //   --bit-ChoiceGroup-circle-size                diameter of the radio circle                  (default: per size, $siz-sel-*)
 //   --bit-ChoiceGroup-circle-color               ring color of an unchecked circle             (default: $clr-brd-pri)
+//   --bit-ChoiceGroup-circle-hover-color         ring color of a hovered unchecked circle      (default: $clr-brd-pri-hover)
 //   --bit-ChoiceGroup-circle-border-width        stroke of the ring                            (default: $shp-border-width)
 //   --bit-ChoiceGroup-dot-size                   diameter of the checked dot                   (default: per size)
+//   --bit-ChoiceGroup-dot-hover-color            the dot a hovered unchecked item previews     (default: $clr-fg-sec-hover)
 //   --bit-ChoiceGroup-icon-size                  size of an item's icon                        (default: per size)
-//   --bit-ChoiceGroup-item-gap                   room between the circle and the item content  (default: spacing(0.75))
-//   --bit-ChoiceGroup-item-min-height            smallest height of an item, its pointer
-//                                                target                                        (default: the circle size)
+//   --bit-ChoiceGroup-item-content-gap           room between the circle and the item content  (default: spacing(0.75))
+//   --bit-ChoiceGroup-item-min-height            height of an item's row, which is its
+//                                                pointer target                                (default: the circle size plus its air)
 //   --bit-ChoiceGroup-item-padding               padding inside an item                        (default: 0, per size in the card variants)
 //   --bit-ChoiceGroup-item-radius                corner radius of an item and its focus ring   (default: $shp-radius-control, $shp-radius-surface for a card)
+//   --bit-ChoiceGroup-item-color                 text color of an item                         (default: inherited)
+//   --bit-ChoiceGroup-item-checked-color         text color of the checked item                (default: inherited)
 //   --bit-ChoiceGroup-item-background            background of an item                         (default: transparent, per variant for a card)
 //   --bit-ChoiceGroup-item-hover-background      background of a hovered card                  (default: per variant)
 //   --bit-ChoiceGroup-item-checked-background    background of the checked card                (default: per variant)
 //   --bit-ChoiceGroup-item-border-color          border of a card at rest                      (default: per variant)
+//   --bit-ChoiceGroup-item-hover-border-color    border of a hovered card                      (default: the Color role's hover color)
+//   --bit-ChoiceGroup-item-checked-border-color  border of the checked card                    (default: the Color role's main color)
 //   --bit-ChoiceGroup-item-border-width          border stroke of a card                       (default: $shp-border-width)
 //   --bit-ChoiceGroup-item-checked-font-weight   weight of the checked item's text             (default: $tg-fw-bold)
 //   --bit-ChoiceGroup-item-description-color     color of an item's description                (default: $clr-fg-sec)
@@ -113,7 +119,7 @@
 
 .bit-chg-cnt {
     display: flex;
-    gap: var(--bit-chg-item-gap);
+    gap: var(--bit-chg-gap);
     flex-flow: var(--bit-chg-flex-flow);
 }
 
@@ -174,7 +180,12 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: var(--bit-chg-justify-content);
-    min-height: calc(var(--bit-chg-circle-size) + spacing(0.75));
+
+    // The row of an item, and with it the pointer target, floors at the circle plus a little air. The row
+    // reads the public knob as well as the label inside it does, so the knob is the height of the target:
+    // without it here the row kept a floor of its own, and a value set below that floor changed nothing
+    // while a value above it was grown by that air on top of the height that was asked for.
+    min-height: var(--bit-ChoiceGroup-item-min-height, calc(var(--bit-chg-circle-size) + #{spacing(0.75)}));
 }
 
 .bit-chg-ihi {
@@ -221,7 +232,7 @@
         position: absolute;
         border-radius: 50%;
         box-sizing: border-box;
-        background-color: $clr-fg-sec-hover;
+        background-color: var(--bit-ChoiceGroup-dot-hover-color, #{$clr-fg-sec-hover});
         width: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
         height: var(--bit-chg-dot-size, calc(var(--bit-chg-circle-size) / 2));
         transition: opacity $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
@@ -236,7 +247,7 @@
 @media (hover: hover) {
     .bit-chg-icn:not(.bit-chg-ids):not(.bit-chg-ich) .bit-chg-itl:hover .bit-chg-rad {
         &::before {
-            border-color: $clr-brd-pri-hover;
+            border-color: var(--bit-ChoiceGroup-circle-hover-color, #{$clr-brd-pri-hover});
         }
 
         &::after {
@@ -271,16 +282,18 @@
 .bit-chg-itl {
     display: flex;
     cursor: pointer;
+    user-select: none;
     align-items: center;
     letter-spacing: $tg-ctrl-letter-spacing;
-    gap: var(--bit-ChoiceGroup-item-gap, #{spacing(0.75)});
+    color: var(--bit-ChoiceGroup-item-color, inherit);
+    gap: var(--bit-ChoiceGroup-item-content-gap, #{spacing(0.75)});
     padding: var(--bit-ChoiceGroup-item-padding, 0);
 
-    // A floor on the pointer target rather than a height: the label still grows with a wrapped text or a
-    // description. It defaults to the circle, already the tallest part of a plain item, so it changes
-    // nothing on its own - it is what keeps a NoCircle item, whose only content is one line of text, from
-    // collapsing to a target thinner than that text (WCAG 2.2 SC 2.5.8), and it is the single knob to turn
-    // for a comfortably sized touch target.
+    // A floor rather than a height: the label still grows with a wrapped text or a description. It
+    // defaults to the circle, already the tallest part of a plain item, so it changes nothing on its own -
+    // it is what keeps a NoCircle item, whose only content is one line of text, from collapsing to a
+    // target thinner than that text (WCAG 2.2 SC 2.5.8). The row around it reads the same variable, so
+    // this is the single knob to turn for a comfortably sized touch target.
     min-height: var(--bit-ChoiceGroup-item-min-height, var(--bit-chg-circle-size));
 
     // Matches the radius the tile layout sets below, so the focus ring (a box-shadow, which follows the
@@ -330,7 +343,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            border-color: var(--bit-ChoiceGroup-circle-hover-color, #{$clr-brd-pri-hover});
 
             .bit-chg-rad {
                 &::before {
@@ -470,6 +483,10 @@
         }
     }
 
+    .bit-chg-itl {
+        color: var(--bit-ChoiceGroup-item-checked-color, inherit);
+    }
+
     .bit-chg-itx {
         font-weight: var(--bit-ChoiceGroup-item-checked-font-weight, #{$tg-fw-bold});
     }
@@ -489,7 +506,7 @@
         .bit-chg-icn:not(.bit-chg-ich):not(.bit-chg-ids) {
             .bit-chg-itl:hover .bit-chg-rad {
                 &::before {
-                    border-color: $clr-brd-pri;
+                    border-color: var(--bit-ChoiceGroup-circle-color, #{$clr-brd-pri});
                 }
 
                 &::after {
@@ -744,7 +761,7 @@
 // Style of an instance) retargets it in all three sizes at once, while the size class keeps deciding what
 // it is when nothing overrides it.
 .bit-chg-sm {
-    --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
+    --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
     --bit-chg-ico-size: var(--bit-ChoiceGroup-icon-size, #{spacing(3)});
     --bit-chg-fontsize: var(--bit-ChoiceGroup-font-size, #{$tg-fs-xs});
     --bit-chg-circle-size: var(--bit-ChoiceGroup-circle-size, #{$siz-sel-sm});
@@ -755,7 +772,7 @@
 }
 
 .bit-chg-md {
-    --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
+    --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
     --bit-chg-ico-size: var(--bit-ChoiceGroup-icon-size, #{spacing(4)});
     --bit-chg-fontsize: var(--bit-ChoiceGroup-font-size, #{$tg-fs-sm});
     --bit-chg-circle-size: var(--bit-ChoiceGroup-circle-size, #{$siz-sel-md});
@@ -766,7 +783,7 @@
 }
 
 .bit-chg-lg {
-    --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(2)});
+    --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(2)});
     --bit-chg-ico-size: var(--bit-ChoiceGroup-icon-size, #{spacing(5)});
     --bit-chg-fontsize: var(--bit-ChoiceGroup-font-size, #{$tg-fs-md});
     --bit-chg-circle-size: var(--bit-ChoiceGroup-circle-size, #{$siz-sel-lg});
@@ -778,15 +795,15 @@
 
 .bit-chg-hor {
     &.bit-chg-sm {
-        --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
+        --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(1)});
     }
 
     &.bit-chg-md {
-        --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(2)});
+        --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(2)});
     }
 
     &.bit-chg-lg {
-        --bit-chg-item-gap: var(--bit-ChoiceGroup-gap, #{spacing(3)});
+        --bit-chg-gap: var(--bit-ChoiceGroup-gap, #{spacing(3)});
     }
 }
 
@@ -823,7 +840,7 @@
     }
 
     .bit-chg-ich .bit-chg-itl {
-        border-color: var(--bit-chg-clr);
+        border-color: var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-chg-clr));
     }
 
     &.bit-inv .bit-chg-itl {
@@ -834,7 +851,7 @@
     // card stays inert and a tile inside a card does not keep its stand-alone hover border.
     @media (hover: hover) {
         .bit-chg-icn:not(.bit-chg-ids) .bit-chg-itl:hover {
-            border-color: var(--bit-chg-clr-hover);
+            border-color: var(--bit-ChoiceGroup-item-hover-border-color, var(--bit-chg-clr-hover));
             background-color: var(--bit-ChoiceGroup-item-hover-background, var(--bit-chg-card-bg-hover));
         }
     }
@@ -881,7 +898,7 @@
             }
 
             .bit-chg-ich .bit-chg-itl:hover {
-                border-color: var(--bit-chg-clr);
+                border-color: var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-chg-clr));
             }
         }
     }

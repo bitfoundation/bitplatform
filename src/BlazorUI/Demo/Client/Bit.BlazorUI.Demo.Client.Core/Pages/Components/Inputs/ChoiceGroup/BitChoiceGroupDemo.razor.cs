@@ -54,6 +54,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Comparer",
+            Type = "IEqualityComparer<TValue>?",
+            DefaultValue = "null",
+            Description = "The comparer that decides which item carries the current value, and which item the DefaultValue seeds the selection with. Defaults to EqualityComparer<TValue>.Default; supply one when TValue is a class whose instances are equal by their content rather than by reference.",
+        },
+        new()
+        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
@@ -355,6 +362,12 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "--bit-ChoiceGroup-circle-hover-color",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Ring color of the circle of a hovered unchecked item.",
+        },
+        new()
+        {
             Name = "--bit-ChoiceGroup-circle-border-width",
             DefaultValue = "--bit-shp-brd-width",
             Description = "Stroke of the ring of the circle.",
@@ -367,21 +380,27 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "--bit-ChoiceGroup-dot-hover-color",
+            DefaultValue = "--bit-clr-fg-sec-hover",
+            Description = "The dot a hovered unchecked item previews before it is picked.",
+        },
+        new()
+        {
             Name = "--bit-ChoiceGroup-icon-size",
             DefaultValue = "Per size",
             Description = "Size of the icon of an item, both as a tile and inline.",
         },
         new()
         {
-            Name = "--bit-ChoiceGroup-item-gap",
+            Name = "--bit-ChoiceGroup-item-content-gap",
             DefaultValue = "spacing(0.75)",
             Description = "Room between the circle and the content of an item.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-item-min-height",
-            DefaultValue = "The circle size",
-            Description = "Smallest height of an item, which is its pointer target. Raise it for a comfortable touch target, especially with NoCircle.",
+            DefaultValue = "The circle size plus its air",
+            Description = "Smallest height of the row of an item, which is its pointer target. Set it to 44px for a comfortable touch target, which is what an item with no circle and a single line of text needs most.",
         },
         new()
         {
@@ -394,6 +413,18 @@ public partial class BitChoiceGroupDemo
             Name = "--bit-ChoiceGroup-item-radius",
             DefaultValue = "--bit-shp-radius-control, --bit-shp-radius-surface for a card",
             Description = "Corner radius of an item; the focus ring follows it.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-color",
+            DefaultValue = "Inherited",
+            Description = "Text color of an item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-checked-color",
+            DefaultValue = "Inherited",
+            Description = "Text color of the checked item.",
         },
         new()
         {
@@ -418,6 +449,18 @@ public partial class BitChoiceGroupDemo
             Name = "--bit-ChoiceGroup-item-border-color",
             DefaultValue = "Per variant",
             Description = "Border of a card at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-hover-border-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Border of a hovered card.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-checked-border-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Border of the checked card.",
         },
         new()
         {
