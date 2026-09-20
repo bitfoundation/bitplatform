@@ -11,6 +11,12 @@
         }
     }
 
+    // Bounds the card examples so a FullWidth group reads as a column of cards rather than as one
+    // stretched across the whole page.
+    .variant-box {
+        max-width: rem2(420px);
+    }
+
     .custom-description {
         gap: rem2(4px);
         display: flex;

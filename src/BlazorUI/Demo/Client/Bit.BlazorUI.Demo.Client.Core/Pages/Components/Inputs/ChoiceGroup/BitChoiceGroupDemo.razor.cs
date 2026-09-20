@@ -238,6 +238,211 @@ public partial class BitChoiceGroupDemo
             Href = "#class-styles",
             LinkType = LinkType.Link,
         },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual style of the items: Text (the default) renders a bare radio row, Outline and Fill render each item as a selectable card.",
+            Href = "#variant-enum",
+            LinkType = LinkType.Link,
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ChoiceGroup-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Accent of the checked state: the ring and the dot of the checked circle, and the border of a checked card.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Accent while an item is hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-disabled-color",
+            DefaultValue = "The Color role's disabled color",
+            Description = "Ring and dot of the circle of a disabled item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-disabled-text-color",
+            DefaultValue = "The Color role's disabled text color",
+            Description = "Text, description and icon of a disabled item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the focus ring drawn around the focused item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Circle and card border while the group is invalid. The focus ring keeps its own error color.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-padding",
+            DefaultValue = "spacing(1)",
+            Description = "Padding of the group, around the label, the description and the items.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-gap",
+            DefaultValue = "Per size and orientation",
+            Description = "Space between the items. The Gap parameter sets the same value on one instance and wins over this.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "Text size of the items.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-label-color",
+            DefaultValue = "Inherited",
+            Description = "Color of the group label.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-label-font-size",
+            DefaultValue = "Inherited",
+            Description = "Text size of the group label.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the group label.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk Required adds to the label.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the helper text of the group.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-description-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "Text size of the helper text of the group.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-circle-size",
+            DefaultValue = "Per size, --bit-siz-sel-*",
+            Description = "Diameter of the radio circle.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-circle-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Ring color of an unchecked circle.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-circle-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Stroke of the ring of the circle.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-dot-size",
+            DefaultValue = "Per size",
+            Description = "Diameter of the dot inside a checked circle.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-icon-size",
+            DefaultValue = "Per size",
+            Description = "Size of the icon of an item, both as a tile and inline.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-gap",
+            DefaultValue = "spacing(0.75)",
+            Description = "Room between the circle and the content of an item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-min-height",
+            DefaultValue = "The circle size",
+            Description = "Smallest height of an item, which is its pointer target. Raise it for a comfortable touch target, especially with NoCircle.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-padding",
+            DefaultValue = "0, and per size in the card variants",
+            Description = "Padding inside an item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-radius",
+            DefaultValue = "--bit-shp-radius-control, --bit-shp-radius-surface for a card",
+            Description = "Corner radius of an item; the focus ring follows it.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-background",
+            DefaultValue = "Transparent, and per variant for a card",
+            Description = "Background of an item at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-hover-background",
+            DefaultValue = "Per variant",
+            Description = "Background of a hovered card.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-checked-background",
+            DefaultValue = "Per variant",
+            Description = "Background of the checked card.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-border-color",
+            DefaultValue = "Per variant",
+            Description = "Border of a card at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border stroke of a card and of an icon or image tile.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-checked-font-weight",
+            DefaultValue = "--bit-tpg-fw-bold",
+            Description = "Weight of the text of the checked item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the description of an item.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-item-description-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "Text size of the description of an item.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
@@ -409,6 +614,33 @@ public partial class BitChoiceGroupDemo
                 {
                     Name= "Large",
                     Description="The large size choice group.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new()
+                {
+                    Name= "Fill",
+                    Description="Each item is a selectable card drawn as a filled surface.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Outline",
+                    Description="Each item is a selectable card drawn as a border.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Each item is a bare radio row with no surface of its own. The default.",
                     Value="2",
                 }
             ]

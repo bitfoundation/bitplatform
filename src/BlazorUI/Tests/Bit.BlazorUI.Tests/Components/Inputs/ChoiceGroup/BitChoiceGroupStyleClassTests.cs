@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -217,5 +217,50 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
 
         Assert.IsTrue(description.ClassList.Contains("description-class"));
         Assert.AreEqual("color: red", description.GetAttribute("style"));
+    }
+
+    [TestMethod,
+      DataRow(null, "bit-chg-txt"),
+      DataRow(BitVariant.Text, "bit-chg-txt"),
+      DataRow(BitVariant.Outline, "bit-chg-otl"),
+      DataRow(BitVariant.Fill, "bit-chg-fil")
+    ]
+    public void BitChoiceGroupShouldApplyTheVariantClass(BitVariant? variant, string expectedClass)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+
+        // Exactly one variant class, so a re-render never leaves the previous one behind.
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-chg-txt" or "bit-chg-otl" or "bit-chg-fil"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldSwapTheVariantClassOnARerender()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-otl"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-fil"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-otl"));
     }
 }

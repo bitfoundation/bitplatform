@@ -35,13 +35,21 @@ private readonly List<Order> basicCustoms =
                 DefaultValue=""@(""A"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""ChoiceGroup with Disabled Custom""
+<BitChoiceGroup Label=""ChoiceGroup with a disabled item""
                 Items=""disabledCustoms""
                 DefaultValue=""@(""A"")""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name }, 
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name },
                                          Value = { Selector = i => i.ItemValue },
-                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />";
+                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />
+
+<BitChoiceGroup Label=""ReadOnly""
+                ReadOnly
+                Items=""basicCustoms""
+                @bind-Value=""readOnlyValue""
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
     private readonly string example2CsharpCode = @"
+private string readOnlyValue = ""A"";
+
 public class Order
 {
     public string Name { get; set; }
@@ -604,14 +612,19 @@ private readonly List<Order> descriptionCustoms =
 ];";
 
     private readonly string example11RazorCode = @"
-<BitChoiceGroup Label=""ReadOnly""
-                ReadOnly
+<BitChoiceGroup Label=""1rem gap""
+                Gap=""1rem""
                 Items=""basicCustoms""
-                @bind-Value=""readOnlyValue""
+                DefaultValue=""@(""A"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+
+<BitChoiceGroup Label=""3rem gap (Horizontal)""
+                Gap=""3rem""
+                Horizontal
+                Items=""basicCustoms""
+                DefaultValue=""@(""A"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
     private readonly string example11CsharpCode = @"
-private string readOnlyValue = ""A"";
-
 public class Order
 {
     public string Name { get; set; }
@@ -627,34 +640,6 @@ private readonly List<Order> basicCustoms =
 ];";
 
     private readonly string example12RazorCode = @"
-<BitChoiceGroup Label=""1rem gap""
-                Gap=""1rem""
-                Items=""basicCustoms""
-                DefaultValue=""@(""A"")""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
-
-<BitChoiceGroup Label=""3rem gap (Horizontal)""
-                Gap=""3rem""
-                Horizontal
-                Items=""basicCustoms""
-                DefaultValue=""@(""A"")""
-                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
-    private readonly string example12CsharpCode = @"
-public class Order
-{
-    public string Name { get; set; }
-    public string ItemValue { get; set; }
-}
-
-private readonly List<Order> basicCustoms =
-[
-    new() { Name = ""Custom A"", ItemValue = ""A"" },
-    new() { Name = ""Custom B"", ItemValue = ""B"" },
-    new() { Name = ""Custom C"", ItemValue = ""C"" },
-    new() { Name = ""Custom D"", ItemValue = ""D"" }
-];";
-
-    private readonly string example13RazorCode = @"
 <BitChoiceGroup Label=""Shipping method (Prefix)""
                 Items=""prefixCustoms""
                 DefaultValue=""@(""Standard"")""
@@ -670,7 +655,7 @@ private readonly List<Order> basicCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) },
                                          Suffix = { Name = nameof(Order.Fee) } })"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -693,7 +678,7 @@ private readonly List<Order> suffixCustoms =
     new() { Name = ""Overnight"", ItemValue = ""Overnight"", Fee = ""$25"" }
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitChoiceGroup Label=""Events"" Items=""basicCustoms"" DefaultValue=""@(""A"")""
                 OnChange=""(string? value) => changedValue = value""
                 OnClick=""(Order custom) => clickedCustom = custom.Name""
@@ -704,7 +689,7 @@ private readonly List<Order> suffixCustoms =
 <div>Clicked custom: <b>@clickedCustom</b></div>
 <div>Focused custom: <b>@focusedCustom</b></div>
 <div>Blurred custom: <b>@blurredCustom</b></div>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string? changedValue;
 private string? clickedCustom;
 private string? focusedCustom;
@@ -724,7 +709,7 @@ private readonly List<Order> basicCustoms =
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitButton OnClick=""AddDynamicCustom"">Add item</BitButton>
 <BitButton OnClick=""RemoveDynamicCustom"">Remove item</BitButton>
 <BitButton OnClick=""ReverseDynamicCustoms"">Reverse items</BitButton>
@@ -737,7 +722,7 @@ private readonly List<Order> basicCustoms =
         @(custom.Idx + 1).&nbsp;
     </ItemPrefixTemplate>
 </BitChoiceGroup>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -772,7 +757,7 @@ private void ReverseDynamicCustoms()
     dynamicCustoms = [.. Enumerable.Reverse(dynamicCustoms)];
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-description {
         gap: 0.25rem;
@@ -800,7 +785,7 @@ private void ReverseDynamicCustoms()
         </div>
     </DescriptionTemplate>
 </BitChoiceGroup>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 public class Order
 {
     public string? Name { get; set; }
@@ -814,7 +799,7 @@ private readonly List<Order> deploymentCustoms =
     new() { Name = ""Production"", ItemValue = ""Production"" }
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitChoiceGroup Label=""Default (hugs the widest item)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
@@ -843,7 +828,7 @@ private readonly List<Order> deploymentCustoms =
                 Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 public class Order
 {
     public string? Name { get; set; }
@@ -858,14 +843,14 @@ private readonly List<Order> basicCustoms =
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitChoiceGroup Label=""Delivery window (hover an item)""
                 Items=""titleCustoms""
                 DefaultValue=""@(""24h"")""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) },
                                          Title = { Name = nameof(Order.Tooltip) } })"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 public class Order
 {
     public string? Name { get; set; }
@@ -880,7 +865,7 @@ private readonly List<Order> titleCustoms =
     new() { Name = ""72 h"", ItemValue = ""72h"", Tooltip = ""Delivered within three business days"" }
 ];";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitButton OnClick=""() => showAutoFocus = !showAutoFocus"">@(showAutoFocus ? ""Unmount"" : ""Mount"") the auto focused ChoiceGroup</BitButton>
 
 @if (showAutoFocus)
@@ -892,7 +877,7 @@ private readonly List<Order> titleCustoms =
                     NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                              Value = { Name = nameof(Order.ItemValue) } })"" />
 }";
-    private readonly string example19CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -907,6 +892,60 @@ private readonly List<Order> basicCustoms =
     new() { Name = ""Custom B"", ItemValue = ""B"" },
     new() { Name = ""Custom C"", ItemValue = ""C"" },
     new() { Name = ""Custom D"", ItemValue = ""D"" }
+];";
+
+    private readonly string example19RazorCode = @"
+<BitChoiceGroup Label=""Outline""
+                Variant=""BitVariant.Outline""
+                Items=""descriptionCustoms""
+                DefaultValue=""@(""Daily"")""
+                FullWidth
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
+                                         Value = { Name = nameof(Order.ItemValue) },
+                                         Description = { Name = nameof(Order.Summary) } })"" />
+
+<BitChoiceGroup Label=""Fill, with the circle at the far edge""
+                Variant=""BitVariant.Fill""
+                Items=""descriptionCustoms""
+                DefaultValue=""@(""Daily"")""
+                LabelPosition=""BitLabelPosition.Start""
+                FullWidth
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
+                                         Value = { Name = nameof(Order.ItemValue) },
+                                         Description = { Name = nameof(Order.Summary) } })"" />
+
+<BitChoiceGroup Label=""Outline, horizontal icon cards""
+                Variant=""BitVariant.Outline""
+                Items=""iconCustoms""
+                DefaultValue=""@(""Day"")""
+                Horizontal
+                FullWidth
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
+                                         Value = { Name = nameof(Order.ItemValue) },
+                                         IconName = { Name = nameof(Order.IconName) },
+                                         IsEnabled = { Selector = i => i.IsDisabled is false } })"" />";
+    private readonly string example19CsharpCode = @"
+public class Order
+{
+    public string? Name { get; set; }
+    public string? Summary { get; set; }
+    public string? IconName { get; set; }
+    public bool IsDisabled { get; set; }
+    public string? ItemValue { get; set; }
+}
+
+private readonly List<Order> descriptionCustoms =
+[
+    new() { Name = ""Daily"", ItemValue = ""Daily"", Summary = ""Backs up every night at 2 AM."" },
+    new() { Name = ""Weekly"", ItemValue = ""Weekly"", Summary = ""Backs up every Sunday at 2 AM."" },
+    new() { Name = ""Monthly"", ItemValue = ""Monthly"", Summary = ""Backs up on the first day of each month."" }
+];
+
+private readonly List<Order> iconCustoms =
+[
+    new() { Name = ""Day"", ItemValue = ""Day"", IconName = BitIconName.CalendarDay },
+    new() { Name = ""Week"", ItemValue = ""Week"", IconName = BitIconName.CalendarWeek },
+    new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
     private readonly string example20RazorCode = @"
@@ -1399,7 +1438,34 @@ private readonly List<Order> iconCustoms =
                                    ItemText = ""custom-text"",
                                    ItemChecked = ""custom-checked"",
                                    ItemRadioButton = ""custom-radio-btn"" })""
-                NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })""/>";
+                NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })""/>
+
+<BitChoiceGroup Label=""Bigger circle, square focus ring, wider gap""
+                Items=""basicCustoms""
+                DefaultValue=""@(""A"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })""
+                Style=""--bit-ChoiceGroup-circle-size: 1.5rem; --bit-ChoiceGroup-dot-size: 0.75rem; --bit-ChoiceGroup-gap: 1rem; --bit-ChoiceGroup-item-radius: 0;"" />
+
+<BitChoiceGroup Label=""Recolored, and without the bold checked text""
+                Items=""basicCustoms""
+                DefaultValue=""@(""B"")""
+                NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })""
+                Style=""--bit-ChoiceGroup-color: rebeccapurple; --bit-ChoiceGroup-hover-color: mediumpurple; --bit-ChoiceGroup-circle-color: mediumpurple; --bit-ChoiceGroup-item-checked-font-weight: 400;"" />
+
+
+<div style=""--bit-ChoiceGroup-color: seagreen; --bit-ChoiceGroup-item-checked-background: #2e8b5724; --bit-ChoiceGroup-item-border-color: #2e8b5766;"">
+    <BitChoiceGroup Label=""Outline""
+                    Variant=""BitVariant.Outline""
+                    Items=""basicCustoms""
+                    DefaultValue=""@(""A"")""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+
+    <BitChoiceGroup Label=""Fill""
+                    Variant=""BitVariant.Fill""
+                    Items=""basicCustoms""
+                    DefaultValue=""@(""B"")""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+</div>";
     private readonly string example23CsharpCode = @"
 public class Order
 {

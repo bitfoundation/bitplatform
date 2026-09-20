@@ -192,6 +192,16 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// </summary>
     [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// The visual style of the items of the ChoiceGroup. The default is <see cref="BitVariant.Text"/>, which
+    /// draws no surface at all and renders each item as a bare radio row.
+    /// <see cref="BitVariant.Outline"/> and <see cref="BitVariant.Fill"/> turn every item into a selectable
+    /// card - a bordered one and a filled one - that carries the whole item, including its icon or image, its
+    /// text and its description, and is clickable across its full area.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     internal void RegisterOption(BitChoiceGroupOption<TValue> option)
@@ -357,6 +367,14 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-chg-fil",
+            BitVariant.Outline => "bit-chg-otl",
+            BitVariant.Text => "bit-chg-txt",
+            _ => "bit-chg-txt"
+        });
 
         ClassBuilder.Register(() => Inline ? "bit-chg-inl" : string.Empty);
 
