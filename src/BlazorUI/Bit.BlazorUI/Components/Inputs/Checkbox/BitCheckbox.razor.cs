@@ -4,12 +4,14 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitCheckbox is a component that permits the user to make a binary choice, a choice between one of two possible mutually exclusive options.
-/// It supports an indeterminate state, three-state cycling, per-state icons, cancellable changes, read-only and required modes,
-/// and is keyboard accessible through its underlying native checkbox input.
+/// It supports an indeterminate state, three-state cycling, per-state icons, a visible description, cancellable changes, read-only and
+/// required modes, and is keyboard accessible through its underlying native checkbox input.
 /// </summary>
 public partial class BitCheckbox : BitInputBase<bool>
 {
     private string _inputId = string.Empty;
+    private string _descriptionId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
 
 
 
@@ -18,9 +20,30 @@ public partial class BitCheckbox : BitInputBase<bool>
 
 
     /// <summary>
+    /// Keeps the disabled checkbox focusable and discoverable by assistive technologies.
+    /// When enabled, the disabled state is conveyed using the <c>aria-disabled</c> attribute instead of the
+    /// native <c>disabled</c> attribute, so the checkbox remains in the tab order while its toggling is suppressed.
+    /// </summary>
+    [Parameter] public bool AllowDisabledFocus { get; set; }
+
+    /// <summary>
+    /// The ids of the elements that describe the checkbox, rendered into <c>aria-describedby</c> beside the
+    /// ids the component contributes itself.
+    /// </summary>
+    /// <remarks>
+    /// Use it to point the checkbox at text the page already shows - a validation summary, a hint shared by a
+    /// group of inputs. <see cref="Description"/> and <see cref="AriaDescription"/> are added to the same
+    /// attribute, so the three can be combined.
+    /// </remarks>
+    [Parameter] public string? AriaDescribedby { get; set; }
+
+    /// <summary>
     /// Detailed description of the checkbox for the benefit of screen readers, rendered as a visually
     /// hidden element that the checkbox input points to via <c>aria-describedby</c>.
     /// </summary>
+    /// <remarks>
+    /// Use <see cref="Description"/> instead when the explanation should also be visible on the page.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -66,12 +89,19 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
     /// </summary>
+    /// <remarks>
+    /// The glyph inside the box is decorative by default - the state of the checkbox is already announced by
+    /// the input itself - so it is hidden from assistive technologies. Setting this exposes it as an image
+    /// with that name, read as part of the checkbox. Worth doing only where the glyph carries meaning the
+    /// label does not, such as a custom icon standing for the state rather than repeating the check mark.
+    /// </remarks>
     [Parameter] public string? CheckIconAriaLabel { get; set; }
 
     /// <summary>
     /// Used to customize the content of checkbox(Label and Box).
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitCheckbox.
@@ -88,6 +118,36 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// Default indeterminate visual state for checkbox
     /// </summary>
     [Parameter] public bool? DefaultIndeterminate { get; set; }
+
+    /// <summary>
+    /// A visible explanation of what checking the box means, rendered on a line of its own under it and
+    /// announced after the name of the checkbox through <c>aria-describedby</c>.
+    /// </summary>
+    /// <remarks>
+    /// This is the second line of a settings row - the sentence that says what agreeing actually commits to.
+    /// Use <see cref="AriaDescription"/> instead when it should only be announced. It is indented to line up
+    /// with the label rather than with the box, and sits outside the click target, so selecting the text of
+    /// the description does not toggle the checkbox.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom description of the checkbox, replacing <see cref="Description"/> with arbitrary markup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Stretches the checkbox across the full available width, pushing the box and the label to opposite edges.
+    /// </summary>
+    /// <remarks>
+    /// The shape of a settings row: the label on the reading side of the line and the box at the far edge.
+    /// It applies to the single-line label placements only - stacked above or below, the label already spans
+    /// the whole width. Pair it with <see cref="NoWrap"/> where the label has to stay on one line.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// An indeterminate visual state for checkbox.
@@ -113,7 +173,8 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// Descriptive label for the checkbox.
     /// </summary>
-    [Parameter] public string? Label { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Label { get; set; }
 
     /// <summary>
     /// The position of the label in regards to the checkbox box.
@@ -125,7 +186,25 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// Used to customize the label for the checkbox.
     /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps the label of the checkbox on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    /// <remarks>
+    /// The label wraps onto as many lines as it needs by default, which is what keeps a long one readable.
+    /// Turn this on where the layout has a width of its own to protect - a stretched settings row, a toolbar,
+    /// a cell of a grid - and pair it with a <see cref="Title"/> so the part that was cut off is still
+    /// reachable. It has no effect on a checkbox left to hug its content, which is never narrower than its label.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
+
+    /// <summary>
+    /// Callback for when the checkbox loses focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
     /// Callback invoked before the state of the checkbox changes, letting the change be cancelled.
@@ -140,6 +219,21 @@ public partial class BitCheckbox : BitInputBase<bool>
     ///  Callback that is called when the check box is clicked
     /// </summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Callback for when the checkbox receives focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for when the focus moves into the checkbox.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when the focus moves out of the checkbox.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
     /// <summary>
     /// Reverses the label and checkbox location.
@@ -193,6 +287,8 @@ public partial class BitCheckbox : BitInputBase<bool>
     protected override async Task OnInitializedAsync()
     {
         _inputId = $"BitCheckbox-{UniqueId}-input";
+        _descriptionId = $"BitCheckbox-{UniqueId}-description";
+        _ariaDescriptionId = $"BitCheckbox-{UniqueId}-aria-description";
 
         OnValueChanged += HandleOnValueChanged;
 
@@ -269,11 +365,23 @@ public partial class BitCheckbox : BitInputBase<bool>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-chb-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-chb-req" : string.Empty);
+        // The asterisk hangs on the label, so a checkbox named only by an AriaLabel has nowhere to put one
+        // and says it is required through the native attribute alone.
+        ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-chb-req" : string.Empty);
 
         ClassBuilder.Register(() => (UncheckedIcon is not null || UncheckedIconName.HasValue()) ? "bit-chb-uci" : string.Empty);
 
         ClassBuilder.Register(() => (IndeterminateIcon is not null || IndeterminateIconName.HasValue()) ? "bit-chb-cii" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-chb-fwi" : string.Empty);
+
+        ClassBuilder.Register(() => NoWrap ? "bit-chb-nwr" : string.Empty);
+
+        ClassBuilder.Register(() => HasDescription ? "bit-chb-hds" : string.Empty);
+
+        // The focus ring is drawn around the box, which a custom face replaces - so the checkbox says that
+        // it has no box and the stylesheet puts the ring around the whole face instead of nowhere.
+        ClassBuilder.Register(() => ChildContent is not null ? "bit-chb-cct" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -285,10 +393,49 @@ public partial class BitCheckbox : BitInputBase<bool>
         StyleBuilder.Register(() => Indeterminate ? Styles?.Indeterminate : string.Empty);
     }
 
+    // The value lands in the `value` attribute a form posts, which is markup rather than text for a reader,
+    // so it is pinned to the invariant "true"/"false" instead of the "True"/"False" ToString would give it.
+    protected override string? FormatValueAsString(bool value) => value ? "true" : "false";
+
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out bool result, [NotNullWhen(false)] out string? parsingErrorMessage)
         => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
 
 
+
+    /// <summary>
+    /// Whether the checkbox renders a label of its own, which is what the required asterisk hangs on.
+    /// </summary>
+    private bool HasLabel => LabelTemplate is not null || Label.HasValue();
+
+    /// <summary>
+    /// Whether the checkbox carries a visible description, which is what the extra line under it is rendered for.
+    /// </summary>
+    private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// The value of an attribute the page wrote into <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>
+    /// rather than as a parameter of the component.
+    /// </summary>
+    /// <remarks>
+    /// Those attributes are splatted onto the very input the component writes its own aria-* onto, and a null
+    /// written over a splatted attribute does not leave that attribute alone - it removes it. So every name
+    /// that is also reachable by hand is resolved against what the page wrote instead of being overwritten
+    /// with the parameter's null. HTML attribute names are case insensitive, and so is the deduplication the
+    /// render tree does, which is why a differently cased spelling has to be found here too.
+    /// </remarks>
+    private string? GetSplattedInputAttribute(string name)
+    {
+        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
+
+        if (InputHtmlAttributes.TryGetValue(name, out var value)) return value?.ToString();
+
+        foreach (var attribute in InputHtmlAttributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
+        }
+
+        return null;
+    }
 
     private BitIconInfo? GetStateIcon()
     {
@@ -330,6 +477,14 @@ public partial class BitCheckbox : BitInputBase<bool>
     {
         _ = SetIndeterminate();
     }
+
+    private Task HandleOnBlur(FocusEventArgs e) => OnBlur.InvokeAsync(e);
+
+    private Task HandleOnFocus(FocusEventArgs e) => OnFocus.InvokeAsync(e);
+
+    private Task HandleOnFocusIn(FocusEventArgs e) => OnFocusIn.InvokeAsync(e);
+
+    private Task HandleOnFocusOut(FocusEventArgs e) => OnFocusOut.InvokeAsync(e);
 
     private async Task HandleOnCheckboxClick(MouseEventArgs args)
     {

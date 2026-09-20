@@ -1,6 +1,40 @@
 @namespace Bit.BlazorUI
 @inherits BitInputBase<bool>
 
+@{
+    // A null or false written over a splatted attribute removes that attribute rather than leaving it alone,
+    // so every attribute InputHtmlAttributes can also carry is resolved against what it wrote (see
+    // GetSplattedInputAttribute) instead of being overwritten with the parameter's null. The hyphenated
+    // aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a parameter by
+    // name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do, and losing it
+    // would take the control's name or its description with it.
+    var ariaLabel = AriaLabel ?? GetSplattedInputAttribute("aria-label");
+    var ariaLabelledby = AriaLabelledby ?? GetSplattedInputAttribute("aria-labelledby");
+
+    // aria-describedby is a list of ids, so the author's are kept beside the component's rather than
+    // replaced by them. The visible description comes before the screen-reader-only one, in the order the
+    // two are read on the page.
+    var describedBy = string.Join(' ', new[]
+    {
+        GetSplattedInputAttribute("aria-describedby"),
+        HasDescription ? _descriptionId : null,
+        AriaDescription.HasValue() ? _ariaDescriptionId : null,
+        AriaDescribedby
+    }.Where(id => id.HasValue()));
+
+    // Autofocus must not pull the focus onto a control that cannot take it: a disabled checkbox is out of
+    // the tab order altogether unless AllowDisabledFocus keeps it in.
+    var autoFocus = AutoFocus && (IsEnabled || AllowDisabledFocus);
+
+    // aria-disabled is not one of the boolean HTML attributes: written as a bool it would be rendered with
+    // no value at all, which assistive technologies read as the default - that is, as not disabled.
+    var ariaDisabled = IsEnabled ? null : "true";
+
+    // The glyph is decorative beside the state the input itself announces, so it is hidden from assistive
+    // technologies - unless it was given a name of its own, which is an explicit ask for it to be read.
+    var iconIsNamed = CheckIconAriaLabel.HasValue();
+}
+
 @* stopping propagation on the root covers both the original label click and the click the label forwards to the input *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onclick:stopPropagation="StopPropagation"
@@ -11,6 +45,10 @@
 
     @* the input precedes the label so its focus-visible state can style the box through a sibling selector *@
     <input @ref="InputElement" @attributes="InputHtmlAttributes"
+           @onblur="HandleOnBlur"
+           @onfocus="HandleOnFocus"
+           @onfocusin="HandleOnFocusIn"
+           @onfocusout="HandleOnFocusOut"
            @onclick="@HandleOnCheckboxClick"
            @onclick:stopPropagation="StopPropagation"
            @onclick:preventDefault="@(IsEnabled is false || ReadOnly)"
@@ -18,18 +56,19 @@
            id="@_inputId"
            type="checkbox"
            class="bit-chb-inp"
-           value="@CurrentValue"
+           value="@CurrentValueAsString"
            checked="@CurrentValue"
            required="@Required"
-           autofocus="@AutoFocus"
-           disabled="@(IsEnabled is false)"
-           aria-label="@AriaLabel"
+           tabindex="@TabIndex"
+           autofocus="@autoFocus"
+           disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
+           aria-label="@ariaLabel"
            aria-setsize="@AriaSetSize"
-           aria-labelledby="@AriaLabelledby"
+           aria-labelledby="@ariaLabelledby"
            aria-posinset="@AriaPositionInSet"
-           aria-disabled="@(IsEnabled is false)"
+           aria-disabled="@ariaDisabled"
            aria-readonly="@(ReadOnly ? "true" : null)"
-           aria-describedby="@(AriaDescription.HasValue() ? $"{_Id}-dsc" : null)" />
+           aria-describedby="@(describedBy.HasValue() ? describedBy : null)" />
 
     <label title="@Title"
            for="@_inputId"
@@ -43,7 +82,8 @@
         {
             var icon = GetStateIcon();
             <div style="@Styles?.Box" class="bit-chb-box @Classes?.Box">
-                <i aria-hidden="true"
+                <i role="@(iconIsNamed ? "img" : null)"
+                   aria-hidden="@(iconIsNamed ? null : "true")"
                    aria-label="@CheckIconAriaLabel"
                    style="@Styles?.Icon"
                    class="bit-chb-ico @(icon is null && Indeterminate ? "bit-chb-idi" : null) @icon?.GetCssClasses() @Classes?.Icon" />
@@ -51,7 +91,11 @@
 
             @if (LabelTemplate is not null)
             {
-                @LabelTemplate
+                @* The template is wrapped rather than rendered bare, so that a templated label is still what
+                   the required asterisk hangs on and what NoWrap clamps - the same two things a plain one is. *@
+                <span style="@Styles?.Label" class="bit-chb-tpl @Classes?.Label">
+                    @LabelTemplate
+                </span>
             }
             else if (Label.HasValue())
             {
@@ -62,9 +106,26 @@
         }
     </label>
 
+    @* A line of its own under the checkbox: rendered outside the label, so it describes the checkbox through
+       aria-describedby instead of leaking into the accessible name the way content inside it would - and so
+       that selecting the sentence does not toggle the box it explains. *@
+    @if (HasDescription)
+    {
+        <div id="@_descriptionId" style="@Styles?.Description" class="bit-chb-des @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
     @* rendered as a sibling of the input so the description drives aria-describedby without leaking into the accessible name *@
     @if (AriaDescription.HasValue())
     {
-        <span id="@($"{_Id}-dsc")" class="bit-chb-dsc">@AriaDescription</span>
+        <span id="@_ariaDescriptionId" class="bit-chb-dsc">@AriaDescription</span>
     }
 </div>

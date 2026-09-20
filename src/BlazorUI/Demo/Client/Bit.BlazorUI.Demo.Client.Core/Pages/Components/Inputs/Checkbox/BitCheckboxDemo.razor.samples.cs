@@ -17,21 +17,67 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
 
     private readonly string example3RazorCode = @"
-<BitCheckbox Label=""Reversed"" Reversed />
-<BitCheckbox Label=""Reversed - Disabled"" Reversed IsEnabled=""false"" />
-<BitCheckbox Label=""Reversed - Disable Checked"" Reversed IsEnabled=""false"" Value=""true"" />";
-
-    private readonly string example4RazorCode = @"
 <BitCheckbox Label=""End"" LabelPosition=""BitLabelPosition.End"" />
 <BitCheckbox Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
 <BitCheckbox Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
-<BitCheckbox Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />";
+<BitCheckbox Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
+<BitCheckbox Label=""Reversed"" Reversed />";
+
+    private readonly string example4RazorCode = @"
+<style>
+    .settings-panel {
+        gap: 0.5rem;
+        width: 20rem;
+        display: flex;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        flex-direction: column;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<div class=""settings-panel"">
+    <BitCheckbox FullWidth Reversed Label=""Wi-Fi"" DefaultValue=""true"" />
+    <BitCheckbox FullWidth Reversed Label=""Bluetooth"" />
+    <BitCheckbox FullWidth Reversed Label=""Airplane mode"" />
+</div>
+
+
+<div class=""settings-panel"">
+    <BitCheckbox FullWidth Label=""A label short enough to fit"" />
+    <BitCheckbox FullWidth NoWrap
+                 Title=""Send me a weekly digest of everything that happened in my workspace""
+                 Label=""Send me a weekly digest of everything that happened in my workspace"" />
+</div>";
 
     private readonly string example5RazorCode = @"
-<BitCheckbox>
-    <LabelTemplate>
-        <BitTag Color=""BitColor.Success"">Label Template</BitTag>
-    </LabelTemplate>
+<style>
+    .settings-panel {
+        gap: 0.5rem;
+        width: 20rem;
+        display: flex;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        flex-direction: column;
+        border: 1px solid var(--bit-clr-brd-sec);
+    }
+</style>
+
+<div class=""settings-panel"">
+    <BitCheckbox FullWidth Reversed
+                 Label=""Auto renew""
+                 Description=""The subscription is renewed one day before it expires."" />
+
+    <BitCheckbox FullWidth Reversed
+                 Label=""Share usage data""
+                 Description=""Crash reports and feature usage only. Never the contents of your documents."" />
+</div>
+
+
+<BitCheckbox Label=""I accept the terms"">
+    <DescriptionTemplate>
+        Read the <BitLink Href=""/components/checkbox"">full agreement</BitLink> before you agree.
+    </DescriptionTemplate>
 </BitCheckbox>";
 
     private readonly string example6RazorCode = @"
@@ -46,7 +92,15 @@ public partial class BitCheckboxDemo
              @bind-Indeterminate=""selectAllIndeterminate"" />
 <BitCheckbox Label=""Apple"" Value=""apple"" OnChange=""v => { apple = v; RefreshSelectAll(); }"" />
 <BitCheckbox Label=""Banana"" Value=""banana"" OnChange=""v => { banana = v; RefreshSelectAll(); }"" />
-<BitCheckbox Label=""Orange"" Value=""orange"" OnChange=""v => { orange = v; RefreshSelectAll(); }"" />";
+<BitCheckbox Label=""Orange"" Value=""orange"" OnChange=""v => { orange = v; RefreshSelectAll(); }"" />
+
+
+<BitCheckbox Label=""Three-state checkbox"" ThreeState
+             @bind-Value=""threeStateValue""
+             @bind-Indeterminate=""threeStateIndeterminate"" />
+
+<div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>";
+
     private readonly string example6CsharpCode = @"
 private bool apple;
 private bool banana;
@@ -67,19 +121,11 @@ private void RefreshSelectAll()
 
     selectAll = checkedCount == 3;
     selectAllIndeterminate = checkedCount is > 0 and < 3;
-}";
-
-    private readonly string example7RazorCode = @"
-<BitCheckbox Label=""Three-state checkbox"" ThreeState
-             @bind-Value=""threeStateValue""
-             @bind-Indeterminate=""threeStateIndeterminate"" />
-
-<div>Value: <b>@threeStateValue</b>, Indeterminate: <b>@threeStateIndeterminate</b></div>";
-    private readonly string example7CsharpCode = @"
+}
 private bool threeStateValue;
 private bool threeStateIndeterminate;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCheckbox Label=""One-way checked (Fixed)"" Value=""true"" />
 
 <BitCheckbox Label=""One-way"" Value=""oneWayValue"" />
@@ -96,11 +142,39 @@ private bool threeStateIndeterminate;";
 
 <BitCheckbox Label=""Two-way indeterminate"" @bind-Indeterminate=""twoWayIndeterminate"" />
 <BitToggleButton @bind-IsChecked=""twoWayIndeterminate"" Text=""Toggle"" />";
-    private readonly string example8CsharpCode = @"
+
+    private readonly string example7CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;
 private bool oneWayIndeterminate = true;
 private bool twoWayIndeterminate = true;";
+
+    private readonly string example8RazorCode = @"
+<BitCheckbox>
+    <LabelTemplate>
+        <BitTag Color=""BitColor.Success"">Label Template</BitTag>
+    </LabelTemplate>
+</BitCheckbox>
+
+
+<BitCheckbox @bind-Value=""customCheckboxValue"">
+    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+             IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
+    <span>Custom basic checkbox</span>
+</BitCheckbox>
+
+
+<BitCheckbox @bind-Value=""customContentValue"" @bind-Indeterminate=""customContentIndeterminate"">
+    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+             IconName=""@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
+    <span>Custom indeterminate checkbox</span>
+</BitCheckbox>
+<BitButton OnClick=""() => customContentIndeterminate = true"">Make Indeterminate</BitButton>";
+
+    private readonly string example8CsharpCode = @"
+private bool customCheckboxValue;
+private bool customContentValue;
+private bool customContentIndeterminate = true;";
 
     private readonly string example9RazorCode = @"
 <style>
@@ -115,7 +189,9 @@ private bool twoWayIndeterminate = true;";
 <BitCheckbox Label=""Click me""
              OnClick=""LogOnClick""
              OnChanging=""LogOnChanging""
-             OnChange=""LogOnChange"" />
+             OnChange=""LogOnChange""
+             OnFocus=""LogOnFocus""
+             OnBlur=""LogOnBlur"" />
 <div>@(string.IsNullOrEmpty(eventsLog) ? ""No clicks yet."" : eventsLog)</div>
 
 
@@ -129,6 +205,7 @@ private bool twoWayIndeterminate = true;";
     <BitCheckbox Label=""Stops here"" StopPropagation />
 </div>
 <div>Container clicks: @containerClickCounter</div>";
+
     private readonly string example9CsharpCode = @"
 private string eventsLog = string.Empty;
 private int cancelledCounter;
@@ -140,6 +217,10 @@ private void LogOnClick() => eventsLog = ""OnClick"";
 private void LogOnChanging(BitCheckboxChangeArgs args) => eventsLog += $"" → OnChanging({args.Value})"";
 
 private void LogOnChange(bool value) => eventsLog += $"" → OnChange({value})"";
+
+private void LogOnFocus() => eventsLog = ""OnFocus"";
+
+private void LogOnBlur() => eventsLog += "" → OnBlur"";
 
 private void HandleOnChanging(BitCheckboxChangeArgs args)
 {
@@ -154,7 +235,14 @@ private void HandleOnChanging(BitCheckboxChangeArgs args)
 <BitToggleButton @bind-IsChecked=""readOnlyValue"" Text=""Change it from here"" />
 
 
-<BitCheckbox Label=""I accept the terms"" Required />";
+<BitCheckbox Label=""I accept the terms"" Required />
+
+<BitCheckbox Required>
+    <LabelTemplate>
+        I accept the <BitLink Href=""/components/checkbox"">terms</BitLink>
+    </LabelTemplate>
+</BitCheckbox>";
+
     private readonly string example10CsharpCode = @"
 private bool readOnlyValue;";
 
@@ -171,11 +259,15 @@ private bool readOnlyValue;";
           OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
     <BitCheckbox Label=""I agree with the terms and conditions.""
+                 AriaDescribedby=""terms-error""
                  @bind-Value=""validationModel.TermsAgreement"" />
-    <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+    <div id=""terms-error"">
+        <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+    </div>
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
+
     private readonly string example11CsharpCode = @"
 private BitCheckboxValidationModel validationModel = new();
 
@@ -190,25 +282,6 @@ private async Task HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example12RazorCode = @"
-<BitCheckbox @bind-Value=""customCheckboxValue"">
-    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
-             IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
-    <span>Custom basic checkbox</span>
-</BitCheckbox>
-
-
-<BitCheckbox @bind-Value=""customContentValue"" @bind-Indeterminate=""customContentIndeterminate"">
-    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
-             IconName=""@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
-    <span>Custom indeterminate checkbox</span>
-</BitCheckbox>
-<BitButton OnClick=""() => customContentIndeterminate = true"">Make Indeterminate</BitButton>";
-    private readonly string example12CsharpCode = @"
-private bool customCheckboxValue;
-private bool customContentValue;
-private bool customContentIndeterminate = true;";
-
-    private readonly string example13RazorCode = @"
 <BitCheckbox Label=""Focus me with Tab, toggle me with Space"" />
 
 
@@ -224,14 +297,19 @@ private bool customContentIndeterminate = true;";
 <BitCheckbox AriaLabelledby=""newsletter-label"" />
 
 
+<BitCheckbox Label=""Disabled and skipped"" IsEnabled=""false"" />
+<BitCheckbox Label=""Disabled but still reachable"" IsEnabled=""false"" AllowDisabledFocus />
+
+
 <BitCheckbox Label=""Item 3"" AriaSetSize=""10"" AriaPositionInSet=""3"" />
 <BitCheckbox Label=""Item 4"" AriaSetSize=""10"" AriaPositionInSet=""4"" />";
-    private readonly string example13CsharpCode = @"
+
+    private readonly string example12CsharpCode = @"
 private BitCheckbox checkboxRef = default!;
 
 private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Value />
@@ -371,7 +449,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""fa-solid fa-house"")"" />
@@ -393,7 +471,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 
 <BitCheckbox Label=""Square (UncheckedIcon)"" UncheckedIcon=""@BitIconInfo.Bi(""app"")"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Value />
@@ -406,7 +484,7 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Value />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -463,9 +541,25 @@ private async Task FocusTheCheckbox() => await checkboxRef.FocusAsync();";
              Classes=""@(new() { Checked = ""custom-checked"",
                                 Icon = ""custom-icon"",
                                 Label=""custom-label"",
-                                Box=""custom-box"" })"" />";
+                                Box=""custom-box"" })"" />
 
-    private readonly string example18RazorCode = @"
+
+<BitCheckbox Label=""Rounded, thick, custom fill"" Value
+             Style=""--bit-Checkbox-radius: 50%; --bit-Checkbox-border-width: 2px; --bit-Checkbox-checked-background: rebeccapurple; --bit-Checkbox-check-color: white;"" />
+
+<BitCheckbox Label=""Bigger box, wider gap"" Value
+             Style=""--bit-Checkbox-box-size: 1.75rem; --bit-Checkbox-icon-size: 1.25rem; --bit-Checkbox-gap: 1rem;"" />
+
+<BitCheckbox Label=""Mixed state in its own color"" Indeterminate
+             Style=""--bit-Checkbox-indeterminate-color: darkorange; --bit-Checkbox-indeterminate-size: 0.5rem;"" />
+
+
+<div style=""--bit-Checkbox-border-color: var(--bit-clr-suc); --bit-Checkbox-checked-background: var(--bit-clr-suc); --bit-Checkbox-checked-hover-background: var(--bit-clr-suc-hover); --bit-Checkbox-focus-color: var(--bit-clr-suc-focus); --bit-Checkbox-description-color: var(--bit-clr-suc);"">
+    <BitCheckbox Label=""Analytics"" Description=""Anonymous usage statistics."" Value />
+    <BitCheckbox Label=""Crash reports"" Description=""Stack traces only, never your data."" />
+</div>";
+
+    private readonly string example17RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";

@@ -1,21 +1,46 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// checkbox and one set on the Style of an instance re-skins that one alone:
+//   --bit-Checkbox-color                     label text color at rest                     (default: inherited from the page)
+//   --bit-Checkbox-description-color         the description line under the label         (default: $clr-fg-sec)
+//   --bit-Checkbox-disabled-color            box stroke and fill when disabled            (default: the role's disabled color)
+//   --bit-Checkbox-disabled-text-color       label, description and glyph when disabled   (default: the role's disabled text color)
+//   --bit-Checkbox-focus-color               focus ring color                             (default: the role's focus color)
+//   --bit-Checkbox-required-color            the asterisk of a required checkbox          (default: $clr-req)
+//   --bit-Checkbox-background                box fill while unchecked                     (default: transparent)
+//   --bit-Checkbox-border-color              box stroke while unchecked                   (default: $clr-brd-pri)
+//   --bit-Checkbox-hover-border-color        box stroke on hover while unchecked          (default: the rest stroke)
+//   --bit-Checkbox-checked-background        box fill while checked                       (default: the role's main color)
+//   --bit-Checkbox-checked-hover-background  box fill while checked and hovered           (default: the role's hover color)
+//   --bit-Checkbox-checked-border-color      box stroke while checked                     (default: the checked fill)
+//   --bit-Checkbox-check-color               the glyph drawn on the checked box           (default: the role's on-color)
+//   --bit-Checkbox-indeterminate-color       the mark and stroke of the mixed state       (default: the role's main color)
+//   --bit-Checkbox-indeterminate-size        side of the filled square of the mixed state (default: per size)
+//   --bit-Checkbox-box-size                  side of the box                              (default: per size, $siz-sel-*)
+//   --bit-Checkbox-icon-size                 the glyph inside the box                     (default: per size)
+//   --bit-Checkbox-border-width              thickness of the box stroke                  (default: $shp-border-width)
+//   --bit-Checkbox-radius                    corner radius of the box                     (default: $shp-radius-selection)
+//   --bit-Checkbox-gap                       room between the box and the label           (default: spacing(1))
+//   --bit-Checkbox-font-size                 the label                                    (default: per size, from the type ramp)
+//   --bit-Checkbox-description-font-size     the description                              (default: per size, one step below the label)
+//   --bit-Checkbox-min-height                smallest height and width of the click target(default: the box, never below spacing(3))
+
 .bit-chb {
     cursor: pointer;
     width: fit-content;
+    // The width floor of the click target, which matters for the checkbox that carries no label at all -
+    // a selection box in a grid row - whose target is otherwise the box alone. See .bit-chb-lbl for the
+    // height floor and for what the two are for.
+    min-width: var(--bit-Checkbox-min-height, max(var(--bit-chb-box-size), #{spacing(3)}));
     border-radius: $shp-radius-control;
     font-family: $tg-font-family;
+    color: var(--bit-Checkbox-color, inherit);
     --bit-chb-ico-opa: 0;
-    --bit-chb-box-clr-brd: #{$clr-brd-pri};
+    --bit-chb-des-indent: calc(var(--bit-chb-box-size) + var(--bit-Checkbox-gap, #{spacing(1)}));
+    --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
+    --bit-chb-box-clr-brd: var(--bit-Checkbox-border-color, #{$clr-brd-pri});
     --bit-chb-ico-clr: var(--bit-chb-clr-txt-sec);
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-ico-opa: 1;
-            --bit-chb-box-clr-bg: transparent;
-            --bit-chb-box-clr-brd: #{$clr-brd-pri};
-        }
-    }
 
     &.bit-inv {
         --bit-chb-box-clr-brd: #{$clr-err};
@@ -37,20 +62,31 @@
 
     &.bit-dis {
         cursor: default;
-        color: var(--bit-chb-clr-dis-text);
+        color: var(--bit-Checkbox-disabled-text-color, var(--bit-chb-clr-dis-text));
         pointer-events: none;
-        --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
-        --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
-        --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
+        --bit-chb-ico-clr: var(--bit-Checkbox-disabled-text-color, var(--bit-chb-clr-dis-text));
+        --bit-chb-ico-clr-bg: var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis));
+        --bit-chb-box-clr-brd: var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis));
 
         &.bit-chb-ckd {
-            --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
-            --bit-chb-box-clr-bg: var(--bit-chb-clr-dis);
-            --bit-chb-box-clr-brd: var(--bit-chb-clr-dis);
+            --bit-chb-ico-clr: var(--bit-Checkbox-disabled-text-color, var(--bit-chb-clr-dis-text));
+            --bit-chb-box-clr-bg: var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis));
+            --bit-chb-box-clr-brd: var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis));
         }
 
         &.bit-chb-ind {
-            --bit-chb-ico-clr-bg: var(--bit-chb-clr-dis);
+            --bit-chb-ico-clr-bg: var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis));
+        }
+
+        .bit-chb-des {
+            color: var(--bit-Checkbox-disabled-text-color, var(--bit-chb-clr-dis-text));
+        }
+
+        // AllowDisabledFocus keeps a disabled checkbox in the tab order, so the indicator has to stay
+        // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
+        // contradicts the inert look and reads as actionable.
+        .bit-chb-inp:focus-visible ~ .bit-chb-lbl .bit-chb-box {
+            @include focus-ring(var(--bit-Checkbox-disabled-color, var(--bit-chb-clr-dis)));
         }
     }
 }
@@ -69,8 +105,16 @@
 
     // Focus lands on this hidden input, so the themed ring is drawn on the visible box.
     &:focus-visible ~ .bit-chb-lbl .bit-chb-box {
-        @include focus-ring(var(--bit-chb-clr-focus));
+        @include focus-ring(var(--bit-Checkbox-focus-color, var(--bit-chb-clr-focus)));
     }
+}
+
+// A custom face replaces the box the ring is normally drawn around, so it is drawn around the face
+// instead. Without this the only thing a keyboard user has to go on is gone - the focus itself is
+// still on the input, which nobody can see.
+.bit-chb-cct .bit-chb-inp:focus-visible ~ .bit-chb-lbl {
+    border-radius: var(--bit-Checkbox-radius, #{$shp-radius-selection});
+    @include focus-ring(var(--bit-Checkbox-focus-color, var(--bit-chb-clr-focus)));
 }
 
 .bit-chb-dsc {
@@ -89,11 +133,18 @@
     cursor: default;
 }
 
+// The asterisk hangs on whichever label the checkbox carries - a plain one or a template - since both
+// are the line the reader is looking at when they need to know the answer is not optional.
 .bit-chb-req {
-    .bit-chb-txt::after {
+    .bit-chb-txt::after,
+    .bit-chb-tpl::after {
         content: "*";
-        color: $clr-req;
+        // The same asterisk with empty alternative text, so it is not read out beside the native
+        // required attribute that already says the same thing. Declared second, and left out by an
+        // engine that does not know the syntax, which keeps the plain asterisk above.
+        content: "*" / "";
         margin-inline-start: spacing(0.625);
+        color: var(--bit-Checkbox-required-color, #{$clr-req});
     }
 }
 
@@ -101,21 +152,21 @@
     display: flex;
     cursor: inherit;
     overflow: hidden;
+    flex-shrink: 0;
     position: relative;
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    transition-duration: $mot-duration;
     width: var(--bit-chb-box-size);
     height: var(--bit-chb-box-size);
-    border-style: $shp-border-style;
-    border-width: $shp-border-width;
-    border-radius: $shp-radius-selection;
     min-width: var(--bit-chb-box-size);
+    border-style: $shp-border-style;
     border-color: var(--bit-chb-box-clr-brd);
     background-color: var(--bit-chb-box-clr-bg);
-    transition-property: background, border, border-color;
-    transition-timing-function: $mot-easing;
+    border-width: var(--bit-Checkbox-border-width, #{$shp-border-width});
+    border-radius: var(--bit-Checkbox-radius, #{$shp-radius-selection});
+    transition: background-color $mot-duration-short $mot-easing,
+                border-color $mot-duration-short $mot-easing;
 
     .bit-chb-ico {
         display: flex;
@@ -126,31 +177,89 @@
     width: 100%;
     height: 100%;
     display: flex;
-    transition: $mot-duration-short;
     align-items: center;
     justify-content: center;
     color: var(--bit-chb-ico-clr);
     opacity: var(--bit-chb-ico-opa);
     font-size: var(--bit-chb-ico-fontsize);
+    transition: color $mot-duration-short $mot-easing,
+                opacity $mot-duration-short $mot-easing;
 }
 
-.bit-chb-txt {
+.bit-chb-txt,
+.bit-chb-tpl {
     line-height: spacing(2.5);
 }
 
 .bit-chb-lbl {
     width: 100%;
-    height: 100%;
     display: flex;
-    gap: spacing(1);
     cursor: inherit;
     font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     align-items: center;
-    font-size: var(--bit-chb-lbl-fontsize);
+    box-sizing: border-box;
+    // The whole label forwards its clicks to the box, so it is part of the control as far as the pointer
+    // is concerned: no tap delay and no grey flash box on a touch screen.
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    gap: var(--bit-Checkbox-gap, #{spacing(1)});
+    font-size: var(--bit-Checkbox-font-size, var(--bit-chb-lbl-fontsize));
     flex-direction: var(--bit-chb-lbl-flex-direction);
     justify-content: var(--bit-chb-lbl-justify-content);
+    // The label is the click target - the box only carries the look - so the height of the target is set
+    // here. It keeps every size above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), which a
+    // 14px Small box on a 20px line would not clear, and it is a floor rather than a height: a wrapped
+    // label still grows the row. Set it, and the width floor on the root, to 0 for a checkbox that has
+    // to sit on the line of the running text around it.
+    min-height: var(--bit-Checkbox-min-height, max(var(--bit-chb-box-size), #{spacing(3)}));
+}
+
+// A line of its own under the checkbox, indented to line up with the label rather than with the box.
+.bit-chb-des {
+    // Outside the label, so it neither toggles the checkbox nor inherits the pointer the root carries.
+    cursor: auto;
+    color: var(--bit-Checkbox-description-color, #{$clr-fg-sec});
+    margin-inline-start: var(--bit-chb-des-indent);
+    font-size: var(--bit-Checkbox-description-font-size, var(--bit-chb-des-fontsize));
+}
+
+// A description makes the root as wide as the longer of the two lines, so the label row is let go of the
+// full width it otherwise takes - which is what keeps the end-aligned placements packed against their own
+// content instead of against the far edge of a sentence underneath them.
+.bit-chb-hds .bit-chb-lbl {
+    width: fit-content;
+}
+
+// Stretched across its container, with the label growing to push the box to the far edge - the settings
+// row. Only the single-line placements: stacked above or below, the label already spans the whole width
+// and growing it would stretch it down the free height instead of across.
+.bit-chb-fwi {
+    width: 100%;
+
+    .bit-chb-lbl {
+        width: 100%;
+    }
+
+    &:not(.bit-chb-ltp):not(.bit-chb-lbt) {
+        .bit-chb-txt,
+        .bit-chb-tpl {
+            flex-grow: 1;
+        }
+    }
+}
+
+// A checkbox that has a width of its own to protect keeps its label on one line and ends it with an
+// ellipsis, which the text can only do once it is allowed to shrink below its own content.
+.bit-chb-nwr {
+    .bit-chb-txt,
+    .bit-chb-tpl {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 
@@ -160,43 +269,24 @@
 }
 
 .bit-chb-ckd {
-    --bit-chb-box-clr-bg: var(--bit-chb-clr);
-    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-bg: var(--bit-chb-clr-hover);
-            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
-            --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
-        }
-    }
+    --bit-chb-box-clr-bg: var(--bit-Checkbox-checked-background, var(--bit-chb-clr));
+    --bit-chb-box-clr-brd: var(--bit-Checkbox-checked-border-color, var(--bit-Checkbox-checked-background, var(--bit-chb-clr)));
+    --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt));
 }
 
 .bit-chb-ind {
-    --bit-chb-box-clr-bg: transparent;
-    --bit-chb-box-clr-brd: var(--bit-chb-clr);
     --bit-chb-ico-opa: 1;
-    --bit-chb-ico-clr: var(--bit-chb-clr-txt);
-    --bit-chb-ico-clr-bg: var(--bit-chb-clr);
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-box-clr-bg: transparent;
-            --bit-chb-box-clr-brd: var(--bit-chb-clr-hover);
-            --bit-chb-ico-opa: 1;
-            --bit-chb-ico-clr: var(--bit-chb-clr-txt-hover);
-            --bit-chb-ico-clr-bg: var(--bit-chb-clr-hover);
-        }
-    }
+    --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
+    --bit-chb-box-clr-brd: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr));
+    --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt));
+    --bit-chb-ico-clr-bg: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr));
 
     // the default indeterminate visual: a filled square in the middle of the box
     .bit-chb-idi {
-        width: var(--bit-ch-ind-size);
-        height: var(--bit-ch-ind-size);
-        border-radius: $shp-radius-selection;
+        width: var(--bit-Checkbox-indeterminate-size, var(--bit-chb-ind-size));
+        height: var(--bit-Checkbox-indeterminate-size, var(--bit-chb-ind-size));
+        border-radius: var(--bit-Checkbox-radius, #{$shp-radius-selection});
         background-color: var(--bit-chb-ico-clr-bg);
 
         &::before {
@@ -207,20 +297,46 @@
 
 // a custom indeterminate icon sits on the transparent box, so it takes the box color rather than the on-color text
 .bit-chb-cii.bit-chb-ind {
-    --bit-chb-ico-clr: var(--bit-chb-clr);
-
-    @media (hover: hover) {
-        &:hover {
-            --bit-chb-ico-clr: var(--bit-chb-clr-hover);
-        }
-    }
+    --bit-chb-ico-clr: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr));
 
     &.bit-dis {
-        --bit-chb-ico-clr: var(--bit-chb-clr-dis-text);
+        --bit-chb-ico-clr: var(--bit-Checkbox-disabled-text-color, var(--bit-chb-clr-dis-text));
+    }
+}
+
+// The whole checkbox is the hover target, not only the box, because the label is part of the click
+// target too. The states that cannot be clicked into another one are left out of it: on a read-only
+// checkbox a highlight - and the ghost check the empty box previews - would promise a change no click
+// can make, and on an invalid one it would paint over the error color that is the point of the state.
+// A disabled checkbox never matches, since it takes no pointer events at all.
+@media (hover: hover) {
+    .bit-chb:hover:not(.bit-chb-rdl):not(.bit-inv) {
+        --bit-chb-ico-opa: 1;
+        --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
+        --bit-chb-box-clr-brd: var(--bit-Checkbox-hover-border-color, var(--bit-Checkbox-border-color, #{$clr-brd-pri}));
+
+        &.bit-chb-ckd {
+            --bit-chb-box-clr-bg: var(--bit-Checkbox-checked-hover-background, var(--bit-chb-clr-hover));
+            --bit-chb-box-clr-brd: var(--bit-Checkbox-checked-border-color, var(--bit-Checkbox-checked-hover-background, var(--bit-chb-clr-hover)));
+            --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt-hover));
+        }
+
+        &.bit-chb-ind {
+            --bit-chb-box-clr-brd: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));
+            --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt-hover));
+            --bit-chb-ico-clr-bg: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));
+        }
+
+        // a custom indeterminate icon sits on the transparent box, so it takes the box color rather
+        // than the on-color text
+        &.bit-chb-cii.bit-chb-ind {
+            --bit-chb-ico-clr: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));
+        }
     }
 }
 
 .bit-chb-rvs {
+    --bit-chb-des-indent: 0;
     --bit-chb-lbl-justify-content: flex-end;
     --bit-chb-lbl-flex-direction: row-reverse;
 }
@@ -228,21 +344,25 @@
 // label position classes come after the reversed one, so an explicit LabelPosition wins over Reversed
 
 .bit-chb-ltp {
+    --bit-chb-des-indent: 0;
     --bit-chb-lbl-justify-content: flex-start;
     --bit-chb-lbl-flex-direction: column-reverse;
 }
 
 .bit-chb-lbt {
+    --bit-chb-des-indent: 0;
     --bit-chb-lbl-justify-content: flex-start;
     --bit-chb-lbl-flex-direction: column;
 }
 
 .bit-chb-lst {
+    --bit-chb-des-indent: 0;
     --bit-chb-lbl-justify-content: flex-end;
     --bit-chb-lbl-flex-direction: row-reverse;
 }
 
 .bit-chb-lnd {
+    --bit-chb-des-indent: calc(var(--bit-chb-box-size) + var(--bit-Checkbox-gap, #{spacing(1)}));
     --bit-chb-lbl-justify-content: flex-start;
     --bit-chb-lbl-flex-direction: row;
 }
@@ -442,25 +562,30 @@
     --bit-chb-clr-focus: #{$clr-brd-ter-focus};
 }
 
+// The box takes the theme's selection size for its class, the glyph inside it and the filled square of the
+// mixed state are derived from that size, and the description sits one step below the label on the type ramp.
 .bit-chb-sm {
-    --bit-chb-box-size: #{$siz-sel-sm};
-    --bit-ch-ind-size: #{spacing(0.875)};
+    --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-sm});
+    --bit-chb-ind-size: #{spacing(0.875)};
     --bit-chb-lbl-fontsize: #{$tg-fs-xs};
-    --bit-chb-ico-fontsize: #{spacing(1)};
+    --bit-chb-des-fontsize: #{$tg-fs-2xs};
+    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1)});
 }
 
 .bit-chb-md {
-    --bit-chb-box-size: #{$siz-sel-md};
-    --bit-ch-ind-size: #{spacing(1.25)};
+    --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-md});
+    --bit-chb-ind-size: #{spacing(1.25)};
     --bit-chb-lbl-fontsize: #{$tg-fs-sm};
-    --bit-chb-ico-fontsize: #{spacing(1.375)};
+    --bit-chb-des-fontsize: #{$tg-fs-xs};
+    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1.375)});
 }
 
 .bit-chb-lg {
-    --bit-chb-box-size: #{$siz-sel-lg};
-    --bit-ch-ind-size: #{spacing(1.625)};
+    --bit-chb-box-size: var(--bit-Checkbox-box-size, #{$siz-sel-lg});
+    --bit-chb-ind-size: #{spacing(1.625)};
     --bit-chb-lbl-fontsize: #{$tg-fs-md};
-    --bit-chb-ico-fontsize: #{spacing(1.875)};
+    --bit-chb-des-fontsize: #{$tg-fs-sm};
+    --bit-chb-ico-fontsize: var(--bit-Checkbox-icon-size, #{spacing(1.875)});
 }
 
 
@@ -496,6 +621,10 @@
 
         .bit-chb-box {
             border-color: GrayText;
+        }
+
+        .bit-chb-des {
+            color: GrayText;
         }
     }
 }
