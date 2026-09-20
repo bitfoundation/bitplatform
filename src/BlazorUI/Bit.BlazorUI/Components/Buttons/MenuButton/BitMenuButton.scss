@@ -672,6 +672,7 @@
     }
 
     .bit-mnb-omn .bit-mnb-chb,
+    .bit-mnb-nsp.bit-mnb-omn .bit-mnb-opb,
     .bit-mnb-tgl .bit-mnb-opb,
     .bit-mnb-itm.bit-mnb-chk,
     .bit-mnb-itm.bit-mnb-osb:not([disabled]):not([aria-disabled="true"]) {
@@ -704,9 +705,11 @@
         background-color: Canvas;
     }
 
-    // The glyphs keep a color of their own, which the forced pair of the row they sit on does not include.
+    // The glyphs and the secondary text keep a color of their own, which the forced pair of the row they sit
+    // on does not include.
     .bit-mnb-ick,
-    .bit-mnb-sch {
+    .bit-mnb-sch,
+    .bit-mnb-isc {
         color: currentColor;
     }
 

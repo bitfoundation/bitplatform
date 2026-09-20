@@ -167,7 +167,7 @@
    nothing to announce. *@
 @if (LoadingLabel.HasValue())
 {
-    <span role="status" class="bit-mnb-sts">@(IsLoading ? LoadingLabel : null)</span>
+    <span role="status" aria-hidden="@(ariaHidden ? "true" : null)" class="bit-mnb-sts">@(IsLoading ? LoadingLabel : null)</span>
 }
 
 @if (descriptionId is not null)

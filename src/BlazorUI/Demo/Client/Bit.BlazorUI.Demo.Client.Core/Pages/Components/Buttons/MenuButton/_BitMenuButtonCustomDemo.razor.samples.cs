@@ -288,18 +288,7 @@ protected override void OnInitialized()
         checkableCustoms[1].Checked = true;
         checkableCustoms[2].Checked = false;
     };
-}
-
-private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
-{
-    Text = { Name = nameof(Operation.Name) },
-    Key = { Name = nameof(Operation.Id) },
-    IconName = { Name = nameof(Operation.Image) },
-    IsEnabled = { Selector = m => m.Disabled is false },
-    IsSeparator = { Name = nameof(Operation.IsDivider) },
-    Checkable = { Name = nameof(Operation.Checkable) },
-    IsChecked = { Name = nameof(Operation.Checked) }
-};";
+}";
 
     private readonly string example9RazorCode = @"
 <style>
