@@ -139,7 +139,8 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Determines that only the icon should be rendered.
+    /// Determines that only the icon should be rendered; the text is kept as screen-reader-only content so the
+    /// button keeps its accessible name.
     /// </summary>
     public bool? IconOnly { get; set; }
 
@@ -189,6 +190,11 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
     /// the linked document.
     /// </summary>
     public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
+    /// Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle.
+    /// </summary>
+    public bool? Rounded { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
@@ -428,6 +434,13 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.Rel = Rel.Value;
 
             relWasSet = true;
+        }
+
+        if (Rounded.HasValue && bitButton.HasNotBeenSet(nameof(Rounded)))
+        {
+            bitButton.Rounded = Rounded.Value;
+
+            bitButton.ClassBuilder.Reset();
         }
 
         if (SecondaryText.HasValue() && bitButton.HasNotBeenSet(nameof(SecondaryText)))

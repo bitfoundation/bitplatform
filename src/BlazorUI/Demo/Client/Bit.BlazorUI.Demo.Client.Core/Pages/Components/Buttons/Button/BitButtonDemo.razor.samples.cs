@@ -19,7 +19,12 @@ public partial class BitButtonDemo
 
 <BitButton Variant=""BitVariant.Fill"" IsEnabled=""false"">Fill</BitButton>
 <BitButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Outline</BitButton>
-<BitButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitButton>";
+<BitButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitButton>
+
+
+<BitButton Rounded Variant=""BitVariant.Fill"">Fill</BitButton>
+<BitButton Rounded Variant=""BitVariant.Outline"">Outline</BitButton>
+<BitButton Rounded Variant=""BitVariant.Text"">Text</BitButton>";
 
     private readonly string example3RazorCode = @"
 <BitButton IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">Start</BitButton>
@@ -31,9 +36,13 @@ public partial class BitButtonDemo
 <BitButton IconUrl=""/images/bit-logo.svg"" Variant=""BitVariant.Text"" IconPosition=""BitIconPosition.End"">End</BitButton>
 
 
-<BitButton IconOnly AriaLabel=""Add"" IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"" />
-<BitButton IconOnly AriaLabel=""Edit"" IconName=""@BitIconName.Edit"" Variant=""BitVariant.Outline"" />
-<BitButton IconOnly AriaLabel=""Delete"" IconName=""@BitIconName.Delete"" Variant=""BitVariant.Text"" />";
+<BitButton IconOnly IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"">Add</BitButton>
+<BitButton IconOnly IconName=""@BitIconName.Edit"" Variant=""BitVariant.Outline"">Edit</BitButton>
+<BitButton IconOnly AriaLabel=""Delete"" IconName=""@BitIconName.Delete"" Variant=""BitVariant.Text"" />
+
+<BitButton Rounded IconOnly IconName=""@BitIconName.Add"" Variant=""BitVariant.Fill"">Add</BitButton>
+<BitButton Rounded IconOnly IconName=""@BitIconName.Edit"" Variant=""BitVariant.Outline"">Edit</BitButton>
+<BitButton Rounded IconOnly AriaLabel=""Delete"" IconName=""@BitIconName.Delete"" Variant=""BitVariant.Text"" />";
 
     private readonly string example4RazorCode = @"
 <BitButton IsLoading=""fillIsLoading"" Variant=""BitVariant.Fill"" OnClick=""LoadingFillClick"">
@@ -349,7 +358,8 @@ private bool noWrap = true;";
 <BitDropdown Label=""FloatPosition"" Items=""floatPositionList"" @bind-Value=""floatPosition"" FitWidth />
 <BitTextField Label=""FloatOffset"" @bind-Value=""floatOffset"" Immediate />
 
-<BitButton IconOnly
+<BitButton Rounded
+           IconOnly
            AriaLabel=""Add""
            Size=""BitSize.Large""
            IconName=""@BitIconName.Add""
@@ -584,9 +594,9 @@ private BitButton focusButtonRef = default!;";
 </BitButton>
 
 
-@* The public CSS variables are inherited, so .pill-buttons in the stylesheet beside this page
+@* The public CSS variables are inherited, so .compact-buttons in the stylesheet beside this page
    re-skins both of the buttons inside it without naming a class of the component. *@
-<div class=""example-content pill-buttons"">
+<div class=""example-content compact-buttons"">
     <BitButton IconName=""@BitIconName.Accept"">Accept</BitButton>
     <BitButton IconName=""@BitIconName.Cancel"" Variant=""BitVariant.Outline"">Cancel</BitButton>
 </div>
@@ -621,9 +631,11 @@ private async Task LoadingClassesClick()
 }";
 
     private const string example16ScssCode = @"
-.pill-buttons {
-    --bit-Button-radius: 999px;
-    --bit-Button-padding: 0.5rem 1.5rem;
+.compact-buttons {
+    --bit-Button-gap: 0.25rem;
+    --bit-Button-font-size: 0.75rem;
+    --bit-Button-padding: 0 0.75rem;
+    --bit-Button-min-height: 1.75rem;
 }
 
 ::deep {

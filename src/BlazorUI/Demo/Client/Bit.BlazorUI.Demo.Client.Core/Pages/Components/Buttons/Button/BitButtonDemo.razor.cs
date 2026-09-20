@@ -168,7 +168,7 @@ public partial class BitButtonDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines that only the icon should be rendered."
+            Description = "Determines that only the icon should be rendered; the text is kept as screen-reader-only content, so the button keeps its accessible name unless an AriaLabel replaces it."
         },
         new()
         {
@@ -259,6 +259,13 @@ public partial class BitButtonDemo
             Description = "Sets the rel attribute for link-rendered buttons when Href is a non-anchor URL; ignored for empty or hash-only hrefs.",
             LinkType = LinkType.Link,
             Href = "#link-rels",
+        },
+        new()
+        {
+            Name = "Rounded",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle. It sets what --bit-Button-radius falls back to, so a radius of your own still wins.",
         },
         new()
         {
@@ -980,7 +987,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-radius",
             DefaultValue = "--bit-shp-radius-button",
-            Description = "Corner radius of the box, which the focus ring follows.",
+            Description = "Corner radius of the box, which the focus ring follows. Rounded moves the default to --bit-shp-radius-full.",
         },
         new()
         {
@@ -998,7 +1005,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-min-width",
             DefaultValue = "--bit-siz-ctrl-min-width",
-            Description = "Smallest width of a labeled button, for lining up a row of buttons whose labels differ in length.",
+            Description = "Smallest width of a labeled button, for lining up a row of buttons whose labels differ in length. FullWidth and NoWrap drop it to zero unless it is set, since both size the button by its container.",
         },
         new()
         {
@@ -1010,7 +1017,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-gap",
             DefaultValue = "Per size: 0.25rem for Small, 0.5rem otherwise",
-            Description = "Room between the icon and the text.",
+            Description = "Room between the icon and the text, and between the loading spinner and its label.",
         },
         new()
         {

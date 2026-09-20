@@ -13,6 +13,10 @@
     // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
     // by hand is a real thing to do, and losing it would take a control's name or state with it.
     var formId = FormId ?? GetSplattedAttribute("form");
+    var title = Title ?? GetSplattedAttribute("title");
+    var dir = Dir?.ToString().ToLower() ?? GetSplattedAttribute("dir");
+    var target = Target ?? GetSplattedAttribute("target");
+    var download = Download ?? GetSplattedAttribute("download");
     var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
@@ -35,6 +39,13 @@
     // button kept in the tab order (AllowDisabledFocus) carries no native disabled attribute, and a loading one is
     // only kept from the pointer by pointer-events - both would still submit their form on Enter without this.
     var suppressDefault = IsEnabled is false || (IsLoading && Reclickable is false);
+    // IconOnly takes the label out of the box, and with it the button's accessible name - which is the usual way
+    // an icon button ends up nameless. The label is kept as screen-reader-only text instead, so the name survives
+    // the parameter on its own; an aria-label or an aria-labelledby is the page naming the button itself and takes
+    // its place. A Title does not: the browser falls back to it only when there is no name at all, and a tooltip
+    // is shown on hover alone, so it is left to be the description of the name rather than to stand in for it.
+    var srOnlyLabel = IconOnly && (hasPrimary || hasSecondary)
+                   && ariaLabel.HasNoValue() && GetSplattedAttribute("aria-labelledby").HasNoValue();
 
     RenderFragment content = @<text>
         @if (icon is not null)
@@ -70,6 +81,23 @@
                     </div>
                 }
             </div>
+        }
+        else if (srOnlyLabel)
+        {
+            <span class="bit-btn-srl">
+                @if (hasPrimary)
+                {
+                    @(PrimaryTemplate ?? ChildContent)
+                }
+                else if (SecondaryTemplate is not null)
+                {
+                    @SecondaryTemplate
+                }
+                else
+                {
+                    @SecondaryText
+                }
+            </span>
         }
     </text>;
 
@@ -120,10 +148,10 @@
             class="@ClassBuilder.Value"
             type="@_buttonType.GetValue()"
             form="@formId"
-            dir="@Dir?.ToString().ToLower()"
+            dir="@dir"
             disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
             autofocus="@autoFocus"
-            title="@Title"
+            title="@title"
             tabindex="@tabIndex"
             aria-label="@ariaLabel"
             aria-hidden="@(ariaHidden ? "true" : null)"
@@ -140,16 +168,16 @@ else
        @onclick:stopPropagation="StopPropagation"
        @onclick:preventDefault="suppressDefault"
        id="@_Id"
-       rel="@_rel"
+       rel="@GetRel(target)"
        style="@StyleBuilder.Value"
        class="@ClassBuilder.Value"
-       dir="@Dir?.ToString().ToLower()"
+       dir="@dir"
        href="@(IsEnabled && IsLoading is false ? Href : null)"
        role="@anchorRole"
        autofocus="@autoFocus"
-       title="@Title"
-       target="@Target"
-       download="@Download"
+       title="@title"
+       target="@target"
+       download="@download"
        tabindex="@tabIndex"
        aria-label="@ariaLabel"
        aria-hidden="@(ariaHidden ? "true" : null)"

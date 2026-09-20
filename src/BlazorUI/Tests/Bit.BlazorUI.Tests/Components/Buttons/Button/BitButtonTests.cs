@@ -937,6 +937,140 @@ public class BitButtonTests : BunitTestContext
         Assert.IsFalse(bitButton.HasAttribute("autofocus"));
     }
 
+    [TestMethod]
+    public void BitButtonShouldKeepTheSplattedTitleDirAndTabIndex()
+    {
+        var bitButton = RenderSplatted(new() { ["title"] = "Splatted title", ["dir"] = "rtl", ["tabindex"] = "3" }).Find(".bit-btn");
+
+        Assert.AreEqual("Splatted title", bitButton.GetAttribute("title"));
+        Assert.AreEqual("rtl", bitButton.GetAttribute("dir"));
+        Assert.AreEqual("3", bitButton.GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonAnchorShouldKeepTheSplattedTargetAndDownload()
+    {
+        var anchor = RenderSplatted(new()
+        {
+            [nameof(BitButton.Href)] = "https://bitplatform.dev",
+            ["target"] = "_blank",
+            ["download"] = "logo.svg"
+        }).Find(".bit-btn");
+
+        Assert.AreEqual("_blank", anchor.GetAttribute("target"));
+        Assert.AreEqual("logo.svg", anchor.GetAttribute("download"));
+        // a hand-written target opens the same new browsing context the parameter does, so it closes the same hole
+        Assert.AreEqual("noopener", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitButtonSplattedBlankTargetShouldNotDuplicateAnAlreadyAskedForRel()
+    {
+        var anchor = RenderSplatted(new()
+        {
+            [nameof(BitButton.Href)] = "https://bitplatform.dev",
+            [nameof(BitButton.Rel)] = BitLinkRels.NoReferrer,
+            ["target"] = "_blank"
+        }).Find(".bit-btn");
+
+        Assert.AreEqual("noreferrer", anchor.GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitButtonSplattedBlankTargetShouldNotAddARelToAHashOnlyHref()
+    {
+        var anchor = RenderSplatted(new()
+        {
+            [nameof(BitButton.Href)] = "#section",
+            ["target"] = "_blank"
+        }).Find(".bit-btn");
+
+        Assert.IsFalse(anchor.HasAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconOnlyShouldKeepTheLabelAsTheAccessibleName()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.AddChildContent("Add an item");
+        });
+
+        Assert.IsEmpty(com.FindAll(".bit-btn-tcn"));
+        Assert.AreEqual("Add an item", com.Find(".bit-btn-srl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitButtonIconOnlyWithoutAPrimaryLabelShouldFallBackToTheSecondaryText()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.Add(p => p.SecondaryText, "secondary");
+        });
+
+        Assert.AreEqual("secondary", com.Find(".bit-btn-srl").TextContent.Trim());
+    }
+
+    [DataTestMethod,
+        DataRow("aria-label"),
+        DataRow("aria-labelledby")]
+    public void BitButtonIconOnlyShouldDropTheScreenReaderLabelWhenTheButtonIsNamedByHand(string attribute)
+    {
+        var com = RenderSplatted(new()
+        {
+            [nameof(BitButton.IconOnly)] = true,
+            [nameof(BitButton.IconName)] = "Emoji",
+            [attribute] = "the-name"
+        });
+
+        Assert.IsEmpty(com.FindAll(".bit-btn-srl"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconOnlyShouldDropTheScreenReaderLabelWhenAnAriaLabelNamesIt()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.Add(p => p.AriaLabel, "Add");
+            parameters.AddChildContent("Add an item");
+        });
+
+        Assert.IsEmpty(com.FindAll(".bit-btn-srl"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconOnlyShouldKeepTheAccessibleNameWhileItIsLoading()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.AddChildContent("Add an item");
+        });
+
+        Assert.AreEqual("Add an item", com.Find(".bit-btn-hcn .bit-btn-srl").TextContent.Trim());
+    }
+
+    [DataTestMethod,
+        DataRow(true),
+        DataRow(false)]
+    public void BitButtonRoundedClassTest(bool rounded)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Rounded, rounded);
+        });
+
+        Assert.AreEqual(rounded, com.Find(".bit-btn").ClassList.Contains("bit-btn-rnd"));
+    }
+
     // The attributes a page writes by hand reach the component the way @attributes sends them, which is the
     // only path a lowercase name matching a parameter of the component can take.
     private IRenderedComponent<BitButton> RenderSplatted(Dictionary<string, object> attributes)
@@ -1631,6 +1765,7 @@ public class BitButtonTests : BunitTestContext
             NoWrap = true,
             Reclickable = true,
             Rel = BitLinkRels.NoOpener,
+            Rounded = true,
             SecondaryText = "secondary",
             Size = BitSize.Small,
             StopPropagation = true,
@@ -1684,6 +1819,7 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(instance.NoWrap);
         Assert.IsTrue(instance.Reclickable);
         Assert.AreEqual(BitLinkRels.NoOpener, instance.Rel);
+        Assert.IsTrue(instance.Rounded);
         Assert.AreEqual("secondary", instance.SecondaryText);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.StopPropagation);

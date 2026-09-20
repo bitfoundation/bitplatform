@@ -193,6 +193,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
+    /// <remarks>
+    /// The text stays as screen-reader-only content, so the button keeps the accessible name the label gave it
+    /// instead of becoming a nameless icon. Setting <see cref="AriaLabel"/> (or an <c>aria-labelledby</c>) names
+    /// the button explicitly and replaces it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IconOnly { get; set; }
 
@@ -277,6 +282,16 @@ public partial class BitButton : BitComponentBase
     [Parameter]
     [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
+    /// Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle.
+    /// </summary>
+    /// <remarks>
+    /// It changes the corner the button falls back to, so a <c>--bit-Button-radius</c> set on the button or on
+    /// an ancestor still has the last word.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Rounded { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
@@ -421,6 +436,8 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
 
+        ClassBuilder.Register(() => Rounded ? "bit-btn-rnd" : string.Empty);
+
         ClassBuilder.Register(() => FixedColor ? "bit-btn-fxc" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
@@ -526,25 +543,43 @@ public partial class BitButton : BitComponentBase
 
 
 
+    // The Target parameter's rel is resolved the moment the parameter is set. A target written by hand is not a
+    // parameter and never reaches that path, so the reverse-tabnabbing guard is re-applied here against the target
+    // the anchor actually renders; it is idempotent, so a rel that already carries one passes through untouched.
+    private string? GetRel(string? target)
+    {
+        if (target is not "_blank") return _rel;
+
+        if (Href.HasNoValue() || Href!.StartsWith('#')) return _rel;
+
+        if (_rel is not null && (_rel.Contains("noopener") || _rel.Contains("noreferrer"))) return _rel;
+
+        return _rel.HasValue() ? $"{_rel} noopener" : "noopener";
+    }
+
     private string? GetTabIndex(bool ariaHidden)
     {
         // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
         // user lands on something a screen reader has nothing to say about.
         if (ariaHidden) return "-1";
 
+        // The hyphen-less TabIndex parameter is the one a page usually reaches for, but the attribute is also
+        // splattable by its own name - and the attribute written here would otherwise overwrite that with null.
+        var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
+
         if (IsEnabled is false)
         {
             if (AllowDisabledFocus is false) return "-1";
 
             // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
-            return Href.HasValue() ? TabIndex ?? "0" : TabIndex;
+            return Href.HasValue() ? tabIndex ?? "0" : tabIndex;
         }
 
         // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
-        if (IsLoading && Href.HasValue()) return TabIndex ?? "0";
+        if (IsLoading && Href.HasValue()) return tabIndex ?? "0";
 
         // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
-        return TabIndex;
+        return tabIndex;
     }
 
     private string GetLabelPositionClass()

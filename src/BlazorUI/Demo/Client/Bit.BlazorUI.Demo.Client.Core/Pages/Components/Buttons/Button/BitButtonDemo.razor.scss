@@ -45,9 +45,11 @@
 
 // The public CSS variables are inherited, so one set here re-skins every button inside this row
 // without the stylesheet ever naming a class of the component.
-.pill-buttons {
-    --bit-Button-radius: 999px;
-    --bit-Button-padding: 0.5rem 1.5rem;
+.compact-buttons {
+    --bit-Button-gap: 0.25rem;
+    --bit-Button-font-size: 0.75rem;
+    --bit-Button-padding: 0 0.75rem;
+    --bit-Button-min-height: 1.75rem;
 }
 
 ::deep {

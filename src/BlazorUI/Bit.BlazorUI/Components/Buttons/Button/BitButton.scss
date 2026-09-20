@@ -15,13 +15,14 @@
 //   --bit-Button-disabled-background       background when disabled                       (default: the role's disabled color filled, transparent otherwise)
 //   --bit-Button-disabled-border-color     border color when disabled                     (default: as the disabled background)
 //   --bit-Button-focus-color               focus ring color                               (default: the role's focus color)
-//   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button)
+//   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button, $shp-radius-full when Rounded)
 //   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
 //   --bit-Button-padding                   padding of the box                             (default: per size, $siz-ctrl-pad-*)
-//   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width)
+//   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width, 0 when FullWidth or NoWrap sizes the button by its container)
 //   --bit-Button-min-height                smallest height of the box, and the smallest
 //                                          width of an icon-only one                      (default: per size, $siz-ctrl-*)
-//   --bit-Button-gap                       room between the icon and the text             (default: per size, spacing(0.5) for Small and spacing(1) otherwise)
+//   --bit-Button-gap                       room between the icon and the text, and
+//                                          between the spinner and its loading label      (default: per size, spacing(0.5) for Small and spacing(1) otherwise)
 //   --bit-Button-font-size                 size of the primary text                       (default: per size, from the type ramp)
 //   --bit-Button-secondary-color           color of the secondary line of text            (default: the button's own foreground)
 //   --bit-Button-secondary-font-size       size of the secondary text                     (default: one ramp step below the primary text)
@@ -186,10 +187,12 @@
     gap: var(--bit-Button-gap, var(--bit-btn-gap));
 }
 
-// The two pieces of text the button carries for a screen reader and for nobody else: the live region that
-// announces the loading label, and the description it is pointed at through aria-describedby. Both are taken
-// out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
+// The three pieces of text the button carries for a screen reader and for nobody else: the live region that
+// announces the loading label, the description it is pointed at through aria-describedby, and the label an
+// icon-only button keeps so that it still has a name. All three are taken out of the flow rather than hidden,
+// since display:none is also hidden from the readers they are written for.
 .bit-btn-dsc,
+.bit-btn-srl,
 .bit-btn-sts {
     border: 0;
     padding: 0;
@@ -202,10 +205,12 @@
     clip-path: inset(50%);
 }
 
+// The spinner and its label are the icon and the text of the loading state, so they are spaced by the same gap
+// the icon and the label are - which is what keeps a Small button's loading state as tight as its rest state.
 .bit-btn-ldg {
     display: flex;
-    gap: spacing(1);
     align-items: center;
+    gap: var(--bit-Button-gap, var(--bit-btn-gap));
     justify-content: center;
     background-color: transparent;
 }
@@ -216,8 +221,11 @@
     font-size: var(--bit-Button-font-size, var(--bit-btn-lbl-fontsize));
 }
 
+// A full-width button is sized by whatever holds it, so the control minimum that lines a normal one up with its
+// neighbours has to give way here: kept, it would push the button out of any container narrower than it.
 .bit-btn-flw {
     width: 100%;
+    min-width: var(--bit-Button-min-width, 0);
 }
 
 // A button that has a width of its own to protect keeps each line of its text on one line and ends it with an
@@ -225,6 +233,10 @@
 // which is why the text column gives up its automatic minimum too, and why the primary line - a flex row, so that
 // an icon written into the child content sits beside the text - becomes a block while it is being clamped.
 .bit-btn-nwr {
+    // The root first: as a flex or grid item it is sized by its own content unless its automatic minimum is
+    // given up, so a toolbar row would grow to fit the label this class exists to clamp.
+    min-width: var(--bit-Button-min-width, 0);
+
     // The two direct children of the loading grid give up their automatic minimum too, or the column
     // they share is sized by the very label they are meant to be clamping.
     .bit-btn-tcn,
@@ -266,6 +278,13 @@
 // for the duration of the drag, and restores this one after.
 .bit-btn-drg {
     cursor: grab;
+}
+
+// Rounded changes what the corner falls back to rather than replacing it, so a --bit-Button-radius set on an
+// ancestor or on the button's own Style still has the last word. An icon-only button is already a square, so
+// the same full radius rounds it into a circle - which is what a floating action button is.
+.bit-btn-rnd {
+    border-radius: var(--bit-Button-radius, #{$shp-radius-full});
 }
 
 

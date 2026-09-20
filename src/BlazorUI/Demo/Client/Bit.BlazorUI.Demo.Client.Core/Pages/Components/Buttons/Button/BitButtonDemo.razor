@@ -5,10 +5,10 @@
 @page "/components/icon-button"
 
 <PageOutlet Url="components/button" Title="Button"
-            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, icons, primary/secondary text, loading and auto-loading states, link rendering, and public CSS variables for everything the parameters do not cover." />
+            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, and public CSS variables for everything the parameters do not cover." />
 
 <DemoPage Name="Button"
-          Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
+          Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, an icon-only button keeps its label as its accessible name, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
           Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
@@ -26,7 +26,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+    <DemoExample Title="Variant & Rounded" RazorCode="@example2RazorCode" Id="example2">
         <div>
             <b>Variant</b> sets the emphasis: <b>Fill</b> (the default) for the one primary action of a view,
             <b>Outline</b> for the secondary ones beside it, and <b>Text</b> for the lowest-emphasis commands.
@@ -56,6 +56,17 @@
             <BitButton Variant="BitVariant.Fill" IsEnabled="false">Fill</BitButton>
             <BitButton Variant="BitVariant.Outline" IsEnabled="false">Outline</BitButton>
             <BitButton Variant="BitVariant.Text" IsEnabled="false">Text</BitButton>
+        </div>
+        <br /><br />
+        <div>
+            <b>Rounded</b> gives the button pill-shaped corners. It sets what the corner falls back to, so a
+            <code>--bit-Button-radius</code> of your own still wins.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitButton Rounded Variant="BitVariant.Fill">Fill</BitButton>
+            <BitButton Rounded Variant="BitVariant.Outline">Outline</BitButton>
+            <BitButton Rounded Variant="BitVariant.Text">Text</BitButton>
         </div>
     </DemoExample>
 
@@ -90,15 +101,22 @@
         </div>
         <br /><br />
         <div>
-            <b>IconOnly</b> drops the label and makes the button a square of the size class, the way a command bar wants
-            it. An icon has no text, so an <b>AriaLabel</b> is what gives such a button its name - without one it is
-            announced as an unlabeled button.
+            <b>IconOnly</b> drops the label and makes the button a square of the size class, the way a command bar
+            wants it - but keeps the label as screen-reader-only text, so the button is never announced as an
+            unlabeled one. Give it an <b>AriaLabel</b> instead when the visible label is not the name you want read,
+            or when there is no label to keep. Adding <b>Rounded</b> to that square is what makes it a circle.
         </div>
         <br />
         <div class="example-content">
-            <BitButton IconOnly AriaLabel="Add" IconName="@BitIconName.Add" Variant="BitVariant.Fill" />
-            <BitButton IconOnly AriaLabel="Edit" IconName="@BitIconName.Edit" Variant="BitVariant.Outline" />
+            <BitButton IconOnly IconName="@BitIconName.Add" Variant="BitVariant.Fill">Add</BitButton>
+            <BitButton IconOnly IconName="@BitIconName.Edit" Variant="BitVariant.Outline">Edit</BitButton>
             <BitButton IconOnly AriaLabel="Delete" IconName="@BitIconName.Delete" Variant="BitVariant.Text" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitButton Rounded IconOnly IconName="@BitIconName.Add" Variant="BitVariant.Fill">Add</BitButton>
+            <BitButton Rounded IconOnly IconName="@BitIconName.Edit" Variant="BitVariant.Outline">Edit</BitButton>
+            <BitButton Rounded IconOnly AriaLabel="Delete" IconName="@BitIconName.Delete" Variant="BitVariant.Text" />
         </div>
     </DemoExample>
 
@@ -395,7 +413,8 @@
         <div>
             A floating button is pinned to a corner or an edge so it stays in view, and is raised off the content
             it sits over. <b>Float</b> pins it to the viewport and <b>FloatAbsolute</b> to its container;
-            <b>FloatPosition</b> picks the anchor and <b>FloatOffset</b> the distance from it.
+            <b>FloatPosition</b> picks the anchor and <b>FloatOffset</b> the distance from it. With <b>IconOnly</b>
+            and <b>Rounded</b> it is the circular floating action button.
         </div>
         <div>
             <b>Draggable</b> lets the user move it out of the way - by pointer, or with the arrow keys while it has
@@ -412,8 +431,9 @@
             <BitTextField Label="FloatOffset" @bind-Value="floatOffset" Immediate />
         </div>
         <br />
-        <BitButton IconOnly AriaLabel="Add" Size="BitSize.Large" IconName="@BitIconName.Add" OnClick="ScrollToFloat"
-                   Float Draggable FloatPosition="floatPosition" FloatOffset="@floatOffset" />
+        <BitButton Rounded IconOnly AriaLabel="Add" Size="BitSize.Large" IconName="@BitIconName.Add"
+                   OnClick="ScrollToFloat" Float Draggable FloatPosition="floatPosition"
+                   FloatOffset="@floatOffset" />
         <br /><br />
         <div><b>FloatAbsolute & Draggable</b>:</div><br />
         <div class="float-container">
@@ -446,7 +466,8 @@
     <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>Title</b> is the browser's own tooltip, shown on hover only, so it never stands in for an accessible
-            name: an icon-only button needs an <b>AriaLabel</b> as well, kept consistent with it.
+            name. An <b>IconOnly</b> button keeps its own label for that; <b>AriaLabel</b> names one that has no label
+            to keep, and is worth keeping consistent with the Title beside it.
         </div>
         <br />
         <div class="example-content">
@@ -777,11 +798,11 @@
         <div>
             What the parameters do not cover, the public <BitLink Href="#css-variables-section">CSS variables</BitLink>
             do. They are read off the root and never declared by the component, so one set on an ancestor re-skins every
-            button inside it, and one set on the <b>Style</b> of an instance re-skins that one alone - a pill-shaped
-            button, a taller touch target, a tighter row, without a single selector:
+            button inside it, and one set on the <b>Style</b> of an instance re-skins that one alone - a tighter
+            toolbar row, a taller touch target, a squared-off box, without a single selector:
         </div>
         <br />
-        <div class="example-content pill-buttons">
+        <div class="example-content compact-buttons">
             <BitButton IconName="@BitIconName.Accept">Accept</BitButton>
             <BitButton IconName="@BitIconName.Cancel" Variant="BitVariant.Outline">Cancel</BitButton>
         </div>
