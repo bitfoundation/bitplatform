@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class BitMenuButtonDemo
 {
@@ -19,6 +19,20 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, add an aria-hidden attribute instructing screen readers to ignore the menu button."
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the header button automatically receives focus when the page renders. It is dropped on a menu button hidden from assistive technologies, and on a disabled one that is not kept focusable.",
+        },
+        new()
+        {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enters the loading state automatically while awaiting OnClick and ignores further clicks of the header button until it returns. Meant for the main half of a split menu button, whose chevron keeps opening the menu while the command runs.",
         },
         new()
         {
@@ -148,6 +162,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "FormId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the form element the menu button is associated with, rendered as the form attribute of the header button and of the items. It lets a submit or reset command sit outside of its form.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -181,7 +202,7 @@ public partial class BitMenuButtonDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and disables its click.",
+            Description = "Determines whether the menu button is in the loading state. It replaces the default icon of the header button with a spinner and ignores its click; in split mode the chevron still opens the menu.",
         },
         new()
         {
@@ -215,10 +236,24 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "LoadingDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the spinner appears after the menu button enters the loading state, which keeps a fast operation from flashing one. The click guard applies immediately regardless.",
+        },
+        new()
+        {
             Name = "LoadingLabel",
             Type = "string?",
             DefaultValue = "null",
             Description = "The text to show beside the spinner in the loading state, replacing the text of the header button. It is also announced by screen readers through a status live region.",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template that replaces the spinner and the label of the header button while the menu button is in the loading state.",
         },
         new()
         {
@@ -246,8 +281,8 @@ public partial class BitMenuButtonDemo
         new()
         {
             Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            Description = "The callback is called when the menu button header is clicked."
+            Type = "EventCallback<TItem?>",
+            Description = "The callback that is called when the header button is clicked, with the selected item in Sticky mode and null otherwise, and when an item of the menu is activated outside of Sticky mode, with that item."
         },
         new()
         {
@@ -267,6 +302,13 @@ public partial class BitMenuButtonDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of the ChildContent.",
+        },
+        new()
+        {
+            Name = "Reclickable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Enables re-clicking the header button while the menu button is in the loading state. By default its click is ignored, which is what protects against a double submission.",
         },
         new()
         {
@@ -297,6 +339,13 @@ public partial class BitMenuButtonDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "If true, the selected item is going to change the header item."
+        },
+        new()
+        {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the propagation of the click event of the menu button to the parent elements. Useful when the menu button is placed inside clickable containers like rows or cards.",
         },
         new()
         {
@@ -496,6 +545,12 @@ public partial class BitMenuButtonDemo
             Name = "--bit-MenuButton-callout-max-width",
             DefaultValue = "The width of the viewport",
             Description = "The widest the callout gets before the labels of its items are ellipsized. Without a cap, one long label would widen the callout past the side of the screen.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-callout-padding",
+            DefaultValue = "0",
+            Description = "Padding around the list of items inside the callout. Flush by default, so a menu is the list of its rows and nothing else.",
         },
         new()
         {

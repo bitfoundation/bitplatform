@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class MenuButtonsJsRuntimeExtensions
 {
@@ -12,8 +12,8 @@ internal static class MenuButtonsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.dispose", id);
     }
 
-    internal static ValueTask BitMenuButtonsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character, bool includeDisabled)
+    internal static ValueTask BitMenuButtonsFocusItem(this IJSRuntime jsRuntime, string calloutId, string mode, string? character, bool includeDisabled, bool fromCurrent)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.focusItem", calloutId, mode, character, includeDisabled);
+        return jsRuntime.InvokeVoid("BitBlazorUI.MenuButtons.focusItem", calloutId, mode, character, includeDisabled, fromCurrent);
     }
 }

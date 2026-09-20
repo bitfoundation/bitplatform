@@ -35,6 +35,8 @@
 //                                                                                              the positioning code)
 //   --bit-MenuButton-callout-max-width         widest the callout gets before its labels are
 //                                              ellipsized                                     (default: the width of the viewport)
+//   --bit-MenuButton-callout-padding           padding around the list of items inside the
+//                                              callout                                        (default: 0)
 //   --bit-MenuButton-item-color                text and icon color of an item                 (default: $clr-fg-pri)
 //   --bit-MenuButton-item-min-height           smallest height of an item                     (default: per size, $siz-item-*)
 //   --bit-MenuButton-item-padding              padding of an item                             (default: per size)
@@ -117,6 +119,11 @@
     cursor: default;
 }
 
+// Reclickable is the page keeping that click, so the cursor goes back to inviting it.
+.bit-mnb-rcl > .bit-mnb-opb {
+    cursor: pointer;
+}
+
 // The spinner takes the header icon's slot and its size, so entering the loading state moves nothing around it.
 .bit-mnb-spn {
     flex-shrink: 0;
@@ -144,7 +151,12 @@
     min-width: 0;
     color: inherit;
     cursor: pointer;
+    // A button element's UA style is the `font` shorthand, which resets the family and the weight rather than
+    // inheriting them - so the type of the root (and of the theme's family token through it) has to be asked
+    // for by name here, or the label of every menu button would be drawn in the browser's own button font.
     font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
     align-items: center;
     text-decoration: none;
     box-sizing: border-box;
@@ -263,6 +275,8 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
     overscroll-behavior: contain;
     opacity: var(--bit-mnb-cal-opa);
     transform: var(--bit-mnb-cal-tra);
@@ -322,9 +336,11 @@
 
 .bit-mnb-cul {
     margin: 0;
-    padding: 0;
     width: 100%;
     list-style-type: none;
+    // Flush by default, so a menu is the list of its rows and nothing else. The variable is what a design
+    // system whose menus breathe inside their popup (a band above the first row and below the last) sets.
+    padding: var(--bit-MenuButton-callout-padding, 0);
 }
 
 .bit-mnb-isp {
@@ -350,9 +366,14 @@
     display: flex;
     cursor: pointer;
     text-align: start;
+    // An item is a button or an anchor, and only the anchor inherits its type: without these a menu of links
+    // and commands would draw the two halves of the same list in two different fonts.
     font-size: inherit;
+    font-family: inherit;
+    font-weight: inherit;
     align-items: center;
     line-height: inherit;
+    letter-spacing: inherit;
     box-sizing: border-box;
     text-decoration: none;
     background-color: transparent;

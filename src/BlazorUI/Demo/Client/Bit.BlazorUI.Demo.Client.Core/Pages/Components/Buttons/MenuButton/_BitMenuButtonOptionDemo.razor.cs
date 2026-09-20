@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonOptionDemo
 {
@@ -18,7 +18,6 @@ public partial class _BitMenuButtonOptionDemo
     private BitMenuButtonOption optionC = default!;
 
     private bool optionIsLoading;
-    private bool optionAutoIsLoading;
 
     private bool optionShowName = true;
     private bool optionShowStatus = true;
@@ -38,12 +37,9 @@ public partial class _BitMenuButtonOptionDemo
         optionShowOwner = false;
     }
 
-    private async Task HandleOnLoadingClick()
-    {
-        optionAutoIsLoading = true;
-        await Task.Delay(2000);
-        optionAutoIsLoading = false;
-    }
+    private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+    private async Task HandleOnRefreshClick() => await Task.Delay(300);
 
 
 
@@ -463,8 +459,15 @@ private bool twoWayIsOpen;";
 </BitMenuButton>";
 
     private readonly string example15RazorCode = @"
-<BitMenuButton Split Text=""Save"" IconName=""@BitIconName.Save"" IsLoading=""optionAutoIsLoading"" LoadingLabel=""Saving...""
-               OnClick=""(BitMenuButtonOption option) => HandleOnLoadingClick()"" TItem=""BitMenuButtonOption"">
+<BitMenuButton Split Text=""Save"" IconName=""@BitIconName.Save"" AutoLoading LoadingLabel=""Saving...""
+               OnClick=""(BitMenuButtonOption _) => HandleOnSaveClick()"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Split Text=""Refresh"" IconName=""@BitIconName.Refresh"" AutoLoading LoadingDelay=""500""
+               OnClick=""(BitMenuButtonOption _) => HandleOnRefreshClick()"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
@@ -475,18 +478,26 @@ private bool twoWayIsOpen;";
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
-<BitCheckbox Label=""IsLoading"" @bind-Value=""optionIsLoading"" />";
+<BitCheckbox Label=""IsLoading"" @bind-Value=""optionIsLoading"" />
+
+<BitMenuButton Split Text=""Upload"" IconName=""@BitIconName.Upload"" AutoLoading
+               OnClick=""(BitMenuButtonOption _) => HandleOnSaveClick()"" TItem=""BitMenuButtonOption"">
+    <LoadingTemplate>
+        <BitEllipsisLoading CustomSize=""24"" CustomColor=""currentColor"" />
+    </LoadingTemplate>
+    <Options>
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+    </Options>
+</BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
 private bool optionIsLoading;
-private bool optionAutoIsLoading;
 
-private async Task HandleOnLoadingClick()
-{
-    optionAutoIsLoading = true;
-    await Task.Delay(2000);
-    optionAutoIsLoading = false;
-}";
+private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 
     private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" TItem=""BitMenuButtonOption""

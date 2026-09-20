@@ -1,7 +1,9 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Tests.Components.Buttons.MenuButton;
@@ -937,6 +939,214 @@ public class BitMenuButtonTests : BunitTestContext
 
         com.Find(".bit-mnb-opb").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
+        Assert.IsFalse(com.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonStickyPlainHeaderShouldOnlyOpenTheMenu()
+    {
+        // The header of a plain menu button opens the menu. Running the selected item's own action as well
+        // would carry out a command the user only asked to choose between.
+        var clicked = 0;
+        var stickyItems = new List<BitMenuButtonItem>
+        {
+            new() { Text = "Item A", Key = "A", OnClick = _ => clicked++ },
+            new() { Text = "Item B", Key = "B" }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, stickyItems);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.IsTrue(com.Instance.IsOpen);
+        Assert.AreEqual(0, clicked);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonStickySplitHeaderShouldRunTheSelectedItemAction()
+    {
+        // The main half of a split button is a command of its own, so there the item's action is the click.
+        var clicked = 0;
+        var stickyItems = new List<BitMenuButtonItem>
+        {
+            new() { Text = "Item A", Key = "A", OnClick = _ => clicked++ },
+            new() { Text = "Item B", Key = "B" }
+        };
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, stickyItems);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Split, true);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.IsFalse(com.Instance.IsOpen);
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonAutoLoadingShouldLoadWhileAwaitingTheClick()
+    {
+        var tcs = new TaskCompletionSource();
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.OnClick, async (BitMenuButtonItem _) => await tcs.Task);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.IsTrue(com.Instance.IsLoading);
+        com.WaitForAssertion(() => Assert.IsNotNull(com.Find(".bit-mnb-spn")));
+
+        tcs.SetResult();
+
+        com.WaitForAssertion(() => Assert.IsFalse(com.Instance.IsLoading));
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonLoadingShouldIgnoreTheHeaderClickUnlessReclickable()
+    {
+        var clicked = 0;
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.OnClick, (BitMenuButtonItem _) => { clicked++; });
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+        Assert.AreEqual(0, clicked);
+
+        com.Render(parameters => parameters.Add(p => p.Reclickable, true));
+
+        com.Find(".bit-mnb-opb").Click();
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonLoadingDelayShouldHoldBackTheSpinner()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.LoadingDelay, 3000);
+            parameters.Add(p => p.IsLoading, true);
+        });
+
+        // The class (and with it the click guard) applies at once; only the spinner waits for the delay.
+        Assert.IsTrue(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-lod"));
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonLoadingTemplateShouldReplaceTheSpinner()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Text, "Save");
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-loading");
+                builder.AddContent(2, "Working");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-spn").Count);
+        Assert.AreEqual("Working", com.Find(".custom-loading").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonAutoFocusShouldBeRenderedOnTheHeaderButton()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-mnb-opb").HasAttribute("autofocus"));
+
+        // A menu button hidden from assistive technologies must not pull the focus either.
+        com.Render(parameters => parameters.Add(p => p.AriaHidden, true));
+
+        Assert.IsFalse(com.Find(".bit-mnb-opb").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonFormIdShouldAssociateTheHeaderAndTheItems()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.FormId, "the-form");
+        });
+
+        Assert.AreEqual("the-form", com.Find(".bit-mnb-opb").GetAttribute("form"));
+        Assert.AreEqual("the-form", com.Find("button.bit-mnb-itm").GetAttribute("form"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonEmptiedItemsShouldEmptyTheMenu()
+    {
+        // An empty Items is a real state: a menu whose items are taken away has to lose them.
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual(2, com.FindAll(".bit-mnb-itm").Count);
+
+        com.Render(parameters => parameters.Add(p => p.Items, new List<BitMenuButtonItem>()));
+
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonItemsFilledInPlaceShouldBeRendered()
+    {
+        // The same list instance, longer than it was, is not the one already rendered.
+        var live = new List<BitMenuButtonItem>();
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, live);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-itm").Count);
+
+        live.Add(new BitMenuButtonItem { Text = "Item A", Key = "A" });
+        com.Render();
+
+        Assert.AreEqual(1, com.FindAll(".bit-mnb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonSplitChevronShouldToggleTheCallout()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+        });
+
+        com.Find(".bit-mnb-chb").Click();
+        Assert.IsTrue(com.Instance.IsOpen);
+
+        com.Find(".bit-mnb-chb").Click();
         Assert.IsFalse(com.Instance.IsOpen);
     }
 }

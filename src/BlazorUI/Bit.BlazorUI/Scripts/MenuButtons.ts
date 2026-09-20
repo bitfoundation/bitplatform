@@ -57,8 +57,8 @@ namespace BitBlazorUI {
             MenuButtons._handlers.delete(id);
         }
 
-        public static focusItem(calloutId: string, mode: string, char: string | null, includeDisabled?: boolean) {
-            Utils.focusItem(calloutId, '.bit-mnb-itm', mode, char, includeDisabled === true);
+        public static focusItem(calloutId: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean) {
+            Utils.focusItem(calloutId, '.bit-mnb-itm', mode, char, includeDisabled === true, fromCurrent === true);
         }
     }
 }

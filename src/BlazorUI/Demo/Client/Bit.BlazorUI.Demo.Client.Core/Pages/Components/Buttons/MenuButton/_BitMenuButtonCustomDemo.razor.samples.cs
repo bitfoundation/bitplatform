@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {
@@ -561,13 +561,23 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
     private readonly string example15RazorCode = @"
 <BitMenuButton Split Text=""Save"" Items=""basicIconCustoms"" IconName=""@BitIconName.Save"" NameSelectors=""nameSelectors""
-               LoadingLabel=""Saving..."" IsLoading=""customAutoIsLoading"" OnClick=""(Operation item) => HandleOnLoadingClick()"" />
+               AutoLoading LoadingLabel=""Saving..."" OnClick=""(Operation _) => HandleOnSaveClick()"" />
+
+<BitMenuButton Split Text=""Refresh"" Items=""basicIconCustoms"" IconName=""@BitIconName.Refresh"" NameSelectors=""nameSelectors""
+               AutoLoading LoadingDelay=""500"" OnClick=""(Operation _) => HandleOnRefreshClick()"" />
+
 <BitMenuButton Text=""Loading"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IsLoading=""customIsLoading"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""customIsLoading"" />";
+<BitCheckbox Label=""IsLoading"" @bind-Value=""customIsLoading"" />
+
+<BitMenuButton Split Text=""Upload"" Items=""basicIconCustoms"" IconName=""@BitIconName.Upload"" NameSelectors=""nameSelectors""
+               AutoLoading OnClick=""(Operation _) => HandleOnSaveClick()"">
+    <LoadingTemplate>
+        <BitEllipsisLoading CustomSize=""24"" CustomColor=""currentColor"" />
+    </LoadingTemplate>
+</BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
 private bool customIsLoading;
-private bool customAutoIsLoading;
 
 public class Operation
 {
@@ -592,12 +602,9 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IsEnabled = { Selector = m => m.Disabled is false }
 };
 
-private async Task HandleOnLoadingClick()
-{
-    customAutoIsLoading = true;
-    await Task.Delay(2000);
-    customAutoIsLoading = false;
-}";
+private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 
     private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicIconCustoms""

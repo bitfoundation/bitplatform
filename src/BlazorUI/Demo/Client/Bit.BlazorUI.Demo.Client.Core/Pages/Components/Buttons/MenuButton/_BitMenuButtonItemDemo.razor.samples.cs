@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -354,13 +354,23 @@ private static List<BitMenuButtonItem> basicItemsIcon =
 
     private readonly string example15RazorCode = @"
 <BitMenuButton Split Text=""Save"" Items=""basicItemsIcon"" IconName=""@BitIconName.Save"" LoadingLabel=""Saving...""
-               IsLoading=""itemAutoIsLoading"" OnClick=""(BitMenuButtonItem item) => HandleOnLoadingClick()"" />
+               AutoLoading OnClick=""(BitMenuButtonItem _) => HandleOnSaveClick()"" />
+
+<BitMenuButton Split Text=""Refresh"" Items=""basicItemsIcon"" IconName=""@BitIconName.Refresh""
+               AutoLoading LoadingDelay=""500"" OnClick=""(BitMenuButtonItem _) => HandleOnRefreshClick()"" />
+
 <BitMenuButton Text=""Loading"" Items=""basicItemsIcon"" IsLoading=""itemIsLoading"" />
-<BitCheckbox Label=""IsLoading"" @bind-Value=""itemIsLoading"" />";
+<BitCheckbox Label=""IsLoading"" @bind-Value=""itemIsLoading"" />
+
+<BitMenuButton Split Text=""Upload"" Items=""basicItemsIcon"" IconName=""@BitIconName.Upload""
+               AutoLoading OnClick=""(BitMenuButtonItem _) => HandleOnSaveClick()"">
+    <LoadingTemplate>
+        <BitEllipsisLoading CustomSize=""24"" CustomColor=""currentColor"" />
+    </LoadingTemplate>
+</BitMenuButton>";
 
     private readonly string example15CsharpCode = @"
 private bool itemIsLoading;
-private bool itemAutoIsLoading;
 
 private static List<BitMenuButtonItem> basicItemsIcon =
 [
@@ -369,12 +379,9 @@ private static List<BitMenuButtonItem> basicItemsIcon =
     new() { Text = ""Item C"", Key = ""C"", IconName = BitIconName.Emoji2 }
 ];
 
-private async Task HandleOnLoadingClick()
-{
-    itemAutoIsLoading = true;
-    await Task.Delay(2000);
-    itemAutoIsLoading = false;
-}";
+private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 
     private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicItemsIcon""

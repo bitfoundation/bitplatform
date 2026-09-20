@@ -110,6 +110,7 @@
                    tabindex of 0 would put every row of an open menu into the page's tab order. *@
                 <button @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
                         role="@role"
+                        form="@MenuButton.FormId"
                         type="@MenuButton._buttonType.GetValue()"
                         title="@MenuButton.GetTitle(Item)"
                         tabindex="-1"

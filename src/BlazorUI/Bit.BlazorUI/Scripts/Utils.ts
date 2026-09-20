@@ -1053,7 +1053,9 @@
         // instead of the native disabled attribute) in the navigation, so they can be reached and announced as
         // unavailable rather than silently skipped. A natively disabled element cannot take the focus at all,
         // so it stays out either way.
-        public static focusItem(containerId: string, selector: string, mode: string, char: string | null, includeDisabled?: boolean) {
+        // fromCurrent keeps the focused item itself in the 'char' search rather than starting after it, which is
+        // what lets a typeahead string that already matches it be typed further into without jumping away.
+        public static focusItem(containerId: string, selector: string, mode: string, char: string | null, includeDisabled?: boolean, fromCurrent?: boolean) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -1076,7 +1078,7 @@
                     index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
                 } else if (mode === 'char' && char) {
                     const c = char.toLowerCase();
-                    const start = current < 0 ? 0 : current + 1;
+                    const start = current < 0 ? 0 : (fromCurrent === true ? current : current + 1);
                     for (let i = 0; i < items.length; i++) {
                         const candidate = (start + i) % items.length;
                         if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {
@@ -14,7 +14,6 @@ public partial class _BitMenuButtonCustomDemo
     private bool twoWayIsOpen;
 
     private bool customIsLoading;
-    private bool customAutoIsLoading;
 
     private static BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     {
@@ -169,10 +168,7 @@ public partial class _BitMenuButtonCustomDemo
         };
     }
 
-    private async Task HandleOnLoadingClick()
-    {
-        customAutoIsLoading = true;
-        await Task.Delay(2000);
-        customAutoIsLoading = false;
-    }
+    private async Task HandleOnSaveClick() => await Task.Delay(2000);
+
+    private async Task HandleOnRefreshClick() => await Task.Delay(300);
 }

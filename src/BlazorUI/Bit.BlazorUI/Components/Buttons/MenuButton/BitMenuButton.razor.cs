@@ -9,13 +9,21 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 {
+    // The typeahead of a menu resets after this long without a keystroke, which is what separates one
+    // search from the next (the APG menu pattern leaves the exact value to the implementation).
+    private const int TypeaheadTimeout = 1000;
+
     private List<TItem> _items = [];
+    private bool _showLoading;
     internal BitButtonType _buttonType;
     private string _calloutId = default!;
     private string _overlayId = default!;
     private bool _focusFirstItemOnOpen;
+    private string _typeahead = string.Empty;
     private ElementReference _operatorButtonRef;
     private ElementReference _chevronButtonRef;
+    private DateTimeOffset _typeaheadAt = DateTimeOffset.MinValue;
+    private CancellationTokenSource? _loadingDelayCts;
     private IEnumerable<TItem> _oldItems = default!;
     private DotNetObjectReference<BitMenuButton<TItem>> _dotnetObj = default!;
 
@@ -47,6 +55,26 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// If true, add an aria-hidden attribute instructing screen readers to ignore the menu button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, the header button automatically receives focus when the page renders
+    /// (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    /// <remarks>
+    /// It is dropped on a menu button that is hidden from assistive technologies, and on a disabled one that
+    /// is not kept focusable, since neither should be able to pull the focus on the first render.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
+    /// If true, the menu button enters the loading state automatically while awaiting <see cref="OnClick"/>
+    /// and ignores further clicks of the header button until it returns.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for the main half of a split menu button, which is a command of its own; the chevron
+    /// keeps opening the menu while the command runs.
+    /// </remarks>
+    [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
     /// The background color kind of the callout.
@@ -141,6 +169,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
+    /// The id of the form element the menu button is associated with (rendered as the <c>form</c> attribute of
+    /// the header button and of the items). It lets a submit or reset command sit outside of its form element.
+    /// </summary>
+    [Parameter] public string? FormId { get; set; }
+
+    /// <summary>
     /// Expands the menu button width to 100% of the available width.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -176,7 +210,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// It replaces the default icon of the header button with a spinner and ignores its click.
     /// In split mode the chevron still opens the menu, so the rest of the commands stay reachable.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
 
     /// <summary>
@@ -204,11 +238,24 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem?>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the spinner appears after the menu button enters the loading state,
+    /// which is what keeps a fast operation from flashing one. The click guard of the loading state applies
+    /// immediately regardless of the delay.
+    /// </summary>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
     /// The text to show beside the spinner while the menu button is in the loading state, replacing the text of
     /// the header button. It is also announced by screen readers through a status live region when the loading
     /// state starts, which is what tells a user who cannot see the spinner that the operation is running.
     /// </summary>
     [Parameter] public string? LoadingLabel { get; set; }
+
+    /// <summary>
+    /// The custom template that replaces the spinner and the label of the header button while the menu button
+    /// is in the loading state. The chevron of a split button is kept beside it.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// The tallest the callout grows before its items start to scroll, as a CSS length (e.g. <c>12rem</c>).
@@ -222,8 +269,15 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitMenuButtonNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// The callback is called when the menu button header is clicked.
+    /// The callback that is called when the header button is clicked, and when an item of the menu is activated
+    /// outside of <see cref="Sticky"/> mode.
     /// </summary>
+    /// <remarks>
+    /// It carries the item the click belongs to: the selected one for the header of a sticky menu button,
+    /// the activated one for an item, and <c>null</c> for the header of a menu button that is not sticky.
+    /// In sticky mode an item's activation is a selection rather than a command, so it raises
+    /// <see cref="OnChange"/> instead.
+    /// </remarks>
     [Parameter] public EventCallback<TItem?> OnClick { get; set; }
 
     /// <summary>
@@ -240,6 +294,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// Alias of the ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// Enables re-clicking the header button while the menu button is in the loading state.
+    /// By default its click is ignored while the loading lasts, which is what protects against a double submission.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Determines the current selected item that acts as the header item.
@@ -267,6 +328,12 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool Sticky { get; set; }
 
     /// <summary>
+    /// If true, stops the propagation of the click event of the menu button to the parent elements.
+    /// Useful when the menu button is placed inside clickable containers like rows or cards.
+    /// </summary>
+    [Parameter] public bool StopPropagation { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the menu button.
     /// </summary>
     [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
@@ -292,6 +359,14 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
+
+
+
+    /// <summary>
+    /// Gives focus to the header button of the menu button, which is the element that carries the menu button
+    /// in the tab order (the chevron of a split button is the one beside it).
+    /// </summary>
+    public ValueTask FocusAsync() => _operatorButtonRef.FocusAsync();
 
 
 
@@ -378,6 +453,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => IsLoading ? "bit-mnb-lod" : string.Empty);
 
+        ClassBuilder.Register(() => IsLoading && Reclickable ? "bit-mnb-rcl" : string.Empty);
+
         ClassBuilder.Register(() => Split ? "bit-mnb-spl" : "bit-mnb-nsp");
 
         ClassBuilder.Register(() => Toggle && Split && IsToggled ? $"bit-mnb-tgl {Classes?.Toggled}" : string.Empty);
@@ -424,11 +501,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
+        UpdateLoadingVisuals();
+
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
-        if (ChildContent is not null || Options is not null || Items.Any() is false || Items == _oldItems) return;
+        // Only the two APIs that register their own items are left alone here.
+        if (ChildContent is not null || Options is not null) return;
+
+        // An empty Items is a real state rather than nothing to do: a menu whose items are taken away has to
+        // lose them, not carry on rendering the ones it was given last. The count is compared beside the
+        // reference for the same reason in reverse - a list added to in place is the same instance as the one
+        // already rendered, and would otherwise never be read again.
+        if (Items == _oldItems && _items.Count == Items.Count()) return;
 
         _oldItems = Items;
         _items = [.. Items];
@@ -919,7 +1005,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnHeaderClick(TItem? item)
     {
-        if (IsEnabled is false || IsLoading) return;
+        if (IsEnabled is false) return;
+        if (IsLoading && Reclickable is false) return;
 
         if (Split is false)
         {
@@ -944,18 +1031,54 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             await OnToggleChange.InvokeAsync(IsToggled);
         }
 
-        if (item is not null)
-        {
-            if (GetIsEnabled(item) is false) return;
+        if (item is not null && GetIsEnabled(item) is false) return;
 
+        if (AutoLoading)
+        {
+            if (await AssignIsLoading(true) is false) return;
+
+            UpdateLoadingVisuals();
+        }
+
+        try
+        {
             await OnClick.InvokeAsync(item);
 
-            await InvokeItemClick(item);
+            // Only the main half of a split button is a command of its own. The header of a plain menu button
+            // opens the menu - running the selected item's own action as well would carry out a command the
+            // user only asked to choose between, so the sticky header stays a label there.
+            if (item is not null && Split)
+            {
+                await InvokeItemClick(item);
+            }
         }
-        else
+        finally
         {
-            await OnClick.InvokeAsync();
+            if (AutoLoading)
+            {
+                await AssignIsLoading(false);
+
+                UpdateLoadingVisuals();
+            }
         }
+    }
+
+    // The chevron of a split button is the trigger of its menu, so it toggles it the way the header of a plain
+    // one does. With the pointer the overlay takes the click that would close an open menu, but from the
+    // keyboard the chevron can still be the focused element with the menu open, and Enter has to close it.
+    private async Task HandleOnChevronClick()
+    {
+        if (IsEnabled is false) return;
+
+        if (IsOpen)
+        {
+            _focusFirstItemOnOpen = false;
+            await CloseCallout();
+            StateHasChanged();
+            return;
+        }
+
+        await OpenCallout();
     }
 
     internal async Task HandleOnItemClick(TItem item)
@@ -1107,17 +1230,36 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             default:
                 if (e.Key?.Length is 1 && e.Key != " " && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false)
                 {
-                    await FocusItem("char", e.Key);
+                    await Typeahead(e.Key);
                 }
                 break;
         }
     }
 
-    private ValueTask FocusItem(string mode, string? character = null)
+    // The APG typeahead: the keystrokes that arrive in quick succession are one search string, so a menu with
+    // several items under the same letter is reachable by typing further into the label instead of only by
+    // cycling through them. A single character repeated stays the cycle it has always been.
+    private async Task Typeahead(string character)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        _typeahead = (now - _typeaheadAt).TotalMilliseconds > TypeaheadTimeout
+                        ? character
+                        : _typeahead + character;
+        _typeaheadAt = now;
+
+        var repeated = _typeahead.All(c => c == _typeahead[0]);
+
+        // A repeated character searches from the item AFTER the focused one, so each press lands on the next
+        // match; a real search string searches from the focused one, so the item it already matches is kept.
+        await FocusItem("char", repeated ? _typeahead[..1] : _typeahead, fromCurrent: repeated is false);
+    }
+
+    private ValueTask FocusItem(string mode, string? character = null, bool fromCurrent = false)
     {
         // A disabled item is normally stepped over, but DisabledInteractive is the page asking for it to be
         // reachable - which is the whole point of keeping it focusable rather than natively disabled.
-        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character, DisabledInteractive);
+        return _js.BitMenuButtonsFocusItem(_calloutId, mode, character, DisabledInteractive, fromCurrent);
     }
 
     private async Task FocusTrigger()
@@ -1159,9 +1301,65 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     private async Task CloseCallout()
     {
+        // A menu that closes ends the search that was being typed into it, so the next one starts over
+        // rather than continuing a string the user can no longer see the matches of.
+        _typeahead = string.Empty;
+        _typeaheadAt = DateTimeOffset.MinValue;
+
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
+    }
+
+    // The loading state guards the click from the moment it starts, but the spinner is held back for
+    // LoadingDelay - long enough that an operation which returns immediately never flashes one.
+    private void UpdateLoadingVisuals()
+    {
+        if (IsLoading)
+        {
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                _showLoading = true;
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            _showLoading = false;
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
+
+        _showLoading = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
     }
 
     private async Task ToggleCallout()
@@ -1282,6 +1480,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
 
         await base.DisposeAsync(disposing);
 

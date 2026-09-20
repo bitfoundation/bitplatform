@@ -24,6 +24,15 @@
     // since the EditContext default belongs to the items (see _buttonType), and the only job of the header of a
     // plain menu button is opening the menu, which a submit button would do while also submitting the form.
     var headerButtonType = (Split && ButtonType.HasValue) ? ButtonType.Value.GetValue() : "button";
+    // The association only matters for a header or an item that submits or resets, but it is written wherever
+    // the page asked for it rather than guessed at from the button type the component happens to have resolved.
+    var formId = FormId ?? GetSplattedAttribute("form");
+    // Autofocus follows the same rule as the tab order: a menu button hidden from assistive technologies, or a
+    // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
+    // autofocus included.
+    var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null)
+                        && ariaHidden is false
+                        && (IsEnabled || DisabledInteractive);
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
@@ -32,10 +41,13 @@
      dir="@Dir?.ToString().ToLower()">
     <button @ref="_operatorButtonRef"
             @onclick="() => HandleOnHeaderClick(_selectedItem)"
+            @onclick:stopPropagation="StopPropagation"
             @onkeydown="e => HandleOnTriggerKeyDown(e, Split is false)"
             id="@(_Id + "-opb")"
             title="@Title"
+            form="@formId"
             type="@headerButtonType"
+            autofocus="@autoFocus"
             tabindex="@(IsEnabled || DisabledInteractive ? 0 : -1)"
             disabled="@(IsEnabled is false && DisabledInteractive is false)"
             aria-label="@ariaLabel"
@@ -60,10 +72,14 @@
             {
                 @ItemTemplate(_selectedItem)
             }
+            else if (_showLoading && LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
             else
             {
                 var icon = GetIcon(_selectedItem);
-                @if (IsLoading)
+                @if (_showLoading)
                 {
                     <div aria-hidden="true" style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
                 }
@@ -72,20 +88,24 @@
                     <i aria-hidden="true" style="@Styles?.OperatorButtonIcon" class="bit-mnb-ico @icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
                 <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                    @(IsLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
+                    @(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
                 </span>
             }
         }
         else
         {
             var headerIcon = BitIconInfo.From(Icon, IconName);
-            @if (HeaderTemplate is not null)
+            @if (_showLoading && LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else if (HeaderTemplate is not null)
             {
                 @HeaderTemplate
             }
             else
             {
-                @if (IsLoading)
+                @if (_showLoading)
                 {
                     <div aria-hidden="true" style="@Styles?.Spinner" class="bit-mnb-spn @Classes?.Spinner"></div>
                 }
@@ -94,9 +114,9 @@
                     <i aria-hidden="true" style="@Styles?.Icon" class="bit-mnb-ico @headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
 
-                @if (Text.HasValue() || (IsLoading && LoadingLabel.HasValue()))
+                @if (Text.HasValue() || (_showLoading && LoadingLabel.HasValue()))
                 {
-                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(IsLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
+                    <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
                 }
             }
         }
@@ -112,7 +132,8 @@
         <span aria-hidden="true" style="@Styles?.Separator" class="bit-mnb-spb @Classes?.Separator"></span>
 
         <button @ref="_chevronButtonRef"
-                @onclick="async () => await OpenCallout()"
+                @onclick="HandleOnChevronClick"
+                @onclick:stopPropagation="StopPropagation"
                 @onkeydown="e => HandleOnTriggerKeyDown(e, true)"
                 type="button"
                 id="@(_Id + "-chb")"

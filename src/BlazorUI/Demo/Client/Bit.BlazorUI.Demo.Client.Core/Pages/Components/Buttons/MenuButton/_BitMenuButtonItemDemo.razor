@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The basic usage of BitMenuButton, opening a callout with a list of clickable items provided by the Items
         parameter using the BitMenuButtonItem class.
@@ -57,7 +57,8 @@
              PreventRenderForMcpClient>
     <div>
         In Sticky mode, clicking an item selects it and renders it as the header button, removing it from the callout
-        list while it stays selected.
+        list while it stays selected. Split then makes the header a command of its own, running the
+        selected item's action; without it the header only opens the menu.
     </div>
     <br />
     <div class="example-content">
@@ -313,15 +314,30 @@
              PreventRenderForMcpClient>
     <div>
         IsLoading replaces the header icon with a spinner and ignores the click of the header button; in Split mode the
-        chevron still opens the menu. LoadingLabel replaces the text beside the spinner and is announced by screen
-        readers through a status live region, which is what tells a user who cannot see the spinner that it started.
+        chevron still opens the menu, and Reclickable lifts the guard where a second click is wanted. AutoLoading holds
+        that state for as long as the OnClick handler runs, and LoadingDelay keeps a fast one from flashing a spinner.
+        LoadingLabel replaces the text beside the spinner and is announced through a status live region, which is what
+        tells a user who cannot see the spinner that it started; LoadingTemplate replaces both.
     </div>
     <br />
     <div class="example-content">
         <BitMenuButton Split Text="Save" Items="basicItemsIcon" IconName="@BitIconName.Save" LoadingLabel="Saving..."
-                       IsLoading="itemAutoIsLoading" OnClick="(BitMenuButtonItem item) => HandleOnLoadingClick()" />
+                       AutoLoading OnClick="(BitMenuButtonItem _) => HandleOnSaveClick()" />
+        <BitMenuButton Split Text="Refresh" Items="basicItemsIcon" IconName="@BitIconName.Refresh"
+                       AutoLoading LoadingDelay="500" OnClick="(BitMenuButtonItem _) => HandleOnRefreshClick()" />
         <BitMenuButton Text="Loading" Items="basicItemsIcon" IsLoading="itemIsLoading" />
         <BitCheckbox Label="IsLoading" @bind-Value="itemIsLoading" />
+    </div>
+    <br /><br />
+    <div>LoadingTemplate:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Split Text="Upload" Items="basicItemsIcon" IconName="@BitIconName.Upload"
+                       AutoLoading OnClick="(BitMenuButtonItem _) => HandleOnSaveClick()">
+            <LoadingTemplate>
+                <BitEllipsisLoading CustomSize="24" CustomColor="currentColor" />
+            </LoadingTemplate>
+        </BitMenuButton>
     </div>
 </DemoExample>
 
@@ -331,7 +347,9 @@
         Title and ChevronDownTitle are the tooltips of the two halves. AriaLabel names an icon-only header and
         ChevronDownAriaLabel the chevron, which already defaults to <b>More options</b>. AriaDescription is read after
         the name, the AriaLabel of an item replaces its own label, and DisabledInteractive keeps the disabled items
-        reachable by the arrow keys so they are announced as unavailable instead of silently skipped.
+        reachable by the arrow keys so they are announced as unavailable instead of silently skipped. AutoFocus,
+        left out here so the page is not pulled down to it, moves the focus to the header button on the first
+        render, and it steps aside for a menu button that is hidden or disabled.
     </div>
     <br />
     <div class="example-content">
