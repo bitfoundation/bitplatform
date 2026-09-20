@@ -99,7 +99,19 @@ namespace BitBlazorUI {
                     if (!isTextInput(e) && (isPrintable(e) || e.key === ' ' || Dropdowns.TEXT_KEYS.indexOf(e.key) > -1)) {
                         const combo = (callout.querySelector('.bit-drp-icb') ??
                                        root?.querySelector('.bit-drp-inp')) as HTMLElement | null;
-                        combo?.focus();
+                        if (combo) {
+                            combo.focus();
+                            return;
+                        }
+
+                        // A search box filters the same list, so the keys that edit text belong to it for
+                        // the same reason - typing after the arrow keys refines the search instead of
+                        // starting a type-ahead the search box has already made redundant (see
+                        // HandleOnCalloutKeyDown). The space bar is the exception: on a dropdown that is
+                        // not typed into it is the toggle of the focused option, which nothing replaces.
+                        if (e.key !== ' ') {
+                            (callout.querySelector('.bit-drp-sin') as HTMLElement | null)?.focus();
+                        }
                     }
                 };
                 callout.addEventListener('keydown', handler);

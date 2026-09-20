@@ -2112,6 +2112,30 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "--bit-Dropdown-prefix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the Prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-prefix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the Prefix addon.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-suffix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the Suffix addon.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-suffix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the Suffix addon.",
+        },
+        new()
+        {
             Name = "--bit-Dropdown-accent-color",
             DefaultValue = "The Color role's main color",
             Description = "The accent: group headers, the search glyph, the filled checkbox, the highlighted part of a matched item, the overflow chip, the spinner arc and the bar marking the item Enter would commit.",
@@ -2214,6 +2238,12 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "--bit-Dropdown-responsive-width",
+            DefaultValue = "272px",
+            Description = "Width of the side panel a Responsive dropdown opens on a small screen. Capped at the width of the viewport.",
+        },
+        new()
+        {
             Name = "--bit-Dropdown-overlay-background",
             DefaultValue = "transparent",
             Description = "The layer between the page and an open callout. Give it a color for a modal-style scrim.",
@@ -2247,6 +2277,12 @@ public partial class BitDropdownDemo
             Name = "--bit-Dropdown-item-selected-background",
             DefaultValue = "--bit-clr-bg-sec",
             Description = "Background of a selected row.",
+        },
+        new()
+        {
+            Name = "--bit-Dropdown-item-selected-color",
+            DefaultValue = "--bit-Dropdown-item-color",
+            Description = "Text of a selected row. Set it along with the background above whenever that one is repainted with something the row text was not chosen against.",
         },
         new()
         {

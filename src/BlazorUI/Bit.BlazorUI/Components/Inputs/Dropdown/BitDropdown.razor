@@ -23,6 +23,13 @@
     var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false &&
                                _selectedItems.Take(GetDisplayedItemsCount()).Any(GetIsEnabled);
 
+    // The combobox role, and the state that goes with it, belong on the element the keyboard actually
+    // lands on - which is the field itself only while it has nothing focusable inside it. The ComboBox
+    // mode has an input, so the role moves onto it: a field that keeps a tab stop of its own around an
+    // input is two tab stops for one control, and the element a screen reader then describes is a plain
+    // text box that reports neither that it has a list nor whether that list is showing.
+    var comboboxOnField = Combo is false;
+
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
            options of the listbox it is rendered in; its text stays exposed either way. *@
@@ -100,34 +107,30 @@
         </label>
     }
 
-    @* The combobox is the interactive element of this input, so it is the one InputElement points at:
-       the inherited FocusAsync of BitInputBase then focuses what a user would focus by hand. *@
-       
-    @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
-       to be reported here and not only on the input it wraps. *@
+    @* The field is the interactive element of a dropdown that is not typed into, so it is the one
+       InputElement points at and the one FocusAsync (overridden for the ComboBox mode) focuses. *@
     <div @ref="InputElement"
          @onclick="HandleOnClick"
          @onkeydown="HandleOnTriggerKeyDown"
          @onfocusin="HandleOnFocusIn"
          @onfocusout="HandleOnFocusOut"
          title="@Title"
-         role="combobox"
          id="@_dropdownId"
          style="@Styles?.Container"
          class="bit-drp-wrp @Classes?.Container"
-         autofocus="@AutoFocus"
-         tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
-         aria-haspopup="listbox"
-         aria-autocomplete="@(Combo ? "list" : null)"
-         aria-required="@(Required ? "true" : null)"
-         aria-readonly="@(ReadOnly ? "true" : null)"
-         aria-invalid="@(ValueInvalid is true ? "true" : null)"
-         aria-disabled="@(IsEnabled is false ? "true" : null)"
-         aria-expanded=@(IsOpen ? "true" : "false")
-         aria-label="@AriaLabel"
-         aria-labelledby="@(AriaLabel.HasValue() ? null : GetDropdownAriaLabelledby())"
-         aria-describedby="@(HasDescription ? _descriptionId : null)"
-         aria-controls="@(IsOpen? _scrollContainerId : null)">
+         role="@(comboboxOnField ? "combobox" : null)"
+         autofocus="@(comboboxOnField && AutoFocus)"
+         tabindex="@(IsEnabled && comboboxOnField ? (TabIndex ?? "0") : "-1")"
+         aria-haspopup="@(comboboxOnField ? "listbox" : null)"
+         aria-required="@(comboboxOnField && Required ? "true" : null)"
+         aria-readonly="@(comboboxOnField && ReadOnly ? "true" : null)"
+         aria-invalid="@(comboboxOnField && ValueInvalid is true ? "true" : null)"
+         aria-disabled="@(comboboxOnField && IsEnabled is false ? "true" : null)"
+         aria-expanded="@(comboboxOnField ? (IsOpen ? "true" : "false") : null)"
+         aria-label="@(comboboxOnField ? AriaLabel : null)"
+         aria-labelledby="@(comboboxOnField && AriaLabel.HasNoValue() ? GetDropdownAriaLabelledby() : null)"
+         aria-describedby="@(comboboxOnField && HasDescription ? _descriptionId : null)"
+         aria-controls="@(comboboxOnField && IsOpen ? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
         {
@@ -241,8 +244,11 @@
 
             @if (Combo)
             {
-                @* An input does not inherit the accessible name of the combobox element around
-                   it, so without an AriaLabel it is named after the label by hand. *@
+                @* The combobox of this mode: the element the focus lands on, so it is the one that
+                   reports the list and whether it is showing. An input does not inherit the accessible
+                   name of anything around it, so without an AriaLabel it is named after the label by
+                   hand. Its readonly and disabled states are the native attributes, which is what the
+                   aria- pair would only be restating. *@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
@@ -252,12 +258,19 @@
                        style="@Styles?.ComboBoxInput"
                        class="bit-drp-inp @Classes?.ComboBoxInput"
                        type="text"
+                       role="combobox"
                        value="@_comboInputText"
                        readonly="@ReadOnly"
+                       autofocus="@AutoFocus"
+                       tabindex="@TabIndex"
                        aria-label="@AriaLabel"
                        aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                        aria-describedby="@(HasDescription ? _descriptionId : null)"
+                       aria-haspopup="listbox"
                        aria-autocomplete="list"
+                       aria-required="@(Required ? "true" : null)"
+                       aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                       aria-expanded="@(IsOpen ? "true" : "false")"
                        aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
                        aria-controls="@(IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
@@ -484,18 +497,23 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
-            @* An input does not inherit the accessible name of the combobox element around
-               it, so without an AriaLabel it is named after the label by hand. *@
+            @* The input of the responsive panel, which takes the focus - and with it the combobox role
+               and its state - from the one in the field for as long as the panel is on the screen. *@
             <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange" @onfocusin="HandleComboInputFocusIn" @onfocusout="HandleComboInputFocusOut"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
                    type="text"
+                   role="combobox"
                    value="@_comboInputText"
                    readonly="@ReadOnly"
                    aria-label="@AriaLabel"
                    aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                    aria-describedby="@(HasDescription ? _descriptionId : null)"
+                   aria-haspopup="listbox"
                    aria-autocomplete="list"
+                   aria-required="@(Required ? "true" : null)"
+                   aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                   aria-expanded="@(IsOpen ? "true" : "false")"
                    aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
                    aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"

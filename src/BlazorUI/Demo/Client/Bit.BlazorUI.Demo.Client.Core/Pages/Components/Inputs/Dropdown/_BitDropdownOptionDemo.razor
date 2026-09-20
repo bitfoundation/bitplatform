@@ -499,8 +499,10 @@
         input as soon as the callout opens - with the pointer and with Enter or Space on the keyboard alike - so
         typing filters right away. A clear button appears in the search input as soon as there is something to clear,
         which follows the text being typed rather than the term that has been applied: a search waiting to be committed
-        (or held back by a debounce) can be taken back the moment it is typed. The search term is discarded whenever the
-        callout closes, so the next opening always starts from the full list.
+        (or held back by a debounce) can be taken back the moment it is typed. Arrowing into the list never leaves the
+        term behind: the next character typed, and <b>Backspace</b> with it, goes back to the search box and keeps
+        filtering, so a search box replaces the typeahead rather than competing with it. The search term is discarded
+        whenever the callout closes, so the next opening always starts from the full list.
     </div>
     <br /><br />
     <div class="example-content">
@@ -1450,9 +1452,10 @@
         item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
         selects every item the current search shows - or clears them when they are all selected already -
         while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
-        Typing printable characters runs a typeahead: the accumulated characters jump to the
-        item starting with them, repeating one character cycles through the items starting with it, and the buffer
-        resets after a short pause. The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
+        Typing printable characters runs a typeahead on a dropdown with no text field of its own: the accumulated
+        characters jump to the item starting with them, repeating one character cycles through the items starting
+        with it, and the buffer resets after a short pause. A <b>ShowSearchBox</b> dropdown filters instead.
+        The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
         back to the first one; <b>NoWrapNavigation</b> stops them at the ends instead, which suits a long list where
         the jump from one end to the other is more likely to read as the focus having been lost than as a move that
         was asked for - the typeahead keeps wrapping either way, since it looks for the item that matches rather
@@ -1460,12 +1463,17 @@
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
         match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
         reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
+        The whole dropdown is one tab stop in every mode: the combobox role, and the expanded state that goes with
+        it, sit on whichever element the keyboard actually lands on - the field itself, or the editable input of the
+        ComboBox mode, which then takes the field's place in the tab order instead of adding a second stop to it.
         The row the arrow keys have reached carries a focus outline in the focus color, drawn inside the row so the
         scrolling list cannot clip it, and the field keeps its own ring in the ComboBox mode, where the element
         actually holding the focus is the input inside it.
-        In ComboBox mode the keys that belong to the typed text - the printable characters, <b>Backspace</b>,
-        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> - return the focus to the input and act on it
-        there, so arrowing into the list never strands the user away from the term they are typing.
+        The keys that belong to the typed text - the printable characters, <b>Backspace</b>, <b>Delete</b>,
+        <b>ArrowLeft</b> and <b>ArrowRight</b> - return the focus to the text field of the dropdown and act on
+        it there, so arrowing into the list never strands the user away from the term they are typing: the
+        ComboBox input in that mode, the search box of a <b>ShowSearchBox</b> dropdown otherwise. <b>Space</b>
+        is the one key that stays behind, since on a list that is only searched it is the toggle of the focused item.
         However the callout is dismissed - a key, a click outside it, the close button of the responsive panel or
         a swipe - the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
         being dropped at the top of the page along with the element that was holding it.
@@ -2420,7 +2428,9 @@
                             --bit-Dropdown-callout-radius: 1rem;
                             --bit-Dropdown-chip-border-color: #d1495b;
                             --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
-                            --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);">
+                            --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);
+                            --bit-Dropdown-item-selected-background: #d1495b;
+                            --bit-Dropdown-item-selected-color: white;">
             @foreach (var item in basicItems)
             {
                 <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />

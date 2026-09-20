@@ -930,6 +930,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// </summary>
     public ValueTask FocusComboInputAsync() => Combo ? FocusTrigger() : ValueTask.CompletedTask;
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// In the ComboBox mode the element that takes the focus is the editable input inside the field,
+    /// which is where the keyboard lands and what carries the combobox role; the field around it is
+    /// out of the tab order there, so focusing it would leave the caret nowhere.
+    /// </remarks>
+    public override ValueTask FocusAsync() => Combo ? FocusTrigger() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (Combo is false) return base.FocusAsync(preventScroll);
+
+        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync(preventScroll);
+    }
+
     /// <summary>
     /// The ElementReference to the search input element, which is null while the search box is not
     /// rendered - it needs <see cref="ShowSearchBox"/> and an open callout to live in, and it is
@@ -2403,9 +2420,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 {
                     await HandleOnSelectAllClick();
                 }
-                // In Combo mode the combo input is the type-ahead, and printable keys
-                // typed into the search box must keep filtering instead of moving focus.
-                else if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
+                // In Combo mode the combo input is the type-ahead, and so is the search box of a dropdown
+                // that has one: the keydown listener of Dropdowns.ts hands a printable key typed on an
+                // option back to whichever of the two is there, and a type-ahead on top of it would move
+                // the focus away from the field the character is about to be typed into.
+                else if (Combo is false && HasSearchBox is false && IsPrintableKey(e))
                 {
                     await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
                 }

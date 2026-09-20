@@ -2235,8 +2235,11 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
     }
 
+    // The combobox role belongs on the element the keyboard lands on, which is the field itself only
+    // while it has nothing focusable inside it. The ComboBox mode has an input, so the role - and the
+    // state that goes with it - moves onto that, leaving the dropdown one tab stop rather than two.
     [TestMethod]
-    public void BitDropdownComboAriaAutocompleteShouldBeOnTheComboboxElement()
+    public void BitDropdownComboboxRoleShouldFollowTheFocusedElement()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -2245,7 +2248,11 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Items, GetShortDropdownItems());
         });
 
-        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-autocomplete"));
+        var field = component.Find(".bit-drp-wrp");
+        Assert.AreEqual("combobox", field.GetAttribute("role"));
+        Assert.AreEqual("false", field.GetAttribute("aria-expanded"));
+        Assert.AreEqual("0", field.GetAttribute("tabindex"));
+        Assert.IsFalse(field.HasAttribute("aria-autocomplete"));
 
         component.Render(parameters =>
         {
@@ -2253,7 +2260,21 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Combo, true);
         });
 
-        Assert.AreEqual("list", component.Find(".bit-drp-wrp").GetAttribute("aria-autocomplete"));
+        field = component.Find(".bit-drp-wrp");
+        Assert.IsFalse(field.HasAttribute("role"));
+        Assert.IsFalse(field.HasAttribute("aria-expanded"));
+        Assert.IsFalse(field.HasAttribute("aria-haspopup"));
+        Assert.AreEqual("-1", field.GetAttribute("tabindex"));
+
+        var comboInput = component.Find(".bit-drp-inp");
+        Assert.AreEqual("combobox", comboInput.GetAttribute("role"));
+        Assert.AreEqual("listbox", comboInput.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("list", comboInput.GetAttribute("aria-autocomplete"));
+        Assert.AreEqual("false", comboInput.GetAttribute("aria-expanded"));
+
+        component.Find(".bit-drp-wrp").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-drp-inp").GetAttribute("aria-expanded"));
     }
 
     [TestMethod]
@@ -3491,8 +3512,10 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
     }
 
-    // The trigger is named after the element that shows the selection. An input inside that element
-    // would contribute its value to the name, making the trigger report back whatever is being typed.
+    // A dropdown that is not typed into is named after the element that shows the selection, and an
+    // input inside that element would contribute its value to the name, making the field report back
+    // whatever is being typed. In the ComboBox mode the input is the combobox and names itself after
+    // the label, so its value never reaches the name in the first place.
     [TestMethod]
     public void BitDropdownComboInputShouldStayOutOfTheTriggerAccessibleName()
     {
@@ -3500,17 +3523,30 @@ public class BitDropdownTests : BunitTestContext
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
             parameters.Add(p => p.Items, GetShortDropdownItems());
             parameters.Add(p => p.Value, "f-app");
         });
 
         var labelledBy = component.Find(".bit-drp-wrp").GetAttribute("aria-labelledby");
-        var namedBy = component.Find($"#{labelledBy}");
+        var namedBy = component.Find($"#{labelledBy!.Split(' ')[^1]}");
 
         Assert.AreEqual("Apple", namedBy.TextContent.Trim());
         Assert.AreEqual(0, namedBy.QuerySelectorAll("input").Length);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Value, "f-app");
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+
         Assert.AreEqual(1, component.FindAll(".bit-drp-inp").Count);
+        Assert.AreEqual(component.Find(".bit-drp-lbl").GetAttribute("id"), comboInput.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("aria-labelledby"));
     }
 
     // A live region only announces while it is in the accessibility tree, and the callout is hidden
@@ -3819,6 +3855,41 @@ public class BitDropdownTests : BunitTestContext
 
         invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
         Assert.AreEqual(true, invocations[^1].Arguments[6]);
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxShouldReplaceTheTypeAhead()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        var callout = component.Find(".bit-drp-cal");
+        callout.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // Without a search box a printable key is a type-ahead, which is a move of the focus.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
+        Assert.AreEqual("char", invocations[^1].Arguments[1]);
+        Assert.AreEqual("b", invocations[^1].Arguments[2]);
+
+        var countBefore = invocations.Count;
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        callout.KeyDown(new KeyboardEventArgs { Key = "b" });
+
+        // With one, the key belongs to the search box - the keydown listener of Dropdowns.ts hands it
+        // back to it - so the component must not move the focus away from the field being typed into.
+        Assert.AreEqual(countBefore, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
     }
 
     [TestMethod]

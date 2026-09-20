@@ -25,6 +25,12 @@
 //   --bit-Dropdown-icon-color              caret and affix glyphs                   (default: $clr-fg-sec)
 //   --bit-Dropdown-icon-size               size of the glyphs of the component      (default: per size, $siz-icon-*)
 //
+//   PREFIX AND SUFFIX (the two addons flush with the ends of the field)
+//   --bit-Dropdown-prefix-color            text of the prefix addon                 (default: $clr-fg-pri)
+//   --bit-Dropdown-prefix-background       background of the prefix addon           (default: $clr-bg-sec)
+//   --bit-Dropdown-suffix-color            text of the suffix addon                 (default: $clr-fg-pri)
+//   --bit-Dropdown-suffix-background       background of the suffix addon           (default: $clr-bg-sec)
+//
 //   ACCENT - the role color, which reaches the group headers, the search glyph, the checkbox fill, the
 //   search-match highlight, the overflow chip, the spinner arc and the bar marking the commit target.
 //   --bit-Dropdown-accent-color            the accent itself                        (default: the Color role's main color)
@@ -52,6 +58,8 @@
 //   --bit-Dropdown-callout-radius          corner radius of that surface            (default: $shp-radius-popup)
 //   --bit-Dropdown-callout-shadow          its elevation                            (default: $box-shadow-popup)
 //   --bit-Dropdown-callout-max-height      how tall the scrolling list may grow     (default: $siz-popup-max-height)
+//   --bit-Dropdown-responsive-width        width of the side panel a Responsive
+//                                          dropdown opens on a small screen         (default: spacing(34))
 //   --bit-Dropdown-overlay-background      the layer between the page and an open
 //                                          callout, transparent by default - give it
 //                                          a color for a modal-style scrim          (default: transparent)
@@ -62,6 +70,9 @@
 //   --bit-Dropdown-item-color              text of one row                          (default: $clr-fg-pri)
 //   --bit-Dropdown-item-hover-background   background of the hovered row            (default: $clr-bg-pri-hover)
 //   --bit-Dropdown-item-selected-background  background of a selected row           (default: $clr-bg-sec)
+//   --bit-Dropdown-item-selected-color     text of a selected row - set it along
+//                                          with the background above when that one
+//                                          is repainted                             (default: --bit-Dropdown-item-color)
 //   --bit-Dropdown-item-disabled-color     text of a row that cannot be picked      (default: $clr-fg-dis)
 //   --bit-Dropdown-header-color            text of a group header                   (default: the accent)
 //   --bit-Dropdown-divider-color           the rule a Divider item draws            (default: $clr-bg-sec)
@@ -109,6 +120,7 @@
     --bit-drp-itm-clr: var(--bit-Dropdown-item-color, #{$clr-fg-pri});
     --bit-drp-itm-hover-bg: var(--bit-Dropdown-item-hover-background, #{$clr-bg-pri-hover});
     --bit-drp-itm-sel-bg: var(--bit-Dropdown-item-selected-background, #{$clr-bg-sec});
+    --bit-drp-itm-sel-clr: var(--bit-Dropdown-item-selected-color, var(--bit-drp-itm-clr));
     --bit-drp-itm-dis-clr: var(--bit-Dropdown-item-disabled-color, #{$clr-fg-dis});
     --bit-drp-cal-bg: var(--bit-Dropdown-callout-background, #{$clr-bg-pri});
 }
@@ -441,9 +453,11 @@
         gap: spacing(0.5);
         min-height: var(--bit-drp-h);
 
+        // The chips carry their own height floor, so the row around them gives back what they gained
+        // and the field ends up the size it was rather than a chip taller.
+        padding-block: spacing(0.75);
         // Logical, not physical: the room left at the end is for the icons of the trigger, which sit
         // where the text ends - on the left of an RTL dropdown.
-        padding-block: spacing(1);
         padding-inline: spacing(1) spacing(3.5);
     }
 }
@@ -454,6 +468,11 @@
     gap: spacing(0.5);
     align-items: center;
     padding: 0 spacing(0.5);
+    // What makes the remove button below a pointer target of the size WCAG 2.2 asks for (SC 2.5.8): the
+    // button stretches to the chip, and a chip left to the line box of its own text is about 19px tall -
+    // wide enough for the 24 the button floors itself at, and short of it in the other direction. A floor
+    // rather than a height, so a ChipTemplate taller than this still decides how tall its chip is.
+    min-height: spacing(3);
     color: var(--bit-Dropdown-chip-color, inherit);
     border-radius: var(--bit-Dropdown-chip-radius, #{$shp-radius-chip});
     background-color: var(--bit-Dropdown-chip-background, #{$clr-bg-sec});
@@ -470,9 +489,9 @@
 }
 
 // The glyph a chip can be removed by is far smaller than the 24 CSS pixels WCAG 2.2 asks of a pointer
-// target. The chip is tall enough to carry that on its own, so the button stretches to the chip height
-// and is floored at the target width - the drawn glyph keeps its size, only what answers the pointer
-// around it grows, and it grows inside the chip rather than over the one standing next to it.
+// target (SC 2.5.8). The chip carries that height for it, so the button stretches to the chip and is
+// floored at the target width - the drawn glyph keeps its size, only what answers the pointer around it
+// grows, and it grows inside the chip rather than over the one standing next to it.
 .bit-drp-crb {
     padding: 0;
     border: none;
@@ -536,7 +555,12 @@
     border: $shp-border-width $shp-border-style transparent;
 
     &.bit-drp-chd {
+        color: var(--bit-drp-itm-sel-clr);
         background-color: var(--bit-drp-itm-sel-bg);
+
+        .bit-drp-itx {
+            color: var(--bit-drp-itm-sel-clr);
+        }
 
         .bit-drp-chb {
             border-color: var(--bit-drp-clr);
@@ -550,7 +574,9 @@
 
         @media (hover: hover) {
             &:hover {
-                background-color: var(--bit-drp-itm-hover-bg);
+                // Blended with the selected fill for the same reason a single select row is - see
+                // .bit-drp-sel - even though the check mark says as much here too.
+                background-color: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
 
                 .bit-drp-chb {
                     border-color: var(--bit-drp-clr-hover);
@@ -628,13 +654,23 @@
     white-space: nowrap;
     padding: 0 spacing(1.25);
     min-height: var(--bit-drp-h);
-    color: $clr-fg-pri;
-    background: $clr-bg-sec;
 
     span {
         font-size: var(--bit-drp-fs);
         padding-bottom: spacing(0.125);
     }
+}
+
+// The two addons are themed apart rather than as one pair: a unit suffix and a category prefix are
+// rarely the same kind of thing, and an author who paints one of them has no reason to get the other.
+.bit-drp-pre {
+    color: var(--bit-Dropdown-prefix-color, #{$clr-fg-pri});
+    background: var(--bit-Dropdown-prefix-background, #{$clr-bg-sec});
+}
+
+.bit-drp-suf {
+    color: var(--bit-Dropdown-suffix-color, #{$clr-fg-pri});
+    background: var(--bit-Dropdown-suffix-background, #{$clr-bg-sec});
 }
 
 .bit-drp-mcn {
@@ -850,13 +886,15 @@
     flex-basis: var(--bit-drp-h);
     margin: spacing(-0.125) 0;
 
+    // The same hover the clear button of the field and the rows of the list take, rather than the
+    // background a selected row carries - which read as a selection on a button that has none.
     @media (hover: hover) {
         &:hover {
             .bit-drp-sbc {
-                background-color: $clr-bg-sec;
+                background-color: var(--bit-drp-itm-hover-bg);
 
                 i {
-                    color: $clr-fg-pri;
+                    color: $clr-fg-pri-hover;
                 }
             }
         }
@@ -1081,11 +1119,21 @@
 }
 
 .bit-drp-sel {
+    color: var(--bit-drp-itm-sel-clr);
     background-color: var(--bit-drp-itm-sel-bg);
+
+    .bit-drp-itx {
+        color: var(--bit-drp-itm-sel-clr);
+    }
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-drp-itm-hover-bg);
+            // The two backgrounds blended rather than the hover one on its own: a single select row
+            // carries no check mark, so its fill is the only thing saying it is the selected one, and
+            // taking it away for as long as the pointer rests on it hides exactly the row being looked
+            // for. Where color-mix is not understood the declaration is dropped and the row simply
+            // keeps its selected fill, which is the same trade-off made the safe way round.
+            background-color: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
         }
     }
 }
@@ -1107,7 +1155,11 @@
     box-sizing: border-box;
     overflow-wrap: break-word;
     padding: spacing(1) spacing(1.5);
-    font-size: calc(var(--bit-drp-fs) * 0.85);
+    // The text size of the rows it sits above rather than a fraction of it: it is set apart by the
+    // italic and the quieter color it already carries, and a fraction of the smallest size class had
+    // it down at ten pixels - off the type ramp and under what the rest of the library asks anyone
+    // to read. It follows a public item-font-size along with the rows for the same reason.
+    font-size: var(--bit-drp-itm-fs);
 }
 
 .bit-drp-emp {
@@ -1120,7 +1172,7 @@
     box-sizing: border-box;
     justify-content: center;
     overflow-wrap: break-word;
-    font-size: var(--bit-drp-fs);
+    font-size: var(--bit-drp-itm-fs);
     min-height: var(--bit-drp-itm-h);
     padding: spacing(1) spacing(1.5);
 }
@@ -1136,7 +1188,7 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     justify-content: center;
-    font-size: var(--bit-drp-fs);
+    font-size: var(--bit-drp-itm-fs);
 }
 
 .bit-drp-spn {
@@ -1242,8 +1294,10 @@
     border: none;
     cursor: pointer;
     font-weight: $tg-fw-regular;
-    width: $siz-ctrl-md;
-    height: $siz-ctrl-md;
+    // The square follows the control height like every other button of the component, so the panel of a
+    // small or a large dropdown closes with a target the size of the dropdown rather than a medium one.
+    width: var(--bit-drp-h);
+    height: var(--bit-drp-h);
     text-align: center;
     display: inline-block;
     text-decoration: none;
@@ -1299,7 +1353,9 @@
         display: block;
         overflow: hidden;
         max-height: unset;
-        width: spacing(34);
+        // Capped at the viewport so a wider panel than the screen it opens on cannot push its close
+        // button off the edge, which is the one control that gets out of it again.
+        width: min(var(--bit-Dropdown-responsive-width, #{spacing(34)}), 100vw);
         animation-name: unset;
         transform: translateX(100%);
         box-shadow: $box-shadow-sheet;

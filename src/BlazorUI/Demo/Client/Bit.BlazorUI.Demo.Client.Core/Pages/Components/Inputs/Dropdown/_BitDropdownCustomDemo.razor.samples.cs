@@ -3175,7 +3175,9 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
                     --bit-Dropdown-callout-radius: 1rem;
                     --bit-Dropdown-chip-border-color: #d1495b;
                     --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
-                    --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);"" />
+                    --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);
+                    --bit-Dropdown-item-selected-background: #d1495b;
+                    --bit-Dropdown-item-selected-color: white;"" />
 
 <BitDropdown Label=""Density""
              Items=""GetBasicCustoms()""

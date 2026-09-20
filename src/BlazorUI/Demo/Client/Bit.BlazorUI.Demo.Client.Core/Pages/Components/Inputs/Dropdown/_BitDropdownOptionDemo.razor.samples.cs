@@ -2600,7 +2600,9 @@ private readonly List<BitDropdownItem<string>> basicItems =
                     --bit-Dropdown-callout-radius: 1rem;
                     --bit-Dropdown-chip-border-color: #d1495b;
                     --bit-Dropdown-chip-background: color-mix(in srgb, #d1495b 18%, transparent);
-                    --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);"">
+                    --bit-Dropdown-item-hover-background: color-mix(in srgb, #d1495b 12%, transparent);
+                    --bit-Dropdown-item-selected-background: #d1495b;
+                    --bit-Dropdown-item-selected-color: white;"">
     @foreach (var item in basicItems)
     {
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
