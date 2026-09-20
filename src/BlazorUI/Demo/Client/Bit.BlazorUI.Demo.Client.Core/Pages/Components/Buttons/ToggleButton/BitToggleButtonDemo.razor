@@ -531,7 +531,7 @@
                              Text="Details" />
         </div>
         <br />
-        <div id="accessibility-details">@(detailsVisible ? "The details panel is visible." : "The details panel is hidden.")</div>
+        <div id="accessibility-details" hidden="@(detailsVisible is false)">The details panel is visible.</div>
         <br /><br /><br />
         <div>
             Underneath all of it is a real <b>&lt;button&gt;</b>, so Enter and Space toggle it, Tab reaches it, and the

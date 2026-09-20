@@ -173,12 +173,15 @@
     }
 }
 
-// A loading toggle button whose clicks are being swallowed says so with the pointer too: the hover shade and
-// the pointer cursor belong to a control that takes clicks, and this one is ignoring every one of them until
-// the work finishes. Reclickable is the loading state that still reacts, and it keeps both.
+// A loading toggle button whose clicks are being swallowed says so with the pointer: the pointer cursor
+// belongs to a control that takes clicks, and this one is ignoring every one of them until the work finishes.
+// Reclickable is the loading state that still reacts, and it keeps it. Left able to receive the pointer for
+// the same reason as the disabled state above - pointer-events: none would take the title tooltip and this
+// very cursor with it, and would drop the button out of hit testing, so a click meant for it would fall
+// through to whatever sits behind and StopPropagation would never run. The click is already refused in the
+// handler and in preventDefault.
 .bit-tgb-lod {
     cursor: default;
-    pointer-events: none;
 }
 
 .bit-tgb-hcn {
