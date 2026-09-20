@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
     <div>
         The basic usage of BitMenuButton, declaring its items as BitMenuButtonOption components directly in the markup.
     </div>
@@ -155,8 +155,10 @@
 
 <DemoExample Title="Icons" RazorCode="@example5RazorCode" Id="example5" PreventRenderForMcpClient>
     <div>
-        IconName sets the header icon, ChevronDownIconName replaces the chevron, and each option carries its own icon.
-        NoIcon drops the header icon, including the icon of the selected option in Sticky mode.
+        IconName sets the header icon, ChevronDownIconName replaces the chevron - which turns over while the menu is open - and each option carries its own icon.
+        NoIcon drops the header icon, including the icon of the selected option in Sticky mode. IconOnly drops the
+        text and the chevron instead, squaring the header into the overflow trigger of a toolbar or a row - give
+        it an AriaLabel, since it has no text left to be named by.
     </div>
     <br />
     <div class="example-content">
@@ -183,6 +185,29 @@
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
         </BitMenuButton>
         <BitMenuButton Sticky TItem="BitMenuButtonOption" NoIcon>
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+    </div>
+    <br /><br />
+    <div>IconOnly:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More"
+                       TItem="BitMenuButtonOption" Variant="BitVariant.Text">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More"
+                       TItem="BitMenuButtonOption" Variant="BitVariant.Outline">
+            <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
+            <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+        </BitMenuButton>
+        <BitMenuButton IconOnly Split AriaLabel="Save" IconName="@BitIconName.Save"
+                       TItem="BitMenuButtonOption">
             <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
             <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
@@ -635,7 +660,7 @@
             <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
         </BitMenuButton>
 
-        <BitMenuButton AriaLabel="More actions" IconName="@BitIconName.More" Variant="BitVariant.Text"
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More" Variant="BitVariant.Text"
                        TItem="BitMenuButtonOption">
             <BitMenuButtonOption Key="share" IconName="@BitIconName.Share" AriaLabel="Share this page" />
             <BitMenuButtonOption Key="print" IconName="@BitIconName.Print" AriaLabel="Print this page" />
@@ -2335,8 +2360,9 @@
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each option, the Styles and Classes parameters targeting the internal parts of the
-        component, and the public CSS variables - set on the Style for the button and on Styles.Callout for the menu,
-        which is rendered outside the root element.
+        component, and the public CSS variables - set on the Style for the button, on Styles.Callout for the menu
+        (which is rendered outside the root element), and on the Style of a single option for that row alone, which
+        is how one destructive command is coloured without a class.
     </div>
     <br />
     <div><b>Component's Style & Class</b>:</div>
@@ -2421,6 +2447,15 @@
         <BitMenuButtonOption Text="Option A" Key="A" IconName="@BitIconName.Emoji" />
         <BitMenuButtonOption Text="Option B" Key="B" IconName="@BitIconName.Emoji" />
         <BitMenuButtonOption Text="Option C" Key="C" IconName="@BitIconName.Emoji2" />
+    </BitMenuButton>
+    <br /><br />
+    <BitMenuButton Text="Actions" IconName="@BitIconName.Settings" TItem="BitMenuButtonOption"
+                   Variant="BitVariant.Outline">
+        <BitMenuButtonOption Text="Edit" Key="edit" IconName="@BitIconName.Edit" />
+        <BitMenuButtonOption Text="Duplicate" Key="duplicate" IconName="@BitIconName.Copy" />
+        <BitMenuButtonOption IsSeparator />
+        <BitMenuButtonOption Text="Delete" Key="delete" IconName="@BitIconName.Delete"
+                             Style="--bit-MenuButton-item-color: var(--bit-clr-err);" />
     </BitMenuButton>
 </DemoExample>
 

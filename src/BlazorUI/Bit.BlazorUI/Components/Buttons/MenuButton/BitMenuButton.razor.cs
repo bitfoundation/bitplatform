@@ -17,6 +17,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     private List<TItem> _items = [];
     private bool _showLoading;
     internal BitButtonType _buttonType;
+    // The list the callout carries, which is what the trigger's aria-controls names: the APG menu button
+    // pattern points the button at the menu itself rather than at the element the menu is drawn inside,
+    // which is what lets a reader move from the button to the popup it has just announced.
+    private string _menuId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
     private bool _focusFirstItemOnOpen;
@@ -208,6 +212,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The icon to show inside the header of menu button.
     /// </summary>
     [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Renders the header button as its icon alone: the text and the chevron beside it are dropped and the
+    /// button becomes a square of the control's own height. It is the overflow menu of a toolbar or a row -
+    /// a glyph that opens a menu and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// The button then has no text to be named by, so give it an <c>AriaLabel</c> (or a
+    /// <see cref="Title"/>). In split mode only the main half is squared up: the chevron half is the only
+    /// way into the menu, so it stays. A <see cref="HeaderTemplate"/> is the page's own markup and is
+    /// rendered as written.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// If true, removes the icon from the header button.
@@ -406,6 +424,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        // The menu is being dismissed from outside (a click on the page, another callout taking over), which
+        // ends the search that was being typed into it just as closing it from the keyboard does.
+        ResetTypeahead();
+
         if (await AssignIsOpen(false) is false) return;
 
         StateHasChanged();
@@ -489,6 +511,8 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => FullWidth ? "bit-mnb-flw" : string.Empty);
 
+        ClassBuilder.Register(() => IconOnly ? "bit-mnb-ion" : string.Empty);
+
         ClassBuilder.Register(() => IsLoading ? "bit-mnb-lod" : string.Empty);
 
         ClassBuilder.Register(() => IsLoading && Reclickable ? "bit-mnb-rcl" : string.Empty);
@@ -517,6 +541,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     protected override async Task OnInitializedAsync()
     {
+        _menuId = $"BitMenuButton-{UniqueId}-menu";
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
 
@@ -1248,6 +1273,19 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         await OpenCallout();
     }
 
+    // The overlay takes the click that dismisses the menu, so the click never reaches a control of its own:
+    // whatever had the focus when the menu closed is either the trigger itself, or an item that is now
+    // hidden - and a hidden element losing the focus drops it on the document, taking the keyboard back to
+    // the top of the page (WCAG 2.4.3). So the trigger is given it back, the way Escape does.
+    private async Task HandleOnOverlayClick()
+    {
+        await CloseCallout();
+
+        StateHasChanged();
+
+        await FocusTrigger();
+    }
+
     internal async Task HandleOnItemClick(TItem item)
     {
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
@@ -1558,15 +1596,20 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         // rendered while the menu around it is still in the body - which is where it was moved from.
         await CloseSubmenusFrom(0);
 
-        // A menu that closes ends the search that was being typed into it, so the next one starts over
-        // rather than continuing a string the user can no longer see the matches of.
-        _typeahead = string.Empty;
-        _typeaheadCalloutId = string.Empty;
-        _typeaheadAt = DateTimeOffset.MinValue;
+        ResetTypeahead();
 
         if (await AssignIsOpen(false) is false) return;
 
         await ToggleCallout();
+    }
+
+    // A menu that closes ends the search that was being typed into it, so the next one starts over rather
+    // than continuing a string the user can no longer see the matches of.
+    private void ResetTypeahead()
+    {
+        _typeahead = string.Empty;
+        _typeaheadCalloutId = string.Empty;
+        _typeaheadAt = DateTimeOffset.MinValue;
     }
 
     // The loading state guards the click from the moment it starts, but the spinner is held back for

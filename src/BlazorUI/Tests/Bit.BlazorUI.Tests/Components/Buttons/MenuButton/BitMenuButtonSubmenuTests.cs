@@ -133,7 +133,8 @@ public class BitMenuButtonSubmenuTests : BunitTestContext
         Assert.AreEqual("true", parentItem.GetAttribute("aria-expanded"));
         Assert.AreEqual(parentItem.Id, com.Find(".bit-mnb-sub ul").GetAttribute("aria-labelledby"));
         Assert.IsTrue(parentItem.ClassList.Contains("bit-mnb-osb"));
-        Assert.IsNotNull(parentItem.GetAttribute("aria-controls"));
+        // aria-controls names the submenu itself rather than the callout that carries it (the APG pattern).
+        Assert.AreEqual(com.Find(".bit-mnb-sub ul").Id, parentItem.GetAttribute("aria-controls"));
 
         // Clicking it again walks back out of the submenu.
         com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1].Click();

@@ -199,6 +199,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "IconOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the header button as its icon alone: the text and the chevron beside it are dropped and the button becomes a square of the control's own height - the overflow trigger of a toolbar or a row. It then has no text to be named by, so give it an AriaLabel. In split mode only the main half is squared up, since the chevron half is the only way into the menu.",
+        },
+        new()
+        {
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
@@ -500,7 +507,7 @@ public partial class BitMenuButtonDemo
         {
             Name = "--bit-MenuButton-min-height",
             DefaultValue = "--bit-siz-ctrl-sm/md/lg per Size",
-            Description = "Smallest height of the button, and the width of the chevron half unless that is set on its own. It is a floor, so the button still grows with a taller icon or a wrapped label.",
+            Description = "Smallest height of the button, the width of the chevron half unless that is set on its own, and the width of an IconOnly header. It is a floor, so the button still grows with a taller icon or a wrapped label.",
         },
         new()
         {

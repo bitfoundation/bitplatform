@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The basic usage of BitMenuButton with the Items parameter accepting instances of a custom generic class, whose
         properties are mapped using the NameSelectors parameter.
@@ -87,8 +87,10 @@
 <DemoExample Title="Icons" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5"
              PreventRenderForMcpClient>
     <div>
-        IconName sets the header icon, ChevronDownIconName replaces the chevron, and each item carries its own icon.
-        NoIcon drops the header icon, including the icon of the selected item in Sticky mode.
+        IconName sets the header icon, ChevronDownIconName replaces the chevron - which turns over while the menu is open - and each item carries its own icon.
+        NoIcon drops the header icon, including the icon of the selected item in Sticky mode. IconOnly drops the
+        text and the chevron instead, squaring the header into the overflow trigger of a toolbar or a row - give
+        it an AriaLabel, since it has no text left to be named by.
     </div>
     <br />
     <div class="example-content">
@@ -104,6 +106,17 @@
         <BitMenuButton Text="No icon" Items="basicIconCustoms" NameSelectors="nameSelectors"
                        IconName="@BitIconName.Edit" NoIcon />
         <BitMenuButton Sticky Items="basicIconCustoms" NameSelectors="nameSelectors" NoIcon />
+    </div>
+    <br /><br />
+    <div>IconOnly:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More"
+                       Items="basicIconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Text" />
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More"
+                       Items="basicIconCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
+        <BitMenuButton IconOnly Split AriaLabel="Save" IconName="@BitIconName.Save"
+                       Items="basicIconCustoms" NameSelectors="nameSelectors" />
     </div>
 </DemoExample>
 
@@ -396,7 +409,7 @@
         <BitMenuButton Split Text="Save" Title="Save the document" ChevronDownTitle="More save options"
                        ChevronDownAriaLabel="More save options" Items="basicIconCustoms"
                        NameSelectors="nameSelectors" />
-        <BitMenuButton AriaLabel="More actions" IconName="@BitIconName.More" Items="ariaLabelCustoms"
+        <BitMenuButton IconOnly AriaLabel="More actions" IconName="@BitIconName.More" Items="ariaLabelCustoms"
                        NameSelectors="nameSelectors" Variant="BitVariant.Text" />
         <BitMenuButton Text="Disabled items" Items="basicIconCustoms" NameSelectors="nameSelectors"
                        DisabledInteractive Variant="BitVariant.Outline" />
@@ -1148,8 +1161,9 @@
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the
-        component, and the public CSS variables - set on the Style for the button and on Styles.Callout for the menu,
-        which is rendered outside the root element.
+        component, and the public CSS variables - set on the Style for the button, on Styles.Callout for the menu
+        (which is rendered outside the root element), and on the Style of a single item for that row alone, which is
+        how one destructive command is coloured without a class.
     </div>
     <br />
     <div><b>Component's Style & Class</b>:</div>
@@ -1207,6 +1221,9 @@
                                                "--bit-MenuButton-item-min-height: 2.5rem;" +
                                                "--bit-MenuButton-item-hover-background: #ede9fe;" +
                                                "--bit-MenuButton-item-focus-color: #6d28d9;" })" />
+    <br /><br />
+    <BitMenuButton Text="Actions" IconName="@BitIconName.Settings" Items="destructiveCustoms"
+                   NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"

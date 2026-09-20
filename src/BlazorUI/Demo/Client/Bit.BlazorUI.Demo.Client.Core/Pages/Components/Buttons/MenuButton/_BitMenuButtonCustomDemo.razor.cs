@@ -122,6 +122,20 @@ public partial class _BitMenuButtonCustomDemo
         new() { Name = "Custom C (Classed)", Id = "C", Image = BitIconName.Emoji2, Class = "custom-item" },
     ];
 
+    private static List<Operation> destructiveCustoms =
+    [
+        new() { Name = "Edit", Id = "edit", Image = BitIconName.Edit },
+        new() { Name = "Duplicate", Id = "duplicate", Image = BitIconName.Copy },
+        new() { IsDivider = true },
+        new()
+        {
+            Name = "Delete",
+            Id = "delete",
+            Image = BitIconName.Delete,
+            Style = "--bit-MenuButton-item-color: var(--bit-clr-err);"
+        }
+    ];
+
     private static List<Operation> isSelectedCustoms =
     [
         new() { Name = "Custom A", Id = "A", Image = BitIconName.Emoji },

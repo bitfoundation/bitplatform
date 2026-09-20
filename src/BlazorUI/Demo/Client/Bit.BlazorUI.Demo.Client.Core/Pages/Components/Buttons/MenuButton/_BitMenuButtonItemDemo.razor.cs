@@ -38,6 +38,20 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Item B (Classed)", Key = "C", IconName = BitIconName.Emoji2, Class = "custom-item" }
     ];
 
+    private static List<BitMenuButtonItem> destructiveItems =
+    [
+        new() { Text = "Edit", Key = "edit", IconName = BitIconName.Edit },
+        new() { Text = "Duplicate", Key = "duplicate", IconName = BitIconName.Copy },
+        new() { IsSeparator = true },
+        new()
+        {
+            Text = "Delete",
+            Key = "delete",
+            IconName = BitIconName.Delete,
+            Style = "--bit-MenuButton-item-color: var(--bit-clr-err);"
+        }
+    ];
+
     private static List<BitMenuButtonItem> basicItemsOnClick =
     [
         new() { Text = "Item A", Key = "A", IconName = BitIconName.Emoji },

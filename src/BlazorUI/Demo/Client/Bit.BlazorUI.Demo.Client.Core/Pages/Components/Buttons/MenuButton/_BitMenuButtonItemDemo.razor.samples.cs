@@ -72,7 +72,11 @@ private List<BitMenuButtonItem> basicItems =
 <BitMenuButton Text=""ChevronDownIconName"" Items=""basicItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />
 
 <BitMenuButton Text=""No icon"" Items=""basicItemsIcon"" IconName=""@BitIconName.Edit"" NoIcon />
-<BitMenuButton Sticky Items=""basicItemsIcon"" NoIcon />";
+<BitMenuButton Sticky Items=""basicItemsIcon"" NoIcon />
+
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""basicItemsIcon"" Variant=""BitVariant.Text"" />
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""basicItemsIcon"" Variant=""BitVariant.Outline"" />
+<BitMenuButton IconOnly Split AriaLabel=""Save"" IconName=""@BitIconName.Save"" Items=""basicItemsIcon"" />";
 
     private readonly string example5CsharpCode = @"
 private List<BitMenuButtonItem> basicItemsIcon =
@@ -403,7 +407,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 <BitMenuButton Split Text=""Save"" Title=""Save the document"" ChevronDownTitle=""More save options""
                ChevronDownAriaLabel=""More save options"" Items=""basicItemsIcon"" />
 
-<BitMenuButton AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""ariaLabelItems"" Variant=""BitVariant.Text"" />
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""ariaLabelItems"" Variant=""BitVariant.Text"" />
 
 <BitMenuButton Text=""Disabled items"" Items=""basicItemsIcon"" DisabledInteractive Variant=""BitVariant.Outline"" />";
 
@@ -958,7 +962,9 @@ private List<BitMenuButtonItem> basicItems =
                Styles=""@(new() { Callout = ""--bit-MenuButton-callout-radius: 0.75rem;"" +
                                            ""--bit-MenuButton-item-min-height: 2.5rem;"" +
                                            ""--bit-MenuButton-item-hover-background: #ede9fe;"" +
-                                           ""--bit-MenuButton-item-focus-color: #6d28d9;"" })"" />";
+                                           ""--bit-MenuButton-item-focus-color: #6d28d9;"" })"" />
+
+<BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" Items=""destructiveItems"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example22CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
@@ -973,6 +979,14 @@ private static List<BitMenuButtonItem> itemStyleClassItems =
     new() { Text = ""Item A (Default)"", Key = ""A"", IconName = BitIconName.Emoji, Style = ""color: brown"" },
     new() { Text = ""Item C (Styled)"", Key = ""B"", IconName = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
     new() { Text = ""Item B (Classed)"", Key = ""C"", IconName = BitIconName.Emoji2, Class = ""custom-item"" }
+];
+
+private static List<BitMenuButtonItem> destructiveItems =
+[
+    new() { Text = ""Edit"", Key = ""edit"", IconName = BitIconName.Edit },
+    new() { Text = ""Duplicate"", Key = ""duplicate"", IconName = BitIconName.Copy },
+    new() { IsSeparator = true },
+    new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete, Style = ""--bit-MenuButton-item-color: var(--bit-clr-err);"" }
 ];";
 
     private readonly string example23RazorCode = @"

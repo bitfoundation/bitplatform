@@ -137,12 +137,15 @@
             {
                 @* The items are never in the tab sequence: the menu is entered by opening it, and the focus is
                    moved between the items with the arrow keys from there (the APG menu button pattern), so a
-                   tabindex of 0 would put every row of an open menu into the page's tab order. *@
+                   tabindex of 0 would put every row of an open menu into the page's tab order.
+                   Only a row that opens a submenu carries an id: the submenu is named after it, and it names
+                   the submenu back while that is open.
+                   Every note about the button stays out here rather than between its attributes: a Razor
+                   comment is markup, and inside a tag it is parsed as attributes instead - which renders
+                   every word of it onto the element. *@
                 <button @ref="_itemRef" @attributes="pointerAttributes"
                         @onclick="HandleOnClick" @onclick:stopPropagation
                         role="@role"
-                        @* Only a row that opens a submenu is pointed at by anything: the submenu is named
-                           after it, and it names the submenu back while that is open. *@
                         id="@(hasSubmenu ? _itemId : null)"
                         form="@(hasSubmenu ? null : MenuButton.FormId)"
                         type="@(hasSubmenu ? "button" : MenuButton._buttonType.GetValue())"
@@ -153,7 +156,7 @@
                         aria-label="@MenuButton.GetAriaLabel(Item)"
                         aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                         aria-haspopup="@(hasSubmenu ? "menu" : null)"
-                        aria-controls="@(hasSubmenu && _isSubmenuOpen ? _submenuId : null)"
+                        aria-controls="@(hasSubmenu && _isSubmenuOpen ? _submenuMenuId : null)"
                         aria-expanded="@(hasSubmenu ? _isSubmenuOpen.ToString().ToLower() : null)"
                         style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
                         class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @(_isSubmenuOpen ? "bit-mnb-osb" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
@@ -176,6 +179,7 @@
                      style="@MenuButton.Styles?.Submenu"
                      class="bit-mnb-cal bit-mnb-sub @MenuButton.GetMenuCalloutCss(_isSubmenuOpen) @MenuButton.Classes?.Submenu">
                     <ul role="menu"
+                        id="@_submenuMenuId"
                         aria-labelledby="@_itemId"
                         style="@MenuButton.Styles?.CalloutContainer"
                         class="bit-mnb-cul @MenuButton.Classes?.CalloutContainer">

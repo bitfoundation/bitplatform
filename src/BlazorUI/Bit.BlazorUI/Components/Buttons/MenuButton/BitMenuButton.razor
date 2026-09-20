@@ -61,7 +61,7 @@
             aria-busy="@(IsLoading ? "true" : null)"
             aria-describedby="@describedByValue"
             aria-haspopup="@(Split ? null : "menu")"
-            aria-controls="@(Split ? null : _calloutId)"
+            aria-controls="@(Split ? null : _menuId)"
             aria-expanded="@(Split ? null : IsOpen.ToString().ToLower())"
             style="@GetStyle(_selectedItem);@Styles?.OperatorButton"
             class="bit-mnb-opb @GetClass(_selectedItem) @Classes?.OperatorButton"
@@ -92,9 +92,12 @@
                 {
                     <i aria-hidden="true" style="@Styles?.OperatorButtonIcon" class="bit-mnb-ico @icon.GetCssClasses() @Classes?.OperatorButtonIcon" />
                 }
-                <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
-                    @(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
-                </span>
+                @if (IconOnly is false)
+                {
+                    <span style="@Styles?.OperatorButtonText" class="bit-mnb-btx @Classes?.OperatorButtonText">
+                        @(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : GetText(_selectedItem))
+                    </span>
+                }
             }
         }
         else
@@ -119,14 +122,16 @@
                     <i aria-hidden="true" style="@Styles?.Icon" class="bit-mnb-ico @headerIcon.GetCssClasses() @Classes?.Icon" />
                 }
 
-                @if (Text.HasValue() || (_showLoading && LoadingLabel.HasValue()))
+                @if (IconOnly is false && (Text.HasValue() || (_showLoading && LoadingLabel.HasValue())))
                 {
                     <span style="@Styles?.Text" class="bit-mnb-btx @Classes?.Text">@(_showLoading && LoadingLabel.HasValue() ? LoadingLabel : Text)</span>
                 }
             }
         }
 
-        @if (Split is false)
+        @* An icon-only header is its glyph and nothing else, so the chevron goes with the text. What the
+           button does is still announced: aria-haspopup and aria-expanded are on the button itself. *@
+        @if (Split is false && IconOnly is false)
         {
             <i aria-hidden="true" style="@Styles?.ChevronDown" class="bit-mnb-chv @chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
         }
@@ -146,7 +151,7 @@
                 tabindex="@tabIndex"
                 disabled="@(IsEnabled is false && DisabledInteractive is false)"
                 aria-haspopup="menu"
-                aria-controls="@_calloutId"
+                aria-controls="@_menuId"
                 aria-label="@chevronLabel"
                 aria-hidden="@(ariaHidden ? "true" : null)"
                 aria-disabled="@(IsEnabled ? null : "true")"
@@ -175,7 +180,7 @@
     <span id="@descriptionId" class="bit-mnb-dsc">@AriaDescription</span>
 }
 
-<div @onclick="CloseCallout" @onclick:stopPropagation
+<div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
      aria-hidden="true"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
@@ -187,6 +192,7 @@
      style="@GetCalloutStyle()"
      class="bit-mnb-cal @GetCalloutCss() @Classes?.Callout">
     <ul role="menu"
+        id="@_menuId"
         aria-labelledby="@(_Id + (Split ? "-chb" : "-opb"))"
         style="@Styles?.CalloutContainer"
         class="bit-mnb-cul @Classes?.CalloutContainer">

@@ -18,7 +18,8 @@
 //   --bit-MenuButton-disabled-background       background when disabled                        (default: per variant, the role's dis color)
 //   --bit-MenuButton-disabled-border-color     border color when disabled                      (default: the disabled background)
 //   --bit-MenuButton-focus-color               focus ring color                                (default: the role's focus color)
-//   --bit-MenuButton-min-height                smallest height of the button                   (default: per size, $siz-ctrl-*)
+//   --bit-MenuButton-min-height                smallest height of the button, and the width of
+//                                              the chevron half and of an IconOnly header       (default: per size, $siz-ctrl-*)
 //   --bit-MenuButton-padding                   padding of each half of the button              (default: per size)
 //   --bit-MenuButton-gap                       room between the icon, the text and the chevron (default: spacing(1))
 //   --bit-MenuButton-font-size                 text size of the button and of the items        (default: per size, from the type ramp)
@@ -147,6 +148,19 @@
     font-size: var(--bit-MenuButton-icon-size, var(--bit-mnb-icon-size));
 }
 
+// The chevron turns over while the menu is open, so the state of the button can be read off it rather than
+// only off the menu underneath it. The independent `rotate` property is used rather than a transform so
+// that it composes with the one an icon class of its own may already apply - the default chevron is a
+// right-pointing one turned down by `bit-ico-r90` - which keeps the flip correct for any icon swapped in.
+.bit-mnb-chv {
+    rotate: 0deg;
+    transition: rotate $mot-duration-short $mot-easing;
+}
+
+.bit-mnb-omn .bit-mnb-chv {
+    rotate: 180deg;
+}
+
 .bit-mnb-opb,
 .bit-mnb-chb {
     display: flex;
@@ -195,6 +209,14 @@
     // The chevron half is a square of the control's own height, the way every icon button in the library is,
     // so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
     width: var(--bit-MenuButton-chevron-width, var(--bit-mnb-min-height));
+    padding: var(--bit-MenuButton-padding, var(--bit-mnb-pad-y));
+}
+
+// An icon-only header is a square of the control's own height, the way every icon button in the library is,
+// so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too. The width is a
+// floor rather than a size, so FullWidth still stretches the button and a split one still shares the row.
+.bit-mnb-ion > .bit-mnb-opb {
+    min-width: var(--bit-MenuButton-min-height, var(--bit-mnb-min-height));
     padding: var(--bit-MenuButton-padding, var(--bit-mnb-pad-y));
 }
 

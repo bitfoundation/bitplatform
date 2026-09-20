@@ -136,7 +136,11 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 <BitMenuButton Text=""ChevronDownIconName"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />
 
 <BitMenuButton Text=""No icon"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" IconName=""@BitIconName.Edit"" NoIcon />
-<BitMenuButton Sticky Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" NoIcon />";
+<BitMenuButton Sticky Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" NoIcon />
+
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />
+<BitMenuButton IconOnly Split AriaLabel=""Save"" IconName=""@BitIconName.Save"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" />";
 
     private readonly string example5CsharpCode = @"
 public class Operation
@@ -627,7 +631,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
 <BitMenuButton Split Text=""Save"" Title=""Save the document"" ChevronDownTitle=""More save options""
                ChevronDownAriaLabel=""More save options"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors"" />
 
-<BitMenuButton AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""ariaLabelCustoms""
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Items=""ariaLabelCustoms""
                NameSelectors=""nameSelectors"" Variant=""BitVariant.Text"" />
 
 <BitMenuButton Text=""Disabled items"" Items=""basicIconCustoms"" NameSelectors=""nameSelectors""
@@ -1296,7 +1300,9 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
                Styles=""@(new() { Callout = ""--bit-MenuButton-callout-radius: 0.75rem;"" +
                                            ""--bit-MenuButton-item-min-height: 2.5rem;"" +
                                            ""--bit-MenuButton-item-hover-background: #ede9fe;"" +
-                                           ""--bit-MenuButton-item-focus-color: #6d28d9;"" })"" />";
+                                           ""--bit-MenuButton-item-focus-color: #6d28d9;"" })"" />
+
+<BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" Items=""destructiveCustoms"" NameSelectors=""nameSelectors"" Variant=""BitVariant.Outline"" />";
 
     private readonly string example22CsharpCode = @"
 public class Operation
@@ -1312,6 +1318,14 @@ private static List<Operation> itemStyleClassCustoms =
     new() { Name = ""Custom A (Default)"", Id = ""A"", Image = BitIconName.Emoji, Style = ""color: brown"" },
     new() { Name = ""Custom B (Styled)"", Id = ""B"", Image = BitIconName.Emoji, Style = ""color: tomato; border-color: brown; background-color: peachpuff;"" },
     new() { Name = ""Custom C (Classed)"", Id = ""C"", Image = BitIconName.Emoji2, Class = ""custom-item"" },
+];
+
+private static List<Operation> destructiveCustoms =
+[
+    new() { Name = ""Edit"", Id = ""edit"", Image = BitIconName.Edit },
+    new() { Name = ""Duplicate"", Id = ""duplicate"", Image = BitIconName.Copy },
+    new() { IsDivider = true },
+    new() { Name = ""Delete"", Id = ""delete"", Image = BitIconName.Delete, Style = ""--bit-MenuButton-item-color: var(--bit-clr-err);"" }
 ];
 
 private BitMenuButtonNameSelectors<Operation> nameSelectors = new()

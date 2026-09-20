@@ -190,6 +190,24 @@ public partial class _BitMenuButtonOptionDemo
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton IconOnly Split AriaLabel=""Save"" IconName=""@BitIconName.Save"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
     private readonly string example6RazorCode = @"
@@ -538,7 +556,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
-<BitMenuButton AriaLabel=""More actions"" IconName=""@BitIconName.More"" Variant=""BitVariant.Text"" TItem=""BitMenuButtonOption"">
+<BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" Variant=""BitVariant.Text"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Key=""share"" IconName=""@BitIconName.Share"" AriaLabel=""Share this page"" />
     <BitMenuButtonOption Key=""print"" IconName=""@BitIconName.Print"" AriaLabel=""Print this page"" />
 </BitMenuButton>
@@ -1991,6 +2009,13 @@ private async Task HandleOnRefreshClick() => await Task.Delay(300);";
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"">
+    <BitMenuButtonOption Text=""Edit"" Key=""edit"" IconName=""@BitIconName.Edit"" />
+    <BitMenuButtonOption Text=""Duplicate"" Key=""duplicate"" IconName=""@BitIconName.Copy"" />
+    <BitMenuButtonOption IsSeparator />
+    <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" Style=""--bit-MenuButton-item-color: var(--bit-clr-err);"" />
 </BitMenuButton>";
 
     private readonly string example23RazorCode = @"

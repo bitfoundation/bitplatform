@@ -48,6 +48,9 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
     private string _itemId => $"BitMenuButton-{_uniqueId}-item";
     private string _submenuId => $"BitMenuButton-{_uniqueId}-submenu";
+    // The menu inside the submenu's callout, which is what the row points at: aria-controls names the
+    // popup itself rather than the element that carries it.
+    private string _submenuMenuId => $"BitMenuButton-{_uniqueId}-submenu-menu";
 
     // The Option API knows it has a submenu from the fragment it was given rather than from the options
     // inside it: those only register once they render, which is inside the submenu this decides to draw.

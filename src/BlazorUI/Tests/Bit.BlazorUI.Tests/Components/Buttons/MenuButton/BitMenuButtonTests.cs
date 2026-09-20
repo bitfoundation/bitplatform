@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -442,11 +442,13 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("menu", operatorButton.GetAttribute("aria-haspopup"));
         Assert.AreEqual("false", operatorButton.GetAttribute("aria-expanded"));
-        Assert.IsNotNull(operatorButton.GetAttribute("aria-controls"));
 
         var menu = com.Find(".bit-mnb-cul");
         Assert.AreEqual("menu", menu.GetAttribute("role"));
         Assert.IsNotNull(menu.GetAttribute("aria-labelledby"));
+
+        // aria-controls names the menu itself rather than the callout that carries it (the APG pattern).
+        Assert.AreEqual(menu.Id, operatorButton.GetAttribute("aria-controls"));
     }
 
     [TestMethod]
@@ -463,7 +465,7 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("menu", chevronButton.GetAttribute("aria-haspopup"));
         Assert.AreEqual("false", chevronButton.GetAttribute("aria-expanded"));
-        Assert.IsNotNull(chevronButton.GetAttribute("aria-controls"));
+        Assert.AreEqual(com.Find(".bit-mnb-cul").Id, chevronButton.GetAttribute("aria-controls"));
         Assert.AreEqual("Open menu", chevronButton.GetAttribute("aria-label"));
 
         var operatorButton = com.Find(".bit-mnb-opb");
@@ -1294,6 +1296,95 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.IsFalse(items[0].Selected);
         Assert.IsTrue(items[1].Selected);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonOverlayClickShouldCloseTheCallout()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+        Assert.IsTrue(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-omn"));
+
+        // The overlay takes the click that dismisses the menu, and hands the focus back to the trigger with it.
+        com.Find(".bit-mnb-ovl").Click();
+        Assert.IsFalse(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-omn"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldRenderOnlyTheAttributesItDeclares()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        // A Razor comment written inside a tag is parsed as attributes rather than as a comment, which puts
+        // every word of it on the element. The rendered markup is checked for the one character that can
+        // only have come from one.
+        foreach (var element in com.FindAll(".bit-mnb, .bit-mnb-opb, .bit-mnb-itm"))
+        {
+            foreach (var attribute in element.Attributes)
+            {
+                Assert.IsFalse(attribute.Name.Contains('@'), $"Unexpected attribute '{attribute.Name}'.");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BitMenuButtonIconOnlyShouldDropTheTextAndTheChevron()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Text, "More");
+            parameters.Add(p => p.IconName, "More");
+            parameters.Add(p => p.AriaLabel, "More actions");
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-mnb").ClassList.Contains("bit-mnb-ion"));
+        Assert.IsNotNull(com.Find(".bit-mnb-opb .bit-icon--More"));
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-chv").Count);
+
+        // The button has no text left, so what says what it does is its name and its popup semantics.
+        var operatorButton = com.Find(".bit-mnb-opb");
+        Assert.AreEqual("More actions", operatorButton.GetAttribute("aria-label"));
+        Assert.AreEqual("menu", operatorButton.GetAttribute("aria-haspopup"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonIconOnlySplitShouldKeepTheChevronHalf()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Text, "Save");
+            parameters.Add(p => p.IconName, "Save");
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.Split, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
+        // The chevron half is the only way into the menu of a split button, so it stays whatever the header does.
+        Assert.IsNotNull(com.Find(".bit-mnb-chb .bit-mnb-chv"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonIconOnlyStickyShouldDropTheSelectedItemText()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.IconOnly, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
     }
 
     private class RadioModel
