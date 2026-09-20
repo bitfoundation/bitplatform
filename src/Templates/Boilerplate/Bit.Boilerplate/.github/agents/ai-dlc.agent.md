@@ -95,7 +95,7 @@ The features below were switched **off** when this project was generated from th
 *   **Offline database** (`offlineDb`): a client-side EF Core `DbContext` so the app can store and query its data on the device.
 <!--#endif-->
 <!--#if (module != "Admin")-->
-*   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and the `BitDataGrid` CRUD pages with their controllers: categories, edited in a modal popup, and products, edited on a page of their own.
+*   **Admin panel module** (`module=Admin`): the dashboard - its widgets and charts - and `BitDataGrid` CRUD pages with their controllers, one editing its rows in a modal popup and one on a page of its own.
 <!--#endif-->
 
 When the user asks for one of these, or you conclude the task needs it:
@@ -110,5 +110,5 @@ When the user asks for one of these, or you conclude the task needs it:
 - Always complete phases 1-2 before writing any code
 - Keep the user informed of phase transitions
 - If blocked, explain why and propose alternatives - never silently skip work
-- This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the repository for it - a page, service or pattern to copy is usually already here
+- This project was generated from a project template that ships TOO MANY features, so before building anything "new", search the project for it - a page, service or pattern to copy is usually already here
 - Limit each task to a single concern; avoid batching unrelated changes

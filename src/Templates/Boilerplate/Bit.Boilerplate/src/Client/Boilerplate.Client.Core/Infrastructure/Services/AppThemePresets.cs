@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 /// <summary>
@@ -19,6 +20,11 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// </remarks>
 public static class AppThemePresets
 {
+    //#if (IsInsideProjectTemplate == true)
+    // These two name the Fluent 2 preset only because the template itself has to compile: template.json's
+    // themeLightConstant / themeDarkConstant generators rewrite this text to the design system the project is
+    // created with, and this file is the only place left that spells one out - so it is the only place they reach.
+    //#endif
     public const string Light = BitExtraThemePresets.Fluent2Light;
 
     public const string Dark = BitExtraThemePresets.Fluent2Dark;

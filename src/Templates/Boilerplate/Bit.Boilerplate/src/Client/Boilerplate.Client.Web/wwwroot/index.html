@@ -15,8 +15,8 @@
     <base href="/">
     <meta charset="utf-8">
     <!-- [mirror] The PWA status bar / browser chrome color. A static page cannot read them off
-         AppThemePresets the way the other heads do, so these two must equal its fluent2-light / fluent2-dark
-         backgrounds - which the native apps paint their status bar with too, so an installed PWA looks like them.
+         AppThemePresets the way the other heads do, so these two must equal its light / dark backgrounds - which
+         the native apps paint their status bar with too, so an installed PWA looks like them.
          The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags with the live --bit-clr-bg-pri on every theme or accent change, so a
          theme pinned against the OS, or a picked accent, wins as well. Keep in sync with: src/Client/Boilerplate.Client.Maui/wwwroot/index.html,
          src/Client/Boilerplate.Client.Web/wwwroot/manifest.json, src/Server/Boilerplate.Server.Web/Components/App.razor -->
