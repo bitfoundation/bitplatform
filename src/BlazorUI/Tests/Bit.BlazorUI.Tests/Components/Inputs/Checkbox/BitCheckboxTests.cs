@@ -586,6 +586,8 @@ public class BitCheckboxTests : BunitTestContext
     /// The native disabled attribute is what keeps a disabled checkbox out of its form and out of that
     /// form's validation, so a checkbox kept focusable - which trades that attribute away - has to be kept
     /// out of both by hand. An unchecked required one would otherwise block the very submit it cannot join.
+    /// The requirement is still announced though: the checkbox is reachable, so it is read out, and it must
+    /// not be read out as optional.
     /// </summary>
     [TestMethod]
     public void BitCheckboxDisabledButFocusableIsNotSubmittedOrRequiredTest()
@@ -604,11 +606,35 @@ public class BitCheckboxTests : BunitTestContext
         Assert.IsFalse(input.HasAttribute("disabled"));
         Assert.IsFalse(input.HasAttribute("name"));
         Assert.IsFalse(input.HasAttribute("required"));
+        Assert.AreEqual("true", input.GetAttribute("aria-required"));
 
         component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
 
         Assert.AreEqual("terms", component.Find("input").GetAttribute("name"));
         Assert.IsTrue(component.Find("input").HasAttribute("required"));
+        Assert.IsFalse(component.Find("input").HasAttribute("aria-required"));
+    }
+
+    /// <summary>
+    /// A disabled checkbox that is not kept focusable carries the native disabled attribute instead, which
+    /// already drops it out of the form - but aria-required is written all the same, so that the two
+    /// disabled checkboxes say the same thing about themselves whichever way they were disabled.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxDisabledRequiredIsStillAnnouncedAsRequiredTest()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Label");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var input = component.Find("input");
+
+        Assert.IsTrue(input.HasAttribute("disabled"));
+        Assert.IsFalse(input.HasAttribute("required"));
+        Assert.AreEqual("true", input.GetAttribute("aria-required"));
     }
 
     /// <summary>

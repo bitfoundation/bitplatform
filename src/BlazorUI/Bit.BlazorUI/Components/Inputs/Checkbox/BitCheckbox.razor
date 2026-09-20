@@ -39,9 +39,12 @@
     // A read-only checkbox is serialized like any other, but the native required is dropped for the same
     // reason it is on a disabled one: an unchecked box nobody is allowed to check would refuse the submit
     // with a browser message asking for a click that does nothing. The requirement is still announced -
-    // and still enforced by whatever validates the model - it just stops being a trap.
+    // and still enforced by whatever validates the model - it just stops being a trap. So aria-required
+    // stands in wherever the attribute was dropped, read-only or disabled alike: a disabled checkbox that
+    // AllowDisabledFocus keeps in the tab order is still reached and still read out, and the one thing it
+    // must not do is read out as optional.
     var required = Required && IsEnabled && ReadOnly is false;
-    var ariaRequired = Required && IsEnabled && ReadOnly ? "true" : GetSplattedInputAttribute("aria-required");
+    var ariaRequired = Required && required is false ? "true" : GetSplattedInputAttribute("aria-required");
 
     // The mixed state of a native checkbox lives in its `indeterminate` DOM property, which is not an
     // attribute and cannot be rendered: it is pushed from JavaScript after the element exists. So until

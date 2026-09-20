@@ -746,6 +746,7 @@ public partial class BitCheckboxDemo
     private bool twoWayIndeterminate = true;
 
     private string eventsLog = string.Empty;
+    private bool eventsCycleEnded;
     private int cancelledCounter;
     private int containerClickCounter;
     private bool allowChange;
@@ -786,19 +787,37 @@ public partial class BitCheckboxDemo
         selectAllIndeterminate = checkedCount is > 0 and < 3;
     }
 
-    private void LogOnClick() => eventsLog = "OnClick";
+    private void LogOnClick() => AppendEventLog("OnClick");
 
-    private void LogOnChanging(BitCheckboxChangeArgs args) => eventsLog += $" → OnChanging({args.Value})";
+    private void LogOnChanging(BitCheckboxChangeArgs args) => AppendEventLog($"OnChanging({args.Value})");
 
-    private void LogOnChange(bool value) => eventsLog += $" → OnChange({value})";
+    private void LogOnChange(bool value)
+    {
+        AppendEventLog($"OnChange({value})");
+        eventsCycleEnded = true;
+    }
 
-    private void LogOnFocus() => eventsLog = "OnFocus";
+    private void LogOnFocus() => AppendEventLog("OnFocus");
 
-    private void LogOnFocusIn() => eventsLog += " → OnFocusIn";
+    private void LogOnFocusIn() => AppendEventLog("OnFocusIn");
 
-    private void LogOnFocusOut() => eventsLog += " → OnFocusOut";
+    private void LogOnFocusOut() => AppendEventLog("OnFocusOut");
 
-    private void LogOnBlur() => eventsLog += " → OnBlur";
+    private void LogOnBlur() => AppendEventLog("OnBlur");
+
+    // Every callback appends, so the log is the order they actually fired in - the focus arriving is still
+    // on the line when the click that follows it is written. Only the first one after a completed click
+    // starts the line over, which is what keeps a second click from being read as part of the first.
+    private void AppendEventLog(string name)
+    {
+        if (eventsCycleEnded)
+        {
+            eventsLog = string.Empty;
+            eventsCycleEnded = false;
+        }
+
+        eventsLog += eventsLog.Length == 0 ? name : $" → {name}";
+    }
 
     private void HandleOnChanging(BitCheckboxChangeArgs args)
     {

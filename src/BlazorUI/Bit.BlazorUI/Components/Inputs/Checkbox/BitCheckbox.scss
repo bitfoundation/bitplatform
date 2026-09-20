@@ -267,6 +267,24 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+
+    // The asterisk sits at the end of the very line the ellipsis cuts, so on a clamped label it would be
+    // the first thing cut - and a required checkbox would stop looking required in exactly the stretched
+    // settings row that clamps it. It is taken out of the flow and pinned to the end of the label box
+    // instead, with the room it needs reserved as padding the ellipsis then stops short of.
+    &.bit-chb-req {
+        .bit-chb-txt,
+        .bit-chb-tpl {
+            position: relative;
+            padding-inline-end: calc(#{spacing(0.625)} + 1ch);
+
+            &::after {
+                position: absolute;
+                inset-inline-end: 0;
+                margin-inline-start: 0;
+            }
+        }
+    }
 }
 
 

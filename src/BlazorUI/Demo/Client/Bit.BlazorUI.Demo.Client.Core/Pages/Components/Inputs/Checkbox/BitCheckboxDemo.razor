@@ -302,9 +302,10 @@
         <br /><br /><br />
         <div>
             <b>Required</b> renders the native <b>required</b> attribute on the checkbox input and marks the label
-            with an asterisk - a templated label as well as a plain one. A read-only or disabled checkbox keeps
-            the asterisk but drops the native attribute, which would otherwise refuse the submit over a box
-            nobody is allowed to check:
+            with an asterisk - a templated label as well as a plain one. A read-only checkbox keeps the asterisk
+            but drops the native attribute, which would otherwise refuse the submit over a box nobody is allowed
+            to check; a disabled one drops both, since nothing is being asked of a control that is out of the
+            interaction. Either way the requirement is still announced, through <b>aria-required</b>:
         </div><br />
         <BitCheckbox Label="I accept the terms" Required />
         <br />
