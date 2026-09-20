@@ -81,7 +81,7 @@ public partial class BitLoadingDemo
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label of the loading component.",
+            Description = "The position of the label of the loading component. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

@@ -106,7 +106,7 @@ public partial class BitAccordionDemo
             Name = "ExpanderIconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End.",
+            Description = "Gets or sets the side of the header the expander icon sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

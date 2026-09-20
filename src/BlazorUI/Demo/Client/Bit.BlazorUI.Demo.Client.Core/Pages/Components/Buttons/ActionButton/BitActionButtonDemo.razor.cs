@@ -145,7 +145,7 @@ public partial class BitActionButtonDemo
             Name = "IconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

@@ -39,6 +39,12 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 - **A section only uses what has already been introduced.** A demo page is read from the top down, so
   a section may only use the parameters and the features its own section, or an earlier one, has
   introduced.
+- **A parameter typed with a library-wide enum links the shared table and names what it honours.**
+  `BitPlacement`, `BitPosition`, `BitShape`, `BitLineStyle` and `BitSelectionMode` are written once in
+  `Models/SharedSubEnums.cs`; a page adds the one it needs to its sub-enum list and points its row at
+  the table's stable id (`Href="#placement-enum"`). Which of the values a particular parameter honours
+  is the row's own `Description` - it is what the site renders and what the MCP server hands an agent,
+  and a component honouring four of nine values says nothing without it.
 - **A multi-API component's tabs stay aligned**: same sections, same order, same titles, same data
   (same labels, same number of button groups per section) - only the API differs.
 - **The samples match what is rendered.** `RazorCode` / `CsharpCode` are what a reader copies out, so
@@ -140,7 +146,7 @@ all it takes for it to appear in the catalog, the search index and the completio
   cannot read a schema).
 - **The server's `instructions`** (`BlazorUIMcpInstructions`) are all it says before being asked
   anything, so they carry only what a per-tool description cannot: which tool to call first, and the
-  six rules that decide whether markup that compiles also looks right. Nothing else on the server
+  seven rules that decide whether markup that compiles also looks right. Nothing else on the server
   restates them - the prompts point at them - and their counts are interpolated from the catalogs,
   never typed.
 - **Redundancy is designed out of the answers too.** A component's own types are documented in full;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.AccordionList;
 
 public partial class BitAccordionListDemo
 {
@@ -122,7 +122,7 @@ public partial class BitAccordionListDemo
             Name = "ExpanderIconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The side of the header the expander icon of all the items sits on. The default value is End.",
+            Description = "The side of the header the expander icon of all the items sits on. The default value is End. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon at the end.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

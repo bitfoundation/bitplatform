@@ -218,7 +218,7 @@ public partial class BitSnackBarDemo
             Name = "Position",
             Type = "BitPosition?",
             DefaultValue = "null",
-            Description = "The position of the snack bars to show (default is bottom right).",
+            Description = "The corner or edge of the screen the snack bars are stacked at (default is the bottom end). Start and End follow the reading direction; Left and Right stay on the same side of the screen in either.",
             LinkType = LinkType.Link,
             Href = "#position-enum"
         },

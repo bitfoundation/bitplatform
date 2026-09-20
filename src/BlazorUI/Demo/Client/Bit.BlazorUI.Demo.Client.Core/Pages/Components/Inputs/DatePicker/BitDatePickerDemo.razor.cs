@@ -384,7 +384,7 @@ public partial class BitDatePickerDemo
             Name = "IconPlacement",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.End",
-            Description = "Determines the side of the input the DatePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
+            Description = "Determines the side of the input the DatePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

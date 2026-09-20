@@ -99,7 +99,7 @@ public partial class BitProgressDemo
             LinkType = LinkType.Link,
             Href = "#placement-enum",
             DefaultValue = "BitPlacement.Bottom",
-            Description = "Where the GapDegree gap sits, which is also where the stroke of the gauge begins and ends. Reversed mirrors the gauge, so it swaps a Start gap with an End one and leaves a Top or a Bottom one where it is.",
+            Description = "Where the GapDegree gap sits, which is also where the stroke of the gauge begins and ends. Reversed mirrors the gauge, so it swaps a Start gap with an End one and leaves a Top or a Bottom one where it is. Only Top, Bottom, Start and End are honoured; any other side leaves the gap at the bottom.",
         },
         new()
         {

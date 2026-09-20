@@ -132,7 +132,7 @@ public partial class BitCheckboxDemo
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set.",
+            Description = "The position of the label in regards to the checkbox box. Takes precedence over Reversed when both are set. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

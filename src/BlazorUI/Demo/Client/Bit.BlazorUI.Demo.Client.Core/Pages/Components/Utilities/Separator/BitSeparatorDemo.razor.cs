@@ -9,7 +9,7 @@ public partial class BitSeparatorDemo
             Name = "AlignContent",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the content should be aligned in the separator. Defaults to the center of the line.",
+            Description = "Where the content should be aligned along the line of the separator. Only Start, Center and End are honoured; any other value, or none, centers the content.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

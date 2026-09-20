@@ -86,7 +86,7 @@ public partial class BitLinkDemo
             Name = "IconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the icon relative to the link content. The icon goes in front of the text by default; End puts it after the text.",
+            Description = "The position of the icon relative to the link content. The icon goes in front of the text by default; End puts it after the text. Only Start and End are honoured; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

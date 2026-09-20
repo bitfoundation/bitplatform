@@ -141,7 +141,7 @@ public partial class BitChoiceGroupDemo
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it. Items rendered as image or icon tiles lay their own content out and ignore this parameter.",
+            Description = "The position of the content of each item relative to its radio circle. Defaults to End, which renders the circle first and the content after it. Items rendered as image or icon tiles lay their own content out and ignore this parameter. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },

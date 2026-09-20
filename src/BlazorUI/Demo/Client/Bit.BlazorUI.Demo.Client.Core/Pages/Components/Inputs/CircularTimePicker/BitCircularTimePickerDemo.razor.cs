@@ -187,7 +187,7 @@ public partial class BitCircularTimePickerDemo
             LinkType = LinkType.Link,
             Href = "#placement-enum",
             DefaultValue = "BitPlacement.End",
-            Description = "Determines the side of the input the TimePicker's icon is rendered on. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
+            Description = "Determines the side of the input the TimePicker's icon is rendered on. Only Start and End are honoured; any other value leaves the icon on the end side. The side follows the reading direction: Start is the left of an LTR input and the right of an RTL one."
         },
         new()
         {

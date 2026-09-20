@@ -175,7 +175,7 @@ public partial class BitButtonDemo
             Name = "IconPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Gets or sets the position of the icon relative to the component's content.",
+            Description = "Gets or sets the position of the icon relative to the component's content. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -205,7 +205,7 @@ public partial class BitButtonDemo
             Name = "LoadingLabelPlacement",
             Type = "BitPlacement",
             DefaultValue = "BitPlacement.End",
-            Description = "The position of the loading Label in regards to the spinner icon.",
+            Description = "The position of the loading Label in regards to the spinner icon. Only Top, Bottom, Start and End are honoured; any other value falls back to the default.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

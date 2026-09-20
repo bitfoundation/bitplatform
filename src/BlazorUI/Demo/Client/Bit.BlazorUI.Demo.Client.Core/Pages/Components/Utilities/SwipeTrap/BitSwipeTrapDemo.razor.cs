@@ -186,7 +186,7 @@ public partial class BitSwipeTrapDemo
                     Name = "Direction",
                     Type = "BitPlacement",
                     DefaultValue = "",
-                    Description = "The swipe direction in which the action triggered.",
+                    Description = "The swipe direction in which the action triggered. It is always one of the physical four - Top, Bottom, Left or Right - read off the screen rather than off the reading direction.",
                     LinkType = LinkType.Link,
                     Href = "#placement-enum"
 

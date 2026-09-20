@@ -244,7 +244,7 @@ public partial class BitDropMenuDemo
             Name = "PanelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "The position of the responsive panel to show on the screen.",
+            Description = "The position of the responsive panel to show on the screen. Left and Right are read against the direction of the panel and land on Start or End; Center and the two combined values fall back to End.",
             LinkType = LinkType.Link,
             Href = "#placement-enum"
         },

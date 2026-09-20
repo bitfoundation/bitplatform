@@ -238,7 +238,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "LabelPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
+            Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one. Only Top, Bottom, Start and End are honoured; any other value leaves the layout as it is with this unset.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
