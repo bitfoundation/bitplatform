@@ -36,6 +36,20 @@
                 toggle
                 buttons that report <strong>aria-pressed</strong>. In every mode the group holds a single tab stop
                 (a roving tabindex) unless <BitTag Color="BitColor.SecondaryBackground">Navigable</BitTag> is disabled.
+                <br /><br />
+                Two behaviors follow the selection mode rather than a parameter, and both can be turned around:
+                <br />
+                1. In the <BitTag Color="BitColor.SecondaryBackground">Single</BitTag> mode the selection
+                <strong>follows the focus</strong>, as the WAI-ARIA radiogroup pattern expects, so an arrow key both
+                moves and selects. Set
+                <BitTag Color="BitColor.SecondaryBackground">SelectOnFocus="false"</BitTag> on a group whose selection
+                does real work, and the user then commits with Space or Enter.
+                <br />
+                2. While the <BitTag Color="BitColor.SecondaryBackground">MaxToggles</BitTag> cap is reached, the items
+                that are not toggled report themselves as <strong>aria-disabled</strong> and run nothing at all -
+                neither <BitTag Color="BitColor.SecondaryBackground">OnItemClick</BitTag> nor the item's own
+                <BitTag Color="BitColor.SecondaryBackground">OnClick</BitTag> - until one of the toggled items is
+                un-toggled.
             </BitText>
         </NotesTemplate>
         <Examples>

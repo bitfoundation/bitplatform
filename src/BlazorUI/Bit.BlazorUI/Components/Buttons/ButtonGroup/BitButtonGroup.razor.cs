@@ -151,6 +151,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// click that silently does nothing. They stay focusable, so the group is still navigable end to end, and they
     /// come back as soon as one of the toggled items is un-toggled.
     /// <br />
+    /// Stopping responding is the whole of it: an item reporting itself as aria-disabled runs nothing at all, so
+    /// neither <see cref="OnItemClick"/> nor the item's own OnClick is called while the cap holds it out of reach.
+    /// An action that has to run whatever the cap says belongs on an item outside the capped group, or on a group
+    /// that caps nothing.
+    /// <br />
     /// Capping a group at one item is <see cref="BitButtonGroupSelectionMode.Single"/> with an extra step - the user
     /// has to un-toggle before choosing again - and capping it at one while <see cref="FixedToggle"/> also forbids
     /// un-toggling the last item freezes the selection for good.
@@ -172,6 +177,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// The callback that is called when a button is clicked.
     /// </summary>
+    /// <remarks>
+    /// Only the buttons that are actually live call it: a disabled one kept clickable by
+    /// <see cref="DisabledInteractive"/>, a loading one, and one the <see cref="MaxToggles"/> cap reports as
+    /// aria-disabled all move the group's tab stop and do nothing else.
+    /// </remarks>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
@@ -330,6 +340,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
+        // The options already rendered are not re-rendered by the group, and an added one can change what they
+        // render: the tab stop moves to it when it comes before the one holding it, and an added toggled item can
+        // be what takes the toggle cap to its limit.
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -350,8 +364,23 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             _ = AssignToggleKeys(GetToggledKeys());
         }
 
+        // The tab stop is remembered by key and by reference, and both of them point at an option that is being
+        // disposed: left behind, the reference would keep it alive and the key would be handed back to whatever
+        // later option is given the same one. The next GetActiveItem then falls back to the toggled (or first)
+        // item, which is where a group that has lost the button the focus was on belongs.
+        if (IsFocusedItem(item) || (option.Key.HasValue() && option.Key == _focusedKey))
+        {
+            _focusedItem = null;
+            _focusedKey = null;
+        }
+
         _itemElements.Remove(item);
         _items.Remove(item);
+
+        // Each option renders its own button, so the group re-rendering does not re-render any of them: what the
+        // removal changes about the others - which one holds the tab stop, and whether the toggle cap still has
+        // them out of reach - is only written out once they are asked to render again.
+        RefreshOptions();
         StateHasChanged();
     }
 
@@ -723,6 +752,12 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     // reference instead, which is all such an item has to be told apart by.
     internal void HandleOnItemFocus(TItem item)
     {
+        // Only the items the navigation itself lands on may hold the tab stop. A disabled item is left out of it
+        // unless DisabledInteractive keeps it in, and a disabled link has no disabled attribute to stop a pointer
+        // press reaching this handler: pointed at one, the tab stop would name an item GetActiveItem skips over
+        // and would silently fall back to the toggled (or first) button.
+        if (IsItemFocusable(item) is false) return;
+
         var key = GetItemKey(item);
         if (key == _focusedKey && IsFocusedItem(item)) return;
 

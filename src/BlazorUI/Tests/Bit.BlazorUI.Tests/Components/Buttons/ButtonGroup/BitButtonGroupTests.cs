@@ -1229,6 +1229,35 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("true", comp.Find(".bit-btg").GetAttribute("aria-disabled"));
     }
 
+    [TestMethod]
+    public void BitButtonGroupShouldNotMoveTheTabStopToAnItemTheNavigationSkips()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b", Href = "/b", IsEnabled = false },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        comp.FindAll(".bit-btg-itm")[2].Focus();
+
+        Assert.AreEqual("0", comp.FindAll(".bit-btg-itm")[2].GetAttribute("tabindex"));
+
+        // A disabled link has no disabled attribute to stop a pointer press with, so the press still reaches the
+        // group. The tab stop belongs to the items the arrow keys navigate between, and that one is not among
+        // them: left to follow the press, it would be dropped where nothing matches it and would silently reset.
+        comp.FindAll(".bit-btg-itm")[1].Click();
+
+        Assert.AreEqual("0", comp.FindAll(".bit-btg-itm")[2].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", comp.FindAll(".bit-btg-itm")[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", comp.FindAll(".bit-btg-itm")[1].GetAttribute("tabindex"));
+    }
+
     public class KeylessButtonGroupItem
     {
         public string? Text { get; set; }
