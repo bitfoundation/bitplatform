@@ -7,6 +7,16 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitToggleButton : BitComponentBase
 {
+    /// <summary>
+    /// The roles a toggle button can be given by hand whose state is read from <c>aria-checked</c> rather than
+    /// from <c>aria-pressed</c>. Naming one of them describes the pattern; keeping the state in step with it is
+    /// then the component's job, not one more attribute for the page to write and forget to update.
+    /// </summary>
+    private static readonly string[] _ariaCheckedRoles =
+        ["checkbox", "menuitemcheckbox", "menuitemradio", "option", "radio", "switch", "treeitem"];
+
+
+
     private bool _showLoading;
     private int _pendingChanges;
     private CancellationTokenSource? _loadingDelayCts;
@@ -59,8 +69,8 @@ public partial class BitToggleButton : BitComponentBase
     /// announcing both makes the toggle button ambiguous.
     /// <br />
     /// <c>aria-pressed</c> is a state of the button role alone, so a <c>role</c> written on the component by hand -
-    /// a <c>menuitemcheckbox</c> in a menu, an <c>option</c> in a listbox - takes it with it whatever this mode says,
-    /// and the state that pattern reads (an <c>aria-checked</c>) is then the page's to write.
+    /// a <c>menuitemcheckbox</c> in a menu, an <c>option</c> in a listbox - takes it with it whatever this mode says.
+    /// Where that role reads <c>aria-checked</c> instead, the toggle button writes the checked state there by itself.
     /// </remarks>
     [Parameter] public BitToggleButtonAriaMode? AriaMode { get; set; }
 
@@ -70,8 +80,13 @@ public partial class BitToggleButton : BitComponentBase
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
-    /// If true, enters the loading state automatically while awaiting the click and change events, preventing subsequent clicks by default.
+    /// If true, enters the loading state automatically for as long as the <see cref="OnClick"/>,
+    /// <see cref="OnChanging"/> and <see cref="OnChange"/> callbacks take, preventing subsequent clicks by default.
     /// </summary>
+    /// <remarks>
+    /// The window opens before the first of them is invoked and closes once the last has returned, so an
+    /// asynchronous toggle needs no loading flag of its own. <see cref="ToggleAsync"/> takes the same path.
+    /// </remarks>
     [Parameter] public bool AutoLoading { get; set; }
 
     /// <summary>
@@ -114,8 +129,14 @@ public partial class BitToggleButton : BitComponentBase
     public bool FixedCheckMark { get; set; }
 
     /// <summary>
-    /// Preserves the foreground color of the toggle button through hover and focus.
+    /// Preserves the foreground color of the toggle button through hover and press.
     /// </summary>
+    /// <remarks>
+    /// The color it holds is the one that reads against the <see cref="Color"/> role, which is what the
+    /// <see cref="BitVariant.Outline"/> and <see cref="BitVariant.Text"/> variants swap in as soon as a fill
+    /// appears behind the content. With a background color those two otherwise draw the content in roughly the
+    /// color of the page at rest. A checked toggle button holds its checked foreground instead.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool FixedColor { get; set; }
 
@@ -438,8 +459,10 @@ public partial class BitToggleButton : BitComponentBase
 
         await ChangeIsChecked(IsChecked is false, autoLoading: true);
 
-        // unlike a click, a programmatic call has no event handler behind it to request a render
-        StateHasChanged();
+        // Unlike a click, a programmatic call has no event handler behind it to request a render - and no
+        // guarantee of arriving on the renderer's thread either, since the caller may be a timer or a
+        // background task, where StateHasChanged on its own throws.
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -770,7 +793,21 @@ public partial class BitToggleButton : BitComponentBase
         };
 
     private string? GetAriaChecked()
-        => AriaMode is BitToggleButtonAriaMode.Switch ? IsChecked.ToString().ToLower() : null;
+    {
+        if (AriaMode is BitToggleButtonAriaMode.Switch) return IsChecked.ToString().ToLower();
+
+        // These two named the state attribute themselves - none at all, or aria-expanded - so nothing is added
+        // beside what they asked for.
+        if (AriaMode is BitToggleButtonAriaMode.None or BitToggleButtonAriaMode.Expanded) return null;
+
+        // Otherwise the state follows the pattern the page named: aria-pressed belongs to the button role alone,
+        // and a role that reads aria-checked instead is left with no state at all unless it is written here.
+        if (_ariaCheckedRoles.Contains(GetSplattedAttribute("role")) is false) return null;
+
+        // This one is read off the role rather than asked for, and an inference gives way to what the page wrote
+        // itself - unlike an explicit AriaMode, which is the parameter for saying what the state attribute is.
+        return GetSplattedAttribute("aria-checked") is null ? IsChecked.ToString().ToLower() : null;
+    }
 
     private string? GetAriaExpanded()
         => AriaMode is BitToggleButtonAriaMode.Expanded ? IsChecked.ToString().ToLower() : null;

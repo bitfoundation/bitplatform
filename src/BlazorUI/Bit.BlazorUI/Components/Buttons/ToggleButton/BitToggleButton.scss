@@ -13,6 +13,8 @@
 //   --bit-ToggleButton-active-background              background while pressed                (default: the role's active color)
 //   --bit-ToggleButton-active-border-color            border color while pressed              (default: the active background)
 //   --bit-ToggleButton-checked-color                  foreground while checked                (default: the role's on color)
+//   --bit-ToggleButton-checked-hover-color            foreground while checked and hovered    (default: the checked foreground)
+//   --bit-ToggleButton-checked-active-color           foreground while checked and pressed    (default: the checked hover foreground)
 //   --bit-ToggleButton-checked-background             background while checked                (default: the role's dark color)
 //   --bit-ToggleButton-checked-border-color           border color while checked              (default: the checked background)
 //   --bit-ToggleButton-checked-hover-background       background while checked and hovered    (default: the role's dark hover color)
@@ -39,6 +41,8 @@
 //   --bit-ToggleButton-font-weight                    text weight                             (default: $tg-font-weight)
 //   --bit-ToggleButton-icon-size                      icon and check mark size                (default: the text size, the glyph size when icon-only)
 //   --bit-ToggleButton-spinner-size                   spinner diameter in the loading state   (default: per size)
+//   --bit-ToggleButton-loading-label-font-size        size of the label beside the spinner    (default: per size, one ramp step
+//                                                                                             below the text)
 
 .bit-tgb {
     cursor: pointer;
@@ -70,6 +74,12 @@
     gap: var(--bit-ToggleButton-gap, var(--bit-tgb-icn-margin));
     --bit-tgb-icn-margin: #{spacing(0.5)};
 
+    // The foreground FixedColor pins: the role's contrasting color, which every variant and every state is
+    // readable against, rather than the resting color of the Outline and Text variants, which on a background
+    // role is the background itself. The checked state retargets it below, and the pin at the end of the file
+    // reads it off the element, so the value is written twice rather than once per variant and state.
+    --bit-tgb-fg: var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt));
+
     // The one size the icon and the check mark read. An icon-only button retargets it below to the glyph
     // size of its size class; with a label beside it the glyph rides the text, which is what keeps the two
     // lined up whatever the font scale turns out to be.
@@ -83,9 +93,14 @@
         @include focus-ring(var(--bit-ToggleButton-focus-color, var(--bit-tgb-clr-focus)));
     }
 
+    // Left able to receive the pointer, unlike most inert things: the title is what a toggle button has to say
+    // why it is off with, and pointer-events: none takes the tooltip and the cursor with it - a disabled button
+    // would show the cursor of whatever sits behind it. Nothing is lost by it, since the click is already
+    // refused twice over, in the handler and in preventDefault. The hover and active rules of the variants are
+    // written before the disabled ones and lose to them on source order; the one rule that is written after
+    // them, the FixedColor pin at the end of the file, excludes this state by name.
     &.bit-dis {
         cursor: default;
-        pointer-events: none;
 
         // AllowDisabledFocus keeps a disabled toggle button in the tab order, so the indicator has to stay
         // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
@@ -219,7 +234,7 @@
 .bit-tgb-lbl {
     color: inherit;
     text-align: center;
-    font-size: var(--bit-tgb-lbl-fontsize);
+    font-size: var(--bit-ToggleButton-loading-label-font-size, var(--bit-tgb-lbl-fontsize));
 }
 
 // The two pieces of text the button carries for a screen reader and for nobody else: the live region that
@@ -239,20 +254,20 @@
 }
 
 .bit-tgb-fil {
-    color: var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt));
+    color: var(--bit-tgb-fg);
     border-color: var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, var(--bit-tgb-clr)));
     background-color: var(--bit-ToggleButton-background, var(--bit-tgb-clr));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt)));
+            color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg));
             border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
             background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
         }
     }
 
     &:active {
-        color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt))));
+        color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg)));
         border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
         background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
     }
@@ -321,20 +336,23 @@
 // buttons. It carries its own variables for the same reason: restyling the resting look of a toggle button
 // must not quietly take the state indication with it.
 .bit-tgb-chk {
-    color: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+    // Retargeted here rather than on the root, so FixedColor pins the checked foreground on a checked toggle
+    // button and the resting one on an unchecked one, without the pin having to name either state.
+    --bit-tgb-fg: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+    color: var(--bit-tgb-fg);
     border-color: var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark)));
     background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+            color: var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg));
             border-color: var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover)));
             background-color: var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover));
         }
     }
 
     &:active {
-        color: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+        color: var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg)));
         border-color: var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active)));
         background-color: var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active));
     }
@@ -349,7 +367,7 @@
 // color at all, disabled or not.
 .bit-tgb-chk.bit-dis {
     opacity: var(--bit-ToggleButton-checked-disabled-opacity, #{$opa-dis});
-    color: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+    color: var(--bit-tgb-fg);
     border-color: var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark)));
     background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
 }
@@ -413,7 +431,15 @@
         border-color: ButtonText;
     }
 
-    .bit-tgb-chk {
+    // The hovered and pressed selectors are spelled out because this is the one state that opts out of the
+    // forced palette: with forced-color-adjust off the author's colors are used again, and the checked
+    // hover/active rules - two classes to this one - would otherwise paint the theme's dark shade over the
+    // system Highlight the user chose. The FixedColor pair is listed for the same reason, one class further up.
+    .bit-tgb-chk,
+    .bit-tgb-chk:hover,
+    .bit-tgb-chk:active,
+    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):hover,
+    .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):active {
         forced-color-adjust: none;
         color: HighlightText;
         border-color: Highlight;
@@ -425,11 +451,17 @@
         border-color: GrayText;
     }
 
-    // The system palette conveys both facts on its own here - the Highlight fill of the checked state survives
-    // the disabled rule above, which only reaches the text and the border - so the dimming that carries the
-    // state elsewhere has nothing left to do, and would only weaken a color the user chose for its clarity.
+    // A disabled checked toggle button has two facts to carry at once, and the system palette cannot stack them
+    // the way the themed one does: GrayText over the Highlight fill is a pairing no contrast is promised for,
+    // and keeping the fill alone would leave an inert control looking live. So the fill is dropped back to the
+    // canvas, where GrayText is legible by definition, and the state moves onto the border, which Highlight
+    // still marks out. The dimming that carries the state elsewhere is turned off: it would only weaken colors
+    // the user chose for their clarity.
     .bit-tgb-chk.bit-dis {
         opacity: 1;
+        color: GrayText;
+        border-color: Highlight;
+        background-color: Canvas;
     }
 
     .bit-tgb-spn {
@@ -451,13 +483,24 @@
     }
 }
 
+// FixedColor holds --bit-tgb-fg - the checked foreground on a checked toggle button, the resting one otherwise -
+// through the two states that would otherwise repaint it. The hovered and pressed selectors are spelled out
+// because a bare .bit-tgb-fxc is outranked by .bit-tgb-otl:hover whatever the source order: it happens to paint
+// the same color there by default, so the pin only came apart once a --bit-ToggleButton-color was set with it.
+// Written this way it ties with the variant and checked rules and wins on being last in the file. The disabled
+// rules stay ahead of it, since their two-class selectors outrank a single-class one and an inert control keeps
+// its inert color.
 .bit-tgb-fxc {
-    color: var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt));
+    color: var(--bit-tgb-fg);
 
-    // The checked state has a foreground of its own, and pinning the resting one must not overwrite it -
-    // the two-class selector outranks both the pin above and the checked rule it would otherwise lose to.
-    &.bit-tgb-chk {
-        color: var(--bit-ToggleButton-checked-color, var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt)));
+    @media (hover: hover) {
+        &:not(.bit-dis):hover {
+            color: var(--bit-tgb-fg);
+        }
+    }
+
+    &:not(.bit-dis):active {
+        color: var(--bit-tgb-fg);
     }
 }
 
@@ -470,4 +513,12 @@
     --bit-tgb-ico: var(--bit-ToggleButton-icon-size, var(--bit-tgb-ntx-icn-size));
     padding: var(--bit-ToggleButton-padding, var(--bit-tgb-ntx-pad));
     min-width: var(--bit-ToggleButton-min-width, var(--bit-ToggleButton-min-height, var(--bit-tgb-min-height)));
+
+    // The gap above is dropped because a toggle button with no text has one glyph in it and nothing to
+    // separate it from. A check mark makes two, and they would otherwise touch. FixedCheckMark reserves the
+    // mark's box while unchecked, so it is the presence of the element rather than the state that decides,
+    // and the two states stay the same width.
+    &:has(.bit-tgb-chm) {
+        --bit-tgb-icn-margin: #{spacing(0.5)};
+    }
 }

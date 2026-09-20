@@ -421,6 +421,62 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(component.Instance.IsChecked);
     }
 
+    [TestMethod]
+    public async Task BitToggleButtonAutoLoadingShouldClearWhenTheChangeIsCancelled()
+    {
+        // A refused toggle is still a finished one: the loading state the click opened has to close with it, or
+        // the toggle button is left spinning over a state that never moved and swallowing every further click.
+        var tcs = new TaskCompletionSource();
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.OnChanging, async (BitToggleButtonChangeArgs args) =>
+            {
+                await tcs.Task;
+                args.Cancel = true;
+            });
+        });
+
+        var click = component.Find(".bit-tgb").ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-tgb-spn")));
+
+        tcs.SetResult();
+        await click;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+            Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
+            Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("aria-busy"));
+        });
+
+        Assert.IsFalse(component.Instance.IsChecked);
+        Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-chk"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public async Task BitToggleButtonToggleAsyncShouldFollowTheClickGuardOfTheLoadingState(bool reclickable)
+    {
+        // The programmatic path is the click's path, so the guard that stops a loading toggle button from being
+        // clicked again stops it from being toggled from code as well - unless Reclickable lifted it.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.Reclickable, reclickable);
+        });
+
+        await component.Instance.ToggleAsync();
+
+        Assert.AreEqual(reclickable, component.Instance.IsChecked);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
@@ -951,6 +1007,71 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual("menuitemcheckbox", bitToggleButton.GetAttribute("role"));
         Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-checked"));
         Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+    }
+
+    [TestMethod,
+        DataRow("menuitemcheckbox", true),
+        DataRow("menuitemradio", false),
+        DataRow("option", true),
+        DataRow("checkbox", false),
+        DataRow("treeitem", true),
+        DataRow("menuitem", false)
+    ]
+    public void BitToggleButtonAHandWrittenRoleThatReadsAriaCheckedShouldBeGivenTheState(string role, bool isChecked)
+    {
+        // Naming one of these roles describes the pattern, and the state it reads is aria-checked rather than the
+        // aria-pressed of the button role - so the toggle button keeps it in step by itself, instead of leaving the
+        // page with a second copy of IsChecked to maintain. A menuitem, which has no checked state, is given none.
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["Text"] = "Status bar",
+            ["IsChecked"] = isChecked,
+            ["role"] = role
+        }).Find(".bit-tgb");
+
+        var expected = role is "menuitem" ? null : isChecked.ToString().ToLower();
+
+        Assert.AreEqual(expected, bitToggleButton.GetAttribute("aria-checked"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+    }
+
+    [TestMethod,
+        DataRow(BitToggleButtonAriaMode.None),
+        DataRow(BitToggleButtonAriaMode.Expanded)
+    ]
+    public void BitToggleButtonAnExplicitAriaModeShouldWinOverTheRoleWrittenByHand(BitToggleButtonAriaMode ariaMode)
+    {
+        // Both of these named the state attribute themselves - none at all, and aria-expanded - so the state the
+        // role would otherwise be given is not added beside what was asked for.
+        var bitToggleButton = RenderSplatted(new()
+        {
+            ["Text"] = "Status bar",
+            ["IsChecked"] = true,
+            ["AriaMode"] = ariaMode,
+            ["role"] = "menuitemcheckbox"
+        }).Find(".bit-tgb");
+
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-checked"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+        Assert.AreEqual(ariaMode is BitToggleButtonAriaMode.Expanded ? "true" : null, bitToggleButton.GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonFixedColorTest(bool fixedColor)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Mute");
+            parameters.Add(p => p.FixedColor, fixedColor);
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual(fixedColor, bitToggleButton.ClassList.Contains("bit-tgb-fxc"));
     }
 
     [TestMethod]

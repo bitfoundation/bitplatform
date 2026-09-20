@@ -14,6 +14,7 @@ public partial class BitToggleButtonDemo
 <BitToggleButton Variant=""BitVariant.Outline"" IsEnabled=""false"">Outline</BitToggleButton>
 <BitToggleButton Variant=""BitVariant.Text"" IsEnabled=""false"">Text</BitToggleButton>
 
+<BitToggleButton IsEnabled=""false"" Title=""Connect a microphone to enable this"">Disabled, with a reason</BitToggleButton>
 <BitToggleButton IsEnabled=""false"" AllowDisabledFocus=""false"">Not focusable</BitToggleButton>";
 
     private readonly string example3RazorCode = @"
@@ -247,12 +248,21 @@ private async Task HandleAutoLoadingChange()
 </div>";
 
     private readonly string example12RazorCode = @"
-<BitToggleButton Color=""BitColor.TertiaryBackground"" FixedColor
+<BitToggleButton Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground""
+                 OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
+                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
+
+<BitToggleButton FixedColor Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground""
+                 OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
+                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
+
+<BitToggleButton Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
+                 IconOnly AriaLabel=""Mute""
                  OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton Color=""BitColor.TertiaryBackground"" FixedColor
-                 OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
-                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
+<BitToggleButton FixedColor Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground""
+                 IconOnly AriaLabel=""Mute""
+                 OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />";
 
     private readonly string example13RazorCode = @"
 <BitToggleButton OnText=""Muted"" OffText=""Unmuted"" />
@@ -287,7 +297,6 @@ private async Task HandleAutoLoadingChange()
 <div id=""accessibility-details"">@(detailsVisible ? ""The details panel is visible."" : ""The details panel is hidden."")</div>
 
 <BitToggleButton role=""menuitemcheckbox"" Variant=""BitVariant.Text""
-                 aria-checked=""@statusBarVisible.ToString().ToLower()""
                  @bind-IsChecked=""statusBarVisible""
                  AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 

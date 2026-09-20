@@ -60,7 +60,7 @@ public partial class BitToggleButtonDemo
             Name = "AutoLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, enters the loading state automatically while awaiting the click and change events, preventing subsequent clicks by default.",
+            Description = "If true, enters the loading state automatically for as long as the OnClick, OnChanging and OnChange callbacks take, preventing subsequent clicks by default. ToggleAsync takes the same path.",
         },
         new()
         {
@@ -120,7 +120,7 @@ public partial class BitToggleButtonDemo
             Name = "FixedColor",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Preserves the foreground color of the toggle button through hover and focus.",
+            Description = "Preserves the foreground color of the toggle button through hover and press. The color it holds is the one that reads against the Color role, which the Outline and Text variants otherwise only swap in once a fill appears behind the content.",
         },
         new()
         {
@@ -494,6 +494,18 @@ public partial class BitToggleButtonDemo
         },
         new()
         {
+            Name = "--bit-ToggleButton-checked-hover-color",
+            DefaultValue = "--bit-ToggleButton-checked-color",
+            Description = "Foreground while checked and hovered, on pointer devices only.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-active-color",
+            DefaultValue = "--bit-ToggleButton-checked-hover-color",
+            Description = "Foreground while checked and pressed.",
+        },
+        new()
+        {
             Name = "--bit-ToggleButton-checked-background",
             DefaultValue = "The Color role's dark color",
             Description = "Background while checked, and the fallback of the checked border color. It is what separates the two states visually, so it stays worth keeping distinct from the resting background.",
@@ -617,6 +629,12 @@ public partial class BitToggleButtonDemo
             Name = "--bit-ToggleButton-spinner-size",
             DefaultValue = "Per Size: spacing(2) / spacing(2.35) / spacing(2.75)",
             Description = "Diameter of the spinner shown in the loading state.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-loading-label-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
+            Description = "Font size of the LoadingLabel beside the spinner, one step of the ramp below the text of the toggle button.",
         },
     ];
 

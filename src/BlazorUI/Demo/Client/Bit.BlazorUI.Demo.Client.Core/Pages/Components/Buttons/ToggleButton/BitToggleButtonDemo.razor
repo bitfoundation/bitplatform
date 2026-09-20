@@ -43,10 +43,12 @@
         <br /><br />
         <div>
             A disabled BitToggleButton stays focusable by default so screen reader users can still find it,
-            rendering <b>aria-disabled</b> instead of the native <b>disabled</b> attribute.
-            Set <b>AllowDisabledFocus</b> to false to take it out of the tab order instead.
+            rendering <b>aria-disabled</b> instead of the native <b>disabled</b> attribute. It also keeps its
+            tooltip, which is where a <b>Title</b> can say why it is off. Set <b>AllowDisabledFocus</b> to false
+            to render the native attribute and take it out of the tab order instead - at the cost of both.
         </div><br />
         <div class="example-box">
+            <BitToggleButton IsEnabled="false" Title="Connect a microphone to enable this">Disabled, with a reason</BitToggleButton>
             <BitToggleButton IsEnabled="false" AllowDisabledFocus="false">Not focusable</BitToggleButton>
         </div>
     </DemoExample>
@@ -406,17 +408,31 @@
 
     <DemoExample Title="FixedColor" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            The foreground color normally shifts on hover and focus to reinforce that something is happening.
-            With the background colors that is counterproductive - the hover shade is close enough to the content
-            that the text and the icon wash out. <b>FixedColor</b> pins the foreground so it stays legible throughout.
+            The Outline and Text variants draw their content in the color itself and swap it for the one that
+            reads against the fill as soon as a fill appears on hover. With a background color the first of those
+            is roughly the page behind it, so the content barely shows at rest. <b>FixedColor</b> pins the
+            readable one down instead - in both states, and through hover and press.
         </div><br />
+        <div>Without, then with - hover each of them:</div><br />
         <div class="example-box">
-            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor
-                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
-
-            <BitToggleButton Color="BitColor.TertiaryBackground" FixedColor
+            <BitToggleButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground"
                              OnText="Muted" OnIconName="@BitIconName.MicOff"
                              OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+
+            <BitToggleButton FixedColor Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground"
+                             OnText="Muted" OnIconName="@BitIconName.MicOff"
+                             OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+        </div>
+        <br /><br /><br />
+        <div>The same on the Text variant, which has no border left to make it out by either:</div><br />
+        <div class="example-box">
+            <BitToggleButton Variant="BitVariant.Text" Color="BitColor.TertiaryBackground"
+                             IconOnly AriaLabel="Mute"
+                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
+
+            <BitToggleButton FixedColor Variant="BitVariant.Text" Color="BitColor.TertiaryBackground"
+                             IconOnly AriaLabel="Mute"
+                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
         </div>
     </DemoExample>
 
@@ -522,11 +538,11 @@
             focus ring is drawn for the keyboard and not for the mouse. Where the toggle button belongs to a larger
             pattern, a <b>role</b> or an <b>aria-*</b> attribute written on it by hand is kept beside what it writes
             itself, and naming a pattern of its own takes the state attribute with it: <b>aria-pressed</b> is a state
-            of the button role alone, so a menu item writes the state a menu reads instead - here <b>aria-checked</b>:
+            of the button role alone, so a menu item is given the state a menu reads instead - <b>aria-checked</b>,
+            kept in step with <b>IsChecked</b> without a second attribute to maintain:
         </div><br />
         <div class="example-box">
             <BitToggleButton role="menuitemcheckbox" Variant="BitVariant.Text"
-                             aria-checked="@statusBarVisible.ToString().ToLower()"
                              @bind-IsChecked="statusBarVisible"
                              AriaLabel="Show the status bar" ShowCheckMark FixedCheckMark Text="Status bar" />
         </div>
