@@ -25,6 +25,8 @@ public partial class _BitMenuButtonOptionDemo
     private bool optionShowStatus = true;
     private bool optionShowOwner;
 
+    private bool optionWrapLines = true;
+
     private bool optionSortByName = true;
     private bool optionSortByDate;
     private bool optionSortBySize;
@@ -262,7 +264,7 @@ public partial class _BitMenuButtonOptionDemo
 </BitMenuButton>
 
 <BitMenuButton Text=""Closes on click"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" CheckIconName=""@BitIconName.CheckboxCompositeReversed"">
-    <BitMenuButtonOption Text=""Wrap lines"" Key=""wrap"" Checkable IsChecked=""true"" />
+    <BitMenuButtonOption Text=""Wrap lines"" Key=""wrap"" Checkable @bind-IsChecked=""optionWrapLines"" />
     <BitMenuButtonOption Text=""Show whitespace"" Key=""whitespace"" Checkable />
 </BitMenuButton>
 
@@ -278,6 +280,8 @@ public partial class _BitMenuButtonOptionDemo
 private bool optionShowName = true;
 private bool optionShowStatus = true;
 private bool optionShowOwner;
+
+private bool optionWrapLines = true;
 
 private string VisibleColumns => string.Join("", "", new[]
 {

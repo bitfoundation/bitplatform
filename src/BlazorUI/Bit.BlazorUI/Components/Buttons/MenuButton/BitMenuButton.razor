@@ -69,17 +69,17 @@
         @if (Sticky)
         {
             var template = GetTemplate(_selectedItem);
-            if (template is not null)
+            @if (_showLoading && LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else if (_showLoading is false && template is not null)
             {
                 @template(_selectedItem!)
             }
-            else if (ItemTemplate is not null)
+            else if (_showLoading is false && ItemTemplate is not null)
             {
                 @ItemTemplate(_selectedItem)
-            }
-            else if (_showLoading && LoadingTemplate is not null)
-            {
-                @LoadingTemplate
             }
             else
             {
@@ -104,7 +104,7 @@
             {
                 @LoadingTemplate
             }
-            else if (HeaderTemplate is not null)
+            else if (_showLoading is false && HeaderTemplate is not null)
             {
                 @HeaderTemplate
             }

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -188,7 +188,9 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// The content inside the header of menu button can be customized.
+    /// The content inside the header of menu button can be customized. The loading state takes the header
+    /// over while it lasts, so a menu button that is loading shows its spinner (or its
+    /// <see cref="LoadingTemplate"/>) rather than this template.
     /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
@@ -1285,9 +1287,13 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         if (Sticky)
         {
-            if (await AssignSelectedItem(item) is false) return;
-
-            await OnChange.InvokeAsync(item);
+            // A one-way SelectedItem refuses the assignment, which only means the selection did not change -
+            // the callout has still been closed here, so the rest of the handler (the focus return below
+            // above all) runs either way.
+            if (await AssignSelectedItem(item))
+            {
+                await OnChange.InvokeAsync(item);
+            }
         }
         else
         {
@@ -1334,15 +1340,16 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         {
             menuButtonItem.IsChecked = value;
         }
-
-        if (item is BitMenuButtonOption menuButtonOption)
+        else if (item is BitMenuButtonOption menuButtonOption)
         {
+            // An option writes its own parameter back so that @bind-IsChecked reports the change, which a
+            // reflection write over the top of it would undo.
             await menuButtonOption.SetIsChecked(value);
         }
-
-        if (NameSelectors is null) return;
-
-        item.SetValueToProperty(NameSelectors.IsChecked.Name, value);
+        else if (NameSelectors is not null)
+        {
+            item.SetValueToProperty(NameSelectors.IsChecked.Name, value);
+        }
     }
 
     private async Task InvokeItemClick(TItem item)

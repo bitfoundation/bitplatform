@@ -302,7 +302,7 @@
 
         <BitMenuButton Text="Closes on click" TItem="BitMenuButtonOption" Variant="BitVariant.Outline"
                        CheckIconName="@BitIconName.CheckboxCompositeReversed">
-            <BitMenuButtonOption Text="Wrap lines" Key="wrap" Checkable IsChecked="true" />
+            <BitMenuButtonOption Text="Wrap lines" Key="wrap" Checkable @bind-IsChecked="optionWrapLines" />
             <BitMenuButtonOption Text="Show whitespace" Key="whitespace" Checkable />
         </BitMenuButton>
 
