@@ -21,12 +21,17 @@ public sealed class BitThemeSurfacesContractTests
     [
         [BitThemePresets.Light, "Fluent", "colors.fluent-light.scss"],
         [BitThemePresets.Dark, "Fluent", "colors.fluent-dark.scss"],
+        // Each family's base alias is selected by its light palette, so it is pinned to that file.
+        [BitThemePresets.Fluent, "Fluent", "colors.fluent-light.scss"],
         [BitThemePresets.FluentLight, "Fluent", "colors.fluent-light.scss"],
         [BitThemePresets.FluentDark, "Fluent", "colors.fluent-dark.scss"],
+        [BitThemePresets.Fluent2, "Fluent2", "colors.fluent2-light.scss"],
         [BitThemePresets.Fluent2Light, "Fluent2", "colors.fluent2-light.scss"],
         [BitThemePresets.Fluent2Dark, "Fluent2", "colors.fluent2-dark.scss"],
+        [BitThemePresets.Material, "Material", "colors.material-light.scss"],
         [BitThemePresets.MaterialLight, "Material", "colors.material-light.scss"],
         [BitThemePresets.MaterialDark, "Material", "colors.material-dark.scss"],
+        [BitThemePresets.Cupertino, "Cupertino", "colors.cupertino-light.scss"],
         [BitThemePresets.CupertinoLight, "Cupertino", "colors.cupertino-light.scss"],
         [BitThemePresets.CupertinoDark, "Cupertino", "colors.cupertino-dark.scss"],
     ];
@@ -51,10 +56,11 @@ public sealed class BitThemeSurfacesContractTests
         // registers its presets - the same thing an app's own code does.
         string[] presets =
         [
-            BitThemePresets.Light, BitThemePresets.Dark, BitThemePresets.FluentLight, BitThemePresets.FluentDark,
-            BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark,
-            BitThemePresets.MaterialLight, BitThemePresets.MaterialDark,
-            BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
+            BitThemePresets.Light, BitThemePresets.Dark,
+            BitThemePresets.Fluent, BitThemePresets.FluentLight, BitThemePresets.FluentDark,
+            BitThemePresets.Fluent2, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark,
+            BitThemePresets.Material, BitThemePresets.MaterialLight, BitThemePresets.MaterialDark,
+            BitThemePresets.Cupertino, BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
         ];
 
         foreach (var preset in presets)

@@ -41,12 +41,19 @@ public static class BitExtraThemeRegistration
 #pragma warning restore CA2255
     public static void Register()
     {
+        // The base alias of each family is its own entry, carrying the light palette's surfaces:
+        // colors.<family>-light selects both names (:root[bit-theme="material"],
+        // [bit-theme="material-light"]), so a page set to the bare family name and left out of this
+        // table would paint its first frame in the Fluent fallback and then repaint.
         BitThemePresetRegistry.Register(
         [
+            new() { Name = BitExtraThemePresets.Fluent2, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
             new() { Name = BitExtraThemePresets.Fluent2Light, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
             new() { Name = BitExtraThemePresets.Fluent2Dark, BackgroundPrimary = "#131313", BackgroundSecondary = "#1F1F1F" },
+            new() { Name = BitExtraThemePresets.Material, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F1F6FA" },
             new() { Name = BitExtraThemePresets.MaterialLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F1F6FA" },
             new() { Name = BitExtraThemePresets.MaterialDark, BackgroundPrimary = "#0C131B", BackgroundSecondary = "#182029" },
+            new() { Name = BitExtraThemePresets.Cupertino, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
             new() { Name = BitExtraThemePresets.CupertinoLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" },
             new() { Name = BitExtraThemePresets.CupertinoDark, BackgroundPrimary = "#131313", BackgroundSecondary = "#202020" },
         ]);

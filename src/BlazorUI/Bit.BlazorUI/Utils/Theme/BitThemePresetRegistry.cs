@@ -39,10 +39,14 @@ public static class BitThemePresetRegistry
     static BitThemePresetRegistry()
     {
         // The presets the core stylesheet itself implements. light / dark are the same two palettes
-        // under their family-less names: colors.fluent-light and colors.fluent-dark each select both
-        // (:root[bit-theme="light"], [bit-theme="fluent-light"]).
+        // under their family-less names, and fluent is the family's base alias: colors.fluent-light
+        // selects all three (:root[bit-theme="light"], [bit-theme="fluent"], [bit-theme="fluent-light"])
+        // and colors.fluent-dark the other two. Every name a stylesheet paints has to be in this
+        // table under its own key, or a host page's first paint falls back to a color the stylesheet
+        // that follows it never applies.
         Register(new BitThemePreset { Name = BitThemePresets.Light, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" });
         Register(new BitThemePreset { Name = BitThemePresets.Dark, BackgroundPrimary = "#0F1318", BackgroundSecondary = "#1B2025" });
+        Register(new BitThemePreset { Name = BitThemePresets.Fluent, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" });
         Register(new BitThemePreset { Name = BitThemePresets.FluentLight, BackgroundPrimary = "#FFFFFF", BackgroundSecondary = "#F5F5F5" });
         Register(new BitThemePreset { Name = BitThemePresets.FluentDark, BackgroundPrimary = "#0F1318", BackgroundSecondary = "#1B2025" });
     }
