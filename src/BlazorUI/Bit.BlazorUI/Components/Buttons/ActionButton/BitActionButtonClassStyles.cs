@@ -11,7 +11,7 @@ public class BitActionButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the icon element (the glyph, or the image rendered for IconUrl).
+    /// Custom class or style applied to the icon element.
     /// </summary>
     public string? Icon { get; set; }
 
