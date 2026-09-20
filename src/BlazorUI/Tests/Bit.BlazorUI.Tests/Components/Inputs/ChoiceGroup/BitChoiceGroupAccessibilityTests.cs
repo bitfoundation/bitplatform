@@ -398,6 +398,42 @@ public class BitChoiceGroupAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldKeepTheImageAltInTheDerivedNameOfAnItem()
+    {
+        // An ImageAlt written for the picture is part of the name the label computes, so the derived name
+        // carries it, in the place the image is rendered in - between the prefix and the text.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Bar", Value = "Bar", Description = "desc Bar", ImageSrc = "bar.png", ImageAlt = "a bar chart" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("a bar chart Bar", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameADecorativeImageItemByItsTextAlone()
+    {
+        // The image is decorative without an ImageAlt (it renders an empty alt), so it adds nothing to the
+        // label's own name and nothing to the derived one either.
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Bar", Value = "Bar", Description = "desc Bar", ImageSrc = "bar.png" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("Bar", component.Find(".bit-chg-icn input").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitChoiceGroupShouldPreferTheAriaLabelOfAnItemOverItsDerivedName()
     {
         var items = new List<BitChoiceGroupItem<string>>

@@ -703,7 +703,13 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // renders, and in the same order, so the name still matches the visible text (WCAG 2.5.3).
     internal string? GetItemAccessibleName(TItem item)
     {
-        var name = string.Join(' ', new[] { GetPrefix(item), GetText(item), GetSuffix(item) }.Where(part => part.HasValue()));
+        // An image of the item is decorative by default (an empty alt), and then it adds nothing to the
+        // name the label computes; an ImageAlt that was written for it does, and it is rendered between
+        // the prefix and the text, so it takes that place here too - otherwise naming the input from the
+        // text alone would drop the one part of the label the picture says on its own.
+        var imageAlt = GetImageSrc(item).HasValue() ? GetImageAlt(item) : null;
+
+        var name = string.Join(' ', new[] { GetPrefix(item), imageAlt, GetText(item), GetSuffix(item) }.Where(part => part.HasValue()));
 
         return name.HasValue() ? name : null;
     }

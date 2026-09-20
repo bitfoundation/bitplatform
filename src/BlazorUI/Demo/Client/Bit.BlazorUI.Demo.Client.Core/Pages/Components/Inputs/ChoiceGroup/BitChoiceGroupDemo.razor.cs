@@ -429,8 +429,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-background",
-            DefaultValue = "Transparent, and per variant for a card",
-            Description = "Background of an item at rest.",
+            DefaultValue = "Per Color for an icon or image tile, and per variant for a card",
+            Description = "Background of the surface an item draws at rest: the icon or image tile, and the card of the Outline and Fill variants. A plain text item draws no surface of its own, and the Inline mode drops the tile.",
         },
         new()
         {

@@ -33,7 +33,8 @@
 //   --bit-ChoiceGroup-item-radius                corner radius of an item and its focus ring   (default: $shp-radius-control, $shp-radius-surface for a card)
 //   --bit-ChoiceGroup-item-color                 text color of an item                         (default: inherited)
 //   --bit-ChoiceGroup-item-checked-color         text color of the checked item                (default: inherited)
-//   --bit-ChoiceGroup-item-background            background of an item                         (default: transparent, per variant for a card)
+//   --bit-ChoiceGroup-item-background            background of the surface an item draws: the
+//                                                icon or image tile, and the card of a variant  (default: per Color for a tile, per variant for a card)
 //   --bit-ChoiceGroup-item-hover-background      background of a hovered card                  (default: per variant)
 //   --bit-ChoiceGroup-item-checked-background    background of the checked card                (default: per variant)
 //   --bit-ChoiceGroup-item-border-color          border of a card at rest                      (default: per variant)
@@ -464,8 +465,13 @@
 
     }
 
+    // Scoped the way the unchecked hover above is, and for the same reason: this rule outweighs both the
+    // disabled reset and the invalid coloring of the circle, so it excludes them itself rather than
+    // leaving a later rule to undo it - a disabled checked option stays inert and an invalid one keeps
+    // its error color under the pointer. The invalid scope is wrapped in :where() to cost no specificity,
+    // which keeps the read-only reset below the winner it already was.
     @media (hover: hover) {
-        .bit-chg-itl:hover .bit-chg-rad {
+        :where(.bit-chg:not(.bit-inv)) &:not(.bit-chg-ids) .bit-chg-itl:hover .bit-chg-rad {
             &::before {
                 border-color: var(--bit-chg-clr-hover);
             }
@@ -874,9 +880,10 @@
     --bit-chg-card-bg: transparent;
     --bit-chg-card-brd: #{$clr-brd-sec};
     --bit-chg-card-bg-hover: #{$clr-bg-sec-hover};
+    --bit-chg-card-bg-checked: #{translucent(var(--bit-chg-clr), 8%)};
 
     .bit-chg-ich .bit-chg-itl {
-        background-color: var(--bit-ChoiceGroup-item-checked-background, #{translucent(var(--bit-chg-clr), 8%)});
+        background-color: var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked));
     }
 }
 
@@ -886,9 +893,10 @@
     --bit-chg-card-bg: #{$clr-bg-sec};
     --bit-chg-card-brd: transparent;
     --bit-chg-card-bg-hover: #{$clr-bg-ter};
+    --bit-chg-card-bg-checked: #{translucent(var(--bit-chg-clr), 14%)};
 
     .bit-chg-ich .bit-chg-itl {
-        background-color: var(--bit-ChoiceGroup-item-checked-background, #{translucent(var(--bit-chg-clr), 14%)});
+        background-color: var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked));
     }
 }
 
@@ -904,8 +912,12 @@
                 background-color: var(--bit-ChoiceGroup-item-background, var(--bit-chg-card-bg));
             }
 
+            // Both halves of the checked look are restated, not the border alone: the hover above sets a
+            // background too, so leaving it out would let the hover replace the checked tint with the
+            // plain hover surface and brighten the card the pointer only passed over.
             .bit-chg-ich .bit-chg-itl:hover {
                 border-color: var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-chg-clr));
+                background-color: var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked));
             }
         }
     }
