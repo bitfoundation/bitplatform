@@ -23,6 +23,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The id of the element that the toggle button controls (rendered into <c>aria-controls</c>).
     /// </summary>
+    /// <remarks>
+    /// Where what it controls is a part of the page the checked state shows or hides, pair it with
+    /// <see cref="BitToggleButtonAriaMode.Expanded"/>, which announces the toggle button as collapsed or
+    /// expanded rather than as pressed.
+    /// </remarks>
     [Parameter] public string? AriaControls { get; set; }
 
     /// <summary>
@@ -274,6 +279,12 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The title of the toggle button when it is not checked.
     /// </summary>
+    /// <remarks>
+    /// The title is what names a toggle button that has no text of its own - an icon-only one, typically - so a
+    /// title that differs per state changes the accessible name there and suppresses <c>aria-pressed</c> just as
+    /// a per-state text does. Add an <see cref="BitComponentBase.AriaLabel"/> to keep the name stable while the
+    /// tooltip varies.
+    /// </remarks>
     [Parameter] public string? OffTitle { get; set; }
 
     /// <summary>
@@ -338,6 +349,12 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The title of the toggle button when it is checked.
     /// </summary>
+    /// <remarks>
+    /// The title is what names a toggle button that has no text of its own - an icon-only one, typically - so a
+    /// title that differs per state changes the accessible name there and suppresses <c>aria-pressed</c> just as
+    /// a per-state text does. Add an <see cref="BitComponentBase.AriaLabel"/> to keep the name stable while the
+    /// tooltip varies.
+    /// </remarks>
     [Parameter] public string? OnTitle { get; set; }
 
     /// <summary>
@@ -349,7 +366,13 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Enables re-clicking while the toggle button is in the loading state.
     /// </summary>
-    [Parameter] public bool Reclickable { get; set; }
+    /// <remarks>
+    /// A loading toggle button otherwise stops responding to the pointer altogether - it keeps neither the
+    /// hover shade nor the pointer cursor, since both read as actionable on a control that ignores every click.
+    /// Enabling this keeps them along with the clicks.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Renders a check mark in the checked state so the state is not conveyed by color alone, which is also what
@@ -409,7 +432,7 @@ public partial class BitToggleButton : BitComponentBase
     {
         if (IsLoading && Reclickable is false) return;
 
-        await ChangeIsChecked(IsChecked is false);
+        await ChangeIsChecked(IsChecked is false, autoLoading: true);
 
         // unlike a click, a programmatic call has no event handler behind it to request a render
         StateHasChanged();
@@ -434,6 +457,11 @@ public partial class BitToggleButton : BitComponentBase
         // The grid that stacks the loading visuals over the content follows what is actually shown rather than
         // the parameter, so a toggle button inside its LoadingDelay keeps laying out as a plain one.
         ClassBuilder.Register(() => _showLoading ? "bit-tgb-lda" : string.Empty);
+
+        // The pointer affordance follows the click guard instead, which applies from the first click whether or
+        // not the spinner has appeared yet: a toggle button that swallows clicks must not keep the hover shade
+        // and the pointer cursor of one that takes them.
+        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-tgb-lod" : string.Empty);
 
         ClassBuilder.Register(() => NoWrap ? "bit-tgb-nwr" : string.Empty);
 
@@ -595,26 +623,34 @@ public partial class BitToggleButton : BitComponentBase
         if (IsEnabled is false) return;
         if (IsLoading && Reclickable is false) return;
 
-        await OnClick.InvokeAsync(e);
+        // The auto-loading window opens before OnClick rather than after it. An async OnClick handler is part of
+        // what the click is waiting for, so a guard that only starts once it has returned leaves open exactly the
+        // window it exists to close - and the button would show no spinner for the whole of it.
+        // Snapshotted so the cleanup pairs with the entry even if the parameter changes mid-await.
+        var autoLoading = AutoLoading;
 
-        await ChangeIsChecked(IsChecked is false);
+        await BeginAutoLoading(autoLoading);
+
+        try
+        {
+            await OnClick.InvokeAsync(e);
+
+            // the loading state is already held open by this method, so the change does not open a second one
+            await ChangeIsChecked(IsChecked is false, autoLoading: false);
+        }
+        finally
+        {
+            await EndAutoLoading(autoLoading);
+        }
     }
 
-    private async Task ChangeIsChecked(bool value)
+    private async Task ChangeIsChecked(bool value, bool autoLoading)
     {
         if (IsEnabled is false) return;
 
-        // snapshot so the finally cleanup pairs with the entry increment even if the parameter changes mid-await
-        var autoLoading = AutoLoading;
+        autoLoading = autoLoading && AutoLoading;
 
-        if (autoLoading)
-        {
-            await AssignIsLoading(true);
-
-            // Reclickable lets clicks overlap, so count the in-flight changes and only
-            // clear the loading state once the last one has completed
-            _pendingChanges++;
-        }
+        await BeginAutoLoading(autoLoading);
 
         try
         {
@@ -633,11 +669,35 @@ public partial class BitToggleButton : BitComponentBase
         }
         finally
         {
-            if (autoLoading && --_pendingChanges == 0)
-            {
-                await AssignIsLoading(false);
-            }
+            await EndAutoLoading(autoLoading);
         }
+    }
+
+    private async Task BeginAutoLoading(bool autoLoading)
+    {
+        if (autoLoading is false) return;
+
+        await AssignIsLoading(true);
+
+        // The loading visuals normally follow the parameter through OnParametersSet, which a state change the
+        // component makes to itself never reaches - so the spinner has to be driven from here, or an auto-loading
+        // toggle button would hold the click guard up without ever showing one.
+        UpdateLoadingVisuals();
+
+        // Reclickable lets clicks overlap, so count the in-flight operations and only
+        // clear the loading state once the last one has completed
+        _pendingChanges++;
+    }
+
+    private async Task EndAutoLoading(bool autoLoading)
+    {
+        if (autoLoading is false) return;
+
+        if (--_pendingChanges > 0) return;
+
+        await AssignIsLoading(false);
+
+        UpdateLoadingVisuals();
     }
 
 
@@ -701,12 +761,15 @@ public partial class BitToggleButton : BitComponentBase
         => AriaMode switch
         {
             BitToggleButtonAriaMode.Pressed => IsChecked.ToString().ToLower(),
-            BitToggleButtonAriaMode.Switch or BitToggleButtonAriaMode.None => null,
+            BitToggleButtonAriaMode.Switch or BitToggleButtonAriaMode.None or BitToggleButtonAriaMode.Expanded => null,
             _ => AccessibleNameChanges() ? null : IsChecked.ToString().ToLower()
         };
 
     private string? GetAriaChecked()
         => AriaMode is BitToggleButtonAriaMode.Switch ? IsChecked.ToString().ToLower() : null;
+
+    private string? GetAriaExpanded()
+        => AriaMode is BitToggleButtonAriaMode.Expanded ? IsChecked.ToString().ToLower() : null;
 
     /// <summary>
     /// Reports whether the accessible name of the toggle button differs between the two states, in which case
@@ -717,18 +780,40 @@ public partial class BitToggleButton : BitComponentBase
         // aria-labelledby wins the accessible name computation, so a stable value there pins the name for both states
         if (AriaLabelledBy.HasValue()) return false;
 
-        // an aria-label that does not vary per state pins the accessible name down for both states
-        var onName = OnAriaLabel.HasValue() ? OnAriaLabel
-                   : AriaLabel.HasValue() ? AriaLabel
-                   : IconOnly ? null
-                   : OnText.HasValue() ? OnText : Text;
+        return AccessibleName(true) != AccessibleName(false);
+    }
 
-        var offName = OffAriaLabel.HasValue() ? OffAriaLabel
-                    : AriaLabel.HasValue() ? AriaLabel
-                    : IconOnly ? null
-                    : OffText.HasValue() ? OffText : Text;
+    /// <summary>
+    /// What a screen reader would name the toggle button in the given state, walked in the order the accessible
+    /// name computation uses: aria-label, then the rendered content, then the title attribute. The title is the
+    /// step that is easy to forget - it is what names an icon-only toggle button that was given no aria-label,
+    /// so a per-state OnTitle/OffTitle changes the name there as surely as a per-state text does elsewhere.
+    /// </summary>
+    private string? AccessibleName(bool isChecked)
+    {
+        var ariaLabel = isChecked
+            ? (OnAriaLabel.HasValue() ? OnAriaLabel : AriaLabel)
+            : (OffAriaLabel.HasValue() ? OffAriaLabel : AriaLabel);
 
-        return onName != offName;
+        if (ariaLabel.HasValue()) return ariaLabel;
+
+        // A template is content this cannot read, and it is never empty, so the walk stops here rather than
+        // falling through to the title. Both states answer the same, which is what leaves aria-pressed in place
+        // for a pair of templates - the remarks on OnTemplate say to pin the name down where they read apart.
+        if ((((isChecked ? OnTemplate : OffTemplate) ?? ChildContent)) is not null) return null;
+
+        if (IconOnly is false)
+        {
+            var text = isChecked
+                ? (OnText.HasValue() ? OnText : Text)
+                : (OffText.HasValue() ? OffText : Text);
+
+            if (text.HasValue()) return text;
+        }
+
+        return isChecked
+            ? (OnTitle.HasValue() ? OnTitle : Title)
+            : (OffTitle.HasValue() ? OffTitle : Title);
     }
 
     private string GetLoadingLabelPositionClass()

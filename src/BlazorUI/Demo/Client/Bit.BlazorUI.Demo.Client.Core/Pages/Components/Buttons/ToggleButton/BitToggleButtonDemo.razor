@@ -69,7 +69,9 @@
             <b>Title</b> follows the same shape and fills the native tooltip, with <b>OnTitle</b> and <b>OffTitle</b>
             overriding it per state. It is the natural companion to <b>IconOnly</b>, where the button has no visible
             wording of its own - though a tooltip never reaches keyboard or touch users, so it supplements an
-            <b>AriaLabel</b> rather than replacing one. Hover the two below:
+            <b>AriaLabel</b> rather than replacing one. With nothing else to go on a screen reader falls back to the
+            tooltip, which is why both of these carry an <b>AriaLabel</b>: a title that changed with the state would
+            take the accessible name with it. Hover the two below:
         </div><br />
         <div class="example-box">
             <BitToggleButton IconOnly Title="Microphone" AriaLabel="Microphone"
@@ -101,78 +103,26 @@
             <BitToggleButton IconPosition="BitIconPosition.End" Text="End" IconName="@BitIconName.Microphone" />
         </div>
         <br /><br /><br />
-        <div>No text:</div><br />
+        <div>
+            A BitToggleButton with no text squares up either way - because none was supplied, or because
+            <b>IconOnly</b> drops the one that was. Both leave nothing behind to name the button, hence the
+            <b>AriaLabel</b> on every one of these:
+        </div><br />
         <div class="example-box">
-            <BitToggleButton IconName="@BitIconName.Microphone" />
-            <BitToggleButton OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
-        </div>
-        <br /><br /><br />
-        <div>IconOnly:</div><br />
-        <div class="example-box">
-            <BitToggleButton IconOnly IconName="@BitIconName.Microphone" Text="Microphone" />
-            <BitToggleButton IconOnly
+            <BitToggleButton AriaLabel="Mute" IconName="@BitIconName.Microphone" />
+
+            <BitToggleButton AriaLabel="Mute"
+                             OnIconName="@BitIconName.MicOff" OffIconName="@BitIconName.Microphone" />
+
+            <BitToggleButton IconOnly AriaLabel="Mute" IconName="@BitIconName.Microphone" Text="Microphone" />
+
+            <BitToggleButton IconOnly AriaLabel="Mute"
                              OnText="Muted" OnIconName="@BitIconName.MicOff"
                              OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Checked appearance" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            The darker checked shade is enough for most cases, but some toggles mean genuinely different things in
-            their two states and should look the part. <b>OnColor</b>/<b>OffColor</b> and
-            <b>OnVariant</b>/<b>OffVariant</b> let the whole appearance change with the state, each falling back to
-            the general <b>Color</b> and <b>Variant</b> when it is not set, so you only override the axis you care about.
-        </div><br />
-        <div>OnColor & OffColor:</div><br />
-        <div class="example-box">
-            <BitToggleButton OnColor="BitColor.Success" OffColor="BitColor.Error"
-                             OnText="Recording" OnIconName="@BitIconName.CircleFill"
-                             OffText="Stopped" OffIconName="@BitIconName.CircleStopSolid" />
-        </div>
-        <br /><br /><br />
-        <div>OnVariant & OffVariant:</div><br />
-        <div class="example-box">
-            <BitToggleButton OnVariant="BitVariant.Fill" OffVariant="BitVariant.Outline"
-                             OnText="Following" OffText="Follow" />
-        </div>
-        <br /><br /><br />
-        <div>Both, on top of a shared Color:</div><br />
-        <div class="example-box">
-            <BitToggleButton Color="BitColor.Info"
-                             OnColor="BitColor.Warning" OnVariant="BitVariant.Fill" OffVariant="BitVariant.Text"
-                             OnText="Notifications muted" OnIconName="@BitIconName.RingerOff"
-                             OffText="Notifications on" OffIconName="@BitIconName.Ringer" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="CheckMark" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            A checked state told only by a shade of color is invisible to anyone who cannot perceive that shade, and
-            disappears outright in Windows High Contrast. <b>ShowCheckMark</b> adds a check mark in the checked state
-            so the state carries a shape as well as a color, which is what makes a row of toggle buttons readable at a
-            glance. <b>FixedCheckMark</b> reserves the mark's space while unchecked so the content does not jump on
-            every click, and <b>CheckMarkIconName</b> swaps the mark for any other icon.
-        </div><br />
-        <div>ShowCheckMark:</div><br />
-        <div class="example-box">
-            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Bold" />
-            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Italic" />
-        </div>
-        <br /><br /><br />
-        <div>FixedCheckMark:</div><br />
-        <div class="example-box">
-            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Bold" />
-            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Italic" />
-        </div>
-        <br /><br /><br />
-        <div>CheckMarkIconName:</div><br />
-        <div class="example-box">
-            <BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName="@BitIconName.FavoriteStarFill"
-                             Variant="BitVariant.Outline" Color="BitColor.Warning" Text="Favorite" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             Who owns the checked state is up to you. <b>DefaultIsChecked</b> seeds it once and leaves the
             BitToggleButton in charge, <b>&#64;bind-IsChecked</b> keeps it in sync with a field you control, and
@@ -203,6 +153,92 @@
             <BitToggleButton @ref="programmaticToggleRef" OnText="Muted" OffText="Unmuted" />
             <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticToggleRef.ToggleAsync()">Toggle it</BitButton>
             <BitButton Variant="BitVariant.Outline" OnClick="FocusTheToggleButton">Focus it</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Checked appearance" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            The darker checked shade is enough for most cases, but some toggles mean genuinely different things in
+            their two states and should look the part. <b>OnColor</b>/<b>OffColor</b> and
+            <b>OnVariant</b>/<b>OffVariant</b> let the whole appearance change with the state, each falling back to
+            the general <b>Color</b> and <b>Variant</b> when it is not set, so you only override the axis you care
+            about. Every pair below is the same markup twice, seeded to a different state.
+        </div><br />
+        <div>OnColor & OffColor:</div><br />
+        <div class="example-box">
+            <BitToggleButton OnColor="BitColor.Success" OffColor="BitColor.Error"
+                             OnText="Recording" OnIconName="@BitIconName.CircleFill"
+                             OffText="Stopped" OffIconName="@BitIconName.CircleStopSolid" />
+
+            <BitToggleButton DefaultIsChecked="true"
+                             OnColor="BitColor.Success" OffColor="BitColor.Error"
+                             OnText="Recording" OnIconName="@BitIconName.CircleFill"
+                             OffText="Stopped" OffIconName="@BitIconName.CircleStopSolid" />
+        </div>
+        <br /><br /><br />
+        <div>OnVariant & OffVariant:</div><br />
+        <div class="example-box">
+            <BitToggleButton OnVariant="BitVariant.Fill" OffVariant="BitVariant.Outline"
+                             OnText="Following" OffText="Follow" />
+
+            <BitToggleButton DefaultIsChecked="true"
+                             OnVariant="BitVariant.Fill" OffVariant="BitVariant.Outline"
+                             OnText="Following" OffText="Follow" />
+        </div>
+        <br /><br /><br />
+        <div>Both, on top of a shared Color:</div><br />
+        <div class="example-box">
+            <BitToggleButton Color="BitColor.Info"
+                             OnColor="BitColor.Warning" OnVariant="BitVariant.Fill" OffVariant="BitVariant.Text"
+                             OnText="Notifications muted" OnIconName="@BitIconName.RingerOff"
+                             OffText="Notifications on" OffIconName="@BitIconName.Ringer" />
+
+            <BitToggleButton DefaultIsChecked="true" Color="BitColor.Info"
+                             OnColor="BitColor.Warning" OnVariant="BitVariant.Fill" OffVariant="BitVariant.Text"
+                             OnText="Notifications muted" OnIconName="@BitIconName.RingerOff"
+                             OffText="Notifications on" OffIconName="@BitIconName.Ringer" />
+        </div>
+        <br /><br /><br />
+        <div>
+            Disabling a BitToggleButton does not take its state with it: a setting greyed out at <b>on</b> and one
+            greyed out at <b>off</b> are different facts, so the checked one keeps its own colors and is dimmed
+            rather than repainted in the disabled ones.
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" Text="Fill" />
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Fill" DefaultIsChecked="true" Text="Fill" />
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" Text="Outline" />
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Outline" />
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" Text="Text" />
+            <BitToggleButton IsEnabled="false" Variant="BitVariant.Text" DefaultIsChecked="true" Text="Text" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="CheckMark" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            A checked state told only by a shade of color is invisible to anyone who cannot perceive that shade, and
+            disappears outright in Windows High Contrast. <b>ShowCheckMark</b> adds a check mark in the checked state
+            so the state carries a shape as well as a color, which is what makes a row of toggle buttons readable at a
+            glance. <b>FixedCheckMark</b> reserves the mark's space while unchecked so the content does not jump on
+            every click, and <b>CheckMarkIconName</b> swaps the mark for any other icon.
+        </div><br />
+        <div>ShowCheckMark - the checked one is wider than its neighbour by exactly the mark:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold" />
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Italic" />
+        </div>
+        <br /><br /><br />
+        <div>FixedCheckMark - the same two, now the same width:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold" />
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Italic" />
+        </div>
+        <br /><br /><br />
+        <div>CheckMarkIconName:</div><br />
+        <div class="example-box">
+            <BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName="@BitIconName.FavoriteStarFill"
+                             Variant="BitVariant.Outline" Color="BitColor.Warning"
+                             DefaultIsChecked="true" Text="Favorite" />
         </div>
     </DemoExample>
 
@@ -412,10 +448,26 @@
         </div>
         <br /><br /><br />
         <div>
+            The name is whatever a screen reader would actually read, not just the text: with nothing else to go on
+            it falls back to the tooltip, so a per-state <b>OnTitle</b>/<b>OffTitle</b> on an icon-only
+            BitToggleButton drops <b>aria-pressed</b> too - unless an <b>AriaLabel</b> holds the name still, as in
+            the second one here:
+        </div><br />
+        <div class="example-box">
+            <BitToggleButton IconOnly IconName="@BitIconName.Microphone"
+                             OnTitle="Click to unmute" OffTitle="Click to mute" />
+
+            <BitToggleButton IconOnly IconName="@BitIconName.Microphone" AriaLabel="Mute"
+                             OnTitle="Click to unmute" OffTitle="Click to mute" />
+        </div>
+        <br /><br /><br />
+        <div>
             <b>AriaMode</b> takes the decision back from the automatic one. <b>Pressed</b> always renders
             <b>aria-pressed</b>, <b>Switch</b> renders <b>role="switch"</b> with <b>aria-checked</b> instead - which
-            reads better for an on/off setting than a pressed/not pressed one - and <b>None</b> renders no state
-            attribute at all, for a button like play/pause whose own content already says which state it is in:
+            reads better for an on/off setting than a pressed/not pressed one - <b>Expanded</b> renders
+            <b>aria-expanded</b>, for a button whose checked state is another part of the page being shown, and
+            <b>None</b> renders no state attribute at all, for a button like play/pause whose own content already
+            says which state it is in:
         </div><br />
         <div class="example-box">
             <BitToggleButton AriaMode="BitToggleButtonAriaMode.Pressed" AriaLabel="Bold" IconOnly IconName="@BitIconName.Bold" />
@@ -448,11 +500,15 @@
         </div>
         <br /><br /><br />
         <div>
-            <b>AriaDescription</b> adds a visually hidden description, and <b>AriaControls</b> points at the element the
-            toggle button controls:
+            <b>AriaControls</b> points at the element the toggle button controls, and where that element is a part of
+            the page the checked state reveals, the <b>Expanded</b> mode is what says so - a screen reader then
+            announces the button as collapsed or expanded rather than as pressed, which is the part that tells the
+            user something appeared elsewhere. <b>AriaDescription</b> adds a visually hidden description read after
+            the name:
         </div><br />
         <div class="example-box">
             <BitToggleButton AriaLabel="Show details"
+                             AriaMode="BitToggleButtonAriaMode.Expanded"
                              AriaControls="accessibility-details"
                              AriaDescription="Expands the details panel below the button."
                              @bind-IsChecked="detailsVisible"

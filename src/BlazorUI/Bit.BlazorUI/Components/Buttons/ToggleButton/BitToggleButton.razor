@@ -21,6 +21,7 @@
     // altogether, a value the page wrote by hand is what is left and is kept.
     var ariaPressed = GetAriaPressed() ?? GetSplattedAttribute("aria-pressed");
     var ariaChecked = GetAriaChecked() ?? GetSplattedAttribute("aria-checked");
+    var ariaExpanded = GetAriaExpanded() ?? GetSplattedAttribute("aria-expanded");
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
     // The toggle button pattern is a button unless AriaMode asks for a switch, but a page that gave it a role of its
@@ -80,6 +81,7 @@
         aria-controls="@ariaControls"
         aria-pressed="@ariaPressed"
         aria-checked="@ariaChecked"
+        aria-expanded="@ariaExpanded"
         aria-busy="@ariaBusy"
         aria-disabled="@ariaDisabled"
         aria-labelledby="@ariaLabelledBy"

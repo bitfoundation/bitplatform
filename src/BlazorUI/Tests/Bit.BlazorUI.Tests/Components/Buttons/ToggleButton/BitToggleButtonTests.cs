@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -346,9 +347,147 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.AreEqual(isLoading, bitToggleButton.HasAttribute("aria-busy"));
         Assert.AreEqual(isLoading ? 1 : 0, component.FindAll(".bit-tgb-spn").Count);
 
+        // The pointer is taken away from a loading toggle button whose clicks are being swallowed, and left on a
+        // Reclickable one - which is the loading state that still takes them.
+        Assert.AreEqual(isLoading && reclickable is false, bitToggleButton.ClassList.Contains("bit-tgb-lod"));
+
         bitToggleButton.Click();
 
         Assert.AreEqual(isLoading is false || reclickable, isChecked);
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldTakeThePointerAwayFromTheFirstClickOfALoadingDelay()
+    {
+        // The delay holds the spinner back, not the click guard, so the pointer affordance has to go with the
+        // guard rather than with the spinner - a toggle button that already ignores clicks must not still
+        // invite them.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 5000);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.IsFalse(bitToggleButton.ClassList.Contains("bit-tgb-lda"));
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-lod"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleButtonAutoLoadingShouldCoverTheOnClickCallbackToo()
+    {
+        // An async OnClick handler is part of what the click is waiting for, so the loading state has to already
+        // be open while it runs - otherwise the guard leaves open exactly the window it exists to close, and the
+        // toggle button shows neither a spinner nor a busy state for the whole of it.
+        var clickCount = 0;
+        var tcs = new TaskCompletionSource();
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) =>
+            {
+                clickCount++;
+                return tcs.Task;
+            });
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        var click = bitToggleButton.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
+            Assert.AreEqual("true", component.Find(".bit-tgb").GetAttribute("aria-busy"));
+            Assert.HasCount(1, component.FindAll(".bit-tgb-spn"));
+        });
+
+        // and the click guard is up with it, so the second click never reaches the handler
+        _ = bitToggleButton.ClickAsync(new MouseEventArgs());
+        Assert.AreEqual(1, clickCount);
+
+        tcs.SetResult();
+        await click;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
+            Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+        });
+
+        Assert.IsTrue(component.Instance.IsChecked);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonExpandedAriaModeShouldRenderAriaExpandedAlone(bool isChecked)
+    {
+        // The disclosure pattern: the checked state is another part of the page being shown, which a screen
+        // reader announces as collapsed or expanded rather than as pressed. The two readings are mutually
+        // exclusive, so the pressed state has to go with it, and the button keeps its implicit role.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AriaMode, BitToggleButtonAriaMode.Expanded);
+            parameters.Add(p => p.AriaControls, "details-panel");
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Text, "Details");
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual(isChecked ? "true" : "false", bitToggleButton.GetAttribute("aria-expanded"));
+        Assert.AreEqual("details-panel", bitToggleButton.GetAttribute("aria-controls"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-pressed"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("aria-checked"));
+        Assert.IsFalse(bitToggleButton.HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldNotRenderAriaPressedWhenOnlyTheTitleChanges()
+    {
+        // With nothing else to name it, an icon-only toggle button is named by its title - so a title that
+        // differs per state changes the accessible name as surely as a per-state text does.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Microphone");
+            parameters.Add(p => p.OnTitle, "Click to unmute");
+            parameters.Add(p => p.OffTitle, "Click to mute");
+        });
+
+        Assert.IsFalse(component.Find(".bit-tgb").HasAttribute("aria-pressed"));
+
+        // and an aria-label pins the name down over the varying tooltip, which brings the state attribute back
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconName, "Microphone");
+            parameters.Add(p => p.AriaLabel, "Mute");
+            parameters.Add(p => p.OnTitle, "Click to unmute");
+            parameters.Add(p => p.OffTitle, "Click to mute");
+        });
+
+        Assert.AreEqual("false", component.Find(".bit-tgb").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldKeepAriaPressedWhenTheTitleIsBehindAVisibleText()
+    {
+        // The title only names a toggle button that has no content of its own; a visible text outranks it in the
+        // accessible name computation, so a varying tooltip behind a stable text changes nothing.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.OnTitle, "Click to unmute");
+            parameters.Add(p => p.OffTitle, "Click to mute");
+        });
+
+        Assert.AreEqual("false", component.Find(".bit-tgb").GetAttribute("aria-pressed"));
     }
 
     [TestMethod]

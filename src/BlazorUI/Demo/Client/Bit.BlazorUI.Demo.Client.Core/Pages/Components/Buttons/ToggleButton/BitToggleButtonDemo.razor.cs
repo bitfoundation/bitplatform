@@ -16,7 +16,7 @@ public partial class BitToggleButtonDemo
             Name = "AriaControls",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The id of the element that the toggle button controls (rendered into aria-controls).",
+            Description = "The id of the element that the toggle button controls (rendered into aria-controls). Where the controlled element is a part of the page the checked state reveals, pair it with the Expanded AriaMode.",
         },
         new()
         {
@@ -259,7 +259,7 @@ public partial class BitToggleButtonDemo
             Name = "OffTitle",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title of the toggle button when it is not checked.",
+            Description = "The title of the toggle button when it is not checked. With no other wording to name the toggle button, the tooltip becomes its accessible name, so a title that differs per state suppresses aria-pressed just as a per-state text does.",
         },
         new()
         {
@@ -339,7 +339,7 @@ public partial class BitToggleButtonDemo
             Name = "OnTitle",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The title of the toggle button when it is checked.",
+            Description = "The title of the toggle button when it is checked. With no other wording to name the toggle button, the tooltip becomes its accessible name, so a title that differs per state suppresses aria-pressed just as a per-state text does.",
         },
         new()
         {
@@ -355,7 +355,7 @@ public partial class BitToggleButtonDemo
             Name = "Reclickable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables re-clicking while the toggle button is in the loading state.",
+            Description = "Enables re-clicking while the toggle button is in the loading state. A loading toggle button otherwise stops responding to the pointer altogether, keeping neither the hover shade nor the pointer cursor of a control that takes clicks.",
         },
         new()
         {
@@ -545,6 +545,12 @@ public partial class BitToggleButtonDemo
             Name = "--bit-ToggleButton-disabled-border-color",
             DefaultValue = "--bit-ToggleButton-disabled-background, then per Variant",
             Description = "Border color when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-ToggleButton-checked-disabled-opacity",
+            DefaultValue = "--bit-opa-dis",
+            Description = "Dimming of a disabled toggle button that is checked. It keeps the checked colors rather than taking the disabled ones, since a setting greyed out at \"on\" and one greyed out at \"off\" are different facts; set it to 1 to hand the whole appearance back to the disabled variables above.",
         },
         new()
         {
@@ -744,6 +750,12 @@ public partial class BitToggleButtonDemo
                     Name= "None",
                     Description="Renders no state attribute at all, for content that already conveys the state.",
                     Value="3",
+                },
+                new()
+                {
+                    Name= "Expanded",
+                    Description="Renders aria-expanded instead of aria-pressed, for a toggle button whose checked state is another part of the page being shown.",
+                    Value="4",
                 }
             ]
         },

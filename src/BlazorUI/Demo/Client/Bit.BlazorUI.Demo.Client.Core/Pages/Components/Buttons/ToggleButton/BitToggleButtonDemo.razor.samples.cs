@@ -37,38 +37,15 @@ public partial class BitToggleButtonDemo
 <BitToggleButton IconPosition=""BitIconPosition.Start"" Text=""Start"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton IconPosition=""BitIconPosition.End"" Text=""End"" IconName=""@BitIconName.Microphone"" />
 
-<BitToggleButton IconName=""@BitIconName.Microphone"" />
-<BitToggleButton OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
-
-<BitToggleButton IconOnly IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
-<BitToggleButton IconOnly
+<BitToggleButton AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
+<BitToggleButton AriaLabel=""Mute""
+                 OnIconName=""@BitIconName.MicOff"" OffIconName=""@BitIconName.Microphone"" />
+<BitToggleButton IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" Text=""Microphone"" />
+<BitToggleButton IconOnly AriaLabel=""Mute""
                  OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />";
 
     private readonly string example5RazorCode = @"
-<BitToggleButton OnColor=""BitColor.Success"" OffColor=""BitColor.Error""
-                 OnText=""Recording"" OnIconName=""@BitIconName.CircleFill""
-                 OffText=""Stopped"" OffIconName=""@BitIconName.CircleStopSolid"" />
-
-<BitToggleButton OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Outline""
-                 OnText=""Following"" OffText=""Follow"" />
-
-<BitToggleButton Color=""BitColor.Info""
-                 OnColor=""BitColor.Warning"" OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Text""
-                 OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
-                 OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />";
-
-    private readonly string example6RazorCode = @"
-<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Bold"" />
-<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
-
-<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Bold"" />
-<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
-
-<BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName=""@BitIconName.FavoriteStarFill""
-                 Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" Text=""Favorite"" />";
-
-    private readonly string example7RazorCode = @"
 <BitToggleButton DefaultIsChecked=""true""
                  OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
                  OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
@@ -86,12 +63,54 @@ public partial class BitToggleButtonDemo
 <BitToggleButton @ref=""programmaticToggleRef"" OnText=""Muted"" OffText=""Unmuted"" />
 <BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticToggleRef.ToggleAsync()"">Toggle it</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""FocusTheToggleButton"">Focus it</BitButton>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private bool twoWayBoundValue;
 private bool onChangeValue;
 private BitToggleButton programmaticToggleRef = default!;
 
 private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAsync();";
+
+    private readonly string example6RazorCode = @"
+<BitToggleButton OnColor=""BitColor.Success"" OffColor=""BitColor.Error""
+                 OnText=""Recording"" OnIconName=""@BitIconName.CircleFill""
+                 OffText=""Stopped"" OffIconName=""@BitIconName.CircleStopSolid"" />
+<BitToggleButton DefaultIsChecked=""true""
+                 OnColor=""BitColor.Success"" OffColor=""BitColor.Error""
+                 OnText=""Recording"" OnIconName=""@BitIconName.CircleFill""
+                 OffText=""Stopped"" OffIconName=""@BitIconName.CircleStopSolid"" />
+
+<BitToggleButton OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Outline""
+                 OnText=""Following"" OffText=""Follow"" />
+<BitToggleButton DefaultIsChecked=""true""
+                 OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Outline""
+                 OnText=""Following"" OffText=""Follow"" />
+
+<BitToggleButton Color=""BitColor.Info""
+                 OnColor=""BitColor.Warning"" OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Text""
+                 OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
+                 OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />
+<BitToggleButton DefaultIsChecked=""true"" Color=""BitColor.Info""
+                 OnColor=""BitColor.Warning"" OnVariant=""BitVariant.Fill"" OffVariant=""BitVariant.Text""
+                 OnText=""Notifications muted"" OnIconName=""@BitIconName.RingerOff""
+                 OffText=""Notifications on"" OffIconName=""@BitIconName.Ringer"" />
+
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" Text=""Fill"" />
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Fill"" DefaultIsChecked=""true"" Text=""Fill"" />
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Text=""Outline"" />
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Outline"" />
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Text=""Text"" />
+<BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" DefaultIsChecked=""true"" Text=""Text"" />";
+
+    private readonly string example7RazorCode = @"
+<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold"" />
+<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
+
+<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold"" />
+<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
+
+<BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName=""@BitIconName.FavoriteStarFill""
+                 Variant=""BitVariant.Outline"" Color=""BitColor.Warning""
+                 DefaultIsChecked=""true"" Text=""Favorite"" />";
 
     private readonly string example8RazorCode = @"
 <style>
@@ -240,6 +259,11 @@ private async Task HandleAutoLoadingChange()
 
 <BitToggleButton AriaLabel=""Mute"" OnText=""Muted"" OffText=""Unmuted"" />
 
+<BitToggleButton IconOnly IconName=""@BitIconName.Microphone""
+                 OnTitle=""Click to unmute"" OffTitle=""Click to mute"" />
+<BitToggleButton IconOnly IconName=""@BitIconName.Microphone"" AriaLabel=""Mute""
+                 OnTitle=""Click to unmute"" OffTitle=""Click to mute"" />
+
 <BitToggleButton AriaMode=""BitToggleButtonAriaMode.Pressed"" AriaLabel=""Bold"" IconOnly IconName=""@BitIconName.Bold"" />
 <BitToggleButton AriaMode=""BitToggleButtonAriaMode.Switch"" AriaLabel=""Airplane mode"" Text=""Airplane mode"" />
 <BitToggleButton AriaMode=""BitToggleButtonAriaMode.None""
@@ -255,6 +279,7 @@ private async Task HandleAutoLoadingChange()
                  IconOnly IconName=""@BitIconName.StatusCircleCheckmark"" />
 
 <BitToggleButton AriaLabel=""Show details""
+                 AriaMode=""BitToggleButtonAriaMode.Expanded""
                  AriaControls=""accessibility-details""
                  AriaDescription=""Expands the details panel below the button.""
                  @bind-IsChecked=""detailsVisible""

@@ -22,6 +22,9 @@
 //   --bit-ToggleButton-disabled-color                 foreground when disabled                (default: the role's disabled text color)
 //   --bit-ToggleButton-disabled-background            background when disabled                (default: per variant, the role's disabled color or transparent)
 //   --bit-ToggleButton-disabled-border-color          border color when disabled              (default: the disabled background)
+//   --bit-ToggleButton-checked-disabled-opacity       dimming of a disabled checked toggle
+//                                                     button, which keeps its own colors so
+//                                                     the state survives being disabled       (default: $opa-dis)
 //   --bit-ToggleButton-focus-color                    focus ring color                        (default: the role's focus color)
 //   --bit-ToggleButton-radius                         corner radius of the box and its ring   (default: $shp-radius-button)
 //   --bit-ToggleButton-border-width                   thickness of the border                 (default: $shp-border-width)
@@ -126,6 +129,18 @@
 
 .bit-tgb-eni {
     flex-direction: row-reverse;
+
+    // The loading state moves the content into a flex box of its own, which has to reverse along with the root.
+    .bit-tgb-hcn {
+        flex-direction: row-reverse;
+    }
+
+    // Reversing the row would carry the check mark to the far end with the icon, and the check mark is not
+    // what IconPosition was asked to move. Ordering it after everything else puts it back at the leading
+    // edge, since a reversed main axis lays the highest order out first.
+    .bit-tgb-chm {
+        order: 1;
+    }
 }
 
 .bit-tgb-flw {
@@ -141,6 +156,14 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+}
+
+// A loading toggle button whose clicks are being swallowed says so with the pointer too: the hover shade and
+// the pointer cursor belong to a control that takes clicks, and this one is ignoring every one of them until
+// the work finishes. Reclickable is the loading state that still reacts, and it keeps both.
+.bit-tgb-lod {
+    cursor: default;
+    pointer-events: none;
 }
 
 .bit-tgb-hcn {
@@ -317,6 +340,20 @@
     }
 }
 
+// A disabled toggle button still has to say which state it is in - a setting greyed out at "on" and one greyed
+// out at "off" are different facts, and left alone the variants' disabled rules paint the two of them the same,
+// since a two-class selector outranks the single-class checked block above. So the checked state is given its
+// own colors back here and dimmed rather than repainted: this is the case $opa-dis exists for, where the color
+// carries information that repainting it would destroy, and an inactive control is outside the contrast
+// minimum of WCAG 1.4.3 in any case. ShowCheckMark remains the way to convey the state without relying on
+// color at all, disabled or not.
+.bit-tgb-chk.bit-dis {
+    opacity: var(--bit-ToggleButton-checked-disabled-opacity, #{$opa-dis});
+    color: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+    border-color: var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark)));
+    background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
+}
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-tgb-#{$role} {
@@ -338,7 +375,7 @@
     --bit-tgb-min-height: #{$siz-ctrl-sm};
     --bit-tgb-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
     --bit-tgb-fontsize: #{$tg-fs-xs};
-    --bit-tgb-ntx-pad: #{spacing(0.5)};
+    --bit-tgb-ntx-pad: #{$siz-ctrl-pad-y-sm};
     --bit-tgb-ntx-icn-size: #{spacing(2.00)};
     --bit-tgb-spn-size: #{spacing(2.00)};
     --bit-tgb-lbl-fontsize: #{$tg-fs-2xs};
@@ -348,7 +385,7 @@
     --bit-tgb-min-height: #{$siz-ctrl-md};
     --bit-tgb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
     --bit-tgb-fontsize: #{$tg-fs-sm};
-    --bit-tgb-ntx-pad: #{spacing(0.75)};
+    --bit-tgb-ntx-pad: #{$siz-ctrl-pad-y-md};
     --bit-tgb-ntx-icn-size: #{spacing(2.35)};
     --bit-tgb-spn-size: #{spacing(2.35)};
     --bit-tgb-lbl-fontsize: #{$tg-fs-xs};
@@ -358,7 +395,7 @@
     --bit-tgb-min-height: #{$siz-ctrl-lg};
     --bit-tgb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
     --bit-tgb-fontsize: #{$tg-fs-md};
-    --bit-tgb-ntx-pad: #{spacing(1.0)};
+    --bit-tgb-ntx-pad: #{$siz-ctrl-pad-y-lg};
     --bit-tgb-ntx-icn-size: #{spacing(3.35)};
     --bit-tgb-spn-size: #{spacing(2.75)};
     --bit-tgb-lbl-fontsize: #{$tg-fs-sm};
@@ -386,6 +423,13 @@
     .bit-tgb.bit-dis {
         color: GrayText;
         border-color: GrayText;
+    }
+
+    // The system palette conveys both facts on its own here - the Highlight fill of the checked state survives
+    // the disabled rule above, which only reaches the text and the border - so the dimming that carries the
+    // state elsewhere has nothing left to do, and would only weaken a color the user chose for its clarity.
+    .bit-tgb-chk.bit-dis {
+        opacity: 1;
     }
 
     .bit-tgb-spn {

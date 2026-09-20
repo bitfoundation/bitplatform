@@ -1867,7 +1867,11 @@ public class BitActionButtonTests : BunitTestContext
 
         var firstClick = button.ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-lod")));
+        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-acb-spn")));
+
+        // The class that takes the pointer away follows the click guard rather than the loading state, so a
+        // Reclickable button keeps the pointer it needs to receive the second click.
+        Assert.AreEqual(reclickable is false, component.Find(".bit-acb").ClassList.Contains("bit-acb-lod"));
 
         var secondClick = button.ClickAsync(new MouseEventArgs());
 
