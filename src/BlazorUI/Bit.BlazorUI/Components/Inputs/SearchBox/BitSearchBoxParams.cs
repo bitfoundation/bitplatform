@@ -114,6 +114,13 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     public bool? FixedIcon { get; set; }
 
     /// <summary>
+    /// The keyboard shortcut that moves the focus into the search box from anywhere on the page, written in
+    /// the syntax of the <c>aria-keyshortcuts</c> attribute (for example <c>Control+K Meta+K</c>, which
+    /// covers a Windows and a macOS keyboard at once).
+    /// </summary>
+    public string? FocusShortcut { get; set; }
+
+    /// <summary>
     /// Expands the search box to fill the available width of its container.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -281,6 +288,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     public BitSearchBoxClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The text rendered in the callout when the suggest items provider throws.
+    /// </summary>
+    public string? SuggestFailedText { get; set; }
+
+    /// <summary>
     /// Matches the search term against the suggest items with the diacritics of both removed.
     /// </summary>
     public bool? SuggestIgnoreDiacritics { get; set; }
@@ -421,6 +433,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.FixedIcon = FixedIcon.Value;
 
             bitSearchBox.ClassBuilder.Reset();
+        }
+
+        if (FocusShortcut is not null && bitSearchBox.HasNotBeenSet(nameof(FocusShortcut)))
+        {
+            bitSearchBox.FocusShortcut = FocusShortcut;
         }
 
         if (FullWidth.HasValue && bitSearchBox.HasNotBeenSet(nameof(FullWidth)))
@@ -602,6 +619,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
             bitSearchBox.Styles = Styles;
 
             bitSearchBox.StyleBuilder.Reset();
+        }
+
+        if (SuggestFailedText is not null && bitSearchBox.HasNotBeenSet(nameof(SuggestFailedText)))
+        {
+            bitSearchBox.SuggestFailedText = SuggestFailedText;
         }
 
         if (SuggestIgnoreDiacritics.HasValue && bitSearchBox.HasNotBeenSet(nameof(SuggestIgnoreDiacritics)))

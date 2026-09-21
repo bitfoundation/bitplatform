@@ -71,6 +71,7 @@
                    tabindex="@TabIndex"
                    readonly="@ReadOnly"
                    required="@Required"
+                   aria-required="@(Required ? "true" : null)"
                    value="@CurrentValue"
                    style="@Styles?.Input"
                    autofocus="@AutoFocus"
@@ -88,6 +89,7 @@
                    class="bit-srb-inp @Classes?.Input"
                    spellcheck="@(SpellCheck is null ? null : (SpellCheck.Value ? "true" : "false"))"
                    maxlength="@(MaxLength >= 0 ? MaxLength : null)"
+                   aria-keyshortcuts="@FocusShortcut"
                    role="@(_hasSuggestSource ? "combobox" : "searchbox")"
                    aria-haspopup="@(_hasSuggestSource ? "listbox" : null)"
                    aria-controls="@(_hasSuggestSource ? _scrollContainerId : null)"
@@ -163,8 +165,12 @@
                 }
                 else
                 {
+                    @* The default glyph is a directional arrow and is marked as such, because it is the one
+                       the RTL layout has to mirror; an icon the app chose means the same thing both ways. *@
+                    var isDefaultSearchIcon = SearchButtonIcon is null && SearchButtonIconName is null;
                     var searchButtonIcon = BitIconInfo.From(SearchButtonIcon, SearchButtonIconName ?? "ChromeBackMirrored");
-                    <i style="@Styles?.SearchButtonIcon" class="@searchButtonIcon?.GetCssClasses() @Classes?.SearchButtonIcon" aria-hidden="true" />
+                    <i style="@Styles?.SearchButtonIcon" aria-hidden="true"
+                       class="@searchButtonIcon?.GetCssClasses() @(isDefaultSearchIcon ? "bit-srb-dsi" : null) @Classes?.SearchButtonIcon" />
 
                     if (SearchButtonText.HasValue())
                     {
@@ -255,7 +261,7 @@
     <div id="@_calloutId"
          style="@Styles?.Callout"
          dir="@Dir?.ToString().ToLower()"
-         class="bit-srb-cal @_calloutSizeClass @(DisableAnimation ? "bit-srb-nan" : null) @Classes?.Callout">
+         class="bit-srb-cal @_calloutSizeClass @_calloutColorClass @(ReadOnly ? "bit-srb-rol" : null) @(DisableAnimation ? "bit-srb-nan" : null) @Classes?.Callout">
 
         @if (CalloutHeaderTemplate is not null)
         {
@@ -301,7 +307,22 @@
                 }
             </div>
         }
-        else if (_searchTriggered && _viewSuggestedItems.Count == 0)
+        else if (_suggestFailed && HasSuggestFailedContent)
+        {
+            <div aria-hidden="true"
+                 style="@Styles?.SuggestFailed"
+                 class="bit-srb-fld @Classes?.SuggestFailed">
+                @if (SuggestFailedTemplate is not null)
+                {
+                    @SuggestFailedTemplate
+                }
+                else
+                {
+                    @SuggestFailedText
+                }
+            </div>
+        }
+        else if (_searchTriggered && _suggestFailed is false && _viewSuggestedItems.Count == 0)
         {
             @if (NoResultsTemplate is not null)
             {
@@ -330,7 +351,13 @@
             @foreach (var (text, index) in _viewSuggestedItems.Select((t, i) => (t, i)))
             {
                 var isSelected = index == _selectedIndex;
-                <div role="presentation" style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                @* Keyed by position rather than by text: the ids the aria-activedescendant of the input
+                   points at are built from the index, so a row has to keep the index it was rendered with. *@
+                <div @key="index" role="presentation" style="@Styles?.SuggestItemWrapper" class="@Classes?.SuggestItemWrapper">
+                    @* Read-only blocks picking a suggestion but not browsing the list, so the rows stay in
+                       the accessibility tree and stay reachable with the arrow keys - and say that they
+                       cannot be chosen, rather than silently swallowing the attempt. The native disabled
+                       attribute is deliberately not used: it would take them out of that tree altogether. *@
                     <button @onclick="() => HandleOnSuggestedItemClick(text)"
                             @onmousedown:preventDefault="true"
                             id="@GetItemId(index)"
@@ -338,6 +365,7 @@
                             type="button"
                             role="option"
                             title="@text"
+                            aria-disabled="@(ReadOnly ? "true" : null)"
                             style="@Styles?.SuggestItemButton"
                             aria-posinset="@(index + 1)"
                             aria-setsize="@_viewSuggestedItems.Count"

@@ -174,6 +174,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "FocusShortcut",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The keyboard shortcut that moves the focus into the search box from anywhere on the page, written in the syntax of the aria-keyshortcuts attribute the input is given (e.g. \"Control+K Meta+K\"). A combination with no modifier only fires while the focus is outside of a field.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -395,6 +402,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "OnSuggestFailed",
+            Type = "EventCallback<Exception>",
+            Description = "Callback executed with the exception a SuggestItemsProvider threw. A cancelled call is not a failure and never raises it.",
+        },
+        new()
+        {
             Name = "OnSuggestItemSelect",
             Type = "EventCallback<string>",
             Description = "Callback executed when the user selects one of the suggest items either by clicking on it or by pressing enter while it is highlighted.",
@@ -522,6 +535,20 @@ public partial class BitSearchBoxDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template for the suffix of the search box.",
+        },
+        new()
+        {
+            Name = "SuggestFailedTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content rendered in the callout when the SuggestItemsProvider throws, which replaces the plain SuggestFailedText.",
+        },
+        new()
+        {
+            Name = "SuggestFailedText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text rendered in the callout when the SuggestItemsProvider throws, which is what tells a search that could not run apart from one that found nothing. It replaces the built-in sentence announced to screen readers as well.",
         },
         new()
         {
@@ -737,6 +764,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-clear-button-active-background",
+            DefaultValue = "$clr-bg-pri-active",
+            Description = "Background of the pressed clear button.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-clear-button-hover-background",
             DefaultValue = "$clr-bg-pri-hover",
             Description = "Background of the hovered clear button.",
@@ -821,9 +854,21 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-callout-failed-color",
+            DefaultValue = "$clr-err",
+            Description = "Color of the message a failing suggest items provider is reported with.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-spinner-color",
-            DefaultValue = "$clr-pri",
-            Description = "Arc color of the loading spinner of the callout.",
+            DefaultValue = "The Color role's main color",
+            Description = "Arc color of the loading spinner, in the field and in the callout.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-spinner-size",
+            DefaultValue = "Per Size ($siz-icon-md by default)",
+            Description = "Diameter of the loading spinner, in the field and in the callout.",
         },
         new()
         {
@@ -860,6 +905,12 @@ public partial class BitSearchBoxDemo
             Name = "--bit-SearchBox-item-selected-background",
             DefaultValue = "$clr-bg-sec",
             Description = "Background of the suggest item the arrow keys highlight.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-selected-border-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Ring drawn inside the suggest item the arrow keys highlight, which is the only thing that says where the keyboard is (the focus itself never leaves the input).",
         },
         new()
         {
@@ -1088,6 +1139,13 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
+                    Name = "SuggestFailed",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container the search box's callout reports a failing suggest items provider in.",
+                },
+                new()
+                {
                     Name = "Hint",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1201,6 +1259,13 @@ public partial class BitSearchBoxDemo
                     Type = "int",
                     DefaultValue = "3",
                     Description = "The value of the MinSuggestTriggerChars parameter.",
+                },
+                new()
+                {
+                    Name = "HasFailed",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the SuggestItemsProvider threw, so the suggest items are empty because the search could not run rather than because nothing matched.",
                 },
             ]
         },
@@ -1634,6 +1699,9 @@ public partial class BitSearchBoxDemo
         announcedText = args switch
         {
             { IsLoading: true } => "Looking for matches...",
+            // Before the empty-result arm below, which would otherwise blame the term for a search
+            // that never ran.
+            { HasFailed: true } => "Suggestions are unavailable right now.",
             { SearchTerm: null or "" } => null,
             { IsSearchTermTooShort: true } => $"Keep typing, {args.MinSuggestTriggerChars} characters are needed to search.",
             { SuggestItems.Count: 0 } => $"Nothing matches '{args.SearchTerm}'. Try another word.",
@@ -1727,6 +1795,16 @@ public partial class BitSearchBoxDemo
 
         return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
     };
+
+    private string? suggestFailure;
+
+    private async ValueTask<IEnumerable<string>> LoadItemsThatFail(BitSearchBoxSuggestItemsProviderRequest request)
+    {
+        // an artificial delay so that the loading state is seen before the failure replaces it.
+        await Task.Delay(600, request.CancellationToken);
+
+        throw new HttpRequestException("The suggestions endpoint is unreachable.");
+    }
 
     private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggestItemsProviderRequest request)
     {

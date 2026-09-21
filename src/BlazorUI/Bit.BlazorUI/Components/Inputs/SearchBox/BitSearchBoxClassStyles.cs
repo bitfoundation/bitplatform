@@ -143,6 +143,11 @@ public class BitSearchBoxClassStyles
     public string? NoResults { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the container the search box's callout reports a failing suggest items provider in.
+    /// </summary>
+    public string? SuggestFailed { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the too-short-term hint of the search box's callout.
     /// </summary>
     public string? Hint { get; set; }

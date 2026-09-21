@@ -19,6 +19,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool _inputHasValue;
     private bool _suppressSearch;
     private bool _searchTriggered;
+    private bool _suggestFailed;
     private bool _hasSuggestSource;
     private string? _announcement;
     private string? _foldedTerm;
@@ -27,6 +28,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private int _selectedIndex = -1;
     private string? _enterKeyHint = "search";
     private string? _calloutSizeClass;
+    private string? _calloutColorClass;
+    private string? _registeredShortcut;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
@@ -210,6 +213,22 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FixedIcon { get; set; }
+
+    /// <summary>
+    /// The keyboard shortcut that moves the focus into the search box from anywhere on the page, which is
+    /// what turns a search box in a header into the one every app with a lot to search through has. It is
+    /// written in the syntax of the <c>aria-keyshortcuts</c> attribute - a space separated list of
+    /// combinations, each of them modifiers and a key joined by <c>+</c> - and the input is given that very
+    /// attribute, so the shortcut is announced rather than only being there for whoever guessed it.
+    /// </summary>
+    /// <remarks>
+    /// A combination that carries no modifier (the bare <c>/</c> of a documentation site) only fires while
+    /// the focus is outside of a field, so it never steals a character from something being typed elsewhere.
+    /// A macOS keyboard expects a different modifier than a Windows one, which one value covers:
+    /// <c>FocusShortcut="Control+K Meta+K"</c>. Pair it with a <see cref="SuffixTemplate"/> rendering the
+    /// combination inside the field to make it discoverable with the eyes as well.
+    /// </remarks>
+    [Parameter] public string? FocusShortcut { get; set; }
 
     /// <summary>
     /// Expands the search box to fill the available width of its container.
@@ -420,6 +439,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public EventCallback<string> OnSuggestItemSelect { get; set; }
 
     /// <summary>
+    /// Callback executed with the exception a <see cref="SuggestItemsProvider"/> threw, which is otherwise
+    /// the one failure of the component an app never gets to see - the callout reports it to the user, and
+    /// this reports it to the log. A cancelled call is not a failure and never raises it.
+    /// </summary>
+    [Parameter] public EventCallback<Exception> OnSuggestFailed { get; set; }
+
+    /// <summary>
     /// Callback executed with true when the suggest items callout opens and with false when it closes.
     /// </summary>
     [Parameter] public EventCallback<bool> OnSuggestItemsToggle { get; set; }
@@ -527,6 +553,20 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The custom template for the suffix of the search box.
     /// </summary>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
+    /// <summary>
+    /// The custom content rendered in the callout when the <see cref="SuggestItemsProvider"/> throws, which
+    /// replaces the plain <see cref="SuggestFailedText"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? SuggestFailedTemplate { get; set; }
+
+    /// <summary>
+    /// The text rendered in the callout when the <see cref="SuggestItemsProvider"/> throws - a search that
+    /// could not run, which without it is indistinguishable from one that ran and found nothing, and so
+    /// leaves the user retyping a term that was never the problem. It replaces the built-in English
+    /// sentence announced to screen readers as well.
+    /// </summary>
+    [Parameter] public string? SuggestFailedText { get; set; }
 
     /// <summary>
     /// Custom search function to be used in place of the default search algorithm.
@@ -663,6 +703,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => Required ? "bit-srb-req" : string.Empty);
 
+        ClassBuilder.Register(() => ReadOnly ? "bit-srb-rol" : string.Empty);
+
         // The base class already paints the failing validation of an EditContext. An ErrorMessage the app
         // sets itself is the same rejection told a different way, so it reuses that class rather than
         // adding one of its own - guarded so the two never emit it twice.
@@ -685,28 +727,35 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _ => "bit-srb-bpr"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-srb-pri",
-            BitColor.Secondary => "bit-srb-sec",
-            BitColor.Tertiary => "bit-srb-ter",
-            BitColor.Info => "bit-srb-inf",
-            BitColor.Success => "bit-srb-suc",
-            BitColor.Warning => "bit-srb-wrn",
-            BitColor.SevereWarning => "bit-srb-swr",
-            BitColor.Error => "bit-srb-err",
-            BitColor.PrimaryBackground => "bit-srb-pbg",
-            BitColor.SecondaryBackground => "bit-srb-sbg",
-            BitColor.TertiaryBackground => "bit-srb-tbg",
-            BitColor.PrimaryForeground => "bit-srb-pfg",
-            BitColor.SecondaryForeground => "bit-srb-sfg",
-            BitColor.TertiaryForeground => "bit-srb-tfg",
-            BitColor.PrimaryBorder => "bit-srb-pbr",
-            BitColor.SecondaryBorder => "bit-srb-sbr",
-            BitColor.TertiaryBorder => "bit-srb-tbr",
-            _ => "bit-srb-pri"
-        });
+        ClassBuilder.Register(GetColorClass);
     }
+
+    /// <summary>
+    /// The class that declares the color role tokens of the component. The callout is rendered outside of
+    /// the root element, so it never inherits them and is given the very same class instead - which is what
+    /// lets the highlight ring of a suggest item and the spinner of the callout follow the chosen color.
+    /// </summary>
+    private string GetColorClass() => Color switch
+    {
+        BitColor.Primary => "bit-srb-pri",
+        BitColor.Secondary => "bit-srb-sec",
+        BitColor.Tertiary => "bit-srb-ter",
+        BitColor.Info => "bit-srb-inf",
+        BitColor.Success => "bit-srb-suc",
+        BitColor.Warning => "bit-srb-wrn",
+        BitColor.SevereWarning => "bit-srb-swr",
+        BitColor.Error => "bit-srb-err",
+        BitColor.PrimaryBackground => "bit-srb-pbg",
+        BitColor.SecondaryBackground => "bit-srb-sbg",
+        BitColor.TertiaryBackground => "bit-srb-tbg",
+        BitColor.PrimaryForeground => "bit-srb-pfg",
+        BitColor.SecondaryForeground => "bit-srb-sfg",
+        BitColor.TertiaryForeground => "bit-srb-tfg",
+        BitColor.PrimaryBorder => "bit-srb-pbr",
+        BitColor.SecondaryBorder => "bit-srb-sbr",
+        BitColor.TertiaryBorder => "bit-srb-tbr",
+        _ => "bit-srb-pri"
+    };
 
     protected override void RegisterCssStyles()
     {
@@ -753,6 +802,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             _ => "bit-srb-md"
         };
 
+        _calloutColorClass = GetColorClass();
+
         _enterKeyHint = (EnterKeyHint ?? BitEnterKeyHint.Search) switch
         {
             BitEnterKeyHint.Enter => "enter",
@@ -770,6 +821,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        // A search box that was turned read-only, or had its suggest source taken away, while its list was
+        // open would otherwise be stuck with it: the callout leaves the markup on the next render, but the
+        // full screen overlay the browser is still showing is dismissed by nothing.
+        if (_isOpen && _hasSuggestSource is false)
+        {
+            await CloseCallout();
+            return;
+        }
 
         // A suggest list replaced from the outside while the callout is open (one that has just
         // finished loading, for instance) has to be re-filtered right away, otherwise the user
@@ -789,6 +849,29 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // The shortcut listens on the document rather than on the input, so it is the one piece of the
+        // component that has to be taken back off again - and re-registered whenever its value changes,
+        // which is how an app that swaps it at runtime is not left with the previous one still armed.
+        if (_registeredShortcut != FocusShortcut)
+        {
+            var previous = _registeredShortcut;
+
+            _registeredShortcut = FocusShortcut;
+
+            try
+            {
+                if (FocusShortcut.HasValue())
+                {
+                    await _js.BitSearchBoxRegisterShortcut(_inputId, FocusShortcut!);
+                }
+                else if (previous.HasValue())
+                {
+                    await _js.BitSearchBoxUnregisterShortcut(_inputId);
+                }
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
 
         if (firstRender is false) return;
 
@@ -816,6 +899,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    private bool HasSuggestFailedContent => SuggestFailedText.HasValue() || SuggestFailedTemplate is not null;
 
     // aria-labelledby wins over aria-label, so pointing the input at the visible label while a name of its
     // own was given would quietly throw that name away. The visible label keeps naming the input through
@@ -1342,7 +1427,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         // disposes its own source in its own finally block instead.
         _cancellationTokenSource?.Cancel();
 
-        if (CanSearch(term) is false)
+        _suggestFailed = false;
+
+        if (_hasSuggestSource is false || CanSearch(term) is false)
         {
             _isLoading = false;
             _searchTriggered = false;
@@ -1379,11 +1466,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             {
                 return;
             }
-            catch
+            catch (Exception ex)
             {
                 if (cts.IsCancellationRequested) return;
 
+                // A search that could not run is not a search that found nothing: reporting the two the
+                // same way leaves the user retyping a term that was never the problem.
+                _suggestFailed = true;
                 _viewSuggestedItems = [];
+
+                await OnSuggestFailed.InvokeAsync(ex);
             }
             finally
             {
@@ -1460,10 +1552,12 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (AnnouncementProvider is not null)
         {
-            return AnnouncementProvider(new(term, _viewSuggestedItems, _isLoading, isTermTooShort, MinSuggestTriggerChars));
+            return AnnouncementProvider(new(term, _viewSuggestedItems, _isLoading, isTermTooShort, MinSuggestTriggerChars, _suggestFailed));
         }
 
         if (_isLoading) return LoadingText.HasValue() ? LoadingText : "Loading suggestions.";
+
+        if (_suggestFailed) return SuggestFailedText.HasValue() ? SuggestFailedText : "Suggestions could not be loaded.";
 
         if (isTermTooShort)
         {
@@ -1499,6 +1593,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (_searchTriggered is false) return false;
 
         if (_isLoading) return true;
+
+        if (_suggestFailed) return HasSuggestFailedContent;
 
         return NoResultsText.HasValue() || NoResultsTemplate is not null;
     }
@@ -1790,6 +1886,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _cancellationTokenSource?.Dispose();
 
         OnValueChanged -= HandleOnValueChanged;
+
+        if (_registeredShortcut.HasValue())
+        {
+            try
+            {
+                // The listener is on the document, so it outlives the component unless it is taken off.
+                await _js.BitSearchBoxUnregisterShortcut(_inputId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
 
         if (_dotnetObj is not null)
         {

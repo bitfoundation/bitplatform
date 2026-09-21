@@ -48,6 +48,90 @@ namespace BitBlazorUI {
             (input as any).__bitSrbKeyDown = handler;
         }
 
+        // The shortcut that puts the focus into a search box from anywhere on the page, keyed by the id of
+        // the input so a page full of search boxes can each keep their own, and so the listener can be taken
+        // off the document again when the component goes away.
+        private static shortcuts: { [inputId: string]: (e: KeyboardEvent) => void } = {};
+
+        // The value is written in the syntax of aria-keyshortcuts - a space separated list of combinations,
+        // each one modifiers and a key joined by '+' - so the very same string the input advertises to
+        // assistive technologies is the one that is listened for. ('Control+K Meta+K' is how one shortcut
+        // covers both a Windows and a macOS keyboard.)
+        public static registerShortcut(inputId: string, shortcut: string) {
+            SearchBox.unregisterShortcut(inputId);
+
+            if (!inputId || !shortcut) return;
+
+            const combos = shortcut.split(/\s+/).filter(c => c.length > 0).map(combo => {
+                const parts = combo.split('+').filter(p => p.length > 0);
+                const key = (parts.pop() || '').toLowerCase();
+                const mods = parts.map(m => m.toLowerCase());
+                return {
+                    key,
+                    alt: mods.indexOf('alt') > -1,
+                    ctrl: mods.indexOf('control') > -1 || mods.indexOf('ctrl') > -1,
+                    meta: mods.indexOf('meta') > -1 || mods.indexOf('command') > -1 || mods.indexOf('cmd') > -1,
+                    shift: mods.indexOf('shift') > -1,
+                };
+            }).filter(c => c.key.length > 0);
+
+            if (combos.length === 0) return;
+
+            const handler = (e: KeyboardEvent) => {
+                if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
+
+                const key = (e.key || '').toLowerCase();
+                const match = combos.find(c => c.key === key &&
+                    c.alt === e.altKey && c.ctrl === e.ctrlKey && c.meta === e.metaKey && c.shift === e.shiftKey);
+
+                if (!match) return;
+
+                // An unmodified shortcut - the bare '/' of a documentation site - is a character somebody may
+                // be in the middle of typing somewhere else on the page, so it only fires outside of a field.
+                // A modified one is nobody else's, and works wherever the focus happens to be.
+                if (!match.alt && !match.ctrl && !match.meta && SearchBox.isTypingTarget(e.target)) return;
+
+                const input = document.getElementById(inputId) as HTMLInputElement;
+                if (!input || input.disabled) return;
+
+                e.preventDefault();
+                input.focus();
+            };
+
+            SearchBox.shortcuts[inputId] = handler;
+            document.addEventListener('keydown', handler);
+        }
+
+        public static unregisterShortcut(inputId: string) {
+            const handler = SearchBox.shortcuts[inputId];
+            if (!handler) return;
+
+            document.removeEventListener('keydown', handler);
+            delete SearchBox.shortcuts[inputId];
+        }
+
+        // Whether the key would land in something the user is writing in, which is what an unmodified
+        // shortcut must never steal. A read-only field is not one of those: nothing is typed into it.
+        private static isTypingTarget(target: EventTarget | null): boolean {
+            const element = target as HTMLElement;
+            if (!element || !element.tagName) return false;
+
+            const tag = element.tagName.toLowerCase();
+
+            if (tag === 'textarea') return !(element as HTMLTextAreaElement).readOnly;
+            if (tag === 'select') return true;
+            if (element.isContentEditable) return true;
+
+            if (tag === 'input') {
+                const input = element as HTMLInputElement;
+                // The types that hold no text of their own (a checkbox, a button, a radio) swallow nothing.
+                const typeless = ['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'image', 'range', 'color'];
+                return !input.readOnly && typeless.indexOf((input.type || 'text').toLowerCase()) < 0;
+            }
+
+            return false;
+        }
+
         public static moveCursorToEnd(inputElement: HTMLInputElement) {
             if (!inputElement) return;
 

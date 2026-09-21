@@ -66,6 +66,26 @@
         text-decoration: none;
     }
 
+    // The shortcut chip a search box renders in its suffix slot, so that a FocusShortcut is something
+    // the eyes find too and not only whoever already knew about it.
+    .shortcut-hint {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        padding-inline-end: 0.5rem;
+
+        kbd {
+            font-size: rem2(11px);
+            font-family: inherit;
+            line-height: 1;
+            padding: 0.2rem 0.35rem;
+            border-radius: 0.25rem;
+            color: $bit-color-foreground-secondary;
+            background-color: $bit-color-background-secondary;
+            border: 1px solid $bit-color-border-primary;
+        }
+    }
+
     .validation-message {
         font-size: rem2(12px);
         color: $bit-color-error;
