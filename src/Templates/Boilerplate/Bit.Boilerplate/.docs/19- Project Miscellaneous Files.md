@@ -434,7 +434,7 @@ dnx Bit.ResxTranslator
     "servers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=10.6"
+            "url": "https://bitplatform.dev/mcp?v=10.6.1"
         }
     }
 }
@@ -453,7 +453,7 @@ dnx Bit.ResxTranslator
 - Copilot uses the bitplatform MCP server to fetch the component's real API reference and examples
 - You get accurate answers based on the actual source code and documentation
 
-**One config per tool**: this same server list is mirrored where each AI tool expects it - `.vscode/mcp.json` (VS Code), `.mcp.json` (Claude Code and Visual Studio), `.cursor/mcp.json` (Cursor), `.gemini/settings.json` (Gemini CLI / Gemini Code Assist) and `.junie/mcp/mcp.json` (JetBrains Junie). When adding or changing a server, update all of them.
+**One config per tool**: this same server list is mirrored where each AI tool expects it - `.vscode/mcp.json` (VS Code), `.mcp.json` (Claude Code and Visual Studio), `.cursor/mcp.json` (Cursor), `.gemini/settings.json` (Gemini CLI / Gemini Code Assist), `.junie/mcp/mcp.json` (JetBrains Junie) and `.codex/config.toml` (OpenAI Codex CLI and IDE extension, which only loads a project config once you have trusted the folder). When adding or changing a server, update all of them.
 
 **Adding More MCP Servers**:
 You can add additional MCP servers to extend Copilot's capabilities further. For example:
