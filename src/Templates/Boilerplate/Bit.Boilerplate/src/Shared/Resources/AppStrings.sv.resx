@@ -2210,4 +2210,13 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Vi skickade en kod till {0} och {1}.</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskläge</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Den här appen är låst till skärmen: Windows-tangenten, Alt+Tab, Aktivitetshanteraren och att stänga fönstret är alla blockerade. Använd knappen för att avsluta.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Avsluta appen</value>
+  </data>
 </root>

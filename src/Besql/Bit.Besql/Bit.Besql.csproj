@@ -3,7 +3,7 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);IL2091;EF1001</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -24,8 +24,11 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" Condition="'$(TargetFramework)' == 'net9.0'" />
 
         <PackageReference Include="Microsoft.JSInterop" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Microsoft.JSInterop" Version="11.0.0-rc.1.26425.128" Condition="'$(TargetFramework)' == 'net11.0'" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" Condition="'$(TargetFramework)' == 'net11.0'" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.1.26431.118" Condition="'$(TargetFramework)' == 'net11.0'" />
     </ItemGroup>
 
 </Project>

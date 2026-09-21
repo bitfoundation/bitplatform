@@ -3,12 +3,12 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <!-- See the note in Bit.BlazorUI.csproj: Debug builds only the TFM the demo and tests run on. -->
-        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
         <RootNamespace>Bit.BlazorUI</RootNamespace>
         <WarningLevel>0</WarningLevel>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net11.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -22,7 +22,7 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
+        <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net11.0'">
         <CallTarget Targets="InstallNodejsDependencies"/>
         <CallTarget Targets="BuildCss"/>
     </Target>

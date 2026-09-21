@@ -3,14 +3,14 @@
     <Import Project="../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
-        <!-- The demo and the tests only run on the latest TFM, so compiling net9.0 and net8.0 on every Debug
-             build triples the inner-loop work for output nothing consumes. Release (pack, CI) still builds
-             all three; pass -p:BuildAllTfms=true to get them in Debug too. -->
-        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- The demo and the tests only run on the latest TFM, so compiling net10.0, net9.0 and net8.0 on every Debug
+             build quadruples the inner-loop work for output nothing consumes. Release (pack, CI) still builds
+             all four; pass -p:BuildAllTfms=true to get them in Debug too. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net10.0'">
+        <ResolveStaticWebAssetsInputsDependsOn Condition="'$(TargetFramework)' == 'net11.0'">
             BeforeBuildTasks;
             $(ResolveStaticWebAssetsInputsDependsOn)
         </ResolveStaticWebAssetsInputsDependsOn>
@@ -31,6 +31,7 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>
@@ -67,7 +68,7 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net10.0'">
+    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile" Condition="'$(TargetFramework)' == 'net11.0'">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="BuildCss" />
