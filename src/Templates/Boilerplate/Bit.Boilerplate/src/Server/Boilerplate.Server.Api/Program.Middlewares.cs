@@ -83,7 +83,7 @@ public static partial class Program
         }).WithTags("Test").CacheOutput("AppResponseCachePolicy").ExcludeFromDescription();
 
         //#if (signalR == true)
-        app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+        app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", Infrastructure.SignalR.AppHubOptions.Configure);
 
         // Chatbot tools. Isolated from /dev-mcp. Served under the api version the controllers carry as well.
         foreach (var path in new[] { OAuthResources.McpPath, $"{OAuthResources.McpPath}/v1" })

@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net10.0-windows</TargetFramework>
+        <TargetFramework>net11.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
         <!-- Lets the whole Bit.Brouter.slnx build on the Linux CI runner; running it still needs Windows. -->
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
@@ -18,7 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.110" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.1.26451.6" />
     </ItemGroup>
 
     <ItemGroup>

@@ -26,7 +26,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -35,4 +35,4 @@ jobs:
       run: dotnet build src/Minifier/Bit.Minifier.slnx
 
     - name: dotnet test
-      run: cd src/Minifier && dotnet test --project Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj --no-build
+      run: cd src/Minifier/Tests/Bit.Minifier.Tests && dotnet test --no-build

@@ -414,7 +414,7 @@ jobs:
       run: dotnet build TodoSample/src/Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj -t:BeforeBuildTasks -p:WasmEnableSIMD=true -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:UseMonoRuntime=false -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -584,13 +584,13 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Publish aab
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net11.0-android
 
     - name: Upload artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: android-bundle
-        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+        path: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net11.0-android/*-Signed.apk
 
     # versionCode derives from APP_VERSION; bump it or Play rejects the bundle.
     - name: Upload to Google Play (internal track)
@@ -598,7 +598,7 @@ jobs:
       with:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         packageName: ${{ env.APP_BUNDLE_ID }}
-        releaseFiles: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseFiles: TodoSample/src/Client/TodoSample.Client.Maui/bin/Release/net11.0-android/*-Signed.aab
         releaseName: ${{ vars.APP_VERSION }}
         track: internal
         status: completed
@@ -694,11 +694,11 @@ jobs:
           dotnet build TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -t:BeforeBuildTasks -p:Version="${{ vars.APP_VERSION}}" --no-restore -c Release
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
+      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net11.0-ios
 
     - name: Locate ipa
       id: ipa
-      run: echo "path=$(ls TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls TodoSample/src/Client/TodoSample.Client.Maui/bin/release/net11.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
