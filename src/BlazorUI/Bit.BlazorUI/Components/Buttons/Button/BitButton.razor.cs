@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
@@ -7,10 +9,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitButton : BitComponentBase
 {
+    private int _clickId;
     private string? _rel;
-    private string? _tabIndex;
     private bool _dragging;
+    private bool _showLoading;
+    private bool _draggableEnabled;
+    private bool _resetDragPosition;
     private BitButtonType _buttonType;
+    private CancellationTokenSource? _loadingDelayCts;
     private DotNetObjectReference<BitButton>? _dotnetObj;
 
 
@@ -25,6 +31,17 @@ public partial class BitButton : BitComponentBase
     /// </summary>
     [CascadingParameter] public EditContext? EditContext { get; set; }
 
+    /// <summary>
+    /// Gets or sets the cascading parameters for the button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitButtonParams.ParamName)]
+    public BitButtonParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
@@ -37,6 +54,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -83,9 +105,18 @@ public partial class BitButton : BitComponentBase
     [Parameter] public string? Download { get; set; }
 
     /// <summary>
-    /// Makes the Float/FloatAbsolute button draggable on the page.
+    /// Makes the Float/FloatAbsolute button draggable on the page; ignored when neither is set.
     /// </summary>
-    [Parameter] public bool Draggable { get; set; }
+    /// <remarks>
+    /// The button can also be moved from the keyboard while it has the focus - the arrow keys move it by a
+    /// step and Shift with an arrow by a coarser one - so the repositioning is not dragging-only
+    /// (WCAG 2.2 SC 2.5.7). The click that ends a drag is swallowed, so <see cref="OnClick"/> is raised by a
+    /// press and not by a move. A move is kept inside the box the button is positioned in - the viewport for
+    /// <see cref="Float"/>, the container for <see cref="FloatAbsolute"/> - and holds until the anchor
+    /// changes: setting <see cref="FloatPosition"/> or <see cref="FloatOffset"/> again drops it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Draggable { get; set; }
 
     /// <summary>
     /// Preserves the foreground color of the button through hover and focus.
@@ -108,13 +139,18 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Specifies the offset of the floating button.
     /// </summary>
+    /// <remarks>
+    /// Any CSS length (<c>1rem</c>, <c>5%</c>, a <c>calc()</c>), or a bare number, which is read as pixels.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
+    [CallOnSet(nameof(OnSetFloatAnchor))]
     public string? FloatOffset { get; set; }
 
     /// <summary>
     /// Specifies the position of the floating button.
     /// </summary>
     [Parameter, ResetClassBuilder]
+    [CallOnSet(nameof(OnSetFloatAnchor))]
     public BitPosition? FloatPosition { get; set; }
 
     /// <summary>
@@ -133,7 +169,7 @@ public partial class BitButton : BitComponentBase
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public string? Href { get; set; }
 
     /// <summary>
@@ -157,7 +193,7 @@ public partial class BitButton : BitComponentBase
     /// <remarks>
     /// The icon name should be from the Fluent UI icon set (e.g., <c>BitIconName.Emoji</c>).
     /// <br />
-    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery: 
+    /// Browse available names in <c>BitIconName</c> of the <c>Bit.BlazorUI.Icons</c> nuget package or the gallery:
     /// <see href="https://blazorui.bitplatform.dev/iconography"/>.
     /// <br />
     /// For external icon libraries, use <see cref="Icon"/> instead.
@@ -167,6 +203,11 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines that only the icon should be rendered.
     /// </summary>
+    /// <remarks>
+    /// The text stays as screen-reader-only content, so the button keeps the accessible name the label gave it
+    /// instead of becoming a nameless icon. Setting <see cref="BitComponentBase.AriaLabel"/> (or an <c>aria-labelledby</c>) names
+    /// the button explicitly and replaces it.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IconOnly { get; set; }
 
@@ -184,12 +225,31 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Determines whether the button is in loading mode or not.
     /// </summary>
+    /// <remarks>
+    /// The spinner is stacked over the content rather than replacing it, so the box keeps the size and the
+    /// accessible name it had before the click. The button renders <c>aria-busy</c>, and - unless
+    /// <see cref="Reclickable"/> is set - <c>aria-disabled</c> too, since the click is refused.
+    /// </remarks>
     [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsLoading { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the spinner appears after the button enters the loading state.
+    /// </summary>
+    /// <remarks>
+    /// An operation that finishes inside the delay never shows a spinner at all, which is what keeps a fast
+    /// action from flashing one. The state itself is not delayed: the click is blocked and <c>aria-busy</c> is
+    /// rendered as soon as the loading starts, whatever this is set to.
+    /// </remarks>
+    [Parameter] public int LoadingDelay { get; set; }
+
+    /// <summary>
     /// The loading label text to show next to the spinner icon.
     /// </summary>
+    /// <remarks>
+    /// It is also announced by assistive technologies when the loading starts, from a live region beside the
+    /// button, so that it is heard as a change of state instead of changing the name of the button itself.
+    /// </remarks>
     [Parameter] public string? LoadingLabel { get; set; }
 
     /// <summary>
@@ -198,9 +258,20 @@ public partial class BitButton : BitComponentBase
     [Parameter] public BitLabelPosition LoadingLabelPosition { get; set; } = BitLabelPosition.End;
 
     /// <summary>
-    /// The custom template used to replace the default loading text inside the button in the loading state.
+    /// The custom template used to replace the default spinner and loading label inside the button in the loading state.
     /// </summary>
+    /// <remarks>
+    /// Like the spinner it replaces, it is hidden from assistive technologies: the content stacked underneath it
+    /// keeps the button's accessible name while it works. Use <see cref="LoadingLabel"/> for what should be
+    /// announced when the loading starts.
+    /// </remarks>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps each line of the button's text on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
 
     /// <summary>
     /// Raised when the button is clicked; receives a bool indicating the current loading state.
@@ -216,15 +287,32 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Enables re-clicking while the button is in the loading state.
     /// </summary>
-    [Parameter] public bool Reclickable { get; set; }
+    /// <remarks>
+    /// A loading button that takes the click is still an available control, so it keeps the pointer cursor and
+    /// is not reported as <c>aria-disabled</c> the way a loading one that refuses the click is. The re-click only
+    /// raises <see cref="OnClick"/>: with <see cref="AutoLoading"/>, the state stays as it is until the run the
+    /// last click started has ended.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Sets the <c>rel</c> attribute for link-rendered buttons when <see cref="Href"/> is a non-anchor URL; ignored for empty or hash-only hrefs.
     /// The <c>rel</c> attribute specifies the relationship between the current document and the linked document.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public BitLinkRels? Rel { get; set; }
+
+    /// <summary>
+    /// Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle.
+    /// </summary>
+    /// <remarks>
+    /// It changes the corner the button falls back to, so a <c>--bit-Button-radius</c> set on the button or on
+    /// an ancestor still has the last word.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Rounded { get; set; }
 
     /// <summary>
     /// The text of the secondary section of the button.
@@ -259,7 +347,7 @@ public partial class BitButton : BitComponentBase
     /// When set to <c>_blank</c> and no <see cref="Rel"/> is provided, <c>rel="noopener"</c> gets added automatically for security.
     /// </summary>
     [Parameter]
-    [CallOnSet(nameof(OnSetHrefAndRel))]
+    [CallOnSet(nameof(OnSetHrefRelAndTarget))]
     public string? Target { get; set; }
 
     /// <summary>
@@ -282,22 +370,30 @@ public partial class BitButton : BitComponentBase
 
 
 
+    // The three callbacks the drag script invokes, each with the pointer's position. The coordinates are
+    // unused here, but the signatures have to take them: the interop dispatcher matches a call to a method
+    // by the number of arguments and throws when they differ, and the script swallows what it throws - so a
+    // handler declared without them is never actually reached, and the drag flag below never flips.
     [JSInvokable("OnDragStart")]
-    public async ValueTask _OnDragStart()
+    public ValueTask _OnDragStart(double x, double y)
     {
-        //_dragging = true;
+        return ValueTask.CompletedTask;
     }
 
     [JSInvokable("OnDragging")]
-    public async ValueTask _OnDragging()
+    public ValueTask _OnDragging(double x, double y)
     {
         _dragging = true;
+
+        return ValueTask.CompletedTask;
     }
 
     [JSInvokable("OnDragEnd")]
-    public async ValueTask _OnDragEnd()
+    public async ValueTask _OnDragEnd(double x, double y)
     {
+        // The click that ends a drag arrives after the drag does, so the flag that swallows it has to outlive it.
         await Task.Delay(100);
+
         _dragging = false;
     }
 
@@ -317,7 +413,9 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => SecondaryText.HasValue() || SecondaryTemplate is not null ? "bit-btn-hsc" : string.Empty);
 
-        ClassBuilder.Register(() => IsLoading ? "bit-btn-lda" : string.Empty);
+        ClassBuilder.Register(() => _showLoading ? "bit-btn-lda" : string.Empty);
+
+        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-btn-lnc" : string.Empty);
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -359,12 +457,19 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => IconPosition is BitIconPosition.End ? "bit-btn-eni" : string.Empty);
 
+        ClassBuilder.Register(() => Rounded ? "bit-btn-rnd" : string.Empty);
+
         ClassBuilder.Register(() => FixedColor ? "bit-btn-fxc" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
 
+        ClassBuilder.Register(() => NoWrap ? "bit-btn-nwr" : string.Empty);
+
         ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
                                   : Float ? "bit-btn-ffx" : string.Empty);
+
+        // The grab cursor is the only thing that says a floating button can be moved before anyone tries.
+        ClassBuilder.Register(() => Draggable && (Float || FloatAbsolute) ? "bit-btn-drg" : string.Empty);
 
         ClassBuilder.Register(() => (Float || FloatAbsolute) ? FloatPosition switch
         {
@@ -391,28 +496,27 @@ public partial class BitButton : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-btn-float-offset:{FloatOffset}" : string.Empty);
+        StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{NormalizeFloatOffset(FloatOffset!)}" : string.Empty);
     }
 
+    // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
+    // button stops being pinned at all and drifts off with the content. A number is also what an offset
+    // bound to a numeric input arrives as, so it is read as pixels rather than dropped on the floor.
+    private static string NormalizeFloatOffset(string floatOffset)
+    {
+        var offset = floatOffset.Trim();
+
+        return double.TryParse(offset, NumberStyles.Float, CultureInfo.InvariantCulture, out _) ? $"{offset}px" : offset;
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonParams))]
     protected override void OnParametersSet()
     {
-        if (IsEnabled is false)
-        {
-            // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
-            _tabIndex = AllowDisabledFocus ? (Href.HasValue() ? "0" : null) : "-1";
-        }
-        else if (Href.HasValue() && IsLoading)
-        {
-            // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
-            _tabIndex = TabIndex ?? "0";
-        }
-        else
-        {
-            // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
-            _tabIndex = TabIndex;
-        }
+        CascadingParameters?.UpdateParameters(this);
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
+
+        UpdateLoadingVisuals();
 
         base.OnParametersSet();
     }
@@ -421,24 +525,124 @@ public partial class BitButton : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (Float || FloatAbsolute)
+        if (IsDisposed) return;
+
+        // Dragging only means anything for a button that is positioned, so the two parameters are read
+        // together. The result is compared against what the script was last told, rather than re-sent on
+        // every render: enable() returns early on a second call, but disable() does not - a floating button
+        // that is not draggable used to tear the listeners down once per render, and one that stopped
+        // floating kept them for good.
+        // A drag pins the button by an inline left/top of its own, which outranks every rule the anchor
+        // classes bring. Setting the anchor again is the app asking for that position back, so what the
+        // drag wrote is dropped - otherwise both parameters would silently do nothing after the first move.
+        if (_resetDragPosition)
         {
-            if (IsDisposed) return;
+            _resetDragPosition = false;
 
-            if (Draggable)
+            if (_draggableEnabled)
             {
-                _dotnetObj ??= DotNetObjectReference.Create(this);
+                await _js.BitDraggablesReset(_Id);
+            }
+        }
 
-                await _js.BitDraggablesEnable(_Id, _dotnetObj);
-            }
-            else
-            {
-                await _js.BitDraggablesDisable(_Id);
-            }
+        var draggable = Draggable && (Float || FloatAbsolute);
+
+        if (draggable == _draggableEnabled) return;
+
+        _draggableEnabled = draggable;
+
+        if (draggable)
+        {
+            _dotnetObj ??= DotNetObjectReference.Create(this);
+
+            await _js.BitDraggablesEnable(_Id, _dotnetObj);
+        }
+        else
+        {
+            await _js.BitDraggablesDisable(_Id);
         }
     }
 
 
+
+    // The position a drag left behind is only dropped once the button has rendered with the new anchor, so
+    // the two never race: the class and the style land first, and the inline left/top go after them.
+    internal void OnSetFloatAnchor()
+    {
+        _resetDragPosition = true;
+    }
+
+    internal void OnSetHrefRelAndTarget()
+    {
+        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        {
+            _rel = null;
+            return;
+        }
+
+        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
+
+        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
+        // author already asked for one of the two rels that close that hole.
+        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
+        {
+            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
+        }
+
+        _rel = rel;
+    }
+
+
+
+    // The Target parameter's rel is resolved the moment the parameter is set. Neither a target nor a rel written by
+    // hand is a parameter, so neither reaches that path: the rel the anchor renders is resolved against the splatted
+    // one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is re-applied
+    // here against the target the anchor actually renders; it is idempotent, so a rel that already carries one of the
+    // two closing rels passes through untouched.
+    private string? GetRel(string? target)
+    {
+        var rel = _rel ?? GetSplattedAttribute("rel");
+
+        if (target is not "_blank") return rel;
+
+        if (Href.HasNoValue() || Href!.StartsWith('#')) return rel;
+
+        if (HasRelToken(rel, "noopener") || HasRelToken(rel, "noreferrer")) return rel;
+
+        return rel.HasValue() ? $"{rel} noopener" : "noopener";
+    }
+
+    // rel is a space separated set of case insensitive tokens, so the guard asks whether one of them IS the token
+    // rather than whether the string contains it - a rel of "noopener-policy" closes nothing.
+    private static bool HasRelToken(string? rel, string token)
+        => rel is not null &&
+           rel.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+              .Any(t => string.Equals(t, token, StringComparison.OrdinalIgnoreCase));
+
+    private string? GetTabIndex(bool ariaHidden)
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
+        // user lands on something a screen reader has nothing to say about.
+        if (ariaHidden) return "-1";
+
+        // The hyphen-less TabIndex parameter is the one a page usually reaches for, but the attribute is also
+        // splattable by its own name - and the attribute written here would otherwise overwrite that with null.
+        var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
+
+        if (IsEnabled is false)
+        {
+            if (AllowDisabledFocus is false) return "-1";
+
+            // anchors without an href are not focusable, so an explicit tabindex is required to keep them in the tab order
+            return Href.HasValue() ? tabIndex ?? "0" : tabIndex;
+        }
+
+        // the href is removed while loading, so an explicit tabindex is required to keep the anchor focusable
+        if (IsLoading && Href.HasValue()) return tabIndex ?? "0";
+
+        // falls back to the browser default so the disabled state's tabindex does not stick around after re-enabling
+        return tabIndex;
+    }
 
     private string GetLabelPositionClass()
         => LoadingLabelPosition switch
@@ -455,44 +659,107 @@ public partial class BitButton : BitComponentBase
         if (IsEnabled is false) return;
         if (IsLoading && Reclickable is false) return;
 
-        var isLoading = IsLoading;
-
-        if (AutoLoading)
-        {
-            if (await AssignIsLoading(true) is false) return;
-        }
-
+        // The click that ends a drag is the drag's own, not a press of the button, so it is swallowed
+        // before anything else happens - including the loading state, which would otherwise flash on
+        // every drag of a Draggable floating button.
         if (_dragging)
         {
             _dragging = false;
+            return;
         }
-        else
+
+        var isLoading = IsLoading;
+
+        // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
+        // that state is already on, so it only raises the event: entering it again would be a no-op, and
+        // leaving it when this run ends would clear the spinner of the run that is still in flight - or,
+        // for a handler that abandons its previous run by throwing into it, clear it on the way out of the
+        // run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
+        {
+            if (await AssignIsLoading(true) is false) return;
+
+            UpdateLoadingVisuals();
+        }
+
+        try
         {
             await OnClick.InvokeAsync(isLoading);
         }
-
-        if (AutoLoading)
+        finally
         {
-            await AssignIsLoading(false);
+            // in a finally so that a handler that throws leaves the button clickable again instead of
+            // stranding it in a loading state that nothing will ever clear.
+            if (AutoLoading && clickId == _clickId)
+            {
+                await AssignIsLoading(false);
+
+                UpdateLoadingVisuals();
+            }
         }
     }
 
-    private void OnSetHrefAndRel()
+    private void UpdateLoadingVisuals()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
+        if (IsLoading)
         {
-            _rel = null;
+            if (_showLoading || _loadingDelayCts is not null) return;
+
+            if (LoadingDelay < 1)
+            {
+                SetShowLoading(true);
+                return;
+            }
+
+            _loadingDelayCts = new();
+            _ = ShowLoadingAfterDelay(_loadingDelayCts.Token);
+        }
+        else
+        {
+            SetShowLoading(false);
+            CancelLoadingDelay();
+        }
+    }
+
+    private async Task ShowLoadingAfterDelay(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(LoadingDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
             return;
         }
 
-        if (Rel.HasValue)
-        {
-            _rel = BitLinkRelUtils.GetRels(Rel.Value);
-            return;
-        }
+        if (IsDisposed || IsLoading is false || token.IsCancellationRequested) return;
 
-        // protects against reverse-tabnabbing when opening the link in a new browsing context
-        _rel = Target == "_blank" ? "noopener" : null;
+        SetShowLoading(true);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // The loading state changes the layout of the root element (the spinner is stacked over the content that
+    // holds the size), so the class list has to be rebuilt whenever it flips - including the flip that comes
+    // from the delay timer rather than from a parameter, which no [ResetClassBuilder] can see.
+    private void SetShowLoading(bool value)
+    {
+        if (_showLoading == value) return;
+
+        _showLoading = value;
+
+        ClassBuilder.Reset();
+    }
+
+    private void CancelLoadingDelay()
+    {
+        if (_loadingDelayCts is null) return;
+
+        _loadingDelayCts.Cancel();
+        _loadingDelayCts.Dispose();
+        _loadingDelayCts = null;
     }
 
 
@@ -500,6 +767,8 @@ public partial class BitButton : BitComponentBase
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
+
+        CancelLoadingDelay();
 
         await base.DisposeAsync(disposing);
 

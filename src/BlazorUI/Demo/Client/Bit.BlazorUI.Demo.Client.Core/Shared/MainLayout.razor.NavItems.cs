@@ -19,7 +19,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "ActionButton", Url = "/components/actionbutton", AdditionalUrls = ["/components/action-button"] },
-                new() { Text = "Button", Url = "/components/button" },
+                new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton", Data = "FAB, Floating Action Button, Submit" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group" },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"] },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
