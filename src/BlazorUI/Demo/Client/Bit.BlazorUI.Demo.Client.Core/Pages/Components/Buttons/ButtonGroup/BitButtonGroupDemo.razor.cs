@@ -8,6 +8,13 @@ public partial class BitButtonGroupDemo
     [
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives the keyboard focus to the ButtonGroup when the page first renders. The focus lands on the button that owns the group's single tab stop, which is the same button a Tab into the group reaches.",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -18,7 +25,7 @@ public partial class BitButtonGroupDemo
             Name = "IconOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines that only the icon should be rendered.",
+            Description = "Determines that only the icon should be rendered, which also squares the buttons the way every icon button in the library is shaped. The hidden text stays the accessible name of the button, so an icon-only group is still readable without an AriaLabel being set on every item.",
         },
         new()
         {
@@ -71,7 +78,7 @@ public partial class BitButtonGroupDemo
             Name = "FixedToggle",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the fixed-toggle mode that ensures one item to be always toggled. In the Multiple selection mode it prevents un-toggling the last toggled item.",
+            Description = "Enables the fixed-toggle mode that ensures one item to be always toggled. In the Multiple selection mode it prevents un-toggling the last toggled item. It is what makes a Single-mode group a mandatory choice: without it, activating the toggled item takes the selection back and leaves the radiogroup with nothing checked.",
         },
         new()
         {
@@ -85,7 +92,7 @@ public partial class BitButtonGroupDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The gap between the buttons of the ButtonGroup in the detached mode.",
+            Description = "The gap between the buttons of the ButtonGroup in the detached mode, as any CSS length. It sets the public --bit-ButtonGroup-gap custom property on this group, which can also be set on :root to space every detached group out at once.",
         },
         new()
         {
@@ -115,7 +122,7 @@ public partial class BitButtonGroupDemo
             Name = "MaxToggles",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The maximum number of items that can be toggled at the same time in the Multiple selection mode.",
+            Description = "The maximum number of items that can be toggled at the same time in the Multiple selection mode. While the cap is reached, the items that are not toggled are rendered with the aria-disabled attribute and stop responding, so that the cap is visible rather than a click that silently does nothing; they stay focusable and come back as soon as one of the toggled items is un-toggled.",
         },
         new()
         {
@@ -180,9 +187,9 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "SelectOnFocus",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus.",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Toggles the focused item while navigating the ButtonGroup using the keyboard, so that the selection follows the focus. Unset, it follows the SelectionMode: on in the Single mode, whose arrow keys the WAI-ARIA radiogroup pattern expects to check the radio they land on, and off in the Multiple and None modes. Set it to false on a Single-mode group whose selection does work - a filter, a fetch - so that arrowing across it does not fire that work on every keystroke. The navigation only ever selects: a key landing on an item that is already toggled leaves it toggled, and un-toggling stays with Space, Enter and a click.",
         },
         new()
         {
@@ -215,7 +222,7 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "Size",
-            Type = "BitSize",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
             LinkType = LinkType.Link,
@@ -245,6 +252,182 @@ public partial class BitButtonGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Defines whether to render ButtonGroup children vertically."
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            Description = "Gives the keyboard focus to the button that owns the ButtonGroup's tab stop - the toggled one, otherwise the first focusable one - which is the same button a Tab into the group reaches. It does nothing while the group holds no focusable button at all.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ButtonGroup-color",
+            DefaultValue = "Per Variant: the Color role's on color (Fill) or its main color (Outline, Text)",
+            Description = "Text and icon color of a button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-background",
+            DefaultValue = "Per Variant: the Color role's main color (Fill), transparent (Outline, Text)",
+            Description = "Background of a button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-border-color",
+            DefaultValue = "The Color role's main color (the group) and dark color (the separators)",
+            Description = "Color of the group's outer border and of the separators between its buttons. It wins over the hover and pressed states, which otherwise repaint the border along with the buttons.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-separator-color",
+            DefaultValue = "--bit-ButtonGroup-border-color",
+            Description = "Color of the separators between the buttons alone, leaving the group's outer border to the variable above - which is what a segmented control whose dividers are lighter than its outline needs. In the Detached and Wrap layouts every button draws the whole outline itself, so there are no separators of their own there and the border color paints all of it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-hover-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Text and icon color while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Background while hovered, and the fallback of the pressed background below.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-active-background",
+            DefaultValue = "--bit-ButtonGroup-hover-background",
+            Description = "Background while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-selected-color",
+            DefaultValue = "The Color role's on color",
+            Description = "Text and icon color of a toggled button, which the check mark of ShowSelectionIndicator follows.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-selected-background",
+            DefaultValue = "The Color role's dark color",
+            Description = "Background and border of a toggled button - the whole of what marks a button as selected, so a group that has to read differently when selected is re-skinned here.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-selected-hover-background",
+            DefaultValue = "The Color role's dark-hover color",
+            Description = "Background and border of a toggled button while hovered or pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-selected-border-color",
+            DefaultValue = "--bit-ButtonGroup-selected-background",
+            Description = "Border of a toggled button, for a selection whose outline is not its background: the two are one declaration otherwise, so tinting the background takes the outline down with it. A color set here is kept while the button is hovered and pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-disabled-color",
+            DefaultValue = "The Color role's disabled text color",
+            Description = "Text and icon color of a disabled button, and of a group disabled as a whole.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-disabled-background",
+            DefaultValue = "Per Variant: the Color role's disabled color (Fill), transparent (Outline, Text)",
+            Description = "Background of a disabled button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-disabled-border-color",
+            DefaultValue = "The Color role's disabled color",
+            Description = "Border and separators of a disabled group.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-focus-color",
+            DefaultValue = "Per Variant: the Color role's on color (Fill) or its main color (Outline, Text)",
+            Description = "Color of the keyboard focus indicator, which is drawn inside the focused button so the group's rounded corners never clip it - or as the library's outset focus ring when Detached, where nothing is clipped.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-radius",
+            DefaultValue = "--bit-shp-radius-button, or --bit-shp-radius-full when Rounded",
+            Description = "Outer corner radius of the group, or of every button when Detached.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Width of the group's outer border and of the separators between its buttons. Set it to 0 for a group whose buttons are told apart by their background alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-min-height",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Smallest height of a button, which is what lines a group up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-padding",
+            DefaultValue = "Per Size: --bit-siz-ctrl-pad-y-* and --bit-siz-ctrl-pad-x-*",
+            Description = "Padding of a button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Text size of a button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-font-weight",
+            DefaultValue = "--bit-tpg-font-weight",
+            Description = "Text weight of a button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-icon-size",
+            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
+            Description = "Size of the icon, the loading spinner and the selection indicator, which share one slot so a spinner replacing an icon moves nothing around it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-content-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon, the text and the badge inside a button.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the buttons in the Detached mode. The Gap parameter sets this same variable on one instance.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-badge-color",
+            DefaultValue = "The button's own text color",
+            Description = "Text color of a button's badge.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-badge-font-size",
+            DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
+            Description = "Text size of a button's badge, one ramp step below the button's own text.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-badge-background",
+            DefaultValue = "A 20% tint of the button's own text color",
+            Description = "Background of a button's badge, tinted out of the text color by default so it stays legible on every variant.",
         },
     ];
 
@@ -397,6 +580,13 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link when the item renders as an anchor (by providing the Href property). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -429,6 +619,13 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Title to render in the item.",
+               },
+               new()
+               {
+                   Name = "IsToggled",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the item is toggled. This property's value is assigned by the component.",
                }
             ]
         },
@@ -579,6 +776,13 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link when the option renders as an anchor (by providing the Href parameter). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -611,6 +815,13 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Title to render in the option.",
+               },
+               new()
+               {
+                   Name = "IsToggled",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the option is toggled. This property's value is assigned by the component.",
                }
             ]
         },
@@ -857,6 +1068,15 @@ public partial class BitButtonGroupDemo
                 },
                 new()
                 {
+                    Name = "Rel",
+                    Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.Rel))",
+                    Description = "Rel field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
                     Name = "Style",
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Style))",
@@ -897,6 +1117,15 @@ public partial class BitButtonGroupDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitButtonGroupItem.Title))",
                     Description = "Title field name and selector of the custom input class.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "IsToggled",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.IsToggled))",
+                    Description = "IsToggled field name and selector of the custom input class. This property's value is assigned by the component.",
                     LinkType = LinkType.Link,
                     Href = "#name-selector-pair",
                 }
@@ -1019,7 +1248,7 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Clip",
-                    Description="The items are kept on a single line and the overflowing part is clipped.",
+                    Description="The items are kept on a single line and the overflowing part is clipped. A detached group lets it spill out instead, since it clips nothing at all - which is what keeps the focus ring of its buttons whole.",
                     Value="0",
                 },
                 new()
@@ -1031,13 +1260,13 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Scroll",
-                    Description="The items are kept on a single line and the group becomes scrollable, without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys.",
+                    Description="The items are kept on a single line and the group becomes scrollable along the axis it is laid out on - sideways, or down a vertical group - without rendering a scrollbar. It can still be scrolled by swiping, by the wheel - ordinary wheel input down a vertical group, shift+wheel across a horizontal one - and through the arrow keys, which bring the button they focus into view.",
                     Value="2",
                 },
                 new()
                 {
                     Name= "Scrollbar",
-                    Description="The items are kept on a single line and the group becomes scrollable, with a visible scrollbar. The scrollbar is laid out inside the border of the group, which makes the group taller.",
+                    Description="The same, with a visible scrollbar. The scrollbar is laid out inside the border of the group, so the group grows by the room it takes on the edge it sits on.",
                     Value="3",
                 }
             ]
@@ -1176,33 +1405,6 @@ public partial class BitButtonGroupDemo
                 {
                     Name= "Large",
                     Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
             ]
