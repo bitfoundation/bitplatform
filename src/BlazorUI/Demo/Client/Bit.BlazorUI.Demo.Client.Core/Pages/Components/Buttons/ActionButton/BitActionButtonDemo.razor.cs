@@ -768,6 +768,16 @@ public partial class BitActionButtonDemo
     private int rowClickCount;
     private int innerClickCount;
 
+    private readonly BitActionButtonParams[] actionButtonParams =
+    [
+        new()
+        {
+            Underlined = true,
+            IconPosition = BitIconPosition.End,
+            Target = "_blank",
+        }
+    ];
+
     private async Task HandleAutoLoadingClick()
     {
         await Task.Delay(2000);

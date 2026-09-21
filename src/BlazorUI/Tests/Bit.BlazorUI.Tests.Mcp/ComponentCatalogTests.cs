@@ -317,6 +317,43 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     /// <summary>
+    /// A component that takes a <c>...Params</c> from a <c>BitParams</c> ancestor says so, with the
+    /// type to construct and the call that lists its members.
+    /// <para>
+    /// Nothing else in the answer carries it: the cascade is a <c>[CascadingParameter]</c> rather
+    /// than a <c>[Parameter]</c>, so it is in neither table, and the params class is named after
+    /// the component, which keeps it out of the type listing. Without this line an agent that has
+    /// read the whole answer still has no way to learn that one object can set the defaults of
+    /// every instance under it.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitActionButton", "BitActionButtonParams")]
+    [DataRow("BitText", "BitTextParams")]
+    [DataRow("BitStack", "BitStackParams")]
+    public async Task A_component_that_takes_a_params_object_names_it(string component, string paramsType)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "## Cascading parameters", $"{component} no longer says it takes a params object.");
+        StringAssert.Contains(answer, $"`{paramsType}`", $"{component} does not name the type its cascade carries.");
+        StringAssert.Contains(answer, "BitParams", $"{component} names no way to provide {paramsType}.");
+        StringAssert.Contains(answer, $"GetBitBlazorUIType(typeName: \"{paramsType}\")", $"{component} does not say where {paramsType}'s members are listed.");
+
+        var reference = await CallAsync("GetBitBlazorUIType", new { typeName = paramsType });
+
+        Assert.DoesNotContain("has no public type called", reference, $"{paramsType} does not resolve by name.");
+
+        // The line is only worth its cost where it is true: a component with no params class of its
+        // own must not carry it.
+        var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" });
+
+        Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
+    }
+
+    /// <summary>
     /// The public CSS custom properties a component reads off its root are the one part of its API
     /// that has no type behind it: the demo page's own table is the whole source, reached by a field
     /// name. So a page that renames <c>componentCssVariables</c>, or a table that loses its defaults,

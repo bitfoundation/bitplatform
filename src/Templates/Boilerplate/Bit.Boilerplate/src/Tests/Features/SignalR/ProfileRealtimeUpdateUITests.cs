@@ -58,7 +58,12 @@ public partial class ProfileRealtimeUpdateUITests : AppPageTest
 
         var newFullName = $"Realtime Update {Guid.NewGuid():N}";
 
-        await Page.GetByPlaceholder(AppStrings.FullName).FillAsync(newFullName);
+        // Nothing on this form is gated on the name, so it offers no signal of its own: without waiting for the app to
+        // attach, the name could be typed into the pre-rendered field, thrown away by hydration, and Save would then
+        // round-trip the name the user already had - leaving browser B waiting for an update that was never made.
+        await Page.WaitForBlazorInteractive();
+
+        await Page.GetByPlaceholder(AppStrings.FullName).FillEnsuringStable(newFullName);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).ClickAsync();
 
         // Browser A confirms the save round-tripped (See ProfileSection.SaveProfile -> SnackBarService.Success).

@@ -57,6 +57,8 @@ public partial class PushNotificationsToggleUITests : AppPageTest
     /// </summary>
     private async Task OpenAppMenu(ILocator callout)
     {
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
         await Expect(NotificationsSwitch(callout)).ToBeVisibleAsync();

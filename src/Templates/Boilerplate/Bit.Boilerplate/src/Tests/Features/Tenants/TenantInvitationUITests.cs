@@ -85,8 +85,7 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await SignInPanelUtils.FillCredentials(page, email, password);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(page).ToHaveURLAsync(serverAddress.ToString());
@@ -97,6 +96,8 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // She already belongs to the seeded store tenant, so the "create" section starts collapsed; expand it.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByText(AppStrings.CreateNewTenant).First.ClickAsync();
 
         // The create and the rename forms share the same "tenant name" placeholder; the create one comes first in the DOM.
@@ -123,9 +124,12 @@ public partial class TenantInvitationUITests : AppPageTest
         // Expand the "Invite user to <tenant>" section (only the current tenant's admin sees it). Its title carries the
         // tenant name, so match it by its stable prefix.
         var inviteHeaderPrefix = AppStrings.InviteUserToTenant.Replace("{0}", "").Trim();
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
 
         // Expanding this section resets its form the same way the create one does, so the value has to be confirmed.
+        // Not SignInPanelUtils: this is the invite form, which shares only the placeholder with the sign in panel.
         await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Invite, Exact = true }).ClickAsync();
 
@@ -169,6 +173,8 @@ public partial class TenantInvitationUITests : AppPageTest
         // Her pending invitation shows up as a tenant card with an "Accept" action. The button carries an icon whose
         // glyph leaks into its accessible name, so match the name by substring (the default) rather than exactly.
         await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.AcceptInvitation }).ClickAsync();
 
         // Accepting switches her into the tenant (no elevated access needed for switching), so it becomes her current
@@ -182,6 +188,8 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GoToInApp(PageUrls.ManageMyTenants);
 
         // The Leave/Accept buttons carry icons whose glyphs leak into their accessible names, so match by substring.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.LeaveTenant }).ClickAsync();
 
         // Leaving is destructive, so it is confirmed before anything is sent - the elevated-access token is only

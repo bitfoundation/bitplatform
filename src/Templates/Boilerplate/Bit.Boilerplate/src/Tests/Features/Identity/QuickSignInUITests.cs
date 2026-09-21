@@ -40,6 +40,8 @@ public partial class QuickSignInUITests : AppPageTest
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Buying while signed-out opens the SignInModal over the product page.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await Page.WaitForBlazorInteractive();
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Buy, Exact = true }).ClickAsync();
 
         // She signs in for the very first time with a magic link OTP right inside the modal, the same way the identity

@@ -222,12 +222,19 @@ public partial class AppMenu
     {
         showTimeZones = true;
         timeZoneSearchText = null;
-        currentTimeZoneId = (await TimeZoneService.GetCurrentTimeZone()).Id;
+
+        var currentTimeZone = await TimeZoneService.GetCurrentTimeZone();
+        var currentTimeZoneText = GetTimeZoneDisplayText(currentTimeZone);
+        var systemTimeZones = TimeZoneInfo.GetSystemTimeZones();
+
+        currentTimeZoneId = systemTimeZones.FirstOrDefault(tz => string.Equals(tz.Id, currentTimeZone.Id, StringComparison.OrdinalIgnoreCase))?.Id
+                            ?? systemTimeZones.FirstOrDefault(tz => string.Equals(GetTimeZoneDisplayText(tz), currentTimeZoneText, StringComparison.OrdinalIgnoreCase))?.Id
+                            ?? currentTimeZone.Id;
 
         // Rebuilt on every open rather than cached, because the current zone leads the list and changes with it.
         // Android's tzdata carries the IANA links as ids of their own ("Iran" beside "Asia/Tehran"), and both render
         // the same text, so rows that read alike are dropped - after the ordering, which keeps the current zone's one.
-        timeZones = [.. TimeZoneInfo.GetSystemTimeZones()
+        timeZones = [.. systemTimeZones
             .OrderByDescending(tz => string.Equals(tz.Id, currentTimeZoneId, StringComparison.OrdinalIgnoreCase))
             .ThenBy(tz => tz.BaseUtcOffset)
             .ThenBy(tz => tz.Id, StringComparer.OrdinalIgnoreCase)

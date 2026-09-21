@@ -49,6 +49,8 @@ public partial class ExternalIdentityTests : AppPageTest
         // Keycloak's hosted login page in a popup window (See DefaultExternalNavigationService.NavigateTo for the web flow).
         var keycloakLogin = await Page.RunAndWaitForPopupAsync(async () =>
         {
+            // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+            await Page.WaitForBlazorInteractive();
             await Page.GetByTitle(AppStrings.KeycloakSignInButtonText).ClickAsync();
         });
         // Keycloak's standard username/password login form uses these stable element ids.

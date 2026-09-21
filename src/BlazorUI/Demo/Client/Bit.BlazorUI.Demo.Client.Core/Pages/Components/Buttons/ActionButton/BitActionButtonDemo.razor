@@ -392,7 +392,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>BitParams</b> carries a <b>BitActionButtonParams</b> down to every action button under it, so a toolbar, a card, or a whole page sets the shared look and the shared link behavior once instead of on every button.
+            What it carries is a default and not an override: a button that writes a parameter for itself keeps its own value, and only what it left unset is filled in from the cascade,
+            which is what lets one button step out of the group it is in without the group having to know about it. Every parameter of the component is on the params object, and each of them is filled in on its own,
+            so a button can take its <b>IconPosition</b> from the cascade and its <b>Underlined</b> from its own markup.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitParams Parameters="@actionButtonParams">
+                <BitActionButton IconName="@BitIconName.Documentation" Href="https://bitplatform.dev">
+                    Takes the icon position, the underline, and the target from the cascade
+                </BitActionButton>
+
+                <BitActionButton IconName="@BitIconName.Feedback" Href="https://github.com/bitfoundation/bitplatform/issues">
+                    So does this one, without repeating any of it
+                </BitActionButton>
+
+                <BitActionButton Underlined="false" IconName="@BitIconName.Info" Href="https://bitplatform.dev">
+                    Its own Underlined, the cascaded rest
+                </BitActionButton>
+            </BitParams>
+        </div>
+        <br />
+        <div class="example-content">
+            <BitActionButton IconName="@BitIconName.Documentation" Href="https://bitplatform.dev">
+                Outside the cascade, and back to the defaults
+            </BitActionButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <b>Color</b> paints the icon and the spinner at rest, takes over the text on hover and press, and picks the focus ring, all from the current theme.
             Beyond the semantic roles, the background, foreground, and border roles suit buttons that must blend into a surface, such as the ones on the dark panel below.
@@ -609,7 +640,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
         <div>
             Besides the built-in Fluent set behind <b>IconName</b>, <b>Icon</b> renders any CSS-class icon library such as FontAwesome or Bootstrap Icons: pass the raw classes, or use the
             <b>BitIconInfo</b> helpers (<code>Css</code>, <code>Fa</code>, <code>Bi</code>). When both are set, <b>Icon</b> wins. Reference the library's stylesheet in your app.
@@ -672,7 +703,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
         <div>
             Each preset scales the text, the icon, the spinner, and the padding together. Medium is the default; Small suits dense toolbars and table rows, Large prominent standalone actions.
         </div>
@@ -693,7 +724,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach every part on its own: the root, the icon, the content, the loading label, and the spinner.
             Prefer <b>Classes</b> when your CSS should own states such as hover and focus, which inline styles cannot express.
@@ -748,7 +779,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Dir</b> set to Rtl mirrors the button for right-to-left languages: the icon and the content swap sides and the padding follows. Set it per button, or let it flow from an ancestor through the cascading direction value.
         </div>

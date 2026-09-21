@@ -38,7 +38,7 @@ public partial class ForceUpdateUITests : AppPageTest
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(MagicLinkSignInUtils.NewTestEmail());
+        await SignInPanelUtils.FillEmail(Page, MagicLinkSignInUtils.NewTestEmail());
 
         // The button stays disabled until the debounced e-mail value is committed, so Playwright waits for it to enable.
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SendMagicLinkButtonText }).ClickAsync();
