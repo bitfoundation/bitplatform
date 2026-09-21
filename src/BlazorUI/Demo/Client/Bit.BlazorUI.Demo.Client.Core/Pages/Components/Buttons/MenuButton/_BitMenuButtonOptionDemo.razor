@@ -260,7 +260,8 @@
 <DemoExample Title="Toggle" RazorCode="@example7RazorCode" Id="example7" PreventRenderForMcpClient>
     <div>
         Enable toggle behavior on the header button in Split mode. Clicking the operator button toggles the IsToggled
-        state, while the chevron button still opens the callout.
+        state, while the chevron button still opens the callout. The toggled header is painted with the darker end of
+        its color role in every variant, so the button that is on reads stronger than the one that is off.
     </div>
     <br />
     <div>Toggle:</div>
@@ -277,6 +278,44 @@
     <br />
     <div class="example-content">
         <BitMenuButton Text="DefaultIsToggled" TItem="BitMenuButtonOption" Split Toggle DefaultIsToggled="true">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br /><br />
+    <div>Variant:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Fill" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Fill" DefaultIsToggled="true">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Outline" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Outline" DefaultIsToggled="true">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Text" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Text" DefaultIsToggled="true">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Fill" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Fill">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Outline" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Outline">
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
+        </BitMenuButton>
+        <BitMenuButton Text="Text" TItem="BitMenuButtonOption" Split Toggle Variant="BitVariant.Text">
             <BitMenuButtonOption Text="Option A" Key="A" />
             <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
             <BitMenuButtonOption Text="Option C" Key="C" />
@@ -493,10 +532,12 @@
     <div>One-way IsOpen (closes after 2 seconds):</div>
     <br />
     <div class="example-content">
+        @* No @ref here: only the two-way SelectedItem example above binds against the options, and
+           capturing into the same three fields from here would overwrite what it bound to. *@
         <BitMenuButton Sticky IsOpen="oneWayIsOpen" TItem="BitMenuButtonOption">
-            <BitMenuButtonOption Text="Option A" Key="A" @ref="optionA" />
-            <BitMenuButtonOption Text="Option B" Key="B" @ref="optionB" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" @ref="optionC" />
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
         </BitMenuButton>
         <BitCheckbox Label="One-way IsOpen" @bind-Value="oneWayIsOpen"
                      OnChange="async _ => { await Task.Delay(2000); oneWayIsOpen = false; }" />
@@ -506,9 +547,9 @@
     <br />
     <div class="example-content">
         <BitMenuButton Sticky @bind-IsOpen="twoWayIsOpen" TItem="BitMenuButtonOption">
-            <BitMenuButtonOption Text="Option A" Key="A" @ref="optionA" />
-            <BitMenuButtonOption Text="Option B" Key="B" @ref="optionB" IsEnabled="false" />
-            <BitMenuButtonOption Text="Option C" Key="C" @ref="optionC" />
+            <BitMenuButtonOption Text="Option A" Key="A" />
+            <BitMenuButtonOption Text="Option B" Key="B" IsEnabled="false" />
+            <BitMenuButtonOption Text="Option C" Key="C" />
         </BitMenuButton>
         <BitCheckbox Label="Two-way IsOpen" @bind-Value="twoWayIsOpen" />
     </div>

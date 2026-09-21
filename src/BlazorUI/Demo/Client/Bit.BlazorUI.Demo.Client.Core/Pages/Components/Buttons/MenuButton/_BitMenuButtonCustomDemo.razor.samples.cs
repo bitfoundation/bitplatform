@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {
@@ -198,6 +198,14 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 <BitMenuButton Text=""DefaultIsToggled"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle DefaultIsToggled=""true"" />
 
+<BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"" />
+
+<BitMenuButton Text=""Fill"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Fill"" />
+<BitMenuButton Text=""Outline"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Outline"" />
+<BitMenuButton Text=""Text"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle Variant=""BitVariant.Text"" />
+
 <BitMenuButton Text=""Two-way"" Items=""basicCustoms"" NameSelectors=""nameSelectors"" Split Toggle @bind-IsToggled=""customIsToggled"" />
 <BitCheckbox Label=""IsToggled"" @bind-Value=""customIsToggled"" />
 
@@ -260,7 +268,8 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     IconName = { Name = nameof(Operation.Image) },
     Checkable = { Name = nameof(Operation.Checkable) },
     IsChecked = { Name = nameof(Operation.Checked) },
-    RadioGroup = { Name = nameof(Operation.SortGroup) }
+    RadioGroup = { Name = nameof(Operation.SortGroup) },
+    OnClick = { Name = nameof(Operation.Clicked) }
 };
 
 private List<Operation> checkableCustoms =
@@ -400,6 +409,7 @@ public class Operation
     public string? Name { get; set; }
     public string? Image { get; set; }
     public bool Disabled { get; set; }
+    public Action<Operation>? Clicked { get; set; }
 }
 
 private List<Operation> basicCustoms =
@@ -421,8 +431,22 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     Text = { Name = nameof(Operation.Name) },
     Key = { Name = nameof(Operation.Id) },
     IconName = { Name = nameof(Operation.Image) },
-    IsEnabled = { Selector = m => m.Disabled is false }
-};";
+    IsEnabled = { Selector = m => m.Disabled is false },
+    OnClick = { Name = nameof(Operation.Clicked) }
+};
+
+protected override void OnInitialized()
+{
+    // The item's own handler is a plain Action the component invokes directly, so it can run off
+    // the renderer's dispatcher - StateHasChanged called raw from here throws under Blazor Server.
+    Action<Operation> onClick = item =>
+    {
+        eventsClickedCustom = $""{item.Name}"";
+        _ = InvokeAsync(StateHasChanged);
+    };
+
+    basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
+}";
 
     private readonly string example11RazorCode = @"
 <BitMenuButton Split Sticky Items=""basicCustoms"" DefaultSelectedItem=""basicCustoms[1]"" NameSelectors=""nameSelectors"" />
@@ -622,7 +646,7 @@ private BitMenuButtonNameSelectors<Operation> nameSelectors = new()
 
 private async Task HandleOnSaveClick() => await Task.Delay(2000);
 
-private async Task HandleOnRefreshClick() => await Task.Delay(300);";
+private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 
     private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicIconCustoms""

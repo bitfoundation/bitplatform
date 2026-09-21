@@ -189,10 +189,12 @@ public partial class _BitMenuButtonItemDemo
     {
         twoWaySelectedItem = basicItems[2];
 
+        // The item's own OnClick is a plain Action the component invokes directly, so it can run off
+        // the renderer's dispatcher - StateHasChanged called raw from here throws under Blazor Server.
         Action<BitMenuButtonItem> onClick = item =>
         {
             eventsClickedItem = $"{item.Text}";
-            StateHasChanged();
+            _ = InvokeAsync(StateHasChanged);
         };
 
         basicItemsOnClick.ForEach(i => i.OnClick = onClick);
@@ -207,5 +209,5 @@ public partial class _BitMenuButtonItemDemo
 
     private async Task HandleOnSaveClick() => await Task.Delay(2000);
 
-    private async Task HandleOnRefreshClick() => await Task.Delay(300);
+    private async Task HandleOnRefreshClick() => await Task.Delay(2000);
 }

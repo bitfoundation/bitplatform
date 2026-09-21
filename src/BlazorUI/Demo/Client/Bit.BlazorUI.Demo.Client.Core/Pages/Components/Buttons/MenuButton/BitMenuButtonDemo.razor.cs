@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class BitMenuButtonDemo
 {
@@ -471,13 +471,37 @@ public partial class BitMenuButtonDemo
         {
             Name = "--bit-MenuButton-active-color",
             DefaultValue = "The Color role's on-color",
-            Description = "Text and icon color of the pressed half, of a toggled header button, and of the chevron while the menu is open.",
+            Description = "Text and icon color of the pressed half, and of the chevron while the menu is open.",
         },
         new()
         {
             Name = "--bit-MenuButton-active-background",
             DefaultValue = "The Color role's active color",
-            Description = "Background of the pressed half, of a toggled header button, and of the chevron while the menu is open.",
+            Description = "Background of the pressed half, and of the chevron while the menu is open.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-toggled-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Text and icon color of the header button while it is toggled.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-toggled-background",
+            DefaultValue = "The Color role's dark color",
+            Description = "Background of the header button while it is toggled.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-toggled-hover-background",
+            DefaultValue = "The Color role's dark-hover color",
+            Description = "Background of the toggled header button on hover (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-toggled-active-background",
+            DefaultValue = "The Color role's dark-active color",
+            Description = "Background of the toggled header button while it is pressed.",
         },
         new()
         {

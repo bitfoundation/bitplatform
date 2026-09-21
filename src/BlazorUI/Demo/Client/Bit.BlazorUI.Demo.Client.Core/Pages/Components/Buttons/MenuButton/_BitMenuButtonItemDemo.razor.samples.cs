@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonItemDemo
 {
@@ -109,6 +109,14 @@ private List<BitMenuButtonItem> longItems =
 <BitMenuButton Text=""Toggle"" Items=""basicItems"" Split Toggle />
 
 <BitMenuButton Text=""DefaultIsToggled"" Items=""basicItems"" Split Toggle DefaultIsToggled=""true"" />
+
+<BitMenuButton Text=""Fill"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Outline"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"" />
+<BitMenuButton Text=""Text"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"" />
+
+<BitMenuButton Text=""Fill"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Fill"" />
+<BitMenuButton Text=""Outline"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Outline"" />
+<BitMenuButton Text=""Text"" Items=""basicItems"" Split Toggle Variant=""BitVariant.Text"" />
 
 <BitMenuButton Text=""Two-way"" Items=""basicItems"" Split Toggle @bind-IsToggled=""itemIsToggled"" />
 <BitCheckbox Label=""IsToggled"" @bind-Value=""itemIsToggled"" />
@@ -277,10 +285,12 @@ private List<BitMenuButtonItem> basicItemsOnClick =
 
 protected override void OnInitialized()
 {
+    // The item's own OnClick is a plain Action the component invokes directly, so it can run off
+    // the renderer's dispatcher - StateHasChanged called raw from here throws under Blazor Server.
     Action<BitMenuButtonItem> onClick = item =>
     {
         eventsClickedItem = $""{item.Text}"";
-        StateHasChanged();
+        _ = InvokeAsync(StateHasChanged);
     };
 
     basicItemsOnClick.ForEach(i => i.OnClick = onClick);
@@ -398,7 +408,7 @@ private static List<BitMenuButtonItem> basicItemsIcon =
 
 private async Task HandleOnSaveClick() => await Task.Delay(2000);
 
-private async Task HandleOnRefreshClick() => await Task.Delay(300);";
+private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 
     private readonly string example16RazorCode = @"
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" Items=""basicItemsIcon""

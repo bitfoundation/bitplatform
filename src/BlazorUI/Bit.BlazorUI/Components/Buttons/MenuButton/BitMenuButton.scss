@@ -10,10 +10,13 @@
 //   --bit-MenuButton-radius                    corner radius of the button and its focus ring  (default: $shp-radius-button)
 //   --bit-MenuButton-hover-color               text and icon color on hover                    (default: the role's on-color)
 //   --bit-MenuButton-hover-background          background of the hovered half                  (default: the role's hover color)
-//   --bit-MenuButton-active-color              text and icon color while pressed, toggled or
-//                                              with the menu open                              (default: the role's on-color)
-//   --bit-MenuButton-active-background         background while pressed, toggled or with the
-//                                              menu open                                       (default: the role's active color)
+//   --bit-MenuButton-active-color              text and icon color while pressed or with the
+//                                              menu open                                       (default: the role's on-color)
+//   --bit-MenuButton-active-background         background while pressed or with the menu open  (default: the role's active color)
+//   --bit-MenuButton-toggled-color             text and icon color of the toggled header       (default: the role's on-color)
+//   --bit-MenuButton-toggled-background        background of the toggled header                (default: the role's dark color)
+//   --bit-MenuButton-toggled-hover-background  background of the toggled header on hover       (default: the role's dark-hover color)
+//   --bit-MenuButton-toggled-active-background background of the toggled header while pressed  (default: the role's dark-active color)
 //   --bit-MenuButton-disabled-color            text and icon color when disabled               (default: the role's disabled text color)
 //   --bit-MenuButton-disabled-background       background when disabled                        (default: per variant, the role's dis color)
 //   --bit-MenuButton-disabled-border-color     border color when disabled                      (default: the disabled background)
@@ -235,10 +238,27 @@
     --bit-mnb-clr-chb-bg: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
 }
 
+// The toggled header is painted with the darker end of the role, the way BitToggleButton's checked state is,
+// rather than with the pressed color: pressed is a lighter step of the role in the dark scheme, so a sustained
+// state drawn with it made the button that is ON read as the lighter - and so the weaker - of the two. The
+// hovered and the pressed steps are restated here because `.bit-mnb-opb:hover` weighs the same as this rule
+// and would otherwise be settled by source order, leaving a toggled header inert under the pointer.
 .bit-mnb-tgl {
-    .bit-mnb-opb {
-        color: var(--bit-MenuButton-active-color, var(--bit-mnb-clr-txt));
-        background-color: var(--bit-MenuButton-active-background, var(--bit-mnb-clr-active));
+    > .bit-mnb-opb {
+        color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
+        background-color: var(--bit-MenuButton-toggled-background, var(--bit-mnb-clr-dark));
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
+                background-color: var(--bit-MenuButton-toggled-hover-background, var(--bit-mnb-clr-dark-hover));
+            }
+        }
+
+        &:active {
+            color: var(--bit-MenuButton-toggled-color, var(--bit-mnb-clr-txt));
+            background-color: var(--bit-MenuButton-toggled-active-background, var(--bit-mnb-clr-dark-active));
+        }
     }
 }
 
@@ -591,6 +611,9 @@
         --bit-mnb-clr-txt: #{role($tokens, on)};
         --bit-mnb-clr-hover: #{role($tokens, hover)};
         --bit-mnb-clr-active: #{role($tokens, active)};
+        --bit-mnb-clr-dark: #{role($tokens, dark)};
+        --bit-mnb-clr-dark-hover: #{role($tokens, dark-hover)};
+        --bit-mnb-clr-dark-active: #{role($tokens, dark-active)};
         --bit-mnb-clr-focus: #{role($tokens, focus)};
         --bit-mnb-clr-dis: #{role($tokens, dis)};
         --bit-mnb-clr-dis-text: #{role($tokens, dis-text)};

@@ -34,7 +34,11 @@ public partial class _BitMenuButtonCustomDemo
         Checkable = { Name = nameof(Operation.Checkable) },
         IsChecked = { Name = nameof(Operation.Checked) },
         ChildItems = { Name = nameof(Operation.Children) },
-        RadioGroup = { Name = nameof(Operation.SortGroup) }
+        RadioGroup = { Name = nameof(Operation.SortGroup) },
+        // Without this the selector falls back to a property named OnClick, which Operation does not
+        // have, so an item's own click handler would never be found - and the Events and Checkable
+        // sections below both rely on one.
+        OnClick = { Name = nameof(Operation.Clicked) }
     };
 
     private static BitMenuButtonNameSelectors<Operation> nameSelectors2 = new()
@@ -218,10 +222,12 @@ public partial class _BitMenuButtonCustomDemo
     {
         twoWaySelectedCustom = basicCustoms[2];
 
+        // The item's own click handler is a plain Action the component invokes directly, so it can run
+        // off the renderer's dispatcher - StateHasChanged called raw from here throws under Blazor Server.
         Action<Operation> onClick = item =>
         {
             eventsClickedCustom = $"{item.Name}";
-            StateHasChanged();
+            _ = InvokeAsync(StateHasChanged);
         };
 
         basicCustomsOnClick.ForEach(i => i.Clicked = onClick);
@@ -236,5 +242,5 @@ public partial class _BitMenuButtonCustomDemo
 
     private async Task HandleOnSaveClick() => await Task.Delay(2000);
 
-    private async Task HandleOnRefreshClick() => await Task.Delay(300);
+    private async Task HandleOnRefreshClick() => await Task.Delay(2000);
 }

@@ -136,7 +136,8 @@
              PreventRenderForMcpClient>
     <div>
         Enable toggle behavior on the header button in Split mode. Clicking the operator button toggles the IsToggled
-        state, while the chevron button still opens the callout.
+        state, while the chevron button still opens the callout. The toggled header is painted with the darker end of
+        its color role in every variant, so the button that is on reads stronger than the one that is off.
     </div>
     <br />
     <div>Toggle:</div>
@@ -149,6 +150,20 @@
     <br />
     <div class="example-content">
         <BitMenuButton Text="DefaultIsToggled" Items="basicItems" Split Toggle DefaultIsToggled="true" />
+    </div>
+    <br /><br />
+    <div>Variant:</div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Fill" Items="basicItems" Split Toggle Variant="BitVariant.Fill" DefaultIsToggled="true" />
+        <BitMenuButton Text="Outline" Items="basicItems" Split Toggle Variant="BitVariant.Outline" DefaultIsToggled="true" />
+        <BitMenuButton Text="Text" Items="basicItems" Split Toggle Variant="BitVariant.Text" DefaultIsToggled="true" />
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Fill" Items="basicItems" Split Toggle Variant="BitVariant.Fill" />
+        <BitMenuButton Text="Outline" Items="basicItems" Split Toggle Variant="BitVariant.Outline" />
+        <BitMenuButton Text="Text" Items="basicItems" Split Toggle Variant="BitVariant.Text" />
     </div>
     <br /><br />
     <div>Two-way binding:</div>
