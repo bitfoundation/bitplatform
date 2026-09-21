@@ -533,7 +533,32 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <div>
+        <strong>BitParams</strong> carries a <strong>BitButtonGroupParams</strong> down to every ButtonGroup under it,
+        so a page sets the look of its groups once instead of repeating it at each of them. What it carries is a default
+        and not an override: a group that sets a parameter for itself keeps its own value, and only what it left unset
+        is filled in from the cascade, which is what lets one group step out of the section it is in without the section
+        having to know about it. The params object holds the parameters that say nothing about the item type, so one of
+        them fits all three APIs of the component; the items, the templates, the name selectors and the bound
+        <strong>ToggleKey</strong> stay on the group itself.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="buttonGroupParams">
+            <div>Takes the variant, the shape and the justification from the cascade</div>
+            <BitButtonGroup Items="basicItems" />
+            <div>So does this one, without repeating any of it</div>
+            <BitButtonGroup Items="basicItems" />
+            <div>Its own variant, and the cascaded shape and justification</div>
+            <BitButtonGroup Items="basicItems" Variant="BitVariant.Text" />
+        </BitParams>
+        <div>Outside the cascade, and back to the defaults</div>
+        <BitButtonGroup Items="basicItems" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>
         The <strong>Color</strong> sets the palette of the whole group - its border, fill, hover and active states, the
         focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground,
@@ -812,7 +837,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>
         Beyond the built-in Fluent UI icons, the item's <strong>Icon</strong> takes a BitIconInfo that renders an icon
         from
@@ -839,7 +864,7 @@
     <BitButtonGroup Variant="BitVariant.Text" Color="BitColor.Tertiary" Items="externalIconItems" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+<DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>
         The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which set the
         height, padding, text size, and icon size of every button from the theme's control tokens, so a group lines
@@ -868,7 +893,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+<DemoExample Title="Style &amp; Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
     <div>
         Styling works at three levels: <strong>Style</strong> and <strong>Class</strong> target the root element, each
         item's
@@ -905,7 +930,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25"
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26"
              PreventRenderForMcpClient>
     <div>
         Setting <strong>Dir</strong> to Rtl (or inheriting it from an ancestor) flips the ButtonGroup for right-to-left

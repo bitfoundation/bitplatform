@@ -250,6 +250,16 @@ public partial class _BitButtonGroupItemDemo
         }
     ];
 
+    private readonly BitButtonGroupParams[] buttonGroupParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Rounded = true,
+            Justified = true,
+        }
+    ];
+
     private List<BitButtonGroupItem> rtlItems =
     [
         new() { Text = "اضافه کردن", IconName = BitIconName.Add },

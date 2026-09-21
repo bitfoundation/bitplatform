@@ -856,7 +856,49 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+             PreventRenderForMcpClient>
+    <div>
+        <strong>BitParams</strong> carries a <strong>BitButtonGroupParams</strong> down to every ButtonGroup under it,
+        so a page sets the look of its groups once instead of repeating it at each of them. What it carries is a default
+        and not an override: a group that sets a parameter for itself keeps its own value, and only what it left unset
+        is filled in from the cascade, which is what lets one group step out of the section it is in without the section
+        having to know about it. The params object holds the parameters that say nothing about the item type, so one of
+        them fits all three APIs of the component; the items, the templates, the name selectors and the bound
+        <strong>ToggleKey</strong> stay on the group itself.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="buttonGroupParams">
+            <div>Takes the variant, the shape and the justification from the cascade</div>
+            <BitButtonGroup TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <div>So does this one, without repeating any of it</div>
+            <BitButtonGroup TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+            <div>Its own variant, and the cascaded shape and justification</div>
+            <BitButtonGroup Variant="BitVariant.Text" TItem="BitButtonGroupOption">
+                <BitButtonGroupOption Text="Add" />
+                <BitButtonGroupOption Text="Edit" />
+                <BitButtonGroupOption Text="Delete" />
+            </BitButtonGroup>
+        </BitParams>
+        <div>Outside the cascade, and back to the defaults</div>
+        <BitButtonGroup TItem="BitButtonGroupOption">
+            <BitButtonGroupOption Text="Add" />
+            <BitButtonGroupOption Text="Edit" />
+            <BitButtonGroupOption Text="Delete" />
+        </BitButtonGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
     <div>
         The <strong>Color</strong> sets the palette of the whole group - its border, fill, hover and active states, the
         focus ring, and the darker shade used for toggled buttons - from the theme's general, background, foreground,
@@ -1567,7 +1609,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
     <div>
         Beyond the built-in Fluent UI icons, the option's <strong>Icon</strong> takes a BitIconInfo that renders an icon
         from any external library. Pass the CSS classes directly, or use the helpers such as
@@ -1605,7 +1647,7 @@
     </BitButtonGroup>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>
         The <strong>Size</strong> picks one of three presets - Small, Medium (default), and Large - which set the
         height, padding, text size, and icon size of every button from the theme's control tokens, so a group lines
@@ -1670,7 +1712,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style &amp; Class" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Style &amp; Class" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>
         Styling works at three levels: <strong>Style</strong> and <strong>Class</strong> target the root element, each
         option's own <strong>Style</strong> and <strong>Class</strong> target a single button, and
@@ -1737,7 +1779,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
     <div>
         Setting <strong>Dir</strong> to Rtl (or inheriting it from an ancestor) flips the ButtonGroup for right-to-left
         languages: the buttons, their icons, and the separators between them all reverse, and so does the arrow key

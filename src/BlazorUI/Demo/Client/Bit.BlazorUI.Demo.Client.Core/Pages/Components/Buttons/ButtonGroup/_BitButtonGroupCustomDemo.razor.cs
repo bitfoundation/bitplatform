@@ -323,6 +323,16 @@ public partial class _BitButtonGroupCustomDemo
         }
     ];
 
+    private readonly BitButtonGroupParams[] buttonGroupParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Rounded = true,
+            Justified = true,
+        }
+    ];
+
     private List<Operation> rtlCustoms =
     [
         new() { Name = "اضافه کردن", Image = BitIconName.Add },

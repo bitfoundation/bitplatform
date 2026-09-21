@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The ButtonGroup joins related buttons into a single unit: a plain action toolbar, or a single-select or
@@ -25,6 +27,22 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private IEnumerable<TItem> _oldItems = default!;
     private IEnumerable<string>? _internalToggleKeys;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the ButtonGroup component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple ButtonGroup components through the <see cref="BitParams"/> component.
+    /// <br />
+    /// The cascaded values carry nothing about the item type, so one <see cref="BitButtonGroupParams"/> fits every
+    /// group under it whatever each of them is generic over.
+    /// </remarks>
+    [CascadingParameter(Name = BitButtonGroupParams.ParamName)]
+    public BitButtonGroupParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
@@ -535,6 +553,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     protected override async Task OnInitializedAsync()
     {
+        // The selection mode, the toggle defaults and the cap are all read below, so the cascaded values are
+        // taken before that rather than only in OnParametersSetAsync, which runs after this.
+        CascadingParameters?.UpdateParameters(this);
+
         // Only seed _items from Items for the Items API; in the options/child-content path the options
         // register themselves, so it must start empty.
         _items = (ChildContent is null && Options is null && Items is not null) ? [.. Items] : [];
@@ -586,8 +608,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitButtonGroupParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         if (ChildContent is null && Options is null && Items is not null && Items.Any())
         {
             if (_oldItems is null || (ReferenceEquals(Items, _oldItems) is false && Items.SequenceEqual(_oldItems) is false))

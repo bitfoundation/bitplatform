@@ -473,6 +473,41 @@ private async Task FocusTheGroup()
 }";
 
     private readonly string example21RazorCode = @"
+<BitParams Parameters=""buttonGroupParams"">
+    <BitButtonGroup TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" />
+        <BitButtonGroupOption Text=""Edit"" />
+        <BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" />
+        <BitButtonGroupOption Text=""Edit"" />
+        <BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+    <BitButtonGroup Variant=""BitVariant.Text"" TItem=""BitButtonGroupOption"">
+        <BitButtonGroupOption Text=""Add"" />
+        <BitButtonGroupOption Text=""Edit"" />
+        <BitButtonGroupOption Text=""Delete"" />
+    </BitButtonGroup>
+</BitParams>
+
+<BitButtonGroup TItem=""BitButtonGroupOption"">
+    <BitButtonGroupOption Text=""Add"" />
+    <BitButtonGroupOption Text=""Edit"" />
+    <BitButtonGroupOption Text=""Delete"" />
+</BitButtonGroup>";
+    private readonly string example21CsharpCode = @"
+private readonly BitButtonGroupParams[] buttonGroupParams =
+[
+    new()
+    {
+        Variant = BitVariant.Outline,
+        Rounded = true,
+        Justified = true,
+    }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
@@ -824,7 +859,7 @@ private async Task FocusTheGroup()
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
     
     <BitButtonGroup Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
@@ -851,7 +886,7 @@ private async Task FocusTheGroup()
         <BitButtonGroupOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
     </BitButtonGroup>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>
@@ -882,7 +917,7 @@ private async Task FocusTheGroup()
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -949,7 +984,7 @@ private async Task FocusTheGroup()
     <BitButtonGroupOption Text=""Add"" /><BitButtonGroupOption Text=""Edit"" /><BitButtonGroupOption Text=""Delete"" />
 </BitButtonGroup>";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" TItem=""BitButtonGroupOption"">
     <BitButtonGroupOption Text=""اضافه کردن"" IconName=""@BitIconName.Add"" />
     <BitButtonGroupOption Text=""ویرایش"" IconName=""@BitIconName.Edit"" />
