@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -53,7 +54,6 @@ public class BitRatingTests : BunitTestContext
         var bitRating = component.Find(".bit-rtg");
 
         Assert.IsTrue(bitRating.ClassList.Contains("bit-rtg-rdl"));
-        Assert.AreEqual("true", bitRating.GetAttribute("aria-readonly"));
 
         // A read-only rating is a picture of a value rather than a set of choices, so it is announced
         // as a single labelled image instead of a group of unreachable radios.
@@ -82,9 +82,11 @@ public class BitRatingTests : BunitTestContext
 
         var bitRating = component.Find(".bit-rtg");
 
-        // Neither attribute is supported on the img role, where there is nothing to require or disable.
+        // None of these is supported on the img role, where there is nothing to require, disable or correct.
+        Assert.IsFalse(bitRating.HasAttribute("aria-readonly"));
         Assert.IsFalse(bitRating.HasAttribute("aria-required"));
         Assert.IsFalse(bitRating.HasAttribute("aria-disabled"));
+        Assert.IsFalse(bitRating.HasAttribute("aria-invalid"));
     }
 
     [TestMethod]
@@ -1152,6 +1154,34 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(expected, value);
     }
 
+    [TestMethod,
+        DataRow("ArrowLeft", true, false, false),
+        DataRow("ArrowRight", false, true, false),
+        DataRow("Home", false, false, true),
+        DataRow("End", true, false, false),
+        DataRow("3", false, true, false)
+    ]
+    public void BitRatingKeyboardShouldLeaveAModifiedKeyToTheBrowser(string key, bool alt, bool ctrl, bool meta)
+    {
+        var value = 3d;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // Alt+ArrowLeft goes back, Ctrl+Home reaches the top of the page, Ctrl+digit switches tabs: a held
+        // modifier makes the key a shortcut of the page rather than a move inside the rating.
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs
+        {
+            Key = key,
+            AltKey = alt,
+            CtrlKey = ctrl,
+            MetaKey = meta
+        });
+
+        Assert.AreEqual(3d, value);
+    }
+
     [TestMethod]
     public void BitRatingKeyboardShouldLeaveEscapeToTheContainer()
     {
@@ -1279,6 +1309,360 @@ public class BitRatingTests : BunitTestContext
         });
 
         Assert.AreEqual("product-rate", component.Find(".bit-input-hidden").GetAttribute("name"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderAndBeNamedByItsLabel()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Rate this product");
+        });
+
+        var root = component.Find(".bit-rtg");
+        var label = component.Find(".bit-rtg-lbl");
+
+        Assert.AreEqual("Rate this product", label.TextContent);
+
+        // A row of stars carries no text of its own, so the visible label is what names the group.
+        Assert.AreEqual(component.Find(".bit-rtg-lbc").Id, root.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderALabelTemplate()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-label");
+                builder.AddContent(2, "How was it?");
+                builder.CloseElement();
+            }));
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual("How was it?", component.Find(".custom-label").TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-lbl").Count);
+        Assert.AreEqual(component.Find(".bit-rtg-lbc").Id, root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderNoLabelContainerWithoutALabel()
+    {
+        var component = RenderComponent<BitRating>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-lbc").Count);
+        Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod,
+        DataRow(null, ""),
+        DataRow(BitLabelPosition.Top, ""),
+        DataRow(BitLabelPosition.Bottom, "bit-rtg-lbm"),
+        DataRow(BitLabelPosition.Start, "bit-rtg-lst"),
+        DataRow(BitLabelPosition.End, "bit-rtg-led")
+    ]
+    public void BitRatingShouldRespectLabelPosition(BitLabelPosition? position, string expectedClass)
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.LabelPosition, position);
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        if (string.IsNullOrEmpty(expectedClass))
+        {
+            Assert.IsFalse(root.ClassList.Any(c => c is "bit-rtg-lbm" or "bit-rtg-lst" or "bit-rtg-led"));
+        }
+        else
+        {
+            Assert.IsTrue(root.ClassList.Contains(expectedClass));
+        }
+    }
+
+    [TestMethod]
+    public void BitRatingAriaLabelShouldWinOverTheLabel()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.AriaLabel, "Rate the build quality");
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        // aria-labelledby would silently discard the explicit string, so only one of the two is rendered.
+        Assert.IsFalse(root.HasAttribute("aria-labelledby"));
+        Assert.AreEqual("Rate the build quality", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectAriaLabelledBy()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.AriaLabelledBy, "external-heading");
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual("external-heading", root.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingReadOnlyWithALabelShouldKeepTheValueInItsName()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Label, "Average rating");
+            parameters.Add(p => p.DefaultValue, 4.2);
+        });
+
+        var root = component.Find(".bit-rtg");
+        var valueText = component.Find(".bit-rtg-alb[id]");
+
+        // Naming the picture of a value by its label alone would lose the value it exists to show.
+        Assert.AreEqual($"{component.Find(".bit-rtg-lbc").Id} {valueText.Id}", root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 4.2, 5), valueText.TextContent);
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderNoHiddenValueTextWithoutALabel()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, 4.2);
+        });
+
+        // Without a label there is nothing for the value to join, so it stays in the aria-label instead.
+        Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 4.2, 5),
+                        component.Find(".bit-rtg").GetAttribute("aria-label"));
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-alb").Count);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderAndBeDescribedByItsDescription()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.Description, "Half a star is selectable.");
+        });
+
+        var root = component.Find(".bit-rtg");
+        var description = component.Find(".bit-rtg-dsc");
+
+        Assert.AreEqual("Half a star is selectable.", description.TextContent.Trim());
+
+        // The description describes the group rather than naming it, so it joins aria-describedby and the
+        // name still comes from the label.
+        Assert.AreEqual(description.Id, root.GetAttribute("aria-describedby"));
+        Assert.AreEqual(component.Find(".bit-rtg-lbc").Id, root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderADescriptionTemplate()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-description");
+                builder.AddContent(2, "Tap a star to rate");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Tap a star to rate", component.Find(".custom-description").TextContent);
+        Assert.AreEqual(component.Find(".bit-rtg-dsc").Id, component.Find(".bit-rtg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldKeepASplattedAriaDescribedBy()
+    {
+        // A hyphenated aria-* name never reaches a parameter, so it arrives as a splatted attribute - which the
+        // component's own value would otherwise replace. aria-describedby is a space separated list of IDREFs,
+        // so the description of the rating joins the page's rather than taking its place.
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddMultipleAttributes(1, new Dictionary<string, object>
+            {
+                [nameof(BitRating.Description)] = "Half a star is selectable.",
+                ["aria-describedby"] = "external-hint"
+            });
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual($"external-hint {component.Find(".bit-rtg-dsc").Id}",
+                        component.Find(".bit-rtg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderNoDescriptionContainerWithoutADescription()
+    {
+        var component = RenderComponent<BitRating>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-dsc").Count);
+        Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow(true, false, true),
+        DataRow(false, false, false),
+        DataRow(true, true, false)
+    ]
+    public void BitRatingShouldMarkARequiredLabel(bool required, bool readOnly, bool expected)
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.Required, required);
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        Assert.AreEqual(expected, component.Find(".bit-rtg").ClassList.Contains("bit-rtg-req"));
+    }
+
+    [TestMethod]
+    public void BitRatingParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitRating)}", BitRatingParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitRatingParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitRatingParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.IsInstanceOfType<BitInputBaseParams>(@params);
+        Assert.AreEqual(BitRatingParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitRatingParams
+            {
+                Max = 3,
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Vertical = true,
+                ReadOnly = true,
+                Label = "Cascaded label",
+                LabelPosition = BitLabelPosition.End,
+                SelectedIconName = "HeartFill",
+                UnselectedIconName = "Heart"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitRating>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual(3, component.FindAll(".bit-rtg-btn").Count);
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-vrt"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-rdl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-led"));
+        Assert.AreEqual("Cascaded label", component.Find(".bit-rtg-lbl").TextContent);
+        Assert.IsTrue(component.FindAll(".bit-rtg-iem")[2].ClassList.Contains("bit-icon--Heart"));
+        Assert.IsTrue(component.FindAll(".bit-rtg-ifl")[0].ClassList.Contains("bit-icon--HeartFill"));
+    }
+
+    [TestMethod]
+    public void BitRatingDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitRatingParams
+            {
+                Max = 3,
+                Color = BitColor.Success,
+                ReadOnly = true,
+                Label = "Cascaded label"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitRating>(0);
+                builder.AddAttribute(1, nameof(BitRating.Max), 6);
+                builder.AddAttribute(2, nameof(BitRating.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitRating.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual(6, component.FindAll(".bit-rtg-btn").Count);
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-err"));
+
+        // An explicit false is a written parameter like any other, so the cascade does not fill it in.
+        Assert.IsFalse(root.ClassList.Contains("bit-rtg-rdl"));
+
+        // What the markup left unwritten still comes from the cascade.
+        Assert.AreEqual("Cascaded label", component.Find(".bit-rtg-lbl").TextContent);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectTheLabelClassesAndStyles()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Quality");
+            parameters.Add(p => p.Classes, new BitRatingClassStyles
+            {
+                Label = "custom-label",
+                LabelContainer = "custom-label-container",
+                Container = "custom-container"
+            });
+            parameters.Add(p => p.Styles, new BitRatingClassStyles
+            {
+                Label = "color: red;",
+                LabelContainer = "padding: 1rem;",
+                Container = "gap: 1rem;"
+            });
+        });
+
+        var labelContainer = component.Find(".bit-rtg-lbc");
+        var label = component.Find(".bit-rtg-lbl");
+        var container = component.Find(".bit-rtg-cnt");
+
+        Assert.IsTrue(labelContainer.ClassList.Contains("custom-label-container"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.IsTrue(container.ClassList.Contains("custom-container"));
+        StringAssert.Contains(labelContainer.GetAttribute("style"), "padding: 1rem;");
+        StringAssert.Contains(label.GetAttribute("style"), "color: red;");
+        StringAssert.Contains(container.GetAttribute("style"), "gap: 1rem;");
     }
 
     [TestMethod]

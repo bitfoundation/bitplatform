@@ -1,14 +1,45 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// rating and one set on the Style of an instance re-skins that one alone:
+//   --bit-Rating-color              color of the filled part of the items          (default: the Color role's main color)
+//   --bit-Rating-unselected-color   color of the unfilled part of the items        (default: $clr-fg-ter)
+//   --bit-Rating-hover-color        color of the filled part while the pointer is
+//                                   previewing a value over the items             (default: the role's hover color)
+//   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: the role's focus color)
+//   --bit-Rating-disabled-color     color of both parts when IsEnabled is false    (default: $clr-fg-dis)
+//   --bit-Rating-invalid-color      color of both parts, and of the focus ring,
+//                                   while the value is invalid                    (default: $clr-err / $clr-err-focus)
+//   --bit-Rating-size               size of the item glyphs                        (default: per size, $siz-icon-*)
+//   --bit-Rating-target-size        smallest pointer target of an item, which the
+//                                   glyph is centred in; 0 shrinks the items to
+//                                   the glyph and its padding                      (default: 1.5rem)
+//   --bit-Rating-padding            padding of an item around its glyph            (default: spacing(0.25))
+//   --bit-Rating-gap                extra room between the items                   (default: 0)
+//   --bit-Rating-radius             corner radius of an item and its focus ring    (default: $shp-radius-control)
+//   --bit-Rating-hover-scale        how much the hovered item grows                (default: 1.1; 1 turns it off)
+//   --bit-Rating-label-color        text color of the label                        (default: $clr-fg-pri)
+//   --bit-Rating-label-font-size    text size of the label                         (default: $tg-fs-sm)
+//   --bit-Rating-label-gap          room between the label and the items, and
+//                                   between the items and the description         (default: spacing(1))
+//   --bit-Rating-description-color  text color of the description                  (default: $clr-fg-sec)
+//   --bit-Rating-description-font-size  text size of the description               (default: $tg-fs-xs)
+
 .bit-rtg {
-    font-weight: $tg-fw-regular;
+    display: inline-flex;
     width: fit-content;
+    // A column of label, items and description, which is the Top position; the label position classes
+    // below turn it into the other three. The items themselves are laid out by their own container,
+    // so where the label sits and which way the items run are independent of each other.
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--bit-Rating-label-gap, #{spacing(1)});
+    font-weight: $tg-fw-regular;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
     --bit-rtg-clr-uns: #{$clr-fg-ter};
-    --bit-rtg-size: #{$siz-icon-md};
 
     // While the pointer is over an interactive rating the filled part - which the hover preview has
     // already extended to the item under the pointer - shifts to the hover shade, so the preview reads
@@ -16,7 +47,14 @@
     // left out of it, so the error color it is painted with survives the pointer passing over it.
     @media (hover: hover) {
         &:hover:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-ifl {
-            color: var(--bit-rtg-clr-hover);
+            color: var(--bit-Rating-hover-color, var(--bit-rtg-clr-hover));
+        }
+
+        // The item under the pointer grows a little, which is the affordance that says the items are
+        // there to be pressed - the one thing a row of stars does not say by itself. It is not the
+        // value preview, so a rating that has turned that off still gets it.
+        &:not(.bit-dis):not(.bit-rtg-rdl) .bit-rtg-btn:hover .bit-rtg-ict {
+            transform: scale(var(--bit-Rating-hover-scale, 1.1));
         }
     }
 
@@ -26,41 +64,97 @@
             pointer-events: none;
         }
 
-        .bit-rtg-iem, .bit-rtg-ifl {
-            color: $clr-fg-dis;
+        .bit-rtg-iem, .bit-rtg-ifl, .bit-rtg-lbl, .bit-rtg-dsc {
+            color: var(--bit-Rating-disabled-color, #{$clr-fg-dis});
         }
     }
 
     &.bit-inv {
         .bit-rtg-iem, .bit-rtg-ifl {
-            color: $clr-err;
+            color: var(--bit-Rating-invalid-color, #{$clr-err});
         }
 
         .bit-rtg-btn:focus-visible {
-            @include focus-ring($clr-err-focus);
+            @include focus-ring(var(--bit-Rating-invalid-color, #{$clr-err-focus}));
         }
     }
+
+    // The asterisk of a required rating, drawn on the label the way every other required input in the
+    // library draws it. It is decorative: the group already carries aria-required.
+    &.bit-rtg-req {
+        .bit-rtg-lbl::after {
+            content: " *";
+            color: $clr-req;
+            padding-inline-end: spacing(1.5);
+        }
+    }
+}
+
+// The items, laid out apart from the label: a row that wraps, so a hundred-item scale stays inside a
+// narrow container instead of overflowing it.
+.bit-rtg-cnt {
+    order: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-Rating-gap, 0);
+}
+
+// The three boxes are ordered rather than reversed, so that moving the label never drags the description
+// along with it: a description belongs under the items it describes whichever side the label is on.
+.bit-rtg-lbc {
+    order: 1;
+    max-width: 100%;
+}
+
+.bit-rtg-lbl {
+    display: block;
+    overflow-wrap: break-word;
+    font-weight: $tg-fw-semibold;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-Rating-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-Rating-label-font-size, #{$tg-fs-sm});
+}
+
+// The hint that sits under the items, pointed at by aria-describedby rather than read as part of the
+// name, so a screen reader announces the label first and the instructions after it.
+.bit-rtg-dsc {
+    order: 3;
+    display: block;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    color: var(--bit-Rating-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-Rating-description-font-size, #{$tg-fs-xs});
 }
 
 .bit-rtg-btn {
     margin: 0;
     border: none;
+    display: flex;
     cursor: pointer;
     position: relative;
+    align-items: center;
     outline: transparent;
-    box-sizing: content-box;
-    // A minimum rather than a fixed height: the icons never exceed their line box, so the size token still
-    // decides the height of a plain rating, while an ItemTemplate taller than an icon grows the item to fit
-    // instead of spilling out of it.
-    min-height: var(--bit-rtg-size);
-    font-size: var(--bit-rtg-size);
-    line-height: var(--bit-rtg-size);
+    justify-content: center;
+    box-sizing: border-box;
     background-color: transparent;
-    border-radius: $shp-radius-control;
-    padding: spacing(1) spacing(0.25);
+    padding: var(--bit-Rating-padding, #{spacing(0.25)});
+    // A star is a small glyph, and its own box would be a pointer target well under the 24px minimum of
+    // WCAG 2.2 (SC 2.5.8) at every size below Large - and the items of a row are adjacent, so the spacing
+    // exception to that rule cannot save them either. The item takes that minimum as a floor on both axes
+    // and centres the glyph inside it, which is also what keeps the touch targets of neighbouring items
+    // apart. The floor is a literal rather than a token on purpose: it is a conformance minimum and not a
+    // design-system decision, so it must not grow or shrink with the density of a preset - an app that
+    // wants the roomier targets of a touch platform raises it through the variable. Minimums rather than
+    // sizes: an ItemTemplate taller or wider than a glyph grows the item to fit instead of spilling out.
+    min-width: var(--bit-Rating-target-size, 1.5rem);
+    min-height: var(--bit-Rating-target-size, 1.5rem);
+    font-size: var(--bit-Rating-size, var(--bit-rtg-size));
+    line-height: var(--bit-Rating-size, var(--bit-rtg-size));
+    border-radius: var(--bit-Rating-radius, #{$shp-radius-control});
 
     &:focus-visible {
-        @include focus-ring(var(--bit-rtg-clr-focus));
+        @include focus-ring(var(--bit-Rating-focus-color, var(--bit-rtg-clr-focus)));
         // The ring is drawn with a box-shadow, which the neighbouring items would otherwise paint over.
         z-index: 1;
     }
@@ -74,7 +168,9 @@
 }
 
 // A transparent slice of an item, laid over the icons, that commits its own fraction of the item.
-// inset-inline-start keeps the first slice on the leading edge in both directions.
+// It covers the whole target rather than the glyph alone, so the slices of an item stay contiguous and
+// no part of it is a dead zone. inset-inline-start keeps the first slice on the leading edge in both
+// directions.
 .bit-rtg-seg {
     top: 0;
     height: 100%;
@@ -112,10 +208,11 @@
 // The slack costs a horizontal rating nothing, because its filled layer hangs from the top edge the icon
 // starts at, but a vertical rating anchors that layer to the bottom edge and measures its fill against
 // this box: the fill would be drawn below the glyph it is meant to cover, and a half-filled item would
-// show more than half. It also keeps the step slices, which cover the item, centred on what is drawn.
+// show more than half.
 .bit-rtg-ict {
     display: flex;
     position: relative;
+    transition: transform $mot-duration-short $mot-easing;
 }
 
 .bit-rtg-iem {
@@ -123,7 +220,7 @@
     font-style: normal;
     font-weight: $tg-fw-regular;
     display: inline-block;
-    color: var(--bit-rtg-clr-uns);
+    color: var(--bit-Rating-unselected-color, var(--bit-rtg-clr-uns));
     transition: color $mot-duration-short $mot-easing;
 }
 
@@ -140,7 +237,7 @@
     font-weight: $tg-fw-regular;
     display: inline-block;
     vertical-align: middle;
-    color: var(--bit-rtg-clr);
+    color: var(--bit-Rating-color, var(--bit-rtg-clr));
     transition: width $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
@@ -148,14 +245,8 @@
 // A vertical rating stacks its items bottom-up, so that "more" is up the same way the ArrowUp key means
 // more, and the fill of a partly covered item grows from its bottom edge instead of its leading one.
 .bit-rtg-vrt {
-    display: inline-flex;
-    align-items: center;
-    flex-direction: column-reverse;
-
-    // The generous padding that separates the items of a row belongs on the other axis once they form a
-    // column, so the rows do not end up spaced twice as far apart as the columns were.
-    .bit-rtg-btn {
-        padding: spacing(0.25) spacing(1);
+    .bit-rtg-cnt {
+        flex-direction: column-reverse;
     }
 
     // Anchored to the bottom, and the glyph inside it with them: clipping a box whose content sits at the
@@ -174,6 +265,42 @@
         top: auto;
         width: 100%;
         inset-inline-start: 0;
+    }
+}
+
+
+// The three label positions that are not the default Top. Start and End put the label on the same line as
+// the items, which is the compact "Quality: * * * * *" row, so they centre the two against each other and
+// let the line wrap - the description then takes a line of its own under both, since it refuses to shrink
+// below the full width.
+.bit-rtg-lbm {
+    .bit-rtg-lbc {
+        order: 2;
+    }
+
+    .bit-rtg-cnt {
+        order: 1;
+    }
+}
+
+.bit-rtg-lst,
+.bit-rtg-led {
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: row;
+
+    .bit-rtg-dsc {
+        flex: 1 0 100%;
+    }
+}
+
+.bit-rtg-led {
+    .bit-rtg-lbc {
+        order: 2;
+    }
+
+    .bit-rtg-cnt {
+        order: 1;
     }
 }
 

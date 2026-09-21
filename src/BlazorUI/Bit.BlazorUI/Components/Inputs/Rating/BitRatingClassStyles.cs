@@ -8,6 +8,26 @@ public class BitRatingClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the container of the label of the rating.
+    /// </summary>
+    public string? LabelContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the label of the rating.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of the rating.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the rating items.
+    /// </summary>
+    public string? Container { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the rating's button.
     /// </summary>
     public string? Button { get; set; }

@@ -12,6 +12,26 @@ public partial class BitRatingDemo
 <BitRating ReadOnly DefaultValue=""3.5"" />";
 
     private readonly string example2RazorCode = @"
+<BitRating Required
+           Label=""How would you rate your stay?""
+           Description=""Hover a star to see what it means.""
+           ItemTitles=""@([""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""])""
+           @bind-Value=""labelValue"" />
+
+<BitRating Label=""Cleanliness"" LabelPosition=""BitLabelPosition.Start"" DefaultValue=""4"" />
+
+<BitRating LabelPosition=""BitLabelPosition.Bottom"" @bind-Value=""labelTemplateValue"">
+    <LabelTemplate>
+        <BitText Typography=""BitTypography.Caption1"">@ratingWords[(int)labelTemplateValue]</BitText>
+    </LabelTemplate>
+</BitRating>";
+    private readonly string example2CsharpCode = @"
+private double labelValue = 3;
+private double labelTemplateValue = 4;
+
+private readonly string[] ratingWords = [""Not rated yet"", ""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""];";
+
+    private readonly string example3RazorCode = @"
 <div style=""display:flex;align-items:center;gap:0.5rem"">
     <BitRating Max=""1"" ReadOnly DefaultValue=""1"" />
     <BitLabel>4.2 · 1,034 reviews</BitLabel>
@@ -25,17 +45,17 @@ public partial class BitRatingDemo
     <BitRating Max=""100"" DefaultValue=""37"" />
 </div>";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitRating Vertical @bind-Value=""verticalValue"" />
 <BitLabel>Value: @verticalValue</BitLabel>
 
 <BitRating Vertical Precision=""0.5"" Size=""BitSize.Large"" @bind-Value=""verticalPrecisionValue"" />
 <BitLabel>Value: @verticalPrecisionValue</BitLabel>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private double verticalValue = 3;
 private double verticalPrecisionValue = 3.5;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitRating Precision=""0.5"" @bind-Value=""halfPrecisionValue"" />
 <BitLabel>Value: @halfPrecisionValue</BitLabel>
 
@@ -44,12 +64,12 @@ private double verticalPrecisionValue = 3.5;";
 
 <BitRating Precision=""0.1"" Size=""BitSize.Large"" @bind-Value=""exactPrecisionValue"" />
 <BitLabel>Value: @exactPrecisionValue</BitLabel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private double halfPrecisionValue = 2.5;
 private double quarterPrecisionValue = 3.25;
 private double exactPrecisionValue = 3.7;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitRating @bind-Value=""noZeroValue"" />
 <BitLabel>Value: @noZeroValue</BitLabel>
 
@@ -58,38 +78,41 @@ private double exactPrecisionValue = 3.7;";
 
 <BitRating AllowClear @bind-Value=""allowClearValue"" />
 <BitLabel>Value: @allowClearValue</BitLabel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private double noZeroValue;
 private double allowZeroValue;
 private double allowClearValue = 3;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitRating @bind-Value=""highlightValue"" />
 
 <BitRating HighlightSelectedOnly @bind-Value=""highlightValue"" />
 
 <BitLabel>Value: @highlightValue</BitLabel>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private double highlightValue = 3;";
 
-    private readonly string example7RazorCode = @"
-<BitRating @bind-Value=""hoverBoundValue"" OnHoverChange=""v => hoverPreviewValue = v"" />
-<BitLabel>@(hoverLabels[(int)(hoverPreviewValue ?? hoverBoundValue)])</BitLabel>
+    private readonly string example8RazorCode = @"
+<BitRating LabelPosition=""BitLabelPosition.Bottom""
+           @bind-Value=""hoverBoundValue""
+           OnHoverChange=""v => hoverPreviewValue = v"">
+    <LabelTemplate>
+        <BitText Typography=""BitTypography.Caption1"">@ratingWords[(int)(hoverPreviewValue ?? hoverBoundValue)]</BitText>
+    </LabelTemplate>
+</BitRating>
 
 <BitRating NoHoverPreview DefaultValue=""2"" />";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private double hoverBoundValue = 3;
 private double? hoverPreviewValue;
-private readonly string[] hoverLabels = [""Not rated yet"", ""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""];";
 
-    private readonly string example8RazorCode = @"
+private readonly string[] ratingWords = [""Not rated yet"", ""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""];";
+
+    private readonly string example9RazorCode = @"
 <BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.HeartFill"" UnselectedIconName=""@BitIconName.Heart"" />
 
 <BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.CheckboxCompositeReversed"" UnselectedIconName=""@BitIconName.Checkbox"" />
 
-<BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.LikeSolid"" UnselectedIconName=""@BitIconName.Dislike"" />";
-
-    private readonly string example9RazorCode = @"
 <BitRating @bind-Value=""perItemIconValue""
            GetSelectedIcon=""i => BitIconInfo.Bit(i > 2 ? BitIconName.LikeSolid : BitIconName.DislikeSolid)""
            GetUnselectedIcon=""i => BitIconInfo.Bit(i > 2 ? BitIconName.Like : BitIconName.Dislike)"" />
@@ -118,44 +141,6 @@ private readonly string[] faceIcons =
 private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 1]);";
 
     private readonly string example10RazorCode = @"
-<BitRating DefaultValue=""3"" ItemTitles=""@([""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""])"" />";
-
-    private readonly string example11RazorCode = @"
-<style>
-    .number-item {
-        width: 1.75rem;
-        height: 1.75rem;
-        line-height: 1;
-        font-size: 0.875rem;
-        align-items: center;
-        display: inline-flex;
-        border-radius: 0.25rem;
-        justify-content: center;
-        color: var(--bit-clr-fg-ter);
-        border: 1px solid var(--bit-clr-brd-pri);
-    }
-
-    .number-item-on {
-        color: var(--bit-clr-pri-text);
-        border-color: var(--bit-clr-pri);
-        background-color: var(--bit-clr-pri);
-    }
-
-    .emoji-item {
-        opacity: 0.4;
-        line-height: 1;
-        font-size: 1.75rem;
-        display: inline-block;
-        filter: grayscale(1);
-    }
-
-    .emoji-item-on {
-        opacity: 1;
-        filter: none;
-    }
-</style>
-
-
 <BitRating Max=""10"" @bind-Value=""templateValue"">
     <ItemTemplate Context=""item"">
         <span class=""number-item @(item.IsFull ? ""number-item-on"" : null)"">@item.Index</span>
@@ -169,28 +154,66 @@ private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 
     </ItemTemplate>
 </BitRating>
 <BitLabel>Value: @moodValue</BitLabel>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private double templateValue = 7;
 private double moodValue = 4;
 private readonly string[] moodFaces = [""😖"", ""😐"", ""🙂"", ""😀"", ""🤩""];";
+    private const string example10ScssCode = @"
+// A plain badge that fills once its item does.
+.number-item {
+    width: 1.75rem;
+    height: 1.75rem;
+    line-height: 1;
+    font-size: 0.875rem;
+    align-items: center;
+    display: inline-flex;
+    border-radius: 0.25rem;
+    justify-content: center;
+    color: $bit-color-foreground-tertiary;
+    border: 1px solid $bit-color-border-primary;
+}
 
-    private readonly string example12RazorCode = @"
+.number-item-on {
+    color: $bit-color-primary-text;
+    border-color: $bit-color-primary;
+    background-color: $bit-color-primary;
+}
+
+// The mood faces, greyed out until their item is the selected one.
+.emoji-item {
+    opacity: 0.4;
+    line-height: 1;
+    font-size: 1.75rem;
+    display: inline-block;
+    filter: grayscale(1);
+}
+
+.emoji-item-on {
+    opacity: 1;
+    filter: none;
+}";
+    private readonly DemoCodeFile[] example10CodeFiles =
+    [
+        new("BitRatingDemo.razor.scss", example10ScssCode),
+    ];
+
+    private readonly string example11RazorCode = @"
 <BitRating AllowZeroStars Value=""oneWayBinding"" />
 <BitToggleButton OnChange=""v => oneWayBinding = v ? 5 : 0"" Text=""@(oneWayBinding == 5 ? ""Unstar All"" : ""Star All"")"" />
 
 <BitRating @bind-Value=""twoWayBinding"" />
 <BitNumberField Step=""0.5"" @bind-Value=""twoWayBinding"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private double oneWayBinding = 0;
 private double twoWayBinding = 3;";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitRating DefaultValue=""2"" OnChange=""v => onChangeValue = v"" />
 <BitLabel>Changed value: @onChangeValue</BitLabel>
 
 <BitRating @bind-Value=""onChangingValue"" OnChanging=""HandleOnChanging"" />
 <BitLabel>Value: @onChangingValue @(changeRejected ? ""(lowering was rejected)"" : """")</BitLabel>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private double onChangeValue;
 private double onChangingValue = 3;
 private bool changeRejected;
@@ -202,24 +225,17 @@ private void HandleOnChanging(BitRatingChangeArgs args)
     args.Cancel = changeRejected;
 }";
 
-    private readonly string example14RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-
+    private readonly string example13RazorCode = @"
 <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
 
     <DataAnnotationsValidator />
 
-    <BitRating Required AllowZeroStars @bind-Value=""ValidationModel.Value"" />
+    <BitRating Required AllowZeroStars Label=""Your rate"" @bind-Value=""ValidationModel.Value"" />
     <ValidationMessage For=""@(() => ValidationModel.Value)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 public class BitRatingDemoFormModel
 {
     [Range(typeof(double), ""1"", ""5"", ErrorMessage = ""Your rate must be between {1} and {2}"")]
@@ -230,8 +246,16 @@ public BitRatingDemoFormModel ValidationModel = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
+    private const string example13ScssCode = @"
+.validation-message {
+    color: $bit-color-error;
+}";
+    private readonly DemoCodeFile[] example13CodeFiles =
+    [
+        new("BitRatingDemo.razor.scss", example13ScssCode),
+    ];
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitRating AllowClear
            Precision=""0.5""
            AriaLabel=""Rate this product""
@@ -240,18 +264,21 @@ private void HandleInvalidSubmit() { }";
            @bind-Value=""accessibilityValue"" />
 <BitLabel>Value: @accessibilityValue</BitLabel>
 
-<BitRating ReadOnly DefaultValue=""4.2"" GetAriaLabel=""GetRatingAriaLabel"" />";
-    private readonly string example15CsharpCode = @"
+<BitRating ReadOnly DefaultValue=""4.2"" GetAriaLabel=""GetRatingAriaLabel"" />
+
+<div id=""rating-external-label"">Overall satisfaction</div>
+<BitRating AriaLabelledBy=""rating-external-label"" DefaultValue=""4"" />";
+    private readonly string example14CsharpCode = @"
 private double accessibilityValue = 3;
 
 private string GetRatingAriaLabel(double value, double max) => $""Rated {value} out of {max}"";";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 Visible: [ <BitRating Visibility=""BitVisibility.Visible"" /> ]
 Hidden: [ <BitRating Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitRating Color=""GetScoreColor()"" @bind-Value=""scoreValue"" />
 <BitLabel>@scoreWords[(int)scoreValue]</BitLabel>
 
@@ -259,7 +286,7 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
            GetSelectedIcon=""GetScoreIcon""
            GetUnselectedIcon=""GetScoreIcon""
            @bind-Value=""scoreValue"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private double scoreValue = 2;
 private readonly string[] scoreWords = [""Unrated"", ""Poor"", ""Poor"", ""Okay"", ""Great"", ""Great""];
 
@@ -276,6 +303,34 @@ private BitIconInfo GetScoreIcon(int index) => BitIconInfo.Bit(scoreValue switch
     <= 3 => BitIconName.EmojiNeutral,
     _ => BitIconName.Emoji2
 });";
+
+    private readonly string example17RazorCode = @"
+<BitParams Parameters=""@ratingParams"">
+    <BitRating Label=""Comfort"" DefaultValue=""4"" />
+
+    <BitRating Label=""Value for money"" DefaultValue=""3.5"" />
+
+    <BitRating Label=""Rate it yourself"" ReadOnly=""false"" Color=""BitColor.Success"" @bind-Value=""cascadeValue"" />
+</BitParams>
+
+
+<BitRating DefaultValue=""4"" />";
+    private readonly string example17CsharpCode = @"
+private double cascadeValue = 3;
+
+private readonly BitRatingParams[] ratingParams =
+[
+    new()
+    {
+        ReadOnly = true,
+        Precision = 0.5,
+        Size = BitSize.Small,
+        Color = BitColor.Warning,
+        SelectedIconName = BitIconName.HeartFill,
+        UnselectedIconName = BitIconName.Heart,
+        LabelPosition = BitLabelPosition.Start
+    }
+];";
 
     private readonly string example18RazorCode = @"
 <BitRating Color=""BitColor.Primary"" DefaultValue=""3.5"" />
@@ -320,25 +375,6 @@ private BitIconInfo GetScoreIcon(int index) => BitIconInfo.Bit(scoreValue switch
 <BitRating Size=""BitSize.Large"" DefaultValue=""3"" />";
 
     private readonly string example21RazorCode = @"
-<style>
-    .custom-class {
-        margin-inline: 1rem;
-        border-radius: 0.25rem;
-        padding-inline: 0.5rem;
-        border: 1px solid dodgerblue;
-        box-shadow: dodgerblue 0 0 1rem;
-    }
-
-    .custom-selected {
-        color: seagreen;
-    }
-
-    .custom-unselected {
-        color: mediumseagreen;
-    }
-</style>
-
-
 <BitRating DefaultValue=""3"" Style=""padding-inline: 0.5rem; margin-inline: 1rem; box-shadow: tomato 0 0 1rem; border-radius: 1rem;"" />
 
 <BitRating DefaultValue=""3"" Class=""custom-class"" />
@@ -346,10 +382,54 @@ private BitIconInfo GetScoreIcon(int index) => BitIconInfo.Bit(scoreValue switch
 
 <BitRating DefaultValue=""3.5"" Styles=""@(new() { SelectedIcon = ""color: blueviolet;"", UnselectedIcon = ""color: plum;"" })"" />
 
-<BitRating DefaultValue=""3.5"" Classes=""@(new() { SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />";
+<BitRating Label=""Classes"" DefaultValue=""3.5"" Classes=""@(new() { Label = ""custom-label"", SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />
+
+
+<BitRating DefaultValue=""3.5"" Style=""--bit-Rating-color: goldenrod; --bit-Rating-hover-color: darkorange; --bit-Rating-unselected-color: #d8c9a3;"" />
+
+<BitRating DefaultValue=""3"" Style=""--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25;"" />
+
+<div>
+    Rated
+    <BitRating Size=""BitSize.Small"" ReadOnly DefaultValue=""4"" Style=""--bit-Rating-target-size: 0; --bit-Rating-padding: 0;"" />
+    by 1,034 people.
+</div>
+
+
+<div style=""--bit-Rating-color: crimson; --bit-Rating-unselected-color: pink; --bit-Rating-label-color: crimson;"">
+    <BitRating Label=""Story"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""4.5"" />
+    <BitRating Label=""Music"" LabelPosition=""BitLabelPosition.Start"" ReadOnly DefaultValue=""3"" />
+</div>";
+    private const string example21ScssCode = @"
+.custom-class {
+    margin-inline: 1rem;
+    border-radius: 0.25rem;
+    padding-inline: 0.5rem;
+    border: 1px solid dodgerblue;
+    box-shadow: dodgerblue 0 0 1rem;
+}
+
+.custom-label {
+    color: dodgerblue;
+    text-transform: uppercase;
+}
+
+.custom-selected {
+    color: seagreen;
+}
+
+.custom-unselected {
+    color: mediumseagreen;
+}";
+    private readonly DemoCodeFile[] example21CodeFiles =
+    [
+        new("BitRatingDemo.razor.scss", example21ScssCode),
+    ];
 
     private readonly string example22RazorCode = @"
 <BitRating Dir=""BitDir.Rtl"" DefaultValue=""3"" />
 
-<BitRating Dir=""BitDir.Rtl"" Precision=""0.5"" DefaultValue=""3.5"" />";
+<BitRating Dir=""BitDir.Rtl"" Precision=""0.5"" DefaultValue=""3.5"" />
+
+<BitRating Dir=""BitDir.Rtl"" Label=""امتیاز شما"" LabelPosition=""BitLabelPosition.Start"" DefaultValue=""4"" />";
 }

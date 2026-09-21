@@ -27,6 +27,13 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "AriaLabelledBy",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of an element that names the rating as a whole, for a name that is already written somewhere on the page. It wins over every other source of the name, including the visible Label.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -49,6 +56,20 @@ public partial class BitRatingDemo
             Description = "The general color of the rating, applied to the filled part of the items. The unfilled part stays neutral so it reads as \"not rated yet\" whichever color is picked.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The hint shown under the items and pointed at by aria-describedby, for the instruction a row of stars cannot give by itself. It describes the rating rather than naming it, so it is announced after the label.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Replaces the Description with custom content, which is still what describes the rating for assistive technologies.",
         },
         new()
         {
@@ -97,6 +118,29 @@ public partial class BitRatingDemo
             Type = "IList<string>?",
             DefaultValue = "null",
             Description = "The native tooltips of the rating items, in order, shown when hovering over each one, and used as the accessible name of the item unless AriaLabelFormat overrides it. Items beyond the end of the list simply get no tooltip.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The visible label of the rating, which also becomes its accessible name: a row of stars carries no text of its own, so without a label - or an AriaLabel - the group is announced without saying what is being rated. A required rating marks its label with an asterisk.",
+        },
+        new()
+        {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "Where the label sits relative to the items: above them by default, and beside them with Start or End for the compact single-line row.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Replaces the Label with custom content, which still names the rating for assistive technologies the same way the plain label does.",
         },
         new()
         {
@@ -214,6 +258,34 @@ public partial class BitRatingDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the root element of the rating.",
+                },
+                new()
+                {
+                    Name = "LabelContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the label of the rating.",
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the label of the rating.",
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description of the rating.",
+                },
+                new()
+                {
+                    Name = "Container",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the rating items.",
                 },
                 new()
                 {
@@ -387,6 +459,19 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "Determines where the label of the rating sits relative to its items.",
+            Items =
+            [
+                new() { Name = "Top", Description = "The label sits above the items.", Value = "0" },
+                new() { Name = "End", Description = "The label sits after the items, on the same line.", Value = "1" },
+                new() { Name = "Bottom", Description = "The label sits below the items.", Value = "2" },
+                new() { Name = "Start", Description = "The label sits before the items, on the same line.", Value = "3" }
+            ]
+        },
+        new()
+        {
             Id = "color-enum",
             Name = "BitColor",
             Description = "Defines the color kinds available in the bit BlazorUI.",
@@ -413,7 +498,116 @@ public partial class BitRatingDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Rating-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Color of the filled part of the items.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-unselected-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Color of the unfilled part of the items, which stays neutral whatever the Color is so that it keeps reading as \"not rated yet\".",
+        },
+        new()
+        {
+            Name = "--bit-Rating-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Color of the filled part while the pointer is previewing a value over the items (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Rating-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring of an item.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Color of both parts of the items, and of the label, when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-invalid-color",
+            DefaultValue = "--bit-clr-err (items), --bit-clr-err-focus (ring)",
+            Description = "Color of both parts of the items, and of the focus ring, while the value is invalid.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-size",
+            DefaultValue = "Per size: --bit-siz-icon-sm / -md / -lg",
+            Description = "Size of the item glyphs, which the Size parameter otherwise picks.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-target-size",
+            DefaultValue = "1.5rem",
+            Description = "Smallest pointer target of an item on both axes, which the glyph is centred in - the 24px minimum of WCAG 2.2 (SC 2.5.8). Raise it for the roomier targets of a touch platform, or set it to 0 to shrink the items to the glyph and its padding, for a rating that has to sit inside a line of running text.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-padding",
+            DefaultValue = "spacing(0.25)",
+            Description = "Padding of an item around its glyph, which only widens the item once it exceeds the target size.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-gap",
+            DefaultValue = "0",
+            Description = "Extra room between the items, beyond their own padding.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of an item and of its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-hover-scale",
+            DefaultValue = "1.1",
+            Description = "How much the item under the pointer grows, which is the affordance that says the items are there to be pressed. A value of 1 turns it off.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-label-font-size",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-label-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the label and the items, and between the items and the description.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of the description.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-description-font-size",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the description.",
+        }
+    ];
 
+
+
+    private double labelValue = 3;
+    private double labelTemplateValue = 4;
 
     private double verticalValue = 3;
     private double verticalPrecisionValue = 3.5;
@@ -430,7 +624,7 @@ public partial class BitRatingDemo
 
     private double hoverBoundValue = 3;
     private double? hoverPreviewValue;
-    private readonly string[] hoverLabels = ["Not rated yet", "Terrible", "Bad", "Normal", "Good", "Wonderful"];
+    private readonly string[] ratingWords = ["Not rated yet", "Terrible", "Bad", "Normal", "Good", "Wonderful"];
 
     private double perItemIconValue = 4;
     private double faceValue = 3;
@@ -458,6 +652,21 @@ public partial class BitRatingDemo
 
     private double scoreValue = 2;
     private readonly string[] scoreWords = ["Unrated", "Poor", "Poor", "Okay", "Great", "Great"];
+
+    private double cascadeValue = 3;
+    private readonly BitRatingParams[] ratingParams =
+    [
+        new()
+        {
+            ReadOnly = true,
+            Precision = 0.5,
+            Size = BitSize.Small,
+            Color = BitColor.Warning,
+            SelectedIconName = BitIconName.HeartFill,
+            UnselectedIconName = BitIconName.Heart,
+            LabelPosition = BitLabelPosition.Start
+        }
+    ];
 
     public BitRatingDemoFormModel ValidationModel = new();
     public string? SuccessMessage;

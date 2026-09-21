@@ -18,6 +18,11 @@ namespace BitBlazorUI {
             const handler = (e: KeyboardEvent) => {
                 if (Ratings._navKeys.indexOf(e.key) === -1) return;
 
+                // A held Ctrl, Alt or Meta makes the key a browser or system shortcut instead - Alt+ArrowLeft
+                // goes back, Ctrl+Home reaches the top of the page - and the Blazor handler hands those back
+                // for the same reason, so their default action has to survive here too.
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+
                 const target = e.target as HTMLElement | null;
                 if (!target || !target.closest('.bit-rtg-btn')) return;
 

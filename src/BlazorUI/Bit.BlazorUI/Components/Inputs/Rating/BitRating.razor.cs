@@ -5,17 +5,34 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Ratings show people’s opinions of a product, helping others make more informed purchasing decisions.
-/// It supports fractional values down to any precision, a live hover preview, clearing, per-item titles,
-/// a custom item template, and is fully operable from the keyboard.
+/// It supports fractional values down to any precision, a live hover preview, clearing, a label and a
+/// description, per-item icons and titles, a custom item template, a horizontal or vertical layout, and is
+/// fully operable from the keyboard.
 /// </summary>
 public partial class BitRating : BitInputBase<double>
 {
+    private string _labelId = default!;
+    private string _valueTextId = default!;
+    private string _descriptionId = default!;
     private double? _hoverValue;
     private ElementReference[] _itemRefs = [];
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the rating component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple rating components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitRatingParams.ParamName)]
+    public BitRatingParams? CascadingParameters { get; set; }
 
 
 
@@ -40,6 +57,12 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public string? AriaLabelFormat { get; set; }
 
     /// <summary>
+    /// The id of an element that names the rating as a whole, for a name that is already written somewhere
+    /// on the page. It wins over every other source of the name, including the visible <see cref="Label"/>.
+    /// </summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
     /// If true, the rating automatically receives focus when the page renders
     /// (rendered as the <c>autofocus</c> attribute of the item that holds the tab stop).
     /// </summary>
@@ -49,6 +72,19 @@ public partial class BitRating : BitInputBase<double>
     /// Custom CSS classes for different parts of the BitRating.
     /// </summary>
     [Parameter] public BitRatingClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The hint shown under the items and pointed at by <c>aria-describedby</c>, for the instruction a row
+    /// of stars cannot give by itself - that half a star is selectable, say, or that clicking the current
+    /// one clears it. It describes the rating rather than naming it, so it is announced after the label.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Replaces the <see cref="Description"/> with custom content, which is still what describes the rating
+    /// for assistive technologies.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// The general color of the rating, applied to the filled part of the items.
@@ -106,6 +142,27 @@ public partial class BitRating : BitInputBase<double>
     /// Items beyond the end of the list simply get no tooltip.
     /// </summary>
     [Parameter] public IList<string>? ItemTitles { get; set; }
+
+    /// <summary>
+    /// The visible label of the rating, which also becomes its accessible name: a row of stars carries no
+    /// text of its own, so without a label - or an <see cref="BitComponentBase.AriaLabel"/> - the group is
+    /// announced without saying what is being rated. A required rating marks its label with an asterisk.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Where the label sits relative to the items: above them by default, and beside them with
+    /// <see cref="BitLabelPosition.Start"/> or <see cref="BitLabelPosition.End"/> for the compact
+    /// "Quality: 3 of 5" row.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
+
+    /// <summary>
+    /// Replaces the <see cref="Label"/> with custom content, which still names the rating for assistive
+    /// technologies the same way the plain label does.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Maximum rating, which is also the number of rendered items. Values below 1 are treated as 1.
@@ -219,6 +276,10 @@ public partial class BitRating : BitInputBase<double>
 
     protected override async Task OnInitializedAsync()
     {
+        _labelId = $"BitRating-{UniqueId}-label";
+        _valueTextId = $"BitRating-{UniqueId}-value";
+        _descriptionId = $"BitRating-{UniqueId}-description";
+
         SetDefaultValue();
 
         await base.OnInitializedAsync();
@@ -261,6 +322,18 @@ public partial class BitRating : BitInputBase<double>
 
         ClassBuilder.Register(() => Vertical ? "bit-rtg-vrt" : string.Empty);
 
+        // The asterisk is a property of an answer that is still expected, so a read-only or disabled
+        // rating - which is no longer asking anything - does not draw one.
+        ClassBuilder.Register(() => IsEnabled && ReadOnly is false && Required ? "bit-rtg-req" : string.Empty);
+
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Bottom => "bit-rtg-lbm",
+            BitLabelPosition.Start => "bit-rtg-lst",
+            BitLabelPosition.End => "bit-rtg-led",
+            _ => string.Empty
+        });
+
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-rtg-pri",
@@ -297,8 +370,11 @@ public partial class BitRating : BitInputBase<double>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRatingParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         var max = _Max;
 
         if (_itemRefs.Length != max)
@@ -431,6 +507,69 @@ public partial class BitRating : BitInputBase<double>
             return _ValueText;
         }
     }
+
+    /// <summary>
+    /// Whether the rating draws a label of its own, which is also what makes it able to name itself.
+    /// </summary>
+    /// <remarks>
+    /// Only rendered when there is something to show, so its id is only worth referencing then: pointing
+    /// aria-labelledby at an element that is not there would leave the group without a name at all, since a
+    /// name given by reference wins over the aria-label beside it.
+    /// </remarks>
+    internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
+
+    /// <summary>
+    /// Whether the rating draws a description of its own, on the same terms as its label.
+    /// </summary>
+    internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// The elements that describe the rating. This attribute sits after the HtmlAttributes splat in the
+    /// markup, so it is what ends up rendered no matter what - a null would even remove a splatted value -
+    /// which is why an aria-describedby the consumer splatted is carried over here rather than replaced.
+    /// Both are kept, since aria-describedby is a space separated list of IDREFs.
+    /// </summary>
+    private string? _AriaDescribedBy
+    {
+        get
+        {
+            HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
+            var splattedDescribedBy = splatted?.ToString();
+
+            if (HasDescription is false) return splattedDescribedBy;
+
+            return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
+        }
+    }
+
+    /// <summary>
+    /// The element the name of the rating is read from, when it is read from the page rather than given as a
+    /// string: the explicit AriaLabelledBy, then the visible label. The two string forms - AriaLabel and the
+    /// GetAriaLabel callback - are deliberately allowed to win over the visible label, since aria-labelledby
+    /// would otherwise silently discard them.
+    /// </summary>
+    private string? _AriaLabelledBy
+    {
+        get
+        {
+            if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
+
+            if (AriaLabel.HasValue() || GetAriaLabel is not null || HasLabel is false) return null;
+
+            return _RendersHiddenValueText ? $"{_labelId} {_valueTextId}" : _labelId;
+        }
+    }
+
+    /// <summary>
+    /// Whether the value joins the name of the rating from a hidden element of its own. A read-only rating is
+    /// a picture of a value whose items are hidden behind a single name, so naming it by its visible label
+    /// alone would leave the value it exists to show unannounced.
+    /// </summary>
+    private bool _RendersHiddenValueText => ReadOnly
+                                         && HasLabel
+                                         && AriaLabelledBy.HasNoValue()
+                                         && AriaLabel.HasNoValue()
+                                         && GetAriaLabel is null;
 
     /// <summary>
     /// The default format both the value text and the per-item labels fall back to.
@@ -609,6 +748,12 @@ public partial class BitRating : BitInputBase<double>
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false || ReadOnly) return;
+
+        // Every key this handler answers to is also half of a browser or system shortcut - Alt+ArrowLeft goes
+        // back, Ctrl+Home reaches the top of a page, Ctrl+digit switches tabs - so a held modifier hands the
+        // key back rather than silently spending it on the rating. Shift is the exception: it is the rating's
+        // own modifier, the one that turns a step into a whole item.
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
         var isRtl = Dir == BitDir.Rtl;
         var value = CurrentValue;
