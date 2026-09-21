@@ -5,11 +5,11 @@
 @page "/components/icon-button"
 
 <PageOutlet Url="components/button" Title="Button"
-            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, and public CSS variables for everything the parameters do not cover." />
+            Description="The versatile and accessible button of the bit BlazorUI, with Fill, Outline, and Text variants, semantic colors, sizes, pill and circular shapes, icons, primary/secondary text, loading and auto-loading states, link rendering, full-width and floating (FAB) layouts with optional dragging, cascading defaults through BitParams, and public CSS variables for everything the parameters do not cover." />
 
 <DemoPage Name="Button"
           SecondaryNames="@(["CompoundButton", "IconButton"])"
-          Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, an icon-only button keeps its label as its accessible name, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
+          Description="BitButton triggers an action or navigates when the user activates it. It renders a native button, or an anchor when an Href is provided, and offers Fill, Outline, and Text variants across a full palette of semantic colors and sizes. It supports start/end icons, an optional secondary line of text, and loading states that stack a spinner over the content so the box keeps the size and the accessible name it had before the click. It also stretches to the full width of its container, or leaves the flow entirely as a floating (FAB) button pinned to the viewport or to its container and draggable by pointer or by the arrow keys, and a BitParams ancestor carrying a BitButtonParams sets the defaults of every button in a subtree. Its defaults are accessibility-first: disabled buttons stay focusable through aria-disabled, an icon-only button keeps its label as its accessible name, the loading label is announced from a live region rather than folded into the button's name, an external link gets rel='noopener' on its own, and every state is re-established in system colors under Windows High Contrast."
           Parameters="componentParameters" SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
@@ -556,8 +556,9 @@
             footer or a whole page sets the variant, the size and the color once instead of on every button in it.
             What it carries is a default and not an override: a button that sets a parameter for itself keeps its own
             value, and only what it left unset is filled in - which is what lets the one destructive action in a row
-            step out of the cascade without the row having to know about it. Every parameter of the component is on
-            the params object, and each is filled in on its own.
+            step out of the cascade without the row having to know about it. Every value parameter of the component is
+            on the params object - the content templates and the OnClick callback are not - and each is filled in on
+            its own.
         </div>
         <br />
         <div class="example-content">
