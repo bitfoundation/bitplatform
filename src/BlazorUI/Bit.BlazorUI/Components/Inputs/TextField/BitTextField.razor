@@ -46,6 +46,13 @@
                 </div>
             }
 
+            @* The icon is written once and placed on whichever end IconPosition asks for, so a leading and a
+               trailing one are the same mark with the same name rather than two pieces of markup drifting apart. *@
+            @if (HasIcon && IconPosition is BitIconPosition.Start)
+            {
+                @IconFragment
+            }
+
             <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
                 @if (IsMultilineElement)
                 {
@@ -81,7 +88,7 @@
                               minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
                               spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                               autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
-                              aria-label="@AriaLabel"
+                              aria-label="@InputAriaLabel"
                               aria-busy="@AriaBusy"
                               aria-invalid="@AriaInvalid"
                               aria-labelledby="@LabelledBy"
@@ -121,7 +128,7 @@
                            minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
                            spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                            autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
-                           aria-label="@AriaLabel"
+                           aria-label="@InputAriaLabel"
                            aria-busy="@AriaBusy"
                            aria-invalid="@AriaInvalid"
                            aria-labelledby="@LabelledBy"
@@ -207,16 +214,9 @@
                 </button>
             }
 
-            @if (Icon is not null || IconName.HasValue())
+            @if (HasIcon && IconPosition is not BitIconPosition.Start)
             {
-                var icon = BitIconInfo.From(Icon, IconName);
-                <i style="@Styles?.Icon"
-                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
-                   role="@(IconAriaLabel.HasValue() ? "img" : null)"
-                   aria-label="@IconAriaLabel"
-                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
-                   @onclick="HandleOnChromeClick"
-                   @onmousedown:preventDefault />
+                @IconFragment
             }
 
             @if (SuffixTemplate is not null)
@@ -317,3 +317,19 @@
        thing screen readers are known to miss. *@
     <span role="status" class="bit-tfl-dsc">@LiveText</span>
 </div>
+
+@code {
+    private RenderFragment IconFragment =>
+    @<text>
+        @{
+            var icon = BitIconInfo.From(Icon, IconName);
+        }
+        <i style="@Styles?.Icon"
+           class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
+           role="@(IconAriaLabel.HasValue() ? "img" : null)"
+           aria-label="@IconAriaLabel"
+           aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
+           @onclick="HandleOnChromeClick"
+           @onmousedown:preventDefault />
+    </text>;
+}

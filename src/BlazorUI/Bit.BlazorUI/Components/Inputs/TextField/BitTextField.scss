@@ -47,7 +47,9 @@
 //   --bit-TextField-button-hover-color      glyph color of those buttons while hovered      (default: $clr-fg-pri-hover)
 //   --bit-TextField-button-hover-background background of those buttons while hovered       (default: $clr-bg-pri-hover)
 //   --bit-TextField-affix-color             color of the prefix and the suffix              (default: $clr-fg-pri)
-//   --bit-TextField-affix-background        fill behind the prefix and the suffix           (default: $clr-bg-sec)
+//   --bit-TextField-affix-background        fill behind the prefix and the suffix           (default: $clr-bg-sec, and none in the
+//                                                                                            Underlined variant, which has no box
+//                                                                                            to fill against)
 //   --bit-TextField-affix-padding           padding of the prefix and the suffix            (default: 0 spacing(1.25))
 //   --bit-TextField-description-color       color of the description under the field        (default: $clr-fg-pri)
 //   --bit-TextField-count-color             color of the character counter                  (default: $clr-fg-sec)
@@ -158,11 +160,16 @@
         }
 
         // NoBorder means no border in every state: the disabled frame border above is more specific than
-        // the .bit-tfl-nbd rule, so it has to be turned off again here.
+        // the .bit-tfl-nbd rule, so it has to be turned off again here - and so is the underline, which is
+        // what the border of the underlined variant is.
         &.bit-tfl-nbd {
             .bit-tfl-fgp,
             .bit-tfl-cbt {
                 border: none;
+            }
+
+            .bit-tfl-wrp {
+                border-bottom: none;
             }
         }
     }
@@ -341,12 +348,27 @@
     width: var(--bit-TextField-button-width, var(--bit-tfl-btn-width));
     min-height: var(--bit-tfl-inp-min-height);
 
+    // The button is the last thing in the frame often enough that its corner has to follow the frame's,
+    // and only then: rounding it while an icon or a suffix still comes after it would draw a rounded chip
+    // in the middle of the field the moment the button is hovered.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
     &:focus-visible {
         @include focus-ring(var(--bit-TextField-focus-color, var(--bit-tfl-clr-focus)));
     }
 
+    // A read-only field keeps its buttons enabled-looking otherwise: the disabled state of the field is a
+    // class on the root, while the one a read-only field gives its clear button is the html attribute alone.
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+    }
+
     @media (hover: hover) {
-        &:hover {
+        &:not(:disabled):hover {
             background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
@@ -383,8 +405,13 @@
     width: var(--bit-TextField-button-width, var(--bit-tfl-btn-width));
     font-size: var(--bit-TextField-font-size, var(--bit-tfl-font-size));
     min-height: var(--bit-tfl-inp-min-height);
-    border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-    border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+
+    // Only when it is the last thing in the frame: a reveal button, an icon or a suffix after it would
+    // otherwise leave a rounded hover chip sitting in the middle of the field.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
 
     // The glyph follows the icon size of the field rather than a size of its own, so it stays the same
     // mark as the reveal password one next to it and grows along with a Large field instead of staying
@@ -401,8 +428,15 @@
         @include focus-ring(var(--bit-TextField-focus-color, var(--bit-tfl-clr-focus)));
     }
 
+    // A read-only field disables the button through the html attribute rather than through the disabled
+    // class of the root, so the muted look and the refusal to answer the pointer are asked for here.
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+    }
+
     @media (hover: hover) {
-        &:hover {
+        &:not(:disabled):hover {
             color: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
             background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
@@ -631,6 +665,21 @@
         flex: 1 1 0;
         border: none;
         text-align: start;
+    }
+
+    // The variant drops the box around the field, so the filled chip the affixes wear in the boxed one
+    // would be the only block of color left in a field that is otherwise a single rule.
+    .bit-tfl-pre,
+    .bit-tfl-suf {
+        background: var(--bit-TextField-affix-background, transparent);
+    }
+}
+
+// NoBorder means no border in every variant: in the underlined one the rule under the field is the border,
+// so taking the frame away has to take that rule with it.
+.bit-tfl-nbd.bit-tfl-und {
+    .bit-tfl-wrp {
+        border-bottom: none;
     }
 }
 
@@ -910,4 +959,66 @@
 .bit-tfl-brn {
     --bit-tfl-clr-brd: transparent;
     --bit-tfl-clr-brd-hover: transparent;
+}
+
+
+// Windows High Contrast / forced-colors: every color an author paints is replaced by the system pair, which
+// takes four of this component's states with it. The disabled field would come back at full contrast, the
+// rejected frame would be painted the same color as an accepted one, the ghost suggestion would read as text
+// that is already in the value, and a field that deliberately has no frame would have no perceivable boundary
+// at all. Each is re-established with something the mode keeps: a system color, or a border style.
+@media (forced-colors: active) {
+    .bit-tfl.bit-dis {
+        .bit-tfl-lbl,
+        .bit-tfl-cnt,
+        .bit-tfl-des span,
+        .bit-tfl-ico,
+        .bit-tfl-lod,
+        .bit-tfl-rpi,
+        .bit-tfl-cbt,
+        .bit-tfl-pre,
+        .bit-tfl-suf {
+            color: GrayText;
+        }
+
+        .bit-tfl-fgp,
+        .bit-tfl-cbt {
+            border-color: GrayText;
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp {
+            border-bottom-color: GrayText;
+        }
+    }
+
+    // The rejection is carried by a color alone everywhere else, so here it is carried by the stroke itself:
+    // a dashed frame is the one difference from an accepted field that the forced palette cannot flatten.
+    .bit-tfl.bit-inv {
+        .bit-tfl-fgp {
+            border-style: dashed;
+        }
+
+        &.bit-tfl-und .bit-tfl-wrp {
+            border-bottom-style: dashed;
+        }
+    }
+
+    // The suggestion is faded text behind the input; painted in the same CanvasText as the value it trails,
+    // it would read as something that has already been accepted.
+    .bit-tfl-gho {
+        color: GrayText;
+    }
+
+    // A frame the author took away - NoBorder, or a Transparent border kind - leaves nothing but the system
+    // Canvas behind it here, so the field itself becomes invisible. The stroke is handed back, which is the
+    // accommodation this mode exists for; the borderless look is kept everywhere else.
+    .bit-tfl-nbd:not(.bit-tfl-und) .bit-tfl-fgp,
+    .bit-tfl-brn:not(.bit-tfl-und) .bit-tfl-fgp {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-tfl-brn.bit-tfl-und .bit-tfl-wrp,
+    .bit-tfl-nbd.bit-tfl-und .bit-tfl-wrp {
+        border-bottom: $shp-border-width $shp-border-style CanvasText;
+    }
 }

@@ -3527,4 +3527,115 @@ public class BitTextFieldTests : BunitTestContext
             component.Find(selector).Click();
         }
     }
+
+    [TestMethod]
+    public void BitTextFieldIconShouldRenderAtTheTrailingEndByDefault()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Calendar");
+        });
+
+        var (iconIndex, inputWrapperIndex) = IndexOfIconAndInput(component);
+
+        Assert.IsTrue(iconIndex > inputWrapperIndex);
+    }
+
+    [DataTestMethod,
+     DataRow(BitIconPosition.Start, true),
+     DataRow(BitIconPosition.End, false)]
+    public void BitTextFieldIconPositionShouldDecideWhichEndTheIconSitsAt(BitIconPosition position, bool beforeTheInput)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Calendar");
+            parameters.Add(p => p.IconPosition, position);
+        });
+
+        var (iconIndex, inputWrapperIndex) = IndexOfIconAndInput(component);
+
+        Assert.AreEqual(beforeTheInput, iconIndex < inputWrapperIndex);
+    }
+
+    [TestMethod]
+    public void BitTextFieldLeadingIconShouldKeepItsNameAndItsPressBehavior()
+    {
+        // The icon is one piece of markup placed at either end, so a leading one is named and answers a
+        // press exactly like a trailing one does.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Lock");
+            parameters.Add(p => p.IconAriaLabel, "Encrypted");
+            parameters.Add(p => p.IconPosition, BitIconPosition.Start);
+        });
+
+        var icon = component.Find(".bit-tfl-ico");
+
+        Assert.AreEqual("img", icon.GetAttribute("role"));
+        Assert.AreEqual("Encrypted", icon.GetAttribute("aria-label"));
+        Assert.IsNull(icon.GetAttribute("aria-hidden"));
+
+        icon.Click();
+    }
+
+    [TestMethod]
+    public void BitTextFieldShouldKeepAnAriaLabelOfTheConsumer()
+    {
+        // The explicit attribute of the input wins over the splatted ones, so an unset AriaLabel would
+        // otherwise write a null over a name the consumer splatted and leave the input unnamed.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-label", "Splatted name" } });
+        });
+
+        Assert.AreEqual("Splatted name", component.Find(".bit-tfl-inp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldAriaLabelShouldWinOverASplattedOne()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "The parameter");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-label", "Splatted name" } });
+        });
+
+        Assert.AreEqual("The parameter", component.Find(".bit-tfl-inp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldShouldKeepAnAriaLabelledByOfTheConsumer()
+    {
+        // A field named by a heading or by a column header of the page around it points at that element,
+        // which is an explicit naming and wins over the visible label of the field.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Label, "The visible label");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-labelledby", "outside-heading" } });
+        });
+
+        Assert.AreEqual("outside-heading", component.Find(".bit-tfl-inp").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldLabelShouldNameTheInputWhenNothingElseDoes()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Label, "The visible label");
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual(component.Find(".bit-tfl-lbl").Id, input.GetAttribute("aria-labelledby"));
+    }
+
+    // Which end the icon sits at is a question about the order of the children of the frame, so the two
+    // are located by their classes rather than by comparing element references.
+    private static (int Icon, int InputWrapper) IndexOfIconAndInput(IRenderedComponent<BitTextField> component)
+    {
+        var classes = component.Find(".bit-tfl-fgp").Children.Select(c => c.ClassName ?? string.Empty).ToList();
+
+        return (classes.FindIndex(c => c.Contains("bit-tfl-ico")), classes.FindIndex(c => c.Contains("bit-tfl-ghw")));
+    }
 }

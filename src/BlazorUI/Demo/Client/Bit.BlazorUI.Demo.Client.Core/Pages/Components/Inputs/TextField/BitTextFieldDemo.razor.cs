@@ -201,14 +201,23 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "IconAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the icon shown at the trailing end of the text field. The icon is decorative and hidden from assistive technologies by default; setting this turns it into an image with a name, which is what an icon carrying a meaning of its own needs.",
+            Description = "The accessible name of the icon shown inside the text field. The icon is decorative and hidden from assistive technologies by default; setting this turns it into an image with a name, which is what an icon carrying a meaning of its own needs.",
         },
         new()
         {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The icon name for the icon shown in the far right end of the text field from the built-in Fluent UI icons.",
+            Description = "The icon name for the icon shown inside the text field, at the end IconPosition puts it at, from the built-in Fluent UI icons.",
+        },
+        new()
+        {
+            Name = "IconPosition",
+            Type = "BitIconPosition?",
+            DefaultValue = "null",
+            Description = "Which end of the field the icon sits at, inside the frame. End (the default) puts it past the clear and reveal buttons, Start in front of the input. It follows the reading direction, so it mirrors itself in a right-to-left page.",
+            LinkType = LinkType.Link,
+            Href = "#icon-position-enum",
         },
         new()
         {
@@ -928,6 +937,27 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Id = "icon-position-enum",
+            Name = "BitIconPosition",
+            Description = "Describes the placement of an icon relative to other content.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Start",
+                    Description = "The icon sits in front of the input, at the leading end of the frame.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "The icon sits at the trailing end of the frame, past the clear and reveal buttons.",
+                    Value = "1",
+                },
+            ]
+        },
+        new()
+        {
             Id = "label-position-enum",
             Name = "BitLabelPosition",
             Description = "Defines the positions a label can take relative to the control it belongs to.",
@@ -1357,8 +1387,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-affix-background",
-            DefaultValue = "--bit-clr-bg-sec",
-            Description = "Fill behind the prefix and the suffix, which is what sets them apart from the input between them.",
+            DefaultValue = "--bit-clr-bg-sec, none in the Underlined variant",
+            Description = "Fill behind the prefix and the suffix, which is what sets them apart from the input between them. The underlined variant has no box to fill against, so it leaves the affixes unfilled unless this is set.",
         },
         new()
         {
@@ -1696,17 +1726,21 @@ public partial class BitTextFieldDemo : IDisposable
 <BitTextField Label=""FullWidth"" FullWidth Placeholder=""Fills the width of its container..."" />";
 
     private readonly string example2RazorCode = @"
-<BitTextField Label=""Basic"" Underlined />
-<BitTextField Label=""Placeholder"" Underlined Placeholder=""Enter a text..."" />
-<BitTextField Label=""Disabled"" Underlined IsEnabled=""false"" />
-<BitTextField Label=""Required"" Underlined Required />";
+<BitTextField Label=""Default"" Placeholder=""Enter a text..."" />
+
+<BitTextField Label=""Underlined"" Underlined Placeholder=""Enter a text..."" />
+
+<BitTextField Label=""NoBorder"" NoBorder Placeholder=""Enter a text..."" />
+
+<BitTextField Label=""Underlined + Required"" Underlined Required />
+
+<BitTextField Label=""NoBorder + Required"" NoBorder Required />
+
+<BitTextField Label=""Underlined + Disabled"" Underlined IsEnabled=""false"" DefaultValue=""Not editable"" />
+
+<BitTextField Label=""NoBorder + Disabled"" NoBorder IsEnabled=""false"" DefaultValue=""Not editable"" />";
 
     private readonly string example3RazorCode = @"
-<BitTextField Label=""Basic"" Placeholder=""Enter a text..."" NoBorder />
-<BitTextField Label=""Disabled"" Placeholder=""Enter a text..."" NoBorder IsEnabled=""false"" />
-<BitTextField Label=""Required"" Placeholder=""Enter a text..."" NoBorder Required />";
-
-    private readonly string example4RazorCode = @"
 <BitTextField Label=""Multiline"" Multiline />
 <BitTextField Label=""Resizable"" Multiline Resizable />
 <BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />
@@ -1723,7 +1757,7 @@ public partial class BitTextFieldDemo : IDisposable
 <BitTextField Label=""Wrap = off (long lines scroll sideways)"" Multiline Rows=""3"" Wrap=""off""
               DefaultValue=""A single very long line that is never wrapped, so the field scrolls sideways instead of breaking it apart."" />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitTextField Label=""Text"" Type=""BitInputType.Text"" />
 <BitTextField Label=""Number"" Type=""BitInputType.Number"" />
 <BitTextField Label=""Email"" Type=""BitInputType.Email"" />
@@ -1746,17 +1780,156 @@ public partial class BitTextFieldDemo : IDisposable
               AutoCapitalize=""none""
               Description=""What a coupon code or a username field wants."" />";
 
+    private readonly string example5RazorCode = @"
+<BitTextField Label=""Trailing icon (the default)"" IconName=""@BitIconName.EditMail"" />
+
+<BitTextField Label=""Leading icon"" IconName=""@BitIconName.Search"" IconPosition=""BitIconPosition.Start"" Placeholder=""Search..."" />
+
+<BitTextField Label=""Prefix"" Prefix=""https://"" />
+
+<BitTextField Label=""Suffix"" Suffix="".com"" />
+
+<BitTextField Label=""Prefix and suffix"" Prefix=""https://"" Suffix="".com"" />
+
+<BitTextField Label=""All of them at once""
+              Prefix=""$""
+              Suffix=""USD""
+              DefaultValue=""1,250.00""
+              IconName=""@BitIconName.Calculator""
+              IconPosition=""BitIconPosition.Start"" />
+
+<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" IsEnabled=""false"" />";
+
     private readonly string example6RazorCode = @"
-<BitTextField Label=""Email"" IconName=""@BitIconName.EditMail"" />
-<BitTextField Label=""Calendar"" IconName=""@BitIconName.Calendar"" />";
+<BitTextField Label=""Password"" Type=""BitInputType.Password"" />
+
+<BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword />
+
+<BitTextField Label=""Offered to the password manager""
+              Type=""BitInputType.Password""
+              CanRevealPassword
+              AutoComplete=""current-password""
+              Description=""AutoComplete tells the browser which credential belongs here."" />
+
+<BitTextField Label=""Custom icons and aria-label""
+              Type=""BitInputType.Password""
+              CanRevealPassword
+              RevealPasswordAriaLabel=""Show the password""
+              RevealPasswordIconName=""@BitIconName.RedEye""
+              HidePasswordIconName=""@BitIconName.Hide"" />
+
+<BitTextField @ref=""passwordRef""
+              Label=""Toggled from the outside""
+              Type=""BitInputType.Password""
+              CanRevealPassword
+              DefaultValue=""p@ssw0rd"" />
+<BitButton OnClick=""() => passwordRef?.ToggleRevealPassword()"">ToggleRevealPassword</BitButton>";
+    private readonly string example6CsharpCode = @"
+private BitTextField? passwordRef;";
 
     private readonly string example7RazorCode = @"
-<BitTextField Label=""Prefix"" Prefix=""https://"" />
-<BitTextField Label=""Suffix"" Suffix="".com"" />
-<BitTextField Label=""Prefix and Suffix"" Prefix=""https://"" Suffix="".com"" />
-<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IsEnabled=""false"" />";
+<BitTextField Label=""Email"" DefaultValue=""example@email.com"" ShowClearButton />
+
+<BitTextField Label=""Custom icon and aria-label""
+              ShowClearButton
+              DefaultValue=""Clear me""
+              ClearButtonAriaLabel=""Empty this field""
+              ClearButtonIconName=""@BitIconName.ChromeClose"" />
+
+<BitTextField Label=""Search (the native clear affordance is hidden)""
+              Type=""BitInputType.Search""
+              ShowClearButton
+              DefaultValue=""bit BlazorUI"" />
+
+<BitTextField Label=""Multiline"" Multiline Rows=""3"" ShowClearButton
+              DefaultValue=""A multiline value that can be cleared."" />
+
+<BitTextField Label=""ReadOnly (the button is disabled)"" ReadOnly ShowClearButton
+              DefaultValue=""Read only value"" />
+
+<BitTextField @ref=""clearRef"" Label=""Cleared from the outside"" @bind-Value=""clearApiValue"" />
+<BitButton OnClick=""() => clearRef?.ClearAsync()"">ClearAsync</BitButton>
+<div>Value: [@clearApiValue]</div>";
+    private readonly string example7CsharpCode = @"
+private BitTextField? clearRef;
+private string? clearApiValue = ""Clear me from the button below"";";
 
     private readonly string example8RazorCode = @"
+<BitTextField Label=""One-way"" Value=""@oneWayValue"" />
+<div>Value: [@oneWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
+
+<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
+<div>Value: [@twoWayValue]</div>
+<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
+
+<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
+<BitLabel>Value: [@onChangeValue]</BitLabel>
+
+<BitTextField Label=""DefaultValue (uncontrolled)"" DefaultValue=""Initial value""
+              OnChange=""(v) => defaultValueChanged = v"" />
+<div>Value: [@defaultValueChanged]</div>
+
+<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
+<div>Value: [@immediateValue]</div>
+
+<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
+<div>Value: [@debounceValue]</div>
+
+<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
+<div>Value: [@throttleValue]</div>
+
+<BitTextField Label=""Trim"" Trim @bind-Value=""trimmedValue"" Placeholder=""Type with spaces around the text..."" />
+<pre>[@trimmedValue]</pre>
+
+<BitTextField Label=""Not trimmed"" @bind-Value=""notTrimmedValue"" Placeholder=""Type with spaces around the text..."" />
+<pre>[@notTrimmedValue]</pre>";
+    private readonly string example8CsharpCode = @"
+private string? oneWayValue;
+private string? twoWayValue;
+private string? onChangeValue;
+private string? defaultValueChanged;
+private string? immediateValue;
+private string? debounceValue;
+private string? throttleValue;
+private string? trimmedValue;
+private string? notTrimmedValue;";
+
+    private readonly string example9RazorCode = @"
+<BitTextField Label=""With a limit"" ShowCount MaxLength=""30"" Placeholder=""Up to 30 characters..."" />
+
+<BitTextField Label=""Without a limit"" ShowCount Placeholder=""Just counts what you type..."" />
+
+<BitTextField Label=""With a description"" ShowCount MaxLength=""30""
+              Description=""Both the description and the counter share the footer."" />
+
+<BitTextField Label=""Over the limit (assigned from the code)""
+              ShowCount
+              MaxLength=""10""
+              DefaultValue=""A value longer than the limit of the field"" />
+
+<BitTextField Label=""Multiline"" Multiline Rows=""4"" ShowCount MaxLength=""140"" @bind-Value=""countValue"" />
+<div>Value: [@countValue]</div>
+
+<BitTextField Label=""Counted in UTF-16 code units (the default)""
+              ShowCount
+              Immediate
+              MaxLength=""20""
+              DefaultValue=""👍🏽 hi"" />
+
+<BitTextField Label=""Counted in text elements (CountStrategy)""
+              ShowCount
+              Immediate
+              MaxLength=""20""
+              DefaultValue=""👍🏽 hi""
+              CountStrategy=""CountTextElements""
+              Description=""The same value, counted the way it reads."" />";
+    private readonly string example9CsharpCode = @"
+private string? countValue;
+
+private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;";
+
+    private readonly string example10RazorCode = @"
 <BitTextField>
     <LabelTemplate>
         <BitLabel Style=""color:coral"">Custom Label</BitLabel>
@@ -1807,132 +1980,11 @@ public partial class BitTextFieldDemo : IDisposable
 
 <BitTextField Label=""Custom error message"" DefaultValue=""admin"">
     <ErrorMessageTemplate>
-        <span>✖ This name is reserved. <a href=""#example20"">See the Validation section</a>.</span>
+        <span>✖ This name is reserved. <a href=""#example17"">See the Validation section</a>.</span>
     </ErrorMessageTemplate>
 </BitTextField>";
 
-    private readonly string example9RazorCode = @"
-<BitTextField Label=""Password"" Type=""BitInputType.Password"" />
-
-<BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword />
-
-<BitTextField Label=""Offered to the password manager""
-              Type=""BitInputType.Password""
-              CanRevealPassword
-              AutoComplete=""current-password""
-              Description=""AutoComplete tells the browser which credential belongs here."" />
-
-<BitTextField Label=""Custom icons and aria-label""
-              Type=""BitInputType.Password""
-              CanRevealPassword
-              RevealPasswordAriaLabel=""Show the password""
-              RevealPasswordIconName=""@BitIconName.RedEye""
-              HidePasswordIconName=""@BitIconName.Hide"" />
-
-<BitTextField @ref=""passwordRef""
-              Label=""Toggled from the outside""
-              Type=""BitInputType.Password""
-              CanRevealPassword
-              DefaultValue=""p@ssw0rd"" />
-<BitButton OnClick=""() => passwordRef?.ToggleRevealPassword()"">ToggleRevealPassword</BitButton>";
-    private readonly string example9CsharpCode = @"
-private BitTextField? passwordRef;";
-
-    private readonly string example10RazorCode = @"
-<BitTextField Label=""Email"" DefaultValue=""example@email.com"" ShowClearButton />
-
-<BitTextField Label=""Custom icon and aria-label""
-              ShowClearButton
-              DefaultValue=""Clear me""
-              ClearButtonAriaLabel=""Empty this field""
-              ClearButtonIconName=""@BitIconName.ChromeClose"" />
-
-<BitTextField Label=""Search (the native clear affordance is hidden)""
-              Type=""BitInputType.Search""
-              ShowClearButton
-              DefaultValue=""bit BlazorUI"" />
-
-<BitTextField Label=""Multiline"" Multiline Rows=""3"" ShowClearButton
-              DefaultValue=""A multiline value that can be cleared."" />
-
-<BitTextField Label=""ReadOnly (the button is disabled)"" ReadOnly ShowClearButton
-              DefaultValue=""Read only value"" />
-
-<BitTextField @ref=""clearRef"" Label=""Cleared from the outside"" @bind-Value=""clearApiValue"" />
-<BitButton OnClick=""() => clearRef?.ClearAsync()"">ClearAsync</BitButton>
-<div>Value: [@clearApiValue]</div>";
-    private readonly string example10CsharpCode = @"
-private BitTextField? clearRef;
-private string? clearApiValue = ""Clear me from the button below"";";
-
     private readonly string example11RazorCode = @"
-<BitTextField Label=""With a limit"" ShowCount MaxLength=""30"" Placeholder=""Up to 30 characters..."" />
-
-<BitTextField Label=""Without a limit"" ShowCount Placeholder=""Just counts what you type..."" />
-
-<BitTextField Label=""With a description"" ShowCount MaxLength=""30""
-              Description=""Both the description and the counter share the footer."" />
-
-<BitTextField Label=""Over the limit (assigned from the code)""
-              ShowCount
-              MaxLength=""10""
-              DefaultValue=""A value longer than the limit of the field"" />
-
-<BitTextField Label=""Multiline"" Multiline Rows=""4"" ShowCount MaxLength=""140"" @bind-Value=""countValue"" />
-<div>Value: [@countValue]</div>
-
-<BitTextField Label=""Counted in UTF-16 code units (the default)""
-              ShowCount
-              Immediate
-              MaxLength=""20""
-              DefaultValue=""👍🏽 hi"" />
-
-<BitTextField Label=""Counted in text elements (CountStrategy)""
-              ShowCount
-              Immediate
-              MaxLength=""20""
-              DefaultValue=""👍🏽 hi""
-              CountStrategy=""CountTextElements""
-              Description=""The same value, counted the way it reads."" />";
-    private readonly string example11CsharpCode = @"
-private string? countValue;
-
-private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;";
-
-    private readonly string example12RazorCode = @"
-<BitTextField Label=""One-way"" Value=""@oneWayValue"" />
-<div>Value: [@oneWayValue]</div>
-<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
-
-<BitTextField Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<div>Value: [@twoWayValue]</div>
-<BitOtpInput Length=""5"" Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />
-
-<BitTextField Label=""OnChange"" OnChange=""(v) => onChangeValue = v"" />
-<BitLabel>Value: [@onChangeValue]</BitLabel>
-
-<BitTextField Label=""DefaultValue (uncontrolled)"" DefaultValue=""Initial value""
-              OnChange=""(v) => defaultValueChanged = v"" />
-<div>Value: [@defaultValueChanged]</div>
-
-<BitTextField Label=""Immediate"" @bind-Value=""@immediateValue"" Immediate />
-<div>Value: [@immediateValue]</div>
-
-<BitTextField Label=""Debounce"" @bind-Value=""@debounceValue"" Immediate DebounceTime=""300"" />
-<div>Value: [@debounceValue]</div>
-
-<BitTextField Label=""Throttle"" @bind-Value=""@throttleValue"" Immediate ThrottleTime=""300"" />
-<div>Value: [@throttleValue]</div>";
-    private readonly string example12CsharpCode = @"
-private string? oneWayValue;
-private string? twoWayValue;
-private string? onChangeValue;
-private string? defaultValueChanged;
-private string? immediateValue;
-private string? debounceValue;
-private string? throttleValue;";
-
-    private readonly string example13RazorCode = @"
 <BitTextField @bind-Value=""ghostBasicTextValue""
               Immediate
               Label=""Basic Single-line""
@@ -1978,7 +2030,7 @@ private string? throttleValue;";
               OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: true))""
               OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: true))"" />
 <div>Value: [@ghostMultilineValue]</div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? ghostBasicTextValue;
 private string? ghostBasicSuggestion;
 
@@ -2081,17 +2133,7 @@ private static async Task<string?> GetGhostSuggestionAsync(string? value, Cancel
     return GetGhostSuggestion(value);
 }";
 
-    private readonly string example14RazorCode = @"
-<BitTextField Label=""Trimmed"" Trim @bind-Value=""trimmedValue"" />
-<pre>[@trimmedValue]</pre>
-
-<BitTextField Label=""Not Trimmed"" @bind-Value=""notTrimmedValue"" />
-<pre>[@notTrimmedValue]</pre>";
-    private readonly string example14CsharpCode = @"
-private string? trimmedValue;
-private string? notTrimmedValue;";
-
-    private readonly string example15RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTextField Label=""Type here and press Enter or Escape""
               OnEnter=""HandleOnEnter""
               OnEscape=""HandleOnEscape""
@@ -2116,7 +2158,7 @@ private string? notTrimmedValue;";
 
 <BitTextField Label=""Clearable"" ShowClearButton DefaultValue=""Clear me"" OnClear=""HandleOnClear"" />
 <div>OnClear: [@clearLog]</div>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private int eventCount;
 private int clearCount;
 private string? eventLog;
@@ -2150,7 +2192,7 @@ private string? onInputCommittedValue;
 
 private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString();";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitTextField Label=""SelectOnFocus"" SelectOnFocus DefaultValue=""Focus me and start typing"" />
 
 <BitTextField Label=""ReadOnly + SelectOnFocus"" SelectOnFocus ReadOnly DefaultValue=""AB12-CD34-EF56"" />
@@ -2162,10 +2204,10 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(4, 12); }"">SelectRangeAsync(4, 12)</BitButton>
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(0, 0); }"">Caret to the start</BitButton>
 </BitStack>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitTextField? selectionRef;";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitTextField Label=""Top"" LabelPosition=""BitLabelPosition.Top"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" Placeholder=""Enter a text..."" />
@@ -2178,7 +2220,7 @@ private BitTextField? selectionRef;";
               LabelPosition=""BitLabelPosition.Start""
               Description=""The footer keeps its own line under the whole row."" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTextField Label=""Loading"" Loading DefaultValue=""Checking..."" />
 
 <BitTextField Label=""Loading with a clear button and an icon""
@@ -2201,7 +2243,7 @@ private BitTextField? selectionRef;";
               Description=""@userNameStatus""
               @bind-Value=""userName""
               OnChange=""CheckUserNameAsync"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private string? userName;
 private bool userNameLoading;
 private string? userNameStatus;
@@ -2252,7 +2294,7 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
     cts = null;
 }";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTextField Label=""With a hidden description""
               AriaDescription=""Use the number printed on the back of your card, without the spaces between the groups.""
               Description=""Card number""
@@ -2277,9 +2319,14 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 <BitTextField Label=""With a description of its own""
               Description=""Card number""
               InputHtmlAttributes=""@(new() { { ""aria-describedby"", ""card-number-hint"" } })"" />
-<div id=""card-number-hint"">The field also points at this element, which is not a part of it.</div>";
+<div id=""card-number-hint"">The field also points at this element, which is not a part of it.</div>
 
-    private readonly string example20RazorCode = @"
+<div id=""shipping-heading""><b>Shipping address</b></div>
+<BitTextField Placeholder=""Street""
+              InputHtmlAttributes=""@(new() { { ""aria-labelledby"", ""shipping-heading"" } })""
+              Description=""Named by the heading above it rather than by a label of its own."" />";
+
+    private readonly string example17RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -2335,7 +2382,7 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example20CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required(ErrorMessage = ""This field is required."")]
@@ -2367,7 +2414,7 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitParams Parameters=""@textFieldParams"">
     <BitTextField Label=""Takes the underline, the clear button and the trimming from the cascade""
                   DefaultValue=""bit BlazorUI"" />
@@ -2379,8 +2426,7 @@ private void HandleInvalidSubmit() { }";
 
 
 <BitTextField Label=""Outside the cascade, and back to the defaults"" DefaultValue=""bit BlazorUI"" />";
-
-    private readonly string example21CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private readonly BitTextFieldParams[] textFieldParams =
 [
     new()
@@ -2392,19 +2438,19 @@ private readonly BitTextFieldParams[] textFieldParams =
     }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
@@ -2427,7 +2473,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 <BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -2449,7 +2495,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 
 <BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitTextField Label=""Small"" Size=""BitSize.Small"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Medium"" Size=""BitSize.Medium"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Large"" Size=""BitSize.Large"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
@@ -2460,7 +2506,7 @@ private readonly BitTextFieldParams[] textFieldParams =
 <BitTextField Label=""Large with a clear button"" Size=""BitSize.Large"" ShowClearButton
               DefaultValue=""A large field."" />";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example24RazorCode = @"
 <style>
     .tfl-brand-scope {
         --bit-TextField-radius: 0.75rem;
@@ -2593,10 +2639,10 @@ private readonly BitTextFieldParams[] textFieldParams =
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example27CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example28RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

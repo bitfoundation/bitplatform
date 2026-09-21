@@ -246,19 +246,29 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// The accessible name of the icon shown at the trailing end of the text field. The icon is decorative
-    /// and hidden from assistive technologies by default; setting this turns it into an image with a name,
-    /// which is what an icon carrying a meaning of its own (a warning, a lock, a "saved" mark) needs.
+    /// The accessible name of the icon shown inside the text field. The icon is decorative and hidden from
+    /// assistive technologies by default; setting this turns it into an image with a name, which is what an
+    /// icon carrying a meaning of its own (a warning, a lock, a "saved" mark) needs.
     /// </summary>
     [Parameter] public string? IconAriaLabel { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown in the far right end of the text field from the built-in Fluent UI icons.
+    /// The icon name for the icon shown inside the text field, at the end <see cref="IconPosition"/> puts it
+    /// at, from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
     /// For external icon libraries, use <see cref="Icon"/> instead.
     /// </remarks>
     [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Which end of the field the icon sits at, inside the frame. The default is
+    /// <see cref="BitIconPosition.End"/>, past the clear and reveal buttons;
+    /// <see cref="BitIconPosition.Start"/> puts it in front of the input instead, which is where the glyph
+    /// that says what a field is for - a magnifier, an envelope, a currency mark - belongs. It follows the
+    /// reading direction rather than the screen, so it mirrors itself in a right-to-left page.
+    /// </summary>
+    [Parameter] public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
     /// Sets the inputmode html attribute of the input element.
@@ -980,6 +990,8 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
 
+    private bool HasIcon => Icon is not null || IconName.HasValue();
+
     private bool HasLabel => Label.HasValue() || LabelTemplate is not null;
 
     private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
@@ -1061,10 +1073,18 @@ public partial class BitTextField : BitTextInputBase<string?>
                                         ? (LoadingAriaLabel ?? "Loading")
                                         : (GhostText.HasValue() ? GhostText : null);
 
-    // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of its
-    // own was given would quietly throw that name away. The visible label keeps naming the input through the
-    // for/id pair either way, which is what the label element is for.
-    private string? LabelledBy => HasLabel && AriaLabel.HasNoValue() ? _labelId : null;
+    // The name a consumer wrote for the input itself wins over the visible label, the same way AriaLabel does:
+    // pointing at an element of their own is an explicit naming of the field. It is read back off the splatted
+    // attributes for the reason the ones above are - the explicit attribute of the input wins over the
+    // splatted ones, so a null written over a splatted aria-label or aria-labelledby would take it away, and
+    // an input whose name comes from the page around it would be left unnamed.
+    // aria-labelledby takes precedence over aria-label in turn, so pointing at the visible label while a name
+    // of its own was given would quietly throw that name away. The visible label keeps naming the input
+    // through the for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => GetInputAttribute("aria-labelledby")
+                                  ?? (HasLabel && AriaLabel.HasNoValue() ? _labelId : null);
+
+    private string? InputAriaLabel => AriaLabel ?? GetInputAttribute("aria-label");
 
     private string? GetInputAttribute(string name)
     {

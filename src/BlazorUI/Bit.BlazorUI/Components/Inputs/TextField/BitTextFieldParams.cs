@@ -148,19 +148,24 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     public string? HidePasswordIconName { get; set; }
 
     /// <summary>
-    /// The icon to display at the trailing end of the field, from an external icon library.
+    /// The icon to display inside the field, from an external icon library.
     /// </summary>
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
-    /// The accessible name of the icon shown at the trailing end of the text field.
+    /// The accessible name of the icon shown inside the text field.
     /// </summary>
     public string? IconAriaLabel { get; set; }
 
     /// <summary>
-    /// The icon name for the icon shown at the trailing end of the text field, from the built-in Fluent UI icons.
+    /// The icon name for the icon shown inside the text field, from the built-in Fluent UI icons.
     /// </summary>
     public string? IconName { get; set; }
+
+    /// <summary>
+    /// Which end of the field the icon sits at, inside the frame.
+    /// </summary>
+    public BitIconPosition? IconPosition { get; set; }
 
     /// <summary>
     /// Change the content of the input field when the user writes text (based on the 'oninput' HTML event).
@@ -539,6 +544,11 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
         if (IconName.HasValue() && bitTextField.HasNotBeenSet(nameof(IconName)))
         {
             bitTextField.IconName = IconName;
+        }
+
+        if (IconPosition.HasValue && bitTextField.HasNotBeenSet(nameof(IconPosition)))
+        {
+            bitTextField.IconPosition = IconPosition.Value;
         }
 
         if (Immediate.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(Immediate)))
