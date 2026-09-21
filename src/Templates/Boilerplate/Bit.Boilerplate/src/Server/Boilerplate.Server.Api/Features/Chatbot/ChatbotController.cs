@@ -183,7 +183,7 @@ public partial class ChatbotController : AppControllerBase, IChatbotController
             {{{SystemPromptProvider.GetSystemPrompt(PromptKind.Support, HttpContext.RequestServices)}}}
 
             ### Voice call:
-            This is a live voice call and nothing you say is shown as text: use no markdown or links, and never read out a URL. Your tools still show the user cards and suggestions on the screen. When a tool asks the user to approve something there, tell them to tap the button: a spoken yes is not an approval.
+            This is a live voice call, while user is able to see the text of your voice, try not to use heavy markdown or links.
 
             ### Variables:
             {{UserCulture}}: "{{{culture?.NativeName ?? "English"}}}"

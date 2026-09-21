@@ -699,7 +699,7 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>Aller à aujourd’hui</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Créez facilement votre application Blazor multi-mode (WASM, Server, Hybrid, pré-rendu) en un temps record !</value>
+    <value>Tout ce que vous voyez fonctionne déjà, sur le web, Android, iOS, Windows et macOS. Appropriez-vous-le et publiez.</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Accueil</value>
@@ -717,13 +717,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <value>En savoir plus</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Un ensemble d’outils pour les développeurs .NET sur plusieurs plateformes</value>
+    <value>Une application complète sur chaque plateforme, dès le premier jour</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Un ensemble de composants Blazor performants, faciles à personnaliser et élégants</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>Un modèle de projet .NET riche en fonctionnalités qui fonctionne partout de manière transparente</value>
+    <value>Le point de départ de cette application : tout est déjà en place, et le code source est entièrement à vous.</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Le Boilerplate est construit avec ASP.NET Core, Identity, Web API, EF Core et Blazor.</value>
