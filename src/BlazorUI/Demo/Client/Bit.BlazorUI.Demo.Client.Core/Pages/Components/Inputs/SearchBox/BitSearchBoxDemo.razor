@@ -5,14 +5,15 @@
             Title="SearchBox"
             Description="A search box (SearchBox) provides an accessible input field with optional suggestions (auto-complete), a clear button and a search button, for searching content within a site or app." />
 
-@* Sections 1 to 17 cover what the search box does, up to and including Validation; the last five
-   (Color, External Icons, Size, Style & Class and RTL) are the look-and-feel sections shared by
-   every component of the library. *@
+@* Sections 1 to 18 cover what the search box does, up to and including Cascading parameters; the
+   last five (Color, External Icons, Size, Style & Class and RTL) are the look-and-feel sections
+   shared by every component of the library. *@
 
 <div>
     <DemoPage Name="SearchBox"
               Description="A search box (SearchBox) provides an input field for searching content within a site or app to find specific items. On top of a plain text input it adds a search icon, a clear button, an optional search button, and an optional suggest (auto-complete) callout backed either by an in-memory list or by an async, cancellable items provider. The input follows the WAI-ARIA combobox pattern: it exposes the suggest list to screen readers, announces the outcome of every search through its own live region, and supports full keyboard navigation with the arrow keys, Page Up/Page Down, Home/End, Enter and Escape."
               Parameters="componentParameters"
+              CssVariables="componentCssVariables"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
               PublicMembers="componentPublicMembers"
@@ -39,13 +40,16 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
+        <DemoExample Title="Label & Description" RazorCode="@example2RazorCode" Id="example2">
             <div>
-                A <b>Label</b> renders a real html label element that is programmatically tied to the input, so clicking it
-                focuses the search box and screen readers announce it as the accessible name of the field. Prefer it over a
-                placeholder-only design: the placeholder disappears as soon as the user starts typing.
+                A <b>Label</b> renders a real html label element tied to the input, so clicking it focuses the search box and
+                screen readers announce it as the accessible name of the field. Prefer it over a placeholder-only design: the
+                placeholder disappears as soon as the user starts typing. <b>LabelTemplate</b> takes custom markup instead.
                 <br /><br />
-                Use <b>LabelTemplate</b> when the label needs custom markup such as an icon or a required marker.
+                <b>Description</b> (or <b>DescriptionTemplate</b>) renders a hint under the field and points the input at it
+                through <code>aria-describedby</code>, so it is read after the label rather than being decoration only a
+                sighted user benefits from. <b>AriaDescription</b> is referenced the same way but is visually hidden, for
+                what only a screen reader user needs to be told.
             </div>
             <br />
             <div class="example-box">
@@ -58,6 +62,21 @@
                             <BitText Typography="BitTypography.Subtitle2">Advanced search</BitText>
                         </BitStack>
                     </LabelTemplate>
+                </BitSearchBox>
+                <br />
+                <BitSearchBox Label="Search the docs"
+                              Placeholder="e.g. theming"
+                              Description="Searches component names, parameters and guides." />
+                <br />
+                <BitSearchBox Label="Search orders"
+                              Placeholder="e.g. #1024"
+                              AriaDescription="Results update as you type. Use the up and down arrow keys to review them.">
+                    <DescriptionTemplate>
+                        <BitStack Horizontal FitHeight Gap="0.25rem" Alignment="BitAlignment.Center">
+                            <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                            <span>Order number, customer name or email.</span>
+                        </BitStack>
+                    </DescriptionTemplate>
                 </BitSearchBox>
             </div>
         </DemoExample>
@@ -126,7 +145,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Search Button" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Search Button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>ShowSearchButton</b> appends an explicit submit affordance to the field, which is the recommended pattern
                 for a site-wide search where the user may not know that pressing enter runs the search. Clicking it closes the
@@ -134,10 +153,25 @@
                 <br /><br />
                 Its glyph is customizable through <b>SearchButtonIconName</b>, <b>SearchButtonIcon</b> or a full
                 <b>SearchButtonTemplate</b>, and its accessible name through <b>SearchButtonAriaLabel</b>.
+                <b>SearchButtonText</b> puts a visible label next to the glyph and widens the button to fit it, which is the
+                clearer affordance where the search is the point of the page; the label then names the button itself, so no
+                aria-label is rendered on top of it.
+                <br /><br />
+                <b>Loading</b> shows a spinner where the clear button sits and marks the input busy while the search the app
+                itself started is still running. It is not the callout's own progress, which an async
+                <b>SuggestItemsProvider</b> drives through <b>LoadingText</b> - the two can be on at the same time.
             </div>
             <br />
             <div class="example-box">
                 <BitSearchBox Placeholder="Search" ShowSearchButton />
+                <br />
+                <BitSearchBox Placeholder="SearchButtonText" ShowSearchButton SearchButtonText="Search" />
+                <br />
+                <BitSearchBox Placeholder="Press enter or click Search"
+                              ShowSearchButton
+                              SearchButtonText="Search"
+                              Loading="isSearching"
+                              OnSearch="RunSlowSearch" />
                 <br />
                 <BitSearchBox Placeholder="SearchButtonIconName" ShowSearchButton SearchButtonIconName="PageListFilter" />
                 <br />
@@ -230,8 +264,10 @@
                 keyboard to bring up (<code>BitInputMode.Search</code> shows the layout optimized for search terms),
                 <b>EnterKeyHint</b> picks the label of its return key and already defaults to
                 <code>BitEnterKeyHint.Search</code> here because pressing enter always runs a search, and
-                <b>SpellCheck</b> turns the red squiggles on or off - setting it to false is usually the right call for
-                a search field, whose terms are rarely dictionary words.
+                <b>SpellCheck</b> turns the red squiggles on or off, <b>AutoCorrect="false"</b> stops a mobile browser
+                from rewriting a term its dictionary does not know, and <b>AutoCapitalize="none"</b> keeps the virtual
+                keyboard from capitalizing it - the three usually belong together in a search field, whose terms are
+                rarely dictionary words.
                 <br /><br />
                 <b>SelectTextOnFocus</b> selects whatever is already in the field every time it takes the focus, so that
                 typing replaces the previous term instead of appending to it - the behavior a search box the user keeps
@@ -254,7 +290,8 @@
                 <br />
                 <BitSearchBox Placeholder="EnterKeyHint = Go" EnterKeyHint="BitEnterKeyHint.Go" />
                 <br />
-                <BitSearchBox Placeholder="SpellCheck = false" SpellCheck="false" />
+                <BitSearchBox SpellCheck="false" AutoCorrect="false" AutoCapitalize="none"
+                              Placeholder="SpellCheck, AutoCorrect & AutoCapitalize off" />
                 <br />
                 <BitSearchBox SelectTextOnFocus Placeholder="SelectTextOnFocus" DefaultValue="Click me to select this term" />
             </div>
@@ -340,25 +377,23 @@
 
         <DemoExample Title="Suggestion (AutoComplete)" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
-                Assigning <b>SuggestItems</b> (an in-memory list) or <b>SuggestItemsProvider</b> (an async, cancellable
-                function) turns the search box into a combobox with an auto-complete callout. Note that the suggestions only
-                react to the bound value, so the component almost always needs <b>Immediate</b> to search as the user types.
+                <b>SuggestItems</b> (an in-memory list) or <b>SuggestItemsProvider</b> (an async, cancellable function)
+                turns the search box into a combobox with an auto-complete callout. The suggestions react to the bound
+                value, so searching as the user types needs <b>Immediate</b>.
                 <br /><br />
-                <b>SuggestFilterFunction</b> replaces the default case-insensitive "contains" matching,
-                <b>SuggestIgnoreDiacritics</b> keeps that default matching but folds the accents away on both sides, so
-                that "Jose" finds "José" without the user having to reproduce the diacritics,
-                <b>MinSuggestTriggerChars</b> (3 by default) sets how many characters are needed before searching,
-                <b>MaxSuggestCount</b> (5 by default) caps the number of rendered suggestions, and <b>DebounceTime</b> avoids
-                hammering a remote provider on every keystroke. Stale provider calls are cancelled automatically through the
-                <b>CancellationToken</b> of the request, so a slow response can never overwrite a newer one.
+                <b>SuggestFilterFunction</b> replaces the default case-insensitive "contains" matching;
+                <b>SuggestIgnoreDiacritics</b> keeps it but folds the accents away on both sides, so "Jose" finds "José".
+                <b>MinSuggestTriggerChars</b> (3) sets how many characters are needed before searching,
+                <b>MaxSuggestCount</b> (5) caps the rendered suggestions, and <b>DebounceTime</b> keeps a remote provider
+                from being called on every keystroke. A superseded provider call is cancelled through the
+                <b>CancellationToken</b> of its request, so a slow response can never overwrite a newer one.
                 <br /><br />
-                <b>Modeless</b> removes the invisible overlay that otherwise captures the first outside click, and
-                <b>FixedCalloutWidth</b> pins the callout to the width of the component instead of letting it grow with the
-                longest suggestion.
+                <b>Modeless</b> removes the invisible overlay that captures the first outside click, and
+                <b>FixedCalloutWidth</b> pins the callout to the width of the component instead of letting it grow with
+                the longest suggestion.
                 <br /><br />
-                Picking a suggestion (by clicking it or by pressing enter while it is highlighted) writes it into the field,
-                leaves the caret at its end so the term can be refined right away, and raises
-                <b>OnSuggestItemSelect</b> followed by <b>OnSearch</b>.
+                Picking a suggestion writes it into the field, leaves the caret at its end so the term can be refined
+                right away, and raises <b>OnSuggestItemSelect</b> followed by <b>OnSearch</b>.
             </div>
             <br />
             <div class="example-box">
@@ -543,28 +578,20 @@
 
         <DemoExample Title="Keyboard & Screen Readers" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
-                The search box implements the WAI-ARIA combobox pattern, so the whole suggest list is reachable
-                without a mouse. The <b>down</b> and <b>up</b> arrows move the highlight (wrapping around at both
-                ends), <b>alt + down</b> opens the list without moving the highlight and <b>alt + up</b> closes it,
-                <b>page down</b> and <b>page up</b> jump five items at a time and stop at the edges, <b>home</b> and
-                <b>end</b> jump straight to the first and the last suggestion, <b>enter</b> accepts the highlighted
-                one (and places the caret at the end of it), <b>tab</b> and <b>escape</b> dismiss the list, and a
-                second <b>escape</b> clears the field. While the list is open these keys no longer move the text
-                caret, scroll the page or submit the surrounding form, and while an input method editor is
-                composing (Chinese, Japanese, Korean) none of them reach the list at all, so enter commits the
-                composition and the arrows walk the candidate window as they should.
-                <b>NoWrapNavigation</b> stops the up and down arrows from cycling between the two ends of the list,
-                which in a long list reads more like the highlight having been lost than like a deliberate jump.
+                The search box implements the WAI-ARIA combobox pattern, so the whole suggest list is reachable without a
+                mouse: <b>down</b> / <b>up</b> move the highlight (wrapping at both ends), <b>alt + down</b> opens the list
+                and <b>alt + up</b> closes it, <b>page down</b> / <b>page up</b> jump five items and stop at the edges,
+                <b>home</b> / <b>end</b> jump to the first and the last suggestion, <b>enter</b> accepts the highlighted one,
+                <b>tab</b> and <b>escape</b> dismiss the list, and a second <b>escape</b> clears the field. While the list is
+                open these keys no longer move the caret, scroll the page or submit the surrounding form - and while an input
+                method editor is composing (Chinese, Japanese, Korean) none of them reach the list at all, so enter commits
+                the composition and the arrows walk the candidate window. <b>NoWrapNavigation</b> stops the wrapping, which
+                in a long list reads more like the highlight having been lost than like a deliberate jump.
                 <br /><br />
-                Screen readers never see the list appear, so the component also owns a visually hidden live region
-                that reports the outcome of every search: how many suggestions were found, that there were none, or
-                that the term is still shorter than <b>MinSuggestTriggerChars</b>. The
-                <b>AnnouncementProvider</b> replaces those built-in English sentences with your own, which is the
-                hook to localize them; it receives the search term, the suggestions, whether the provider is still
-                loading and whether the term is too short, and returning null keeps the region silent.
-                <br /><br />
-                Turn on a screen reader (or inspect the <code>role="status"</code> element inside the component) and
-                type in both fields below to hear the difference between the default and the custom announcements.
+                A screen reader never sees the list appear, so the component owns a visually hidden live region that reports
+                the outcome of every search: how many suggestions were found, that there were none, or that the term is still
+                shorter than <b>MinSuggestTriggerChars</b>. <b>AnnouncementProvider</b> replaces those built-in English
+                sentences, which is the hook to localize them; returning null keeps the region silent.
             </div>
             <br />
             <div class="example-box">
@@ -595,17 +622,12 @@
 
         <DemoExample Title="Programmatic Control" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
-                Capturing the component with <b>@@ref</b> gives access to its public API:
-                <b>FocusAsync</b> moves the focus into the input, <b>Clear</b> empties the value and raises
-                <b>OnClear</b> exactly like the clear button does, <b>ShowSuggestItems</b> runs the search for the
-                current value and opens the callout even when the field is not focused, and
-                <b>HideSuggestItems</b> dismisses it again. The read-only <b>IsSuggestItemsOpen</b> property tells
-                whether the callout is currently open, and <b>OnSuggestItemsToggle</b> is raised with true when it
-                opens and with false when it closes, which is what a page needs to dim a backdrop or pause a
-                background poll while the user is browsing suggestions.
-                <br /><br />
-                <b>InputElement</b> exposes the underlying <code>ElementReference</code> for anything the component
-                does not wrap itself.
+                Capturing the component with <b>@@ref</b> gives access to its public API: <b>FocusAsync</b> moves the focus
+                into the input, <b>Clear</b> empties the value and raises <b>OnClear</b> exactly like the clear button does,
+                <b>ShowSuggestItems</b> runs the search for the current value and opens the callout even when the field is
+                not focused, and <b>HideSuggestItems</b> dismisses it again. <b>IsSuggestItemsOpen</b> reads back whether the
+                callout is open, and <b>OnSuggestItemsToggle</b> is raised with true when it opens and false when it closes.
+                <b>InputElement</b> exposes the underlying <code>ElementReference</code>.
             </div>
             <br />
             <div class="example-box">
@@ -634,6 +656,11 @@
                 cascading <b>EditContext</b>, reports its changes to it, renders the <code>aria-invalid</code> attribute and
                 an error state when the field is invalid, and works with <b>ValidationMessage</b>. Set <b>NoValidate</b> to
                 opt out of that integration.
+                <br /><br />
+                Outside a form, <b>ErrorMessage</b> (or <b>ErrorMessageTemplate</b>) reports a rejection the app itself
+                knows about: a server response, or a rule spanning two fields. It marks the field invalid on its own, is
+                referenced by the input through <code>aria-describedby</code>, and is announced by the live region of the
+                component the moment it shows up rather than only on the next focus.
             </div>
             <br />
             <div class="example-box">
@@ -645,10 +672,41 @@
                                   @bind-Value="validationModel.Text" />
                     <ValidationMessage For="() => validationModel.Text" />
                 </EditForm>
+                <br /><br /><br />
+                <BitSearchBox Immediate
+                              Label="Search orders"
+                              Placeholder="Type at least 3 characters"
+                              ErrorMessage="@errorMessage"
+                              OnChange="HandleErrorMessageChange" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
+        <DemoExample Title="Cascading parameters" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                <b>BitParams</b> carries a <b>BitSearchBoxParams</b> down to every search box under it, so a toolbar, a
+                filter panel or a whole page sets the shared look and the shared suggest behavior once instead of at every
+                field. What it carries is a default and not an override: a search box that writes a parameter for itself
+                keeps its own value, and only what it left unset is filled in from the cascade. Each parameter is filled in
+                on its own, so a field can take its <b>Size</b> from the cascade and its <b>Underlined</b> from its own
+                markup. What belongs to one field alone - the value, the label, the suggest source, the templates and the
+                callbacks - stays in its own markup.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitParams Parameters="searchBoxParams">
+                    <BitSearchBox Placeholder="Products" SuggestItems="GetSuggestedItems()" />
+                    <br />
+                    <BitSearchBox Placeholder="Customers" SuggestItems="GetSuggestedItems()" />
+                    <br />
+                    <BitSearchBox Underlined Placeholder="Its own Underlined, the cascaded rest"
+                                  SuggestItems="GetSuggestedItems()" />
+                </BitParams>
+                <br />
+                <BitSearchBox Placeholder="Outside the cascade" SuggestItems="GetSuggestedItems()" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
             <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
             <br /><br />
             <div class="example-box">
@@ -796,7 +854,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+        <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
             <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b>, <b>SearchButtonIcon</b> and <b>ClearButtonIcon</b> parameters.</div>
 
             <br />
@@ -853,7 +911,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
+        <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
             <div>
                 The <b>Size</b> parameter scales the height, the font size and the icons of the search box in one go, so the
                 component can match a compact toolbar or a prominent hero search. <b>Medium</b> is the default when no size
@@ -875,12 +933,17 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
             <div>
                 <b>Style</b> and <b>Class</b> apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every
                 internal part of the component (the label, the wrapper, the input container, the icon, the clear and search
                 buttons, the callout, the suggest items and the highlighted text). The <b>Focused</b> key of both objects is
                 applied to the root only while the input holds the focus, which makes it easy to build custom focus visuals.
+                <br /><br />
+                For a re-skin that follows every state on its own, set the public <b>CSS variables</b> listed in the API
+                section instead: on <code>:root</code> they re-skin every search box of the app, on <b>Style</b> they
+                re-skin one. The suggest callout is rendered outside the root element, so its own variables are set through
+                the <b>Callout</b> key of <b>Styles</b>.
             </div>
             <br /><br />
             <div class="example-box">
@@ -914,10 +977,31 @@
                               Classes="@(new() { Callout = "custom-callout",
                                                  SuggestItemButton = "custom-suggest-item",
                                                  SuggestItemHighlight = "custom-highlight" })" />
+                <br /><br /><br />
+                <div>CSS variables:</div><br />
+                <BitSearchBox Immediate
+                              FixedIcon
+                              ShowSearchButton
+                              HighlightSuggestItems
+                              MinSuggestTriggerChars="1"
+                              Placeholder="e.g. app"
+                              SuggestItems="GetSuggestedItems()"
+                              Style="--bit-SearchBox-radius: 2rem;
+                                     --bit-SearchBox-height: 2.75rem;
+                                     --bit-SearchBox-icon-color: #6d28d9;
+                                     --bit-SearchBox-border-color: #ddd6fe;
+                                     --bit-SearchBox-focus-color: #6d28d9;
+                                     --bit-SearchBox-hover-border-color: #a78bfa;
+                                     --bit-SearchBox-search-button-background: #6d28d9;
+                                     --bit-SearchBox-search-button-hover-background: #5b21b6;"
+                              Styles="@(new() { Callout = "--bit-SearchBox-callout-radius: 0.75rem;" +
+                                                          "--bit-SearchBox-item-min-height: 2.5rem;" +
+                                                          "--bit-SearchBox-item-hover-background: #ede9fe;" +
+                                                          "--bit-SearchBox-highlight-color: #6d28d9;" })" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
             <div>Use the BitSearchBox component in right-to-left (RTL).</div><br />
             <div dir="rtl">
                 <div class="example-box">

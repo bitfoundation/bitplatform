@@ -2587,4 +2587,443 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     #endregion
+
+    #region description, error message & cascading parameters
+
+    [TestMethod]
+    public void BitSearchBoxDescriptionShouldRenderAndDescribeTheInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Searches products by name.");
+        });
+
+        var description = component.Find(".bit-srb-des");
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual("Searches products by name.", description.TextContent.Trim());
+        Assert.AreEqual(description.GetAttribute("id"), input.GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxDescriptionTemplateShouldReplaceTheDescriptionText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Description, "plain");
+            parameters.Add(p => p.DescriptionTemplate, "<span id='custom-description'>custom</span>");
+        });
+
+        var description = component.Find(".bit-srb-des");
+
+        Assert.IsNotNull(component.Find("#custom-description"));
+        Assert.IsFalse(description.TextContent.Contains("plain"));
+        Assert.AreEqual(description.GetAttribute("id"), component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAriaDescriptionShouldRenderHiddenAndDescribeTheInput()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.AriaDescription, "Results update as you type.");
+        });
+
+        var ariaDescription = component.Find(".bit-srb-ard");
+
+        Assert.AreEqual("Results update as you type.", ariaDescription.TextContent.Trim());
+        Assert.AreEqual(ariaDescription.GetAttribute("id"), component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutDescriptionsShouldNotRenderDescribedBy()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-des").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-ard").Count);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxDescribedByShouldKeepTheConsumerOwnValueFirst()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "outside-hint" } });
+            parameters.Add(p => p.ErrorMessage, "Rejected.");
+            parameters.Add(p => p.Description, "A hint.");
+            parameters.Add(p => p.AriaDescription, "For screen readers.");
+        });
+
+        var describedBy = component.Find(".bit-srb-inp").GetAttribute("aria-describedby")!.Split(' ');
+
+        Assert.AreEqual(4, describedBy.Length);
+        Assert.AreEqual("outside-hint", describedBy[0]);
+        Assert.AreEqual(component.Find(".bit-srb-erm").GetAttribute("id"), describedBy[1]);
+        Assert.AreEqual(component.Find(".bit-srb-des").GetAttribute("id"), describedBy[2]);
+        Assert.AreEqual(component.Find(".bit-srb-ard").GetAttribute("id"), describedBy[3]);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageShouldMarkTheFieldInvalidAndBeAnnounced()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "The term is too short.");
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual("The term is too short.", component.Find(".bit-srb-erm").TextContent.Trim());
+        Assert.AreEqual(component.Find(".bit-srb-erm").GetAttribute("id"), input.GetAttribute("aria-describedby"));
+        Assert.AreEqual("The term is too short.", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorLiveRegionShouldAlwaysBeRendered()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        var liveRegion = component.Find(".bit-srb-elv");
+
+        Assert.AreEqual("status", liveRegion.GetAttribute("role"));
+        Assert.AreEqual(string.Empty, liveRegion.TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageTemplateShouldReplaceTheErrorText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, "<span id='custom-error'>custom</span>");
+        });
+
+        Assert.IsNotNull(component.Find("#custom-error"));
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+
+        // Only the plain text is announced, since a template is free to render anything at all.
+        Assert.AreEqual(string.Empty, component.Find(".bit-srb-elv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutErrorMessageShouldNotBeInvalid()
+    {
+        var component = RenderComponent<BitSearchBox>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAriaLabelShouldWinOverTheLabelElement()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Search products");
+            parameters.Add(p => p.AriaLabel, "Search the whole catalog");
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a
+        // name of its own was given would quietly throw that name away.
+        Assert.AreEqual("Search the whole catalog", input.GetAttribute("aria-label"));
+        Assert.IsFalse(input.HasAttribute("aria-labelledby"));
+        Assert.AreEqual(input.GetAttribute("id"), component.Find("label.bit-srb-lbl").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldRenderTheAutoCapitalizeAndAutoCorrectAttributes()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.AutoCapitalize, "none");
+            parameters.Add(p => p.AutoCorrect, false);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.AreEqual("none", input.GetAttribute("autocapitalize"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+
+        var without = RenderComponent<BitSearchBox>();
+
+        Assert.IsFalse(without.Find(".bit-srb-inp").HasAttribute("autocapitalize"));
+        Assert.IsFalse(without.Find(".bit-srb-inp").HasAttribute("autocorrect"));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-srb-sm"),
+        DataRow(BitSize.Medium, "bit-srb-md"),
+        DataRow(BitSize.Large, "bit-srb-lg")
+    ]
+    public void BitSearchBoxCalloutShouldCarryTheSizeClass(BitSize size, string expectedClass)
+    {
+        // The callout is rendered as a sibling of the root element, so the size class of the
+        // component never reaches it through the cascade and it has to be given one of its own.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.IsTrue(component.Find(".bit-srb-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSearchBox)}", BitSearchBoxParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitSearchBoxParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitSearchBoxParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitSearchBoxParams
+            {
+                Size = BitSize.Large,
+                Color = BitColor.Success,
+                Underlined = true,
+                FullWidth = true,
+                NoBorder = true,
+                Placeholder = "Cascaded placeholder",
+                ClearButtonAriaLabel = "Cascaded clear",
+                MaxLength = 12
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSearchBox>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-srb");
+        var input = component.Find(".bit-srb-inp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-und"));
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-flw"));
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-nbr"));
+        Assert.AreEqual("Cascaded placeholder", input.GetAttribute("placeholder"));
+        Assert.AreEqual("12", input.GetAttribute("maxlength"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitSearchBoxParams
+            {
+                Size = BitSize.Large,
+                Color = BitColor.Success,
+                Placeholder = "Cascaded placeholder"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSearchBox>(0);
+                builder.AddAttribute(1, nameof(BitSearchBox.Size), BitSize.Small);
+                builder.AddAttribute(2, nameof(BitSearchBox.Placeholder), "Own placeholder");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-srb");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-sm"));
+        Assert.AreEqual("Own placeholder", component.Find(".bit-srb-inp").GetAttribute("placeholder"));
+
+        // What the search box left unset is still filled in from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-srb-suc"));
+    }
+
+    #endregion
+
+    #region loading & search button text
+
+    [TestMethod]
+    public void BitSearchBoxLoadingShouldShowTheSpinnerInPlaceOfTheClearButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-srb-lsp .bit-srb-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-lng"));
+        Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-busy"));
+        Assert.AreEqual("Searching", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutLoadingShouldKeepTheClearButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.DefaultValue, "apple"));
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-lsp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxLoadingAriaLabelShouldBeAnnounced()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Looking for matches");
+        });
+
+        Assert.AreEqual("Looking for matches", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageShouldWinOverTheLoadingAnnouncement()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.ErrorMessage, "The search failed.");
+        });
+
+        Assert.AreEqual("The search failed.", component.Find(".bit-srb-elv").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonTextShouldRenderAndNameTheButton()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonText, "Search");
+            parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
+        });
+
+        var button = component.Find(".bit-srb-sbn");
+
+        Assert.AreEqual("Search", component.Find(".bit-srb-sbx").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-sbt"));
+
+        // The visible label already names the button, so an aria-label on top of it would replace what is
+        // written on it with a second, unrelated string, and a tooltip repeating it is pure noise.
+        Assert.IsFalse(button.HasAttribute("aria-label"));
+        Assert.IsFalse(button.HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonWithoutTextShouldKeepItsAriaLabel()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-sbt"));
+        Assert.AreEqual("Run the search", component.Find(".bit-srb-sbn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSearchButtonTemplateShouldReplaceTheTextAndTheIcon()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchButton, true);
+            parameters.Add(p => p.SearchButtonText, "Search");
+            parameters.Add(p => p.SearchButtonTemplate, "<span id='custom-search'>go</span>");
+        });
+
+        Assert.IsNotNull(component.Find("#custom-search"));
+        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxOverlayShouldBeHiddenFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
+
+        Assert.AreEqual("true", component.Find(".bit-srb-ovl").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldTakeInheritedParametersFromTheCascade()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitSearchBoxParams { ReadOnly = true, Required = true, MaxLength = 8 }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSearchBox>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        // ReadOnly and Required are declared by the input base classes rather than by the search box,
+        // so they are the ones the generated HasNotBeenSet knows nothing about.
+        Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("readonly"));
+        Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("required"));
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-req"));
+        Assert.AreEqual("8", component.Find(".bit-srb-inp").GetAttribute("maxlength"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxOwnInheritedParametersShouldWinOverTheCascade()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitSearchBoxParams { ReadOnly = true, Required = true, Immediate = true }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSearchBox>(0);
+                builder.AddAttribute(1, nameof(BitSearchBox.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        // The search box wrote ReadOnly="false" for itself, so the cascade must not turn it back on,
+        // while Required, which it left unset, is still filled in from there.
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("readonly"));
+        Assert.IsTrue(component.Find(".bit-srb-inp").HasAttribute("required"));
+    }
+
+    #endregion
 }

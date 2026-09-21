@@ -26,10 +26,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool _announcementMarker;
     private int _selectedIndex = -1;
     private string? _enterKeyHint = "search";
+    private string? _calloutSizeClass;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
+    private string _errorId = string.Empty;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
+    private string _descriptionId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
     private List<string> _viewSuggestedItems = [];
     private string _scrollContainerId = string.Empty;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -42,11 +46,44 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
 
     /// <summary>
+    /// The parameters of the search box provided by a <see cref="BitParams"/> ancestor.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple search box components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSearchBoxParams.ParamName)]
+    public BitSearchBoxParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Builds the text that the screen reader announces through the live region of the search box
     /// whenever the suggest items change, in place of the built-in English announcements.
     /// Returning null or an empty string announces nothing.
     /// </summary>
     [Parameter] public Func<BitSearchBoxAnnouncementArgs, string?>? AnnouncementProvider { get; set; }
+
+    /// <summary>
+    /// Detailed description of the search box for the benefit of screen readers, rendered into a visually
+    /// hidden element that the input references through its <c>aria-describedby</c> attribute. Use it for
+    /// what only a screen reader user needs to be told; a hint everyone benefits from belongs in
+    /// <see cref="Description"/>, which is referenced the same way but is also visible.
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
+
+    /// <summary>
+    /// Sets the autocapitalize html attribute of the input element, which tells a virtual keyboard whether
+    /// and how to capitalize what is typed. A search term is rarely a sentence, so <c>none</c> is usually
+    /// the right value for a search box on a touch device.
+    /// </summary>
+    [Parameter] public string? AutoCapitalize { get; set; }
+
+    /// <summary>
+    /// Sets the autocorrect html attribute of the input element. Turning it off stops a mobile browser from
+    /// silently rewriting a search term that is a product name, a code or anything else its dictionary
+    /// does not know.
+    /// </summary>
+    [Parameter] public bool? AutoCorrect { get; set; }
 
     /// <summary>
     /// Automatically highlights the first suggest item as soon as the suggest list opens,
@@ -115,6 +152,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The hint rendered under the field, for what the search covers or what to type into it. It is
+    /// referenced by the input through its <c>aria-describedby</c> attribute, so a screen reader reads it
+    /// after the label instead of leaving it as decoration a sighted user alone benefits from.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// The custom content of the description under the field, which replaces the plain
+    /// <see cref="Description"/> text and is referenced by the input in the same way.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// Whether or not to animate the search box icon on focus.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -126,6 +176,29 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <see cref="BitEnterKeyHint.Search"/> because pressing enter always runs a search here.
     /// </summary>
     [Parameter] public BitEnterKeyHint? EnterKeyHint { get; set; }
+
+    /// <summary>
+    /// The message shown under the field when the value was rejected, which is what turns a red frame into
+    /// something the user can act on. Setting it marks the field invalid on its own - the same look and the
+    /// same <c>aria-invalid</c> attribute a failing validation gives it - and the message is referenced by
+    /// the input through its <c>aria-describedby</c> attribute and announced by the live region of the
+    /// component, so it reaches a screen reader the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
+    /// fields). A search box inside an <c>EditForm</c> already gets its messages from the cascading
+    /// EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
+    /// marks the field invalid in the same way. Only the plain text is announced by the live region, since a
+    /// template is free to render anything at all.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
 
     /// <summary>
     /// Forces the suggest callout width to be always fixed at the component's width.
@@ -145,9 +218,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool FullWidth { get; set; }
 
     /// <summary>
-    /// Highlights the part of each suggest item that matches the current search term.
+    /// Whether to hide the clear button when the search box has value.
     /// </summary>
-    [Parameter] public bool HighlightSuggestItems { get; set; }
+    [Parameter] public bool HideClearButton { get; set; }
 
     /// <summary>
     /// Whether or not the icon is visible.
@@ -156,9 +229,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public bool HideIcon { get; set; }
 
     /// <summary>
-    /// Whether to hide the clear button when the search box has value.
+    /// Highlights the part of each suggest item that matches the current search term.
     /// </summary>
-    [Parameter] public bool HideClearButton { get; set; }
+    [Parameter] public bool HighlightSuggestItems { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
@@ -191,9 +264,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// Sets the inputmode html attribute of the input element.
     /// </summary>
-    [Parameter]
-    [CallOnSet(nameof(SetInputMode))]
-    public BitInputMode? InputMode { get; set; }
+    [Parameter] public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// The text of the label of the search box.
@@ -206,13 +277,32 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// The custom template rendered in place of the default spinner while the
+    /// Shows a spinner in the trailing slot of the field and marks the input busy, for a search the app
+    /// itself is running: the one the enter key or the search button started, whose results land somewhere
+    /// else on the page. While it is on, the clear button steps aside for the spinner.
+    /// </summary>
+    /// <remarks>
+    /// It is not about the suggest callout, which shows its own progress while a
+    /// <see cref="SuggestItemsProvider"/> is resolving - that one is <see cref="LoadingText"/> and
+    /// <see cref="LoadingTemplate"/>, and the two can be on at the same time.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Loading { get; set; }
+
+    /// <summary>
+    /// What the live region of the component announces while <see cref="Loading"/> is on, so that the
+    /// progress of the search reaches a screen reader instead of only the spinner being shown.
+    /// </summary>
+    [Parameter] public string LoadingAriaLabel { get; set; } = "Searching";
+
+    /// <summary>
+    /// The custom template rendered in place of the default spinner in the suggest callout while the
     /// <see cref="SuggestItemsProvider"/> is resolving the suggest items.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
-    /// The text rendered next to the loading indicator while the
+    /// The text rendered next to the loading indicator of the suggest callout while the
     /// <see cref="SuggestItemsProvider"/> is resolving the suggest items.
     /// </summary>
     [Parameter] public string? LoadingText { get; set; }
@@ -250,15 +340,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public bool Modeless { get; set; }
 
     /// <summary>
-    /// Prevents clearing the value of the search box when the user presses the escape key.
-    /// </summary>
-    [Parameter] public bool NoClearOnEscape { get; set; }
-
-    /// <summary>
     /// Removes the default border of the search box.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool NoBorder { get; set; }
+
+    /// <summary>
+    /// Prevents clearing the value of the search box when the user presses the escape key.
+    /// </summary>
+    [Parameter] public bool NoClearOnEscape { get; set; }
 
     /// <summary>
     /// The custom template rendered in the callout when the search finds no suggest item.
@@ -381,6 +471,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The custom template for search button icon.
     /// </summary>
     [Parameter] public RenderFragment? SearchButtonTemplate { get; set; }
+
+    /// <summary>
+    /// The label rendered on the search button next to its icon, which is what turns the icon-only button
+    /// into the explicit "Search" affordance a site-wide search usually wants. The button widens to fit it
+    /// instead of staying the square of the field's height, and the label also names the button for a
+    /// screen reader, so <see cref="SearchButtonAriaLabel"/> is no longer rendered while it is set.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? SearchButtonText { get; set; }
 
     /// <summary>
     /// Selects the text already in the search box whenever the input takes the focus, so that typing
@@ -552,6 +651,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => ShowSearchButton ? "bit-srb-ssb" : string.Empty);
 
+        ClassBuilder.Register(() => Loading ? "bit-srb-lng" : string.Empty);
+
+        ClassBuilder.Register(() => SearchButtonText.HasValue() ? "bit-srb-sbt" : string.Empty);
+
         ClassBuilder.Register(() => HideIcon ? "bit-srb-hic" : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-srb-nbr" : string.Empty);
@@ -559,6 +662,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         ClassBuilder.Register(() => FullWidth ? "bit-srb-flw" : string.Empty);
 
         ClassBuilder.Register(() => Required ? "bit-srb-req" : string.Empty);
+
+        // The base class already paints the failing validation of an EditContext. An ErrorMessage the app
+        // sets itself is the same rejection told a different way, so it reuses that class rather than
+        // adding one of its own - guarded so the two never emit it twice.
+        ClassBuilder.Register(() => ValueInvalid is not true && HasErrorMessage ? "bit-inv" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -614,6 +722,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _scrollContainerId = $"BitSearchBox-{UniqueId}-scroll-container";
         _inputId = $"BitSearchBox-{UniqueId}-input";
         _labelId = $"BitSearchBox-{UniqueId}-label";
+        _errorId = $"BitSearchBox-{UniqueId}-error";
+        _descriptionId = $"BitSearchBox-{UniqueId}-description";
+        _ariaDescriptionId = $"BitSearchBox-{UniqueId}-aria-description";
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -624,9 +735,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSearchBoxParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         _hasSuggestSource = SuggestItems is not null || SuggestItemsProvider is not null;
+
+        SetInputMode();
+
+        // The callout is rendered as a sibling of the root element, so the size class of the component
+        // never reaches it through the cascade and it has to be given one of its own.
+        _calloutSizeClass = Size switch
+        {
+            BitSize.Small => "bit-srb-sm",
+            BitSize.Large => "bit-srb-lg",
+            _ => "bit-srb-md"
+        };
 
         _enterKeyHint = (EnterKeyHint ?? BitEnterKeyHint.Search) switch
         {
@@ -687,6 +812,60 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
 
     private bool HasLabel => LabelTemplate is not null || Label.HasValue();
+
+    private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
+
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // aria-labelledby wins over aria-label, so pointing the input at the visible label while a name of its
+    // own was given would quietly throw that name away. The visible label keeps naming the input through
+    // the for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => HasLabel && AriaLabel.HasNoValue() ? _labelId : null;
+
+    // The base class writes the aria-invalid of a failing validation into the splatted attributes, so the
+    // value a consumer set is read back here instead of being overwritten by the explicit attribute below.
+    private string? AriaInvalid => HasErrorMessage || ValueInvalid is true ? "true" : GetInputAttribute("aria-invalid");
+
+    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+
+    /// <summary>
+    /// Everything the input is described by, in reading order. A describedby of the consumer's own comes
+    /// first and is never dropped: the explicit attribute of the input wins over the splatted ones, so an
+    /// app pointing the field at a message of its own would otherwise lose it the moment the component has
+    /// anything to reference.
+    /// </summary>
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                GetInputAttribute("aria-describedby"),
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
+    // A live region only announces what changes inside it after it is already on the page: one that arrives
+    // with its text already in it is regularly missed altogether. So a single empty region is kept in the
+    // markup and only its text comes and goes. It is deliberately not the region the suggest items use:
+    // that one is rewritten on every keystroke, and a rejection folded into it would never be heard again.
+    private string? LiveText => ErrorMessage.HasValue()
+                                    ? ErrorMessage
+                                    : Loading ? LoadingAriaLabel : null;
+
+    private string? GetInputAttribute(string name)
+    {
+        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
+                ? value?.ToString()
+                : null;
+    }
+
+    private string? GetAutoCorrect() => AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null;
 
     /// <summary>
     /// Whether the field is holding any text at all, which is not the same as having a value:

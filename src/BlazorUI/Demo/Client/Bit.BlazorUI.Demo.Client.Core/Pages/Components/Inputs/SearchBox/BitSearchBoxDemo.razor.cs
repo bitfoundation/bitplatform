@@ -17,6 +17,27 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the search box for the benefit of screen readers, rendered into a visually hidden element that the input references through its aria-describedby attribute.",
+        },
+        new()
+        {
+            Name = "AutoCapitalize",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Sets the autocapitalize html attribute of the input element, which tells a virtual keyboard whether and how to capitalize what is typed.",
+        },
+        new()
+        {
+            Name = "AutoCorrect",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Sets the autocorrect html attribute of the input element. Turning it off stops a mobile browser from rewriting a search term its dictionary does not know.",
+        },
+        new()
+        {
             Name = "AutoSelectSuggestItem",
             Type = "bool",
             DefaultValue = "false",
@@ -95,6 +116,20 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The hint rendered under the field, referenced by the input through its aria-describedby attribute so a screen reader reads it after the label.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the description under the field, which replaces the plain Description text and is referenced by the input in the same way.",
+        },
+        new()
+        {
             Name = "DisableAnimation",
             Type = "bool",
             DefaultValue = "false",
@@ -108,6 +143,20 @@ public partial class BitSearchBoxDemo
             Description = "Sets the enterkeyhint html attribute of the input element, which tells virtual keyboards which action label to render on their enter key. It defaults to Search because pressing enter always runs a search here.",
             LinkType = LinkType.Link,
             Href = "#enter-key-hint-enum",
+        },
+        new()
+        {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the field when the value was rejected. It marks the field invalid on its own, is referenced by the input through its aria-describedby attribute, and is announced by the live region of the component.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way.",
         },
         new()
         {
@@ -194,10 +243,24 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a spinner in the trailing slot of the field and marks the input busy, for a search the app itself is running. It is not the progress of the suggest callout, which LoadingText and LoadingTemplate drive.",
+        },
+        new()
+        {
+            Name = "LoadingAriaLabel",
+            Type = "string",
+            DefaultValue = "Searching",
+            Description = "What the live region of the component announces while Loading is on.",
+        },
+        new()
+        {
             Name = "LoadingTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template rendered in place of the default spinner while the SuggestItemsProvider is resolving the suggest items.",
+            Description = "The custom template rendered in place of the default spinner in the suggest callout while the SuggestItemsProvider is resolving the suggest items.",
         },
         new()
         {
@@ -395,6 +458,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "SearchButtonText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The label rendered on the search button next to its icon. The button widens to fit it, and the label names the button for a screen reader, so SearchButtonAriaLabel is no longer rendered while it is set.",
+        },
+        new()
+        {
             Name = "SelectTextOnFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -510,6 +580,304 @@ public partial class BitSearchBoxDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not the search box is underlined.",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-SearchBox-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "Text color of the input, the prefix and the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-placeholder-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "Text color of the placeholder.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-background",
+            DefaultValue = "Per Background kind ($clr-bg-pri by default)",
+            Description = "Background of the field.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-border-color",
+            DefaultValue = "$clr-brd-pri",
+            Description = "Border color of the field at rest.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-border-width",
+            DefaultValue = "$shp-border-width",
+            Description = "Border thickness of the field and of the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-radius",
+            DefaultValue = "$shp-radius-control",
+            Description = "Corner radius of the field, its buttons and its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-height",
+            DefaultValue = "Per Size ($siz-ctrl-md by default)",
+            Description = "Height of the field, and the width of its square icon and button slots.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-padding",
+            DefaultValue = "spacing(1)",
+            Description = "Inline padding of the text input.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-font-size",
+            DefaultValue = "Per Size (from the type ramp)",
+            Description = "Text size of the label, the field, its affixes, the description and the error message.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-icon-size",
+            DefaultValue = "Per Size ($siz-icon-md by default)",
+            Description = "Glyph size of the leading icon and of the buttons.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-icon-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Color of the leading icon.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-hover-border-color",
+            DefaultValue = "$clr-brd-pri-hover",
+            Description = "Border color while the field is hovered.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-hover-icon-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Color of the leading icon while the field is hovered.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Focus ring color of the field, the clear button and the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-disabled-color",
+            DefaultValue = "The Color role's disabled text color",
+            Description = "Text, icon and affix color when the search box is disabled.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-disabled-background",
+            DefaultValue = "The Color role's disabled color",
+            Description = "Background and border color when the search box is disabled.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-invalid-color",
+            DefaultValue = "$clr-err",
+            Description = "Border and icon color of a rejected field, and the color of its error message.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-label-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-label-font-weight",
+            DefaultValue = "$tg-fw-semibold",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-required-color",
+            DefaultValue = "$clr-req",
+            Description = "Color of the asterisk next to the label of a required field.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-description-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "Color of the description under the field.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-affix-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "Text color of the prefix and of the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-affix-background",
+            DefaultValue = "$clr-bg-sec",
+            Description = "Background of the prefix and of the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-clear-button-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "Glyph color of the clear button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-clear-button-hover-color",
+            DefaultValue = "$clr-fg-pri-hover",
+            Description = "Glyph color of the hovered clear button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-clear-button-hover-background",
+            DefaultValue = "$clr-bg-pri-hover",
+            Description = "Background of the hovered clear button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Glyph color of the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-background",
+            DefaultValue = "The Color role's main color",
+            Description = "Background and border color of the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Background of the hovered search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-active-background",
+            DefaultValue = "The Color role's active color",
+            Description = "Background of the pressed search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-width",
+            DefaultValue = "The height of the field, or its content when SearchButtonText is set",
+            Description = "Width of the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-padding",
+            DefaultValue = "Per Size ($siz-ctrl-pad-x-md by default)",
+            Description = "Inline padding of a search button that carries a SearchButtonText.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-search-button-gap",
+            DefaultValue = "spacing(0.5)",
+            Description = "Room between the glyph and the label of the search button.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-background",
+            DefaultValue = "$clr-bg-pri",
+            Description = "Background of the suggest callout. Set through the Callout key of Styles.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-radius",
+            DefaultValue = "$shp-radius-popup",
+            Description = "Corner radius of the callout, on the two corners away from the field. Set through the Callout key of Styles.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-shadow",
+            DefaultValue = "$box-shadow-popup",
+            Description = "Elevation of the callout. Set through the Callout key of Styles.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-max-height",
+            DefaultValue = "$siz-popup-max-height",
+            Description = "Tallest the suggest list grows before it scrolls. Set through the Callout key of Styles.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-border-color",
+            DefaultValue = "$clr-brd-pri",
+            Description = "The hairlines under the callout header and above the callout footer.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-callout-text-color",
+            DefaultValue = "$clr-fg-pri / $clr-fg-sec",
+            Description = "Color of the callout header and footer, and of the loading, empty and too-short messages.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-spinner-color",
+            DefaultValue = "$clr-pri",
+            Description = "Arc color of the loading spinner of the callout.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "Text color of a suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-min-height",
+            DefaultValue = "Per Size ($siz-item-md by default)",
+            Description = "Smallest height of a suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-padding",
+            DefaultValue = "spacing(0.5) spacing(1)",
+            Description = "Padding of a suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-font-size",
+            DefaultValue = "Per Size (from the type ramp)",
+            Description = "Text size of everything inside the callout.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-hover-background",
+            DefaultValue = "$clr-bg-pri-hover",
+            Description = "Background of a hovered suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-selected-background",
+            DefaultValue = "$clr-bg-sec",
+            Description = "Background of the suggest item the arrow keys highlight.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-highlight-color",
+            DefaultValue = "Inherited from the item",
+            Description = "Text color of the matched part of a suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-highlight-background",
+            DefaultValue = "transparent",
+            Description = "Background of the matched part of a suggest item.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-highlight-font-weight",
+            DefaultValue = "$tg-fw-semibold",
+            Description = "Weight of the matched part of a suggest item.",
         },
     ];
 
@@ -636,6 +1004,48 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
+                    Name = "SearchButtonText",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's search button text.",
+                },
+                new()
+                {
+                    Name = "LoadingSpinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner slot shown in the field while the search box is Loading. The spinner of the suggest callout is Loading instead.",
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the search box's error message.",
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's error message.",
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the container of the search box's description.",
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's description.",
+                },
+                new()
+                {
                     Name = "Overlay",
                     Type = "string?",
                     DefaultValue = "null",
@@ -667,7 +1077,7 @@ public partial class BitSearchBoxDemo
                     Name = "Loading",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the loading container of the search box's callout.",
+                    Description = "Custom CSS classes/styles for the loading container of the search box's suggest callout.",
                 },
                 new()
                 {
@@ -1179,6 +1589,45 @@ public partial class BitSearchBoxDemo
     private BitSearchBox searchBoxRef = default!;
 
     private readonly ValidationSearchBoxModel validationModel = new();
+
+    private string? errorMessage;
+
+    private bool isSearching;
+
+    private readonly BitSearchBoxParams[] searchBoxParams =
+    [
+        new()
+        {
+            Immediate = true,
+            FixedIcon = true,
+            FullWidth = true,
+            Size = BitSize.Small,
+            HighlightSuggestItems = true,
+            MinSuggestTriggerChars = 1,
+            NoResultsText = "No matching item found.",
+            SuggestItemsAriaLabel = "Matching items",
+        }
+    ];
+
+    private async Task RunSlowSearch(string? term)
+    {
+        isSearching = true;
+        try
+        {
+            await Task.Delay(2000);
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private void HandleErrorMessageChange(string? value)
+    {
+        errorMessage = value.HasValue() && value!.Length < 3
+                        ? "The search term needs at least 3 characters."
+                        : null;
+    }
 
     private string? AnnounceSuggestItems(BitSearchBoxAnnouncementArgs args)
     {
