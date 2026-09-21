@@ -5,12 +5,12 @@ namespace Bit.Websites.Platform.Server.Services.Mcp;
 
 /// <summary>
 /// Keeps one worktree per released version of the repository, indexes each with codebase-memory and runs that
-/// version's documentation servers out of it, so /mcp?v=10.6.1 answers with the code and the docs of 10.6.1.
+/// version's documentation servers out of it, so /mcp?v=10.6.1 answers with the code and the docs of 10.6.2.
 /// Runs in the background: startup never waits for it, and a version that cannot be prepared is only left out.
 /// </summary>
 public partial class McpVersionsService : BackgroundService
 {
-    /// <summary>Release tags only: v-10.6.1-pre-02 and the like are not served.</summary>
+    /// <summary>Release tags only: v-1.6.2-pre-01 and the like are not served.</summary>
     [GeneratedRegex(@"^v-(?<version>\d+\.\d+\.\d+)$")]
     private static partial Regex ReleaseTagRegex();
 
