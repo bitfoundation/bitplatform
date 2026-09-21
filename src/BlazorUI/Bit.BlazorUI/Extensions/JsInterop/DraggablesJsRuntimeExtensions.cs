@@ -13,6 +13,11 @@ internal static class DraggablesJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.enable", id, dotnetObj, selector);
     }
 
+    internal static ValueTask BitDraggablesReset(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.reset", id);
+    }
+
     internal static ValueTask BitDraggablesDisable(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Draggables.disable", id);
