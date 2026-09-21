@@ -699,7 +699,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Gå till idag</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>Skapa din multimodala (WASM, Server, Hybrid, förrendering) Blazor-app enkelt på kortaste tid någonsin!</value>
+    <value>Allt du ser fungerar redan, på webben, Android, iOS, Windows och macOS. Gör det till ditt och publicera.</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Hem</value>
@@ -717,13 +717,13 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Läs mer</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>Ett verktygsset för .NET-utvecklare på flera plattformar</value>
+    <value>En fullfjädrad app på alla plattformar, från dag ett</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>Ett set med presterande, lättanpassade och vackra Blazor-komponenter</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>En funktionsrik .NET-projektmall som fungerar sömlöst överallt</value>
+    <value>Startpunkten bakom den här appen: allt är redan på plats, och källkoden är helt din.</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Boilerplate är byggt med ASP.NET Core, Identity, Web API, EF Core och Blazor.</value>
