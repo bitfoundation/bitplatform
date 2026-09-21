@@ -1735,7 +1735,10 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.Title, "a tooltip");
         });
 
+        // The frame carries it so the tooltip also covers the affixes and the icon around the input, and the
+        // input carries it so it reaches a keyboard and an assistive technology.
         Assert.AreEqual("a tooltip", component.Find(".bit-tfl-fgp").GetAttribute("title"));
+        Assert.AreEqual("a tooltip", component.Find(".bit-tfl-inp").GetAttribute("title"));
     }
 
     [TestMethod]
@@ -1744,6 +1747,20 @@ public class BitTextFieldTests : BunitTestContext
         var component = RenderComponent<BitTextField>();
 
         Assert.IsFalse(component.Find(".bit-tfl-fgp").HasAttribute("title"));
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldKeepsATitleWrittenOnTheInputAttributes()
+    {
+        // The explicit attribute of the input wins over the splatted ones, so a field with no Title of its
+        // own must not write a null over the title the consumer splatted onto the input.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new() { { "title", "splatted" } });
+        });
+
+        Assert.AreEqual("splatted", component.Find(".bit-tfl-inp").GetAttribute("title"));
     }
 
     [TestMethod,
@@ -3235,5 +3252,279 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitTextFieldParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitTextField)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitTextFieldParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitTextFieldParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitTextFieldParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitTextFieldShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                Size = BitSize.Large,
+                Underlined = true,
+                FullWidth = true,
+                Accent = BitColor.Success,
+                Background = BitColorKind.Tertiary,
+                Label = "Cascaded label",
+                Placeholder = "Cascaded placeholder",
+                MaxLength = 12,
+                Title = "Cascaded title"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-tfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-und"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-fwd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-btr"));
+
+        Assert.AreEqual("Cascaded label", component.Find(".bit-tfl-lbl").TextContent.Trim());
+
+        var input = component.Find(".bit-tfl-inp");
+        Assert.AreEqual("Cascaded placeholder", input.GetAttribute("placeholder"));
+        Assert.AreEqual("12", input.GetAttribute("maxlength"));
+
+        Assert.AreEqual("Cascaded title", component.Find(".bit-tfl-fgp").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                Size = BitSize.Large,
+                Underlined = true,
+                Placeholder = "Cascaded placeholder",
+                Label = "Cascaded label"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.AddAttribute(1, nameof(BitTextField.Size), BitSize.Small);
+                builder.AddAttribute(2, nameof(BitTextField.Label), "Own label");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-tfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-tfl-lg"));
+        Assert.AreEqual("Own label", component.Find(".bit-tfl-lbl").TextContent.Trim());
+
+        // What the field did not write for itself still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-und"));
+        Assert.AreEqual("Cascaded placeholder", component.Find(".bit-tfl-inp").GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldShouldApplyCascadedParametersOfTheInputBaseClasses()
+    {
+        // ReadOnly, Required and Immediate are declared by the input base classes rather than by the component,
+        // so they are tracked apart from the parameters the generated HasNotBeenSet knows about.
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                ReadOnly = true,
+                Required = true,
+                AutoComplete = "off"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.IsTrue(input.HasAttribute("readonly"));
+        Assert.IsTrue(input.HasAttribute("required"));
+        Assert.AreEqual("off", input.GetAttribute("autocomplete"));
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-rdl"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldOwnInputBaseParametersShouldWinOverTheCascadedOnes()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                ReadOnly = true,
+                Required = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.AddAttribute(1, nameof(BitTextField.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.IsFalse(input.HasAttribute("readonly"));
+        Assert.IsTrue(input.HasAttribute("required"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldCascadedTypeShouldReachTheRenderedInput()
+    {
+        // The rendered element type is resolved from a handler the parameter setter calls, so a Type that
+        // arrives through the cascade rather than through the markup has to run it too.
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                Type = BitInputType.Password,
+                CanRevealPassword = true,
+                InputMode = BitInputMode.Numeric
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("password", input.GetAttribute("type"));
+        Assert.AreEqual("numeric", input.GetAttribute("inputmode"));
+        Assert.IsNotNull(component.Find(".bit-tfl-rpb"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldCascadedInputHtmlAttributesShouldBeMergedRatherThanReplaced()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                InputHtmlAttributes = new() { { "data-cascaded", "yes" }, { "data-shared", "from-cascade" } }
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.AddAttribute(1, nameof(BitTextField.InputHtmlAttributes),
+                    new Dictionary<string, object> { { "data-own", "yes" }, { "data-shared", "from-field" } });
+                builder.CloseComponent();
+            });
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("yes", input.GetAttribute("data-own"));
+        Assert.AreEqual("yes", input.GetAttribute("data-cascaded"));
+        Assert.AreEqual("from-field", input.GetAttribute("data-shared"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldParamsShouldApplyClassesAndStyles()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTextFieldParams
+            {
+                Classes = new() { Root = "cascaded-root", Input = "cascaded-input" },
+                Styles = new() { Root = "color: red;", Label = "color: blue;" },
+                Label = "Styled"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitTextField>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("cascaded-root"));
+        Assert.IsTrue(component.Find(".bit-tfl-inp").ClassList.Contains("cascaded-input"));
+        Assert.IsTrue(component.Find(".bit-tfl").GetAttribute("style")!.Contains("color: red"));
+        Assert.IsTrue(component.Find(".bit-tfl-lbl").GetAttribute("style")!.Contains("color: blue"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldChromeShouldPutTheCaretInTheInput()
+    {
+        // The frame shows a text cursor across its whole width, so the chrome inside it hands the focus to
+        // the input rather than swallowing the press.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "https://");
+            parameters.Add(p => p.Suffix, ".com");
+            parameters.Add(p => p.IconName, "Calendar");
+        });
+
+        foreach (var selector in new[] { ".bit-tfl-pre", ".bit-tfl-suf", ".bit-tfl-ico" })
+        {
+            // A press on an element with no handler behind it is refused by the renderer, so the click
+            // going through at all is what says the chrome answers it.
+            component.Find(selector).Click();
+        }
     }
 }

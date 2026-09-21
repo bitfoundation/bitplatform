@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -43,6 +43,20 @@ public partial class BitTextField : BitTextInputBase<string?>
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the text field component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple text field
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitTextFieldParams.ParamName)]
+    public BitTextFieldParams? CascadingParameters { get; set; }
 
 
 
@@ -445,6 +459,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// For multiline text fields, whether or not the field is resizable.
     /// </summary>
+    /// <remarks>
+    /// Vertically only: the grip of a textarea resizes the element itself, and a width dragged past the frame
+    /// around it leaves the input hanging out of its own field. <see cref="AutoHeight"/> takes the grip away
+    /// again, since the height is then the content's to decide.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Resizable { get; set; }
 
@@ -528,6 +547,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// A more descriptive title of the text field, shown by the browser as its tooltip.
     /// </summary>
+    /// <remarks>
+    /// It is written on the frame, so the tooltip also covers the affixes and the icon around the input, and
+    /// on the input itself, so it reaches a keyboard and an assistive technology - a title on a div is shown
+    /// on hover and nothing else.
+    /// </remarks>
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
@@ -751,8 +775,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTextFieldParams))]
     protected override void OnParametersSet()
     {
+        // The cascade is read first so that everything below - the counter, the element type, the classes -
+        // is computed from the parameters the field ends up with rather than from the ones it was written with.
+        CascadingParameters?.UpdateParameters(this);
+
         // The counter follows what the input reports while the user types, which is what keeps it live even
         // when Immediate is off. It is only re-synced from the Value when the Value itself changes, or when
         // the way the characters are counted does.
@@ -1013,6 +1042,14 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
 
+    // The tooltip is written on the frame so that it also covers the affixes and the icon around the input,
+    // and on the input itself so that it reaches a keyboard: a title on a div is shown on hover and nothing
+    // else, while one on the input is what a browser offers on focus and what an assistive technology falls
+    // back to when the field carries no other description. The value of the consumer is read back here for
+    // the same reason the other attributes below are - the explicit attribute of the input wins over the
+    // splatted ones, so a null written over a splatted title would take that title away.
+    private string? InputTitle => Title ?? GetInputAttribute("title");
+
     // A live region only announces what changes inside it after it is already on the page: one that is added
     // along with its text is regularly missed altogether. The rejection of the value, the busy state and the
     // inline suggestion all have to be announced the moment they show up, so a single empty region is kept in
@@ -1048,12 +1085,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     };
 
 
-    private void SetInputMode()
+    internal void SetInputMode()
     {
         _inputMode = InputMode?.ToString().ToLower();
     }
 
-    private void SetElementType()
+    internal void SetElementType()
     {
         // A revealed value must not survive the reveal being taken away, whether that happens by changing
         // the type of the input or by turning the reveal button off.
@@ -1143,6 +1180,18 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnKeyUp.InvokeAsync(e);
+    }
+
+    // The frame of the field shows a text cursor across its whole width, so a press on the chrome inside it -
+    // the prefix, the suffix, the trailing icon, the busy indicator - puts the caret in the input instead of
+    // doing nothing wherever the input itself does not reach. The press is also kept from moving the focus in
+    // the first place (@onmousedown:preventDefault in the markup), so the input never loses the selection it
+    // already had to an element that cannot hold one.
+    private async Task HandleOnChromeClick()
+    {
+        if (IsEnabled is false) return;
+
+        await InputElement.FocusAsync();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)

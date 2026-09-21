@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -37,7 +37,9 @@
             else if (Prefix.HasValue())
             {
                 <div style="@Styles?.PrefixContainer"
-                     class="bit-tfl-pre @Classes?.PrefixContainer">
+                     class="bit-tfl-pre @Classes?.PrefixContainer"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     <span style="@Styles?.Prefix" class="@Classes?.Prefix">
                         @Prefix
                     </span>
@@ -60,6 +62,7 @@
                               name="@Name"
                               id="@_inputId"
                               wrap="@Wrap"
+                              title="@InputTitle"
                               rows="@(Rows ?? 1)"
                               tabindex="@TabIndex"
                               readonly="@ReadOnly"
@@ -99,6 +102,7 @@
                            name="@Name"
                            id="@_inputId"
                            type="@_inputType"
+                           title="@InputTitle"
                            readonly="@ReadOnly"
                            required="@Required"
                            tabindex="@TabIndex"
@@ -137,7 +141,9 @@
                 @* The indicator is only drawn here; what it means is announced by the live region at the end
                    of the component, which is already on the page by the time the busy state shows up. *@
                 <div style="@Styles?.Loading"
-                     class="bit-tfl-lod @Classes?.Loading">
+                     class="bit-tfl-lod @Classes?.Loading"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     @if (LoadingTemplate is not null)
                     {
                         @LoadingTemplate
@@ -208,7 +214,9 @@
                    class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
                    role="@(IconAriaLabel.HasValue() ? "img" : null)"
                    aria-label="@IconAriaLabel"
-                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
+                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
+                   @onclick="HandleOnChromeClick"
+                   @onmousedown:preventDefault />
             }
 
             @if (SuffixTemplate is not null)
@@ -218,7 +226,9 @@
             else if (Suffix.HasValue())
             {
                 <div style="@Styles?.SuffixContainer"
-                     class="bit-tfl-suf @Classes?.SuffixContainer">
+                     class="bit-tfl-suf @Classes?.SuffixContainer"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     <span style="@Styles?.Suffix"
                           class="@Classes?.Suffix">
                         @Suffix

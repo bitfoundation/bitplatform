@@ -1,4 +1,4 @@
-@page "/components/textfield"
+﻿@page "/components/textfield"
 @page "/components/text-field"
 
 <PageOutlet Url="components/textfield"
@@ -11,6 +11,7 @@
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
           PublicMembers="componentPublicMembers"
           GitHubUrl="Inputs/TextField/BitTextField.razor"
           GitHubDemoUrl="Inputs/TextField/BitTextFieldDemo.razor">
@@ -87,7 +88,8 @@
     <DemoExample Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
         <div>
             <b>Multiline</b> renders a textarea instead of an input. <b>Rows</b> sets its height, <b>Resizable</b> gives
-            back the native resize grip that is hidden by default, and <b>AutoHeight</b> grows the field with its content so no
+            back the native resize grip that is hidden by default - vertically only, since a width dragged past the frame would
+            leave the input hanging out of its own field - and <b>AutoHeight</b> grows the field with its content so no
             scrollbar ever shows up. The two work together: <b>Rows</b> stays the floor of that growth, so a field asking for
             four rows does not collapse to a single line the moment its value is emptied. <b>MaxRows</b> puts a ceiling on it:
             past that many rows the field stops growing and scrolls internally, which is what keeps a long paste from pushing
@@ -186,7 +188,8 @@
             A prefix and a suffix are static pieces of text rendered inside the frame of the field, before and after the input.
             They are <b>not part of the value</b>: a field with the <code>https://</code> prefix still binds only what was
             typed. Because of that, keep a descriptive label on the field, since a screen reader reads the value without the
-            affixes around it.
+            affixes around it. The whole frame shows a text cursor and means it: a press on an affix, on the trailing icon or
+            on the busy indicator puts the caret in the input.
         </div>
         <br />
         <div class="example-box">
@@ -452,7 +455,8 @@
             <b>PermanentGhost</b> reserves the scrollbar gutter of a multiline field so the text does not shift when the
             suggestion makes it overflow. The overlay itself is painted for the eye only and hidden from screen readers, so
             the suggestion is announced through a polite live region instead - without it an inline completion would be a
-            feature only sighted users ever learn about.
+            feature only sighted users ever learn about. What the region says is the suggestion and nothing else, so pair the
+            field with an <b>AriaDescription</b> saying how to take it (&quot;press Tab to accept the suggestion&quot;).
         </div>
         <br />
         <div class="example-box">
@@ -462,6 +466,7 @@
                           Label="Basic Single-line"
                           GhostText="@ghostBasicSuggestion"
                           Placeholder="Type 'app', 'ban', 'car', or 'dog'..."
+                          AriaDescription="A completion may be suggested as you type. Press Tab to accept it."
                           OnGhostTextAccepted="(_ => ghostBasicSuggestion = null)"
                           OnChange="(v => ghostBasicSuggestion = GetGhostSuggestion(v))" />
             <div>Value: [@ghostBasicTextValue]</div>
@@ -680,7 +685,9 @@
             <b>Title</b> renders the html title of the
             field, which the browser shows as a tooltip on hover. The trailing icon is decorative and hidden from screen readers
             by default; <b>IconAriaLabel</b> turns it into an image with a name for the cases where the icon carries a meaning of
-            its own.
+            its own. The placeholder is painted from the theme rather than left to the grey the browser picks, which fails the
+            contrast floor on a dark surface - but it still disappears the moment anything is typed, so it never carries what
+            the <b>Label</b> and the <b>Description</b> should.
         </div>
         <br />
         <div class="example-box">
@@ -799,7 +806,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <div>
+            <b>BitParams</b> carries a <b>BitTextFieldParams</b> down to every text field under it, so a form, a panel or a
+            whole app sets the shared look and the shared input behavior once instead of on every field. What it carries is a
+            default and not an override: a field that writes a parameter for itself keeps its own value, and only what it left
+            unset is filled in from the cascade.
+            <br /><br />
+            Three groups of parameters are deliberately not on the params object, because sharing them between fields would be
+            wrong rather than merely unused: what identifies a field and carries its value (<b>Value</b>, <b>DefaultValue</b>,
+            <b>Name</b>, <b>DisplayName</b>), the event callbacks, and what says something about the value in one field alone
+            (<b>Invalid</b>, <b>ErrorMessage</b>, <b>GhostText</b>, <b>Loading</b>, <b>AutoFocus</b>). <b>InputHtmlAttributes</b>
+            is the one that is merged rather than replaced, since it is a set of attributes: a field adding one of its own keeps
+            the cascaded rest.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitParams Parameters="@textFieldParams">
+                <BitTextField Label="Takes the underline, the clear button and the trimming from the cascade"
+                              DefaultValue="bit BlazorUI" />
+                <br />
+                <BitTextField Label="So does this one, without repeating any of it" DefaultValue="Cascaded too" />
+                <br />
+                <BitTextField Label="Its own Underlined, the cascaded rest" Underlined="false" DefaultValue="Boxed again" />
+            </BitParams>
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Outside the cascade, and back to the defaults" DefaultValue="bit BlazorUI" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Background" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <b>Background</b> picks the fill of the field from the color kinds of the theme. <b>Transparent</b> is the one to
             use when the field sits on a colored surface and should inherit it instead of punching a light rectangle into it.
@@ -816,11 +854,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Border" RazorCode="@example23RazorCode" Id="example23">
         <div>
             <b>Border</b> picks the color of the frame from the same color kinds, independently of the background.
             <b>Transparent</b> keeps the border box - and therefore the layout - while making the line itself invisible, which
-            is the difference between it and <b>NoBorder</b>.
+            is the difference between it and <b>NoBorder</b>. Each kind carries its own hover step, so the frame darkens under
+            the pointer without leaving the kind it was given, and a <b>Transparent</b> one stays invisible. The hover is drawn
+            on pointer devices only, and never over a focused or a rejected frame.
         </div>
         <br />
         <div class="example-box" style="background:var(--bit-clr-bg-dis);padding:1rem">
@@ -834,7 +874,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accent" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Accent" RazorCode="@example24RazorCode" Id="example24">
         <div>
             <b>Accent</b> is the color the field takes on while it has focus: the focus ring, the icon and the affixes all
             follow it. Primary is the default, and the remaining variants are what gives a field a meaning of its own - a
@@ -880,7 +920,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
         <div>
             The <b>Icon</b> parameter takes a <b>BitIconInfo</b> instead of a built-in icon name, which is what lets an icon
             come from FontAwesome, Bootstrap Icons or any other icon font: <b>BitIconInfo.Fa</b> and <b>BitIconInfo.Bi</b> build
@@ -933,7 +973,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
         <div>
             <b>Size</b> scales the whole field at once - its height, its font, its icons and its buttons - so a field stays
             proportional to the controls next to it. Medium is the default; Small is what a dense toolbar or a table row wants,
@@ -953,12 +993,34 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every inner
             part by name - the label, the field group, the input, the buttons, the footer and the counter - which is what makes
             a fully custom look possible without overriding the stylesheet. <b>Focused</b> is applied to the root only while the
             field has focus, so a floating label can be driven entirely from these two parameters.
+            <br /><br />
+            For the look rather than the layout there are the public <b>--bit-TextField-*</b> custom properties listed in the
+            <BitLink Href="#css-variables-section">CSS variables</BitLink> table. They are read off the element and inherited, so the same name set
+            on <code>:root</code> re-skins every field of the app, set on an ancestor re-skins the fields inside it, and set on
+            the <b>Style</b> of one field re-skins that one alone - without a selector, a scoped stylesheet or a
+            <code>::deep</code> anywhere. Anything left unset keeps the value the theme gives it, so a single property can be
+            swapped without restating the rest.
+        </div>
+        <br /><br />
+        <div class="example-box">
+            <div>CSS variables:</div>
+            <br />
+            <BitTextField Label="Pill shaped, on one field"
+                          Placeholder="Enter a text..."
+                          IconName="@BitIconName.Search"
+                          Style="--bit-TextField-radius: 2rem; --bit-TextField-padding: 0 1rem;" />
+            <br />
+            <div class="tfl-brand-scope">
+                <BitTextField Label="A scope of its own" Placeholder="Enter a text..." DefaultValue="Re-skinned by an ancestor" />
+                <br />
+                <BitTextField Label="And every field inside it" Placeholder="Enter a text..." ShowCount MaxLength="20" />
+            </div>
         </div>
         <br /><br />
         <div class="example-box">
@@ -987,7 +1049,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27">
+    <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
         <div>
             Set <b>Dir="BitDir.Rtl"</b> to mirror the field for a right-to-left language. The label, the affixes, the buttons,
             the required asterisk and the underline all follow the direction, since the layout is written with logical

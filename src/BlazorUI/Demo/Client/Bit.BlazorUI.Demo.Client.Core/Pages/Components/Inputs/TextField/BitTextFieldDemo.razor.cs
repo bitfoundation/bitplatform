@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
@@ -424,7 +424,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Resizable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "For multiline text fields, whether or not the field is resizable.",
+            Description = "For multiline text fields, whether or not the field is resizable. Vertically only: a width dragged past the frame around it would leave the input hanging out of its own field. AutoHeight takes the grip away again, since the height is then the content's to decide.",
         },
         new()
         {
@@ -528,7 +528,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A more descriptive title of the text field, shown by the browser as its tooltip.",
+            Description = "A more descriptive title of the text field, shown by the browser as its tooltip. It is written on the frame, so the tooltip also covers the affixes and the icon around the input, and on the input itself, so it reaches a keyboard and an assistive technology.",
         },
         new()
         {
@@ -1136,6 +1136,305 @@ public partial class BitTextFieldDemo : IDisposable
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-TextField-background",
+            DefaultValue = "--bit-clr-bg-pri, or the Background kind",
+            Description = "Fill of the frame at rest. It is also what is painted over the background Chrome forces onto an autofilled field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-hover-background",
+            DefaultValue = "--bit-TextField-background",
+            Description = "Fill of the frame while the pointer is over it. Unchanged from the rest fill by default, since the frame color is what moves on hover.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-border-color",
+            DefaultValue = "--bit-clr-brd-pri, or the Border kind",
+            Description = "Color of the frame, and of the bottom rule of the Underlined variant, at rest.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-hover-border-color",
+            DefaultValue = "The Border kind's hover step (transparent for the Transparent kind)",
+            Description = "Color of the frame while the pointer is over it. Drawn on pointer devices only, and never over the focused or the rejected frame.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-focus-border-color",
+            DefaultValue = "--bit-TextField-border-color",
+            Description = "Color of the frame while the field has focus. Unset by default - the focus ring is the indicator this design system draws - and there for a design system whose fields color their border instead. A rejected value keeps its own frame color regardless.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-invalid-border-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Color of the frame of a rejected value, whether it was rejected by the EditContext, by Invalid or by an ErrorMessage.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-focus-color",
+            DefaultValue = "The Accent role's focus color",
+            Description = "Color of the keyboard focus ring, of the underline of a focused Underlined field, and of the rings of the clear and reveal buttons.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-invalid-focus-color",
+            DefaultValue = "--bit-clr-err-focus",
+            Description = "Focus ring color of a rejected value.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-accent-color",
+            DefaultValue = "The Accent role's main color",
+            Description = "Color the trailing icon, the prefix, the suffix and the busy indicator take while the field has focus, and the resting color of the reveal password glyph.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of the frame and of the bottom rule of the Underlined variant.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the frame, which its focus ring and the clear button follow.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the frame, for a field drawn as a raised surface rather than an outlined one.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-min-height",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Smallest height of the frame, which is what lines a field up with the other controls of its size. It is a floor, not a height: a multiline field still grows with its content.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-transition-duration",
+            DefaultValue = "--bit-mot-duration-short",
+            Description = "How long the frame takes to repaint between the rest, hover and focus colors. It collapses to near zero under prefers-reduced-motion unless ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the typed text, and the fill color handed to an autofilled field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-caret-color",
+            DefaultValue = "--bit-TextField-color",
+            Description = "Color of the text cursor.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-placeholder-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Color of the placeholder. It replaces the grey the browser picks on its own, which is not derived from the theme and drops below the contrast floor on a dark surface.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of the field and of its chrome, for a field holding code or a monospaced identifier.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the typed text, the affixes, and the label when it has no size of its own.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-font-weight",
+            DefaultValue = "--bit-tpg-fw-regular",
+            Description = "Weight of the typed text.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-line-height",
+            DefaultValue = "Per Size",
+            Description = "Leading of the multiline text and of the ghost overlay behind it. It is also what AutoHeight measures the rows against, so changing it changes how tall Rows and MaxRows make the field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-padding",
+            DefaultValue = "0 spacing(1), and spacing(0.75) spacing(1) when Multiline",
+            Description = "Padding of the input inside the frame, which the ghost overlay follows so the suggestion stays lined up with the text.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-resize",
+            DefaultValue = "vertical",
+            Description = "The axes the grip of a Resizable multiline field drags along. Vertical only by default: a width dragged past the frame around it would leave the input hanging out of its own field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-label-font-size",
+            DefaultValue = "--bit-TextField-font-size",
+            Description = "Size of the label.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the label.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-label-letter-spacing",
+            DefaultValue = "--bit-tpg-ctrl-letter-spacing",
+            Description = "Tracking of the label, which follows the global control tracking so a field matches the buttons next to it.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-label-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the label and the frame when the two share a row, which is the Start and End label positions.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk marking a required field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-icon-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the trailing icon at rest. While the field has focus the icon takes the accent color instead.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-icon-size",
+            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
+            Description = "Size of the trailing icon and of the glyph of the reveal password button.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-button-width",
+            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
+            Description = "Width of the clear and reveal password buttons, which is what keeps them above the 24px minimum pointer target of WCAG 2.2.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-button-color",
+            DefaultValue = "--bit-clr-fg-sec for the clear button, the accent color for the reveal one",
+            Description = "Glyph color of the clear and reveal password buttons at rest.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-button-hover-color",
+            DefaultValue = "--bit-clr-fg-pri-hover",
+            Description = "Glyph color of the clear button while it is hovered.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-button-hover-background",
+            DefaultValue = "--bit-clr-bg-pri-hover",
+            Description = "Background of the clear and reveal password buttons while they are hovered.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-affix-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the prefix and the suffix at rest. While the field has focus both take the accent color instead.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-affix-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Fill behind the prefix and the suffix, which is what sets them apart from the input between them.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-affix-padding",
+            DefaultValue = "0 spacing(1.25)",
+            Description = "Padding of the prefix and the suffix.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-description-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the description under the field.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-count-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the character counter while it is within the limit.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-error-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Color of the message under a rejected value, and of a counter that is over its limit.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-footer-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Size of the description, the counter and the error message.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-footer-gap",
+            DefaultValue = "spacing(0.625)",
+            Description = "Room between the frame and what is written under it - the error message, the description and the counter - which is the same air the label leaves above the frame.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-ghost-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Color of the inline ghost suggestion painted behind the input.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text, label, icon, affix and counter color while the field is disabled.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Fill of the frame while the field is disabled.",
+        },
+        new()
+        {
+            Name = "--bit-TextField-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Frame color while the field is disabled.",
+        }
+    ];
+
+
+
+    private readonly BitTextFieldParams[] textFieldParams =
+    [
+        new()
+        {
+            Trim = true,
+            Underlined = true,
+            ShowClearButton = true,
+            Placeholder = "Enter a text...",
+        }
+    ];
+
 
 
     private string? oneWayValue;
@@ -1639,6 +1938,7 @@ private string? throttleValue;";
               Label=""Basic Single-line""
               GhostText=""@ghostBasicSuggestion""
               Placeholder=""Type 'app', 'ban', 'car', or 'dog'...""
+              AriaDescription=""A completion may be suggested as you type. Press Tab to accept it.""
               OnGhostTextAccepted=""(_ => ghostBasicSuggestion = null)""
               OnChange=""(v => ghostBasicSuggestion = GetGhostSuggestion(v))"" />
 <div>Value: [@ghostBasicTextValue]</div>
@@ -2068,18 +2368,43 @@ private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example21RazorCode = @"
+<BitParams Parameters=""@textFieldParams"">
+    <BitTextField Label=""Takes the underline, the clear button and the trimming from the cascade""
+                  DefaultValue=""bit BlazorUI"" />
+
+    <BitTextField Label=""So does this one, without repeating any of it"" DefaultValue=""Cascaded too"" />
+
+    <BitTextField Label=""Its own Underlined, the cascaded rest"" Underlined=""false"" DefaultValue=""Boxed again"" />
+</BitParams>
+
+
+<BitTextField Label=""Outside the cascade, and back to the defaults"" DefaultValue=""bit BlazorUI"" />";
+
+    private readonly string example21CsharpCode = @"
+private readonly BitTextFieldParams[] textFieldParams =
+[
+    new()
+    {
+        Trim = true,
+        Underlined = true,
+        ShowClearButton = true,
+        Placeholder = ""Enter a text..."",
+    }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
@@ -2102,7 +2427,7 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -2124,7 +2449,7 @@ private void HandleInvalidSubmit() { }";
 
 <BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitTextField Label=""Small"" Size=""BitSize.Small"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Medium"" Size=""BitSize.Medium"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Large"" Size=""BitSize.Large"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
@@ -2135,8 +2460,20 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""Large with a clear button"" Size=""BitSize.Large"" ShowClearButton
               DefaultValue=""A large field."" />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <style>
+    .tfl-brand-scope {
+        --bit-TextField-radius: 0.75rem;
+        --bit-TextField-border-width: 2px;
+        --bit-TextField-border-color: #7c4dff;
+        --bit-TextField-hover-border-color: #b388ff;
+        --bit-TextField-focus-color: #7c4dff;
+        --bit-TextField-label-color: #7c4dff;
+        --bit-TextField-placeholder-color: #9e86d4;
+        --bit-TextField-count-color: #7c4dff;
+    }
+
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;
@@ -2225,6 +2562,18 @@ private void HandleInvalidSubmit() { }";
 </style>
 
 
+<BitTextField Label=""Pill shaped, on one field""
+              Placeholder=""Enter a text...""
+              IconName=""@BitIconName.Search""
+              Style=""--bit-TextField-radius: 2rem; --bit-TextField-padding: 0 1rem;"" />
+
+<div class=""tfl-brand-scope"">
+    <BitTextField Label=""A scope of its own"" Placeholder=""Enter a text..."" DefaultValue=""Re-skinned by an ancestor"" />
+
+    <BitTextField Label=""And every field inside it"" Placeholder=""Enter a text..."" ShowCount MaxLength=""20"" />
+</div>
+
+
 <BitTextField Style=""box-shadow: aqua 0 0 1rem; margin-inline: 1rem;"" />
 
 <BitTextField Class=""custom-class"" />
@@ -2244,10 +2593,10 @@ private void HandleInvalidSubmit() { }";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example26CsharpCode = @"
+    private readonly string example27CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example28RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />
