@@ -222,7 +222,7 @@ public partial class BitButtonGroupDemo
         new()
         {
             Name = "Size",
-            Type = "BitSize",
+            Type = "BitSize?",
             DefaultValue = "null",
             Description = "The size of ButtonGroup, Possible values: Small | Medium | Large.",
             LinkType = LinkType.Link,
@@ -619,6 +619,13 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Title to render in the item.",
+               },
+               new()
+               {
+                   Name = "IsToggled",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the item is toggled. This property's value is assigned by the component.",
                }
             ]
         },
@@ -808,6 +815,13 @@ public partial class BitButtonGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Title to render in the option.",
+               },
+               new()
+               {
+                   Name = "IsToggled",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Determines if the option is toggled. This property's value is assigned by the component.",
                }
             ]
         },
@@ -1105,6 +1119,15 @@ public partial class BitButtonGroupDemo
                     Description = "Title field name and selector of the custom input class.",
                     LinkType = LinkType.Link,
                     Href = "#name-selector-pair",
+                },
+                new()
+                {
+                    Name = "IsToggled",
+                    Type = "BitNameSelectorPair<TItem, bool>",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.IsToggled))",
+                    Description = "IsToggled field name and selector of the custom input class. This property's value is assigned by the component.",
+                    LinkType = LinkType.Link,
+                    Href = "#name-selector-pair",
                 }
             ]
         },
@@ -1237,7 +1260,7 @@ public partial class BitButtonGroupDemo
                 new()
                 {
                     Name= "Scroll",
-                    Description="The items are kept on a single line and the group becomes scrollable along the axis it is laid out on - sideways, or down a vertical group - without rendering a scrollbar. It can still be scrolled by swiping, by shift+wheel, and through the arrow keys, which bring the button they focus into view.",
+                    Description="The items are kept on a single line and the group becomes scrollable along the axis it is laid out on - sideways, or down a vertical group - without rendering a scrollbar. It can still be scrolled by swiping, by the wheel - ordinary wheel input down a vertical group, shift+wheel across a horizontal one - and through the arrow keys, which bring the button they focus into view.",
                     Value="2",
                 },
                 new()
@@ -1382,33 +1405,6 @@ public partial class BitButtonGroupDemo
                 {
                     Name= "Large",
                     Description="The large size button.",
-                    Value="2",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "button-type-enum",
-            Name = "BitButtonType",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Button",
-                    Description="The button is a clickable button.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Submit",
-                    Description="The button is a submit button (submits form-data).",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Reset",
-                    Description="The button is a reset button (resets the form-data to its initial values).",
                     Value="2",
                 }
             ]
