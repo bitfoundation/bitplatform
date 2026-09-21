@@ -12,7 +12,9 @@
     var fillStart = _FillStart;
     var fillEnd = _FillEnd;
     var marks = _Marks;
-    var hasMarkLabels = marks.Exists(m => m.Label.HasValue());
+    @* A template labels every mark; without one only the marks that carry a label of their own are labelled,
+       and a slider with none of either draws no row at all. *@
+    var hasMarkLabels = MarkLabelTemplate is not null || marks.Exists(m => m.Label.HasValue());
     var labelId = $"{_Id}-label";
     var inputId = $"{_Id}-input";
     var hasLabel = Label.HasValue() || LabelTemplate is not null;
@@ -111,7 +113,7 @@
            labels stack instead of flanking it - the upper end, since that is the one that belongs on top. *@
         @if (ShowValue && IsRanged)
         {
-            <span style="@(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
+            <span style="@GetValueLabelStyle(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
                   class="bit-sld-vlb @(IsVertical ? Classes?.UpperValueLabel : Classes?.LowerValueLabel)">
                 @(IsVertical ? upperText : lowerText)
             </span>
@@ -352,12 +354,19 @@
                 <div class="bit-sld-mks">
                     @foreach (var mark in marks)
                     {
-                        @if (mark.Label.HasValue())
+                        @if (MarkLabelTemplate is not null || mark.Label.HasValue())
                         {
                             <span aria-hidden="true"
                                   style="@GetPointStyle(GetPercent(mark.Value));@mark.Style;@Styles?.MarkLabel"
                                   class="bit-sld-mlb @mark.Class @Classes?.MarkLabel">
-                                @mark.Label
+                                @if (MarkLabelTemplate is not null)
+                                {
+                                    @MarkLabelTemplate(mark)
+                                }
+                                else
+                                {
+                                    @mark.Label
+                                }
                             </span>
                         }
                     }
@@ -372,14 +381,14 @@
         {
             @if (IsRanged)
             {
-                <span style="@(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
+                <span style="@GetValueLabelStyle(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
                       class="bit-sld-vlb @(IsVertical ? Classes?.LowerValueLabel : Classes?.UpperValueLabel)">
                     @(IsVertical ? lowerText : upperText)
                 </span>
             }
             else
             {
-                <span style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@valueText</span>
+                <span style="@GetValueLabelStyle(Styles?.ValueLabel)" class="bit-sld-vlb @Classes?.ValueLabel">@valueText</span>
             }
         }
     </div>

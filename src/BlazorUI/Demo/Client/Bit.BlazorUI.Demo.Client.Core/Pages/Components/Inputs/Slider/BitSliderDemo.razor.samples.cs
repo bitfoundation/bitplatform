@@ -31,14 +31,28 @@ private BitSliderRangeValue ageBand = new(25, 45);";
     private readonly string example3RazorCode = @"
 <BitSlider Label=""Steps of one"" ShowMarks DefaultValue=""6"" />
 
-<BitSlider Label=""Rating"" ShowMarks ShowMarkLabels Max=""5"" DefaultValue=""3"" />
+<BitSlider Label=""Rating"" ShowMarkLabels Max=""5"" DefaultValue=""3"" />
 
-<BitSlider Label=""Budget"" ShowMarks ShowMarkLabels
+<BitSlider Label=""Budget"" ShowMarkLabels
            Min=""0"" Max=""1000"" Step=""10"" MarkStep=""200""
            ValueFormat=""C0""
            DefaultValue=""400"" />
 
 <BitSlider Label=""Quality"" Max=""4"" Marks=""qualityMarks"" DefaultValue=""2"" ShowValue=""false"" />
+
+<BitSlider Label=""Load"" ShowMarkLabels Marks=""loadMarks""
+           Max=""100"" Step=""5""
+           ValueFormat=""0'%'""
+           DefaultValue=""45"" />
+
+<BitSlider Label=""How was it?"" ShowValue=""false""
+           Max=""4""
+           AriaValueText=""GetMoodText""
+           DefaultValue=""3"">
+    <MarkLabelTemplate Context=""mark"">
+        <BitIcon IconName=""@GetMoodIcon(mark.Value)"" Size=""BitSize.Small"" />
+    </MarkLabelTemplate>
+</BitSlider>
 
 <BitSlider Label=""Storage"" RestrictToMarks
            Min=""0"" Max=""2000"" Step=""1""
@@ -47,14 +61,8 @@ private BitSliderRangeValue ageBand = new(25, 45);";
            @bind-Value=""storageValue"" />
 <BitLabel>Value: @storageValue GB</BitLabel>
 
-<BitSlider Label=""Working hours"" IsRanged ShowMarks ShowMarkLabels
-           Min=""0"" Max=""24"" Step=""1"" MarkStep=""6""
-           ValueFormat=""0'h'""
-           DefaultLowerValue=""9""
-           DefaultUpperValue=""17"" />
-
 <BitSlider Label=""Shift"" IsRanged RestrictToMarks MinRange=""4""
-           ShowMarks ShowMarkLabels
+           ShowMarkLabels
            Min=""0"" Max=""24"" Step=""1"" MarkStep=""4""
            ValueFormat=""0'h'""
            DefaultLowerValue=""8""
@@ -69,6 +77,31 @@ private readonly List<BitSliderMark> qualityMarks =
     new(3, ""High""),
     new(4, ""Lossless"")
 ];
+
+// A mark with no label of its own is labelled with its value while ShowMarkLabels is on. A Style
+// reaches both the tick and the label, so one threshold can be picked out from the rest.
+private readonly List<BitSliderMark> loadMarks =
+[
+    new(0),
+    new(25),
+    new(50),
+    new(75),
+    new(90, ""limit"") { Style = ""background-color: tomato; color: tomato;"" },
+    new(100)
+];
+
+private static readonly string[] moodWords = [""Awful"", ""Poor"", ""Fine"", ""Good"", ""Great""];
+
+private static string GetMoodText(double value) => moodWords[(int)Math.Clamp(value, 0, 4)];
+
+private static string GetMoodIcon(double value) => value switch
+{
+    <= 0 => BitIconName.Sad,
+    <= 1 => BitIconName.EmojiDisappointed,
+    <= 2 => BitIconName.EmojiNeutral,
+    <= 3 => BitIconName.Emoji,
+    _ => BitIconName.Emoji2
+};
 
 private readonly List<BitSliderMark> storageMarks =
 [
@@ -510,7 +543,7 @@ private readonly BitSliderParams[] sliderParams =
 
 <BitSlider DefaultValue=""6"" ShowMarks Label=""Its own accent""
            ThumbLabel=""BitSliderThumbLabel.On""
-           Style=""--bit-Slider-color: rebeccapurple; --bit-Slider-hover-color: mediumpurple; --bit-Slider-focus-color: rebeccapurple; --bit-Slider-rail-color: lavender; --bit-Slider-mark-color: mediumpurple; --bit-Slider-thumb-label-radius: 0.25rem;"" />
+           Style=""--bit-Slider-color: rebeccapurple; --bit-Slider-hover-color: mediumpurple; --bit-Slider-active-color: indigo; --bit-Slider-focus-color: rebeccapurple; --bit-Slider-rail-color: lavender; --bit-Slider-mark-color: mediumpurple; --bit-Slider-thumb-label-radius: 0.25rem;"" />
 
 <BitSlider DefaultValue=""6"" Label=""A lifted thumb""
            Style=""--bit-Slider-thumb-size: 1.5rem; --bit-Slider-thumb-border-width: 0.25rem; --bit-Slider-thumb-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 30%);"" />

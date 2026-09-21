@@ -554,6 +554,72 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldHoldOpenTheWidthOfTheLongestValueLabel()
+    {
+        // A label that grows with the number it carries would resize the track it stands beside, moving the
+        // rail out from under the very thumb being dragged. The two ends of the scale are the longest a
+        // numeric label normally reads, so their width is what the label holds open.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, -5D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Value, 7D);
+        });
+
+        // "100" is three characters, one more than "-5".
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:3ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMeasureTheReservedWidthOnTheFormattedText()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Value, 450D);
+            parameters.Add(p => p.GetValueText, (double v) => $"{v:0} kg");
+        });
+
+        // "1000 kg" - the reservation follows the text that is actually drawn, not the bare number.
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:7ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLetTheCallersValueLabelStyleWinOverTheReservedWidth()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.Styles, new BitSliderClassStyles { ValueLabel = "color: tomato;" });
+        });
+
+        var style = com.Find(".bit-sld-vlb").GetAttribute("style");
+
+        // The reservation is written first, so anything the caller sets lands after it and wins.
+        StringAssert.StartsWith(style, "--bit-sld-vlb-min:");
+        StringAssert.Contains(style, "color: tomato;");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReserveTheSameWidthOnBothEndsOfARange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 700D);
+        });
+
+        var labels = com.FindAll(".bit-sld-vlb");
+
+        Assert.AreEqual(2, labels.Count);
+        StringAssert.Contains(labels[0].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+        StringAssert.Contains(labels[1].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+    }
+
+    [TestMethod]
     public void BitSliderShouldOrderTheValueLabelsByEndWhenRanged()
     {
         var com = RenderComponent<BitSlider>(parameters =>
@@ -1790,6 +1856,156 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.AreEqual(6, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksForAMarkStepAlone()
+    {
+        // An interval to draw the marks at has no other purpose, so setting it is asking for them.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.MarkStep, 25D);
+        });
+
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksForShowMarkLabelsAlone()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+        });
+
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLabelAnUnlabelledExplicitMarkWithItsValue()
+    {
+        var marks = new List<BitSliderMark>
+        {
+            new(0),
+            new(2, "Halfway") { Class = "own", Style = "color: tomato;" },
+            new(4)
+        };
+
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+            parameters.Add(p => p.ValueFormat, "0.0");
+            parameters.Add(p => p.Marks, marks);
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("0.0", labels[0].TextContent.Trim());
+
+        // A mark that brought a label of its own keeps it, together with its class and its style.
+        Assert.AreEqual("Halfway", labels[1].TextContent.Trim());
+        Assert.IsTrue(labels[1].ClassList.Contains("own"));
+        StringAssert.Contains(labels[1].GetAttribute("style"), "color: tomato;");
+
+        Assert.AreEqual("4.0", labels[^1].TextContent.Trim());
+
+        // The list belongs to the caller - it may well be a static one shared by several sliders - so the
+        // labelling happens on copies and never writes back into it.
+        Assert.IsNull(marks[0].Label);
+        Assert.IsNull(marks[^1].Label);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksForAMarkLabelTemplateAlone()
+    {
+        // A template to label the marks with has no other purpose either, so it asks for them too.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3D);
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        Assert.AreEqual(4, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(4, com.FindAll(".bit-sld-mlb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLabelEveryMarkWithTheMarkLabelTemplate()
+    {
+        // A template labels every mark, including the ones carrying no label of their own, and it is handed
+        // the mark rather than the bare value - so it can read both.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(2, "Halfway"), new BitSliderMark(4)]);
+            parameters.Add(p => p.MarkLabelTemplate,
+                           (BitSliderMark m) => $"<span class='custom-mark-label'>{m.Value}:{m.Label}</span>");
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb .custom-mark-label");
+
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("0:", labels[0].TextContent.Trim());
+
+        // It wins over the label the mark brought with it.
+        Assert.AreEqual("2:Halfway", labels[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferTheMarkLabelTemplateOverTheGeneratedNumbers()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 2D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+            parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("#0", labels[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepTheMarkLabelsOutOfTheAccessibilityTree()
+    {
+        // The marks are decoration: the value they stand for is announced by the thumb itself, and a row of
+        // them read out one by one would be noise in front of it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 2D);
+            parameters.Add(p => p.ShowMarkLabels, true);
+        });
+
+        foreach (var mark in com.FindAll(".bit-sld-mrk"))
+        {
+            Assert.AreEqual("true", mark.GetAttribute("aria-hidden"));
+        }
+
+        foreach (var label in com.FindAll(".bit-sld-mlb"))
+        {
+            Assert.AreEqual("true", label.GetAttribute("aria-hidden"));
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLeaveTheExplicitMarksUnlabelledWithoutShowMarkLabels()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(4)]);
+        });
+
+        Assert.AreEqual(2, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mlb").Count);
     }
 
     [TestMethod]

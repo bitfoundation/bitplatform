@@ -13,6 +13,7 @@
 // re-skins that one alone:
 //   --bit-Slider-color                   the accent: the fill and the ring around a thumb    (default: the Color role's main color)
 //   --bit-Slider-hover-color             the accent while the slider is hovered              (default: the role's hover color)
+//   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: the role's active color)
 //   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: the role's focus color, the error focus color while the value is invalid)
 //   --bit-Slider-disabled-color          the fill, the thumb ring, the marks and the origin
 //                                        tick while IsEnabled is false                       (default: $clr-bg-dis)
@@ -237,6 +238,33 @@
             .bit-sld-thb {
                 border-color: var(--bit-sld-clr-hover);
             }
+
+            // The floating label is a chip of the accent, so it moves with it rather than being left as the
+            // one part of the slider still wearing the resting color. A background named outright still wins,
+            // since it is the first term of the same fallback chain.
+            .bit-sld-tlb {
+                background-color: var(--bit-Slider-thumb-label-background, var(--bit-sld-clr-hover));
+            }
+        }
+    }
+}
+
+// A press answers the same way a hover does. Without it the one interaction the slider acknowledges in no
+// way at all is the commonest of them: a thumb dragged by the pointer never matches :focus-visible, so a
+// slider being used with a mouse or a finger would look exactly like one standing idle. It reaches the
+// dragged band as well, which is the same kind of input under the same kind of press.
+.bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
+    .bit-sld-box:has(> .bit-sld-inp:active) {
+        .bit-sld-fil {
+            background-color: var(--bit-sld-clr-active);
+        }
+
+        .bit-sld-thb {
+            border-color: var(--bit-sld-clr-active);
+        }
+
+        .bit-sld-tlb {
+            background-color: var(--bit-Slider-thumb-label-background, var(--bit-sld-clr-active));
         }
     }
 }
@@ -427,14 +455,21 @@
     margin-inline-start: spacing(0.625);
 }
 
+// The labels are set in tabular figures so that every digit is the same width: without them the label -
+// and with it the track beside it - would breathe on every value whose digits happen to be narrower, which
+// is the rail moving out from under the thumb that is being dragged. The room held open for the longest
+// text the scale reads (--bit-sld-vlb-min, counted in characters by the component) covers the rest of it:
+// the label no longer grows as the value crosses from 9 to 10, and a vertical slider stops shifting
+// sideways as it is used.
 .bit-sld-vlb {
     display: block;
     box-shadow: none;
     white-space: nowrap;
     color: var(--bit-Slider-value-color, #{$clr-fg-pri});
     box-sizing: border-box;
-    min-width: #{spacing(4)};
+    min-width: max(#{spacing(4)}, var(--bit-sld-vlb-min, 0px));
     text-align: center;
+    font-variant-numeric: tabular-nums;
     font-size: var(--bit-sld-font-size);
     font-weight: var(--bit-Slider-font-weight, #{$tg-fw-semibold});
     letter-spacing: var(--bit-Slider-letter-spacing, #{$tg-ctrl-letter-spacing});
@@ -476,6 +511,7 @@
 .bit-sld-mlb {
     width: 0;
     top: 0.25em;
+    font-variant-numeric: tabular-nums;
     display: flex;
     position: absolute;
     white-space: nowrap;
@@ -488,6 +524,7 @@
 .bit-sld-tlb {
     opacity: 0;
     width: max-content;
+    font-variant-numeric: tabular-nums;
     display: flex;
     position: absolute;
     white-space: nowrap;
@@ -724,6 +761,7 @@
         --bit-sld-clr: var(--bit-Slider-color, #{role($tokens, main)});
         --bit-sld-clr-on: #{role($tokens, on)};
         --bit-sld-clr-hover: var(--bit-Slider-hover-color, #{role($tokens, hover)});
+        --bit-sld-clr-active: var(--bit-Slider-active-color, #{role($tokens, active)});
         --bit-sld-clr-focus: #{role($tokens, focus)};
     }
 }
