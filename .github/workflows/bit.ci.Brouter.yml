@@ -32,10 +32,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -56,25 +61,25 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Brouter/Bit.Brouter.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Brouter/Bit.Brouter.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
 
     - name: dotnet build
       run: dotnet build src/Brouter/Bit.Brouter.slnx
 
     - name: dotnet test
-      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj --no-build
+      run: cd src/Brouter/Tests/Bit.Brouter.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj --no-build
+      run: cd src/Brouter/Tests/Bit.Brouter.Tests.Mcp && dotnet test --no-build
 
     - name: dotnet test (source generator)
-      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj --no-build
+      run: cd src/Brouter/Tests/Bit.Brouter.Tests.Generators && dotnet test --no-build
 
-    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
+    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0/net11.0)
       # Browser, hybrid and trimmed/AOT publish coverage are the stages below.
-      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Hosting/Bit.Brouter.Tests.Hosting.csproj --no-build
+      run: cd src/Brouter/Tests/Bit.Brouter.Tests.Hosting && dotnet test --no-build
 
   # Stage 2 - every web render mode (static SSR, Server, WebAssembly, Auto, with and without prerendering) in
   # Chromium, on each runtime the library ships for.
@@ -85,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ net10.0, net9.0, net8.0 ]
+        framework: [ net11.0, net10.0, net9.0, net8.0 ]
 
     steps:
     - name: Checkout source code
@@ -93,10 +98,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -119,7 +129,7 @@ jobs:
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -128,8 +138,8 @@ jobs:
         BROUTER_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Brouter &&
-        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        cd src/Brouter/Tests/Bit.Brouter.Tests.E2E &&
+        dotnet test -c Release --no-build
         --filter "FullyQualifiedName!~HybridModeTests"
         --report-trx --report-trx-filename brouter-e2e-web-${{ matrix.framework }}.trx
 
@@ -153,7 +163,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -189,8 +199,8 @@ jobs:
         BROUTER_E2E_CONFIGURATION: Release
         BROUTER_E2E_SKIP_BUILD: 1
       run: >
-        cd src/Brouter &&
-        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        cd src/Brouter/Tests/Bit.Brouter.Tests.E2E &&
+        dotnet test -c Release --no-build
         --filter "FullyQualifiedName~HybridModeTests"
         --report-trx --report-trx-filename brouter-e2e-hybrid.trx
 
@@ -225,7 +235,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -245,14 +255,14 @@ jobs:
       run: dotnet build src/Brouter/Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Brouter/Tests/Bit.Brouter.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
         BROUTER_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/harness-${{ matrix.name }}
       run: >
-        cd src/Brouter &&
-        dotnet test --project Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj -c Release --no-build
+        cd src/Brouter/Tests/Bit.Brouter.Tests.E2E &&
+        dotnet test -c Release --no-build
         --filter "FullyQualifiedName!~HybridModeTests"
         --report-trx --report-trx-filename brouter-publish-${{ matrix.name }}.trx
 

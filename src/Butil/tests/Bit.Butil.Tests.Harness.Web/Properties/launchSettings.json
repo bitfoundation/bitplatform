@@ -21,7 +21,6 @@
       "commandLineArgs": "--ButilHarness:Mode=wasm",
       "launchBrowser": true,
       "launchUrl": "e2e",
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5390",
       "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
     },

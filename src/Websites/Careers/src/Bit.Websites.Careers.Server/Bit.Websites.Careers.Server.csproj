@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
@@ -12,7 +12,6 @@
         <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj" />
 		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
-        <PackageReference Include="Bit.BlazorES2019" Version="10.6.2" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,9 +20,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />

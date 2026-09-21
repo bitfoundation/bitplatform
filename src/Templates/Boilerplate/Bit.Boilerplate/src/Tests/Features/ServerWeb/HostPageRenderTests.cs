@@ -48,7 +48,7 @@ public partial class HostPageRenderTests
     private const string DuckDuckBotUserAgent =
         "Mozilla/5.0 (compatible; DuckDuckBot-Https/1.1; https://duckduckgo.com/duckduckbot)";
 
-    private const string BlazorBootScript = "_framework/bit.blazor.web.es2019.js";
+    private const string BlazorBootScript = "_framework/blazor.web.js";
 
     public TestContext TestContext { get; set; } = default!;
 

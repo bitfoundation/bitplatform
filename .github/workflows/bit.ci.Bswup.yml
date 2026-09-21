@@ -32,10 +32,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -62,17 +67,17 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bswup/Bit.Bswup.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Bswup/Bit.Bswup.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
 
     - name: dotnet build
       run: dotnet build src/Bswup/Bit.Bswup.slnx
 
     - name: dotnet test (MCP server)
-      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
+      run: cd src/Bswup/Tests/Bit.Bswup.Tests.Mcp && dotnet test -f net11.0 --no-build
 
-    - name: dotnet test (hosting - served assets, host documents and BswupProgress over HTTP, net8.0/net9.0/net10.0)
+    - name: dotnet test (hosting - served assets, host documents and BswupProgress over HTTP, net8.0/net9.0/net10.0/net11.0)
       # Real-browser coverage (install, offline, updates, recovery) and the published-output gate are the stages below.
-      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Hosting/Bit.Bswup.Tests.Hosting.csproj --no-build
+      run: cd src/Bswup/Tests/Bit.Bswup.Tests.Hosting && dotnet test --no-build
 
     # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
     # the build step itself (e.g. the minifier re-introducing downleveled syntax).
@@ -92,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        framework: [ net10.0, net9.0, net8.0 ]
+        framework: [ net11.0, net10.0, net9.0, net8.0 ]
 
     steps:
     - name: Checkout source code
@@ -100,10 +105,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -126,7 +136,7 @@ jobs:
       run: dotnet build src/Bswup/Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -135,8 +145,8 @@ jobs:
         BSWUP_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bswup &&
-        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        cd src/Bswup/Tests/Bit.Bswup.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename bswup-e2e-web-${{ matrix.framework }}.trx
 
     - name: Upload test results
@@ -162,7 +172,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -171,25 +181,25 @@ jobs:
       with:
         node-version: 24
 
-    # TargetFrameworks=net10.0 on top of -f: -f alone does not reach project references, which then still
+    # TargetFrameworks=net11.0 on top of -f: -f alone does not reach project references, which then still
     # evaluate (and, without their SDKs installed, fail on) every framework they target.
     - name: Publish the harness host
       run: >
         dotnet publish src/Bswup/Tests/Bit.Bswup.Tests.Harness.Web/Bit.Bswup.Tests.Harness.Web.csproj
-        -c Release -f net10.0 -p:TargetFrameworks=net10.0 -o ${{ github.workspace }}/artifacts/bswup-harness
+        -c Release -f net11.0 -p:TargetFrameworks=net11.0 -o ${{ github.workspace }}/artifacts/bswup-harness
 
     - name: Build the E2E suite
       run: dotnet build src/Bswup/Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
         BSWUP_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/bswup-harness
       run: >
-        cd src/Bswup &&
-        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        cd src/Bswup/Tests/Bit.Bswup.Tests.E2E &&
+        dotnet test -c Release --no-build
         --report-trx --report-trx-filename bswup-publish.trx
 
     - name: Upload test results

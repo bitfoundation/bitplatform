@@ -19,11 +19,7 @@ public class Middlewares
     {
         app.UseForwardedHeaders();
 
-        if (env.IsDevelopment())
-        {
-            app.UseWebAssemblyDebugging();
-        }
-        else
+        if (env.IsDevelopment() is false)
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();
@@ -96,6 +92,9 @@ public class Middlewares
         }
 
         UseSiteMap(app);
+
+        // blazor.web.js is endpoint-served from .NET 9 on, so UseStaticFiles never answers for it.
+        app.MapStaticAssets();
 
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

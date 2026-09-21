@@ -25,10 +25,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -49,7 +54,7 @@ jobs:
 
     - name: InstallNodejsDependencies
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+      run: dotnet build src/Bmotion/Bit.Bmotion.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
 
     - name: dotnet build
       run: dotnet build src/Bmotion/Bit.Bmotion.slnx
@@ -57,10 +62,10 @@ jobs:
     - name: dotnet test (C# engine + component tests)
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bmotion && dotnet test Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj -f net10.0 --no-build
+      run: cd src/Bmotion/Tests/Bit.Bmotion.Tests && dotnet test -f net11.0 --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Bmotion && dotnet test Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj -f net10.0 --no-build
+      run: cd src/Bmotion/Tests/Bit.Bmotion.Tests.Mcp && dotnet test -f net11.0 --no-build
 
     - name: JS tests (bit-bmotion.js drag/scroll math)
       run: |
