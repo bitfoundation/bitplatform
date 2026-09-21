@@ -3,10 +3,10 @@
 
 <PageOutlet Url="components/togglebutton"
             Title="ToggleButton"
-            Description="A button that stays pressed, with its own text, icon and color per state, a loading state, and proper aria-pressed semantics." />
+            Description="A button that stays pressed, with its own text, icon and color per state, a loading state, and the ARIA semantics its AriaMode selects." />
 
 <DemoPage Name="ToggleButton"
-          Description="ToggleButton is a button that stays pressed. Instead of firing an action and forgetting it, it holds an on/off state and shows which one it is currently in. It suits the kind of setting that belongs right next to the thing it affects - muting a microphone, bolding a selection, pinning an item - where a toolbar button reads better than a checkbox or a switch. Its text, icon, color and variant can all differ between the two states, it can stay in a loading state while an async toggle is being saved, and it exposes its state to screen readers through aria-pressed."
+          Description="ToggleButton is a button that stays pressed. Instead of firing an action and forgetting it, it holds an on/off state and shows which one it is currently in. It suits the kind of setting that belongs right next to the thing it affects - muting a microphone, bolding a selection, pinning an item - where a toolbar button reads better than a checkbox or a switch. Its text, icon, color and variant can all differ between the two states, it can stay in a loading state while an async toggle is being saved, and it exposes its state to screen readers through aria-pressed, or through whichever semantics its AriaMode selects - aria-checked on a role of its own, aria-expanded for a disclosure, or none at all."
           Parameters="componentParameters"
           CssVariables="componentCssVariables"
           PublicMembers="componentPublicMembers"
