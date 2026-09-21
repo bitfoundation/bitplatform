@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Extras {
         public static applyRootClasses(cssClasses: string[], cssVariables: any) {
             cssClasses?.forEach(c => document.documentElement.classList.add(c));
@@ -297,8 +297,13 @@ namespace BitBlazorUI {
                 }
             });
 
-            Extras._initScriptsPromises[key] = promise;
-            return promise;
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initScriptsPromises[key] = promise.catch((e: any) => {
+                delete Extras._initScriptsPromises[key];
+                throw e;
+            });
+            return Extras._initScriptsPromises[key];
 
             async function addScript(url: string) {
                 return new Promise((res, rej) => {
@@ -335,8 +340,13 @@ namespace BitBlazorUI {
                 }
             });
 
-            Extras._initStylesheetsPromises[key] = promise;
-            return promise;
+            // A rejected load is not remembered: caching it would make one CDN hiccup
+            // permanent for the life of the document, so a later mount could never retry.
+            Extras._initStylesheetsPromises[key] = promise.catch((e: any) => {
+                delete Extras._initStylesheetsPromises[key];
+                throw e;
+            });
+            return Extras._initStylesheetsPromises[key];
 
             async function addStylesheet(url: string) {
                 return new Promise((res, rej) => {
