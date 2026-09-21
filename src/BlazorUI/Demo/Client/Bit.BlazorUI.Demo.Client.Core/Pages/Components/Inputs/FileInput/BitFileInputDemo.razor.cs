@@ -23,7 +23,7 @@ public partial class BitFileInputDemo
             Name = "AllowDuplicates",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is marked as invalid with the DuplicateErrorMessage instead of being added as a second entry, becoming valid again once the file it duplicates is removed.",
+            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by folder, name, size and last modified time is marked as invalid with the DuplicateErrorMessage instead of being added as a second entry, becoming valid again once the file it duplicates is removed.",
         },
         new()
         {
@@ -114,6 +114,15 @@ public partial class BitFileInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Custom error message displayed when a file is selected again while AllowDuplicates is disabled. Defaults to \"The file is already selected\"."
+        },
+        new()
+        {
+            Name = "FileIconSelector",
+            Type = "Func<BitFileInputInfo, BitIconInfo?>?",
+            DefaultValue = "null",
+            Description = "Custom provider of the glyph shown in the thumbnail's place for a file that has no image preview, which is rendered while ShowPreview is enabled. Receives the file and returns the icon to draw, or null to leave that file without one. When not set, the icon is picked from the file's MIME type and extension.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
         },
         new()
         {
@@ -301,7 +310,7 @@ public partial class BitFileInputDemo
             Name = "ShowPreview",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to display a preview thumbnail for image files in the file list."
+            Description = "Whether to display a preview thumbnail for image files in the file list, and a file type glyph in the same place for every file that has no preview."
         },
         new()
         {
@@ -327,6 +336,13 @@ public partial class BitFileInputDemo
             Description = "Custom CSS styles for different parts of the BitFileInput.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip of the browse button, rendered as its title attribute."
         },
         new()
         {
@@ -375,6 +391,15 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "OpenReadStreamAsync",
+            Type = "(BitFileInputInfo fileInfo, long? maxAllowedSize = null, CancellationToken cancellationToken = default) => Task<Stream>",
+            DefaultValue = "",
+            Description = "Opens a forward-only stream over the content of the specified file, which the runtime reads from the browser in chunks instead of materializing the whole file in memory the way ReadContentAsync does. Unlike ReadContentAsync it also reads a file the validations rejected. maxAllowedSize defaults to the size the browser reported for the file, and the stream must be disposed by the caller.",
+            LinkType = LinkType.Link,
+            Href = "#file-input-info"
+        },
+        new()
+        {
             Name = "RemoveFile",
             Type = "(BitFileInputInfo? fileInfo = null) => Task",
             DefaultValue = "",
@@ -413,6 +438,13 @@ public partial class BitFileInputDemo
                    Type = "string",
                    DefaultValue = "string.Empty",
                    Description = "The name of the file including its extension (e.g., \"document.pdf\")."
+               },
+               new()
+               {
+                   Name = "RelativePath",
+                   Type = "string",
+                   DefaultValue = "string.Empty",
+                   Description = "The path of the file relative to the selected folder, including the folder's own name (e.g., \"photos/2024/summer.jpg\"). It is only reported by the browser for a folder selection or a dropped folder, and is an empty string for a file picked or dropped on its own."
                },
                new()
                {
@@ -546,10 +578,24 @@ public partial class BitFileInputDemo
                },
                new()
                {
+                   Name = "FileIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the file type glyph shown in the thumbnail's place of each file item that has no image preview."
+               },
+               new()
+               {
                    Name = "FileName",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the file name of each file item of the BitFileInput."
+               },
+               new()
+               {
+                   Name = "FilePath",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the folder of each file item that came from a folder selection."
                },
                new()
                {
@@ -668,6 +714,234 @@ public partial class BitFileInputDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-FileInput-max-width",
+            DefaultValue = "21.875rem",
+            Description = "The widest the whole component gets. Set it to 100% for a file input that fills its column.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The role color: the fill of a Fill browse button, the rule and the text of an Outline or Text one.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-text-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Text drawn on top of the role color.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "Role color while the browse button is hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-active-color",
+            DefaultValue = "The Color role's active color",
+            Description = "Role color while the browse button is pressed.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring of the browse button and of each remove button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Foreground when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Background when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Border color when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-label-height",
+            DefaultValue = "--bit-siz-ctrl-sm / -md / -lg per Size",
+            Description = "Smallest height of the browse button, which is what lines it up with the other controls of its size.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-label-padding",
+            DefaultValue = "--bit-siz-ctrl-pad-y-* --bit-siz-ctrl-pad-x-* per Size",
+            Description = "Padding of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-label-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-label-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the browse button, which its focus ring follows.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the hint under the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-description-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of that hint, of the file size and of the folder.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-color",
+            DefaultValue = "--bit-FileInput-text-color",
+            Description = "Rule and text of the browse button while files are dragged over the component.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-background",
+            DefaultValue = "--bit-FileInput-hover-color",
+            Description = "Fill of the browse button while files are dragged over the component.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-border-style",
+            DefaultValue = "dashed",
+            Description = "Border style of the drop indicator. Set it to solid for a drop state that does not change the shape of the button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of a file item, valid or not.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of a file item at rest.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-hover-border-color",
+            DefaultValue = "--bit-FileInput-item-border-color, then --bit-clr-brd-pri-hover",
+            Description = "Border of a hovered file item (pointer devices only). It falls back to the resting border color first, so repainting an item's rule covers its hover without a second variable.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-padding",
+            DefaultValue = "0.5rem",
+            Description = "Padding around the name, the size and the error message of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-gap",
+            DefaultValue = "0.1875rem",
+            Description = "Room between two file items, and above the first one.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the file name.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-file-name-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the file name.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-file-size-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the file size and of the folder beside it.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-error-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Message and border of an invalid file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-invalid-background",
+            DefaultValue = "--bit-FileInput-item-background",
+            Description = "Background of an invalid file item. It matches a valid one by default so a rejected file still reads as a row of the list; a tint of the error color is the other reasonable choice.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-preview-size",
+            DefaultValue = "2rem / 2.5rem / 3.25rem per Size",
+            Description = "Side of the image thumbnail and of the file type glyph standing in for it.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-preview-radius",
+            DefaultValue = "--bit-shp-radius-sm",
+            Description = "Corner radius of the image thumbnail.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-file-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the file type glyph.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-button-size",
+            DefaultValue = "--bit-siz-ctrl-sm / -md / -lg per Size",
+            Description = "Side of the square remove button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-button-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph color of the remove button.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-button-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Background of the remove button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-button-hover-background",
+            DefaultValue = "--bit-clr-bg-sec-hover",
+            Description = "Background of a hovered remove button (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-icon-size",
+            DefaultValue = "--bit-siz-icon-sm / -md / -lg per Size",
+            Description = "Glyph size of the remove button.",
+        },
+    ];
+
+
+
     private BitFileInput bitFileInput = default!;
 
 
@@ -691,6 +965,21 @@ public partial class BitFileInputDemo
         return (file.Width < 300 || file.Height < 300)
             ? $"The image is {file.Width}×{file.Height}, smaller than the required 300×300"
             : null;
+    }
+
+
+    private BitIconInfo? SelectFileIcon(BitFileInputInfo file)
+    {
+        // anything the app knows nothing about is left without a glyph rather than given a generic one.
+        if (file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)) return BitIconInfo.Bit("MyMoviesTV");
+        if (file.ContentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)) return BitIconInfo.Bit("Volume3");
+
+        return Path.GetExtension(file.Name).ToLowerInvariant() switch
+        {
+            ".pdf" => BitIconInfo.Bit("PDF"),
+            ".zip" or ".rar" or ".7z" => BitIconInfo.Bit("ZipFolder"),
+            _ => null
+        };
     }
 
 
@@ -755,16 +1044,47 @@ public partial class BitFileInputDemo
 
 
     private BitFileInput publicApiFileInput = default!;
+    private string? streamHash;
 
-
-    private string? AnnounceAttachments(IReadOnlyList<BitFileInputInfo> files)
+    private async Task HashTheFirstFile()
     {
-        if (files.Count == 0) return "No attachment yet.";
+        streamHash = null;
+
+        var file = publicApiFileInput.Files.FirstOrDefault(f => f.IsValid);
+
+        if (file is null) return;
+
+        // nothing of the file is ever held whole: the stream is read in chunks and folded into the hash.
+        await using var stream = await publicApiFileInput.OpenReadStreamAsync(file);
+
+        streamHash = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(stream));
+    }
+
+
+    private string? AnnounceInFarsi(IReadOnlyList<BitFileInputInfo> files)
+    {
+        if (files.Count == 0) return "فایلی انتخاب نشده است.";
 
         var rejected = files.Count(f => f.IsValid is false);
 
         return rejected == 0
-            ? $"{files.Count} attachment(s) ready to send."
-            : $"{files.Count - rejected} attachment(s) ready to send, {rejected} rejected as too large.";
+            ? $"{files.Count} فایل انتخاب شد."
+            : $"{files.Count} فایل انتخاب شد، {rejected} مورد نامعتبر است.";
     }
+
+
+    private readonly BitFileInputParams[] fileInputParams =
+    [
+        new()
+        {
+            Multiple = true,
+            ShowPreview = true,
+            ShowRemoveButton = true,
+            Label = "Attach a file",
+            MaxSize = 1024 * 1024 * 1,
+            MaxSizeErrorMessage = "Attachments are limited to 1 MB.",
+            Description = "Anything up to 1 MB. Drop it here or browse.",
+            FileSizeFormatter = size => $"{size:N0} bytes"
+        }
+    ];
 }

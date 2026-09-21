@@ -19,6 +19,13 @@ public class BitFileInputInfo
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// The path of the file relative to the selected folder, including the folder's own name
+    /// (e.g., "photos/2024/summer.jpg"). It is only reported by the browser for a folder selection or a
+    /// dropped folder, and is an empty string for a file picked or dropped on its own.
+    /// </summary>
+    [JsonPropertyName("relativePath")] public string RelativePath { get; set; } = string.Empty;
+
+    /// <summary>
     /// The size of the file in bytes.
     /// </summary>
     [JsonPropertyName("size")] public long Size { get; set; }

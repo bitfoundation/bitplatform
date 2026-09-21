@@ -1,9 +1,13 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
-/// with support for validation, drag-and-drop, paste, image previews, and customization.
-/// The selected files' metadata and content can be accessed and processed from C# code.
+/// with support for validation, drag-and-drop, paste, image previews, file type glyphs, folder selection,
+/// and customization.
+/// The selected files' metadata is accessible from C# code, and their content can be pulled on demand either
+/// as a byte array (<see cref="ReadContentAsync"/>) or as a chunked stream (<see cref="OpenReadStreamAsync"/>).
 /// </summary>
 public partial class BitFileInput : BitComponentBase
 {
@@ -15,14 +19,28 @@ public partial class BitFileInput : BitComponentBase
     private string? _announcement;
     private bool _announcementMarker;
     private ElementReference _inputRef;
+    private ElementReference _labelRef;
     private string _buttonId = default!;
     private string _descriptionId = default!;
+    private int? _focusAfterRemoveIndex;
     private List<BitFileInputInfo> _files = [];
     private IJSObjectReference _dropZoneRef = default!;
+    private readonly Dictionary<string, ElementReference> _removeRefs = [];
 
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// The cascading parameters of the BitFileInput, provided by a <see cref="BitParams"/> ancestor.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple file input components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitFileInputParams.ParamName)]
+    public BitFileInputParams? CascadingParameters { get; set; }
 
 
 
@@ -41,7 +59,7 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Whether a file that is already in the file list can be selected again.
-    /// When disabled, a newly selected file matching an existing one by name, size and last modified time
+    /// When disabled, a newly selected file matching an existing one by folder, name, size and last modified time
     /// is marked as invalid with the <see cref="DuplicateErrorMessage"/> instead of being added as a second entry,
     /// becoming valid again once the file it duplicates is removed.
     /// The default value is true.
@@ -125,6 +143,14 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public string? DuplicateErrorMessage { get; set; }
 
     /// <summary>
+    /// Custom provider of the glyph shown in the thumbnail's place for a file that has no image preview,
+    /// which is rendered while <see cref="ShowPreview"/> is enabled. Receives the file and returns the icon
+    /// to draw, or null to leave that file without one. When not set, the icon is picked from the file's
+    /// MIME type and extension.
+    /// </summary>
+    [Parameter] public Func<BitFileInputInfo, BitIconInfo?>? FileIconSelector { get; set; }
+
+    /// <summary>
     /// Custom validation function called for each newly selected file after the built-in validations pass.
     /// Return an error message to mark the file as invalid, or null to accept it.
     /// </summary>
@@ -151,8 +177,11 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Whether to hide the default browse button label from the UI.
+    /// Since the browse button is also what turns into the drag-and-drop indicator, hiding it moves that
+    /// indicator onto the component itself so that dropping files still shows that it is allowed.
     /// </summary>
-    [Parameter] public bool HideLabel { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool HideLabel { get; set; }
 
     /// <summary>
     /// The text displayed on the browse button. Defaults to "Browse".
@@ -290,6 +319,11 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public BitFileInputClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The tooltip of the browse button, rendered as its title attribute.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
     /// The visual variant of the browse button, which decides how much of the <see cref="Color"/> it carries:
     /// a full fill, only an outline, or neither.
     /// </summary>
@@ -334,6 +368,7 @@ public partial class BitFileInput : BitComponentBase
         if (IsDisposed) return;
 
         _files.Clear();
+        _removeRefs.Clear();
 
         await _js.BitFileInputReset(UniqueId, _inputRef);
 
@@ -369,6 +404,33 @@ public partial class BitFileInput : BitComponentBase
     }
 
     /// <summary>
+    /// Opens a stream over the content of the specified file, which the runtime reads from the browser in chunks
+    /// instead of materializing the whole file in memory the way <see cref="ReadContentAsync"/> does.
+    /// This is what makes a file too large to hold as a byte array - a video, an archive, a database dump -
+    /// copyable to disk, hashable or forwardable to a server.
+    /// The stream is forward only and must be disposed by the caller.
+    /// Unlike <see cref="ReadContentAsync"/> it also reads a file the validations rejected, since a file too
+    /// large to hold in memory is exactly the one a stream is wanted for.
+    /// </summary>
+    /// <param name="fileInfo">The file to read, which must still be in the current selection.</param>
+    /// <param name="maxAllowedSize">
+    /// The largest number of bytes the stream is allowed to yield, which guards against a file swapped
+    /// underneath the page after it was picked. It defaults to the size the browser reported for the file.
+    /// </param>
+    /// <param name="cancellationToken">A token that cancels the read.</param>
+    public async Task<Stream> OpenReadStreamAsync(BitFileInputInfo fileInfo,
+                                                  long? maxAllowedSize = null,
+                                                  CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(fileInfo);
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        var streamRef = await _js.BitFileInputOpenReadStream(UniqueId, fileInfo.FileId);
+
+        return await streamRef.OpenReadStreamAsync(maxAllowedSize ?? fileInfo.Size, cancellationToken);
+    }
+
+    /// <summary>
     /// Removes a specific file from the selected files list, or clears all files when no file is specified,
     /// invoking the <see cref="OnRemove"/> callback for each removed file and the <see cref="OnChange"/> callback afterwards.
     /// </summary>
@@ -384,6 +446,7 @@ public partial class BitFileInput : BitComponentBase
             var removedFiles = _files.ToArray();
 
             _files.Clear();
+            _removeRefs.Clear();
 
             await _js.BitFileInputReset(UniqueId, _inputRef);
 
@@ -399,6 +462,8 @@ public partial class BitFileInput : BitComponentBase
         else
         {
             if (_files.Remove(fileInfo) is false) return;
+
+            _removeRefs.Remove(fileInfo.FileId);
 
             await _js.BitFileInputRemoveFile(UniqueId, fileInfo.FileId);
 
@@ -467,6 +532,10 @@ public partial class BitFileInput : BitComponentBase
             BitSize.Large => "bit-fin-lg",
             _ => "bit-fin-md"
         });
+
+        // the browse button is what carries the drop indicator, so a component rendered without one needs
+        // the indicator drawn around itself instead of silently accepting drops with nothing to show for it.
+        ClassBuilder.Register(() => HideLabel ? "bit-fin-nlb" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -483,8 +552,11 @@ public partial class BitFileInput : BitComponentBase
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileInputParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         if (_dropZoneRef is null) return;
@@ -494,7 +566,12 @@ public partial class BitFileInput : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender is false) return;
+        if (firstRender is false)
+        {
+            await FocusAfterRemove();
+
+            return;
+        }
 
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
@@ -516,6 +593,64 @@ public partial class BitFileInput : BitComponentBase
 
 
     private string GetDragClass() => $"bit-fin-drg {Classes?.Dragging}".Trim();
+
+    // the remove button the user pressed leaves the DOM along with its file, and the focus with it - a keyboard
+    // user would be dropped back onto the document and have to tab through the page again to get back here.
+    // So the removal remembers where it happened and the next render hands the focus to the button that took
+    // that place, to the last one when the list got shorter, or back to the browse button when nothing is left.
+    private async Task HandleRemoveClick(BitFileInputInfo file)
+    {
+        var index = _files.IndexOf(file);
+
+        await RemoveFile(file);
+
+        if (IsDisposed) return;
+        if (index < 0) return;
+
+        _focusAfterRemoveIndex = index;
+
+        StateHasChanged();
+    }
+
+    private async Task FocusAfterRemove()
+    {
+        if (_focusAfterRemoveIndex is null) return;
+
+        var index = _focusAfterRemoveIndex.Value;
+
+        _focusAfterRemoveIndex = null;
+
+        try
+        {
+            if (ShowRemoveButton && IsEnabled && HideFileList is false &&
+                FileViewTemplate is null && _files.Count > 0)
+            {
+                var target = _files[Math.Min(index, _files.Count - 1)];
+
+                if (_removeRefs.TryGetValue(target.FileId, out var removeRef))
+                {
+                    await removeRef.FocusAsync();
+
+                    return;
+                }
+            }
+
+            if (LabelTemplate is null && HideLabel is false && IsEnabled)
+            {
+                await _labelRef.FocusAsync();
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element may already be gone, which is not worth failing a render over
+    }
+
+    // the name without its extension, which is the part the file list is allowed to ellipsize.
+    private static string GetFileStem(string name)
+    {
+        var extension = Path.GetExtension(name);
+
+        return extension.HasNoValue() ? name : name[..^extension.Length];
+    }
 
     private async Task UpdateDropZone()
     {
@@ -600,10 +735,59 @@ public partial class BitFileInput : BitComponentBase
     }
 
     // two selections of the same file are indistinguishable by their name, size and last modified time,
-    // which is as close to an identity as the browser exposes for a picked file.
+    // which is as close to an identity as the browser exposes for a picked file. The folder a file came
+    // from joins them, since a folder selection routinely holds the same name twice and two such files
+    // are not the same file.
     private static string GetFileIdentity(BitFileInputInfo file)
     {
-        return $"{file.Name}|{file.Size}|{file.LastModified}";
+        return $"{file.RelativePath}|{file.Name}|{file.Size}|{file.LastModified}";
+    }
+
+    // the directory part of the relative path a folder selection reports, which is what the file item
+    // prints beside the size; an ordinary selection reports no path at all and prints nothing.
+    private static string GetFolder(BitFileInputInfo file)
+    {
+        if (file.RelativePath.HasNoValue()) return string.Empty;
+
+        var index = file.RelativePath.LastIndexOf('/');
+
+        return index <= 0 ? string.Empty : file.RelativePath[..index];
+    }
+
+    private BitIconInfo? GetFileIcon(BitFileInputInfo file)
+    {
+        if (FileIconSelector is not null) return FileIconSelector(file);
+
+        return BitIconInfo.Bit(GetDefaultFileIconName(file));
+    }
+
+    // the MIME type the browser reports is the better signal and is checked first; the extension only has
+    // the last word for the families that share a type (an Office document is a zip to the browser) or for
+    // the files a browser hands over with no type at all.
+    private static string GetDefaultFileIconName(BitFileInputInfo file)
+    {
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+
+        switch (extension)
+        {
+            case ".doc" or ".docx" or ".odt" or ".rtf": return "WordDocument";
+            case ".xls" or ".xlsx" or ".ods" or ".csv": return "ExcelDocument";
+            case ".ppt" or ".pptx" or ".odp": return "PowerPointDocument";
+            case ".zip" or ".rar" or ".7z" or ".tar" or ".gz": return "ZipFolder";
+            case ".pdf": return "PDF";
+        }
+
+        var contentType = file.ContentType;
+
+        if (contentType.HasValue())
+        {
+            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) return "FileImage";
+            if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)) return "Video";
+            if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)) return "MusicInCollection";
+            if (contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)) return "TextDocument";
+        }
+
+        return "Page";
     }
 
     private void ValidateFile(BitFileInputInfo file, string[]? allowedTypes)
@@ -652,6 +836,7 @@ public partial class BitFileInput : BitComponentBase
         if (Append is false)
         {
             _files.Clear();
+            _removeRefs.Clear();
         }
 
         var newFiles = await _js.BitFileInputSetup(UniqueId, _inputRef, Append, ShowPreview, ReadImageDimensions);

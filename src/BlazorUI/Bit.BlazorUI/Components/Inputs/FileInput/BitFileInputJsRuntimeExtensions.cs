@@ -73,6 +73,15 @@ internal static class BitFileInputJsRuntimeExtensions
     }
 
     /// <summary>
+    /// Hands back a stream reference over a specific file of the JavaScript file store, which the runtime reads
+    /// in chunks straight off the disk instead of materializing the whole file on either side.
+    /// </summary>
+    internal static ValueTask<IJSStreamReference> BitFileInputOpenReadStream(this IJSRuntime jsRuntime, string id, string fileId)
+    {
+        return jsRuntime.Invoke<IJSStreamReference>("BitBlazorUI.FileInput.openReadStream", id, fileId);
+    }
+
+    /// <summary>
     /// Reads the content of a specific file from the JavaScript file store and returns it as a byte array.
     /// </summary>
     internal static ValueTask<byte[]> BitFileInputReadContent(this IJSRuntime jsRuntime, string id, string fileId)
