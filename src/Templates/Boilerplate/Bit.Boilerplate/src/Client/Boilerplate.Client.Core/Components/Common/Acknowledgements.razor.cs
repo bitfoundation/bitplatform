@@ -57,7 +57,7 @@ public partial class Acknowledgements
         new("pgvector-dotnet", "https://github.com/pgvector/pgvector-dotnet", "https://github.com/pgvector/pgvector-dotnet", "MIT"),
         //#endif
         //#if (database == "MySql")
-        new("Pomelo (MySQL provider)", "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql", "https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql", "MIT"),
+        new("MySQL Connector/NET (EF Core provider)", "https://dev.mysql.com/doc/connector-net/en", "https://github.com/mysql/mysql-connector-net", "GPL-2.0 WITH Universal-FOSS-exception-1.0"),
         //#endif
         //#if (notification == true)
         new("Firebase Cloud Messaging", "https://firebase.google.com/docs/cloud-messaging", "https://github.com/dotnet/android-libraries", "MIT / Apache-2.0"),
@@ -106,7 +106,8 @@ public partial class Acknowledgements
         new("Mailpit", "https://mailpit.axllent.org", "https://github.com/axllent/mailpit", "MIT"),
         //#endif
         //#if (aspire == true && filesStorage == "S3")
-        new("MinIO", "https://www.min.io", "https://github.com/minio/minio", "AGPL-3.0-only"),
+        new("RustFS", "https://rustfs.com", "https://github.com/rustfs/rustfs", "Apache-2.0"),
+        new("AspireIntegration.Hosting.RustFs", "https://github.com/konnta0/Aspire.Extensions", "https://github.com/konnta0/Aspire.Extensions", "MIT"),
         //#endif
         //#if (aspire == true && cloudflare == true)
         new("Shirubasoft.Aspire.CloudflareTunnels", "https://github.com/Shirubasoft/aspire-extensions", "https://github.com/Shirubasoft/aspire-extensions", "MIT"),

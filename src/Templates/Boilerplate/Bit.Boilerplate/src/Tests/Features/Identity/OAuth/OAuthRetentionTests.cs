@@ -10,6 +10,9 @@ public class OAuthRetentionTests
 {
     public TestContext TestContext { get; set; } = default!;
 
+    /// <summary>Belongs to this test alone, which is what makes deleting by it a safe cleanup.</summary>
+    private const string RetentionTestClientId = "retention-test-client";
+
     [TestMethod]
     public async Task TheRetentionJob_Should_SweepExpiredCodes_AndKeepExchangeableOnes()
     {
@@ -44,9 +47,9 @@ public class OAuthRetentionTests
         }
         finally
         {
-            Guid[] codeIds = [expiredCode.Id, recentlyExpiredCode.Id, liveCode.Id];
-
-            await dbContext.OAuthAuthorizationCodes.Where(code => codeIds.Contains(code.Id)).ExecuteDeleteAsync(CancellationToken.None);
+            // By client id, not the three ids: MySQL's provider can map neither a collection parameter nor an inlined
+            // constant list. The id belongs to this test alone and the three rows are all it creates.
+            await dbContext.OAuthAuthorizationCodes.Where(code => code.ClientId == RetentionTestClientId).ExecuteDeleteAsync(CancellationToken.None);
         }
     }
 
@@ -54,7 +57,7 @@ public class OAuthRetentionTests
     {
         Id = Guid.CreateSequentialGuid(),
         CodeHash = Guid.NewGuid().ToString("N"),
-        ClientId = "retention-test-client",
+        ClientId = RetentionTestClientId,
         RedirectUri = "http://127.0.0.1:1/callback",
         Resource = "http://127.0.0.1/dev-mcp",
         Scope = "dev-mcp",
