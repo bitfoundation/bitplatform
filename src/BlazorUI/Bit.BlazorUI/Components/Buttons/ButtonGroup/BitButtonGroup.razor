@@ -2,15 +2,45 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown" @onkeydown:preventDefault="_preventKeyDownDefault"
+@{
+    // A null written over a splatted attribute removes that attribute rather than leaving it alone, so every
+    // attribute a page can also write by hand is resolved against what it wrote (see
+    // BitComponentBase.GetSplattedAttribute) instead of being overwritten with this component's null. The
+    // hyphenated aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a
+    // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do, and
+    // losing it would take the name off a toolbar that assistive technologies will not announce without one.
+    // The role is resolved the same way, and so the pattern the selection mode implies is only the default: a
+    // page that knows better - a plain group, a region of its own - keeps the role it wrote. The exception is a
+    // role that owns items of a matching role: a menubar owns menuitems, a tablist tabs, a listbox options, and
+    // this component renders buttons - with the toolbar and radiogroup keyboard behavior HandleOnKeyDown
+    // implements, not the behavior those patterns require. So such a role is honoured only where the page writes
+    // the items itself, through ChildContent or Options, and is otherwise dropped for the role the selection mode
+    // implies rather than announcing a pattern nothing underneath it follows.
+    var hasCustomContent = Options is not null || ChildContent is not null;
+    var splattedRole = GetSplattedAttribute("role");
+    if (hasCustomContent is false && splattedRole is "menubar" or "menu" or "tablist" or "listbox" or "tree")
+    {
+        splattedRole = null;
+    }
+    var role = splattedRole ?? _RootRole;
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaOrientation = GetSplattedAttribute("aria-orientation") ?? GetAriaOrientation(role);
+    // A disabled group says so on the group itself as well as on each of its buttons: every role it renders with -
+    // radiogroup, toolbar, group - supports aria-disabled, and it is what tells a screen reader that the whole
+    // toolbar is unavailable rather than leaving it to be inferred from button after button.
+    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"
      id="@_Id"
-     role="@_RootRole"
+     role="@role"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel"
-     aria-orientation="@_AriaOrientation">
-    @if (Options is not null || ChildContent is not null)
+     aria-label="@ariaLabel"
+     aria-disabled="@ariaDisabled"
+     aria-orientation="@ariaOrientation">
+    @if (hasCustomContent)
     {
         <CascadingValue Value="this" IsFixed="true">
             @(Options ?? ChildContent)
