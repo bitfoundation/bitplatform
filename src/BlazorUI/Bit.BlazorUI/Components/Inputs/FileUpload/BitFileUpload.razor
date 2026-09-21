@@ -13,7 +13,8 @@
     }
     else if (_ShowLabelButton)
     {
-        <button @onclick="Browse"
+        <button @ref="_labelRef"
+                @onclick="Browse"
                 type="button"
                 id="@_buttonId"
                 disabled="@(IsEnabled is false)"
@@ -57,7 +58,12 @@
        away with them rather than staying behind as an empty landmark in the accessibility tree. *@
     @if (HideFileView is false && Files.Any(f => f.Status != BitFileUploadStatus.Removed))
     {
-        <div role="list" style="@Styles?.FileList" class="bit-upl-fl @Classes?.FileList">
+        @* the list is named, so that a screen reader user arriving at it is told what it holds rather than
+           only that it is a list of so many items. *@
+        <div role="list"
+             aria-label="@(FileListAriaLabel.HasValue() ? FileListAriaLabel : null)"
+             style="@Styles?.FileList"
+             class="bit-upl-fl @Classes?.FileList">
             @* a removed file is not part of the list anymore, so it is left out of it here rather than
                leaving an empty listitem behind for a custom template that renders nothing for it. *@
             @foreach (var file in Files.Where(f => f.Status != BitFileUploadStatus.Removed))

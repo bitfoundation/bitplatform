@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 
@@ -32,6 +33,16 @@ public partial class BitFileUpload : BitComponentBase
     private string _buttonId = default!;
     private string _descriptionId = default!;
     private ElementReference _inputRef;
+    private ElementReference _labelRef;
+    // The button of which file the focus is to be put on after the next render, with the neighbour to fall
+    // back to. An action taken from inside a file item - removing it, starting, pausing or canceling its
+    // upload - takes the very button that was pressed out of the DOM, and without this the focus would go
+    // with it and land back on the document body, dropping a keyboard user at the top of the page.
+    private bool _pendingFocus;
+    private string? _pendingFocusFileId;
+    private string? _pendingFocusFallbackFileId;
+    private BitFileUploadFocusTarget _pendingFocusTarget;
+    private readonly Dictionary<string, _BitFileUploadItem> _itemRefs = [];
     private List<BitFileInfo> _files = [];
     private List<BitFileInfo> _uploadQueue = [];
     private long _internalChunkSize = MIN_CHUNK_SIZE;
@@ -43,6 +54,19 @@ public partial class BitFileUpload : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
     [Inject] private HttpClient _httpClient { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the file upload component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple file upload components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitFileUploadParams.ParamName)]
+    public BitFileUploadParams? CascadingParameters { get; set; }
 
 
 
@@ -248,6 +272,13 @@ public partial class BitFileUpload : BitComponentBase
     /// Return an error message to reject the file so it will not be uploaded, or null to accept it.
     /// </summary>
     [Parameter] public Func<BitFileInfo, string?>? FileValidator { get; set; }
+
+    /// <summary>
+    /// The accessible name of the file list, so that a screen reader user landing on it is told what the list
+    /// they are in holds instead of only how many items it has. Set it to an empty string to leave the list
+    /// unnamed. The default value is "Selected files".
+    /// </summary>
+    [Parameter] public string FileListAriaLabel { get; set; } = "Selected files";
 
     /// <summary>
     /// Custom Razor template rendering each item of the file list in place of the built-in one, receiving
@@ -1120,8 +1151,11 @@ public partial class BitFileUpload : BitComponentBase
         return base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFileUploadParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         if (_dropZoneRef is null) return;
@@ -1131,7 +1165,11 @@ public partial class BitFileUpload : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender is false) return;
+        if (firstRender is false)
+        {
+            await RestorePendingFocus();
+            return;
+        }
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -1153,6 +1191,61 @@ public partial class BitFileUpload : BitComponentBase
     }
 
 
+
+    // The built-in file items report themselves here so that the focus can be handed to a button of another
+    // item once the button that was pressed is gone. A custom FileViewTemplate registers nothing, which is
+    // exactly right: the focus then falls back to the browse button rather than into markup this component
+    // knows nothing about.
+    internal void RegisterItem(string fileId, _BitFileUploadItem item) => _itemRefs[fileId] = item;
+
+    internal void UnregisterItem(string fileId, _BitFileUploadItem item)
+    {
+        if (_itemRefs.TryGetValue(fileId, out var registered) && ReferenceEquals(registered, item))
+        {
+            _itemRefs.Remove(fileId);
+        }
+    }
+
+    internal async Task HandleItemUpload(BitFileInfo file)
+    {
+        // the upload button is replaced by the pause and cancel pair of a running file.
+        RequestFocus(file, BitFileUploadFocusTarget.Pause);
+
+        await Upload(file);
+    }
+
+    internal async Task HandleItemPause(BitFileInfo file)
+    {
+        // the pause button is replaced by the resume (upload) button of a paused file.
+        RequestFocus(file, BitFileUploadFocusTarget.Upload);
+
+        await PauseUpload(file);
+    }
+
+    internal async Task HandleItemCancel(BitFileInfo file)
+    {
+        // the cancel button is replaced by the retry (upload) button of a canceled file.
+        RequestFocus(file, BitFileUploadFocusTarget.Upload);
+
+        await CancelUpload(file);
+    }
+
+    internal async Task HandleItemRemove(BitFileInfo file)
+    {
+        // the whole item goes away with its remove button, so the focus moves to the item that takes its
+        // place - or to the one before it at the end of the list. A removal that fails leaves the item
+        // where it was, and the focus then stays on the very button that was pressed.
+        var visible = _files.Where(f => f.Status != BitFileUploadStatus.Removed).ToList();
+        var index = visible.IndexOf(file);
+        var neighbor = index < 0 ? null
+                     : index + 1 < visible.Count ? visible[index + 1]
+                     : index > 0 ? visible[index - 1]
+                     : null;
+
+        RequestFocus(file, BitFileUploadFocusTarget.Remove, neighbor);
+
+        await RemoveFile(file);
+    }
 
     internal bool IsFileTypeNotAllowed(BitFileInfo file)
     {
@@ -1186,6 +1279,49 @@ public partial class BitFileUpload : BitComponentBase
         if (IsDisposed) return;
 
         StateHasChanged();
+    }
+
+    private void RequestFocus(BitFileInfo file, BitFileUploadFocusTarget target, BitFileInfo? fallback = null)
+    {
+        _pendingFocus = true;
+        _pendingFocusTarget = target;
+        _pendingFocusFileId = file.FileId;
+        _pendingFocusFallbackFileId = fallback?.FileId;
+    }
+
+    private async Task RestorePendingFocus()
+    {
+        if (_pendingFocus is false) return;
+
+        // a removal on its way to the server keeps its item in place, with a spinner where the button that
+        // was pressed used to be, and renders again when it settles. moving the focus on already would take
+        // it away from an item that is still there - and away from the failure message if the removal fails.
+        if (IsRemoving) return;
+
+        _pendingFocus = false;
+
+        var target = _pendingFocusTarget;
+        var fileId = _pendingFocusFileId;
+        var fallbackId = _pendingFocusFallbackFileId;
+
+        _pendingFocusFileId = null;
+        _pendingFocusFallbackFileId = null;
+
+        try
+        {
+            // the item the action was taken on comes first: it is still there whenever the action left it in
+            // place, and the focus then belongs on the button that took over from the one that was pressed.
+            if (fileId is not null && _itemRefs.TryGetValue(fileId, out var item) && await item.TryFocus(target)) return;
+
+            if (fallbackId is not null && _itemRefs.TryGetValue(fallbackId, out var neighbor) && await neighbor.TryFocus(target)) return;
+
+            if (_ShowLabelButton && IsEnabled)
+            {
+                await _labelRef.FocusAsync();
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // an element taken out of the DOM between the render and this call cannot be focused
     }
 
     private static bool IsCountedInOverallProgress(BitFileInfo file)
@@ -2070,7 +2206,7 @@ public partial class BitFileUpload : BitComponentBase
         return sb.ToString();
     }
 
-    private void OnSetChunkSize()
+    internal void OnSetChunkSize()
     {
         _internalChunkSize = ChunkSize.HasValue is false || AutoChunkSize
                                 ? MIN_CHUNK_SIZE

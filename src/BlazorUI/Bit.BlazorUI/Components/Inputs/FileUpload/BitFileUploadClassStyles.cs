@@ -106,4 +106,16 @@ public class BitFileUploadClassStyles
     /// Custom CSS classes/styles for the remove button icon of each file item of the BitFileUpload.
     /// </summary>
     public string? RemoveIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the spinner that takes the place of the remove button
+    /// of a file item while that file is being removed from the server.
+    /// </summary>
+    public string? RemoveSpinnerContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner that takes the place of the remove button of a file item
+    /// while that file is being removed from the server.
+    /// </summary>
+    public string? RemoveSpinner { get; set; }
 }

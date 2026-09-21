@@ -2665,6 +2665,338 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
     }
 
+    [TestMethod]
+    public void BitFileUploadShouldNameTheFileList()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.AreEqual("Selected files", com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+
+        com.Render(parameters => parameters.Add(p => p.FileListAriaLabel, "Attachments"));
+
+        Assert.AreEqual("Attachments", com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldLeaveTheFileListUnnamedWithAnEmptyLabel()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.FileListAriaLabel, string.Empty);
+        });
+
+        SelectFiles(com);
+
+        Assert.IsNull(com.Find(".bit-upl-fl").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitFileUploadParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitFileUpload)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitFileUploadParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitFileUploadParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Outline,
+                Label = "Cascaded label",
+                UploadUrl = "/cascaded-upload",
+                Description = "Cascaded description"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-otl"));
+        Assert.AreEqual("Cascaded label", com.Find(".bit-upl-lbl").TextContent.Trim());
+        Assert.AreEqual("Cascaded description", com.Find(".bit-upl-dsc").TextContent.Trim());
+        Assert.AreEqual("/cascaded-upload", com.FindComponent<BitFileUpload>().Instance.UploadUrl);
+    }
+
+    [TestMethod]
+    public void BitFileUploadDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Label = "Cascaded label",
+                UploadUrl = "/cascaded-upload"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitFileUpload.Label), "Own label");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-err"));
+        Assert.AreEqual("Own label", com.Find(".bit-upl-lbl").TextContent.Trim());
+
+        // what the component left unset still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-lg"));
+        Assert.AreEqual("/cascaded-upload", com.FindComponent<BitFileUpload>().Instance.UploadUrl);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Accept = ".pdf",
+            AllowDrop = false,
+            AllowPaste = false,
+            AllowDuplicates = false,
+            AllowedExtensions = [".pdf", ".docx"],
+            Append = true,
+            AutoChunkSize = true,
+            AutoReset = true,
+            AutoRetries = 3,
+            AutoRetryDelay = TimeSpan.FromSeconds(2),
+            AutoUpload = true,
+            Capture = "environment",
+            ChunkedUpload = true,
+            Color = BitColor.Warning,
+            ConcurrentUploads = 2,
+            Description = "Test description",
+            Directory = true,
+            FileListAriaLabel = "Test list",
+            HideFileView = true,
+            HideLabel = true,
+            Label = "Test label",
+            MaxCount = 5,
+            MaxSize = 1024,
+            MaxTotalSize = 4096,
+            MinSize = 16,
+            Multiple = true,
+            ReadImageDimensions = true,
+            RemoveUrl = "/remove",
+            ShowPreview = true,
+            ShowRemoveButton = true,
+            Size = BitSize.Small,
+            UploadUrl = "/upload",
+            UploadTimeout = TimeSpan.FromMinutes(1),
+            Variant = BitVariant.Text,
+            WithCredentials = true,
+            AriaLabel = "Test aria label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = com.FindComponent<BitFileUpload>().Instance;
+
+        Assert.AreEqual(".pdf", instance.Accept);
+        Assert.IsFalse(instance.AllowDrop);
+        Assert.IsFalse(instance.AllowPaste);
+        Assert.IsFalse(instance.AllowDuplicates);
+        Assert.AreEqual(2, instance.AllowedExtensions.Count);
+        Assert.IsTrue(instance.Append);
+        Assert.IsTrue(instance.AutoChunkSize);
+        Assert.IsTrue(instance.AutoReset);
+        Assert.AreEqual(3, instance.AutoRetries);
+        Assert.AreEqual(TimeSpan.FromSeconds(2), instance.AutoRetryDelay);
+        Assert.IsTrue(instance.AutoUpload);
+        Assert.AreEqual("environment", instance.Capture);
+        Assert.IsTrue(instance.ChunkedUpload);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(2, instance.ConcurrentUploads);
+        Assert.AreEqual("Test description", instance.Description);
+        Assert.IsTrue(instance.Directory);
+        Assert.AreEqual("Test list", instance.FileListAriaLabel);
+        Assert.IsTrue(instance.HideFileView);
+        Assert.IsTrue(instance.HideLabel);
+        Assert.AreEqual("Test label", instance.Label);
+        Assert.AreEqual(5, instance.MaxCount);
+        Assert.AreEqual(1024, instance.MaxSize);
+        Assert.AreEqual(4096, instance.MaxTotalSize);
+        Assert.AreEqual(16, instance.MinSize);
+        Assert.IsTrue(instance.Multiple);
+        Assert.IsTrue(instance.ReadImageDimensions);
+        Assert.AreEqual("/remove", instance.RemoveUrl);
+        Assert.IsTrue(instance.ShowPreview);
+        Assert.IsTrue(instance.ShowRemoveButton);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("/upload", instance.UploadUrl);
+        Assert.AreEqual(TimeSpan.FromMinutes(1), instance.UploadTimeout);
+        Assert.AreEqual(BitVariant.Text, instance.Variant);
+        Assert.IsTrue(instance.WithCredentials);
+        Assert.AreEqual("Test aria label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Label = "Params label"
+        };
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Small);
+            parameters.Add(p => p.Label, "Existing label");
+        });
+
+        var instance = com.Instance;
+
+        @params.UpdateParameters(instance);
+
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing label", instance.Label);
+    }
+
+    [TestMethod]
+    public void BitFileUploadParamsShouldApplyClassesAndStyles()
+    {
+        var @params = new BitFileUploadParams
+        {
+            Classes = new BitFileUploadClassStyles { Root = "custom-root", Label = "custom-label" },
+            Styles = new BitFileUploadClassStyles { Root = "color: red;", Label = "color: blue;" }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+        var label = com.Find(".bit-upl-lbl");
+
+        Assert.IsTrue(root.ClassList.Contains("custom-root"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.IsTrue(label.GetAttribute("style")!.Contains("color: blue"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadParamsShouldDeriveTheWorkingChunkSize()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 4 * 1024 * 1024, FileId = "1", Index = 0 }]);
+
+        var @params = new BitFileUploadParams
+        {
+            ChunkedUpload = true,
+            ChunkSize = 2L * 1024 * 1024
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var upload = com.FindComponent<BitFileUpload>();
+
+        upload.Find(".bit-upl-fi").Change(string.Empty);
+
+        await upload.InvokeAsync(() => upload.Instance.Upload());
+        await upload.InvokeAsync(() => upload.Instance.__HandleChunkUpload(0, 200, string.Empty));
+
+        // a ChunkSize that arrives through the cascade still drives the size of the chunks, which
+        // the setter of the parameter - bypassed by the cascade - is what normally derives.
+        Assert.AreEqual(2 * 1024 * 1024, upload.Instance.Files[0].TotalUploadedSize);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldMoveTheFocusOnWhenAnItemButtonRemovesItsFile()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "b.txt", Size = 100, FileId = "2", Index = 1 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.ShowRemoveButton, true);
+        });
+
+        SelectFiles(com);
+
+        var removeButtons = com.FindAll(".bit-upl-usi[aria-label^='Remove']");
+
+        Assert.HasCount(2, removeButtons);
+
+        await com.Find(".bit-upl-itm .bit-upl-usi[aria-label='Remove a.txt']").ClickAsync(new());
+
+        // the removed file leaves the list, and the focus is handed to the item that takes its place
+        // rather than being dropped on the document body with the button that was pressed.
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.HasCount(1, com.FindAll(".bit-upl-itm"));
+        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
     private void SetupFiles(BitFileInfo[] files)
     {
         Context.JSInterop.Setup<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", _ => true).SetResult(files);

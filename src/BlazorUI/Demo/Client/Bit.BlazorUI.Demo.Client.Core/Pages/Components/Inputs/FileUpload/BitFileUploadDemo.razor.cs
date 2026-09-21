@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileUpload;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileUpload;
 
 public partial class BitFileUploadDemo
 {
@@ -209,6 +209,13 @@ public partial class BitFileUploadDemo
             Type = "string",
             DefaultValue = "File upload failed",
             Description = "The message shown for failed file uploads."
+        },
+        new()
+        {
+            Name = "FileListAriaLabel",
+            Type = "string",
+            DefaultValue = "\"Selected files\"",
+            Description = "The accessible name of the file list, so that a screen reader user landing on it is told what the list they are in holds instead of only how many items it has. Set it to an empty string to leave the list unnamed.",
         },
         new()
         {
@@ -1022,6 +1029,20 @@ public partial class BitFileUploadDemo
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the remove button icon of each file item of the BitFileUpload."
                },
+               new()
+               {
+                   Name = "RemoveSpinnerContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the spinner that takes the place of the remove button of a file item while that file is being removed from the server."
+               },
+               new()
+               {
+                   Name = "RemoveSpinner",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the spinner that takes the place of the remove button of a file item while that file is being removed from the server."
+               },
             ]
         }
     ];
@@ -1266,6 +1287,282 @@ public partial class BitFileUploadDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-FileUpload-max-width",
+            DefaultValue = "21.875rem",
+            Description = "The widest the whole control grows.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-gap",
+            DefaultValue = "0.25rem",
+            Description = "Room between the browse button, the description and the file list, and between the file items themselves.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-color",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Browse button text at rest: the role's on-color in the Fill variant, the role's main color in Outline and Text.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-background",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Browse button fill at rest: the role's main color in the Fill variant, transparent in Outline and Text.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-border-color",
+            DefaultValue = "Per Variant, from the Color role",
+            Description = "Browse button rule at rest. In the Fill variant it follows the background unless it is set on its own.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-hover-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Browse button text while hovered or pressed (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Browse button fill on hover, and its rule too in the Fill variant.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-active-background",
+            DefaultValue = "The Color role's active color",
+            Description = "Browse button fill while pressed, and its rule too in the Fill variant.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-min-height",
+            DefaultValue = "The Size class's control height (--bit-siz-ctrl-sm/md/lg)",
+            Description = "Height floor of the browse button, which is what lines it up with the other controls of its size.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-padding",
+            DefaultValue = "The Size class's control padding",
+            Description = "Padding of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-light",
+            Description = "Text weight of the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the keyboard focus ring, on the browse button and on every file action button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the hint under the browse button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-description-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the hint under the browse button and of each file item's size line.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-background",
+            DefaultValue = "transparent",
+            Description = "Surface of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Rule around a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-hover-border-color",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Rule around a hovered file item (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-padding",
+            DefaultValue = "0.5rem 1rem",
+            Description = "Padding around the name, size and progress of a file item.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-item-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of a file item's name.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-success-color",
+            DefaultValue = "--bit-clr-suc",
+            Description = "Status line of a completed file.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-error-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Status line of a failed or rejected file.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-paused-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Status line of a paused or canceled file.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preview-size",
+            DefaultValue = "Per Size (2rem / 2.5rem / 3.25rem)",
+            Description = "Side of the image preview thumbnail.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preview-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the image preview thumbnail.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-progress-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Filled part of a file's progress bar.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-progress-track-color",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Unfilled part of a file's progress bar.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-progress-height",
+            DefaultValue = "--bit-siz-track-sm",
+            Description = "Thickness of a file's progress bar.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-progress-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of a file's progress bar and its track.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-action-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph of the upload, pause, cancel and remove buttons at rest.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-action-hover-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The same glyph while hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-action-hover-background",
+            DefaultValue = "The Color role's main color at 10% opacity",
+            Description = "Tint behind a hovered action button.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-action-size",
+            DefaultValue = "The Size class's control height (--bit-siz-ctrl-sm/md/lg)",
+            Description = "Width of an action button, which is also the width of the removal spinner's slot.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-action-icon-size",
+            DefaultValue = "The Size class's icon size (--bit-siz-icon-sm/md/lg)",
+            Description = "Size of an action button's glyph, and of the removal spinner.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-spinner-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Arc of the spinner shown while a file is being removed from the server.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-drop-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Browse button text while files are dragged over the component.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-drop-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Browse button fill in the same state.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-drop-border-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Browse button rule in the same state.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-drop-border-style",
+            DefaultValue = "dashed",
+            Description = "Style of that rule, which is what makes the drop indicator read as a drop target.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text color when IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Fill of a disabled browse button in the Fill variant.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Rule of a disabled browse button in the Fill and Outline variants.",
+        }
+    ];
+
+
+
     [Inject] private IConfiguration _configuration { get; set; } = default!;
 
     private bool allowDrop = true;
@@ -1279,8 +1576,31 @@ public partial class BitFileUploadDemo
     private string NonExistingUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/MissingUploadEndpoint";
     private string RemoveUrl => $"{_configuration.GetApiServerAddress()}FileUpload/RemoveFile";
 
+    // the endpoints come from the injected configuration, so the cascaded parameters are built once the
+    // injection has happened rather than in a field initializer - and once, so that the cascading value
+    // keeps its identity across renders instead of re-rendering every uploader under it.
+    private BitFileUploadParams[]? fileUploadParams;
+
+    protected override void OnInitialized()
+    {
+        fileUploadParams =
+        [
+            new()
+            {
+                UploadUrl = UploadUrl,
+                RemoveUrl = RemoveUrl,
+                Multiple = true,
+                ShowRemoveButton = true,
+                MaxSize = 1024 * 1024 * 5,
+                Variant = BitVariant.Outline,
+                Description = "Up to 5 MB per file.",
+            }
+        ];
+
+        base.OnInitialized();
+    }
+
     private BitFileUpload bitFileUpload = default!;
-    private BitFileUpload? overallFileUpload;
     private BitFileUpload? speedFileUpload;
     private BitFileUpload? hiddenViewFileUpload;
 
@@ -1409,47 +1729,45 @@ private string UploadUrl = ""/Upload"";";
 private string UploadUrl = ""/Upload"";";
 
     private readonly string example4RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple />";
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
+               ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
     private readonly string example4CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
-
-    private readonly string example5RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" AutoUpload />";
-    private readonly string example5CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
-
-    private readonly string example6RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" AutoReset />";
-    private readonly string example6CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
-
-    private readonly string example7RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Append />";
-    private readonly string example7CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
-
-    private readonly string example8RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple Append
-               AllowDuplicates=""false"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
-    private readonly string example8CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
 
-    private readonly string example9RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MaxSize=""1024 * 1024 * 1"" />
+    private readonly string example5RazorCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple AutoUpload />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple Append
+               AllowDuplicates=""false"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" AutoReset />";
+    private readonly string example5CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";";
+
+    private readonly string example6RazorCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MaxSize=""1024 * 1024 * 1""
+               MaxSizeErrorMessage=""The file is too big! Please select a file smaller than 1 MB.""
+               Description=""Up to 1 MB per file."" />
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MinSize=""1024"" />
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple Append
-               MaxTotalSize=""1024 * 1024 * 2"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+               MaxCount=""3"" MaxTotalSize=""1024 * 1024 * 2"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               Description=""Up to 3 files, 2 MB in total."" />
 
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" MaxSize=""1024 * 1024 * 1""
-               MaxSizeErrorMessage=""The file is too big! Please select a file smaller than 1 MB."" />";
-    private readonly string example9CsharpCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple FileValidator=""@ValidateEmptyFile"" />";
+    private readonly string example6CsharpCode = @"
 private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
+private string RemoveUrl = ""/Remove"";
 
-    private readonly string example10RazorCode = @"
+private static string? ValidateEmptyFile(BitFileInfo file)
+{
+    return file.Size == 0 ? ""Empty files cannot be uploaded."" : null;
+}";
+
+    private readonly string example7RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Accept="".png,.jpg"" />
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
@@ -1457,50 +1775,22 @@ private string RemoveUrl = ""/Remove"";";
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
                AllowedExtensions=""@(new List<string> { ""image/*"", ""application/pdf"" })"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
 
-    private readonly string example11RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple Append MaxCount=""3""
-               ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
-    private readonly string example11CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
-
-    private readonly string example12RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple FileValidator=""@ValidateEmptyFile"" />";
-    private readonly string example12CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-
-private static string? ValidateEmptyFile(BitFileInfo file)
-{
-    return file.Size == 0 ? ""Empty files cannot be uploaded."" : null;
-}";
-
-    private readonly string example13RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop a folder"" UploadUrl=""@UploadUrl"" Directory Multiple
-               ConcurrentUploads=""3"" MaxCount=""20"" />";
-    private readonly string example13CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
+               MaxCount=""20"" Description=""Up to 20 files out of the chosen folder."" />
 
-    private readonly string example14RazorCode = @"
 <BitFileUpload Label=""Take a photo"" UploadUrl=""@UploadUrl"" Accept=""image/*"" Capture=""environment"" AutoUpload
                Description=""Opens the rear camera on a mobile device."" />
 
 <BitFileUpload Label=""Record a video"" UploadUrl=""@UploadUrl"" Accept=""video/*"" Capture=""user""
                Description=""Opens the front camera on a mobile device."" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
 
-    private readonly string example15RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop images"" UploadUrl=""@UploadUrl"" Multiple ShowPreview
-               Accept=""image/*"" ShowRemoveButton RemoveUrl=""@RemoveUrl""
-               Description=""The selected images are previewed right in the list."" />";
-    private readonly string example15CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
-
-    private readonly string example16RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .dimensions-item {
         display: flex;
@@ -1513,6 +1803,7 @@ private string RemoveUrl = ""/Remove"";";
 
 <BitFileUpload Label=""Select or drag and drop images"" UploadUrl=""@UploadUrl"" Multiple ShowPreview
                Accept=""image/*"" ReadImageDimensions FileValidator=""@ValidateImageDimensions""
+               ShowRemoveButton RemoveUrl=""@RemoveUrl""
                Description=""Images between 200x200 and 4000x4000 pixels."" />
 
 <BitFileUpload Label=""Select or drag and drop images"" UploadUrl=""@UploadUrl"" Multiple
@@ -1524,8 +1815,9 @@ private string RemoveUrl = ""/Remove"";";
         </div>
     </FileViewTemplate>
 </BitFileUpload>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";
 
 private static string? ValidateImageDimensions(BitFileInfo file)
 {
@@ -1540,14 +1832,7 @@ private static string? ValidateImageDimensions(BitFileInfo file)
     return null;
 }";
 
-    private readonly string example17RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
-               ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
-    private readonly string example17CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
-
-    private readonly string example18RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple MaxSize=""1024 * 1024 * 1""
                OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All files are uploaded"")""
                OnInvalid=""@(files => onInvalidText = $""{files.Length} file(s) rejected: {string.Join("", "", files.Select(f => f.Name))}"")""
@@ -1555,12 +1840,19 @@ private string RemoveUrl = ""/Remove"";";
 
 <div>@onAllUploadsCompleteText</div>
 <div>@onInvalidText</div>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string onInvalidText = string.Empty;
 private string onAllUploadsCompleteText = ""No File"";";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example11RazorCode = @"
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload AutoChunkSize />";
+    private readonly string example11CsharpCode = @"
+private string ChunkedUploadUrl = ""/ChunkedUpload"";";
+
+    private readonly string example12RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl""
                UploadRequestQueryStrings=""@(new Dictionary<string, string>{ {""qs1"", ""qsValue1"" } })""
                UploadRequestHttpHeaders=""@(new Dictionary<string, string>{ {""header1"", ""value1"" } })""
@@ -1580,7 +1872,7 @@ private string onAllUploadsCompleteText = ""No File"";";
                ShowRemoveButton
                WithCredentials
                UploadTimeout=""TimeSpan.FromMinutes(10)"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
 private int tokenRequestCount;
@@ -1594,14 +1886,7 @@ private Task<Dictionary<string, string>> GetFreshAuthHeaders()
     return Task.FromResult(new Dictionary<string, string> { { ""Authorization"", $""Bearer token-{tokenRequestCount}"" } });
 }";
 
-    private readonly string example20RazorCode = @"
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload />
-
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" ChunkedUpload AutoChunkSize />";
-    private readonly string example20CsharpCode = @"
-private string ChunkedUploadUrl = ""/ChunkedUpload"";";
-
-    private readonly string example21RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
                AutoRetries=""2"" AutoRetryDelay=""TimeSpan.FromSeconds(1)"" />
 
@@ -1613,30 +1898,23 @@ private string ChunkedUploadUrl = ""/ChunkedUpload"";";
                AutoRetries=""2"" AutoRetryDelay=""TimeSpan.FromSeconds(1)""
                ShouldAutoRetry=""@((file, status) => true)""
                RetryButtonTitle=""Try again"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string NonExistingUploadUrl = ""/MissingUploadEndpoint"";";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple ConcurrentUploads=""2"" />
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple AutoUpload
                ConcurrentUploads=""1"" QueuedUploadMessage=""In the queue…"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
 
-    private readonly string example23RazorCode = @"
-<BitFileUpload @ref=""overallFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
-               OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
-
-<BitProgress Percent=""@(overallFileUpload?.OverallUploadProgress ?? 0)"" ShowPercentNumber />";
-    private readonly string example23CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private BitFileUpload? overallFileUpload;";
-
-    private readonly string example24RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitFileUpload @ref=""speedFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
                OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
+
+<BitProgress Percent=""@(speedFileUpload?.OverallUploadProgress ?? 0)"" ShowPercentNumber />
 
 @foreach (var file in SpeedFiles)
 {
@@ -1653,20 +1931,18 @@ private BitFileUpload? overallFileUpload;";
         (@(speedFileUpload?.OverallRemainingTime is null ? ""-"" : $""{speedFileUpload.OverallRemainingTime:mm\\:ss} left""))
     </b>
 </div>";
-    private readonly string example24CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private BitFileUpload? speedFileUpload;
 
 private IEnumerable<BitFileInfo> SpeedFiles =>
     speedFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
-               FileSizeFormatter=""@(size => $""{size:N0} bytes"")"" />";
-    private readonly string example25CsharpCode = @"
-private string UploadUrl = ""/Upload"";";
+               FileSizeFormatter=""@(size => $""{size:N0} bytes"")"" />
 
-    private readonly string example26RazorCode = @"
+
 <BitFileUpload @ref=""hiddenViewFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
                Multiple AutoUpload HideFileView
                OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
@@ -1685,7 +1961,7 @@ else
 {
     <div>No file selected yet.</div>
 }";
-    private readonly string example26CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private BitFileUpload? hiddenViewFileUpload;
 
@@ -1694,7 +1970,7 @@ private BitFileUpload? hiddenViewFileUpload;
 private IEnumerable<BitFileInfo> HiddenViewFiles =>
     hiddenViewFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .browse-file {
         border: 1px solid #D2D2D7;
@@ -1933,7 +2209,7 @@ private IEnumerable<BitFileInfo> HiddenViewFiles =>
 </BitFileUpload>
 
 <BitButton OnClick=""HandleUploadOnClick"">Upload</BitButton>";
-    private readonly string example27CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
 
@@ -1984,7 +2260,7 @@ private string GetUploadMessageStr(BitFileInfo file) => file.Status switch
     _ => string.Empty,
 };";
 
-    private readonly string example28RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitFileUpload @ref=""bitFileUploadWithBrowseFile"" HideLabel Multiple
                UploadUrl=""@UploadUrl""
                RemoveUrl=""@RemoveUrl"" />
@@ -1994,7 +2270,7 @@ private string GetUploadMessageStr(BitFileInfo file) => file.Status switch
 <BitButton OnClick=""() => bitFileUploadWithBrowseFile.PauseUpload()"">Pause all</BitButton>
 <BitButton OnClick=""() => bitFileUploadWithBrowseFile.CancelUpload()"">Cancel all</BitButton>
 <BitButton OnClick=""() => bitFileUploadWithBrowseFile.Reset()"">Reset</BitButton>";
-    private readonly string example28CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";
 private BitFileUpload bitFileUploadWithBrowseFile = default!;
@@ -2004,14 +2280,17 @@ private async Task HandleBrowseFileOnClick()
     await bitFileUploadWithBrowseFile.Browse();
 }";
 
-    private readonly string example29RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
                AriaLabel=""Select a document to upload"" />
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
+               ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               FileListAriaLabel=""Documents to upload""
                AnnouncementProvider=""@AnnounceUploads"" />";
-    private readonly string example29CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";
 
 private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
 {
@@ -2020,7 +2299,7 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
     return $""{files.Count} attachment(s), {completed} uploaded so far."";
 }";
 
-    private readonly string example30RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitChoiceGroup @bind-Value=""variant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
     <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
     <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
@@ -2030,11 +2309,40 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Variant=""variant"" />
 
 <BitFileUpload Label=""Disabled"" UploadUrl=""@UploadUrl"" Variant=""variant"" IsEnabled=""false"" />";
-    private readonly string example30CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private BitVariant variant = BitVariant.Fill;";
 
-    private readonly string example31RazorCode = @"
+    private readonly string example21RazorCode = @"
+<BitParams Parameters=""@fileUploadParams"">
+    <BitFileUpload Label=""Takes the endpoint, the limits and the look from the cascade"" />
+
+    <BitFileUpload Label=""So does this one, without repeating any of it"" />
+
+    <BitFileUpload Label=""Its own Variant and MaxSize, the cascaded rest""
+                   Variant=""BitVariant.Fill"" MaxSize=""1024 * 1024 * 1"" />
+</BitParams>
+
+
+<BitFileUpload Label=""Outside the cascade, and back to the defaults"" UploadUrl=""@UploadUrl"" />";
+    private readonly string example21CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+
+private readonly BitFileUploadParams[] fileUploadParams =
+[
+    new()
+    {
+        UploadUrl = ""/Upload"",
+        RemoveUrl = ""/Remove"",
+        Multiple = true,
+        ShowRemoveButton = true,
+        MaxSize = 1024 * 1024 * 5,
+        Variant = BitVariant.Outline,
+        Description = ""Up to 5 MB per file."",
+    }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitFileUpload Label=""Primary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Primary"" />
 <BitFileUpload Label=""Secondary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Secondary"" />
 <BitFileUpload Label=""Tertiary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Tertiary"" />
@@ -2053,10 +2361,10 @@ private BitVariant variant = BitVariant.Fill;";
 <BitFileUpload Label=""PrimaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.PrimaryBorder"" />
 <BitFileUpload Label=""SecondaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.SecondaryBorder"" />
 <BitFileUpload Label=""TertiaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.TertiaryBorder"" />";
-    private readonly string example31CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
 
-    private readonly string example32RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome:</div>
@@ -2098,21 +2406,21 @@ private string UploadUrl = ""/Upload"";";
                RetryIcon=""@BitIconInfo.Bi(""arrow-repeat"")""
                CancelIcon=""@BitIconInfo.Bi(""x-circle"")""
                RemoveIcon=""@BitIconInfo.Bi(""trash"")"" />";
-    private readonly string example32CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
 
-    private readonly string example33RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
 
 <BitFileUpload Label=""Medium"" UploadUrl=""@UploadUrl"" Size=""BitSize.Medium"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
 
 <BitFileUpload Label=""Large"" UploadUrl=""@UploadUrl"" Size=""BitSize.Large"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
-    private readonly string example33CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
 
-    private readonly string example34RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -2138,6 +2446,17 @@ private string RemoveUrl = ""/Remove"";";
         color: white;
         background-color: mediumseagreen;
     }
+
+    .custom-vars {
+        --bit-FileUpload-label-radius: 2rem;
+        --bit-FileUpload-label-background: #0f766e;
+        --bit-FileUpload-label-hover-background: #115e59;
+        --bit-FileUpload-item-radius: 1rem;
+        --bit-FileUpload-item-border-color: #99f6e4;
+        --bit-FileUpload-progress-color: #0f766e;
+        --bit-FileUpload-action-hover-color: #0f766e;
+        --bit-FileUpload-focus-color: #0f766e;
+    }
 </style>
 
 
@@ -2161,14 +2480,34 @@ private string RemoveUrl = ""/Remove"";";
                    Dragging = ""custom-dragging"",
                    FileItem = ""custom-item"",
                    RemoveButton = ""custom-remove""
-               })"" />";
+               })"" />
 
-    private readonly string example35RazorCode = @"
+
+<BitFileUpload Label=""One instance, restyled through its own Style""
+               UploadUrl=""@UploadUrl"" Multiple ShowRemoveButton RemoveUrl=""@RemoveUrl""
+               Style=""--bit-FileUpload-label-radius: 2rem;
+                      --bit-FileUpload-label-background: #7c3aed;
+                      --bit-FileUpload-label-hover-background: #6d28d9;
+                      --bit-FileUpload-item-radius: 1rem;
+                      --bit-FileUpload-item-border-color: #ddd6fe;
+                      --bit-FileUpload-progress-color: #7c3aed;
+                      --bit-FileUpload-action-hover-color: #7c3aed;
+                      --bit-FileUpload-focus-color: #7c3aed;"" />
+
+<div class=""custom-vars"">
+    <BitFileUpload Label=""Two uploaders under one ancestor that sets the variables""
+                   UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+    <BitFileUpload Label=""Neither of them declares anything of its own""
+                   UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+</div>";
+
+    private readonly string example26RazorCode = @"
 <div dir=""rtl"">
     <BitFileUpload Dir=""BitDir.Rtl""
                    Label=""انتخاب یا رها کردن فایل""
                    UploadUrl=""@UploadUrl""
                    ShowRemoveButton RemoveUrl=""@RemoveUrl""
+                   FileListAriaLabel=""فایل‌های انتخاب‌شده""
                    UploadButtonTitle=""بارگذاری""
                    PauseButtonTitle=""توقف""
                    CancelButtonTitle=""لغو""

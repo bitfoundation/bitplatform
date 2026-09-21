@@ -2,6 +2,13 @@
 
 @{
     var fileUploadPercent = GetFileUploadPercent(Item);
+
+    // which action buttons this render draws is worked out right here, before any of them is written out,
+    // so the flags the focus management reads are never left over from the render before this one.
+    _hasUploadButton = false;
+    _hasPauseButton = false;
+    _hasCancelButton = false;
+    _hasRemoveButton = false;
 }
 
 @if (Item.Status != BitFileUploadStatus.Removed)
@@ -73,7 +80,9 @@
             var uploadTitle = isRetry
                                 ? (FileUpload.RetryButtonTitle ?? FileUpload.UploadButtonTitle ?? "Retry")
                                 : (FileUpload.UploadButtonTitle ?? "Upload");
-            <button @onclick="() => FileUpload.Upload(Item)"
+            _hasUploadButton = true;
+            <button @ref="_uploadButtonRef"
+                    @onclick="() => FileUpload.HandleItemUpload(Item)"
                     type="button"
                     title="@uploadTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -88,7 +97,9 @@
         {
             var pauseIcon = BitIconInfo.From(FileUpload.PauseIcon, FileUpload.PauseIconName ?? "Pause");
             var pauseTitle = FileUpload.PauseButtonTitle ?? "Pause";
-            <button @onclick="() => FileUpload.PauseUpload(Item)"
+            _hasPauseButton = true;
+            <button @ref="_pauseButtonRef"
+                    @onclick="() => FileUpload.HandleItemPause(Item)"
                     type="button"
                     title="@pauseTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -105,7 +116,9 @@
         {
             var cancelIcon = BitIconInfo.From(FileUpload.CancelIcon, FileUpload.CancelIconName ?? "Cancel");
             var cancelTitle = FileUpload.CancelButtonTitle ?? "Cancel";
-            <button @onclick="() => FileUpload.CancelUpload(Item)"
+            _hasCancelButton = true;
+            <button @ref="_cancelButtonRef"
+                    @onclick="() => FileUpload.HandleItemCancel(Item)"
                     type="button"
                     title="@cancelTitle"
                     disabled="@(FileUpload.IsEnabled is false)"
@@ -121,15 +134,19 @@
             {
                 @* the spinner carries no text of its own, and the live region of the component already
                    announces the outcome of the removal, so it is left out of the accessibility tree. *@
-                <div class="bit-upl-ldg" aria-hidden="true">
-                    <div class="bit-upl-spn"></div>
+                <div aria-hidden="true"
+                     style="@FileUpload.Styles?.RemoveSpinnerContainer"
+                     class="bit-upl-ldg @FileUpload.Classes?.RemoveSpinnerContainer">
+                    <div style="@FileUpload.Styles?.RemoveSpinner" class="bit-upl-spn @FileUpload.Classes?.RemoveSpinner"></div>
                 </div>
             }
             else
             {
                 var removeIcon = BitIconInfo.From(FileUpload.RemoveIcon, FileUpload.RemoveIconName ?? "Delete");
                 var removeTitle = FileUpload.RemoveButtonTitle ?? "Remove";
-                <button @onclick="() => FileUpload.RemoveFile(Item)"
+                _hasRemoveButton = true;
+                <button @ref="_removeButtonRef"
+                        @onclick="() => FileUpload.HandleItemRemove(Item)"
                         type="button"
                         title="@removeTitle"
                         disabled="@(FileUpload.IsEnabled is false)"

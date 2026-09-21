@@ -1,15 +1,77 @@
 @import "../../../Styles/functions.scss";
 
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
+// file upload and one set on the Style of an instance re-skins that one alone:
+//   --bit-FileUpload-max-width                  widest the whole control grows                 (default: spacing(43.75))
+//   --bit-FileUpload-gap                        room between the browse button, the
+//                                               description and the file list                 (default: spacing(0.5))
+//
+//   --bit-FileUpload-label-color                browse button text at rest                     (default: per variant, from the Color role)
+//   --bit-FileUpload-label-background           browse button fill at rest                     (default: per variant, from the Color role)
+//   --bit-FileUpload-label-border-color         browse button rule at rest                     (default: per variant, from the Color role)
+//   --bit-FileUpload-label-hover-color          browse button text on hover                    (default: per variant)
+//   --bit-FileUpload-label-hover-background     browse button fill on hover, and its rule
+//                                               in the Fill variant                            (default: the role's hover color)
+//   --bit-FileUpload-label-active-background    browse button fill while pressed, and its
+//                                               rule in the Fill variant                       (default: the role's active color)
+//   --bit-FileUpload-label-radius               browse button corner radius                    (default: $shp-radius-button)
+//   --bit-FileUpload-label-min-height           browse button height floor                     (default: per size, $siz-ctrl-*)
+//   --bit-FileUpload-label-padding              browse button padding                          (default: per size, $siz-ctrl-pad-*)
+//   --bit-FileUpload-label-font-size            browse button text size                        (default: per size, from the type ramp)
+//   --bit-FileUpload-label-font-weight          browse button text weight                      (default: $tg-fw-light)
+//   --bit-FileUpload-focus-color                keyboard focus ring color                      (default: the role's focus color)
+//
+//   --bit-FileUpload-description-color          hint text under the browse button              (default: $clr-fg-sec)
+//   --bit-FileUpload-description-font-size      hint text size                                 (default: per size)
+//
+//   --bit-FileUpload-item-color                 file item text                                 (default: $clr-fg-pri)
+//   --bit-FileUpload-item-background            file item surface                              (default: transparent)
+//   --bit-FileUpload-item-border-color          file item rule                                 (default: $clr-brd-pri)
+//   --bit-FileUpload-item-hover-border-color    file item rule on hover                        (default: $clr-brd-pri-hover)
+//   --bit-FileUpload-item-radius                file item corner radius                        (default: $shp-radius-surface)
+//   --bit-FileUpload-item-padding               padding around the name, size and progress     (default: spacing(1) spacing(2))
+//   --bit-FileUpload-item-font-size             file name size                                 (default: per size)
+//
+//   --bit-FileUpload-success-color              status line of a completed file                (default: $clr-suc)
+//   --bit-FileUpload-error-color                status line of a failed or rejected file       (default: $clr-err)
+//   --bit-FileUpload-paused-color               status line of a paused or canceled file       (default: the Color role's main color)
+//
+//   --bit-FileUpload-preview-size               image thumbnail side                           (default: per size)
+//   --bit-FileUpload-preview-radius             image thumbnail corner radius                  (default: $shp-radius-control)
+//
+//   --bit-FileUpload-progress-color             filled part of the progress bar                (default: the Color role's main color)
+//   --bit-FileUpload-progress-track-color       unfilled part of the progress bar              (default: $clr-bg-sec)
+//   --bit-FileUpload-progress-height            progress bar thickness                         (default: $siz-track-sm)
+//   --bit-FileUpload-progress-radius            progress bar corner radius                     (default: $shp-radius-full)
+//
+//   --bit-FileUpload-action-color               upload/pause/cancel/remove glyph at rest       (default: $clr-fg-pri)
+//   --bit-FileUpload-action-hover-color         the same glyph on hover                        (default: the Color role's main color)
+//   --bit-FileUpload-action-hover-background    tint behind the hovered action button          (default: the role's main color at 10%)
+//   --bit-FileUpload-action-size                action button width                            (default: per size, $siz-ctrl-*)
+//   --bit-FileUpload-action-icon-size           action button glyph size                       (default: per size, $siz-icon-*)
+//   --bit-FileUpload-spinner-color              arc of the removal spinner                     (default: the Color role's main color)
+//
+//   --bit-FileUpload-drop-color                 browse button text while a file is dragged
+//                                               over the component                             (default: the role's on-color)
+//   --bit-FileUpload-drop-background            its fill in the same state                     (default: the role's hover color)
+//   --bit-FileUpload-drop-border-color          its rule in the same state                     (default: the role's on-color)
+//   --bit-FileUpload-drop-border-style          its rule style in the same state               (default: dashed)
+//
+//   --bit-FileUpload-disabled-color             text of a disabled component                   (default: $clr-fg-dis)
+//   --bit-FileUpload-disabled-background        fill of a disabled browse button                (default: $clr-bg-dis)
+//   --bit-FileUpload-disabled-border-color      rule of a disabled browse button                (default: $clr-brd-dis)
+
 .bit-upl {
     display: flex;
     flex-flow: column nowrap;
-    max-width: spacing(43.75);
     font-family: $tg-font-family;
+    gap: var(--bit-FileUpload-gap, #{spacing(0.5)});
+    max-width: var(--bit-FileUpload-max-width, #{spacing(43.75)});
 
     &.bit-dis {
-        color: $clr-fg-dis;
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        color: var(--bit-FileUpload-disabled-color, #{$clr-fg-dis});
+        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
+        background-color: var(--bit-FileUpload-disabled-background, #{$clr-bg-dis});
 
         //the browse button carries the role color while enabled, but a disabled file upload reads as a
         //neutral form field whatever its role and variant (see the disabled conventions in
@@ -18,7 +80,7 @@
         //since which of the two is painted at all is exactly what the variants disagree on.
         .bit-upl-lbl {
             cursor: default;
-            color: $clr-fg-dis;
+            color: var(--bit-FileUpload-disabled-color, #{$clr-fg-dis});
             pointer-events: none;
         }
     }
@@ -44,16 +106,32 @@
     outline: 0;
     display: flex;
     cursor: pointer;
-    font-weight: $tg-fw-light;
     user-select: none;
     align-items: center;
+    box-sizing: border-box;
     justify-content: center;
-    border-radius: $shp-radius-control;
+    font-family: $tg-font-family;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    min-height: var(--bit-upl-lbl-height);
-    font-size: var(--bit-upl-lbl-fontsize);
-    padding: var(--bit-upl-lbl-padding);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    -webkit-tap-highlight-color: transparent;
+    border-radius: var(--bit-FileUpload-label-radius, #{$shp-radius-button});
+    font-weight: var(--bit-FileUpload-label-font-weight, #{$tg-fw-light});
+    // The control height of the size class, as a floor rather than a height, so the button still lines up
+    // with the other controls of its size and stays above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8).
+    min-height: var(--bit-FileUpload-label-min-height, var(--bit-upl-lbl-height));
+    font-size: var(--bit-FileUpload-label-font-size, var(--bit-upl-lbl-fontsize));
+    padding: var(--bit-FileUpload-label-padding, var(--bit-upl-lbl-padding));
+    transition: color $mot-duration-short $mot-easing,
+                border-color $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing;
+
+    // The browse button is the only thing in the component that opens the file dialog, so a keyboard user
+    // who cannot see where the focus is cannot upload anything at all (WCAG 2.4.7 / 2.4.11).
+    &:focus-visible {
+        @include focus-ring(var(--bit-FileUpload-focus-color, var(--bit-upl-clr-focus)));
+    }
 
     i {
         margin-inline-end: spacing(0.625);
@@ -63,26 +141,27 @@
 //Fill - the default: a solid block of the role color labelled in the role's on-color.
 .bit-upl-fil {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr-txt);
-        border-color: var(--bit-upl-clr);
-        background-color: var(--bit-upl-clr);
+        color: var(--bit-FileUpload-label-color, var(--bit-upl-clr-txt));
+        border-color: var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-label-background, var(--bit-upl-clr)));
+        background-color: var(--bit-FileUpload-label-background, var(--bit-upl-clr));
 
         @media (hover: hover) {
             &:hover {
-                border-color: var(--bit-upl-clr-hover);
-                background-color: var(--bit-upl-clr-hover);
+                color: var(--bit-FileUpload-label-hover-color, var(--bit-FileUpload-label-color, var(--bit-upl-clr-txt)));
+                border-color: var(--bit-FileUpload-label-hover-background, var(--bit-upl-clr-hover));
+                background-color: var(--bit-FileUpload-label-hover-background, var(--bit-upl-clr-hover));
             }
         }
 
         &:active {
-            border-color: var(--bit-upl-clr-active);
-            background-color: var(--bit-upl-clr-active);
+            border-color: var(--bit-FileUpload-label-active-background, var(--bit-upl-clr-active));
+            background-color: var(--bit-FileUpload-label-active-background, var(--bit-upl-clr-active));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: $clr-brd-dis;
-        background-color: $clr-bg-dis;
+        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
+        background-color: var(--bit-FileUpload-disabled-background, #{$clr-bg-dis});
     }
 }
 
@@ -90,52 +169,52 @@
 //variant once a pointer lands on it.
 .bit-upl-otl {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr);
-        border-color: var(--bit-upl-clr);
-        background-color: transparent;
+        color: var(--bit-FileUpload-label-color, var(--bit-upl-clr));
+        border-color: var(--bit-FileUpload-label-border-color, var(--bit-upl-clr));
+        background-color: var(--bit-FileUpload-label-background, transparent);
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-upl-clr-txt);
-                background-color: var(--bit-upl-clr-hover);
+                color: var(--bit-FileUpload-label-hover-color, var(--bit-upl-clr-txt));
+                background-color: var(--bit-FileUpload-label-hover-background, var(--bit-upl-clr-hover));
             }
         }
 
         &:active {
-            color: var(--bit-upl-clr-txt);
-            background-color: var(--bit-upl-clr-active);
+            color: var(--bit-FileUpload-label-hover-color, var(--bit-upl-clr-txt));
+            background-color: var(--bit-FileUpload-label-active-background, var(--bit-upl-clr-active));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: $clr-brd-dis;
-        background-color: transparent;
+        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
+        background-color: var(--bit-FileUpload-label-background, transparent);
     }
 }
 
 //Text: neither rule nor fill at rest, for an uploader that should not outweigh the fields around it.
 .bit-upl-txt {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr);
-        border-color: transparent;
-        background-color: transparent;
+        color: var(--bit-FileUpload-label-color, var(--bit-upl-clr));
+        border-color: var(--bit-FileUpload-label-border-color, transparent);
+        background-color: var(--bit-FileUpload-label-background, transparent);
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-upl-clr-txt);
-                background-color: var(--bit-upl-clr-hover);
+                color: var(--bit-FileUpload-label-hover-color, var(--bit-upl-clr-txt));
+                background-color: var(--bit-FileUpload-label-hover-background, var(--bit-upl-clr-hover));
             }
         }
 
         &:active {
-            color: var(--bit-upl-clr-txt);
-            background-color: var(--bit-upl-clr-active);
+            color: var(--bit-FileUpload-label-hover-color, var(--bit-upl-clr-txt));
+            background-color: var(--bit-FileUpload-label-active-background, var(--bit-upl-clr-active));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: transparent;
-        background-color: transparent;
+        border-color: var(--bit-FileUpload-label-border-color, transparent);
+        background-color: var(--bit-FileUpload-label-background, transparent);
     }
 }
 
@@ -145,22 +224,24 @@
 //that the drop state outranks the per-variant :hover rules above, which are otherwise as specific.
 .bit-upl.bit-upl-drg {
     .bit-upl-lbl {
-        border-style: dashed;
-        color: var(--bit-upl-clr-txt);
-        border-color: var(--bit-upl-clr-txt);
-        background-color: var(--bit-upl-clr-hover);
+        border-style: var(--bit-FileUpload-drop-border-style, dashed);
+        color: var(--bit-FileUpload-drop-color, var(--bit-upl-clr-txt));
+        border-color: var(--bit-FileUpload-drop-border-color, var(--bit-upl-clr-txt));
+        background-color: var(--bit-FileUpload-drop-background, var(--bit-upl-clr-hover));
     }
 }
 
 .bit-upl-dsc {
-    color: $clr-fg-sec;
-    margin-top: spacing(0.5);
-    font-size: var(--bit-upl-fs-fontsize);
+    color: var(--bit-FileUpload-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-FileUpload-description-font-size, var(--bit-upl-fs-fontsize));
 }
 
 .bit-upl-fl {
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: var(--bit-FileUpload-gap, #{spacing(0.5)});
 }
 
 .bit-upl-itm {
@@ -169,16 +250,17 @@
     font-weight: $tg-fw-light;
     align-items: center;
     flex-flow: row nowrap;
-    margin-top: spacing(0.375);
-    border-radius: $shp-radius-surface;
     justify-content: space-between;
-    color: $clr-fg-pri;
-    font-size: var(--bit-upl-itm-fontsize);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    color: var(--bit-FileUpload-item-color, #{$clr-fg-pri});
+    font-size: var(--bit-FileUpload-item-font-size, var(--bit-upl-itm-fontsize));
+    border-radius: var(--bit-FileUpload-item-radius, #{$shp-radius-surface});
+    background-color: var(--bit-FileUpload-item-background, transparent);
+    border: $shp-border-width $shp-border-style var(--bit-FileUpload-item-border-color, #{$clr-brd-pri});
+    transition: border-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            border-color: $clr-brd-pri-hover;
+            border-color: var(--bit-FileUpload-item-hover-border-color, #{$clr-brd-pri-hover});
         }
     }
 
@@ -192,33 +274,34 @@
 
 .bit-upl-uld {
     .bit-upl-us {
-        color: $clr-suc;
+        color: var(--bit-FileUpload-success-color, #{$clr-suc});
     }
 }
 
 .bit-upl-fld {
     .bit-upl-us {
-        color: $clr-err;
+        color: var(--bit-FileUpload-error-color, #{$clr-err});
     }
 }
 
 .bit-upl-psd {
     .bit-upl-us {
-        color: var(--bit-upl-clr);
+        color: var(--bit-FileUpload-paused-color, var(--bit-upl-clr));
     }
 }
 
 .bit-upl-prv {
     flex-shrink: 0;
     object-fit: cover;
-    border-radius: $shp-radius-control;
-    width: var(--bit-upl-prv-size);
-    height: var(--bit-upl-prv-size);
     margin-inline-start: spacing(0.5);
+    border-radius: var(--bit-FileUpload-preview-radius, #{$shp-radius-control});
+    width: var(--bit-FileUpload-preview-size, var(--bit-upl-prv-size));
+    height: var(--bit-FileUpload-preview-size, var(--bit-upl-prv-size));
 }
 
 .bit-upl-fic {
     flex-grow: 1;
+    min-width: 0;
     height: 100%;
     display: flex;
     overflow: hidden;
@@ -227,7 +310,7 @@
     align-items: flex-start;
     justify-content: center;
     flex-flow: column nowrap;
-    padding: spacing(1) spacing(2);
+    padding: var(--bit-FileUpload-item-padding, #{spacing(1)} #{spacing(2)});
 }
 
 .bit-upl-fnc {
@@ -252,7 +335,7 @@
     align-items: center;
     flex-flow: row nowrap;
     margin-top: spacing(0.25);
-    font-size: var(--bit-upl-fs-fontsize);
+    font-size: var(--bit-FileUpload-description-font-size, var(--bit-upl-fs-fontsize));
 }
 
 .bit-upl-fs {
@@ -269,17 +352,19 @@
 .bit-upl-pbc {
     width: 100%;
     overflow: hidden;
-    height: spacing(0.25);
     margin-top: spacing(1);
     margin-bottom: spacing(0.5);
-    background-color: $clr-bg-sec;
+    height: var(--bit-FileUpload-progress-height, #{$siz-track-sm});
+    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-full});
+    background-color: var(--bit-FileUpload-progress-track-color, #{$clr-bg-sec});
 }
 
 // named -pgb rather than -pbr so that it cannot collide with the generated PrimaryBorder role class.
 .bit-upl-pgb {
-    height: spacing(0.25);
+    height: 100%;
     transition: width $mot-duration $mot-easing 0s;
-    background-color: var(--bit-upl-clr);
+    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-full});
+    background-color: var(--bit-FileUpload-progress-color, var(--bit-upl-clr));
 }
 
 .bit-upl-usi {
@@ -290,27 +375,47 @@
     cursor: pointer;
     align-self: stretch;
     align-items: center;
-    color: $clr-fg-pri;
     justify-content: center;
     background-color: transparent;
     font-family: $tg-font-family;
-    width: var(--bit-upl-btn-size);
+    color: var(--bit-FileUpload-action-color, #{$clr-fg-pri});
+    width: var(--bit-FileUpload-action-size, var(--bit-upl-btn-size));
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing;
 
+    // a disabled button is excluded rather than overridden afterwards, since the hover rule reaches the
+    // glyph directly and would otherwise outrank the disabled color the glyph inherits from the button.
     @media (hover: hover) {
-        &:hover {
+        &:hover:not(:disabled) {
+            background-color: var(--bit-FileUpload-action-hover-background, #{translucent(var(--bit-upl-clr), 10%)});
+
             i {
-                color: var(--bit-upl-clr);
+                color: var(--bit-FileUpload-action-hover-color, var(--bit-upl-clr));
             }
         }
+    }
+
+    // The action buttons are the whole keyboard operation of a file item - starting, pausing, canceling and
+    // removing a file - so each of them has to say when it holds the focus. The shared focus-ring mixin
+    // draws its indicator as a box-shadow outside the element, which the file item clips away with its own
+    // overflow:hidden, so the indicator is drawn as an outline inset into the button instead - which is also
+    // what survives a forced-colors palette without a media query of its own.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-FileUpload-focus-color, var(--bit-upl-clr-focus));
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
+        background-color: transparent;
     }
 
     i {
-        font-size: var(--bit-upl-ico-fontsize);
+        line-height: 1;
+        color: inherit;
+        transition: color $mot-duration-short $mot-easing;
+        font-size: var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize));
     }
 }
 
@@ -330,17 +435,17 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: var(--bit-upl-btn-size);
+    width: var(--bit-FileUpload-action-size, var(--bit-upl-btn-size));
 }
 
 .bit-upl-spn {
     border-radius: 50%;
-    width: spacing(2);
-    height: spacing(2);
     border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     border-color: $clr-brd-sec;
-    border-top-color: var(--bit-upl-clr);
+    width: var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize));
+    height: var(--bit-FileUpload-action-icon-size, var(--bit-upl-ico-fontsize));
+    border-top-color: var(--bit-FileUpload-spinner-color, var(--bit-upl-clr));
     animation: bit-upl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
@@ -351,38 +456,84 @@
         --bit-upl-clr-txt: #{role($tokens, on)};
         --bit-upl-clr-hover: #{role($tokens, hover)};
         --bit-upl-clr-active: #{role($tokens, active)};
+        --bit-upl-clr-focus: #{role($tokens, focus)};
     }
 }
 
+// The browse button takes the control height and padding of its size class, the action buttons the same
+// height as a square, and the glyphs the icon step of that class - which is what lines a file upload up
+// with every other control of its size instead of only with itself.
 .bit-upl-sm {
-    --bit-upl-lbl-height: #{spacing(3.5)};
+    --bit-upl-lbl-height: #{$siz-ctrl-sm};
     --bit-upl-lbl-fontsize: #{$tg-fs-xs};
-    --bit-upl-lbl-padding: #{spacing(0.25)} #{spacing(1.5)};
+    --bit-upl-lbl-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
     --bit-upl-itm-fontsize: #{$tg-fs-xs};
     --bit-upl-fs-fontsize: #{$tg-fs-xs};
     --bit-upl-prv-size: #{spacing(4)};
-    --bit-upl-btn-size: #{spacing(3.5)};
+    --bit-upl-btn-size: #{$siz-ctrl-sm};
     --bit-upl-ico-fontsize: #{$siz-icon-sm};
 }
 
 .bit-upl-md {
-    --bit-upl-lbl-height: #{spacing(4.5)};
+    --bit-upl-lbl-height: #{$siz-ctrl-md};
     --bit-upl-lbl-fontsize: #{$tg-fs-sm};
-    --bit-upl-lbl-padding: #{spacing(0.5)} #{spacing(2)};
+    --bit-upl-lbl-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
     --bit-upl-itm-fontsize: #{$tg-fs-sm};
     --bit-upl-fs-fontsize: #{$tg-fs-xs};
     --bit-upl-prv-size: #{spacing(5)};
-    --bit-upl-btn-size: #{spacing(4)};
+    --bit-upl-btn-size: #{$siz-ctrl-md};
     --bit-upl-ico-fontsize: #{$siz-icon-md};
 }
 
 .bit-upl-lg {
-    --bit-upl-lbl-height: #{spacing(5.5)};
+    --bit-upl-lbl-height: #{$siz-ctrl-lg};
     --bit-upl-lbl-fontsize: #{$tg-fs-md};
-    --bit-upl-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
+    --bit-upl-lbl-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
     --bit-upl-itm-fontsize: #{$tg-fs-md};
     --bit-upl-fs-fontsize: #{$tg-fs-sm};
     --bit-upl-prv-size: #{spacing(6.5)};
-    --bit-upl-btn-size: #{spacing(5)};
+    --bit-upl-btn-size: #{$siz-ctrl-lg};
     --bit-upl-ico-fontsize: #{$siz-icon-lg};
+}
+
+// Windows High Contrast / forced-colors: the palette collapses to the system pair, so every color the
+// component paints is dropped. What has to be re-established is what the color alone was saying: the drop
+// state, the disabled state, the progress bar against its track, and the spinner's arc against its ring.
+@media (forced-colors: active) {
+    .bit-upl.bit-dis,
+    .bit-upl.bit-dis .bit-upl-lbl {
+        color: GrayText;
+        border-color: GrayText;
+    }
+
+    .bit-upl-usi:disabled {
+        color: GrayText;
+    }
+
+    .bit-upl-usi:focus-visible {
+        outline-color: Highlight;
+    }
+
+    // The fill of the drop state is stripped, so the dashed rule is the only thing left to say a file is
+    // being dragged over the component - it is given the system highlight to stand out from the rest state.
+    .bit-upl.bit-upl-drg .bit-upl-lbl {
+        border-color: Highlight;
+    }
+
+    // The track and the bar are both painted with system colors rather than outlined, since a rule around
+    // a track two pixels high would leave the bar inside it no room at all to be seen.
+    .bit-upl-pbc {
+        background-color: GrayText;
+        forced-color-adjust: none;
+    }
+
+    .bit-upl-pgb {
+        background-color: Highlight;
+        forced-color-adjust: none;
+    }
+
+    .bit-upl-spn {
+        border-color: GrayText;
+        border-top-color: CanvasText;
+    }
 }
