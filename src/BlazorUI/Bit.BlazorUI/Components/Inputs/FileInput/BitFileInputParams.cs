@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitFileInput"/> component.
@@ -369,6 +369,8 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         if (HideLabel.HasValue && bitFileInput.HasNotBeenSet(nameof(HideLabel)))
         {
             bitFileInput.HideLabel = HideLabel.Value;
+
+            bitFileInput.ClassBuilder.Reset();
         }
 
         if (Label.HasValue() && bitFileInput.HasNotBeenSet(nameof(Label)))
@@ -449,6 +451,8 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         if (ShowDropZone.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowDropZone)))
         {
             bitFileInput.ShowDropZone = ShowDropZone.Value;
+
+            bitFileInput.ClassBuilder.Reset();
         }
 
         if (ShowPreview.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowPreview)))
