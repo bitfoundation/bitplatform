@@ -17,8 +17,8 @@ namespace Bit.BlazorUI;
 /// background/pool thread (for example after <c>ConfigureAwait(false)</c>) would throw in that configuration.
 /// Default single-threaded WebAssembly is unaffected. Call these methods on the renderer's synchronization
 /// context (the default for component lifecycle and event callbacks).
-/// A best-effort <c>DEBUG</c>-only assertion (see <c>AssertInProcessInteropThread</c>) flags the common
-/// thread-pool case during development; it is compiled out of shipping builds so the fast path stays
+/// A best-effort <c>DEBUG</c>-only diagnostic (see <see cref="BitInProcessInteropThreadGuard"/>) reports the
+/// common thread-pool case during development; it is compiled out of shipping builds so the fast path stays
 /// branch-free, and the framework still throws its own exception in that configuration at runtime.
 /// </remarks>
 [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Interop arguments are JSON-serializable types owned by the framework/components; the JSON metadata they require is preserved by the [DynamicallyAccessedMembers(JsonSerialized)] annotations on the generic overloads and by the component models themselves, so the void path is safe to invoke under trimming.", Scope = "member", Target = "~M:Bit.BlazorUI.IJSRuntimeFastExtensions.FastInvokeVoid(Microsoft.JSInterop.IJSRuntime,System.String,System.Threading.CancellationToken,System.Object[])~System.Threading.Tasks.ValueTask")]
@@ -37,29 +37,15 @@ public static class IJSRuntimeFastExtensions
 
 
     /// <summary>
-    /// DEBUG-only guard for the synchronous in-process interop path. On a multithreaded WebAssembly runtime
-    /// (<c>&lt;WasmEnableThreads&gt;</c>) <see cref="IJSInProcessRuntime"/> may only be used on the main thread,
-    /// so running it from a thread-pool (background) thread - the usual outcome of a preceding
-    /// <c>ConfigureAwait(false)</c> - throws. This fails fast with an actionable message ahead of the
-    /// framework's lower-level exception. It is a heuristic: it covers the thread-pool case (not custom
-    /// background threads) and only runs in the browser, where single-threaded WASM has no thread pool so it
-    /// never false-fires. Marked <c>[Conditional("DEBUG")]</c> so the call and its argument evaluation are
-    /// removed entirely from shipping builds, keeping the fast path overhead-free.
+    /// DEBUG-only developer aid for the synchronous in-process interop path; see
+    /// <see cref="BitInProcessInteropThreadGuard"/> for what it reports and why it only reports.
+    /// Marked <c>[Conditional("DEBUG")]</c> so the call and its argument evaluation are removed entirely from
+    /// shipping builds, keeping the fast path overhead-free.
     /// </summary>
     [Conditional("DEBUG")]
     private static void AssertInProcessInteropThread(string identifier)
     {
-        // Format the message only on failure: Debug.Assert(bool, string) evaluates its message argument
-        // eagerly, and these methods are hot paths, so building the string on every passing call would
-        // add needless allocations to DEBUG builds.
-        if (OperatingSystem.IsBrowser() && Thread.CurrentThread.IsThreadPoolThread)
-        {
-            Debug.Fail(
-                $"FastInvoke('{identifier}') ran synchronous in-process JS interop on a thread-pool thread. " +
-                "On multithreaded WebAssembly (<WasmEnableThreads>) this is only valid on the main thread and will throw. " +
-                "Invoke it on the renderer's synchronization context (component lifecycle/event callbacks) without a " +
-                "preceding ConfigureAwait(false), or use the regular asynchronous invocation instead.");
-        }
+        BitInProcessInteropThreadGuard.Report(identifier);
     }
 
     /// <summary>

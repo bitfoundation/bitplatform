@@ -1053,8 +1053,8 @@ public partial class BitPanel : BitComponentBase
 
         var position = Position ?? BitPanelPosition.End;
 
-        // Swipes.dispose releases the .NET reference it was handed, so a re-registration gets one of its own
-        // rather than reusing a reference that has already been released.
+        // The gestures get a reference of their own, released with each teardown: the panel registers and
+        // tears them down again every time it is opened and closed.
         _swipesDotnetObj = DotNetObjectReference.Create(this);
 
         try
@@ -1086,8 +1086,9 @@ public partial class BitPanel : BitComponentBase
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        // Swipes.setup can bail out before it registers anything, leaving nothing for Swipes.dispose to
-        // release, so the reference is also released here (disposing it is idempotent).
+        // The reference is owned here, and released after the JS cleanup so the gesture's callbacks kept a
+        // live target until it was torn down. Disposing is idempotent, so a setup that bailed out before it
+        // registered anything costs nothing here.
         _swipesDotnetObj?.Dispose();
         _swipesDotnetObj = null;
     }

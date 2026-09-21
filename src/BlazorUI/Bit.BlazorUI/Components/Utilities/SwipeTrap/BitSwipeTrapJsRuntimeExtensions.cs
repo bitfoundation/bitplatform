@@ -14,11 +14,11 @@ internal static class BitSwipeTrapJsRuntimeExtensions
                                                      string? skipSelector,
                                                      DotNetObjectReference<BitSwipeTrap>? dotnetObjectReference)
     {
-        return js.InvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, triggerVelocity, threshold, throttle, orientationLock, touchOnly, skipSelector, dotnetObjectReference);
+        return js.FastInvokeVoid("BitBlazorUI.SwipeTrap.setup", id, element, trigger, triggerVelocity, threshold, throttle, orientationLock, touchOnly, skipSelector, dotnetObjectReference);
     }
 
     internal static ValueTask BitSwipeTrapDispose(this IJSRuntime jsRuntime, string id)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.SwipeTrap.dispose", id);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.SwipeTrap.dispose", id);
     }
 }

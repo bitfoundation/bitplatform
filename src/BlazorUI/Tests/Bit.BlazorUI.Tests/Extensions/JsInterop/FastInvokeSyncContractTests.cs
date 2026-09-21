@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -51,7 +50,7 @@ public class FastInvokeSyncContractTests
     [TestMethod]
     public void FastInvoke_CallSites_ShouldNotTargetAsyncJavaScriptFunctions()
     {
-        var blazorUiRoot = TryFindBlazorUiRoot();
+        var blazorUiRoot = JsInteropSources.TryFindBlazorUiRoot();
         if (blazorUiRoot is null)
         {
             // This test reads the .cs/.ts sources from disk. When the tests run from packaged binaries
@@ -63,18 +62,14 @@ public class FastInvokeSyncContractTests
             return;
         }
 
-        var csharpDirs = new[]
-        {
-            Path.Combine(blazorUiRoot, "Bit.BlazorUI"),
-            Path.Combine(blazorUiRoot, "Bit.BlazorUI.Extras"),
-        };
+        var csharpDirs = JsInteropSources.ProjectDirectories(blazorUiRoot);
 
         var fastInvokeTargets = new List<(string ClassMethod, string Identifier, string File)>();
         var unresolved = new List<string>();
 
         foreach (var dir in csharpDirs)
         {
-            foreach (var file in EnumerateSourceFiles(dir, "*.cs"))
+            foreach (var file in JsInteropSources.EnumerateSourceFiles(dir, "*.cs"))
             {
                 if (file.EndsWith(FastExtensionsDefinitionFile, StringComparison.OrdinalIgnoreCase)) continue;
 
@@ -147,7 +142,7 @@ public class FastInvokeSyncContractTests
         var result = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var root in roots)
-        foreach (var file in EnumerateSourceFiles(root, "*.ts"))
+        foreach (var file in JsInteropSources.EnumerateSourceFiles(root, "*.ts"))
         {
             if (file.EndsWith(".d.ts", StringComparison.OrdinalIgnoreCase)) continue;
 
@@ -160,53 +155,11 @@ public class FastInvokeSyncContractTests
         return result;
     }
 
-    private static IEnumerable<string> EnumerateSourceFiles(string root, string pattern)
-    {
-        if (!Directory.Exists(root)) yield break;
-
-        foreach (var file in Directory.EnumerateFiles(root, pattern, SearchOption.AllDirectories))
-        {
-            // Exclude build outputs.
-            if (file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") ||
-                file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
-            {
-                continue;
-            }
-
-            yield return file;
-        }
-    }
-
     private static string? LastTwoSegments(string identifier)
     {
         var segments = identifier.Split('.');
         if (segments.Length < 2) return null;
 
         return $"{segments[^2]}.{segments[^1]}";
-    }
-
-    private static string? TryFindBlazorUiRoot([CallerFilePath] string callerFilePath = "")
-    {
-        // callerFilePath points at this test file; walk up to the BlazorUI source root, which is the
-        // directory that contains both the Bit.BlazorUI and Bit.BlazorUI.Extras projects. Returns null
-        // when the source tree isn't present (e.g. running from packaged binaries) so the caller can
-        // report the test as inconclusive instead of throwing.
-        var directoryName = Path.GetDirectoryName(callerFilePath);
-        if (string.IsNullOrEmpty(directoryName) || !Directory.Exists(directoryName)) return null;
-
-        var dir = new DirectoryInfo(directoryName);
-
-        while (dir is not null)
-        {
-            if (Directory.Exists(Path.Combine(dir.FullName, "Bit.BlazorUI")) &&
-                Directory.Exists(Path.Combine(dir.FullName, "Bit.BlazorUI.Extras")))
-            {
-                return dir.FullName;
-            }
-
-            dir = dir.Parent;
-        }
-
-        return null;
     }
 }

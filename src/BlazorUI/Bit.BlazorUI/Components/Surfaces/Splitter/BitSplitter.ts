@@ -621,8 +621,8 @@ namespace BitBlazorUI {
 
             entry.observer?.disconnect();
             entry.controller.abort();
-            entry.dotnetObj?.dispose();
 
+            // The .NET reference is owned and disposed by the component itself; it is only let go of here.
             delete Splitter._entries[id];
         }
 

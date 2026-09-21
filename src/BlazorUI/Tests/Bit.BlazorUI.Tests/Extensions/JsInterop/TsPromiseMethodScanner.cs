@@ -40,10 +40,45 @@ internal static class TsPromiseMethodScanner
         new(@"//[^\n]*|/\*.*?\*/|""(?:\\.|[^""\\\n])*""|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`",
             RegexOptions.Compiled | RegexOptions.Singleline);
 
+    // A parameter that may be left out: one marked optional ("id?: string") or given a default ("gap = 0").
+    // The "=" has to be the assignment, not the arrow of a function type ("cb: () => void") or a comparison.
+    private static readonly Regex DefaultValueRegex = new(@"(?<![=!<>])=(?![=>])", RegexOptions.Compiled);
+
+    /// <summary>What a static TypeScript method's header says about it.</summary>
+    /// <param name="ReturnsPromise">Whether it is declared <c>async</c> or annotated with a top-level Promise.</param>
+    /// <param name="RequiredParameters">Parameters that are neither optional nor defaulted.</param>
+    /// <param name="OptionalParameters">Parameters marked <c>?</c> or given a default value.</param>
+    /// <param name="HasRestParameter">Whether it ends in a <c>...rest</c> parameter, so it takes any number.</param>
+    public readonly record struct TsMethodSignature(
+        bool ReturnsPromise,
+        int RequiredParameters,
+        int OptionalParameters,
+        bool HasRestParameter);
+
     /// <summary>
     /// Returns every <c>Class.method</c> in <paramref name="text"/> whose header declares it promise-returning.
     /// </summary>
     public static HashSet<string> CollectFromSource(string text)
+    {
+        return [.. CollectSignaturesFromSource(text).Where(p => p.Value.ReturnsPromise).Select(p => p.Key)];
+    }
+
+    /// <summary>
+    /// Returns every <c>Class.method</c> in <paramref name="text"/> declared as a static method, whether it
+    /// returns a Promise or not. This is the set of JavaScript functions interop can name, which is what
+    /// <c>JsInteropIdentifierContractTests</c> resolves every <c>BitBlazorUI.*</c> identifier against.
+    /// </summary>
+    public static HashSet<string> CollectStaticMethodsFromSource(string text)
+    {
+        return [.. CollectSignaturesFromSource(text).Keys];
+    }
+
+    /// <summary>
+    /// Returns what every static method's header in <paramref name="text"/> declares, keyed
+    /// <c>Class.method</c>. A name declared more than once keeps the first header, which is the one a lookup
+    /// by name could not tell apart anyway.
+    /// </summary>
+    public static Dictionary<string, TsMethodSignature> CollectSignaturesFromSource(string text)
     {
         // Everything runs against a copy with comments and literals blanked out (line breaks kept, so positions
         // are unchanged): a signature that is quoted or commented out is never read as a declaration, and no
@@ -54,7 +89,7 @@ internal static class TsPromiseMethodScanner
             .Select(m => (Name: m.Groups["class"].Value, Index: m.Index))
             .ToList();
 
-        var result = new HashSet<string>(StringComparer.Ordinal);
+        var result = new Dictionary<string, TsMethodSignature>(StringComparer.Ordinal);
 
         var position = 0;
         while (position < masked.Length)
@@ -70,22 +105,107 @@ internal static class TsPromiseMethodScanner
             var bodyOpen = SkipReturnAnnotation(masked, closeParen + 1, out var annotation);
             if (bodyOpen >= masked.Length || masked[bodyOpen] != '{') continue; // a bodiless overload signature
 
-            var bodyClose = FindClose(masked, bodyOpen, '{', '}');
-            if (bodyClose < 0) break;
-
-            // Resume after the body, so nothing declared inside it is read as the next header.
-            position = bodyClose + 1;
+            // Resume just inside the body rather than past it. Skipping the body would mean counting braces
+            // through code this scanner does not parse, and a regular-expression literal - /[\s(\[{‘]/,
+            // say - carries an unbalanced "{" that no comment- or string-masking catches. One of those makes
+            // the "body" run to the end of the class and swallow every method declared after it: it cost
+            // BitRichTextEditor.ts 66 of its 137, none of which any contract test could then see.
+            // Scanning the body instead costs nothing here: a header only matches "static &lt;name&gt;(",
+            // which inside a method body would have to be a nested class's member - the library has none -
+            // and a "static" written in a comment or a literal is already blanked out above.
+            position = bodyOpen + 1;
 
             var owningClass = classes.LastOrDefault(c => c.Index < header.Index).Name;
             if (owningClass is null) continue;
 
-            if (header.Groups["async"].Success || AnnotationHasTopLevelPromise(annotation))
-            {
-                result.Add($"{owningClass}.{header.Groups["method"].Value}");
-            }
+            var key = $"{owningClass}.{header.Groups["method"].Value}";
+            if (result.ContainsKey(key)) continue;
+
+            var (required, optional, hasRest) = ReadParameters(masked, header.Index + header.Length, closeParen);
+
+            result[key] = new TsMethodSignature(
+                header.Groups["async"].Success || AnnotationHasTopLevelPromise(annotation),
+                required,
+                optional,
+                hasRest);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Blanks out everything that is not code - comments and string/template literals - keeping every line
+    /// break, so positions in the result still point at the same place in the original. Shared with the C#
+    /// side's scanning, which needs the same "find the top-level comma" reading over its own sources.
+    /// </summary>
+    public static string MaskNonCode(string text)
+    {
+        return NonCodeRegex.Replace(text, m => Regex.Replace(m.Value, @"[^\r\n]", " "));
+    }
+
+    /// <summary>
+    /// Splits the text between two delimiters on its top-level commas, returning each piece's start and end
+    /// index. <paramref name="masked"/> must be the masked copy, so a comma inside a comment or a literal is
+    /// not read as a separator.
+    /// </summary>
+    public static List<(int Start, int End)> SplitTopLevel(string masked, int openIndex, int closeIndex)
+    {
+        var result = new List<(int Start, int End)>();
+
+        var depth = 0;
+        var start = openIndex + 1;
+
+        for (var i = start; i < closeIndex; i++)
+        {
+            var c = masked[i];
+
+            // The ">" of an arrow ("cb: () => void", a lambda argument) closes nothing; counting it would
+            // push the depth below zero and hide every comma after it.
+            if (c is '(' or '[' or '{' or '<') depth++;
+            else if (c is ')' or ']' or '}') depth = Math.Max(0, depth - 1);
+            else if (c == '>' && masked[i - 1] != '=') depth = Math.Max(0, depth - 1);
+            else if (c == ',' && depth == 0)
+            {
+                result.Add((start, i));
+                start = i + 1;
+            }
+        }
+
+        result.Add((start, closeIndex));
+
+        return result;
+    }
+
+    /// <summary>Index of the bracket closing the one at <paramref name="openIndex"/>, or -1.</summary>
+    public static int FindCloseBracket(string masked, int openIndex, char open, char close)
+    {
+        return FindClose(masked, openIndex, open, close);
+    }
+
+    // How many parameters the header between its "(" and ")" declares, split into the ones that must be
+    // passed and the ones that may be left out, plus whether it ends in a rest parameter (which takes any
+    // number). Read off the masked copy, so a comma inside a comment in the parameter list - the library
+    // documents its wider signatures that way - is not read as a separator.
+    private static (int Required, int Optional, bool HasRest) ReadParameters(string masked, int openParenEnd, int closeParen)
+    {
+        var required = 0;
+        var optional = 0;
+        var hasRest = false;
+
+        foreach (var (start, end) in SplitTopLevel(masked, openParenEnd - 1, closeParen))
+        {
+            var parameter = masked[start..end].Trim();
+            if (parameter.Length == 0) continue;
+
+            var colon = parameter.IndexOf(':');
+            var name = (colon < 0 ? parameter : parameter[..colon]).Trim();
+
+            if (name.StartsWith("...", StringComparison.Ordinal)) hasRest = true;
+            else if (name.EndsWith('?') || DefaultValueRegex.IsMatch(parameter)) optional++;
+            else required++;
+        }
+
+        return (required, optional, hasRest);
     }
 
     // Returns the index just past the return-type annotation (the body's "{" when the method has one) and the

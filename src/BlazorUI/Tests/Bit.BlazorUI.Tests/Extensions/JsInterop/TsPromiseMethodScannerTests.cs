@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Extensions.JsInterop;
 
@@ -286,5 +287,57 @@ public class TsPromiseMethodScannerTests
         Assert.IsTrue(promiseMethods.Contains("First.load"));
         Assert.IsFalse(promiseMethods.Contains("Second.load"),
             "A same-named synchronous method in another class must be attributed to that class.");
+    }
+
+    [TestMethod]
+    public void CollectFromSource_KeepsReadingAfterARegularExpressionLiteralWithAnUnbalancedBrace()
+    {
+        // A regex literal is neither a comment nor a string, so the masking pass leaves it alone, and the
+        // character class below carries a "{" with no "}" to match it. A scanner that skipped method bodies
+        // by counting braces would run the first method's "body" to the end of the class and never see the
+        // ones after it - which is what silently emptied this guard for most of BitRichTextEditor.ts.
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                private static opening(previous: string): boolean {
+                  return /[\s(\[{‘“]/.test(previous);
+                }
+
+                public static async later(editor: any) {
+                  await editor.ready;
+                }
+              }
+            }
+            """;
+
+        var promiseMethods = TsPromiseMethodScanner.CollectFromSource(ts);
+
+        Assert.IsTrue(promiseMethods.Contains("Sample.later"),
+            "An async method declared after a regex literal holding an unbalanced brace must still be found.");
+        Assert.IsFalse(promiseMethods.Contains("Sample.opening"));
+    }
+
+    [TestMethod]
+    public void CollectStaticMethodsFromSource_ReturnsEveryStaticMethodWhetherItReturnsAPromiseOrNot()
+    {
+        var ts = """
+            namespace BitBlazorUI {
+              class Sample {
+                public static now(id: string): void { }
+                public static async later(id: string) { }
+                public static soon(id: string): Promise<void> { return Promise.resolve(); }
+                public static get ready(): boolean { return true; }
+                public static arrow = (id: string) => { };
+                public static bodiless(id: string): void;
+              }
+            }
+            """;
+
+        var methods = TsPromiseMethodScanner.CollectStaticMethodsFromSource(ts);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "Sample.now", "Sample.later", "Sample.soon" },
+            methods.ToArray(),
+            "Only the static methods with a body are functions interop can name.");
     }
 }

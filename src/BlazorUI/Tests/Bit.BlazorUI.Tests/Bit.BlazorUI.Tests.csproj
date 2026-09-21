@@ -26,6 +26,11 @@
            source of truth for "the Fluent palette", so BitThemeFluentPaletteContractTests has to be
            able to compare it against those stylesheets without opening the type up to the world. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeFluentPalettes.cs" Link="Utils\Theme\BitThemeFluentPalettes.cs" />
+      <!-- The DEBUG-only guard behind FastInvoke's synchronous path only ever runs in the browser, so what
+           it decides cannot be reached through the public API from a test. It is internal, and this project
+           is not an InternalsVisibleTo friend, so the source is linked in the same way as the types above -
+           the decision itself is a pure function and is tested as one. -->
+      <Compile Include="..\..\Bit.BlazorUI\Extensions\JsInterop\BitInProcessInteropThreadGuard.cs" Link="Extensions\JsInterop\BitInProcessInteropThreadGuard.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
       <Compile Include="..\..\Bit.BlazorUI\Extensions\StringExtensions.cs" Link="Extensions\StringExtensions.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous

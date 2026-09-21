@@ -1324,8 +1324,9 @@ public partial class BitCallout : BitComponentBase
 
         _swipesKey = GetSwipesKey();
 
-        // Swipes.dispose releases the .NET reference it was handed, so the gestures get one of their own
-        // instead of the one the callout positioning keeps using for the life of the component.
+        // The gestures get a reference of their own rather than the one the callout positioning keeps using
+        // for the life of the component: they are registered and torn down again every time the callout
+        // becomes a sheet and stops being one, and this one is released with each teardown.
         _swipesDotnetObj = DotNetObjectReference.Create(this);
 
         try
@@ -1360,8 +1361,9 @@ public partial class BitCallout : BitComponentBase
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        // Swipes.setup bails out on the screens the responsive mode does not apply to, leaving nothing for
-        // Swipes.dispose to release, so the reference is also released here (disposing is idempotent).
+        // The reference is owned here, and released after the JS cleanup so the gesture's callbacks kept a
+        // live target until it was torn down. Disposing is idempotent, so a setup that bailed out on a
+        // screen the responsive mode does not apply to costs nothing here.
         _swipesDotnetObj?.Dispose();
         _swipesDotnetObj = null;
     }

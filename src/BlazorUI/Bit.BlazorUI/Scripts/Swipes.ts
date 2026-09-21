@@ -236,7 +236,7 @@
                 element.addEventListener('pointerleave', onEnd, false);
             }
 
-            const swipe = new BitSwipe(id, element, trigger, dotnetObj);
+            const swipe = new BitSwipe(id, element, trigger);
             swipe.setDisposer(() => {
                 if (isTouchDevice) {
                     element.removeEventListener('touchstart', onStart);
@@ -268,18 +268,22 @@
         }
     }
 
+    // It does not keep the .NET reference. The handlers the setup registered close over the one they were
+    // handed, and it is the component's to dispose: several of the components that register a gesture hand
+    // over the same reference their callout and their keyboard handling use, and one of them tears the
+    // gesture down while it is still on the page (a panel that is closed and opened again), so releasing it
+    // from here would take the rest of that component's interop with it. Dropping the handlers is all this
+    // side has to do.
     class BitSwipe {
         id: string;
         element: HTMLElement;
         trigger: number;
-        dotnetObj: DotNetObject | undefined;
         disposer: () => void = () => { };
 
-        constructor(id: string, element: HTMLElement, trigger: number, dotnetObj: DotNetObject) {
+        constructor(id: string, element: HTMLElement, trigger: number) {
             this.id = id;
             this.element = element;
             this.trigger = trigger;
-            this.dotnetObj = dotnetObj;
         }
 
         public setDisposer(disposer: () => void) {
@@ -288,14 +292,6 @@
 
         public dispose() {
             this.disposer();
-            // Let any teardown failure from dotnetObj.dispose() surface (consistent with the other disposal
-            // paths in this cohort) instead of swallowing it, but still clear the reference afterwards so the
-            // failure signal is preserved before dotnetObj is set to undefined.
-            try {
-                this.dotnetObj?.dispose();
-            } finally {
-                this.dotnetObj = undefined;
-            }
         }
     }
 

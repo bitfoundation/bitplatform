@@ -276,7 +276,6 @@ namespace BitBlazorUI {
             }
         }
 
-        private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {
             // Resolve only when every script has actually executed. Loading is tracked per-url so that
             // concurrent callers (e.g. several components, or a re-mount) await the same execution instead

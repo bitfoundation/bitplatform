@@ -139,12 +139,7 @@ namespace BitBlazorUI {
             const bitController = ColorPicker._bitControllers.find(bc => bc.id == id);
             bitController?.controller.abort();
 
-            try {
-                bitController?.dotnetObj?.dispose();
-            } catch (e) {
-                console.error("BitBlazorUI.ColorPicker.dispose:", e);
-            }
-
+            // The .NET reference is owned and disposed by the component itself; it is only let go of here.
             ColorPicker._bitControllers = ColorPicker._bitControllers.filter(bc => bc.id != id);
         }
 
