@@ -21,6 +21,15 @@ public partial class _BitMenuButtonOptionDemo
 
     private string? submenuClickedOption;
 
+    private readonly BitMenuButtonParams[] menuButtonParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            IconName = BitIconName.Filter
+        }
+    ];
+
     private bool optionShowName = true;
     private bool optionShowStatus = true;
     private bool optionShowOwner;

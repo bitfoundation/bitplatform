@@ -498,6 +498,33 @@ private List<BitMenuButtonItem> shareItems =
 ];";
 
     private readonly string example19RazorCode = @"
+@* The params object carries a default down to every menu button under it, and never overwrites what one set itself. *@
+<BitParams Parameters=""menuButtonParams"">
+    <BitMenuButton Text=""Sort"" Items=""basicItems"" />
+    <BitMenuButton Text=""Group"" Items=""basicItems"" />
+    <BitMenuButton Text=""Export"" Items=""basicItems"" Variant=""BitVariant.Fill"" />
+</BitParams>
+
+<BitMenuButton Text=""Outside the cascade"" Items=""basicItems"" />";
+
+    private readonly string example19CsharpCode = @"
+private readonly BitMenuButtonParams[] menuButtonParams =
+[
+    new()
+    {
+        Variant = BitVariant.Outline,
+        IconName = BitIconName.Filter
+    }
+];
+
+private static List<BitMenuButtonItem> basicItems =
+[
+    new() { Text = ""Item A"", Key = ""A"" },
+    new() { Text = ""Item B"", Key = ""B"", IsEnabled = false },
+    new() { Text = ""Item C"", Key = ""C"" }
+];";
+
+    private readonly string example20RazorCode = @"
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" />
 <BitMenuButton Text=""Primary"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" />
@@ -805,7 +832,7 @@ private List<BitMenuButtonItem> shareItems =
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split />
 <BitMenuButton Text=""TertiaryBorder"" Items=""basicItems"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split />";
 
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -813,7 +840,7 @@ private List<BitMenuButtonItem> basicItems =
     new() { Text = ""Item C"", Key = ""C"" }
 ];";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -856,7 +883,7 @@ private List<BitMenuButtonItem> basicItems =
                Icon=""@BitIconInfo.Fa(""brands github"")""
                ChevronDownIcon=""@BitIconInfo.Fa(""solid angles-down"")"" />";
 
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private static List<BitMenuButtonItem> externalIconItems =
 [
     new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },
@@ -864,7 +891,7 @@ private static List<BitMenuButtonItem> externalIconItems =
     new() { Text = ""Delete"", Icon = BitIconInfo.Fa(""solid trash"") }
 ];";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"" />
 <BitMenuButton Text=""Small"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Small"" />
@@ -877,7 +904,7 @@ private static List<BitMenuButtonItem> externalIconItems =
 <BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"" />
 <BitMenuButton Text=""Large"" Items=""basicItems"" Variant=""BitVariant.Text"" Size=""BitSize.Large"" />";
 
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private List<BitMenuButtonItem> basicItems =
 [
     new() { Text = ""Item A"", Key = ""A"" },
@@ -885,7 +912,7 @@ private List<BitMenuButtonItem> basicItems =
     new() { Text = ""Item C"", Key = ""C"" }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -976,7 +1003,7 @@ private List<BitMenuButtonItem> basicItems =
 
 <BitMenuButton Text=""Actions"" IconName=""@BitIconName.Settings"" Items=""destructiveItems"" Variant=""BitVariant.Outline"" />";
 
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private List<BitMenuButtonItem> basicItems = new()
 {
     new() { Text = ""Item A"", Key = ""A"" },
@@ -999,11 +1026,11 @@ private static List<BitMenuButtonItem> destructiveItems =
     new() { Text = ""Delete"", Key = ""delete"", IconName = BitIconName.Delete, Style = ""--bit-MenuButton-item-color: var(--bit-clr-err);"" }
 ];";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" IconName=""@BitIconName.Edit"" />
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" Items=""rtlItemsIcon"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split />";
 
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
  private static List<BitMenuButtonItem> rtlItemsIcon =
 [
     new() { Text = ""گزینه الف"", Key = ""A"", IconName = BitIconName.Emoji },

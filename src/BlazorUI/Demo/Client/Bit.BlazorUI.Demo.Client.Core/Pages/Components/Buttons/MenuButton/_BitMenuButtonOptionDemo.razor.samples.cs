@@ -616,6 +616,42 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 <div>Clicked item: @submenuClickedOption</div>";
 
     private readonly string example19RazorCode = @"
+@* The params object carries a default down to every menu button under it, and never overwrites what one set itself. *@
+<BitParams Parameters=""menuButtonParams"">
+    <BitMenuButton Text=""Sort"" TItem=""BitMenuButtonOption"">
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+    </BitMenuButton>
+    <BitMenuButton Text=""Group"" TItem=""BitMenuButtonOption"">
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+    </BitMenuButton>
+    <BitMenuButton Text=""Export"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"">
+        <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+    </BitMenuButton>
+</BitParams>
+
+<BitMenuButton Text=""Outside the cascade"" TItem=""BitMenuButtonOption"">
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>";
+
+    private readonly string example19CsharpCode = @"
+private readonly BitMenuButtonParams[] menuButtonParams =
+[
+    new()
+    {
+        Variant = BitVariant.Outline,
+        IconName = BitIconName.Filter
+    }
+];";
+
+    private readonly string example20RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1775,7 +1811,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitMenuButton Text=""Actions"" 
@@ -1842,7 +1878,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
     <BitMenuButtonOption Text=""Delete"" Icon=""@BitIconInfo.Fa(""solid trash"")"" />
 </BitMenuButton>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
@@ -1891,7 +1927,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -2017,7 +2053,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
     <BitMenuButtonOption Text=""Delete"" Key=""delete"" IconName=""@BitIconName.Delete"" Style=""--bit-MenuButton-item-color: var(--bit-clr-err);"" />
 </BitMenuButton>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitMenuButton Text=""گزینه ها"" Dir=""BitDir.Rtl"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"">
     <BitMenuButtonOption Text=""گزینه الف"" Key=""A"" IconName=""@BitIconName.Emoji"" />
     <BitMenuButtonOption Text=""گزینه ب"" Key=""B"" IconName=""@BitIconName.Emoji"" />

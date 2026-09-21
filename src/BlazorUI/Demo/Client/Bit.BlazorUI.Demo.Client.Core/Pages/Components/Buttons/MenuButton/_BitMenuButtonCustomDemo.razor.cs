@@ -17,6 +17,15 @@ public partial class _BitMenuButtonCustomDemo
 
     private string? submenuClickedCustom;
 
+    private readonly BitMenuButtonParams[] menuButtonParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            IconName = BitIconName.Filter
+        }
+    ];
+
     private static BitMenuButtonNameSelectors<Operation> nameSelectors = new()
     {
         Text = { Name = nameof(Operation.Name) },

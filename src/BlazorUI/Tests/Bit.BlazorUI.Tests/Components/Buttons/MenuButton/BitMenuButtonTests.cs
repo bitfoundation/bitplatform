@@ -1387,6 +1387,250 @@ public class BitMenuButtonTests : BunitTestContext
         Assert.AreEqual(0, com.FindAll(".bit-mnb-opb .bit-mnb-btx").Count);
     }
 
+    [TestMethod]
+    public void BitMenuButtonParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitMenuButtonParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitMenuButton<object>)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitMenuButtonParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitMenuButtonParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitMenuButtonParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Variant = BitVariant.Outline,
+                FullWidth = true,
+                Text = "Cascaded Text",
+                Title = "Cascaded Title"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitMenuButton<BitMenuButtonItem>>(0);
+                builder.AddComponentParameter(1, nameof(BitMenuButton<BitMenuButtonItem>.Items), items);
+                builder.CloseComponent();
+            });
+        });
+
+        var menuButton = com.Find(".bit-mnb");
+
+        Assert.IsTrue(menuButton.ClassList.Contains("bit-mnb-suc"));
+        Assert.IsTrue(menuButton.ClassList.Contains("bit-mnb-lg"));
+        Assert.IsTrue(menuButton.ClassList.Contains("bit-mnb-otl"));
+        Assert.IsTrue(menuButton.ClassList.Contains("bit-mnb-flw"));
+        Assert.AreEqual("Cascaded Title", com.Find(".bit-mnb-opb").GetAttribute("title"));
+        Assert.AreEqual("Cascaded Text", com.Find(".bit-mnb-btx").TextContent);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitMenuButtonParams
+        {
+            AriaDescription = "Test description",
+            AriaHidden = true,
+            AutoFocus = true,
+            AutoLoading = true,
+            Background = BitColorKind.Secondary,
+            ButtonType = BitButtonType.Reset,
+            CheckIconName = "CheckMark",
+            ChevronDownAriaLabel = "More",
+            ChevronDownIconName = "ChevronDown",
+            ChevronDownTitle = "Open the menu",
+            CloseOnItemClick = false,
+            Color = BitColor.Warning,
+            DefaultIsToggled = true,
+            DisabledInteractive = true,
+            DropDirection = BitDropDirection.All,
+            FormId = "my-form",
+            FullWidth = true,
+            IconName = "Share",
+            IconOnly = true,
+            IsLoading = true,
+            LoadingDelay = 300,
+            LoadingLabel = "Loading...",
+            MaxHeight = "12rem",
+            NoIcon = true,
+            RadioIconName = "RadioBtnOn",
+            Reclickable = true,
+            Size = BitSize.Small,
+            Split = true,
+            Sticky = true,
+            StopPropagation = true,
+            SubmenuIconName = "ChevronRightMed",
+            Text = "Test Text",
+            Title = "Test Title",
+            Toggle = true,
+            Variant = BitVariant.Text,
+            AriaLabel = "Test Label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitMenuButton<BitMenuButtonItem>>(0);
+                builder.AddComponentParameter(1, nameof(BitMenuButton<BitMenuButtonItem>.Items), items);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = com.FindComponent<BitMenuButton<BitMenuButtonItem>>().Instance;
+
+        Assert.AreEqual("Test description", instance.AriaDescription);
+        Assert.IsTrue(instance.AriaHidden);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.IsTrue(instance.AutoLoading);
+        Assert.AreEqual(BitColorKind.Secondary, instance.Background);
+        Assert.AreEqual(BitButtonType.Reset, instance.ButtonType);
+        Assert.AreEqual("CheckMark", instance.CheckIconName);
+        Assert.AreEqual("More", instance.ChevronDownAriaLabel);
+        Assert.AreEqual("ChevronDown", instance.ChevronDownIconName);
+        Assert.AreEqual("Open the menu", instance.ChevronDownTitle);
+        Assert.IsFalse(instance.CloseOnItemClick);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.IsTrue(instance.DefaultIsToggled);
+        Assert.IsTrue(instance.DisabledInteractive);
+        Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
+        Assert.AreEqual("my-form", instance.FormId);
+        Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual("Share", instance.IconName);
+        Assert.IsTrue(instance.IconOnly);
+        Assert.IsTrue(instance.IsLoading);
+        Assert.AreEqual(300, instance.LoadingDelay);
+        Assert.AreEqual("Loading...", instance.LoadingLabel);
+        Assert.AreEqual("12rem", instance.MaxHeight);
+        Assert.IsTrue(instance.NoIcon);
+        Assert.AreEqual("RadioBtnOn", instance.RadioIconName);
+        Assert.IsTrue(instance.Reclickable);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.IsTrue(instance.Split);
+        Assert.IsTrue(instance.Sticky);
+        Assert.IsTrue(instance.StopPropagation);
+        Assert.AreEqual("ChevronRightMed", instance.SubmenuIconName);
+        Assert.AreEqual("Test Text", instance.Text);
+        Assert.AreEqual("Test Title", instance.Title);
+        Assert.IsTrue(instance.Toggle);
+        Assert.AreEqual(BitVariant.Text, instance.Variant);
+        Assert.AreEqual("Test Label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitMenuButtonParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Text = "Params Text"
+        };
+
+        // First render with direct parameters
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(p =>
+        {
+            p.Add(x => x.Items, items);
+            p.Add(x => x.Color, BitColor.Error);
+            p.Add(x => x.Size, BitSize.Small);
+            p.Add(x => x.Text, "Existing Text");
+        });
+
+        var instance = com.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Text", instance.Text);
+
+        // Now try to update with params, which should not overwrite since the properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Text", instance.Text);
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsShouldApplyClassesAndStyles()
+    {
+        var classes = new BitMenuButtonClassStyles
+        {
+            Root = "custom-root",
+            OperatorButton = "custom-operator"
+        };
+
+        var styles = new BitMenuButtonClassStyles
+        {
+            Root = "color: red;",
+            OperatorButton = "padding: 10px;"
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitMenuButtonParams { Classes = classes, Styles = styles }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitMenuButton<BitMenuButtonItem>>(0);
+                builder.AddComponentParameter(1, nameof(BitMenuButton<BitMenuButtonItem>.Items), items);
+                builder.CloseComponent();
+            });
+        });
+
+        var menuButton = com.Find(".bit-mnb");
+
+        Assert.IsTrue(menuButton.ClassList.Contains("custom-root"));
+        Assert.IsTrue(menuButton.GetAttribute("style")!.Contains("color: red;"));
+
+        var operatorButton = com.Find(".bit-mnb-opb");
+
+        Assert.IsTrue(operatorButton.ClassList.Contains("custom-operator"));
+        Assert.IsTrue(operatorButton.GetAttribute("style")!.Contains("padding: 10px;"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonParamsShouldNotApplyWhenNull()
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var instance = com.Instance;
+
+        Assert.IsNull(instance.CascadingParameters);
+        Assert.IsNull(instance.Color);
+        Assert.IsNull(instance.Size);
+        Assert.IsNull(instance.Text);
+    }
+
     private class RadioModel
     {
         public string? Label { get; set; }

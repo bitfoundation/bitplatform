@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.BlazorUI;
 
@@ -48,6 +49,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// The EditContext, which is set if the menu button is inside an <see cref="EditForm"/>
     /// </summary>
     [CascadingParameter] protected EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the menu button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple menu button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitMenuButtonParams.ParamName)]
+    public BitMenuButtonParams? CascadingParameters { get; set; }
 
 
 
@@ -558,8 +570,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnParametersSetAsync()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         await base.OnParametersSetAsync();
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);

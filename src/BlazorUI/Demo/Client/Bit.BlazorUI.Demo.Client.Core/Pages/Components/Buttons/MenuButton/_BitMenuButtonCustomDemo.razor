@@ -473,7 +473,29 @@
     <div>Clicked item: @submenuClickedCustom</div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19"
+<DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19"
+             PreventRenderForMcpClient>
+    <div>
+        BitParams carries a BitMenuButtonParams down to every menu button under it, so a toolbar or a section of a page
+        sets a variant, an icon or a tooltip once instead of repeating it at every menu button. What it carries is a
+        default and not an override: a menu button that sets a parameter for itself keeps its own value, and only what
+        it left unset is filled in from the cascade. Each parameter is filled in on its own, so a menu button can take
+        the variant from the cascade and the text from its own markup. The params class is not generic although the
+        component is: everything it carries is independent of the item type, while Items, SelectedItem, NameSelectors,
+        the templates and the callbacks stay with each menu button.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitParams Parameters="menuButtonParams">
+            <BitMenuButton Text="Sort" Items="basicCustoms" NameSelectors="nameSelectors" />
+            <BitMenuButton Text="Group" Items="basicCustoms" NameSelectors="nameSelectors" />
+            <BitMenuButton Text="Export" Items="basicCustoms" NameSelectors="nameSelectors" Variant="BitVariant.Fill" />
+        </BitParams>
+        <BitMenuButton Text="Outside the cascade" Items="basicCustoms" NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
              PreventRenderForMcpClient>
     <div>
         The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu
@@ -1100,7 +1122,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+<DemoExample Title="External Icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
              PreventRenderForMcpClient>
     <div>
         Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button
@@ -1143,7 +1165,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
+<DemoExample Title="Size" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
              PreventRenderForMcpClient>
     <div>
         The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.
@@ -1177,7 +1199,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
+<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
              PreventRenderForMcpClient>
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
@@ -1247,7 +1269,7 @@
                    NameSelectors="nameSelectors" Variant="BitVariant.Outline" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
+<DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24"
              PreventRenderForMcpClient>
     <div>
         Use the Dir parameter to render the menu button in right-to-left (RTL) direction.
@@ -1280,4 +1302,4 @@
             Fragment = (item => @<div class="item-template-box" style="color:red">@item.Name (@item.Id)</div>)
         }
     ];
-}
+}

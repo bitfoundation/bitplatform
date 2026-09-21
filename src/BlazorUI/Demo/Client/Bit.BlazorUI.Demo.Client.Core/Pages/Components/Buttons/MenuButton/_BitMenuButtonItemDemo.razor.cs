@@ -17,6 +17,15 @@ public partial class _BitMenuButtonItemDemo
 
     private string? submenuClickedItem;
 
+    private readonly BitMenuButtonParams[] menuButtonParams =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            IconName = BitIconName.Filter
+        }
+    ];
+
     private static List<BitMenuButtonItem> basicItems =
     [
         new() { Text = "Item A", Key = "A" },
