@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -668,6 +669,75 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggle>();
 
         Assert.AreEqual(0, com.FindAll(".bit-tgl-cnn").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleThumbTemplateShouldRenderInTheKnobAndFollowTheState()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, isOn ? "ON" : "OFF")));
+        });
+
+        Assert.AreEqual("OFF", com.Find(".bit-tgl-sta").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.Value, true));
+
+        Assert.AreEqual("ON", com.Find(".bit-tgl-sta").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleThumbTemplateShouldTakeTheKnobFromTheStateIconAndTheRoomierGeometryWithIt()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.OnIconName, "Accept");
+            parameters.Add(p => p.OffIconName, "Cancel");
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL")));
+        });
+
+        Assert.AreEqual("TPL", com.Find(".bit-tgl-sta").TextContent.Trim());
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-ico").Count);
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+    }
+
+    [TestMethod]
+    public void BitToggleThumbTemplateAloneShouldStillAskForTheRoomierGeometry()
+    {
+        var com = RenderComponent<BitToggle>();
+
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+
+        com.Render(parameters => parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL"))));
+
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+    }
+
+    [TestMethod]
+    public void BitToggleLoadingShouldTakeTheKnobBackFromTheThumbTemplate()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL")));
+        });
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.AreEqual(string.Empty, com.Find(".bit-tgl-sta").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleKnobShouldStayOutOfTheAccessibleName()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Dark mode");
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, isOn ? "ON" : "OFF")));
+        });
+
+        // The switch is named by its label and reports its state through aria-checked, so everything the knob
+        // carries - a glyph, a template, the spinner - is decoration that must not end up in the name.
+        Assert.AreEqual("true", com.Find(".bit-tgl-sta").GetAttribute("aria-hidden"));
     }
 
     [TestMethod]

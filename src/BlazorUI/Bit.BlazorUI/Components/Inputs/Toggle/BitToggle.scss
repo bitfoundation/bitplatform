@@ -5,6 +5,7 @@
 //   --bit-Toggle-track-background            track fill while off                          (default: $clr-bg-pri)
 //   --bit-Toggle-track-border-color          track stroke while off                        (default: $clr-brd-pri)
 //   --bit-Toggle-thumb-color                 the knob while off                            (default: $clr-fg-sec)
+//   --bit-Toggle-hover-track-background      track fill on hover while off                 (default: as the track fill at rest)
 //   --bit-Toggle-hover-track-border-color    track stroke on hover while off               (default: $clr-brd-pri-hover)
 //   --bit-Toggle-hover-thumb-color           the knob on hover while off                   (default: $clr-fg-sec-hover)
 //   --bit-Toggle-checked-background          track fill while on                           (default: the role's main color)
@@ -37,7 +38,7 @@
 //                                            every side of it                              (default: derived from the track height and the knob)
 //   --bit-Toggle-thumb-shadow                elevation of the knob                         (default: none)
 //   --bit-Toggle-thumb-active-scale          how far the knob dips while pressed           (default: 0.9)
-//   --bit-Toggle-icon-size                   the glyph inside the knob                     (default: per size)
+//   --bit-Toggle-icon-size                   the glyph inside the knob                     (default: 3/5 of the knob it sits in)
 //   --bit-Toggle-spinner-size                diameter of the loading spinner               (default: 4/5 of the knob it lands in)
 //   --bit-Toggle-spinner-width               thickness of the spinner's ring               (default: $siz-spinner-stroke)
 //   --bit-Toggle-gap                         room between the track and the label, and
@@ -86,6 +87,11 @@
     --bit-tgl-trk-h: var(--bit-Toggle-track-height, var(--bit-tgl-trk-h-base));
     --bit-tgl-thb-size: var(--bit-Toggle-thumb-size, var(--bit-tgl-thb-size-base));
     --bit-tgl-pad: var(--bit-Toggle-thumb-inset, calc((var(--bit-tgl-trk-h) - var(--bit-tgl-thb-size)) / 2 - var(--bit-tgl-brd-w)));
+    // The glyph and the spinner are measured off the knob that carries them rather than off a size class, so
+    // a knob resized through --bit-Toggle-thumb-size keeps whatever it holds in proportion instead of leaving
+    // it at the size the size class asked for. The stroke of the spinner stays a stroke and keeps its token.
+    --bit-tgl-ico-fontsize: calc(var(--bit-tgl-thb-size) * 0.6);
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
     // Every transition of the toggle runs off this one duration, so a theme that wants a slower slide - or
     // none at all - says so once. It already collapses to zero wherever reduced motion is asked for.
     --bit-tgl-dur: var(--bit-Toggle-transition-duration, #{$mot-duration-short});
@@ -95,7 +101,10 @@
     --bit-tgl-trk-clr-bg: var(--bit-Toggle-track-background, #{$clr-bg-pri});
     --bit-tgl-trk-clr-brd: var(--bit-Toggle-track-border-color, #{$clr-brd-pri});
     --bit-tgl-thb-clr: var(--bit-Toggle-thumb-color, #{$clr-fg-sec});
-    --bit-tgl-ico-clr: var(--bit-Toggle-icon-color, #{$clr-bg-pri});
+    // The glyph sits on the knob, which sits on the track, so it is painted in the fill of the track behind
+    // it - read off that fill rather than off the token that happens to be its default, so a track recolored
+    // through any of the variables above carries its glyph along with it.
+    --bit-tgl-ico-clr: var(--bit-Toggle-icon-color, var(--bit-tgl-trk-clr-bg));
     --bit-tgl-cnn-clr: var(--bit-Toggle-content-color, #{$clr-fg-sec});
     // The spinner takes the color the glyph it replaces would have had. Resolved here, on the root, where
     // every state that recolors the glyph declares its own value.
@@ -105,7 +114,9 @@
         --bit-tgl-trk-clr-bg: var(--bit-Toggle-disabled-color, #{$clr-bg-dis});
         --bit-tgl-trk-clr-brd: var(--bit-Toggle-disabled-color, #{$clr-brd-dis});
         --bit-tgl-thb-clr: var(--bit-Toggle-disabled-color, #{$clr-fg-dis});
-        --bit-tgl-ico-clr: var(--bit-Toggle-disabled-color, #{$clr-bg-dis});
+        // The palette is gone in this state, so an icon color picked for the enabled one goes with it and
+        // the glyph simply takes the disabled fill of the track behind it.
+        --bit-tgl-ico-clr: var(--bit-tgl-trk-clr-bg);
         --bit-tgl-cnn-clr: var(--bit-Toggle-disabled-text-color, #{$clr-fg-dis});
 
         .bit-tgl-lbl, .bit-tgl-des, .bit-tgl-stx {
@@ -146,7 +157,8 @@
             --bit-tgl-trk-clr-bg: var(--bit-Toggle-error-color, #{$clr-err});
             --bit-tgl-trk-clr-brd: var(--bit-Toggle-error-color, #{$clr-err});
             --bit-tgl-thb-clr: #{$clr-err-text};
-            --bit-tgl-ico-clr: var(--bit-Toggle-error-color, #{$clr-err});
+            // As in the disabled state: the error fill replaces the palette, and takes the glyph with it.
+            --bit-tgl-ico-clr: var(--bit-tgl-trk-clr-bg);
         }
     }
 }
@@ -157,6 +169,9 @@
 // can make or paint over the error color that is the point of the invalid state.
 @media (hover: hover) {
     .bit-tgl:hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {
+        // Spelled out down to the literal default rather than falling back on --bit-tgl-trk-clr-bg, which is
+        // the very property being declared here and would make the whole value cyclic and drop it.
+        --bit-tgl-trk-clr-bg: var(--bit-Toggle-hover-track-background, var(--bit-Toggle-track-background, #{$clr-bg-pri}));
         --bit-tgl-trk-clr-brd: var(--bit-Toggle-hover-track-border-color, #{$clr-brd-pri-hover});
         --bit-tgl-thb-clr: var(--bit-Toggle-hover-thumb-color, #{$clr-fg-sec-hover});
 
@@ -377,8 +392,12 @@
     display: flex;
     scale: 1;
     z-index: 1;
+    line-height: 1;
     align-items: center;
     position: absolute;
+    // The knob is a shape with a radius of its own, so whatever it carries - a glyph, a template, the
+    // spinner - is kept inside that shape instead of spilling over the track around it.
+    overflow: hidden;
     box-sizing: border-box;
     justify-content: center;
     // Centered on the cross axis by auto margins against a zero block inset rather than by a 50% offset
@@ -505,7 +524,6 @@
     --bit-tgl-trk-clr-bg: var(--bit-Toggle-checked-background, var(--bit-tgl-clr));
     --bit-tgl-trk-clr-brd: var(--bit-Toggle-checked-border-color, transparent);
     --bit-tgl-thb-clr: var(--bit-Toggle-checked-thumb-color, var(--bit-tgl-clr-text));
-    --bit-tgl-ico-clr: var(--bit-Toggle-icon-color, var(--bit-tgl-clr));
     --bit-tgl-cnn-clr: var(--bit-Toggle-content-color, var(--bit-tgl-clr-text));
 
     // The knob slides to the far end and the lane held open for it swaps with it, so whatever content the
@@ -527,8 +545,6 @@
     --bit-tgl-trk-w-ico: #{spacing(5)};
     --bit-tgl-trk-h-ico: #{spacing(2.5)};
     --bit-tgl-thb-size-ico: #{spacing(1.75)};
-    --bit-tgl-ico-fontsize: #{spacing(1)};
-    --bit-tgl-spn-width: #{$siz-spinner-stroke};
     --bit-tgl-cnn-fontsize: #{$tg-fs-2xs};
     --bit-tgl-cnn-pad: #{spacing(0.25)};
     --bit-tgl-lbl-fontsize: #{$tg-fs-xs};
@@ -544,8 +560,6 @@
     --bit-tgl-trk-w-ico: #{spacing(6.5)};
     --bit-tgl-trk-h-ico: #{spacing(3.5)};
     --bit-tgl-thb-size-ico: #{spacing(2.5)};
-    --bit-tgl-ico-fontsize: #{spacing(1.5)};
-    --bit-tgl-spn-width: #{$siz-spinner-stroke};
     --bit-tgl-cnn-fontsize: #{$tg-fs-xs};
     --bit-tgl-cnn-pad: #{spacing(0.375)};
     --bit-tgl-lbl-fontsize: #{$tg-fs-sm};
@@ -561,8 +575,6 @@
     --bit-tgl-trk-w-ico: #{spacing(8)};
     --bit-tgl-trk-h-ico: #{spacing(4.25)};
     --bit-tgl-thb-size-ico: #{spacing(3.25)};
-    --bit-tgl-ico-fontsize: #{spacing(2)};
-    --bit-tgl-spn-width: #{$siz-spinner-stroke};
     --bit-tgl-cnn-fontsize: #{$tg-fs-sm};
     --bit-tgl-cnn-pad: #{spacing(0.5)};
     --bit-tgl-lbl-fontsize: #{$tg-fs-md};

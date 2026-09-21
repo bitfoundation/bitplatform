@@ -127,7 +127,7 @@ public partial class BitToggleDemo
             Name = "Loading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a spinner in place of the knob's icon and suspends the toggle until the pending work behind the change is done.",
+            Description = "Renders a spinner in place of whatever the knob carries and suspends the toggle until the pending work behind the change is done.",
         },
         new()
         {
@@ -274,6 +274,13 @@ public partial class BitToggleDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The default text used when the On or Off texts are null.",
+        },
+        new()
+        {
+            Name = "ThumbTemplate",
+            Type = "RenderFragment<bool>?",
+            DefaultValue = "null",
+            Description = "Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of the glyph OnIconName and OffIconName would have drawn there. The knob takes the roomier geometry a glyph asks for, and the spinner still takes it back while the toggle is busy.",
         },
         new()
         {
@@ -636,6 +643,12 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "--bit-Toggle-hover-track-background",
+            DefaultValue = "As the track fill at rest",
+            Description = "Track fill while hovered and off (pointer devices only).",
+        },
+        new()
+        {
             Name = "--bit-Toggle-hover-track-border-color",
             DefaultValue = "$clr-brd-pri-hover",
             Description = "Track stroke while hovered and off (pointer devices only).",
@@ -793,7 +806,7 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-icon-size",
-            DefaultValue = "Per size",
+            DefaultValue = "3/5 of the knob it sits in",
             Description = "The glyph inside the knob.",
         },
         new()

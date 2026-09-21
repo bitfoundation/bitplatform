@@ -70,15 +70,21 @@
                 aria-disabled="@(IsEnabled is false || IsLoading ? "true" : null)">
 
             @* The knob is taken out of the flow and slid between the two ends of the track, while the lane it
-               would have taken is held open by the padding of the track, which swaps sides with the state. *@
-            <span style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb">
+               would have taken is held open by the padding of the track, which swaps sides with the state.
+               Everything in it - a glyph, a template, the spinner - is decorative next to aria-checked and
+               aria-busy, so the whole knob is hidden from the accessible name the switch takes from its label. *@
+            <span aria-hidden="true" style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb">
                 @if (IsLoading)
                 {
                     <span style="@Styles?.Spinner" class="bit-tgl-spn @Classes?.Spinner"></span>
                 }
+                else if (ThumbTemplate is not null)
+                {
+                    @ThumbTemplate(CurrentValue)
+                }
                 else if (icon is not null)
                 {
-                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-tgl-ico @icon.GetCssClasses() @Classes?.Icon"></i>
+                    <i style="@Styles?.Icon" class="bit-tgl-ico @icon.GetCssClasses() @Classes?.Icon"></i>
                 }
             </span>
 

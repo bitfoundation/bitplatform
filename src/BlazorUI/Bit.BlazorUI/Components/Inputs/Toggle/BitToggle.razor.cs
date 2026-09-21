@@ -4,9 +4,9 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.
-/// For example, “On/Off”, “Show/Hide”. It supports state texts, an icon or custom content inside the track,
-/// a description, a loading state, cancellable changes, read-only and required modes, label placement on any
-/// side, and it is fully operable from the keyboard.
+/// For example, “On/Off”, “Show/Hide”. It supports state texts, custom content inside the track, an icon or a
+/// template inside the knob, a description, a loading state, cancellable changes, read-only and required modes,
+/// label placement on any side, and it is fully operable from the keyboard.
 /// </summary>
 public partial class BitToggle : BitInputBase<bool>
 {
@@ -163,13 +163,13 @@ public partial class BitToggle : BitInputBase<bool>
     public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Renders a spinner in place of the knob's icon and suspends the toggle until the pending
+    /// Renders a spinner in place of whatever the knob carries and suspends the toggle until the pending
     /// work behind the change is done.
     /// </summary>
     /// <remarks>
     /// A loading toggle keeps its current state and ignores clicks, but stays focusable and is
     /// announced as busy and unavailable, so the change that is still in flight is not toggled a second
-    /// time. The spinner is drawn to the size of the knob it replaces the glyph of, so turning the toggle
+    /// time. The spinner is drawn to the size of the knob it takes over, so turning the toggle
     /// busy never resizes it. Use <see cref="AutoLoading"/> to have the toggle raise this state itself
     /// around the callbacks of a change.
     /// </remarks>
@@ -314,6 +314,19 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public BitToggleClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of
+    /// the glyph <see cref="OnIconName"/> and <see cref="OffIconName"/> would have drawn there.
+    /// </summary>
+    /// <remarks>
+    /// The knob steps up to the roomier geometry a glyph asks for - in both states, so flipping the toggle
+    /// never resizes it - and the content is hidden from assistive technologies along with the rest of the
+    /// knob, which already reports its state through <c>aria-checked</c>. While the toggle is busy the
+    /// spinner takes the knob back, the same way it takes it back from a glyph.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment<bool>? ThumbTemplate { get; set; }
+
+    /// <summary>
     /// The default text used when the On or Off texts are null.
     /// </summary>
     [Parameter] public string? Text { get; set; }
@@ -395,7 +408,7 @@ public partial class BitToggle : BitInputBase<bool>
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
         // state that has one, so that toggling never resizes the toggle underneath the pointer.
-        ClassBuilder.Register(() => HasIcon ? "bit-tgl-tic" : string.Empty);
+        ClassBuilder.Register(() => HasThumbContent ? "bit-tgl-tic" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -513,14 +526,16 @@ public partial class BitToggle : BitInputBase<bool>
     private bool IsLoading => Loading || _autoLoading;
 
     /// <summary>
-    /// Whether the knob has a glyph to hold, which is what decides its enlarged geometry.
+    /// Whether the knob has something to hold - a glyph in either state, or a template - which is what
+    /// decides its enlarged geometry.
     /// </summary>
     /// <remarks>
     /// The loading state is deliberately not part of it: a spinner is drawn to the size of whatever knob it
     /// lands in, so that turning a toggle busy never resizes it in front of the person waiting on it.
     /// </remarks>
-    private bool HasIcon => OnIcon is not null || OnIconName.HasValue()
-                         || OffIcon is not null || OffIconName.HasValue();
+    private bool HasThumbContent => ThumbTemplate is not null
+                                 || OnIcon is not null || OnIconName.HasValue()
+                                 || OffIcon is not null || OffIconName.HasValue();
 
     /// <summary>
     /// Whether the toggle currently accepts a change from the user.
