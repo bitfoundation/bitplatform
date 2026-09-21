@@ -16,6 +16,11 @@
     var labelId = $"{_Id}-label";
     var inputId = $"{_Id}-input";
     var hasLabel = Label.HasValue() || LabelTemplate is not null;
+
+    @* What the thumbs are described by: the description this slider renders - one element for the whole slider
+       rather than one per thumb, since what it says is about the slider and not about either end of it - joined
+       with whatever the caller has already pointed the inputs at. *@
+    var describedBy = GetDescribedBy();
     var showThumbLabel = ThumbLabel is not null and not BitSliderThumbLabel.Off;
     var valueText = GetDisplayValue(value);
     var lowerText = GetDisplayValue(lower);
@@ -240,6 +245,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(lowerAriaMin)"
                            aria-valuemax="@ToInvariant(lowerAriaMax)"
@@ -268,6 +274,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(upperAriaMin)"
                            aria-valuemax="@ToInvariant(upperAriaMax)"
@@ -327,6 +334,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(min)"
                            aria-valuemax="@ToInvariant(max)"
@@ -375,4 +383,12 @@
             }
         }
     </div>
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text has to live in an element of its own. It is
+           removed from the page visually and left in the accessibility tree, and sits outside the label so it
+           never leaks into the accessible name of either thumb. *@
+        <span id="@DescriptionId" class="bit-sld-dsc">@AriaDescription</span>
+    }
 </div>

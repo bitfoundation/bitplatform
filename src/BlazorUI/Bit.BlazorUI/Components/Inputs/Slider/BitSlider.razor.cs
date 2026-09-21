@@ -72,6 +72,31 @@ public partial class BitSlider : BitInputBase<double>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the slider component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple slider components
+    /// through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitSliderParams.ParamName)]
+    public BitSliderParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// A description of the Slider for the benefit of screen readers, beyond the name its label already gives it.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered into a visually hidden element of its own that every thumb references through its
+    /// <c>aria-describedby</c> attribute, so it is announced after the name and the value rather than becoming
+    /// part of the name. Use it for what a label has no room to say: the unit a bare number is in, the rule the
+    /// value has to satisfy, or what the thing the slider controls actually does.
+    /// </remarks>
+    [Parameter] public string? AriaDescription { get; set; }
+
+    /// <summary>
     ///  A text description of the Slider number value for the benefit of screen readers.
     ///  This should be used when the Slider number value is not accurately represented by a number.
     /// </summary>
@@ -163,8 +188,8 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     /// <remarks>
     /// A vertical slider has no length of its own to inherit, so it is given one through the
-    /// <c>--bit-sld-length</c> CSS variable, which defaults to 12rem and can be changed per instance
-    /// (<c>Style="--bit-sld-length: 20rem"</c>) or globally.
+    /// <c>--bit-Slider-length</c> CSS variable, which defaults to 12rem and can be changed per instance
+    /// (<c>Style="--bit-Slider-length: 20rem"</c>) or globally.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool IsVertical { get; set; }
@@ -449,6 +474,8 @@ public partial class BitSlider : BitInputBase<double>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-sld-rdl" : string.Empty);
 
+        ClassBuilder.Register(() => IsEnabled && Required ? "bit-sld-req" : string.Empty);
+
         ClassBuilder.Register(() => Inverted ? "bit-sld-ivt" : string.Empty);
 
         ClassBuilder.Register(() => IsRanged ? "bit-sld-rgd" : string.Empty);
@@ -504,6 +531,11 @@ public partial class BitSlider : BitInputBase<double>
 
     protected override void OnInitialized()
     {
+        // The cascade is applied here as well as in OnParametersSet, because the defaults of an unbound slider
+        // are picked exactly once - right below - and which ones those are depends on IsRanged, which a cascade
+        // is as free to set as the markup is.
+        CascadingParameters?.UpdateParameters(this);
+
         _onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnKeyDown);
         _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
 
@@ -534,8 +566,14 @@ public partial class BitSlider : BitInputBase<double>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSliderParams))]
     protected override void OnParametersSet()
     {
+        // Before anything is read off the parameters, since the cascade fills in the ones the markup left unset -
+        // the scale, the step and the marks among them, all of which the caches below and the normalization
+        // after it are built from.
+        CascadingParameters?.UpdateParameters(this);
+
         _marks = null;
         _markValues = null;
 
@@ -585,9 +623,40 @@ public partial class BitSlider : BitInputBase<double>
                 _thumbA = lower;
                 _thumbB = upper;
             }
+
+            ApplyGroupAttributes();
         }
 
         base.OnParametersSet();
+    }
+
+    /// <summary>
+    /// Wraps the two ends of a ranged slider in a named group, which is what the WAI-ARIA multi-thumb pattern
+    /// asks for: without one a screen reader user meets two sliders with no word for what the pair selects
+    /// together. A single-value slider is one control and needs no group around it.
+    /// </summary>
+    /// <remarks>
+    /// The attributes are merged into <see cref="BitComponentBase.HtmlAttributes"/> rather than written onto the
+    /// root element, so that an explicit role or name passed to the slider still wins. An attribute written after
+    /// a splat overrides it even when its value is null, which would silently drop the one the caller supplied.
+    /// The dictionary is emptied and refilled on every parameter set, so nothing outlives the pass that added it.
+    /// </remarks>
+    private void ApplyGroupAttributes()
+    {
+        HtmlAttributes.TryAdd("role", "group");
+
+        // Either one names the group, so a caller who supplied one is not given a second name beside it.
+        if (HtmlAttributes.ContainsKey("aria-label") || HtmlAttributes.ContainsKey("aria-labelledby")) return;
+
+        if (AriaLabel.HasValue())
+        {
+            HtmlAttributes["aria-label"] = AriaLabel;
+        }
+        else if (Label.HasValue() || LabelTemplate is not null)
+        {
+            // The caption a sighted reader is given, which is also what the thumbs borrow their names from.
+            HtmlAttributes["aria-labelledby"] = $"{_Id}-label";
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -1049,6 +1118,32 @@ public partial class BitSlider : BitInputBase<double>
     /// as a whole, and finally its visible label - so a thumb is never left without a name.
     /// </summary>
     private string? GetThumbAriaLabel(string? specific) => specific.HasValue() ? specific : (AriaLabel.HasValue() ? AriaLabel : Label);
+
+    /// <summary>
+    /// The id of the element holding the <see cref="AriaDescription"/>, which is what the thumbs point at.
+    /// </summary>
+    private string DescriptionId => $"{_Id}-description";
+
+    /// <summary>
+    /// Everything the thumbs are described by: the description this slider renders, and whatever the caller has
+    /// already pointed the inputs at through <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>.
+    /// </summary>
+    /// <remarks>
+    /// The two are joined rather than one winning, because the attribute the component writes lands after the
+    /// splatted ones and would otherwise replace them - and a validation message, a hint or a unit the caller has
+    /// associated with the field by hand is exactly the kind of thing that must not be silently dropped.
+    /// aria-describedby takes a list of ids, so both simply appear in it.
+    /// </remarks>
+    private string? GetDescribedBy()
+    {
+        var supplied = InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue("aria-describedby", out var value)
+            ? value?.ToString()
+            : null;
+
+        if (AriaDescription.HasValue() is false) return supplied;
+
+        return supplied.HasValue() ? $"{supplied} {DescriptionId}" : DescriptionId;
+    }
 
     /// <summary>
     /// The element a thumb borrows its name from when there is no text to name it with directly.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -3348,6 +3348,144 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual("3", com.Find(".bit-sld-inp").GetAttribute("tabindex"));
     }
 
+    [TestMethod]
+    public void BitSliderShouldDescribeItselfWithTheAriaDescription()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Budget");
+            parameters.Add(p => p.AriaDescription, "In thousands of euros.");
+        });
+
+        var description = com.Find(".bit-sld-dsc");
+
+        Assert.AreEqual("In thousands of euros.", description.TextContent);
+        Assert.AreEqual(description.Id, com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPointBothThumbsOfARangeAtTheSameDescription()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.AriaDescription, "The band to include.");
+        });
+
+        var id = com.Find(".bit-sld-dsc").Id;
+
+        Assert.AreEqual(id, com.Find(".bit-sld-inp-lwr").GetAttribute("aria-describedby"));
+        Assert.AreEqual(id, com.Find(".bit-sld-inp-upr").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderADescriptionWhenThereIsNone()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-dsc").Count);
+        Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepADescriptionTheCallerPointedTheInputAt()
+    {
+        // A validation message or a hint the caller has associated with the field by hand must survive the one
+        // the slider adds, since aria-describedby takes a list of ids rather than a single one.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.AriaDescription, "In thousands.");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "external-hint" } });
+        });
+
+        Assert.AreEqual($"external-hint {com.Find(".bit-sld-dsc").Id}", com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepTheCallersDescriptionWhenItAddsNoneOfItsOwn()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "external-hint" } });
+        });
+
+        Assert.AreEqual("external-hint", com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGroupTheTwoThumbsOfARange()
+    {
+        // The WAI-ARIA multi-thumb pattern asks for the two sliders to be wrapped in a named group, so that
+        // what the pair selects together has a word of its own.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Label, "Price range");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual(com.Find(".bit-sld-lbl").Id, root.GetAttribute("aria-labelledby"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNameTheGroupAfterItsAriaLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Label, "Price range");
+            parameters.Add(p => p.AriaLabel, "Price, in euros");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("Price, in euros", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLetAHandWrittenNameWinOverTheGroupOne()
+    {
+        // The group attributes are merged into the splatted ones rather than written over them, so a role or a
+        // name put on the slider by hand still reaches the root - and nothing else it carries is lost.
+        var com = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSlider>(0);
+            builder.AddAttribute(1, nameof(BitSlider.IsRanged), true);
+            builder.AddAttribute(2, nameof(BitSlider.Label), "Price");
+            builder.AddAttribute(3, "aria-label", "written by hand");
+            builder.AddAttribute(4, "data-probe", "yes");
+            builder.CloseComponent();
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.AreEqual("written by hand", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("yes", root.GetAttribute("data-probe"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotGroupASingleThumb()
+    {
+        // One control needs no group around it, and an extra one is one more thing to step through.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Volume");
+            parameters.Add(p => p.AriaLabel, "Volume, in percent");
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("aria-labelledby"));
+    }
+
     #endregion
 
     #region Styles, classes and html attributes
@@ -3575,6 +3713,33 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldMarkARequiredSliderOnItsLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Days");
+            parameters.Add(p => p.Required, true);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotMarkADisabledSliderAsRequired()
+    {
+        // A control that cannot be filled in is not one the reader is being asked to fill in.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Days");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
+    }
+
+    [TestMethod]
     public void BitSliderShouldNotValidateWhenNoValidateIsSet()
     {
         // The value of the fixture starts outside the range its model asks for, so the submit below leaves an
@@ -3589,6 +3754,137 @@ public class BitSliderTests : BunitTestContext
         Assert.AreEqual(1, com.Instance.InvalidCount);
         Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
         Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
+    }
+
+    #endregion
+
+    #region Cascading parameters
+
+    [TestMethod]
+    public void BitSliderParamsShouldHaveTheCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSlider)}", BitSliderParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitSliderParamsShouldImplementIBitComponentParams()
+    {
+        var sliderParams = new BitSliderParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(sliderParams);
+        Assert.AreEqual(BitSliderParams.ParamName, sliderParams.Name);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldApplyCascadingParametersFromBitParams()
+    {
+        var com = RenderSliderWithParams(new BitSliderParams
+        {
+            Min = 0,
+            Max = 100,
+            Step = 5,
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            ShowMarks = true,
+            MarkStep = 25,
+            ReadOnly = true
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-sld-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-sld-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-sld-rdl"));
+
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.AreEqual("100", input.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("5", input.GetAttribute("step"));
+        Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+
+        // Marks every 25 of a 0..100 scale, so five of them - which also proves the mark caches are built
+        // after the cascade has been applied rather than before it.
+        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderOwnParametersShouldOverrideTheCascadedOnes()
+    {
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitSliderParams { Max = 100, Color = BitColor.Success, Size = BitSize.Large, ReadOnly = true }
+            });
+            parameters.AddChildContent<BitSlider>(slider =>
+            {
+                slider.Add(p => p.Max, 4D);
+                slider.Add(p => p.Color, BitColor.Error);
+                slider.Add(p => p.ReadOnly, false);
+            });
+        });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-sld-err"));
+        Assert.IsFalse(root.ClassList.Contains("bit-sld-suc"));
+        Assert.IsFalse(root.ClassList.Contains("bit-sld-rdl"));
+
+        // Size was left unset on the slider itself, so it still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-sld-lg"));
+        Assert.AreEqual("4", com.Find(".bit-sld-inp").GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTakeIsRangedFromTheCascadeBeforeItsDefaultsArePicked()
+    {
+        // The defaults of an unbound slider are picked once, in OnInitialized, and which ones those are
+        // depends on IsRanged - so the cascade has to have been applied by then.
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitSliderParams { IsRanged = true, Max = 10 }
+            });
+            parameters.AddChildContent<BitSlider>(slider =>
+            {
+                slider.Add(p => p.DefaultLowerValue, 3D);
+                slider.Add(p => p.DefaultUpperValue, 7D);
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-rgd"));
+        Assert.AreEqual("3", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
+        Assert.AreEqual("7", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTakeTheComponentBaseParametersFromTheCascade()
+    {
+        var com = RenderSliderWithParams(new BitSliderParams { Class = "cascaded", Dir = BitDir.Rtl });
+
+        var root = com.Find(".bit-sld");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTakeRequiredFromTheCascade()
+    {
+        var com = RenderSliderWithParams(new BitSliderParams { Required = true });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-required"));
+    }
+
+    private IRenderedComponent<BitParams> RenderSliderWithParams(BitSliderParams sliderParams)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { sliderParams });
+            parameters.AddChildContent<BitSlider>(slider => slider.Add(p => p.Label, "Cascaded"));
+        });
     }
 
     #endregion

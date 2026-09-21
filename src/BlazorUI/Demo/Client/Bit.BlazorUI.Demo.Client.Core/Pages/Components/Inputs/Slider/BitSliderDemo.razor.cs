@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Slider;
 
@@ -6,6 +6,13 @@ public partial class BitSliderDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A description of the Slider for the benefit of screen readers, beyond the name its label already gives it. It is rendered into a visually hidden element that every thumb references through its aria-describedby attribute, so it is announced after the name and the value rather than becoming part of the name.",
+        },
         new()
         {
             Name = "AriaValueText",
@@ -99,7 +106,7 @@ public partial class BitSliderDemo
             Name = "IsVertical",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to render the slider vertically. Its length comes from the --bit-sld-length CSS variable, which defaults to 12rem.",
+            Description = "Whether to render the slider vertically. Its length comes from the --bit-Slider-length CSS variable, which defaults to 12rem.",
         },
         new()
         {
@@ -384,6 +391,214 @@ public partial class BitSliderDemo
         }
     ];
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Slider-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The accent: the filled part of the track and the ring around every thumb.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-hover-color",
+            DefaultValue = "The Color role's hover color",
+            Description = "The accent while the slider is hovered (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Slider-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "The ring around the thumb that holds the keyboard focus. A slider whose value is invalid uses the error focus color instead.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-disabled-color",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "The fill, the thumb ring, the marks and the origin tick while IsEnabled is false.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "The fill and the thumb ring while the value is invalid.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-rail-color",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "The part of the track the fill has not reached, which stays neutral whichever Color is picked.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-rail-size",
+            DefaultValue = "--bit-siz-track-sm / -md / -lg, per Size",
+            Description = "Thickness of the rail and of the fill.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-rail-radius",
+            DefaultValue = "The rail thickness",
+            Description = "Corner radius of the rail and of the fill. The default rounds them into a pill; set it to 0 for a square-ended bar.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-size",
+            DefaultValue = "--bit-siz-slider-thumb-sm / -md / -lg, per Size",
+            Description = "Diameter of a thumb. It is also the width a vertical slider lays its track inside, and the room kept clear at each end of the track for the thumb to travel into.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-radius",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius of a thumb.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-border-width",
+            DefaultValue = "--bit-shp-brd-width-thick",
+            Description = "Thickness of the accent ring around a thumb.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "The face of a thumb, inside its ring. A page background is what keeps a thumb a distinguishable shape where it overlaps the fill.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of a thumb. It is also what a thumb falls back to when it gives the focus ring up, since the ring and the shadow are the same property.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-length",
+            DefaultValue = "9rem / 12rem / 15rem, per Size",
+            Description = "Length of a vertical slider, which has none of its own to inherit from the line it sits on. It has no effect on a horizontal one, which fills its container.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-gap",
+            DefaultValue = "0.5rem",
+            Description = "Room between the track and the value labels beside it.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Size of the caption and of the value labels.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the caption and of the value labels.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-letter-spacing",
+            DefaultValue = "--bit-tpg-ctrl-letter-spacing",
+            Description = "Tracking of the caption and of the value labels.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the caption above the slider.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-value-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the value labels beside the track.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "The asterisk drawn after the caption of a required slider.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-mark-size",
+            DefaultValue = "The rail thickness, floored at 2px",
+            Description = "Diameter of a mark tick. The floor is what keeps the marks of a hairline rail visible.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-mark-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "A mark the fill has not reached.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-mark-active-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "A mark the fill has reached, drawn on top of it in the contrasting color so it stays legible there.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-mark-label-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The text written under a mark.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-mark-label-font-size",
+            DefaultValue = "Per Size, one ramp step below the value labels",
+            Description = "Size of that text.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "Text of the floating label that rides along with a thumb.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-background",
+            DefaultValue = "The accent color",
+            Description = "Background of that label.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-radius",
+            DefaultValue = "--bit-shp-radius-popup",
+            Description = "Its corner radius.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-padding",
+            DefaultValue = "0.125rem 0.375rem",
+            Description = "Its padding.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-font-size",
+            DefaultValue = "As the mark labels",
+            Description = "Its font size.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-origin-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The tick marking where the fill grows out of, drawn by Origin and IsOriginFromZero.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-origin-width",
+            DefaultValue = "--bit-shp-brd-width-thick",
+            Description = "Thickness of that tick.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-transition-duration",
+            DefaultValue = "--bit-mot-duration-short",
+            Description = "How long the fill and the thumbs take to follow a value that arrives in one jump - a key, a press on the rail, a change made elsewhere on the page. A thumb held under the pointer is never eased, whatever this is set to.",
+        }
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -656,6 +871,21 @@ public partial class BitSliderDemo
     ];
 
 
+
+    private readonly BitSliderParams[] sliderParams =
+    [
+        new()
+        {
+            Min = 0,
+            Max = 100,
+            Step = 5,
+            MarkStep = 25,
+            ShowMarks = true,
+            Size = BitSize.Small,
+            Color = BitColor.Info,
+            ValueFormat = "0'%'",
+        }
+    ];
 
     private BitSliderRangeValue ageBand = new(25, 45);
 

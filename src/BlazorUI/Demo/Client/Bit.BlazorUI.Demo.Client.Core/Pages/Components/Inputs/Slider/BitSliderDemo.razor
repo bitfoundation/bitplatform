@@ -1,4 +1,4 @@
-@page "/components/slider"
+﻿@page "/components/slider"
 
 <PageOutlet Url="components/slider"
             Title="Slider"
@@ -6,8 +6,9 @@
 
 <DemoPage Name="Slider"
           SecondaryNames="@(["Range"])"
-          Description="BitSlider turns a number into a distance you can point at: drag the thumb, press the rail to send it there, or step it with the keyboard, and watch the fill follow. Give it two thumbs and it selects a range instead, with a minimum and a maximum distance to keep them apart, an option to stop them crossing, another to let one push the other along, and one more that makes the band between them a handle you can slide the whole range by. The fill does not have to start at the near end - attach it to zero, to any origin you like, invert it so that it highlights what lies beyond the value, or drop it altogether when the value is a position rather than a quantity. Marks can be drawn at every step or at values you choose, with labels under them, and can be made the only values the user is allowed to land on. A floating label can ride along with the thumb, on hover or always, carrying your own markup if plain text is not enough. It runs horizontally or vertically, takes any theme color and three sizes, and - because it is built on native range inputs - it comes with the whole slider keyboard, touch dragging, form submission and EditForm validation already working, with the larger Page and Shift jumps pinned to a distance you name rather than left to the browser."
+          Description="BitSlider turns a number into a distance you can point at: drag the thumb, press the rail to send it there, or step it with the keyboard. Give it two thumbs and it selects a range instead, with a smallest and a largest distance to keep the two apart, an option to stop them crossing, another to let one push the other along, and a band between them you can slide the whole range by. The fill can grow from the near end, from zero, from any origin you like, invert to highlight what lies beyond the value, or be dropped altogether. Marks can be drawn at every step or at values you choose, labelled, and made the only values the user may land on, and a floating label can ride along with the thumb carrying your own markup. It runs horizontally or vertically, in three sizes and any theme color, and - because it is built on native range inputs - touch dragging, form submission, EditForm validation and the whole slider keyboard already work, with the Page and Shift jumps pinned to a distance you name rather than left to the browser."
           Parameters="componentParameters"
+          CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Inputs/Slider/BitSlider.razor"
@@ -27,9 +28,8 @@
         <div>
             The thumb answers the pointer three ways: drag it, press the rail anywhere to send it there and carry
             straight on dragging, or step it with the keyboard. A move that arrives in one jump - a press on the
-            rail, a key, a value changed somewhere else on the page - is eased into rather than teleported to,
-            while a thumb held under the pointer follows it exactly, since a thumb that lags behind the finger
-            dragging it is worse than one that never eases at all.
+            rail, a key, a value changed elsewhere on the page - is eased into; a thumb held under the pointer
+            follows it exactly.
         </div>
         <br />
         <div class="example-box">
@@ -163,7 +163,7 @@
             the same direction the <b>ArrowUp</b> key already means. Everything follows: the marks and their
             labels run up the side, the floating thumb label moves beside the thumb rather than above it, and the
             value labels stack instead of flanking. A vertical slider has no length of its own to inherit from the
-            line it sits on, so it is given one through the <b>--bit-sld-length</b> CSS variable, which you can
+            line it sits on, so it is given one through the <b>--bit-Slider-length</b> CSS variable, which you can
             change per instance or globally. It is the shape to reach for when the value is naturally a height -
             a level, a gain, a temperature - or when there is a column of room and no row.
         </div>
@@ -179,7 +179,7 @@
 
             <BitSlider Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
 
-            <BitSlider Label="Taller" IsVertical Style="--bit-sld-length: 18rem" DefaultValue="8" />
+            <BitSlider Label="Taller" IsVertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
         </div>
     </DemoExample>
 
@@ -312,12 +312,7 @@
             All of them are enforced by the browser rather than corrected afterwards - the constraint is pushed
             into the bounds of the underlying input - so a thumb never moves somewhere it will be pulled back
             from, on the pointer or on the keyboard, and that holds for a move snapped onto a mark by
-            <a href="components/slider#example3"><b>RestrictToMarks</b></a> as much as for a plain one. And
-            whatever the constraints are, a press on the bare rail
-            still moves the thumb nearest to it: the rail is divided between the two thumbs at their midpoint,
-            so every point of it belongs to the one you would expect it to - unless
-            <a href="components/slider#example8"><b>DraggableTrack</b></a> has given the band between them a job
-            of its own.
+            <a href="components/slider#example3"><b>RestrictToMarks</b></a> as much as for a plain one.
         </div>
         <br />
         <div class="example-box">
@@ -359,18 +354,16 @@
             way along.
         </div>
         <div>
-            Only the rail strictly between the two thumbs takes the drag, so the thumbs themselves are still
-            grabbed and moved individually - and a band squeezed down to less than a thumb's width simply has
-            nothing to take hold of, which is what stops a range dragged shut from being impossible to open up
-            again. The trade is that a press on the band no longer sends the nearer thumb there: the band gets
-            it instead. The rail outside the thumbs is untouched and still moves the thumb nearest to it.
+            Only the rail strictly between the two thumbs takes the drag, so the thumbs stay grabbable and a band
+            squeezed below a thumb's width has nothing to take hold of - which is what keeps a range dragged shut
+            from being impossible to open again. The trade is that a press on the band no longer sends the nearer
+            thumb there; the rail outside the thumbs is untouched.
         </div>
         <div>
-            Dragging the band reports through <b>OnRangeChange</b> and <b>OnRangeChangeEnd</b> like any other
-            move, and it pairs naturally with <b>MinRange</b> and <b>MaxRange</b> - a band held to a fixed width
-            by setting both to the same number is a window you can only slide, which is exactly what a
-            fixed-length selection over a timeline wants. It is a pointer gesture, so the keyboard reaches the
-            two ends the way it always did, one thumb at a time.
+            It reports through <b>OnRangeChange</b> and <b>OnRangeChangeEnd</b> like any other move, and pairs
+            with <b>MinRange</b> and <b>MaxRange</b>: set both to the same number and the band becomes a
+            fixed-width window you can only slide. It is a pointer gesture, so the keyboard still reaches the two
+            ends one thumb at a time.
         </div>
         <br />
         <div class="example-box">
@@ -601,16 +594,23 @@
             numbers are not what they mean: it turns 2 into "Medium" or 750 into "12:30". It is the spoken
             counterpart of <a href="components/slider#example9"><b>GetValueText</b></a>, and falls back to it when
             only the visible form is given - so a slider that already shows "12:30" announces "12:30" without being
-            told twice. <b>AutoFocus</b> hands the slider the focus as the page renders, and <b>FocusAsync</b>
-            does it from code at any moment after that - with <b>FocusUpperAsync</b> beside it for the other
-            thumb of a range, which the single tab stop FocusAsync is pointed at cannot reach. The two inputs
-            are also there as <b>SliderInputElement</b> and <b>UpperSliderInputElement</b> for anything the
-            component does not do for you.
+            told twice. With no text to name a thumb with at all - a slider captioned only by a
+            <b>LabelTemplate</b> - both thumbs are pointed at that caption instead, so the name a sighted reader
+            sees is the name a screen reader announces. <b>AutoFocus</b> hands the slider the focus as the page
+            renders, and <b>FocusAsync</b> does it from code at any moment after that, with
+            <b>FocusUpperAsync</b> beside it for the other thumb of a range. The two inputs are also there as
+            <b>SliderInputElement</b> and <b>UpperSliderInputElement</b>.
         </div>
         <div>
-            When there is no text to name a thumb with at all - a slider captioned only by a <b>LabelTemplate</b> -
-            both thumbs are pointed at that caption instead, so the name a sighted reader sees is the name a screen
-            reader announces, on the upper thumb of a range as much as on the lower one.
+            <b>AriaDescription</b> carries what a name has no room for - the unit a bare number is in, the rule the
+            value has to satisfy - into a hidden element every thumb points at through <b>aria-describedby</b>, so
+            it is announced after the name and the value instead of becoming part of the name. An id you point the
+            inputs at yourself, a validation message among them, is kept alongside it rather than replaced. A
+            ranged slider is also wrapped in a labelled <b>group</b>, as the multi-thumb pattern asks: without one
+            a screen reader user meets two sliders with no word for what the pair selects together.
+            <b>Required</b> is announced through <b>aria-required</b> and marked with the same asterisk every other
+            required control draws. And each thumb's grab area is at least 24px across whatever size the thumb is
+            drawn at, so even a Small slider meets the minimum pointer target of WCAG 2.2.
         </div>
         <br />
         <div class="example-box">
@@ -652,6 +652,23 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => focusableSlider!.FocusUpperAsync()">Focus the upper thumb</BitButton>
             </BitStack>
             <br />
+            <div>AriaDescription and Required (inspect aria-describedby, or listen):</div>
+            <BitSlider Required
+                       Label="Monthly budget"
+                       AriaDescription="In thousands of euros. The plan has to cover at least twenty."
+                       Min="0" Max="100" Step="5"
+                       DefaultValue="40" />
+            <br />
+            <div>A range in a labelled group (inspect the role and the aria-labelledby of the root):</div>
+            <BitSlider IsRanged
+                       Label="Delivery window"
+                       LowerAriaLabel="Earliest"
+                       UpperAriaLabel="Latest"
+                       AriaDescription="Both ends are days from today."
+                       Max="30"
+                       DefaultLowerValue="5"
+                       DefaultUpperValue="14" />
+            <br />
             <div>A range captioned only by a LabelTemplate (inspect the aria-labelledby of each thumb):</div>
             <BitSlider IsRanged Max="10" DefaultLowerValue="3" DefaultUpperValue="7">
                 <LabelTemplate>
@@ -664,7 +681,42 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>BitParams</b> carries a <b>BitSliderParams</b> down to every slider under it, so a panel, a form or a
+            whole page sets the shared scale, the shared marks and the shared look once instead of on every slider.
+            What it carries is a default and not an override: a slider that writes a parameter for itself keeps its
+            own value and takes from the cascade only what it left unset, which is how one slider steps out of the
+            group without the group having to know about it.
+        </div>
+        <div>
+            Every parameter a group can share is on the params object - the scale and the step, the marks, the color
+            and the size, the accessible names of the two ends of a range - together with the <b>ReadOnly</b>,
+            <b>Required</b> and <b>NoValidate</b> every input inherits, which is what makes a whole section of a form
+            read-only in one place. What each slider holds of its own is deliberately not there: a value, a default
+            value, a name, the templates and the event callbacks stay on the markup of the slider itself.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitParams Parameters="@sliderParams">
+                <div>Takes the scale, the step, the marks, the color and the size from the cascade:</div>
+                <BitSlider Label="Compression" DefaultValue="40" />
+                <br />
+                <div>So does this one, without repeating any of it:</div>
+                <BitSlider Label="Sharpening" DefaultValue="70" />
+                <br />
+                <div>Its own Color and ShowMarkLabels, the cascaded rest:</div>
+                <BitSlider Label="Noise reduction" Color="BitColor.Warning" ShowMarkLabels DefaultValue="25" />
+            </BitParams>
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Outside the cascade, and back to the defaults:</div>
+            <BitSlider Label="Untouched" DefaultValue="4" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Color</b> picks the theme color the filled part of the track and the thumbs are painted in, with
             <b>Primary</b> as the default. The unfilled part of the rail deliberately stays neutral whichever color
@@ -704,7 +756,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Size</b> scales the track, the thumbs and the labels together, from the <b>Small</b> that fits into a
             dense settings panel to the <b>Large</b> that carries the main control on a page. <b>Medium</b> is the
@@ -731,12 +783,10 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
-            <b>Style</b> and <b>Class</b> reach the root element, which is enough for the framing around the slider
-            and for the CSS variables it is built on: <b>--bit-sld-thumb</b> is the size of the thumbs,
-            <b>--bit-sld-rail</b> the thickness of the track, <b>--bit-sld-length</b> the length of a vertical one,
-            and <b>--bit-sld-clr-rail</b> the color of the part the fill has not reached. <b>Styles</b> and
+            <b>Style</b> and <b>Class</b> reach the root element, which is where the framing around the slider
+            belongs. <b>Styles</b> and
             <b>Classes</b> go a level deeper and address the parts by name - <b>Root</b>, <b>Label</b>,
             <b>Container</b>, <b>SliderBox</b>, <b>Track</b>, <b>Fill</b>, <b>Thumb</b> (with <b>LowerThumb</b> and
             <b>UpperThumb</b> for the two ends of a range), the underlying inputs (<b>ValueInput</b>,
@@ -751,10 +801,6 @@
             <BitSlider DefaultValue="6" Label="Style" Style="padding: 0.5rem 1rem; border-radius: 0.5rem; box-shadow: tomato 0 0 1rem;" />
             <br />
             <BitSlider DefaultValue="6" Label="Class" Class="custom-class" />
-            <br /><br />
-            <div>The CSS variables:</div>
-            <BitSlider DefaultValue="6" Label="Chunky" Style="--bit-sld-thumb: 2rem; --bit-sld-rail: 1rem;" />
-            <BitSlider DefaultValue="6" Label="Hairline" Style="--bit-sld-thumb: 0.75rem; --bit-sld-rail: 0.125rem;" />
             <br /><br />
             <div>Styles & Classes:</div>
             <BitSlider DefaultValue="6"
@@ -776,9 +822,40 @@
                                          LowerThumb = "border-color: mediumseagreen;",
                                          UpperThumb = "border-color: orangered;" })" />
         </div>
+        <br /><br />
+        <div>
+            For what no parameter and no part covers, the slider reads a set of
+            <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root: the geometry of the thumb
+            and the rail, every color of every state, the type of the labels and the look of the floating one. They
+            inherit, so a value on <code>:root</code> or on any ancestor re-skins every slider below it and one on
+            <b>Style</b> re-skins that instance alone, and anything left unset falls back to the theme token beside
+            it - which is how a reshaped slider still follows the Material or Cupertino preset.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>The geometry - the thumb, the rail and their corners:</div>
+            <BitSlider DefaultValue="6" Label="Chunky" Style="--bit-Slider-thumb-size: 2rem; --bit-Slider-rail-size: 1rem;" />
+            <BitSlider DefaultValue="6" Label="Hairline" Style="--bit-Slider-thumb-size: 0.75rem; --bit-Slider-rail-size: 0.125rem;" />
+            <BitSlider DefaultValue="6" Label="Squared off" Style="--bit-Slider-rail-size: 0.75rem; --bit-Slider-rail-radius: 0; --bit-Slider-thumb-radius: 0.25rem;" />
+            <br />
+            <div>The colors, the marks and the floating label:</div>
+            <BitSlider DefaultValue="6" ShowMarks Label="Its own accent"
+                       ThumbLabel="BitSliderThumbLabel.On"
+                       Style="--bit-Slider-color: rebeccapurple; --bit-Slider-hover-color: mediumpurple; --bit-Slider-focus-color: rebeccapurple; --bit-Slider-rail-color: lavender; --bit-Slider-mark-color: mediumpurple; --bit-Slider-thumb-label-radius: 0.25rem;" />
+            <BitSlider DefaultValue="6" Label="A lifted thumb"
+                       Style="--bit-Slider-thumb-size: 1.5rem; --bit-Slider-thumb-border-width: 0.25rem; --bit-Slider-thumb-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 30%);" />
+        </div>
+        <br />
+        <div>Set once on an ancestor, inherited by every slider inside it:</div>
+        <br />
+        <div class="example-box" style="--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;">
+            <BitSlider Label="Bass" DefaultValue="4" />
+            <BitSlider Label="Middle" DefaultValue="6" />
+            <BitSlider Label="Treble" DefaultValue="8" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Setting <b>Dir</b> to <b>Rtl</b> mirrors the whole slider: the scale starts on the right, the fill grows
             leftwards from it, the marks and their labels are laid out from that same edge, and the arrow keys follow
