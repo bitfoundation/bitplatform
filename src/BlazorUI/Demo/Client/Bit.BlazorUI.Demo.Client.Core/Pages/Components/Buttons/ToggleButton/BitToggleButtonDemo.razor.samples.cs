@@ -103,11 +103,11 @@ private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAs
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" DefaultIsChecked=""true"" Text=""Text"" />";
 
     private readonly string example7RazorCode = @"
-<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold"" />
-<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
+<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold heading"" />
+<BitToggleButton ShowCheckMark Variant=""BitVariant.Outline"" Text=""Bold heading"" />
 
-<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold"" />
-<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Italic"" />
+<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" DefaultIsChecked=""true"" Text=""Bold heading"" />
+<BitToggleButton ShowCheckMark FixedCheckMark Variant=""BitVariant.Outline"" Text=""Bold heading"" />
 
 <BitToggleButton ShowCheckMark FixedCheckMark CheckMarkIconName=""@BitIconName.FavoriteStarFill""
                  Variant=""BitVariant.Outline"" Color=""BitColor.Warning""
@@ -227,16 +227,14 @@ private async Task HandleAutoLoadingChange()
     .narrow-column {
         gap: 0.5rem;
         display: flex;
-        max-width: 16rem;
+        max-width: 12rem;
         flex-flow: column nowrap;
     }
 </style>
 
 
-<div class=""narrow-column"">
-    <BitToggleButton FullWidth OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
-                     OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
-</div>
+<BitToggleButton FullWidth OnText=""Muted"" OnIconName=""@BitIconName.MicOff""
+                 OffText=""Unmuted"" OffIconName=""@BitIconName.Microphone"" />
 
 
 <div class=""narrow-column"">

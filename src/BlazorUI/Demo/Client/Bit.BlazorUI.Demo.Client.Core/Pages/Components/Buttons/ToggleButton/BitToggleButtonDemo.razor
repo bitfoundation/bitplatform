@@ -225,16 +225,19 @@
             glance. <b>FixedCheckMark</b> reserves the mark's space while unchecked so the content does not jump on
             every click, and <b>CheckMarkIconName</b> swaps the mark for any other icon.
         </div><br />
-        <div>ShowCheckMark - the checked one is wider than its neighbour by exactly the mark:</div><br />
+        <div>
+            ShowCheckMark - the same button twice, seeded to a different state: the checked one is wider than the
+            unchecked one by exactly the mark.
+        </div><br />
         <div class="example-box">
-            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold" />
-            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Italic" />
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold heading" />
+            <BitToggleButton ShowCheckMark Variant="BitVariant.Outline" Text="Bold heading" />
         </div>
         <br /><br /><br />
         <div>FixedCheckMark - the same two, now the same width:</div><br />
         <div class="example-box">
-            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold" />
-            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Italic" />
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold heading" />
+            <BitToggleButton ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Bold heading" />
         </div>
         <br /><br /><br />
         <div>CheckMarkIconName:</div><br />
@@ -397,10 +400,8 @@
             across its container instead, which is what you want when it sits alone in a narrow column, a form, or a
             settings row, and its edges should line up with everything around it.
         </div><br />
-        <div class="narrow-column">
-            <BitToggleButton FullWidth OnText="Muted" OnIconName="@BitIconName.MicOff"
-                             OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
-        </div>
+        <BitToggleButton FullWidth OnText="Muted" OnIconName="@BitIconName.MicOff"
+                         OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
         <br /><br /><br />
         <div>
             Once the container decides the width, a long label wraps onto a second line and makes the button taller

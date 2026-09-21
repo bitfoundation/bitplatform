@@ -124,6 +124,11 @@
 
 .bit-tgb-ico {
     flex-shrink: 0;
+    // The glyph is a line of text, so a line-height of normal would size its box from the icon font's own
+    // metrics - which Firefox reads and Chromium and WebKit do not, leaving an icon-only button taller than
+    // its size class there and square everywhere else. Pinned to the glyph itself, the box is the same on all
+    // three, and the padding around it is what the size class actually controls.
+    line-height: 1;
     text-align: center;
     font-size: var(--bit-tgb-ico);
 }
@@ -134,6 +139,7 @@
 
 .bit-tgb-chm {
     flex-shrink: 0;
+    line-height: 1;
     text-align: center;
     font-size: var(--bit-tgb-ico);
 }
@@ -424,7 +430,7 @@
     --bit-tgb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
     --bit-tgb-fontsize: #{$tg-fs-md};
     --bit-tgb-ntx-pad: #{$siz-ctrl-pad-y-lg};
-    --bit-tgb-ntx-icn-size: #{spacing(3.35)};
+    --bit-tgb-ntx-icn-size: #{spacing(2.75)};
     --bit-tgb-spn-size: #{spacing(2.75)};
     --bit-tgb-lbl-fontsize: #{$tg-fs-sm};
 }
