@@ -113,13 +113,16 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
     public int? Max { get; set; }
 
     /// <summary>
-    /// Turns off the preview that follows the pointer over the items and shows the value that a click would commit.
+    /// Turns off the preview that follows the pointer over the items and shows the value that a click would
+    /// commit. Only the preview the component paints stops: the OnHoverChange callback goes on reporting.
     /// </summary>
     public bool? NoHoverPreview { get; set; }
 
     /// <summary>
     /// The smallest change of the value the user can make, as a fraction of a single item.
     /// The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable, and so on.
+    /// It is also the floor of the scale unless <see cref="AllowZeroStars"/> or <see cref="AllowClear"/>
+    /// opens up the unrated 0.
     /// </summary>
     public double? Precision { get; set; }
 
@@ -135,7 +138,7 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
     public string? SelectedIconName { get; set; }
 
     /// <summary>
-    /// Size of rating elements.
+    /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
     public BitSize? Size { get; set; }
 

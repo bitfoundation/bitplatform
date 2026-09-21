@@ -232,6 +232,41 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(allowZeroStars ? "false" : "true", firstButton.GetAttribute("aria-checked"));
     }
 
+    [TestMethod,
+     DataRow(1d, 1d),
+     DataRow(0.5d, 0.5d),
+     DataRow(0.25d, 0.25d),
+     DataRow(0.1d, 0.1d)]
+    public void BitRatingFloorShouldBeASingleStep(double precision, double expected)
+    {
+        // Without AllowZeroStars or AllowClear the smallest rating that can be given is one step, so a
+        // half-star scale reaches 0.5 instead of being held at a whole item.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, precision);
+        });
+
+        Assert.AreEqual(expected, component.Instance.Value);
+        Assert.AreEqual(expected.ToString(CultureInfo.InvariantCulture), component.Find("input").GetAttribute("min"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldCommitTheFirstFractionOfAFractionalScale()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The first slice of the first item is half a star, which the floor of a whole item would have
+        // pulled back up to 1.
+        component.FindAll(".bit-rtg-seg")[0].Click();
+
+        Assert.AreEqual(0.5d, value);
+    }
+
     [TestMethod]
     public void BitRatingShouldClampAValueAboveTheMax()
     {
@@ -516,11 +551,34 @@ public class BitRatingTests : BunitTestContext
 
         component.FindAll(".bit-rtg-btn")[3].MouseOver();
 
-        Assert.IsNull(hovered);
+        // Only the preview the component paints is off: the hovered value is still reported, which is
+        // what a page drawing a preview of its own needs.
+        Assert.AreEqual(4d, hovered);
         StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
 
         // The class turns off the CSS half of the preview, which shades the filled part on hover.
         Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-rtg-nhp"));
+
+        component.Find(".bit-rtg").MouseLeave();
+
+        Assert.IsNull(hovered);
+    }
+
+    [TestMethod]
+    public void BitRatingNoHoverPreviewShouldKeepPaintingTheCommittedValue()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 2);
+            parameters.Add(p => p.NoHoverPreview, true);
+            parameters.Add(p => p.OnHoverChange, (double? v) => { });
+        });
+
+        component.FindAll(".bit-rtg-btn")[4].MouseOver();
+
+        var fills = component.FindAll(".bit-rtg-ifl");
+        StringAssert.Contains(fills[1].GetAttribute("style"), "width:100%");
+        StringAssert.Contains(fills[2].GetAttribute("style"), "width:0%");
     }
 
     [TestMethod]
@@ -650,6 +708,47 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(3.5, value);
     }
 
+    [TestMethod,
+     DataRow("ArrowUp", 4.5d),
+     DataRow("ArrowDown", 4d)]
+    public void BitRatingKeyboardShouldMoveAnOffGridValueOntoTheGrid(string key, double expected)
+    {
+        // A value the Precision never snapped - one bound from elsewhere - has to move onto the grid the
+        // Precision lays over the scale rather than carry its own remainder up and down it.
+        double value = 4.3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldWalkAFractionalScaleOntoWholeItems()
+    {
+        double value = 1;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        root.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        Assert.AreEqual(1.5d, value);
+
+        root.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        Assert.AreEqual(2d, value);
+
+        root.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.AreEqual(1.5d, value);
+    }
+
     [TestMethod]
     public void BitRatingKeyboardShouldReverseTheHorizontalArrowsInRtl()
     {
@@ -726,6 +825,40 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRatingShouldMarkTheCurrentItemApartFromTheCheckedOne()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 3.5);
+        });
+
+        var items = component.FindAll(".bit-rtg-btn");
+
+        // A radio cannot be half checked, so a fractional value checks none of them - but the item the
+        // value lands in is still the one being picked, which is what the styling hook marks.
+        Assert.IsTrue(items.All(i => i.GetAttribute("aria-checked") == "false"));
+        Assert.AreEqual("true", items[3].GetAttribute("data-is-current"));
+        Assert.AreEqual(1, items.Count(i => i.GetAttribute("data-is-current") == "true"));
+    }
+
+    [TestMethod]
+    public void BitRatingCurrentItemShouldFollowTheHoverPreview()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 2);
+        });
+
+        component.FindAll(".bit-rtg-btn")[4].MouseOver();
+
+        var items = component.FindAll(".bit-rtg-btn");
+
+        Assert.AreEqual("true", items[4].GetAttribute("data-is-current"));
+        // The committed value is what the radio reports, whatever the preview is showing.
+        Assert.AreEqual("true", items[1].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
     public void BitRatingShouldReportThePositionOfEachItem()
     {
         var component = RenderComponent<BitRating>(parameters =>
@@ -789,6 +922,29 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRatingItemContextShouldReportTheCurrentItem()
+    {
+        var contexts = new List<BitRatingItemContext>();
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 3.5);
+            parameters.Add(p => p.ItemTemplate, (BitRatingItemContext context) =>
+                (builder) =>
+                {
+                    contexts.Add(context);
+                    builder.AddContent(0, context.Index);
+                });
+        });
+
+        var current = contexts.Where(c => c.IsCurrent).ToList();
+
+        Assert.AreEqual(1, current.Count);
+        Assert.AreEqual(4, current[0].Index);
+        // The run behind it is filled, but only the fourth is the one the value lands in.
+        Assert.AreEqual(3, contexts.Count(c => c.IsFull));
+    }
+
+    [TestMethod]
     public void BitRatingShouldRespectOnChangingCancel()
     {
         double value = 1;
@@ -801,6 +957,40 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[3].Click();
 
         Assert.AreEqual(1d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldEndThePreviewWhenAChangeIsRefused()
+    {
+        double value = 2;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnChanging, (BitRatingChangeArgs args) => args.Cancel = true);
+        });
+
+        component.FindAll(".bit-rtg-btn")[4].MouseOver();
+        component.FindAll(".bit-rtg-btn")[4].Click();
+
+        // A refused value must not go on being previewed: on a touch device no mouseleave ever arrives
+        // to end the preview, so the rating would keep showing the value it just refused.
+        Assert.AreEqual(2d, value);
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style"), "width:0%");
+    }
+
+    [TestMethod]
+    public void BitRatingShouldEndThePreviewWhenAOneWayBindingRefusesTheValue()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2d);
+        });
+
+        component.FindAll(".bit-rtg-btn")[4].MouseOver();
+        component.FindAll(".bit-rtg-btn")[4].Click();
+
+        Assert.AreEqual(2d, component.Instance.Value);
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style"), "width:0%");
     }
 
     [TestMethod]
@@ -1285,6 +1475,97 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRatingShouldRespectFocusEvents()
+    {
+        var focusedIn = 0;
+        var focusedOut = 0;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.OnFocusIn, () => focusedIn++);
+            parameters.Add(p => p.OnFocusOut, () => focusedOut++);
+        });
+
+        component.Find(".bit-rtg").FocusIn();
+        Assert.AreEqual(1, focusedIn);
+        Assert.AreEqual(0, focusedOut);
+
+        component.Find(".bit-rtg").FocusOut();
+        Assert.AreEqual(1, focusedIn);
+        Assert.AreEqual(1, focusedOut);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldNotRaiseFocusEventsWhenDisabled()
+    {
+        var focusedIn = 0;
+        var focusedOut = 0;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnFocusIn, () => focusedIn++);
+            parameters.Add(p => p.OnFocusOut, () => focusedOut++);
+        });
+
+        component.Find(".bit-rtg").FocusIn();
+        component.Find(".bit-rtg").FocusOut();
+
+        Assert.AreEqual(0, focusedIn);
+        Assert.AreEqual(0, focusedOut);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldKeepASplattedAriaLabel()
+    {
+        // Every aria attribute the component computes is rendered after the HtmlAttributes splat, so one
+        // it leaves empty must hand back what the page wrote rather than erase it.
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddMultipleAttributes(1, new Dictionary<string, object> { ["aria-label"] = "Rate this product" });
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Rate this product", component.Find(".bit-rtg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldKeepASplattedAriaLabelledBy()
+    {
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddMultipleAttributes(1, new Dictionary<string, object> { ["aria-labelledby"] = "external-label" });
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual("external-label", root.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitRatingLabelShouldWinOverASplattedAriaLabel()
+    {
+        var component = Context.Render<BitRating>(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddMultipleAttributes(1, new Dictionary<string, object>
+            {
+                [nameof(BitRating.Label)] = "Quality",
+                ["aria-label"] = "ignored"
+            });
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        // A name given by reference wins, so the inline one is not rendered beside it.
+        StringAssert.Contains(root.GetAttribute("aria-labelledby"), "-label");
+        Assert.IsFalse(root.HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitRatingShouldRespectAutoFocus()
     {
         var component = RenderComponent<BitRating>(parameters =>
@@ -1508,6 +1789,24 @@ public class BitRatingTests : BunitTestContext
 
         Assert.AreEqual($"external-hint {component.Find(".bit-rtg-dsc").Id}",
                         component.Find(".bit-rtg").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectAllowClearOnAFractionalValue()
+    {
+        double value = 2.5;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // Committing the fraction that is already committed clears the rating, the same way a whole item
+        // does - the slices are the choices of a fractional scale.
+        component.FindAll(".bit-rtg-seg")[4].Click();
+
+        Assert.AreEqual(0d, value);
     }
 
     [TestMethod]

@@ -67,4 +67,15 @@ public class BitRatingItemContext
     /// Whether the item is completely filled, meaning its <see cref="Percentage"/> is 100.
     /// </summary>
     public bool IsFull => Percentage >= 100;
+
+    /// <summary>
+    /// Whether this is the item the shown value lands in - the fourth of a 3.5, and the one under the
+    /// pointer while a hover preview is running.
+    /// </summary>
+    /// <remarks>
+    /// This is the item being picked rather than the exact committed value, which is what tells it apart
+    /// from the run of filled ones behind it. It is the same thing the <c>data-is-current</c> attribute of
+    /// the item marks for CSS that styles the built-in glyphs.
+    /// </remarks>
+    public bool IsCurrent => Index == Math.Ceiling(DisplayValue);
 }

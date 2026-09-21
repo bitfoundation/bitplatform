@@ -19,11 +19,13 @@
 //   --bit-Rating-radius             corner radius of an item and its focus ring    (default: $shp-radius-control)
 //   --bit-Rating-hover-scale        how much the hovered item grows                (default: 1.1; 1 turns it off)
 //   --bit-Rating-label-color        text color of the label                        (default: $clr-fg-pri)
-//   --bit-Rating-label-font-size    text size of the label                         (default: $tg-fs-sm)
+//   --bit-Rating-label-font-size    text size of the label                         (default: per size, $tg-fs-xs/sm/md)
+//   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-fw-semibold)
 //   --bit-Rating-label-gap          room between the label and the items, and
 //                                   between the items and the description         (default: spacing(1))
 //   --bit-Rating-description-color  text color of the description                  (default: $clr-fg-sec)
-//   --bit-Rating-description-font-size  text size of the description               (default: $tg-fs-xs)
+//   --bit-Rating-description-font-size  text size of the description               (default: per size,
+//                                                                                  $tg-fs-2xs/xs/sm)
 
 .bit-rtg {
     display: inline-flex;
@@ -35,7 +37,9 @@
     align-items: flex-start;
     gap: var(--bit-Rating-label-gap, #{spacing(1)});
     font-weight: $tg-fw-regular;
-    font-size: $tg-fs-sm;
+    // The text of the rating scales with its Size the way every other sized control in the library
+    // scales its own, so a Large rating is not a large row of stars under a small label.
+    font-size: var(--bit-rtg-lbl-size);
     font-family: $tg-font-family;
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
@@ -46,7 +50,9 @@
     // as "this is what a click would give you" rather than as the committed value. An invalid rating is
     // left out of it, so the error color it is painted with survives the pointer passing over it.
     @media (hover: hover) {
-        &:hover:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-ifl {
+        // Scoped to the box the items live in rather than to the root: the pointer resting on the label
+        // or the description previews nothing, so it must not repaint the fill as though it did.
+        &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl {
             color: var(--bit-Rating-hover-color, var(--bit-rtg-clr-hover));
         }
 
@@ -110,10 +116,10 @@
 .bit-rtg-lbl {
     display: block;
     overflow-wrap: break-word;
-    font-weight: $tg-fw-semibold;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-Rating-label-color, #{$clr-fg-pri});
-    font-size: var(--bit-Rating-label-font-size, #{$tg-fs-sm});
+    font-size: var(--bit-Rating-label-font-size, var(--bit-rtg-lbl-size));
+    font-weight: var(--bit-Rating-label-font-weight, #{$tg-fw-semibold});
 }
 
 // The hint that sits under the items, pointed at by aria-describedby rather than read as part of the
@@ -124,7 +130,7 @@
     max-width: 100%;
     overflow-wrap: break-word;
     color: var(--bit-Rating-description-color, #{$clr-fg-sec});
-    font-size: var(--bit-Rating-description-font-size, #{$tg-fs-xs});
+    font-size: var(--bit-Rating-description-font-size, var(--bit-rtg-dsc-size));
 }
 
 .bit-rtg-btn {
@@ -178,16 +184,24 @@
     position: absolute;
 }
 
+// Each size class carries the whole ramp of the rating - the glyph, the label and the description -
+// so that one parameter scales the control rather than only the stars in the middle of it.
 .bit-rtg-sm {
     --bit-rtg-size: #{$siz-icon-sm};
+    --bit-rtg-lbl-size: #{$tg-fs-xs};
+    --bit-rtg-dsc-size: #{$tg-fs-2xs};
 }
 
 .bit-rtg-md {
     --bit-rtg-size: #{$siz-icon-md};
+    --bit-rtg-lbl-size: #{$tg-fs-sm};
+    --bit-rtg-dsc-size: #{$tg-fs-xs};
 }
 
 .bit-rtg-lg {
     --bit-rtg-size: #{$siz-icon-lg};
+    --bit-rtg-lbl-size: #{$tg-fs-md};
+    --bit-rtg-dsc-size: #{$tg-fs-sm};
 }
 
 .bit-rtg-alb {

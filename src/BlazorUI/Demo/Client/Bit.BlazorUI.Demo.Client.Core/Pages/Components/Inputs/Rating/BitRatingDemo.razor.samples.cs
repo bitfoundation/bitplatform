@@ -20,6 +20,12 @@ public partial class BitRatingDemo
 
 <BitRating Label=""Cleanliness"" LabelPosition=""BitLabelPosition.Start"" DefaultValue=""4"" />
 
+<BitRating Label=""Staff"" DefaultValue=""4"">
+    <DescriptionTemplate>
+        Averaged over <b>1,034</b> stays, updated nightly.
+    </DescriptionTemplate>
+</BitRating>
+
 <BitRating LabelPosition=""BitLabelPosition.Bottom"" @bind-Value=""labelTemplateValue"">
     <LabelTemplate>
         <BitText Typography=""BitTypography.Caption1"">@ratingWords[(int)labelTemplateValue]</BitText>
@@ -73,6 +79,9 @@ private double exactPrecisionValue = 3.7;";
 <BitRating @bind-Value=""noZeroValue"" />
 <BitLabel>Value: @noZeroValue</BitLabel>
 
+<BitRating Precision=""0.5"" @bind-Value=""noZeroHalfValue"" />
+<BitLabel>Value: @noZeroHalfValue</BitLabel>
+
 <BitRating AllowZeroStars @bind-Value=""allowZeroValue"" />
 <BitLabel>Value: @allowZeroValue</BitLabel>
 
@@ -80,6 +89,7 @@ private double exactPrecisionValue = 3.7;";
 <BitLabel>Value: @allowClearValue</BitLabel>";
     private readonly string example6CsharpCode = @"
 private double noZeroValue;
+private double noZeroHalfValue;
 private double allowZeroValue;
 private double allowClearValue = 3;";
 
@@ -101,10 +111,16 @@ private double highlightValue = 3;";
     </LabelTemplate>
 </BitRating>
 
-<BitRating NoHoverPreview DefaultValue=""2"" />";
+<BitRating NoHoverPreview
+           @bind-Value=""noPreviewValue""
+           OnHoverChange=""v => noPreviewHoverValue = v"" />
+<BitLabel>@(noPreviewHoverValue is null ? $""Rated {noPreviewValue}"" : $""Click for {noPreviewHoverValue}"")</BitLabel>";
     private readonly string example8CsharpCode = @"
 private double hoverBoundValue = 3;
 private double? hoverPreviewValue;
+
+private double noPreviewValue = 2;
+private double? noPreviewHoverValue;
 
 private readonly string[] ratingWords = [""Not rated yet"", ""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""];";
 
@@ -143,7 +159,7 @@ private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 
     private readonly string example10RazorCode = @"
 <BitRating Max=""10"" @bind-Value=""templateValue"">
     <ItemTemplate Context=""item"">
-        <span class=""number-item @(item.IsFull ? ""number-item-on"" : null)"">@item.Index</span>
+        <span class=""number-item @(item.IsFull ? ""number-item-on"" : null) @(item.IsCurrent ? ""number-item-current"" : null)"">@item.Index</span>
     </ItemTemplate>
 </BitRating>
 <BitLabel>Value: @templateValue</BitLabel>
@@ -179,6 +195,12 @@ private readonly string[] moodFaces = [""😖"", ""😐"", ""🙂"", ""😀"", "
     background-color: $bit-color-primary;
 }
 
+// IsCurrent is the item the value lands in, which is the last of the filled run rather than all of it.
+.number-item-current {
+    outline: 2px solid $bit-color-primary;
+    outline-offset: 2px;
+}
+
 // The mood faces, greyed out until their item is the selected one.
 .emoji-item {
     opacity: 0.4;
@@ -212,11 +234,15 @@ private double twoWayBinding = 3;";
 <BitLabel>Changed value: @onChangeValue</BitLabel>
 
 <BitRating @bind-Value=""onChangingValue"" OnChanging=""HandleOnChanging"" />
-<BitLabel>Value: @onChangingValue @(changeRejected ? ""(lowering was rejected)"" : """")</BitLabel>";
+<BitLabel>Value: @onChangingValue @(changeRejected ? ""(lowering was rejected)"" : """")</BitLabel>
+
+<BitRating DefaultValue=""3"" OnFocusIn=""() => isFocused = true"" OnFocusOut=""() => isFocused = false"" />
+<BitLabel>@(isFocused ? ""Focused"" : ""Not focused"")</BitLabel>";
     private readonly string example12CsharpCode = @"
 private double onChangeValue;
 private double onChangingValue = 3;
 private bool changeRejected;
+private bool isFocused;
 
 private void HandleOnChanging(BitRatingChangeArgs args)
 {
@@ -368,11 +394,11 @@ private readonly BitRatingParams[] ratingParams =
 <BitRating DefaultValue=""3.5"" SelectedIcon=""@BitIconInfo.Bi(""heart-fill"")"" UnselectedIcon=""@BitIconInfo.Bi(""heart"")"" />";
 
     private readonly string example20RazorCode = @"
-<BitRating Size=""BitSize.Small"" DefaultValue=""3"" />
+<BitRating Size=""BitSize.Small"" DefaultValue=""3"" Label=""Small"" Description=""Fits inline beside body text."" />
 
-<BitRating Size=""BitSize.Medium"" DefaultValue=""3"" />
+<BitRating Size=""BitSize.Medium"" DefaultValue=""3"" Label=""Medium"" Description=""The default."" />
 
-<BitRating Size=""BitSize.Large"" DefaultValue=""3"" />";
+<BitRating Size=""BitSize.Large"" DefaultValue=""3"" Label=""Large"" Description=""For the question a page is built around."" />";
 
     private readonly string example21RazorCode = @"
 <BitRating DefaultValue=""3"" Style=""padding-inline: 0.5rem; margin-inline: 1rem; box-shadow: tomato 0 0 1rem; border-radius: 1rem;"" />
@@ -383,6 +409,8 @@ private readonly BitRatingParams[] ratingParams =
 <BitRating DefaultValue=""3.5"" Styles=""@(new() { SelectedIcon = ""color: blueviolet;"", UnselectedIcon = ""color: plum;"" })"" />
 
 <BitRating Label=""Classes"" DefaultValue=""3.5"" Classes=""@(new() { Label = ""custom-label"", SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />
+
+<BitRating Precision=""0.5"" @bind-Value=""currentItemValue"" Classes=""@(new() { Button = ""ringed-item"" })"" />
 
 
 <BitRating DefaultValue=""3.5"" Style=""--bit-Rating-color: goldenrod; --bit-Rating-hover-color: darkorange; --bit-Rating-unselected-color: #d8c9a3;"" />
@@ -420,6 +448,13 @@ private readonly BitRatingParams[] ratingParams =
 
 .custom-unselected {
     color: mediumseagreen;
+}
+
+// data-is-current marks the item the shown value lands in - the fourth of a 3.5, and the one
+// under the pointer while a hover preview is running.
+.ringed-item[data-is-current=""true""] {
+    outline: 1px dashed $bit-color-primary;
+    outline-offset: -1px;
 }";
     private readonly DemoCodeFile[] example21CodeFiles =
     [

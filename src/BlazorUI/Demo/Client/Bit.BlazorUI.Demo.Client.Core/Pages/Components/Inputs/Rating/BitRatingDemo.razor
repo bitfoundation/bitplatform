@@ -44,7 +44,8 @@
             it beside the items for a compact row, and <b>LabelTemplate</b> replaces it with markup of your own,
             below a caption that spells the value out in words. <b>Description</b> is the hint under the items,
             pointed at by <code>aria-describedby</code> so it is announced after the name rather than as part of
-            it. <b>ItemTitles</b> gives each item its own tooltip, in order, and those words double as the
+            it, and <b>DescriptionTemplate</b> replaces it with markup while keeping that role.
+            <b>ItemTitles</b> gives each item its own tooltip, in order, and those words double as the
             accessible name of the item; items past the end of the list fall back to their position.
         </div>
         <br />
@@ -56,6 +57,12 @@
                        @bind-Value="labelValue" />
             <br />
             <BitRating Label="Cleanliness" LabelPosition="BitLabelPosition.Start" DefaultValue="4" />
+            <br />
+            <BitRating Label="Staff" DefaultValue="4">
+                <DescriptionTemplate>
+                    Averaged over <b>1,034</b> stays, updated nightly.
+                </DescriptionTemplate>
+            </BitRating>
             <br />
             <BitRating LabelPosition="BitLabelPosition.Bottom" @bind-Value="labelTemplateValue">
                 <LabelTemplate>
@@ -121,7 +128,9 @@
             arrow keys step by the same amount. A precision that does not divide an item evenly is rounded to
             the closest number of equal steps, and an item is never split into more than a hundred. It
             constrains what the user can pick, never what can be shown: a value bound from elsewhere is always
-            drawn at its exact precision.
+            drawn at its exact precision. It also sets the floor of the scale - the smallest rating that can
+            still be given is one step, so a half-star rating reaches 0.5 without having to open up the
+            unrated 0 that <a href="components/rating#example6"><b>AllowZeroStars</b></a> is for.
         </div>
         <br />
         <div class="example-box">
@@ -141,17 +150,22 @@
 
     <DemoExample Title="Clearing" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            A rating starts at the first item unless it is told that "not rated" is a legitimate answer.
-            <b>AllowZeroStars</b> says exactly that: a value of 0 is kept instead of being pulled up to 1, so
-            the rating can start empty - though the user still cannot get back to it. <b>AllowClear</b> adds
-            that way back: clicking the item that is already selected, or pressing <b>Delete</b> or
-            <b>Backspace</b>, returns the rating to 0, which is why it opens up the 0 on its own.
+            A rating starts at its smallest step - a whole item at the default Precision - unless it is told
+            that "not rated" is a legitimate answer. <b>AllowZeroStars</b> says exactly that: a value of 0 is
+            kept instead of being pulled up, so the rating can start empty - though the user still cannot get
+            back to it. <b>AllowClear</b> adds that way back: clicking the item that is already selected, or
+            pressing <b>Delete</b> or <b>Backspace</b>, returns the rating to 0, which is why it opens up the
+            0 on its own.
         </div>
         <br />
         <div class="example-box">
-            <div>Default (0 is pulled up to 1):</div>
+            <div>Default (0 is pulled up to the smallest step):</div>
             <BitRating @bind-Value="noZeroValue" />
             <BitLabel>Value: @noZeroValue</BitLabel>
+            <br />
+            <div>Default with a half Precision (the floor is half an item, not a whole one):</div>
+            <BitRating Precision="0.5" @bind-Value="noZeroHalfValue" />
+            <BitLabel>Value: @noZeroHalfValue</BitLabel>
             <br />
             <div>AllowZeroStars (starts empty, but cannot be emptied again):</div>
             <BitRating AllowZeroStars @bind-Value="allowZeroValue" />
@@ -189,9 +203,9 @@
             in the hover shade so it reads as a proposal rather than as the committed value; leaving restores
             what is bound. <b>OnHoverChange</b> reports that previewed value as it changes, and null once the
             pointer leaves - which is all a caption needs to follow the pointer, down to a half step at a
-            fractional Precision. <b>NoHoverPreview</b> turns the preview off where it competes with something
-            else on the page; the items still grow under the pointer, since that is an affordance and not a
-            value.
+            fractional Precision. <b>NoHoverPreview</b> turns off the preview the component paints, for a page
+            that competes with it or draws one of its own - the items still grow under the pointer, since that
+            is an affordance and not a value, and OnHoverChange goes on reporting.
         </div>
         <br />
         <div class="example-box">
@@ -204,8 +218,11 @@
                 </LabelTemplate>
             </BitRating>
             <br />
-            <div>NoHoverPreview:</div>
-            <BitRating NoHoverPreview DefaultValue="2" />
+            <div>NoHoverPreview (the stars stay put, the caption still follows the pointer):</div>
+            <BitRating NoHoverPreview
+                       @bind-Value="noPreviewValue"
+                       OnHoverChange="v => noPreviewHoverValue = v" />
+            <BitLabel>@(noPreviewHoverValue is null ? $"Rated {noPreviewValue}" : $"Click for {noPreviewHoverValue}")</BitLabel>
         </div>
     </DemoExample>
 
@@ -255,7 +272,8 @@
             <b>ItemTemplate</b> replaces the pair of icons with content of your own while the BitRating keeps
             everything around it: the hit areas, the hover preview, the keyboard handling and the accessibility.
             The template receives a <b>BitRatingItemContext</b> - the item's <b>Index</b>, the <b>Percentage</b>
-            it is filled by, whether it <b>IsFull</b> or merely <b>IsSelected</b>, and both the previewed
+            it is filled by, whether it <b>IsFull</b> or merely <b>IsSelected</b>, whether it <b>IsCurrent</b>
+            (the one the shown value lands in, which the numbered scale below rings), and both the previewed
             <b>DisplayValue</b> and the committed <b>Value</b>. A template renders as a whole, so a partial fill
             is yours to express if it matters; when all you need is a different glyph per position,
             <a href="components/rating#example9"><b>GetSelectedIcon</b></a> keeps the built-in one.
@@ -265,7 +283,7 @@
             <div>Numbered scale:</div>
             <BitRating Max="10" @bind-Value="templateValue">
                 <ItemTemplate Context="item">
-                    <span class="number-item @(item.IsFull ? "number-item-on" : null)">@item.Index</span>
+                    <span class="number-item @(item.IsFull ? "number-item-on" : null) @(item.IsCurrent ? "number-item-current" : null)">@item.Index</span>
                 </ItemTemplate>
             </BitRating>
             <BitLabel>Value: @templateValue</BitLabel>
@@ -306,7 +324,9 @@
             <b>BitRatingChangeArgs</b> keeps the current value, and since the callback is awaited it can take
             long enough to ask the user a question. The args carry both the incoming <b>Value</b> and the
             <b>OldValue</b>, so the decision can depend on the direction of the change - the second rating below
-            refuses to be lowered.
+            refuses to be lowered. <b>OnFocusIn</b> and <b>OnFocusOut</b> report the focus arriving at and
+            leaving the rating as a whole rather than each item, so moving along the scale with the arrow keys
+            does not read as leaving and re-entering it.
         </div>
         <br />
         <div class="example-box">
@@ -317,6 +337,10 @@
             <div>OnChanging (this one refuses to go down):</div>
             <BitRating @bind-Value="onChangingValue" OnChanging="HandleOnChanging" />
             <BitLabel>Value: @onChangingValue @(changeRejected ? "(lowering was rejected)" : "")</BitLabel>
+            <br />
+            <div>OnFocusIn & OnFocusOut (tab to it, then arrow along it):</div>
+            <BitRating DefaultValue="3" OnFocusIn="() => isFocused = true" OnFocusOut="() => isFocused = false" />
+            <BitLabel>@(isFocused ? "Focused" : "Not focused")</BitLabel>
         </div>
     </DemoExample>
 
@@ -540,21 +564,19 @@
 
     <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
         <div>
-            <b>Size</b> scales the item glyphs, from the <b>Small</b> that fits inline next to a line of text to
-            the <b>Large</b> that carries a rating asked as the main question on a page. <b>Medium</b> is the
-            default. The pointer target of an item never drops below 24×24 CSS pixels, so a smaller size buys a
-            smaller glyph rather than a harder one to hit.
+            <b>Size</b> scales the whole control - the glyphs, the label and the description - from the
+            <b>Small</b> that fits inline next to a line of text to the <b>Large</b> that carries a rating
+            asked as the main question on a page. <b>Medium</b> is the default. The pointer target of an item
+            never drops below 24×24 CSS pixels, so a smaller size buys a smaller glyph rather than a harder one
+            to hit.
         </div>
         <br />
         <div class="example-box">
-            <div>Small:</div>
-            <BitRating Size="BitSize.Small" DefaultValue="3" />
+            <BitRating Size="BitSize.Small" DefaultValue="3" Label="Small" Description="Fits inline beside body text." />
             <br />
-            <div>Medium:</div>
-            <BitRating Size="BitSize.Medium" DefaultValue="3" />
+            <BitRating Size="BitSize.Medium" DefaultValue="3" Label="Medium" Description="The default." />
             <br />
-            <div>Large:</div>
-            <BitRating Size="BitSize.Large" DefaultValue="3" />
+            <BitRating Size="BitSize.Large" DefaultValue="3" Label="Large" Description="For the question a page is built around." />
         </div>
     </DemoExample>
 
@@ -564,7 +586,10 @@
             name - <b>Root</b>, <b>LabelContainer</b>, <b>Label</b>, <b>Description</b>, <b>Container</b>,
             <b>Button</b>, <b>IconContainer</b>, <b>SelectedIcon</b> and <b>UnselectedIcon</b> - so the filled and unfilled
             halves can be styled apart from each other. Prefer <b>Classes</b> where your CSS should own states
-            such as hover and focus, which inline styles cannot express.
+            such as hover and focus, which inline styles cannot express. Each item also carries
+            <code>data-is-current</code>, which marks the one the shown value lands in - the fourth of a 3.5,
+            and the one under the pointer while a preview is running - so the item being picked can be told
+            apart from the run of filled ones behind it.
         </div>
         <br />
         <div class="example-box">
@@ -577,6 +602,9 @@
             <BitRating DefaultValue="3.5" Styles="@(new() { SelectedIcon = "color: blueviolet;", UnselectedIcon = "color: plum;" })" />
             <br />
             <BitRating Label="Classes" DefaultValue="3.5" Classes="@(new() { Label = "custom-label", SelectedIcon = "custom-selected", UnselectedIcon = "custom-unselected" })" />
+            <br /><br />
+            <div>data-is-current (the item being picked is ringed):</div><br />
+            <BitRating Precision="0.5" @bind-Value="currentItemValue" Classes="@(new() { Button = "ringed-item" })" />
         </div>
         <br /><br />
         <div>

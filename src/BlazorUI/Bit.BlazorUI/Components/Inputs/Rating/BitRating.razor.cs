@@ -173,6 +173,10 @@ public partial class BitRating : BitInputBase<double>
     /// Turns off the preview that follows the pointer over the items and shows the value
     /// that a click would commit.
     /// </summary>
+    /// <remarks>
+    /// Only the preview drawn by the component stops: <see cref="OnHoverChange"/> goes on reporting the
+    /// hovered value, which is what a page that draws a preview of its own needs.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoHoverPreview { get; set; }
 
@@ -186,9 +190,23 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public EventCallback<BitRatingChangeArgs> OnChanging { get; set; }
 
     /// <summary>
+    /// Callback for when the rating receives the focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when the focus leaves the rating.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
     /// Callback for when the previewed value changes, which is the value a click would commit.
     /// It receives null when the pointer leaves the rating and the preview ends.
     /// </summary>
+    /// <remarks>
+    /// It reports the hovered value whether or not the component draws the preview itself, so it keeps
+    /// working under <see cref="NoHoverPreview"/>.
+    /// </remarks>
     [Parameter] public EventCallback<double?> OnHoverChange { get; set; }
 
     /// <summary>
@@ -200,6 +218,10 @@ public partial class BitRating : BitInputBase<double>
     /// <remarks>
     /// A precision that does not divide an item evenly - 0.3, say - is rounded to the closest number of equal
     /// steps, so the items always end on a whole value, and an item is never split into more than 100 steps.
+    /// <br />
+    /// It is also the floor of the scale: the smallest rating that can be given is a single step, so a
+    /// half-star rating reaches 0.5 without opening up the unrated 0 that <see cref="AllowZeroStars"/> and
+    /// <see cref="AllowClear"/> are for.
     /// </remarks>
     [Parameter] public double Precision { get; set; } = 1;
 
@@ -225,7 +247,7 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public string? SelectedIconName { get; set; }
 
     /// <summary>
-    /// Size of rating elements.
+    /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -384,7 +406,9 @@ public partial class BitRating : BitInputBase<double>
 
         // A rating turned read-only or disabled under the pointer stops receiving the mouseleave that would
         // normally end the preview, so a stale one would go on rendering in place of the committed value.
-        if (IsEnabled is false || ReadOnly || NoHoverPreview)
+        // NoHoverPreview is not one of these: it hides the preview rather than ending it, so the hovered
+        // value stays tracked for OnHoverChange and simply stops being what the items are drawn from.
+        if (IsEnabled is false || ReadOnly)
         {
             _hoverValue = null;
         }
@@ -443,9 +467,11 @@ public partial class BitRating : BitInputBase<double>
     private int _Max => Math.Max(Max, 1);
 
     /// <summary>
-    /// The smallest value the rating can hold. Both AllowZeroStars and AllowClear open up the unrated 0.
+    /// The smallest value the rating can hold. Both AllowZeroStars and AllowClear open up the unrated 0;
+    /// without them the floor is the smallest rating that can still be given, which is a single step -
+    /// a whole item at the default Precision, and the first half of the first one at a Precision of 0.5.
     /// </summary>
-    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : 1;
+    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : _Step;
 
     /// <summary>
     /// How many selectable steps each item is divided into, derived from the Precision.
@@ -471,9 +497,11 @@ public partial class BitRating : BitInputBase<double>
     private double _Step => 1d / _StepsPerItem;
 
     /// <summary>
-    /// The value the items are rendered from: the hovered one while a preview is active, the committed one otherwise.
+    /// The value the items are rendered from: the hovered one while a preview is active, the committed one
+    /// otherwise. A rating whose preview is turned off still tracks the hovered value for OnHoverChange,
+    /// so the choice of what to draw is made here rather than by stopping the tracking.
     /// </summary>
-    private double _DisplayValue => _hoverValue ?? CurrentValue;
+    private double _DisplayValue => (NoHoverPreview ? null : _hoverValue) ?? CurrentValue;
 
     /// <summary>
     /// The item that holds the single tab stop of the group. It follows the value - a fractional one lands
@@ -524,23 +552,42 @@ public partial class BitRating : BitInputBase<double>
     internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
     /// <summary>
-    /// The elements that describe the rating. This attribute sits after the HtmlAttributes splat in the
-    /// markup, so it is what ends up rendered no matter what - a null would even remove a splatted value -
-    /// which is why an aria-describedby the consumer splatted is carried over here rather than replaced.
-    /// Both are kept, since aria-describedby is a space separated list of IDREFs.
+    /// The value of an aria attribute the consumer splatted onto the component. Every aria attribute the
+    /// rating computes sits after the HtmlAttributes splat in the markup, so it is what ends up rendered no
+    /// matter what - and a null would even remove a splatted value. This is what the computed attributes
+    /// hand back rather than erasing what the page wrote.
+    /// </summary>
+    private string? _GetSplattedAttribute(string name)
+    {
+        HtmlAttributes.TryGetValue(name, out var value);
+
+        return value?.ToString();
+    }
+
+    /// <summary>
+    /// The elements that describe the rating, which is a splatted aria-describedby carried over rather than
+    /// replaced: both are kept, since aria-describedby is a space separated list of IDREFs.
     /// </summary>
     private string? _AriaDescribedBy
     {
         get
         {
-            HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
-            var splattedDescribedBy = splatted?.ToString();
+            var splattedDescribedBy = _GetSplattedAttribute("aria-describedby");
 
             if (HasDescription is false) return splattedDescribedBy;
 
             return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
         }
     }
+
+    /// <summary>
+    /// The name of the rating as an inline string, which is only rendered when nothing names it by
+    /// reference. A name the page splatted is the last resort, so that writing aria-label on the component
+    /// works as it reads even though the component owns the attribute.
+    /// </summary>
+    private string? _AriaLabelAttribute => _AriaLabelledBy is null
+        ? (_AriaLabel ?? _GetSplattedAttribute("aria-label"))
+        : null;
 
     /// <summary>
     /// The element the name of the rating is read from, when it is read from the page rather than given as a
@@ -554,7 +601,9 @@ public partial class BitRating : BitInputBase<double>
         {
             if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
 
-            if (AriaLabel.HasValue() || GetAriaLabel is not null || HasLabel is false) return null;
+            if (AriaLabel.HasValue() || GetAriaLabel is not null) return null;
+
+            if (HasLabel is false) return _GetSplattedAttribute("aria-labelledby");
 
             return _RendersHiddenValueText ? $"{_labelId} {_valueTextId}" : _labelId;
         }
@@ -720,7 +769,11 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task HandleOnHover(double value)
     {
-        if (IsEnabled is false || ReadOnly || NoHoverPreview) return;
+        if (IsEnabled is false || ReadOnly) return;
+
+        // With the preview off and nobody listening there is nothing a hover could change, so the render
+        // it would cost is skipped entirely.
+        if (NoHoverPreview && OnHoverChange.HasDelegate is false) return;
 
         if (_hoverValue == value) return;
 
@@ -729,7 +782,26 @@ public partial class BitRating : BitInputBase<double>
         await OnHoverChange.InvokeAsync(value);
     }
 
-    private async Task HandleOnMouseLeave()
+    private async Task HandleOnFocusIn(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusIn.InvokeAsync(e);
+    }
+
+    private async Task HandleOnFocusOut(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusOut.InvokeAsync(e);
+    }
+
+    private Task HandleOnMouseLeave() => EndPreview();
+
+    /// <summary>
+    /// Takes the preview down, which puts the items back to the committed value and reports the end of it.
+    /// </summary>
+    private async Task EndPreview()
     {
         if (_hoverValue is null) return;
 
@@ -761,8 +833,9 @@ public partial class BitRating : BitInputBase<double>
         // Holding Shift - and the Page keys, which need no modifier for it - moves by a whole item to the
         // next or previous one, so crossing a rating split into tenths costs five presses instead of fifty.
         var coarse = e.ShiftKey || e.Key is "PageUp" or "PageDown";
-        var up = coarse ? Math.Floor(value) + 1 : value + _Step;
-        var down = coarse ? Math.Ceiling(value) - 1 : value - _Step;
+        var step = coarse ? 1 : _Step;
+        var up = StepFrom(value, step, true);
+        var down = StepFrom(value, step, false);
 
         double? newValue = e.Key switch
         {
@@ -787,6 +860,30 @@ public partial class BitRating : BitInputBase<double>
     }
 
     /// <summary>
+    /// The next value up or down the grid a step of the given size lays over the scale.
+    /// </summary>
+    /// <remarks>
+    /// The move lands on that grid rather than adding the step to whatever the value happens to be, which
+    /// matters for a value the Precision never snapped: one bound from elsewhere at 4.3 on a half-star
+    /// scale moves to 4.5 and 4 instead of carrying its own remainder up and down a scale that cannot
+    /// express it. On a value already on the grid the two are the same thing.
+    /// </remarks>
+    private static double StepFrom(double value, double step, bool up)
+    {
+        var steps = value / step;
+
+        // A value that is exactly on the grid divides into a whole number of steps only to within the
+        // rounding of binary floating point, so the index is taken with a tolerance: without it the floor
+        // of a 2.9999999999 would move up to the step the value is already sitting on.
+        const double tolerance = 1e-4;
+
+        var index = up ? Math.Floor(steps + tolerance) + 1
+                       : Math.Ceiling(steps - tolerance) - 1;
+
+        return index * step;
+    }
+
+    /// <summary>
     /// The value a digit key jumps straight to, which is how a keyboard user reaches "4 of 5" in one press
     /// instead of four. A digit beyond the ends of the scale is held to them like any other value.
     /// </summary>
@@ -805,6 +902,17 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task ChangeValue(double value)
     {
+        await CommitValue(value);
+
+        // Whatever became of it, the interaction that got here has spent the preview: keeping it would go
+        // on rendering the hovered value in place of the committed one, and a value an OnChanging refused
+        // or a one-way binding never took would be previewed as though it had landed. The pointer leaving
+        // is no longer the only way out of it, because on a touch device that never happens.
+        await EndPreview();
+    }
+
+    private async Task CommitValue(double value)
+    {
         if (InvalidValueBinding()) return;
 
         value = ClampValue(value);
@@ -818,15 +926,6 @@ public partial class BitRating : BitInputBase<double>
             await OnChanging.InvokeAsync(args);
 
             if (args.Cancel) return;
-        }
-
-        // The preview has served its purpose once a value lands, and keeping it would render the
-        // hovered value instead of the committed one until the pointer moves away.
-        if (_hoverValue is not null)
-        {
-            _hoverValue = null;
-
-            await OnHoverChange.InvokeAsync(null);
         }
 
         await SetCurrentValueAsync(value);

@@ -154,7 +154,7 @@ public partial class BitRatingDemo
             Name = "NoHoverPreview",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Turns off the preview that follows the pointer over the items and shows the value that a click would commit.",
+            Description = "Turns off the preview that follows the pointer over the items and shows the value that a click would commit. Only the preview the component paints stops: OnHoverChange goes on reporting the hovered value.",
         },
         new()
         {
@@ -166,16 +166,28 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when the rating receives the focus. It reports the focus arriving at the rating as a whole, not at each item, so moving along the scale does not raise it again.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when the focus leaves the rating.",
+        },
+        new()
+        {
             Name = "OnHoverChange",
             Type = "EventCallback<double?>",
-            Description = "Callback for when the previewed value changes, which is the value a click would commit. It receives null when the pointer leaves the rating and the preview ends.",
+            Description = "Callback for when the hovered value changes, which is the value a click would commit. It receives null when the pointer leaves the rating, and keeps reporting under NoHoverPreview.",
         },
         new()
         {
             Name = "Precision",
             Type = "double",
             DefaultValue = "1",
-            Description = "The smallest change of the value the user can make, as a fraction of a single item. The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable. It constrains what the user can pick, not what can be displayed.",
+            Description = "The smallest change of the value the user can make, as a fraction of a single item. The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable. It constrains what the user can pick, not what can be displayed, and it is also the floor of the scale unless AllowZeroStars or AllowClear opens up the unrated 0.",
         },
         new()
         {
@@ -198,7 +210,7 @@ public partial class BitRatingDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Size of rating elements.",
+            Description = "Size of the rating, which scales the item glyphs, the label and the description together.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -393,6 +405,12 @@ public partial class BitRatingDemo
                     Name = "IsFull",
                     Type = "bool",
                     Description = "Whether the item is completely filled, meaning its Percentage is 100.",
+                },
+                new()
+                {
+                    Name = "IsCurrent",
+                    Type = "bool",
+                    Description = "Whether this is the item the shown value lands in - the fourth of a 3.5, and the one under the pointer while a hover preview is running. It is the item being picked rather than the exact committed value.",
                 }
             ]
         },
@@ -540,7 +558,7 @@ public partial class BitRatingDemo
         {
             Name = "--bit-Rating-size",
             DefaultValue = "Per size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the item glyphs, which the Size parameter otherwise picks.",
+            Description = "Size of the item glyphs, which the Size parameter otherwise picks. It does not move the label or the description, which have text sizes of their own.",
         },
         new()
         {
@@ -581,8 +599,14 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-label-font-size",
-            DefaultValue = "--bit-tpg-fs-sm",
-            Description = "Text size of the label.",
+            DefaultValue = "Per size: --bit-tpg-fs-xs / -sm / -md",
+            Description = "Text size of the label, which the Size parameter otherwise picks.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Text weight of the label.",
         },
         new()
         {
@@ -599,8 +623,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-description-font-size",
-            DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Text size of the description.",
+            DefaultValue = "Per size: --bit-tpg-fs-2xs / -xs / -sm",
+            Description = "Text size of the description, which the Size parameter otherwise picks.",
         }
     ];
 
@@ -617,6 +641,7 @@ public partial class BitRatingDemo
     private double exactPrecisionValue = 3.7;
 
     private double noZeroValue;
+    private double noZeroHalfValue;
     private double allowZeroValue;
     private double allowClearValue = 3;
 
@@ -624,6 +649,8 @@ public partial class BitRatingDemo
 
     private double hoverBoundValue = 3;
     private double? hoverPreviewValue;
+    private double noPreviewValue = 2;
+    private double? noPreviewHoverValue;
     private readonly string[] ratingWords = ["Not rated yet", "Terrible", "Bad", "Normal", "Good", "Wonderful"];
 
     private double perItemIconValue = 4;
@@ -647,8 +674,11 @@ public partial class BitRatingDemo
     private double onChangeValue;
     private double onChangingValue = 3;
     private bool changeRejected;
+    private bool isFocused;
 
     private double accessibilityValue = 3;
+
+    private double currentItemValue = 3.5;
 
     private double scoreValue = 2;
     private readonly string[] scoreWords = ["Unrated", "Poor", "Poor", "Okay", "Great", "Great"];

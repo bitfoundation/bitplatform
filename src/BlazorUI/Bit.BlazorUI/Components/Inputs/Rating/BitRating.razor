@@ -22,6 +22,8 @@
    is ever rendered: the visible label names the group when there is one, the explicit strings when not. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onkeydown="HandleOnKeyDown"
+     @onfocusin="HandleOnFocusIn"
+     @onfocusout="HandleOnFocusOut"
      @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      class="@ClassBuilder.Value"
@@ -30,7 +32,7 @@
      role="@(ReadOnly ? "img" : "radiogroup")"
      aria-labelledby="@labelledBy"
      aria-describedby="@describedBy"
-     aria-label="@(labelledBy is null ? _AriaLabel : null)"
+     aria-label="@_AriaLabelAttribute"
      aria-invalid="@(ReadOnly is false && ValueInvalid is true ? "true" : null)"
      aria-required="@(ReadOnly is false && Required ? "true" : null)"
      aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)"
@@ -65,7 +67,11 @@
         {
             var index = item;
             var percentage = GetPercentage(index);
-            var isCurrent = index == CurrentValue;
+            // Checked is the exact committed value, which only a whole one ever is - a radio cannot be half
+            // checked. Current is the item the displayed value lands in, fractional or previewed, which is
+            // the styling hook for "the one being picked" rather than a state of the radio.
+            var isChecked = index == CurrentValue;
+            var isCurrent = index == Math.Ceiling(displayValue);
             // A per-item icon replaces the shared pair for that position only, which is what turns a plain
             // scale into one that changes shape as it fills - a frown at one end and a grin at the other.
             var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
@@ -83,7 +89,7 @@
                     aria-hidden="@(ReadOnly ? "true" : null)"
                     aria-setsize="@(ReadOnly ? null : max.ToString())"
                     aria-posinset="@(ReadOnly ? null : index.ToString())"
-                    aria-checked="@(ReadOnly ? null : (isCurrent ? "true" : "false"))"
+                    aria-checked="@(ReadOnly ? null : (isChecked ? "true" : "false"))"
                     data-is-current="@(isCurrent ? "true" : "false")"
                     disabled="@(IsEnabled is false || ReadOnly)"
                     tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
