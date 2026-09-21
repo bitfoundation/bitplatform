@@ -1,8 +1,8 @@
-﻿@page "/components/fileinput"
+@page "/components/fileinput"
 @page "/components/file-input"
 
 <PageOutlet Url="components/fileinput" Title="FileInput"
-            Description="A file selection component with browse, drag-and-drop and clipboard paste support, built-in size, total size, extension, MIME type, count, duplicate, image resolution and custom validation, image preview thumbnails and file type glyphs, folder and camera capture modes, described constraints and screen reader announcements, and a fully templatable file list - selection only, no uploading involved." />
+            Description="A file selection component with browse, drag-and-drop and clipboard paste support, built-in size, total size, extension, MIME type, count, duplicate, image resolution and custom validation, a built-in drop zone panel, image preview thumbnails and file type glyphs, folder and camera capture modes, described constraints and screen reader announcements, and a fully templatable file list - selection only, no uploading involved." />
 
 <DemoPage Name="FileInput"
           Description="BitFileInput is the selection half of working with files: it lets the user hand files to the app - through the file dialog, by dragging them out of the OS onto the component, or by pasting them from the clipboard - without uploading anything anywhere. Each selected file surfaces in C# as a BitFileInputInfo carrying its name, size, MIME type, last-modified time, the folder it came from and, on request, the pixel dimensions of an image, and its content can be pulled on demand as a byte array. Selections are validated on arrival against per-file size bounds, a total size budget, allowed extensions or MIME types, a maximum file count, a no-duplicates rule and any custom rule; files that fail stay in the list, marked invalid with a customizable message, so the user can see exactly what went wrong, and the list level limits release their files again as soon as removals free up room. The built-in file list shows names, human-readable sizes, image thumbnails or file type glyphs and per-file remove buttons, and both the browse area and the list items can be replaced wholesale with templates. Accessibility is wired in rather than bolted on: the constraints can be spelled out in a description tied to the browse button through aria-describedby, and every change of the list is announced through an ARIA live region. When it is time to actually send files to a server, reach for the BitFileUpload component instead."
@@ -177,7 +177,7 @@
                       MaxCount="3" MaxTotalSize="1024 * 1024 * 2" />
     </DemoExample>
 
-    <DemoExample Title="Accept & AllowedExtensions" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Accept, AllowedExtensions & Capture" RazorCode="@example8RazorCode" Id="example8">
         <div>
             Two parameters restrict file types at different points. <b>Accept</b> feeds the native accept
             attribute, so the file dialog only offers matching files - but a drop or a paste never goes through the
@@ -208,6 +208,19 @@
         <div>AllowedExtensions with MIME types (validated):</div>
         <br />
         <BitFileInput Label="Browse or drop a file" AllowedExtensions="@(["image/*", "application/pdf"])" />
+
+        <br /><br />
+
+        <div>
+            <b>Capture</b> is the third native attribute of the picker: it asks a mobile device to open a camera
+            or a microphone instead of the file browser - "user" for the front camera, "environment" for the rear
+            one - and needs an <b>Accept</b> of its own to say which of the two. Desktop browsers ignore it and
+            show the regular dialog.
+        </div>
+
+        <br />
+
+        <BitFileInput Label="Take a photo" Accept="image/*" Capture="environment" />
     </DemoExample>
 
     <DemoExample Title="Custom validation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -240,20 +253,8 @@
                       FileValidator="@ValidateImageDimensions" />
     </DemoExample>
 
-    <DemoExample Title="Capture" RazorCode="@example10RazorCode" Id="example10">
-        <div>
-            <b>Capture</b> renders the native capture attribute, which asks a mobile device to open a camera or a
-            microphone instead of the file browser - "user" for the front camera, "environment" for the rear one.
-            Desktop browsers ignore it and show the regular dialog.
-        </div>
-
-        <br />
-
-        <BitFileInput Label="Take a photo" Accept="image/*" Capture="environment" />
-    </DemoExample>
-
-    <DemoExample Title="Preview & file icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode"
-                 Id="example11">
+    <DemoExample Title="Preview & file icons" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode"
+                 Id="example10">
         <div>
             <b>ShowPreview</b> puts a thumbnail next to each image, backed by an object URL the component creates
             on selection and revokes when the file is removed or the component is disposed - no manual cleanup, and
@@ -276,11 +277,12 @@
         <BitFileInput Label="Browse or drop files" Multiple ShowPreview FileIconSelector="@SelectFileIcon" />
     </DemoExample>
 
-    <DemoExample Title="Localization" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Localization" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             Every piece of English the component can say has a parameter that replaces it, and they are the whole
             list: <b>Label</b> and <b>Description</b> for the browse area, <b>RemoveButtonTitle</b> for the remove
-            button's tooltip and the prefix of its accessible label ("Remove report.pdf"), the six
+            button's tooltip and the prefix of its accessible label ("Remove report.pdf"),
+            <b>FileListAriaLabel</b> for the accessible name of the file list, the six
             <b>...ErrorMessage</b> parameters for the validation messages, <b>FileSizeFormatter</b> for the file
             size - which is also where a different rounding or the decimal base some platforms prefer belongs - and
             <b>AnnouncementProvider</b> for the sentence the screen reader hears on every change of the list.
@@ -303,7 +305,7 @@
         <BitFileInput Label="Browse or drop files" Multiple FileSizeFormatter="@(size => $"{size:N0} bytes")" />
     </DemoExample>
 
-    <DemoExample Title="HideFileList" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="HideFileList" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>HideFileList</b> suppresses the built-in file list while the selection keeps working - for an app
             that renders its own view of the files elsewhere. The example captures the selection through
@@ -329,7 +331,7 @@
         }
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>OnChange</b> fires with the current array of files whenever the selection changes - after browsing,
             dropping, pasting and removing alike. <b>OnInvalid</b> follows it whenever the list holds at least one
@@ -374,7 +376,7 @@
         }
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             The default UI can be swapped out entirely: <b>LabelTemplate</b> replaces the browse button - here with
             a full drop-zone panel that hides itself once files are selected - and <b>FileViewTemplate</b> replaces
@@ -382,6 +384,9 @@
             included. Replacing the browse button also replaces the built-in dashed drop indicator that lives on
             it, so a custom label should bring its own drag feedback: <b>Classes.Dragging</b> puts a class on the
             root element for as long as files hover over the component, which is what turns the panel below blue.
+            For a drop panel that is not this hand-built, reach for
+            <BitLink Href="#example18"><b>ShowDropZone</b></BitLink> instead - it brings the same shape with the
+            focus ring, the drag state and the theme already wired in.
         </div>
 
         <br />
@@ -454,7 +459,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Public API" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             The component can be driven entirely from code: <b>Browse</b> opens the file dialog, <b>Reset</b>
             silently clears the selection without raising any callback, and <b>RemoveFile</b> removes a specific
@@ -496,21 +501,24 @@
         }
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Accessibility" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The browse button is a real button - reached with Tab, activated with Enter or Space, drawing the
             theme's focus ring, and removed from the tab order while the component is disabled - and the hidden
             native input points at it through aria-labelledby, so screen readers announce the visible label. The
-            file list carries list and listitem roles, each remove button an aria-label naming the file it removes
+            file list carries list and listitem roles and an accessible name of its own - "Selected files" unless
+            <b>FileListAriaLabel</b> says otherwise - each remove button an aria-label naming the file it removes
             and the focus after that file is gone, and an invalid file is marked by a message, a red rule and,
             where the palette is stripped away in Windows High Contrast, a dashed rule. A file name is truncated
             without losing its extension. A visually hidden live region announces every change of the list,
             so a screen reader user hears how many files were taken and how many failed validation without going
             looking - and because a live region is skipped when its text repeats verbatim, each update carries an
             invisible marker so two identical selections in a row are both announced.
-            <b>AnnouncementProvider</b> replaces that sentence (see <BitLink Href="#example12">Localization</BitLink>),
+            <b>AnnouncementProvider</b> replaces that sentence (see <BitLink Href="#example11">Localization</BitLink>),
             and <b>AriaLabel</b> labels the browse button where a short visible label like "Browse" does not say
-            enough on its own.
+            enough on its own. Dragging is never the only way in either - everything a drop does, the browse
+            button does with a single tap - and both it and the remove buttons stay at or above the 24 CSS pixel
+            target size in every <b>Size</b>.
         </div>
 
         <br />
@@ -519,7 +527,7 @@
                       Description="Tab to the button, then press Enter or Space." />
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Variant" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Variant</b> decides how much of the <b>Color</b> the browse button carries: <b>Fill</b>, the default,
             paints the whole button, <b>Outline</b> keeps only the rule around it, and <b>Text</b> drops both so the
@@ -557,6 +565,30 @@
             <BitFileInput Variant="BitVariant.Outline" Color="BitColor.Success" Label="Outline" />
             <BitFileInput Variant="BitVariant.Text" Color="BitColor.Success" Label="Text" />
         </div>
+    </DemoExample>
+
+    <DemoExample Title="Drop zone" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            <b>ShowDropZone</b> turns the browse area into the panel a drag-and-drop target is expected to look
+            like - a dashed rule around a glyph and the label - instead of a button that happens to accept drops.
+            It is the same button underneath, so Tab still reaches it and Enter or Space still opens the dialog,
+            and it fills with the theme color while files hover over it exactly as the button does. Because a
+            panel-sized block of the role color is rarely what a drop zone wants, it defaults to the
+            <b>Outline</b> variant; set <b>Variant</b> to take that back. <b>DropZoneIconName</b> swaps the
+            default CloudUpload glyph - or drops it entirely when set to an empty string - and
+            <b>DropZoneIcon</b> takes one from an external icon library.
+        </div>
+
+        <br />
+
+        <BitFileInput ShowDropZone Multiple ShowPreview ShowRemoveButton
+                      Label="Drag files here or click to browse"
+                      Description="Any file type, as many as you like." />
+
+        <br />
+
+        <BitFileInput ShowDropZone Directory DropZoneIconName="FabricFolder"
+                      Label="Drag a folder here or click to browse" />
     </DemoExample>
 
     <DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode"
@@ -756,6 +788,9 @@
 
             <BitFileInput Label="Rounder, roomier items" ShowPreview ShowRemoveButton
                           Style="--bit-FileInput-item-radius: 1rem; --bit-FileInput-item-padding: 1rem; --bit-FileInput-item-gap: 0.75rem; --bit-FileInput-preview-size: 3.5rem;" />
+
+            <BitFileInput Label="A list that scrolls instead of growing" Multiple Append ShowRemoveButton
+                          Style="--bit-FileInput-file-list-max-height: 10rem; --bit-FileInput-item-hover-background: var(--bit-clr-bg-sec-hover);" />
         </div>
 
         <br />

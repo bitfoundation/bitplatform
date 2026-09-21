@@ -24,7 +24,19 @@
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
                 class="bit-fin-lbl @Classes?.Label">
-            @(Label ?? "Browse")
+            @if (ShowDropZone)
+            {
+                @* the glyph is what turns the panel into something recognizable at a glance as a place to
+                   drop files; it is decorative, since the button already says the same thing in words. *@
+                var dropZoneIcon = BitIconInfo.From(DropZoneIcon, DropZoneIconName ?? "CloudUpload");
+
+                if (dropZoneIcon is not null)
+                {
+                    <i style="@Styles?.DropZoneIcon"
+                       class="bit-fin-dzi @dropZoneIcon.GetCssClasses() @Classes?.DropZoneIcon" aria-hidden="true" />
+                }
+            }
+            <span class="bit-fin-lbt">@(Label ?? "Browse")</span>
         </button>
     }
 
@@ -60,7 +72,11 @@
         var removeTitle = RemoveButtonTitle ?? "Remove";
         var removeIcon = ShowRemoveButton ? BitIconInfo.From(RemoveButtonIcon, RemoveButtonIconName ?? "Delete") : null;
 
-        <div role="list" style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
+        @* the list is named so that it is announced as the selected files rather than as one more
+           unlabelled list of the page when a screen reader user walks the landmarks and the lists. *@
+        <div role="list"
+             aria-label="@(FileListAriaLabel ?? "Selected files")"
+             style="@Styles?.FileList" class="bit-fin-fl @Classes?.FileList">
             @foreach (var file in Files)
             {
                 if (FileViewTemplate is not null)
@@ -83,10 +99,13 @@
                                 @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
                                    the alt is empty on purpose: the thumbnail is decorative and its name is already
                                    right next to it, so announcing it again would just repeat the same text. *@
+                                @* lazily, since a folder selection can hold thousands of images and only
+                                   the handful in view is worth decoding. *@
                                 <img src="@file.PreviewUrl"
                                      alt=""
                                      draggable="false"
                                      decoding="async"
+                                     loading="lazy"
                                      style="@Styles?.Preview"
                                      class="bit-fin-prv @Classes?.Preview" />
                             }

@@ -16,13 +16,21 @@
 //   --bit-FileInput-label-padding             padding of the browse button                     (default: per size, $siz-ctrl-pad-*)
 //   --bit-FileInput-label-font-size           text size of the browse button                   (default: per size, from the type ramp)
 //   --bit-FileInput-label-radius              corner radius of the browse button and its ring  (default: $shp-radius-button)
+//   --bit-FileInput-drop-zone-height          smallest height of the drop zone panel           (default: per size)
+//   --bit-FileInput-drop-zone-padding         padding of the drop zone panel                   (default: per size)
+//   --bit-FileInput-drop-zone-radius          corner radius of the drop zone panel             (default: $shp-radius-surface)
+//   --bit-FileInput-drop-zone-border-width    rule thickness of the drop zone panel            (default: $shp-border-width-thick)
+//   --bit-FileInput-drop-zone-border-style    rule style of the drop zone panel                (default: dashed)
+//   --bit-FileInput-drop-zone-icon-size       glyph size inside the drop zone panel            (default: per size)
 //   --bit-FileInput-description-color         color of the hint under the browse button        (default: $clr-fg-sec)
 //   --bit-FileInput-description-font-size     text size of that hint, of the file size and
 //                                             of the folder beside it                          (default: per size, from the type ramp)
 //   --bit-FileInput-drop-color                rule and text of the drop indicator              (default: the text color)
 //   --bit-FileInput-drop-background           fill of the drop indicator                       (default: the hover color)
 //   --bit-FileInput-drop-border-style         border style of the drop indicator               (default: dashed)
+//   --bit-FileInput-file-list-max-height      tallest the file list gets before it scrolls     (default: none)
 //   --bit-FileInput-item-background           background of a file item, valid or not          (default: $clr-bg-sec)
+//   --bit-FileInput-item-hover-background     background of a hovered valid file item          (default: the resting background)
 //   --bit-FileInput-item-border-color         border of a file item                            (default: $clr-brd-pri)
 //   --bit-FileInput-item-hover-border-color   border of a hovered file item                    (default: the resting border color)
 //   --bit-FileInput-item-radius               corner radius of a file item                     (default: $shp-radius-surface)
@@ -40,6 +48,7 @@
 //   --bit-FileInput-remove-button-color       glyph color of the remove button                 (default: $clr-fg-pri)
 //   --bit-FileInput-remove-button-background  background of the remove button                  (default: $clr-bg-sec)
 //   --bit-FileInput-remove-button-hover-background  background of a hovered remove button      (default: $clr-bg-sec-hover)
+//   --bit-FileInput-remove-button-active-background background of a pressed remove button      (default: $clr-bg-sec-active)
 //   --bit-FileInput-remove-icon-size          glyph size of the remove button                  (default: per size, $siz-icon-*)
 
 .bit-fin {
@@ -109,6 +118,29 @@
     // has to be drawn back on - it is the only thing telling a Tab user where the focus has landed.
     &:focus-visible {
         @include focus-ring(var(--bit-FileInput-focus-color, var(--bit-fin-clr-focus)));
+    }
+}
+
+//ShowDropZone turns the same button into the panel a modern file input is expected to look like: a tall
+//full width surface with a dashed rule and a glyph above the label. Nothing but its shape changes - it is
+//still the button the keyboard reaches and the drag indicator is drawn on - so the variant blocks below and
+//the drag state keep applying to it untouched.
+.bit-fin-dzn {
+    .bit-fin-lbl {
+        width: 100%;
+        text-align: center;
+        gap: #{spacing(0.5)};
+        flex-flow: column nowrap;
+        border-style: var(--bit-FileInput-drop-zone-border-style, dashed);
+        border-width: var(--bit-FileInput-drop-zone-border-width, #{$shp-border-width-thick});
+        border-radius: var(--bit-FileInput-drop-zone-radius, #{$shp-radius-surface});
+        min-height: var(--bit-FileInput-drop-zone-height, var(--bit-fin-dzn-height));
+        padding: var(--bit-FileInput-drop-zone-padding, var(--bit-fin-dzn-padding));
+    }
+
+    .bit-fin-dzi {
+        line-height: 1;
+        font-size: var(--bit-FileInput-drop-zone-icon-size, var(--bit-fin-dzn-ico-size));
     }
 }
 
@@ -219,9 +251,14 @@
     font-size: var(--bit-FileInput-description-font-size, var(--bit-fin-fs-fontsize));
 }
 
+// a folder selection can hand over thousands of files, and a list that long pushes everything after it off
+// the page, so it is given a ceiling to scroll under - unset by default, since a handful of files should not
+// be boxed in a scroller either.
 .bit-fin-fl {
     margin: 0;
     padding: 0;
+    overflow-y: auto;
+    max-height: var(--bit-FileInput-file-list-max-height, none);
 }
 
 .bit-fin-itm {
@@ -236,7 +273,8 @@
     border-radius: var(--bit-FileInput-item-radius, #{$shp-radius-surface});
     font-size: var(--bit-FileInput-item-font-size, var(--bit-fin-itm-fontsize));
     border: $shp-border-width $shp-border-style var(--bit-FileInput-item-border-color, #{$clr-brd-pri});
-    transition: border-color $mot-duration-short $mot-easing;
+    transition: border-color $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -257,6 +295,15 @@
 
 .bit-fin-vld {
     background-color: var(--bit-FileInput-item-background, #{$clr-bg-sec});
+
+    @media (hover: hover) {
+        &:hover {
+            // as with the rule, an author who repaints the fill of an item usually means the hover too,
+            // so the dedicated variable falls back to the resting one rather than to a theme color.
+            background-color: var(--bit-FileInput-item-hover-background,
+                                  var(--bit-FileInput-item-background, #{$clr-bg-sec}));
+        }
+    }
 }
 
 // an invalid item carries its reason in words, but a list of a dozen files is scanned before it is read,
@@ -396,7 +443,7 @@
     }
 
     &:active {
-        background-color: $clr-bg-sec-active;
+        background-color: var(--bit-FileInput-remove-button-active-background, #{$clr-bg-sec-active});
     }
 
     // the ring is drawn inside the button rather than around it: the file item clips its own overflow to
@@ -459,6 +506,9 @@
     --bit-fin-itm-fontsize: #{$tg-fs-xs};
     --bit-fin-fs-fontsize: #{$tg-fs-xs};
     --bit-fin-prv-size: #{spacing(4)};
+    --bit-fin-dzn-height: #{spacing(9)};
+    --bit-fin-dzn-padding: #{spacing(1.5)};
+    --bit-fin-dzn-ico-size: #{spacing(3)};
     --bit-fin-rbt-size: #{$siz-ctrl-sm};
     --bit-fin-ico-fontsize: #{$siz-icon-sm};
 }
@@ -470,6 +520,9 @@
     --bit-fin-itm-fontsize: #{$tg-fs-sm};
     --bit-fin-fs-fontsize: #{$tg-fs-xs};
     --bit-fin-prv-size: #{spacing(5)};
+    --bit-fin-dzn-height: #{spacing(11)};
+    --bit-fin-dzn-padding: #{spacing(2)};
+    --bit-fin-dzn-ico-size: #{spacing(4)};
     --bit-fin-rbt-size: #{$siz-ctrl-md};
     --bit-fin-ico-fontsize: #{$siz-icon-md};
 }
@@ -481,6 +534,9 @@
     --bit-fin-itm-fontsize: #{$tg-fs-md};
     --bit-fin-fs-fontsize: #{$tg-fs-sm};
     --bit-fin-prv-size: #{spacing(6.5)};
+    --bit-fin-dzn-height: #{spacing(13)};
+    --bit-fin-dzn-padding: #{spacing(2.5)};
+    --bit-fin-dzn-ico-size: #{spacing(5)};
     --bit-fin-rbt-size: #{$siz-ctrl-lg};
     --bit-fin-ico-fontsize: #{$siz-icon-lg};
 }

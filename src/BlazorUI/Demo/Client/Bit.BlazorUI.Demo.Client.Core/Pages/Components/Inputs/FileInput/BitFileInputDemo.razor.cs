@@ -110,6 +110,22 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "DropZoneIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The glyph of the drop zone panel, using custom CSS classes for external icon libraries. Takes precedence over DropZoneIconName when both are set, and is only rendered while ShowDropZone is enabled.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info"
+        },
+        new()
+        {
+            Name = "DropZoneIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the drop zone panel's glyph from the built-in Fluent UI icons. Defaults to \"CloudUpload\", and an empty string leaves the panel without a glyph at all."
+        },
+        new()
+        {
             Name = "DuplicateErrorMessage",
             Type = "string?",
             DefaultValue = "null",
@@ -132,6 +148,13 @@ public partial class BitFileInputDemo
             Description = "Custom validation function called for each newly selected file after the built-in validations pass. Return an error message to mark the file as invalid, or null to accept it.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
+        },
+        new()
+        {
+            Name = "FileListAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the file list, which tells a screen reader user walking the lists of the page what this one holds. Defaults to \"Selected files\"."
         },
         new()
         {
@@ -307,6 +330,13 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "ShowDropZone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to render the browse area as a full width drop zone panel - a dashed rule around a glyph and the label - instead of an ordinary button. It is the same button underneath, so it is still reached with Tab and activated with Enter or Space, and it carries the drag indicator exactly as the button does. It also makes Outline the default variant; set Variant to take that back."
+        },
+        new()
+        {
             Name = "ShowPreview",
             Type = "bool",
             DefaultValue = "false",
@@ -473,6 +503,12 @@ public partial class BitFileInputDemo
                },
                new()
                {
+                   Name = "Extension",
+                   Type = "string",
+                   Description = "The extension of the file including its leading dot, lowercased (e.g. \".pdf\"), or an empty string for a file whose name carries none."
+               },
+               new()
+               {
                    Name = "LastModifiedDate",
                    Type = "DateTimeOffset",
                    Description = "The last modified time of the file reported by the browser, as a DateTimeOffset."
@@ -547,6 +583,13 @@ public partial class BitFileInputDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the browse button (label) of the BitFileInput."
+               },
+               new()
+               {
+                   Name = "DropZoneIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the glyph of the drop zone panel, which is only rendered while ShowDropZone is enabled."
                },
                new()
                {
@@ -796,6 +839,42 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "--bit-FileInput-drop-zone-height",
+            DefaultValue = "Per Size, 4.5rem / 5.5rem / 6.5rem",
+            Description = "The smallest height of the drop zone panel rendered by ShowDropZone.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-zone-padding",
+            DefaultValue = "Per Size, from the spacing rhythm",
+            Description = "Padding of the drop zone panel.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-zone-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of the drop zone panel, which its focus ring follows.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-zone-border-width",
+            DefaultValue = "--bit-shp-brd-width-thick",
+            Description = "Rule thickness of the drop zone panel.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-zone-border-style",
+            DefaultValue = "dashed",
+            Description = "Rule style of the drop zone panel at rest. Set it to solid for a panel that reads as a surface rather than as a target.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-drop-zone-icon-size",
+            DefaultValue = "Per Size, 1.5rem / 2rem / 2.5rem",
+            Description = "Glyph size inside the drop zone panel.",
+        },
+        new()
+        {
             Name = "--bit-FileInput-description-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the hint under the browse button.",
@@ -826,9 +905,21 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "--bit-FileInput-file-list-max-height",
+            DefaultValue = "none",
+            Description = "The tallest the file list gets before it scrolls, which is what keeps a folder selection of thousands of files from pushing the rest of the page away.",
+        },
+        new()
+        {
             Name = "--bit-FileInput-item-background",
             DefaultValue = "--bit-clr-bg-sec",
             Description = "Background of a file item, valid or not.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-item-hover-background",
+            DefaultValue = "--bit-FileInput-item-background",
+            Description = "Background of a hovered valid file item (pointer devices only).",
         },
         new()
         {
@@ -931,6 +1022,12 @@ public partial class BitFileInputDemo
             Name = "--bit-FileInput-remove-button-hover-background",
             DefaultValue = "--bit-clr-bg-sec-hover",
             Description = "Background of a hovered remove button (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-remove-button-active-background",
+            DefaultValue = "--bit-clr-bg-sec-active",
+            Description = "Background of a pressed remove button.",
         },
         new()
         {

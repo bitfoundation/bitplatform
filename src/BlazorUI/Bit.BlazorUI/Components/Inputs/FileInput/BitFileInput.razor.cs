@@ -1,11 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileInput is a file input component that wraps the HTML file input element and enables file selection
-/// with support for validation, drag-and-drop, paste, image previews, file type glyphs, folder selection,
-/// and customization.
+/// with support for validation, drag-and-drop onto a button or a drop zone panel, paste, image previews,
+/// file type glyphs, folder selection, and customization.
 /// The selected files' metadata is accessible from C# code, and their content can be pulled on demand either
 /// as a byte array (<see cref="ReadContentAsync"/>) or as a chunked stream (<see cref="OpenReadStreamAsync"/>).
 /// </summary>
@@ -137,6 +137,19 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public bool Directory { get; set; }
 
     /// <summary>
+    /// Gets or sets the glyph of the drop zone panel using custom CSS classes for external icon libraries,
+    /// which is only rendered while <see cref="ShowDropZone"/> is enabled.
+    /// Takes precedence over <see cref="DropZoneIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? DropZoneIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the drop zone panel's glyph from the built-in Fluent UI icons.
+    /// Defaults to "CloudUpload", and an empty string leaves the panel without a glyph at all.
+    /// </summary>
+    [Parameter] public string? DropZoneIconName { get; set; }
+
+    /// <summary>
     /// Custom error message displayed when a file is selected again while <see cref="AllowDuplicates"/> is disabled.
     /// Defaults to "The file is already selected".
     /// </summary>
@@ -163,6 +176,12 @@ public partial class BitFileInput : BitComponentBase
     /// When not set, a built-in humanizer is used.
     /// </summary>
     [Parameter] public Func<long, string>? FileSizeFormatter { get; set; }
+
+    /// <summary>
+    /// The accessible name of the file list, which tells a screen reader user walking the lists of the page
+    /// what this one holds. Defaults to "Selected files".
+    /// </summary>
+    [Parameter] public string? FileListAriaLabel { get; set; }
 
     /// <summary>
     /// Custom Razor template for rendering individual file items in the file list.
@@ -298,6 +317,17 @@ public partial class BitFileInput : BitComponentBase
     [Parameter] public string? RemoveButtonTitle { get; set; }
 
     /// <summary>
+    /// Whether to render the browse area as a full width drop zone panel - a dashed rule around a glyph and
+    /// the label - instead of an ordinary button, which is what makes a drag-and-drop target look like one.
+    /// The panel is the same button underneath, so it is still reached with Tab and activated with Enter or Space,
+    /// and it carries the drag indicator exactly as the button does.
+    /// It also makes <see cref="BitVariant.Outline"/> the default variant, since a panel-sized block of the
+    /// role color is rarely what a drop zone wants; set <see cref="Variant"/> to take that back.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ShowDropZone { get; set; }
+
+    /// <summary>
     /// Whether to display a preview thumbnail for image files in the file list.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
@@ -367,12 +397,19 @@ public partial class BitFileInput : BitComponentBase
     {
         if (IsDisposed) return;
 
+        // clearing what is already empty changes nothing, so it is not worth an announcement - otherwise
+        // every AutoReset browse would tell the screen reader that no file is selected before the dialog opens.
+        var hadFiles = _files.Count > 0;
+
         _files.Clear();
         _removeRefs.Clear();
 
         await _js.BitFileInputReset(UniqueId, _inputRef);
 
-        Announce();
+        if (hadFiles)
+        {
+            Announce();
+        }
 
         StateHasChanged();
     }
@@ -500,7 +537,9 @@ public partial class BitFileInput : BitComponentBase
             BitVariant.Fill => "bit-fin-fil",
             BitVariant.Outline => "bit-fin-otl",
             BitVariant.Text => "bit-fin-txt",
-            _ => "bit-fin-fil"
+            // a drop zone is a surface to drop onto rather than the primary action of the page, so it
+            // defaults to the outlined variant whose rule is what the dashed drop indicator is drawn on.
+            _ => ShowDropZone ? "bit-fin-otl" : "bit-fin-fil"
         });
 
         ClassBuilder.Register(() => Color switch
@@ -536,6 +575,8 @@ public partial class BitFileInput : BitComponentBase
         // the browse button is what carries the drop indicator, so a component rendered without one needs
         // the indicator drawn around itself instead of silently accepting drops with nothing to show for it.
         ClassBuilder.Register(() => HideLabel ? "bit-fin-nlb" : string.Empty);
+
+        ClassBuilder.Register(() => ShowDropZone ? "bit-fin-dzn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()

@@ -64,6 +64,12 @@ public class BitFileInputInfo
     [JsonPropertyName("height")] public int? Height { get; set; }
 
     /// <summary>
+    /// The extension of the file including its leading dot, lowercased (e.g. ".pdf"),
+    /// or an empty string for a file whose name carries none.
+    /// </summary>
+    [JsonIgnore] public string Extension => Path.GetExtension(Name).ToLowerInvariant();
+
+    /// <summary>
     /// The last modified time of the file reported by the browser, as a DateTimeOffset.
     /// </summary>
     [JsonIgnore] public DateTimeOffset LastModifiedDate => DateTimeOffset.FromUnixTimeMilliseconds(LastModified);

@@ -18,6 +18,12 @@ public class BitFileInputClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the glyph of the drop zone panel of the BitFileInput,
+    /// which is only rendered while ShowDropZone is enabled.
+    /// </summary>
+    public string? DropZoneIcon { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the description (hint) of the BitFileInput.
     /// </summary>
     public string? Description { get; set; }

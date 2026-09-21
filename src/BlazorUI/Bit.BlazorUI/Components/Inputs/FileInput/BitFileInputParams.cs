@@ -87,6 +87,16 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     public bool? Directory { get; set; }
 
     /// <summary>
+    /// Gets or sets the glyph of the drop zone panel using custom CSS classes for external icon libraries.
+    /// </summary>
+    public BitIconInfo? DropZoneIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the drop zone panel's glyph from the built-in Fluent UI icons.
+    /// </summary>
+    public string? DropZoneIconName { get; set; }
+
+    /// <summary>
     /// Custom error message displayed when a file is selected again while <see cref="AllowDuplicates"/> is disabled.
     /// </summary>
     public string? DuplicateErrorMessage { get; set; }
@@ -106,6 +116,11 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     /// Custom validation function called for each newly selected file after the built-in validations pass.
     /// </summary>
     public Func<BitFileInputInfo, string?>? FileValidator { get; set; }
+
+    /// <summary>
+    /// The accessible name of the file list, which is a piece of English a whole app localizes once.
+    /// </summary>
+    public string? FileListAriaLabel { get; set; }
 
     /// <summary>
     /// Whether to hide the file list that displays the selected files in the UI.
@@ -193,7 +208,12 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     public string? RemoveButtonTitle { get; set; }
 
     /// <summary>
-    /// Whether to display a preview thumbnail for image files, and a file type glyph for everything else.
+    /// Whether to render the browse area as a full width drop zone panel instead of an ordinary button.
+    /// </summary>
+    public bool? ShowDropZone { get; set; }
+
+    /// <summary>
+    /// Whether to display a preview thumbnail for image files in the file list.
     /// </summary>
     public bool? ShowPreview { get; set; }
 
@@ -306,6 +326,16 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.Directory = Directory.Value;
         }
 
+        if (DropZoneIcon is not null && bitFileInput.HasNotBeenSet(nameof(DropZoneIcon)))
+        {
+            bitFileInput.DropZoneIcon = DropZoneIcon;
+        }
+
+        if (DropZoneIconName.HasValue() && bitFileInput.HasNotBeenSet(nameof(DropZoneIconName)))
+        {
+            bitFileInput.DropZoneIconName = DropZoneIconName;
+        }
+
         if (DuplicateErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(DuplicateErrorMessage)))
         {
             bitFileInput.DuplicateErrorMessage = DuplicateErrorMessage;
@@ -324,6 +354,11 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         if (FileValidator is not null && bitFileInput.HasNotBeenSet(nameof(FileValidator)))
         {
             bitFileInput.FileValidator = FileValidator;
+        }
+
+        if (FileListAriaLabel.HasValue() && bitFileInput.HasNotBeenSet(nameof(FileListAriaLabel)))
+        {
+            bitFileInput.FileListAriaLabel = FileListAriaLabel;
         }
 
         if (HideFileList.HasValue && bitFileInput.HasNotBeenSet(nameof(HideFileList)))
@@ -409,6 +444,11 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         if (RemoveButtonTitle.HasValue() && bitFileInput.HasNotBeenSet(nameof(RemoveButtonTitle)))
         {
             bitFileInput.RemoveButtonTitle = RemoveButtonTitle;
+        }
+
+        if (ShowDropZone.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowDropZone)))
+        {
+            bitFileInput.ShowDropZone = ShowDropZone.Value;
         }
 
         if (ShowPreview.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowPreview)))
