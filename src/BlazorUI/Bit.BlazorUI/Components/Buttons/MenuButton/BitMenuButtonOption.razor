@@ -1,0 +1,26 @@
+@namespace Bit.BlazorUI
+
+@* Renders the option's item in place, so the rendered order of the items always follows the markup
+   order of the options, even when an option is added or removed conditionally later on. *@
+@if (Parent is not null)
+{
+    @if (ChildContent is null)
+    {
+        <_BitMenuButtonItem TItem="BitMenuButtonOption" MenuButton="Parent" Item="this"
+                            Level="Level" ShowCheckColumn="_showCheckColumn" />
+    }
+    else
+    {
+        @* The nested options are rendered inside the submenu the item draws for them, and they cascade
+           from this option rather than from the menu button, so they register as its children instead
+           of joining the top-level list. *@
+        <_BitMenuButtonItem TItem="BitMenuButtonOption" MenuButton="Parent" Item="this"
+                            Level="Level" ShowCheckColumn="_showCheckColumn">
+            <ChildrenFragment>
+                <CascadingValue Value="this" IsFixed="true">
+                    @ChildContent
+                </CascadingValue>
+            </ChildrenFragment>
+        </_BitMenuButtonItem>
+    }
+}
