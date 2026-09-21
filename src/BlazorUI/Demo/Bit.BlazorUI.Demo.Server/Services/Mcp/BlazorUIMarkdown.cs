@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Reflection;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
@@ -113,6 +114,7 @@ public static class BlazorUIMarkdown
 
         AppendInherited(builder, component);
         AppendBindable(builder, component);
+        AppendCascadingParams(builder, component);
         AppendCssVariables(builder, component);
 
         foreach (var type in component.OwnTypes)
@@ -422,6 +424,31 @@ public static class BlazorUIMarkdown
         if (bindable.Length == 0) return;
 
         builder.AppendLine($"Two-way bindable: {string.Join(", ", bindable.Select(n => $"`@bind-{n}`"))}.").AppendLine();
+    }
+
+    /// <summary>
+    /// The parameters object an ancestor can set this component's defaults with, which is written
+    /// nowhere in the parameter table: the table is what markup sets on one instance, and this is
+    /// the same set again as nullables, provided to a whole subtree at once.
+    /// <para>
+    /// Named rather than tabulated. Its members are the parameters printed above, and the
+    /// inherited ones, with a <c>?</c> on them, so a second table of sixty rows would say what the
+    /// first one already said; what a reader cannot get from the names is how the two meet - per
+    /// parameter, and as a default the instance's own markup still beats.
+    /// </para>
+    /// </summary>
+    private static void AppendCascadingParams(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.CascadingParams is null) return;
+
+        var name = component.CascadingParams.Name;
+
+        var count = component.CascadingParams
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Count(p => p.CanWrite);
+
+        builder.AppendLine("## Cascading parameters").AppendLine();
+        builder.AppendLine($"`{name}` carries {count} of this component's parameters again as nullables - its own and the inherited ones alike - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
     }
 
     /// <summary>

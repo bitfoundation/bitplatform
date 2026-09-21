@@ -11,6 +11,10 @@ on:
         description: Boilerplate tests with PostgreSQL
         type: boolean
         default: true
+      boilerplate_mysql:
+        description: Boilerplate tests with MySQL
+        type: boolean
+        default: true
       boilerplate_mssql:
         description: Boilerplate tests with SQL Server
         type: boolean
@@ -200,6 +204,115 @@ jobs:
       with:
         name: postgres-tests-invariantglobalization
         path: ./TestPostgreSQL/src/Tests/TestResults
+        retention-days: 14
+
+
+  test_boilerplate_mysql:
+    name: create project from template with mysql and test it
+    if: ${{ inputs.boilerplate_mysql }}
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Uninstall Bit.Boilerplate if running on ACT
+      if: ${{ env.ACT }}
+      run: dotnet new uninstall Bit.Boilerplate
+
+    - name: Prepare Boilerplate template
+      run: |
+        cd src/Templates/Boilerplate && dotnet build -c Release
+        dotnet pack -c Release -o . -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0
+        dotnet new install Bit.Boilerplate.0.0.0.nupkg && cd ../../../
+
+    - name: Install wasm
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Create project from template with mySQL
+      run: dotnet new bit-bp --name TestMySql --database MySql --module Sales --signalR --aspire --redis --advancedTests
+
+    - name: Create appsettings.json for Client.Web
+      run: |
+        echo '{"ServerAddress":"/"}' > TestMySql/src/Client/TestMySql.Client.Web/wwwroot/appsettings.json
+
+    - name: Build and setup database
+      run: |
+        cd TestMySql/src/Server/TestMySql.Server.Api/
+        dotnet build -p:EnforceCodeStyleInBuild=true
+        dnx dotnet-ef@10.0.12 -- migrations add Initial --verbose
+
+    - name: Trust dotnet cert
+      continue-on-error: true
+      run: dotnet dev-certs https --trust # Necessary for aspire related resources
+
+    - name: Build tests and install Playwright
+      working-directory: TestMySql/src/Tests
+      run: |
+        dotnet build
+        pwsh bin/Debug/net10.0/playwright.ps1 install --with-deps
+
+    - name: Run tests (Blazor Server)
+      id: test-mysql-blazorserver
+      working-directory: TestMySql/src/Tests
+      run: dotnet test
+
+    - name: Upload Blazor Server test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorserver.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorserver
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly)
+      id: test-mysql-blazorwasm
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorwasm.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorwasm
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (Blazor WebAssembly, prerender, Firefox)
+      id: test-mysql-blazorwasm-prerender
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true BROWSER=firefox dotnet test --filter "TestCategory=UITest" --no-build
+
+    - name: Upload Blazor WebAssembly prerender test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-blazorwasm-prerender.outcome == 'failure' }}
+      with:
+        name: mysql-tests-blazorwasm-prerender-firefox
+        path: ./TestMySql/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run UI tests (InvariantGlobalization)
+      id: test-mysql-invariantglobalization
+      working-directory: TestMySql/src/Tests
+      run: WebAppRender__BlazorMode=BlazorWebAssembly WebAppRender__PrerenderEnabled=true ResponseCaching__EnableOutputCaching=true dotnet test -p:InvariantGlobalization=true --filter "TestCategory=UITest&TestCategory!=Localization"
+
+    - name: Upload InvariantGlobalization test results on failure
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      if: ${{ !cancelled() && steps.test-mysql-invariantglobalization.outcome == 'failure' }}
+      with:
+        name: mysql-tests-invariantglobalization
+        path: ./TestMySql/src/Tests/TestResults
         retention-days: 14
 
 

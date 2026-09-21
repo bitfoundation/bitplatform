@@ -60,7 +60,7 @@
                 },
                 {
                     "choice": "MySql",
-                    "description": "MySql - MariaDB"
+                    "description": "MySql - uses Oracle's Connector/NET EF Core provider, which is licensed GPL-2.0 with the Universal FOSS Exception, so a closed source application needs Oracle's commercial license."
                 },
                 {
                     "choice": "Other",
@@ -273,9 +273,10 @@
             ],
             "description": "The design system the app's UI ships with, powered by bit BlazorUI theming."
         },
-        // The host pages pin the chosen design system twice: as bit-theme-light / bit-theme-dark preset names in the
-        // index.html files and as BitThemePresets / BitExtraThemePresets constants in App.razor. Both spellings are
-        // rewritten here, so the host pages need no conditional directives around those attributes.
+        // The chosen design system is pinned in three spellings: as bit-theme-light / bit-theme-dark preset names in
+        // the index.html files, as the BitThemePresets / BitExtraThemePresets constants of AppThemePresets, which is
+        // where every head reads it from, and as the theme-color literal of the static index.html files, which have no
+        // C# to read AppThemePresets with. All three are rewritten here, so none needs a conditional directive.
         "themeLightName": {
             "type": "generated",
             "generator": "switch",
@@ -326,6 +327,36 @@
                     {
                         "condition": "",
                         "value": "fluent2-dark"
+                    }
+                ]
+            }
+        },
+        // Only the dark literal is generated: the light background of every preset this template can pick is #FFFFFF.
+        // The content="..." is part of the match, because #FFFFFF alone also spells manifest.json's theme_color and a
+        // color in an email template, while #131313 occurs nowhere else.
+        "themeDarkBackground": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "content=\"#131313\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(theme == 'Fluent')",
+                        "value": "content=\"#0F1318\""
+                    },
+                    {
+                        "condition": "(theme == 'Cupertino')",
+                        "value": "content=\"#131313\""
+                    },
+                    {
+                        "condition": "(theme == 'Material')",
+                        "value": "content=\"#0C131B\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "content=\"#131313\""
                     }
                 ]
             }
@@ -733,6 +764,7 @@
                         "src/Tests/Features/TemplateConfig/HybridHostHardeningTests.cs",
                         "src/Tests/Features/TemplateConfig/VelopackPackagingContractTests.cs",
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
+                        "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
                         "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
@@ -894,7 +926,10 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
-                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs"
+                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs",
+                        // Its subject is Diagnostic/SendTestPushNotification - the one anonymous POST that binds
+                        // nothing but a route value, so a form body reaches AutoCsrfProtectionFilter intact.
+                        "src/Tests/Features/Antiforgery/AntiforgeryFormPostTests.cs"
                     ]
                 },
                 {

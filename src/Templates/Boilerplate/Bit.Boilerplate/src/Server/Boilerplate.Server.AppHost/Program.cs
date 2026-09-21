@@ -26,9 +26,7 @@ var sqlite = builder.AddSqlite();
 //#if (filesStorage == "AzureBlobStorage")
 var azureBlobStorage = builder.AddAzureStorage();
 //#elif (filesStorage == "S3")
-var s3Storage = builder.AddMinioContainer("s3")
-    .WithOtlpExporter()
-    .WithDataVolume();
+var s3Storage = builder.AddS3Storage();
 //#endif
 
 var keycloak = builder.AddKeycloak();

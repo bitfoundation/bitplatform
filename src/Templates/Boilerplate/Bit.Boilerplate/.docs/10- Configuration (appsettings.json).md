@@ -214,7 +214,7 @@ In [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplat
 {
     "ConnectionStrings": {
         "mssqldb": "Data Source=(localdb)\\mssqllocaldb; Initial Catalog=BoilerplateDb;...",
-        "s3": "Endpoint=http://localhost:9000;AccessKey=minioadmin;SecretKey=minioadmin;",
+        "s3": "Endpoint=http://localhost:9000;AccessKey=rustfsadmin;SecretKey=P@ssw0rd;",
         "smtp": "Endpoint=smtp://smtp.ethereal.email:587;UserName=..."
     },
     "AI": {
@@ -272,7 +272,7 @@ When you want to add explanatory comments to configuration files, append `__Comm
 {
     "Parameters": {
         "sqlserver__Comment": "The username is `sa` by default",
-        "s3__Comment": "The username is `minioadmin` by default"
+        "Comment": "You might need to delete the docker volumes to apply changes to the passwords"
     }
 }
 ```

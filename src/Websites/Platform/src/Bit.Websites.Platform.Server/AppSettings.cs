@@ -16,7 +16,9 @@ public class AppSettings
 public class CodebaseMemorySettings
 {
     /// <summary>
-    /// Git checkout to index for the chatbot, or empty to skip indexing on this machine.
+    /// Git checkout to index for the chatbot, or empty to skip indexing on this machine. The root of the
+    /// checkout: only <see cref="Services.CodebaseMemoryIndexService.IndexedPaths"/> of it end up indexed,
+    /// which the site arranges by writing a .cbmignore there, so it wants a checkout of its own.
     /// </summary>
     public string? SourceRepositoryPath { get; set; }
 

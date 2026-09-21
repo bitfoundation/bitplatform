@@ -50,8 +50,7 @@ public partial class OfflineTodoTests : AppPageTest
     {
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(TestData.DefaultTestEmail);
-        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(TestData.DefaultTestPassword);
+        await SignInPanelUtils.FillCredentials(Page, TestData.DefaultTestEmail, TestData.DefaultTestPassword);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());
@@ -63,13 +62,23 @@ public partial class OfflineTodoTests : AppPageTest
 
         await Expect(Page).ToHaveTitleAsync(AppStrings.OfflineTodoTitle);
         await Expect(Page.GetByPlaceholder(AppStrings.TodoAddPlaceholder)).ToBeVisibleAsync();
+
+        // The field being on screen is not the app being ready for it, and the first thing this page is asked to do
+        // happens while the browser is offline - where a value dropped by hydration cannot be diagnosed from the result.
+        await Page.WaitForBlazorInteractive();
     }
 
     private async Task AddTodoItem(string title)
     {
-        await Page.GetByPlaceholder(AppStrings.TodoAddPlaceholder).FillAsync(title);
-        // The Add button is disabled until the debounced title binding kicks in; ClickAsync waits for it to become enabled.
-        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Add, Exact = true }).ClickAsync();
+        // The Add button is disabled until the debounced title binding kicks in, which makes it the proof that the app -
+        // and not merely the pre-rendered input - received the title: on the first add, the page can still be the
+        // pre-rendered one, whose fields are markup nobody is listening to.
+        var addButton = Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Add, Exact = true });
+
+        await Page.GetByPlaceholder(AppStrings.TodoAddPlaceholder)
+                  .FillEnsuringStable(title, until: () => addButton.IsEnabledAsync());
+
+        await addButton.ClickAsync();
 
         await Expect(Page.GetByText(title)).ToBeVisibleAsync();
     }
