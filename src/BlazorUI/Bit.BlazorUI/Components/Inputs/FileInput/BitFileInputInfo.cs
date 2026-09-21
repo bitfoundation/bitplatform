@@ -65,9 +65,9 @@ public class BitFileInputInfo
 
     /// <summary>
     /// The extension of the file including its leading dot, lowercased (e.g. ".pdf"),
-    /// or an empty string for a file whose name carries none.
+    /// or an empty string for a file whose name carries none, a dotfile (".gitignore") included.
     /// </summary>
-    [JsonIgnore] public string Extension => Path.GetExtension(Name).ToLowerInvariant();
+    [JsonIgnore] public string Extension => GetExtension(Name).ToLowerInvariant();
 
     /// <summary>
     /// The last modified time of the file reported by the browser, as a DateTimeOffset.
@@ -90,6 +90,16 @@ public class BitFileInputInfo
     /// This is null by default and only loaded on demand to avoid unnecessary memory usage.
     /// </summary>
     [JsonIgnore] public byte[]? Content { get; internal set; }
+
+    // The extension of a file name including its leading dot, or an empty string when it carries none.
+    // Path.GetExtension hands back the whole name of a dotfile (".gitignore"), whose name is all stem and
+    // no extension, so the leading dot is not counted as one here.
+    internal static string GetExtension(string name)
+    {
+        var index = name.LastIndexOf('.');
+
+        return index <= 0 || index == name.Length - 1 ? string.Empty : name[index..];
+    }
 
     // Tracks whether the file was invalidated by a list level rule (a duplicate, MaxCount or MaxTotalSize),
     // so it can become valid again once removals free up room or drop the original of a duplicate.

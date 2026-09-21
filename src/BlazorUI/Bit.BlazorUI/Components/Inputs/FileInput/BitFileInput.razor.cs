@@ -209,8 +209,11 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Custom Razor template for the browse button area, allowing full customization of the file selection trigger UI.
+    /// Since it replaces the browse button, which is also what turns into the drag-and-drop indicator, providing it
+    /// moves that indicator onto the component itself so that dropping files still shows that it is allowed.
     /// </summary>
-    [Parameter] public RenderFragment? LabelTemplate { get; set; }
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Maximum allowed number of files in the file list.
@@ -445,7 +448,8 @@ public partial class BitFileInput : BitComponentBase
     /// instead of materializing the whole file in memory the way <see cref="ReadContentAsync"/> does.
     /// This is what makes a file too large to hold as a byte array - a video, an archive, a database dump -
     /// copyable to disk, hashable or forwardable to a server.
-    /// The stream is forward only and must be disposed by the caller.
+    /// The stream is forward only and must be disposed by the caller, which is also what releases the
+    /// underlying JavaScript reference to the file.
     /// Unlike <see cref="ReadContentAsync"/> it also reads a file the validations rejected, since a file too
     /// large to hold in memory is exactly the one a stream is wanted for.
     /// </summary>
@@ -462,9 +466,22 @@ public partial class BitFileInput : BitComponentBase
         ArgumentNullException.ThrowIfNull(fileInfo);
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        var streamRef = await _js.BitFileInputOpenReadStream(UniqueId, fileInfo.FileId);
+        var streamRef = await _js.BitFileInputOpenReadStream(UniqueId, fileInfo.FileId)
+                        ?? throw new InvalidOperationException("The JavaScript runtime is no longer available, so the file cannot be read.");
 
-        return await streamRef.OpenReadStreamAsync(maxAllowedSize ?? fileInfo.Size, cancellationToken);
+        try
+        {
+            var stream = await streamRef.OpenReadStreamAsync(maxAllowedSize ?? fileInfo.Size, cancellationToken);
+
+            // the stream reads through the reference, so the reference is handed to the stream to be released with it.
+            return new BitFileInputContentStream(stream, streamRef);
+        }
+        catch
+        {
+            await streamRef.DisposeAsync();
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -572,9 +589,10 @@ public partial class BitFileInput : BitComponentBase
             _ => "bit-fin-md"
         });
 
-        // the browse button is what carries the drop indicator, so a component rendered without one needs
-        // the indicator drawn around itself instead of silently accepting drops with nothing to show for it.
-        ClassBuilder.Register(() => HideLabel ? "bit-fin-nlb" : string.Empty);
+        // the browse button is what carries the drop indicator, so a component rendered without one - hidden
+        // or replaced by a LabelTemplate - needs the indicator drawn around itself instead of silently
+        // accepting drops with nothing to show for it.
+        ClassBuilder.Register(() => LabelTemplate is not null || HideLabel ? "bit-fin-nlb" : string.Empty);
 
         ClassBuilder.Register(() => ShowDropZone ? "bit-fin-dzn" : string.Empty);
     }
@@ -688,10 +706,13 @@ public partial class BitFileInput : BitComponentBase
     // the name without its extension, which is the part the file list is allowed to ellipsize.
     private static string GetFileStem(string name)
     {
-        var extension = Path.GetExtension(name);
+        var extension = BitFileInputInfo.GetExtension(name);
 
         return extension.HasNoValue() ? name : name[..^extension.Length];
     }
+
+    // the extension the file list renders unshrunk beside the stem, which together spell the name back out.
+    private static string GetFileExtension(string name) => BitFileInputInfo.GetExtension(name);
 
     private async Task UpdateDropZone()
     {

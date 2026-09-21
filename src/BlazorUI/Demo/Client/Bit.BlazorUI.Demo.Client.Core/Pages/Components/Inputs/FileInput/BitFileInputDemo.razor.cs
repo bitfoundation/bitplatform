@@ -505,7 +505,7 @@ public partial class BitFileInputDemo
                {
                    Name = "Extension",
                    Type = "string",
-                   Description = "The extension of the file including its leading dot, lowercased (e.g. \".pdf\"), or an empty string for a file whose name carries none."
+                   Description = "The extension of the file including its leading dot, lowercased (e.g. \".pdf\"), or an empty string for a file whose name carries none, a dotfile (\".gitignore\") included."
                },
                new()
                {

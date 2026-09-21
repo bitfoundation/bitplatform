@@ -385,9 +385,11 @@ namespace BitBlazorUI {
                     (file: File) => {
                         // fullPath is rooted at the drop ("/folder/sub/a.txt"); the leading slash is dropped
                         // so it reads the same as the webkitRelativePath of a folder picked through the dialog.
-                        const path: string = entry.fullPath || '';
-                        if (path) {
-                            FileInput._relativePaths.set(file, path.replace(/^\//, ''));
+                        // A file dropped on its own is rooted at the drop too ("/a.txt"), which is just its name
+                        // and not a relative path, so it is left empty the way the dialog reports it.
+                        const path: string = (entry.fullPath || '').replace(/^\//, '');
+                        if (path.includes('/')) {
+                            FileInput._relativePaths.set(file, path);
                         }
                         files.push(file);
                         resolve();

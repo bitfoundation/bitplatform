@@ -1343,6 +1343,23 @@ public class BitFileInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFileInputShouldMoveTheDropIndicatorToTheRootWhenTheLabelIsTemplated()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-fin-nlb"));
+
+        // a LabelTemplate replaces the browse button, which is what would have carried the indicator.
+        component.Render(parameters => parameters.Add(p => p.LabelTemplate, builder => builder.AddContent(0, "pick")));
+
+        Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-fin-nlb"));
+
+        component.Render(parameters => parameters.Add(p => p.LabelTemplate, (Microsoft.AspNetCore.Components.RenderFragment?)null));
+
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-fin-nlb"));
+    }
+
+    [TestMethod]
     public void BitFileInputShouldNameTheWholePathInTheRemoveButtonLabelOfAFolderSelection()
     {
         SetupFiles([new() { Name = "readme.md", Size = 10, FileId = "1", RelativePath = "pkg/one/readme.md" },
@@ -1366,7 +1383,8 @@ public class BitFileInputTests : BunitTestContext
     public void BitFileInputShouldRenderTheFileNameWithoutItsExtensionApart()
     {
         SetupFiles([new() { Name = "a-very-long-quarterly-report-final.pdf", Size = 10, FileId = "1" },
-                    new() { Name = "no-extension", Size = 10, FileId = "2" }]);
+                    new() { Name = "no-extension", Size = 10, FileId = "2" },
+                    new() { Name = ".gitignore", Size = 10, FileId = "3" }]);
 
         var component = RenderComponent<BitFileInput>(parameters =>
         {
@@ -1386,6 +1404,10 @@ public class BitFileInputTests : BunitTestContext
 
         Assert.AreEqual("no-extension", stems[1].TextContent);
         Assert.AreEqual(string.Empty, extensions[1].TextContent);
+
+        // a dotfile is all stem, so the whole name stays in the box the ellipsis is allowed to eat into.
+        Assert.AreEqual(".gitignore", stems[2].TextContent);
+        Assert.AreEqual(string.Empty, extensions[2].TextContent);
     }
 
     [TestMethod]
@@ -1635,7 +1657,10 @@ public class BitFileInputTests : BunitTestContext
     [TestMethod,
        DataRow("report.PDF", ".pdf"),
        DataRow("archive.tar.gz", ".gz"),
-       DataRow("LICENSE", "")
+       DataRow("LICENSE", ""),
+       DataRow(".gitignore", ""),
+       DataRow(".env.local", ".local"),
+       DataRow("trailing.", "")
     ]
     public void BitFileInputInfoShouldReportTheExtension(string name, string expected)
     {

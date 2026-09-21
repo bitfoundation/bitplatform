@@ -129,7 +129,7 @@
                                    truncated as one string ends in "..." and stops saying what kind of file it is,
                                    which is the one thing a glance at a file list is for. *@
                                 <div style="@Styles?.FileName" class="bit-fin-fn @Classes?.FileName">
-                                    <span class="bit-fin-fnm">@GetFileStem(file.Name)</span><span class="bit-fin-fnx">@Path.GetExtension(file.Name)</span>
+                                    <span class="bit-fin-fnm">@GetFileStem(file.Name)</span><span class="bit-fin-fnx">@GetFileExtension(file.Name)</span>
                                 </div>
                             </div>
                             <div class="bit-fin-fsc">
