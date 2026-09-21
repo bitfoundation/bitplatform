@@ -3,10 +3,19 @@
 
 @{
     var icon = GetStateIcon();
+
+    @* Autofocus must not pull the focus onto a control that cannot take it: a disabled toggle is out of the
+       tab order altogether unless AllowDisabledFocus keeps it in. *@
+    var autoFocus = AutoFocus && (IsEnabled || AllowDisabledFocus);
 }
 
-@* stopping propagation on the root covers both the button click and the click a label forwards to it *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* Stopping propagation on the root covers both the button click and the click a label forwards to it.
+   The native tooltip sits here rather than on the track, so it answers a hover anywhere on the toggle -
+   the label is the larger target of the two, and on a disabled toggle the tooltip is usually there to say
+   why. It is written before the splatted attributes, so a title the page wrote by hand still wins. *@
+<div @ref="RootElement"
+     title="@Title"
+     @attributes="HtmlAttributes"
      @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      style="@StyleBuilder.Value"
@@ -30,8 +39,9 @@
     }
 
     <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
-        @* a busy toggle turns clicks away just like a disabled one does, so aria-disabled says so rather than
-           leaving assistive technologies to offer a change that never lands *@
+        @* A busy toggle turns clicks away just like a disabled one does, so aria-disabled says so rather than
+           leaving assistive technologies to offer a change that never lands - and it is what carries the
+           disabled state on its own once AllowDisabledFocus has dropped the native attribute. *@
         <button @ref="_buttonRef"
                 @onblur="HandleOnBlur"
                 @onclick="HandleOnClick"
@@ -41,14 +51,13 @@
                 role="@Role"
                 type="button"
                 id="@_buttonId"
-                title="@Title"
                 style="@Styles?.Button"
                 class="bit-tgl-btn @Classes?.Button"
-                autofocus="@AutoFocus"
+                autofocus="@autoFocus"
                 tabindex="@TabIndex"
                 data-ktp-target="true"
                 data-is-focusable="true"
-                disabled="@(IsEnabled is false)"
+                disabled="@(IsEnabled is false && AllowDisabledFocus is false)"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
                 aria-controls="@AriaControls"

@@ -26,6 +26,29 @@ public partial class BitToggle : BitInputBase<bool>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the toggle component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple toggle components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitToggleParams.ParamName)]
+    public BitToggleParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Keeps a disabled toggle focusable and discoverable by assistive technologies.
+    /// </summary>
+    /// <remarks>
+    /// The disabled state is then conveyed by <c>aria-disabled</c> rather than by the native <c>disabled</c>
+    /// attribute, so the switch stays in the tab order, keeps answering the pointer - which is what lets its
+    /// <see cref="Title"/> explain why it cannot be used - and still refuses every change.
+    /// </remarks>
+    [Parameter] public bool AllowDisabledFocus { get; set; }
+
+    /// <summary>
     /// The id of the element the toggle controls, rendered as <c>aria-controls</c> on the switch.
     /// </summary>
     /// <remarks>
@@ -296,8 +319,13 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The native tooltip of the knob of the toggle, shown on hover.
+    /// The native tooltip of the toggle, shown when the pointer rests anywhere on it.
     /// </summary>
+    /// <remarks>
+    /// It sits on the root rather than on the track, so the label answers a hover as well. On a disabled
+    /// toggle it is only reachable with <see cref="AllowDisabledFocus"/>, which is what keeps the toggle
+    /// answering the pointer at all.
+    /// </remarks>
     [Parameter] public string? Title { get; set; }
 
 
@@ -392,8 +420,11 @@ public partial class BitToggle : BitInputBase<bool>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Recomputed on every parameter change rather than only when the value moves, so a state text or
         // a label swapped from the outside is reflected by the accessible name along with the visible one.
         SetStateText();

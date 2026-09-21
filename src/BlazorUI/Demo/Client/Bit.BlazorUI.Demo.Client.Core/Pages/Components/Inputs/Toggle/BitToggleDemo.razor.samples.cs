@@ -58,14 +58,13 @@ public partial class BitToggleDemo
 <BitToggle Label=""Top"" LabelPosition=""BitLabelPosition.Top"" />
 <BitToggle Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" />
 <BitToggle Label=""Start"" LabelPosition=""BitLabelPosition.Start"" />
-<BitToggle Label=""End"" LabelPosition=""BitLabelPosition.End"" />";
+<BitToggle Label=""End"" LabelPosition=""BitLabelPosition.End"" />
+
+
+<BitToggle Label=""Reversed"" Reversed />
+<BitToggle Label=""Reversed and inline"" Reversed Inline />";
 
     private readonly string example7RazorCode = @"
-<BitToggle Label=""This is a reversed label"" Reversed />
-
-<BitToggle Label=""This is a reversed inline label"" Reversed Inline />";
-
-    private readonly string example8RazorCode = @"
 <BitToggle Label=""This is a full-width toggle"" FullWidth Inline />
 
 <BitToggle Label=""This is a reversed full-width toggle"" Reversed FullWidth Inline />
@@ -76,7 +75,7 @@ public partial class BitToggleDemo
     </LabelTemplate>
 </BitToggle>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitToggle Label=""Save to the server"" Loading=""isSaving"" Value=""savedValue"" OnChange=""HandleSaveToggle"" />
 
 <div>Saved state: <b>@savedValue</b></div>
@@ -88,7 +87,7 @@ public partial class BitToggleDemo
 <BitToggle Label=""Loading"" Loading />
 <BitToggle Label=""Loading and on"" Loading Value=""true"" />
 <BitToggle Label=""Loading with icons"" Loading OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isSaving;
 private bool savedValue;
 private bool autoLoadingValue;
@@ -109,16 +108,16 @@ private async Task SaveTheToggle(bool value)
     await Task.Delay(1000);
 }";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitToggle Label=""Read-only toggle"" ReadOnly @bind-Value=""readOnlyValue"" Text=""Locked"" />
 <BitToggleButton @bind-IsChecked=""readOnlyValue"" Text=""Change it from here"" />
 
 
 <BitToggle Label=""I accept the terms"" Required />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool readOnlyValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitToggle Label=""Always on"" Value=""true"" />
 
 <BitToggle Label=""One-way"" Value=""oneWayValue"" />
@@ -136,7 +135,7 @@ private bool readOnlyValue;";
            Text=""Read-only, still scriptable"" OnChange=""LogMethodChange"" />
 
 <div>@(string.IsNullOrEmpty(methodChangeLog) ? ""Nothing changed yet."" : methodChangeLog)</div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool oneWayValue;
 private bool twoWayValue;
 
@@ -148,7 +147,7 @@ private void LogMethodChange(bool value)
     methodChangeLog = $""OnChange fired with {value}"";
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .clickable-box {
         padding: 1rem;
@@ -190,7 +189,7 @@ private void LogMethodChange(bool value)
            OnFocusOut=""LogOnFocusOut"" />
 
 <div>@(string.IsNullOrEmpty(focusLog) ? ""Not focused yet."" : focusLog)</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string eventsLog = string.Empty;
 private string focusLog = string.Empty;
 private int cancelledCounter;
@@ -240,7 +239,7 @@ private void LogOnBlur()
     focusLog += "" → OnBlur"";
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -255,7 +254,7 @@ private void LogOnBlur()
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private BitToggleValidationModel validationModel = new();
 
 public class BitToggleValidationModel
@@ -267,9 +266,32 @@ public class BitToggleValidationModel
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
+    private readonly string example13RazorCode = @"
+<BitToggle Label=""Auto renew""
+           Description=""The subscription is renewed one day before it expires."" />
+
+
+<div style=""max-width:32rem"">
+    <BitToggle FullWidth Inline
+               Label=""Offline mode""
+               Description=""Keep a copy of the last synced data on this device."" />
+
+    <BitToggle FullWidth Inline
+               Label=""Usage statistics""
+               Description=""Send anonymous usage data to help us prioritize what to build next."" />
+</div>
+
+
+<BitToggle Label=""Beta features"">
+    <DescriptionTemplate>
+        Turning this on opts you into features that are still changing.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </DescriptionTemplate>
+</BitToggle>";
+
     private readonly string example14RazorCode = @"
 <BitToggle Label=""Focus me with Tab, flip me with Space"" />
-<BitToggle Label=""Hover over my knob"" Title=""The native tooltip of the toggle"" />
+<BitToggle Label=""Hover over me"" Title=""The native tooltip of the toggle"" />
 
 
 <BitButton OnClick=""FocusTheToggle"">Focus the toggle</BitButton>
@@ -298,7 +320,12 @@ private void HandleInvalidSubmit() { }";
 
 
 <BitToggle Text=""Dark mode"" />
-<BitToggle Label=""Notifications"" OnText=""Allowed"" OffText=""Blocked"" />";
+<BitToggle Label=""Notifications"" OnText=""Allowed"" OffText=""Blocked"" />
+
+
+<BitToggle Label=""Disabled"" IsEnabled=""false"" Title=""Out of the tab order"" />
+<BitToggle Label=""Disabled, still focusable"" IsEnabled=""false"" AllowDisabledFocus
+           Title=""Available on the Pro plan"" />";
     private readonly string example14CsharpCode = @"
 private BitToggle toggleRef = default!;
 private bool advancedSettingsVisible;
@@ -309,27 +336,27 @@ private async Task FocusTheToggle()
 }";
 
     private readonly string example15RazorCode = @"
-<BitToggle Label=""Auto renew""
-           Description=""The subscription is renewed one day before it expires."" />
+<BitParams Parameters=""@toggleParams"">
+    <BitToggle Label=""Offline mode"" Description=""Keep a copy of the last synced data on this device."" />
+    <BitToggle Label=""Usage statistics"" />
+    <BitToggle Label=""Delete after export"" Color=""BitColor.Error"" OnText=""Deleting"" OffText=""Keeping"" />
+</BitParams>
 
-
-<div style=""max-width:32rem"">
-    <BitToggle FullWidth Inline
-               Label=""Offline mode""
-               Description=""Keep a copy of the last synced data on this device."" />
-
-    <BitToggle FullWidth Inline
-               Label=""Usage statistics""
-               Description=""Send anonymous usage data to help us prioritize what to build next."" />
-</div>
-
-
-<BitToggle Label=""Beta features"">
-    <DescriptionTemplate>
-        Turning this on opts you into features that are still changing.
-        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
-    </DescriptionTemplate>
-</BitToggle>";
+<BitToggle Label=""Outside the cascade, and back to the defaults"" />";
+    private readonly string example15CsharpCode = @"
+private readonly BitToggleParams[] toggleParams =
+[
+    new BitToggleParams
+    {
+        Inline = true,
+        FullWidth = true,
+        OnText = ""On"",
+        OffText = ""Off"",
+        Size = BitSize.Small,
+        Color = BitColor.Success,
+        LabelPosition = BitLabelPosition.Start
+    }
+];";
 
     private readonly string example16RazorCode = @"
 <BitToggle Color=""BitColor.Primary"" Label=""Primary"" Value />
@@ -445,9 +472,9 @@ private async Task FocusTheToggle()
 
 
 <BitToggle Label=""Styles""
-           Styles=""@(new() { Root = ""--toggle-background: lightgray;"", Checked = ""--toggle-background: #2ecc71;"",
-                             Thumb = ""background: whitesmoke;"",
-                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px; --bit-tgl-pad: 2px; --bit-tgl-thb-size: 26px;"" } )"" />
+           Styles=""@(new() { Root = ""--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;"",
+                             Checked = ""--bit-Toggle-checked-background: #2ecc71;"",
+                             Thumb = ""background: whitesmoke;"" } )"" />
 
 <BitToggle Label=""Classes""
            Classes=""@(new() { Thumb = ""custom-thumb"",
@@ -459,7 +486,24 @@ private async Task FocusTheToggle()
                               OffContent = ""custom-off-content"" } )"">
     <OnContent>ON</OnContent>
     <OffContent>OFF</OffContent>
-</BitToggle>";
+</BitToggle>
+
+
+<BitToggle Label=""iOS-sized, elevated knob"" Value
+           Style=""--bit-Toggle-track-width: 3.25rem; --bit-Toggle-track-height: 2rem; --bit-Toggle-thumb-size: 1.75rem; --bit-Toggle-thumb-shadow: 0 0.125rem 0.25rem #0000004d;"" />
+
+<BitToggle Label=""Square, slow, no dip"" Value
+           Style=""--bit-Toggle-track-radius: 0.25rem; --bit-Toggle-thumb-radius: 0.125rem; --bit-Toggle-transition-duration: calc(var(--bit-mot-duration-short) * 4); --bit-Toggle-thumb-active-scale: 1;"" />
+
+<BitToggle Label=""Its own palette"" Value OnIconName=""@BitIconName.Accept""
+           Style=""--bit-Toggle-checked-background: rebeccapurple; --bit-Toggle-checked-thumb-color: gold; --bit-Toggle-icon-color: rebeccapurple; --bit-Toggle-label-color: rebeccapurple;"" />
+
+
+<div style=""--bit-Toggle-checked-background: var(--bit-clr-suc); --bit-Toggle-checked-hover-background: var(--bit-clr-suc-hover); --bit-Toggle-label-font-weight: 400; --bit-Toggle-gap: 1rem;"">
+    <BitToggle Label=""Wi-Fi"" Value />
+    <BitToggle Label=""Bluetooth"" />
+    <BitToggle Label=""Airplane mode"" />
+</div>";
 
     private readonly string example20RazorCode = @"
 <BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />

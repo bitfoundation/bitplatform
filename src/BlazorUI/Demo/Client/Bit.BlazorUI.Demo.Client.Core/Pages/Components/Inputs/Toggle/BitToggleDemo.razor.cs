@@ -6,6 +6,13 @@ public partial class BitToggleDemo
     [
         new()
         {
+            Name = "AllowDisabledFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps a disabled toggle focusable and hoverable, conveying the disabled state through aria-disabled rather than the native disabled attribute. The toggle still refuses every change.",
+        },
+        new()
+        {
             Name = "AriaControls",
             Type = "string?",
             DefaultValue = "null",
@@ -273,7 +280,7 @@ public partial class BitToggleDemo
             Name = "Title",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The native tooltip of the knob of the toggle, shown on hover.",
+            Description = "The native tooltip of the toggle, rendered on its root so a hover anywhere on it - the label included - brings the tooltip up.",
         },
     ];
 
@@ -606,6 +613,266 @@ public partial class BitToggleDemo
     ];
 
 
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-Toggle-track-background",
+            DefaultValue = "$clr-bg-pri",
+            Description = "Track fill while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-border-color",
+            DefaultValue = "$clr-brd-pri",
+            Description = "Track stroke while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "The knob while the toggle is off.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-hover-track-border-color",
+            DefaultValue = "$clr-brd-pri-hover",
+            Description = "Track stroke while hovered and off (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-hover-thumb-color",
+            DefaultValue = "$clr-fg-sec-hover",
+            Description = "The knob while hovered and off (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-background",
+            DefaultValue = "The Color role's main color",
+            Description = "Track fill while the toggle is on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-border-color",
+            DefaultValue = "transparent",
+            Description = "Track stroke while the toggle is on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-thumb-color",
+            DefaultValue = "The Color role's on-color",
+            Description = "The knob while the toggle is on, hover included.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-checked-hover-background",
+            DefaultValue = "The Color role's hover color",
+            Description = "Track fill while hovered and on (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-icon-color",
+            DefaultValue = "The track fill behind the knob",
+            Description = "The glyph inside the knob, in both states - drawn in the color of the track, so it reads as cut out of the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-color",
+            DefaultValue = "As the glyph it replaces",
+            Description = "The moving arc of the loading spinner; the ring it travels on is the same color at 30%.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-color",
+            DefaultValue = "$clr-fg-sec while off, the role's on-color while on",
+            Description = "The OnContent and OffContent carried inside the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-color",
+            DefaultValue = "$clr-fg-pri",
+            Description = "The label beside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-text-color",
+            DefaultValue = "inherit",
+            Description = "The state text beside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-description-color",
+            DefaultValue = "$clr-fg-sec",
+            Description = "The description line under the toggle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-disabled-color",
+            DefaultValue = "$clr-bg-dis / $clr-brd-dis / $clr-fg-dis",
+            Description = "Track fill, track stroke and knob when disabled.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-disabled-text-color",
+            DefaultValue = "$clr-fg-dis",
+            Description = "Label, state text, description and track content when disabled, and the focus ring of a disabled toggle that AllowDisabledFocus keeps in the tab order.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-error-color",
+            DefaultValue = "$clr-err",
+            Description = "Track stroke, checked fill, state text and focus ring while the value is invalid.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-required-color",
+            DefaultValue = "$clr-req",
+            Description = "The asterisk of a required toggle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Focus ring color.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-width",
+            DefaultValue = "Per size, $siz-switch-w-*",
+            Description = "Smallest width of the track; a track carrying content still grows to fit it. Stepped up to the roomier icon geometry when the knob holds a glyph, unless this variable names a width of its own. Set it on the root, not on the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-height",
+            DefaultValue = "Per size, $siz-switch-h-*",
+            Description = "Height of the track. Stepped up when the knob holds a glyph, unless set. Set it on the root, not on the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-track-radius",
+            DefaultValue = "Half the track height",
+            Description = "Corner radius of the track and of its focus ring; the default draws a pill.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-border-width",
+            DefaultValue = "$shp-border-width",
+            Description = "Thickness of the track stroke.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-size",
+            DefaultValue = "Per size, $siz-switch-thumb-*",
+            Description = "Diameter of the knob. Stepped up when it holds a glyph, unless set. Set it on the root, not on the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-radius",
+            DefaultValue = "50%",
+            Description = "Corner radius of the knob; the default draws a circle.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-inset",
+            DefaultValue = "Derived from the track height and the knob",
+            Description = "Room between the knob and the stroke, on every side of it. A negative value lets the knob overhang the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-shadow",
+            DefaultValue = "none",
+            Description = "Elevation of the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-thumb-active-scale",
+            DefaultValue = "0.9",
+            Description = "How far the knob dips while pressed. Set it to 1 to drop the dip.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-icon-size",
+            DefaultValue = "Per size",
+            Description = "The glyph inside the knob.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-size",
+            DefaultValue = "4/5 of the knob it lands in",
+            Description = "Diameter of the loading spinner.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-spinner-width",
+            DefaultValue = "$siz-spinner-stroke",
+            Description = "Thickness of the ring the spinner is drawn on.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-gap",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the track and the label, and between the track and the state text.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-padding",
+            DefaultValue = "Per size",
+            Description = "Inset of the track content from the ends of the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "The label.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-label-font-weight",
+            DefaultValue = "$tg-fw-semibold",
+            Description = "The label.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-text-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "The state text.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-description-font-size",
+            DefaultValue = "Per size, one step below the label",
+            Description = "The description line.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-content-font-size",
+            DefaultValue = "Per size, from the type ramp",
+            Description = "The content carried inside the track.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-transition-duration",
+            DefaultValue = "$mot-duration-short",
+            Description = "How long the knob takes to cross the track, and every color with it. Already collapsed to zero wherever reduced motion is asked for.",
+        },
+    ];
+
+
+
+    private readonly BitToggleParams[] toggleParams =
+    [
+        new BitToggleParams
+        {
+            Inline = true,
+            FullWidth = true,
+            OnText = "On",
+            OffText = "Off",
+            Size = BitSize.Small,
+            Color = BitColor.Success,
+            LabelPosition = BitLabelPosition.Start
+        }
+    ];
 
     private bool isSaving;
     private bool savedValue;
