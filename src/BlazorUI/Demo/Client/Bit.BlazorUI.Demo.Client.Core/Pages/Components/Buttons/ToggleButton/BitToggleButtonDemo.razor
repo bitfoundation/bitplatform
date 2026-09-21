@@ -566,7 +566,49 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            A toolbar of BitToggleButtons usually repeats the same handful of parameters on every button.
+            <b>BitParams</b> takes them out of the markup: it cascades a <b>BitToggleButtonParams</b> down to every
+            BitToggleButton underneath it, however deeply nested. Every property of that class is nullable, so only
+            the ones you actually set travel; the rest are left alone.
+        </div><br />
+        <div>
+            Here <b>Variant</b> and <b>IconOnly</b> are set once for the whole group. A value written on a button
+            itself always wins - the cascade only fills in what the markup left alone - which is why the last one
+            below keeps its own Text variant:
+        </div><br />
+        <BitParams Parameters="toolbarToggleButtonParams">
+            <div class="example-box">
+                <BitToggleButton Text="Bold" IconName="@BitIconName.Bold" />
+                <BitToggleButton Text="Italic" IconName="@BitIconName.Italic" />
+                <BitToggleButton Text="Underline" IconName="@BitIconName.Underline" />
+                <BitToggleButton Text="Align left" IconName="@BitIconName.AlignLeft" Variant="BitVariant.Text" />
+            </div>
+        </BitParams>
+        <br /><br /><br />
+        <div>
+            The starting state is cascaded through <b>DefaultIsChecked</b> rather than through <b>IsChecked</b>. The
+            checked state itself is deliberately left out of <b>BitToggleButtonParams</b>: it is the one parameter a
+            BitToggleButton assigns to itself on every click, so a cascaded value would be written straight back over
+            the click on the next render. <b>DefaultIsChecked</b> is only read while the button initializes, which is
+            what makes it the safe way to start a whole group off checked:
+        </div><br />
+        <BitParams Parameters="checkedToggleButtonParams">
+            <div class="example-box">
+                <BitToggleButton OnText="Muted" OffText="Unmuted" AriaLabel="Mute" />
+                <BitToggleButton OnText="Pinned" OffText="Unpinned" AriaLabel="Pin" />
+            </div>
+        </BitParams>
+        <br /><br /><br />
+        <div>
+            <b>Parameters</b> is a list, so a single <b>BitParams</b> can carry the parameters of several component
+            types at once - a <b>BitToggleButtonParams</b> next to a <b>BitActionButtonParams</b>, each one reaching
+            only the components it belongs to.
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The whole general color set is available, Primary being the default. Each color also supplies the darker
             shade used for the checked state, so a checked and an unchecked BitToggleButton read as one control in two
@@ -783,7 +825,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The built-in icon set is not a requirement. <b>Icon</b>, <b>OnIcon</b> and <b>OffIcon</b> take a
             <b>BitIconInfo</b> that renders whatever CSS classes you give it, so any icon font works -
@@ -831,7 +873,7 @@
                          Variant="BitVariant.Outline" Text="Bold" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             Three presets scale the text, the icon, the padding and the spinner together, and each one takes the
             control height of its size as a floor, so a BitToggleButton lines up with the other controls beside it in
@@ -852,7 +894,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element, while <b>Styles</b> and <b>Classes</b> address the
             individual parts - the root, the icon, the text, the check mark and the loading pieces. Both of them also
@@ -931,7 +973,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Setting <b>Dir</b> to <b>Rtl</b> mirrors the BitToggleButton: the icon moves to the right of the text and
             the spacing follows it, since the layout is built from logical properties rather than fixed left and right

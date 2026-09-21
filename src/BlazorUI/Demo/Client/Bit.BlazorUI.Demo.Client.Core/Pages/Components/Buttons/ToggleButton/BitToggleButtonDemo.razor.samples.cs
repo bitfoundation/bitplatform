@@ -303,6 +303,37 @@ private async Task HandleAutoLoadingChange()
                  AriaLabel=""Show the status bar"" ShowCheckMark FixedCheckMark Text=""Status bar"" />";
 
     private readonly string example14RazorCode = @"
+<BitParams Parameters=""toolbarToggleButtonParams"">
+    <BitToggleButton Text=""Bold"" IconName=""@BitIconName.Bold"" />
+    <BitToggleButton Text=""Italic"" IconName=""@BitIconName.Italic"" />
+    <BitToggleButton Text=""Underline"" IconName=""@BitIconName.Underline"" />
+    <BitToggleButton Text=""Align left"" IconName=""@BitIconName.AlignLeft"" Variant=""BitVariant.Text"" />
+</BitParams>
+
+<BitParams Parameters=""checkedToggleButtonParams"">
+    <BitToggleButton OnText=""Muted"" OffText=""Unmuted"" AriaLabel=""Mute"" />
+    <BitToggleButton OnText=""Pinned"" OffText=""Unpinned"" AriaLabel=""Pin"" />
+</BitParams>";
+    private readonly string example14CsharpCode = @"
+private readonly BitToggleButtonParams[] toolbarToggleButtonParams =
+[
+    new()
+    {
+        IconOnly = true,
+        Variant = BitVariant.Outline
+    }
+];
+
+private readonly BitToggleButtonParams[] checkedToggleButtonParams =
+[
+    new()
+    {
+        DefaultIsChecked = true,
+        Variant = BitVariant.Outline
+    }
+];";
+
+    private readonly string example15RazorCode = @"
 <BitToggleButton Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">Primary</BitToggleButton>
 <BitToggleButton Variant=""BitVariant.Outline"" Color=""BitColor.Primary"">Primary</BitToggleButton>
 <BitToggleButton Variant=""BitVariant.Text"" Color=""BitColor.Primary"">Primary</BitToggleButton>
@@ -442,7 +473,7 @@ private async Task HandleAutoLoadingChange()
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>
 <BitToggleButton IsEnabled=""false"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitToggleButton>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitToggleButton Icon=""@(""fa-solid fa-microphone"")"" Text=""Microphone"" />
@@ -463,7 +494,7 @@ private async Task HandleAutoLoadingChange()
                  CheckMarkIcon=""@BitIconInfo.Fa(""solid check"")""
                  Variant=""BitVariant.Outline"" Text=""Bold"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitToggleButton Size=""BitSize.Small"" Text=""Small"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton Size=""BitSize.Medium"" Text=""Medium"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton Size=""BitSize.Large"" Text=""Large"" IconName=""@BitIconName.Microphone"" />
@@ -473,7 +504,7 @@ private async Task HandleAutoLoadingChange()
 <BitToggleButton Size=""BitSize.Medium"" IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />
 <BitToggleButton Size=""BitSize.Large"" IconOnly AriaLabel=""Mute"" IconName=""@BitIconName.Microphone"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -584,7 +615,7 @@ private async Task HandleAutoLoadingChange()
     <BitToggleButton Variant=""BitVariant.Outline"" ShowCheckMark FixedCheckMark Text=""Underline"" />
 </div>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <div dir=""rtl"">
     <BitToggleButton Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill""
                      OnText=""صدا قطع"" OnIconName=""@BitIconName.MicOff""

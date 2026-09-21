@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -20,6 +22,19 @@ public partial class BitToggleButton : BitComponentBase
     private bool _showLoading;
     private int _pendingChanges;
     private CancellationTokenSource? _loadingDelayCts;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the toggle button component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple toggle button components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitToggleButtonParams.ParamName)]
+    public BitToggleButtonParams? CascadingParameters { get; set; }
 
 
 
@@ -553,6 +568,10 @@ public partial class BitToggleButton : BitComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        // The cascaded values are applied here as well as in OnParametersSet, since DefaultIsChecked is only
+        // read while the component initializes and would otherwise arrive one lifecycle step too late.
+        CascadingParameters?.UpdateParameters(this);
+
         if (IsCheckedHasBeenSet is false && DefaultIsChecked.HasValue)
         {
             await AssignIsChecked(DefaultIsChecked.Value);
@@ -561,8 +580,11 @@ public partial class BitToggleButton : BitComponentBase
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitToggleButtonParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         UpdateLoadingVisuals();
 
         base.OnParametersSet();

@@ -1016,6 +1016,24 @@ public partial class BitToggleButtonDemo
     private bool detailsVisible;
     private bool statusBarVisible;
 
+    private readonly BitToggleButtonParams[] toolbarToggleButtonParams =
+    [
+        new()
+        {
+            IconOnly = true,
+            Variant = BitVariant.Outline
+        }
+    ];
+
+    private readonly BitToggleButtonParams[] checkedToggleButtonParams =
+    [
+        new()
+        {
+            DefaultIsChecked = true,
+            Variant = BitVariant.Outline
+        }
+    ];
+
 
 
     private async Task FocusTheToggleButton() => await programmaticToggleRef.FocusAsync();
