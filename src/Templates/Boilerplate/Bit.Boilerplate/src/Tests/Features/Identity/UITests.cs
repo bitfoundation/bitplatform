@@ -35,8 +35,7 @@ public partial class UITests : AppPageTest
         const string password = TestData.DefaultTestPassword;
         const string userFullName = TestData.DefaultTestFullName;
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await SignInPanelUtils.FillCredentials(Page, email, password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(server.WebAppServerAddress.ToString());

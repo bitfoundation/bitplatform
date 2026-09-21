@@ -68,7 +68,7 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.5.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.5.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.5.4" />
-        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.5.0" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'S3' OR '$(filesStorage)' == '') " Include="AspireIntegration.Hosting.RustFs" Version="0.2.0" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '')" Include="Aspire.Hosting.Keycloak" Version="13.5.4-preview.1.26464.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(cloudflare)' == 'true' OR '$(cloudflare)' == '') " Include="Shirubasoft.Aspire.CloudflareTunnels" Version="2.2.0" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
@@ -105,7 +105,7 @@
         <PackageVersion Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" Version="3.3.0" />
         <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+        <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" Version="10.0.9" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.21" />
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.21" />
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.6" />

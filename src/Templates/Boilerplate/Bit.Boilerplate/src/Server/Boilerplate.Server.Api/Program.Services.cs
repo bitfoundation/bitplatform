@@ -138,8 +138,8 @@ public static partial class Program
                 : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
             return AzureBlobStorage.FromSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
-            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=minioadmin" -e "MINIO_ROOT_PASSWORD=minioadmin" quay.io/minio/minio server /data --console-address ":9001"`
-            // Open MinIO console at http://127.0.0.1:9001/browser
+            // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "RUSTFS_ACCESS_KEY=rustfsadmin" -e "RUSTFS_SECRET_KEY=P@ssw0rd" -e "RUSTFS_CONSOLE_ADDRESS=:9001" -v rustfs-data:/data rustfs/rustfs`
+            // Open RustFS console at http://127.0.0.1:9001/rustfs/console/
             var s3ConnectionString = configuration.GetRequiredConnectionString("s3")!;
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
@@ -381,7 +381,7 @@ public static partial class Program
                     errorCodesToAdd: null);
             });
             //#elif (database == "MySql")
-            options.UseMySql(configuration.GetRequiredConnectionString("mysqldb"), ServerVersion.AutoDetect(configuration.GetRequiredConnectionString("mysqldb")), dbOptions =>
+            options.UseMySQL(configuration.GetRequiredConnectionString("mysqldb"), dbOptions =>
             {
                 // dbOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 dbOptions.EnableRetryOnFailure(

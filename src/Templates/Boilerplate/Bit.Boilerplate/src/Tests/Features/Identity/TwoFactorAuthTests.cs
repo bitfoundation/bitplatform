@@ -144,6 +144,8 @@ public partial class TwoFactorAuthTests : AppPageTest
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Switch to the account section's "Delete" tab, then start (and confirm) the account deletion.
+        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        await page.WaitForBlazorInteractive();
         await page.GetByText(AppStrings.Delete, new() { Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DeleteAccount }).ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
