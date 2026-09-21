@@ -111,8 +111,7 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
         await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
-        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(password);
+        await SignInPanelUtils.FillCredentials(Page, email, password);
         await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(serverAddress.ToString());

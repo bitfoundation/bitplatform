@@ -80,7 +80,7 @@ It breaks what finds a public name some other way, so don't use it when:
 
 ## Numbers
 
-The bit BlazorUI demo, its WebAssembly client published in Release (the managed `.wasm` files, brotli - which
+The bit BlazorUI demo, its WebAssembly client published in Release (the managed `.wasm` files, **brotli compressed** - which
 is what a browser downloads):
 
 | | size | saved | time |

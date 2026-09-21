@@ -1073,7 +1073,7 @@ public class BitDropdownTests : BunitTestContext
             //When virtualize is true, number of rendered items is greater than number of items shown in the list by "2 * OverScanCount".
             var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
-#if NET10_0
+#if NET10_0_OR_GREATER
             maxItemCount += overscanItemsCount;
 #endif
 

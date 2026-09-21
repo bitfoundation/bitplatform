@@ -106,6 +106,8 @@ public partial class TimeZoneSelectionUITests : AppPageTest
     /// </summary>
     private async Task OpenTimeZonePanel(ILocator callout)
     {
+        // A menu that is only markup yet swallows the click, so it never opens and the wait below times out.
+        await Page.WaitForBlazorInteractive();
         await Page.Locator(".menu-chevron").ClickAsync();
         await Expect(callout).ToBeVisibleAsync();
 
