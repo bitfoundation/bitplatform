@@ -10,9 +10,11 @@ namespace Bit.BlazorUI;
 /// pasted text over its separators, caps the number of tags and the length of each of them, rejects the ones
 /// that fail a pattern or a validator of yours, normalizes them through a transformer, and reports every one of
 /// those rejections. The chips form an accessible list that the arrow keys walk through, each of them removable
-/// with the keyboard as well as with its dismiss button, correctable in place and movable within the list, with
-/// a long list folded away behind a chip rather than grown into a wall. Every change can be watched or called
-/// off before it happens, the whole component can be driven from code, and the whole thing takes part in an
+/// with the keyboard as well as with its dismiss button - unless a predicate of yours pins it in place - and each
+/// correctable in place and movable within the list, with a long list folded away behind a chip rather than grown
+/// into a wall, and a spinner for the suggestions the field is still fetching. Every change can be watched or
+/// called off before it happens, the whole component can be driven from code, its look and its rules can be
+/// cascaded to a whole form through <see cref="BitTagsInputParams"/>, and the whole thing takes part in an
 /// EditForm like any other input.
 /// </summary>
 public partial class BitTagsInput : BitInputBase<ICollection<string>?>
@@ -29,6 +31,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private string _listId = string.Empty;
     private string _tagsId = string.Empty;
     private string _hintId = string.Empty;
+    private string _fixedHintId = string.Empty;
     private string _descriptionId = string.Empty;
     private bool _tagsExpanded;
     private string? _separatorsJson;
@@ -60,6 +63,26 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private int _draggingTagIndex = -1;
     private int _dragOverTagIndex = -1;
 
+    private string? _inputMode;
+    private string? _enterKeyHint;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the tags input component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple tags input
+    /// components through the <see cref="BitParams"/> component. What travels down is the configuration of the
+    /// field - its look, its rules, its wording - and not its value: <c>Value</c>, <c>DefaultValue</c>,
+    /// <c>Name</c>, <c>Required</c> and <c>ReadOnly</c> belong to the one field that holds them and are written
+    /// on the component itself.
+    /// </remarks>
+    [CascadingParameter(Name = BitTagsInputParams.ParamName)]
+    public BitTagsInputParams? CascadingParameters { get; set; }
+
 
 
     /// <summary>
@@ -87,6 +110,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? AddedManyAnnouncementFormat { get; set; }
 
     /// <summary>
+    /// Sets the autocomplete html attribute of the input element. It defaults to <c>off</c>, since the
+    /// browser's own autofill would otherwise be offered over the suggestion list of the field - and what it
+    /// saved for a single line text box is the last tag that was typed rather than the list the field holds.
+    /// Set it to a token of your own (<c>email</c>, <c>off</c>, a one-time-code, ...) where the field collects
+    /// values the browser does know about, such as a row of recipients.
+    /// </summary>
+    [Parameter] public string? AutoComplete { get; set; }
+
+    /// <summary>
     /// Whether the input should receive focus on first render.
     /// </summary>
     [Parameter] public bool AutoFocus { get; set; }
@@ -105,6 +137,22 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// suppressed, allowing the event to propagate (e.g., to submit a form).
     /// </summary>
     [Parameter] public bool CancelConfirmKeysOnEmpty { get; set; }
+
+    /// <summary>
+    /// A predicate deciding which tags the user is allowed to take off the list, for the values a field
+    /// holds but does not let go of: the owner of the document among its editors, the tag a saved filter
+    /// is built on. A tag it turns down is drawn without a dismiss button, ignores the Delete and
+    /// Backspace keys, is left where it is by the Backspace pressed on the empty input, and stays behind
+    /// when the field is cleared - so "clear" empties the field of everything it can be emptied of. It is
+    /// still editable and still movable, since neither takes the tag away. It is called for every drawn
+    /// tag on every render, so it should be a lookup rather than a computation, and an exception thrown
+    /// out of it leaves the tag removable rather than locking it into the list for good.
+    /// <br />
+    /// It governs what the user may do, not what the consumer may: <see cref="RemoveTagAsync"/> and
+    /// <see cref="RemoveTagAtAsync"/> name a tag outright and take it off whatever this says, exactly as
+    /// <see cref="MoveTagAsync"/> moves one without <see cref="AllowReorder"/>.
+    /// </summary>
+    [Parameter] public Func<string, bool>? CanRemoveTag { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the component.
@@ -232,6 +280,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? EditedAnnouncementFormat { get; set; }
 
     /// <summary>
+    /// Sets the enterkeyhint html attribute of the input element, which decides the label a virtual keyboard
+    /// draws on its return key. The key confirms a tag here, so <see cref="BitEnterKeyHint.Done"/> and
+    /// <see cref="BitEnterKeyHint.Next"/> are the ones that describe it on a phone, where the generic "return"
+    /// says nothing about what pressing it would do.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetEnterKeyHint))]
+    public BitEnterKeyHint? EnterKeyHint { get; set; }
+
+    /// <summary>
     /// A function returning extra CSS classes for a single tag, which is what tells one chip apart from the
     /// next: the recipient that is not in the address book drawn in red, the tag that came from a saved
     /// filter drawn in grey. It receives the tag and is called for each of them on every render, so it
@@ -248,6 +306,32 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <see cref="BitTagsInputClassStyles.FocusedTag"/> of the <see cref="Styles"/>, so it wins over both.
     /// </summary>
     [Parameter] public Func<string, string?>? GetTagStyle { get; set; }
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the input element, which decides the virtual keyboard a phone
+    /// opens over the field: <see cref="BitInputMode.Email"/> for a row of recipients,
+    /// <see cref="BitInputMode.Numeric"/> for a list of codes. It changes nothing about what the field
+    /// accepts - that is what <see cref="Pattern"/> and <see cref="Validator"/> are for - only about which
+    /// keys the user is given to type it with.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetInputMode))]
+    public BitInputMode? InputMode { get; set; }
+
+    /// <summary>
+    /// Draws a spinner at the end of the field, for the wait the field itself is the cause of: the
+    /// suggestions being fetched for what is being typed, the tag being checked against a server before it
+    /// is accepted. It is an indeterminate progressbar rather than a decoration, so a screen reader
+    /// announces the wait instead of missing it, and it changes nothing about what the field accepts -
+    /// a field that has to stop taking tags while it waits is one whose <see cref="ReadOnly"/> is on.
+    /// </summary>
+    [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// The accessible name of that spinner, which is the whole of what a screen reader has to go on.
+    /// The default is "Loading".
+    /// </summary>
+    [Parameter] public string? LoadingAriaLabel { get; set; }
 
     /// <summary>
     /// The format of the message announced by screen readers when a tag is rejected, where {0} is the tag.
@@ -492,8 +576,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// Whether to render a button that removes every tag at once. It is not rendered while the component
-    /// is read-only, disabled or empty, and it stays out of the tab order, the Escape key pressed on the
-    /// input being its keyboard equivalent.
+    /// is read-only, disabled, empty or left holding nothing but the tags <see cref="CanRemoveTag"/> pins
+    /// in place, and it stays out of the tab order, the Escape key pressed on the input being its keyboard
+    /// equivalent.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 
@@ -509,6 +594,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Sets the spellcheck html attribute of the input element. It is off by default, a tag being a value
+    /// rather than a sentence - an identifier, a code or a hashtag underlined in red says only that the
+    /// dictionary has not heard of it. Turn it on for a field that collects words of a natural language.
+    /// </summary>
+    [Parameter] public bool? SpellCheck { get; set; }
 
     /// <summary>
     /// The values offered to the user while typing, through the suggestion list the browser itself
@@ -633,7 +725,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// Removes the first tag equal to <paramref name="tag"/> (per the <see cref="Comparison"/>), exactly
-    /// as its dismiss button does. It does nothing while the component is disabled or read-only.
+    /// as its dismiss button does. It does nothing while the component is disabled or read-only, and it
+    /// takes the tag off whatever <see cref="CanRemoveTag"/> says, that predicate being what the user may
+    /// do rather than what the consumer may.
     /// </summary>
     public Task RemoveTagAsync(string tag)
     {
@@ -644,7 +738,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             var index = GetTags().FindIndex(t => string.Equals(t, tag, Comparison));
             if (index < 0) return;
 
-            await RemoveTagAt(index);
+            await RemoveTagAt(index, force: true);
 
             StateHasChanged();
         });
@@ -652,7 +746,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// Removes the tag sitting at <paramref name="index"/>, doing nothing when there is none there or
-    /// while the component is disabled or read-only.
+    /// while the component is disabled or read-only. Like <see cref="RemoveTagAsync"/> it names a tag
+    /// outright, so <see cref="CanRemoveTag"/> does not hold it back.
     /// </summary>
     public Task RemoveTagAtAsync(int index)
     {
@@ -660,7 +755,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             if (IsEnabled is false || ReadOnly) return;
 
-            await RemoveTagAt(index);
+            await RemoveTagAt(index, force: true);
 
             StateHasChanged();
         });
@@ -733,13 +828,21 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// Removes all tags along with the text left in the input, and raises <see cref="OnClear"/> with the
-    /// tags that were removed. It does nothing while the component is disabled or read-only.
+    /// tags that were removed. It does nothing while the component is disabled or read-only. The tags
+    /// <see cref="CanRemoveTag"/> holds in place stay where they are and are left out of what is reported:
+    /// clearing empties the field of everything it can be emptied of.
     /// </summary>
     public Task Clear() => InvokeAsync(async () =>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        var removed = GetTags();
+        var all = GetTags();
+
+        // Clearing empties the field of everything it can be emptied of: the tags CanRemoveTag holds in
+        // place are as fixed here as they are under their missing dismiss button, and what is reported -
+        // to OnBeforeClear, to OnClear and to the screen reader - is what actually goes.
+        var removed = CanRemoveTag is null ? all : [.. all.Where(CanRemove)];
+        var kept = CanRemoveTag is null ? [] : all.Where(t => CanRemove(t) is false).ToList();
 
         if (OnBeforeClear.HasDelegate)
         {
@@ -758,7 +861,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         // A field that is already empty has nothing to report: setting the value again would otherwise
         // mark the form dirty and raise a change for a list that did not change.
-        if (removed.Count > 0 || CurrentValue is not null)
+        if (removed.Count > 0)
+        {
+            await SetCurrentValueAsync(kept.Count > 0 ? kept : null);
+        }
+        else if (CurrentValue is not null && kept.Count == 0)
         {
             await SetCurrentValueAsync(null);
         }
@@ -849,11 +956,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _listId = $"BitTagsInput-{UniqueId}-list";
         _tagsId = $"BitTagsInput-{UniqueId}-tags";
         _hintId = $"BitTagsInput-{UniqueId}-hint";
+        _fixedHintId = $"BitTagsInput-{UniqueId}-fixed-hint";
         _descriptionId = $"BitTagsInput-{UniqueId}-description";
 
         SetDefaultValue();
 
         await base.OnInitializedAsync();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagsInputParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -957,7 +1073,17 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
 
 
-    private void OnSetSeparators()
+    internal void OnSetInputMode()
+    {
+        _inputMode = InputMode?.ToString().ToLower();
+    }
+
+    internal void OnSetEnterKeyHint()
+    {
+        _enterKeyHint = EnterKeyHint?.ToString().ToLower();
+    }
+
+    internal void OnSetSeparators()
     {
         // Only the empty string is dropped, not the whitespace: a single space is a perfectly ordinary
         // separator (a field of words), and so is a tab or a comma followed by one.
@@ -1010,7 +1136,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return sb.ToString();
     }
 
-    private void OnSetPattern()
+    internal void OnSetPattern()
     {
         if (Pattern.HasNoValue())
         {
@@ -1090,18 +1216,32 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// The sentence announced after each tag: the one the consumer gave, or one built from the gestures
     /// the component was actually given, since instructions for something that is off would be noise.
     /// </summary>
-    private string? GetTagAriaDescription()
+    private string? GetTagAriaDescription(bool removable)
     {
         if (TagAriaDescription is not null) return TagAriaDescription.HasValue() ? TagAriaDescription : null;
 
         if (IsEnabled is false || ReadOnly) return null;
 
+        if (removable)
+        {
+            return (EditableTags, AllowReorder) switch
+            {
+                (true, true) => "Press Enter to edit, Delete to remove, or Alt with the arrow keys to move.",
+                (true, false) => "Press Enter to edit, or Delete to remove.",
+                (false, true) => "Press Alt with the arrow keys to move, or Delete to remove.",
+                _ => null
+            };
+        }
+
+        // A tag CanRemoveTag holds in place answers to everything but the removal, so it is promised
+        // everything but the removal - and said to be locked even where it answers to nothing else, since
+        // a chip with no dismiss button next to chips that have one is otherwise only a missing button.
         return (EditableTags, AllowReorder) switch
         {
-            (true, true) => "Press Enter to edit, Delete to remove, or Alt with the arrow keys to move.",
-            (true, false) => "Press Enter to edit, or Delete to remove.",
-            (false, true) => "Press Alt with the arrow keys to move, or Delete to remove.",
-            _ => null
+            (true, true) => "This tag cannot be removed. Press Enter to edit it, or Alt with the arrow keys to move it.",
+            (true, false) => "This tag cannot be removed. Press Enter to edit it.",
+            (false, true) => "This tag cannot be removed. Press Alt with the arrow keys to move it.",
+            _ => "This tag cannot be removed."
         };
     }
 
@@ -1115,9 +1255,58 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return Format(MoreTagsAriaLabelFormat ?? "Show {0} more tags", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
     }
 
+    /// <summary>
+    /// Whether the user is allowed to take <paramref name="tag"/> off the list. A predicate of the consumer
+    /// that throws leaves the tag removable: a tag nobody can ever take off is worse than one that can.
+    /// </summary>
+    /// <summary>
+    /// Whether the clear button would have anything to take off the field: every tag, unless
+    /// <see cref="CanRemoveTag"/> holds some of them in place - and none at all where it holds all of
+    /// them, a button that empties nothing being a button that does nothing.
+    /// </summary>
+    private bool HasRemovableTag()
+    {
+        if (CurrentValue is null || CurrentValue.Count == 0) return false;
+
+        if (CanRemoveTag is null) return true;
+
+        return CurrentValue.Any(CanRemove);
+    }
+
+    private bool CanRemove(string tag)
+    {
+        if (CanRemoveTag is null) return true;
+
+        try
+        {
+            return CanRemoveTag(tag);
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
     private string? GetPlaceholder()
     {
         return CurrentValue is null || CurrentValue.Count == 0 ? Placeholder : TagsPlaceholder;
+    }
+
+    /// <summary>
+    /// The aria-describedby of the input: the id of the <see cref="Description"/> added to whatever the
+    /// consumer wrote on the component through <see cref="BitInputBase{T}.InputHtmlAttributes"/>, rather than
+    /// written over it. The attribute is a list of ids, so a field that points at a validation message of its
+    /// own keeps pointing at it while the helper text is read out as well.
+    /// </summary>
+    private string? GetDescribedBy(bool hasDescription)
+    {
+        var custom = InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue("aria-describedby", out var value)
+            ? value?.ToString()
+            : null;
+
+        if (hasDescription is false) return custom;
+
+        return custom.HasValue() ? $"{custom} {_descriptionId}" : _descriptionId;
     }
 
     private string GetDismissAriaLabel(string tag)
@@ -1164,13 +1353,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
     }
 
-    private string? BuildTagStyle(string tag, bool focused)
+    private string? BuildTagStyle(string tag, bool focused, bool removable)
     {
         // The declarations are joined with a semicolon rather than with a space, since one that omits its
         // trailing semicolon would otherwise swallow whatever is appended after it.
         string? style = null;
 
         Append(Styles?.Tag);
+
+        if (removable is false)
+        {
+            Append(Styles?.FixedTag);
+        }
 
         if (focused)
         {
@@ -1190,10 +1384,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
     }
 
-    private string BuildTagClass(string tag, int index, bool focused)
+    private string BuildTagClass(string tag, int index, bool focused, bool removable)
     {
         var custom = Classes?.Tag;
         var focusedClass = focused ? Classes?.FocusedTag : null;
+
+        // A tag the field holds in place looks the same as any other apart from the button it does not
+        // carry, so it is marked for the stylesheet that wants to say more about it than that.
+        var fixedClass = removable ? null : $"bit-tgi-tag-fix {Classes?.FixedTag}".TrimEnd();
 
         // The tag being dragged is faded out and the one it hovers over is marked, which is what tells
         // the pointer where the chip would land before it is let go of.
@@ -1205,7 +1403,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         var tagClass = InvokeTagStyling(GetTagClass, tag);
 
-        return string.Join(' ', new[] { "bit-tgi-tag", custom, focusedClass, dragClass, tagClass }.Where(c => c.HasValue()));
+        return string.Join(' ', new[] { "bit-tgi-tag", custom, focusedClass, fixedClass, dragClass, tagClass }.Where(c => c.HasValue()));
     }
 
     private string GetTagTabIndex(int index, int count)
@@ -1390,8 +1588,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await Clear();
 
         // A clear that OnBeforeClear called off leaves the button, and the focus that is on it, exactly
-        // where they were; only a field that did empty has taken its own clear button away.
-        if (CurrentValue?.Count > 0 || _inputText.Length > 0) return;
+        // where they were; only a field that did empty has taken its own clear button away - which a field
+        // left holding nothing but the tags CanRemoveTag pins in place has too.
+        if (HasRemovableTag() || _inputText.Length > 0) return;
 
         FocusInput();
     }
@@ -1889,7 +2088,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             if (restoreFocus is false) return;
 
-            if (removed && CurrentValue?.Count > 0)
+            if (removed is false)
+            {
+                // The tag is still there - OnBeforeRemove called the removal off, or CanRemoveTag holds
+                // this one in place - so the focus belongs back on it rather than in the input.
+                FocusTag(index);
+            }
+            else if (CurrentValue?.Count > 0)
             {
                 FocusTag(Math.Min(index, CurrentValue.Count - 1));
             }
@@ -2062,13 +2267,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
     }
 
-    private async Task<bool> RemoveTagAt(int index)
+    /// <summary>
+    /// Takes the tag at <paramref name="index"/> off the list. <paramref name="force"/> tells whether the
+    /// <see cref="CanRemoveTag"/> predicate applies: it does to every gesture the user makes, and it does
+    /// not to the consumer naming a tag through the public API.
+    /// </summary>
+    private async Task<bool> RemoveTagAt(int index, bool force = false)
     {
         var list = GetTags();
 
         if (index < 0 || index >= list.Count) return false;
 
         var tag = list[index];
+
+        if (force is false && CanRemove(tag) is false) return false;
 
         if (OnBeforeRemove.HasDelegate)
         {

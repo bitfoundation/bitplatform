@@ -8,7 +8,9 @@ public class BitTagsInputClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the focused state of the root element.
+    /// Custom CSS classes/styles carried by the root element while the input holds the focus. A tag reached
+    /// with the arrow keys is the field's focus rather than the input's, so it lights the field's own ring
+    /// (through :focus-within) without adding this one.
     /// </summary>
     public string? Focused { get; set; }
 
@@ -48,6 +50,12 @@ public class BitTagsInputClassStyles
     public string? FocusedTag { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for a tag the CanRemoveTag predicate holds in place, which carries no
+    /// dismiss button of its own.
+    /// </summary>
+    public string? FixedTag { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the tag text.
     /// </summary>
     public string? TagText { get; set; }
@@ -82,6 +90,11 @@ public class BitTagsInputClassStyles
     /// Custom CSS classes/styles for the counter of the BitTagsInput.
     /// </summary>
     public string? Counter { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner IsLoading draws at the end of the field.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the clear button of the BitTagsInput.

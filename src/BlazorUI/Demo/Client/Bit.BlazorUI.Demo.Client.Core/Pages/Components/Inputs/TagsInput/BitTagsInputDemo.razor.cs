@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TagsInput;
 
@@ -29,6 +29,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "AutoComplete",
+            Type = "string?",
+            DefaultValue = "off",
+            Description = "Sets the autocomplete html attribute of the input element. It is off by default, since the browser's own autofill would otherwise be offered over the suggestion list of the field - and what it saved for a single line text box is the last tag that was typed rather than the list the field holds.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -47,6 +54,13 @@ public partial class BitTagsInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "When true, pressing Enter while the input is empty does not suppress the event, allowing it to propagate (e.g., to submit a parent form).",
+        },
+        new()
+        {
+            Name = "CanRemoveTag",
+            Type = "Func<string, bool>?",
+            DefaultValue = "null",
+            Description = "A predicate deciding which tags the user is allowed to take off the list. A tag it turns down is drawn without a dismiss button, ignores the Delete and Backspace keys, is left alone by the Backspace pressed on the empty input, and stays behind when the field is cleared. It is still editable and still movable. RemoveTagAsync and RemoveTagAtAsync name a tag outright and are not held back by it.",
         },
         new()
         {
@@ -191,6 +205,15 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "EnterKeyHint",
+            Type = "BitEnterKeyHint?",
+            DefaultValue = "null",
+            Description = "Sets the enterkeyhint html attribute of the input element, which decides the label a virtual keyboard draws on its return key. The key confirms a tag here, so Done and Next are the ones that describe it on a phone.",
+            LinkType = LinkType.Link,
+            Href = "#enter-key-hint-enum",
+        },
+        new()
+        {
             Name = "GetTagClass",
             Type = "Func<string, string?>?",
             DefaultValue = "null",
@@ -202,6 +225,22 @@ public partial class BitTagsInputDemo
             Type = "Func<string, string?>?",
             DefaultValue = "null",
             Description = "A function returning extra inline CSS styles for a single tag, the counterpart of GetTagClass. It is appended after the Tag and FocusedTag of the Styles, so it wins over both.",
+        },
+        new()
+        {
+            Name = "InputMode",
+            Type = "BitInputMode?",
+            DefaultValue = "null",
+            Description = "Sets the inputmode html attribute of the input element, which decides the virtual keyboard a phone opens over the field. It changes nothing about what the field accepts - that is what Pattern and Validator are for - only about which keys the user is given to type it with.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode-enum",
+        },
+        new()
+        {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws a spinner at the end of the field, for the wait the field itself is the cause of: the suggestions being fetched for what is being typed, the tag being checked against a server. It is an indeterminate progressbar rather than a decoration, and it changes nothing about what the field accepts.",
         },
         new()
         {
@@ -230,6 +269,13 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The label of the chip that folds the tags back once MaxDisplayedTags unfolded them. The default is \"Show less\".",
+        },
+        new()
+        {
+            Name = "LoadingAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the spinner IsLoading draws, which is the whole of what a screen reader has to go on. The default is \"Loading\".",
         },
         new()
         {
@@ -492,6 +538,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "SpellCheck",
+            Type = "bool?",
+            DefaultValue = "false",
+            Description = "Sets the spellcheck html attribute of the input element. It is off by default, a tag being a value rather than a sentence - an identifier or a hashtag underlined in red says only that the dictionary has not heard of it.",
+        },
+        new()
+        {
             Name = "Suggestions",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
@@ -579,6 +632,262 @@ public partial class BitTagsInputDemo
             Description = "The visual variant of the field: an outline (the default), a filled surface, or only an underline.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
+        },
+    ];
+
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-TagsInput-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the field. The helper text and the counter are derived from it, so one value resizes the whole component.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the text being typed into the input.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-placeholder-color",
+            DefaultValue = "--bit-clr-fg-ter",
+            Description = "Color of the Placeholder and the TagsPlaceholder.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the label above the field.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk a Required label carries.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the helper text under the field. The error state overrides it with the invalid color.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-counter-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the tag counter ShowCounter draws.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-affix-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the Prefix and the Suffix.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-background",
+            DefaultValue = "Per Variant",
+            Description = "Fill of the field: the page surface in Outline, the secondary surface in Fill, transparent in Text.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Rule around the field at rest.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-hover-border-color",
+            DefaultValue = "Per Variant",
+            Description = "Rule around the hovered field (pointer devices only).",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of that rule, and of the underline the Text variant keeps.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner of the field and of its focus ring. The Text variant squares it off.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-min-height",
+            DefaultValue = "Per Size, --bit-siz-ctrl-*",
+            Description = "Smallest height of the field, which is what lines an empty tags input up with the text fields and pickers beside it. It is a floor: the field still grows with every line of chips that wraps into it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-padding",
+            DefaultValue = "Per Size",
+            Description = "Inset between the field and the chips, the input and the affixes inside it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-gap",
+            DefaultValue = "Per Size",
+            Description = "Room between the chips, the input and the affixes, on both axes.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-focus-color",
+            DefaultValue = "The Color role's focus color",
+            Description = "Color of the focus ring the field wears while anything inside it holds the focus.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-focus-border-color",
+            DefaultValue = "The Color role's main color",
+            Description = "Rule around the focused field, and the focus ring of the clear button.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-invalid-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Rule and helper text of a field failing validation, and its focus ring.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-disabled-color",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Text of a disabled field, of its chips, its label, its helper text and its affixes.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-disabled-background",
+            DefaultValue = "--bit-clr-bg-dis",
+            Description = "Fill of a disabled field and of the chips in it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-disabled-border-color",
+            DefaultValue = "--bit-clr-brd-dis",
+            Description = "Rule of a disabled field and of the chips in it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-color",
+            DefaultValue = "Per TagVariant, from the Color role",
+            Description = "Text of a chip, and of the chip that folds the tags away.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-background",
+            DefaultValue = "Per TagVariant, from the Color role",
+            Description = "Fill of a chip. Setting it is how a field paints its chips apart from its accent.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-border-color",
+            DefaultValue = "Per TagVariant, from the Color role",
+            Description = "Rule of a chip, drawn in every tag variant and transparent where it is not painted, so switching variants never moves the text in a chip.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Thickness of that rule.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-radius",
+            DefaultValue = "--bit-shp-radius-chip",
+            Description = "Corner of a chip. A pill takes 999px, a square 0.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-padding",
+            DefaultValue = "Per Size",
+            Description = "Inset of a chip. The block half is 0 on purpose: the height is set by the minimum height below, so the text stays centered whatever the chip holds.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-gap",
+            DefaultValue = "0.1875rem",
+            Description = "Room between a chip's text and its dismiss button.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of a chip, which is a step under the field's own at the Medium and Large sizes.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-min-height",
+            DefaultValue = "Per Size",
+            Description = "Smallest height of a chip, of the input and of the affixes, so a chip holding an icon or a template is exactly as tall as the one beside it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-max-width",
+            DefaultValue = "100%",
+            Description = "Widest a chip grows before its text is cut off with an ellipsis. Set it to keep one long value from taking a whole line of the field.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-focus-color",
+            DefaultValue = "Per TagVariant",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-dragging-opacity",
+            DefaultValue = "0.4",
+            Description = "Alpha of the chip being dragged, which is what reads as a gap waiting to be filled rather than as a chip in two places at once.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-dismiss-icon-size",
+            DefaultValue = "1em",
+            Description = "Glyph of a chip's dismiss button, relative to the chip's own text by default so it scales with the chip rather than with the field.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-icon-size",
+            DefaultValue = "Per Size, --bit-siz-icon-*",
+            Description = "Glyph of the clear button, and the diameter of the spinner, at the end of the field.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-spinner-color",
+            DefaultValue = "The Color role's main color",
+            Description = "The turning arc of the spinner IsLoading draws.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-spinner-track-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "The track that arc turns in.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-clear-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The clear button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-clear-hover-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "The clear button under the pointer.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-toggle-hover-color",
+            DefaultValue = "Per TagVariant",
+            Description = "Text of the hovered chip that folds and unfolds the tags MaxDisplayedTags put away.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-toggle-hover-background",
+            DefaultValue = "Per TagVariant",
+            Description = "Fill and rule of that same chip while it is hovered.",
         },
     ];
 
@@ -787,6 +1096,13 @@ public partial class BitTagsInputDemo
                 },
                 new()
                 {
+                    Name = "FixedTag",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for a tag the CanRemoveTag predicate holds in place, which carries no dismiss button of its own.",
+                },
+                new()
+                {
                     Name = "TagText",
                     Type = "string?",
                     DefaultValue = "null",
@@ -833,6 +1149,13 @@ public partial class BitTagsInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the counter of the tags input.",
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the spinner IsLoading draws at the end of the field.",
                 },
                 new()
                 {
@@ -939,6 +1262,39 @@ public partial class BitTagsInputDemo
                     Description = "The tag is not one of the suggestions, which RestrictToSuggestions made the only accepted values.",
                     Value = "6",
                 },
+            ]
+        },
+        new()
+        {
+            Id = "input-mode-enum",
+            Name = "BitInputMode",
+            Description = "Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.",
+            Items =
+            [
+                new() { Name = "None", Description = "No virtual keyboard. For when the page implements its own keyboard input control.", Value = "0" },
+                new() { Name = "Text", Description = "Standard input keyboard for the user's current locale.", Value = "1" },
+                new() { Name = "Decimal", Description = "Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.", Value = "2" },
+                new() { Name = "Numeric", Description = "Numeric input keyboard, but only requires the digits 0–9.", Value = "3" },
+                new() { Name = "Tel", Description = "A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key.", Value = "4" },
+                new() { Name = "Search", Description = "A virtual keyboard optimized for search input.", Value = "5" },
+                new() { Name = "Email", Description = "A virtual keyboard optimized for entering email addresses.", Value = "6" },
+                new() { Name = "Url", Description = "A keypad optimized for entering URLs.", Value = "7" },
+            ]
+        },
+        new()
+        {
+            Id = "enter-key-hint-enum",
+            Name = "BitEnterKeyHint",
+            Description = "Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.",
+            Items =
+            [
+                new() { Name = "Enter", Description = "Typically inserting a new line.", Value = "0" },
+                new() { Name = "Done", Description = "Typically meaning there is nothing more to input and the input method editor will be closed.", Value = "1" },
+                new() { Name = "Go", Description = "Typically meaning to take the user to the target of the text they typed.", Value = "2" },
+                new() { Name = "Next", Description = "Typically taking the user to the next field that will accept text.", Value = "3" },
+                new() { Name = "Previous", Description = "Typically taking the user to the previous field that will accept text.", Value = "4" },
+                new() { Name = "Search", Description = "Typically taking the user to the results of searching for the text they have typed.", Value = "5" },
+                new() { Name = "Send", Description = "Typically delivering the text to its target.", Value = "6" },
             ]
         },
         new()
@@ -1101,6 +1457,12 @@ public partial class BitTagsInputDemo
                                                     "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine"];
     private string? suggestionMessage;
 
+    private bool asyncLoading;
+    private int asyncRequestId;
+    private string[] asyncSuggestions = [];
+
+    private ICollection<string>? fixedTags = ["ada@example.com", "grace@example.com"];
+
     private const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
     private string? patternMessage;
     private string? validatorMessage;
@@ -1119,10 +1481,23 @@ public partial class BitTagsInputDemo
 
     private BitTagsInput apiTagsInput = default!;
 
-    private bool cancelFormSubmitted;
-    private readonly ValidationTagsInputModel cancelModel = new();
-
+    private bool formSubmitted;
     private readonly ValidationTagsInputModel validationModel = new();
+
+    private readonly List<IBitComponentParams> tagsInputParams =
+    [
+        new BitTagsInputParams
+        {
+            Size = BitSize.Small,
+            Variant = BitVariant.Fill,
+            TagVariant = BitVariant.Outline,
+            Color = BitColor.Info,
+            Separators = [","],
+            ShowClearButton = true,
+            Placeholder = "Add tag...",
+            Transformer = t => t.ToLowerInvariant()
+        }
+    ];
 
 
 
@@ -1143,6 +1518,31 @@ public partial class BitTagsInputDemo
         suggestionMessage = args.Reason == BitTagsInputInvalidReason.NotSuggested
             ? $"'{args.Tag}' is not one of the suggested values."
             : $"'{args.Tag}' was refused ({args.Reason}).";
+    }
+
+    private async Task HandleAsyncInput(string text)
+    {
+        // Only the answer to the last keystroke is kept: an earlier fetch coming back late would
+        // otherwise replace a newer list and turn the spinner off over a wait that is still running.
+        var id = ++asyncRequestId;
+
+        if (string.IsNullOrEmpty(text))
+        {
+            asyncLoading = false;
+            asyncSuggestions = [];
+            return;
+        }
+
+        asyncLoading = true;
+        StateHasChanged();
+
+        await Task.Delay(500);
+
+        if (id != asyncRequestId) return;
+
+        asyncSuggestions = [.. countrySuggestions.Where(c => c.Contains(text, StringComparison.OrdinalIgnoreCase))];
+        asyncLoading = false;
+        StateHasChanged();
     }
 
     private static bool ValidateFramework(string tag)
@@ -1253,5 +1653,5 @@ public partial class BitTagsInputDemo
 
     private async Task ApiFocus() => await apiTagsInput.FocusAsync();
 
-    private void HandleValidSubmit() { }
+    private void HandleValidSubmit() => formSubmitted = true;
 }
