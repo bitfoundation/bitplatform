@@ -4,19 +4,19 @@ cd /d "%~dp0"
 
 set EXIT_CODE=0
 
-echo ================================ Web tests on chromium ================================
+set PLAYWRIGHT_SERVER_ENDPOINT=ws://192.168.178.24:4444/
+
+echo ======================= Web tests on chromium on the remote mac =======================
 dotnet test --filter "TestCategory=Web"
 if errorlevel 1 set EXIT_CODE=1
 
-echo ================================ Web tests on firefox =================================
+echo ======================== Web tests on firefox on the remote mac =======================
 set BROWSER=firefox
 dotnet test --filter "TestCategory=Web" --no-build
 if errorlevel 1 set EXIT_CODE=1
-set BROWSER=
 
 echo ==================== Web tests on webkit (Safari) on the remote mac ===================
 set BROWSER=webkit
-set PLAYWRIGHT_SERVER_ENDPOINT=ws://192.168.178.24:4444/
 dotnet test --filter "TestCategory=Web" --no-build
 if errorlevel 1 set EXIT_CODE=1
 set BROWSER=
