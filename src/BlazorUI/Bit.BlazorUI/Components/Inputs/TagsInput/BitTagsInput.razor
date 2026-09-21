@@ -55,8 +55,23 @@
 
     var suggestions = GetSuggestions();
 
-    // The same icon on every tag, so it is resolved once per render rather than once per chip.
+    // A tag picked up with its handle and never put anywhere - because the parent has since taken it
+    // away, because the fold has closed over it, or because the field no longer offers the reordering at
+    // all - is put back down: a chip that is lifted with nowhere to land is only a chip drawn askew.
+    if (_pickedUpTagIndex >= displayedTagCount || (_pickedUpTagIndex >= 0 && (isInteractive is false || AllowReorder is false)))
+    {
+        SetPickedUpTag(-1);
+    }
+
+    // The tag that is currently being carried, read once rather than once per chip: while it is in the
+    // air, every other handle is labelled by it rather than by the tag it belongs to.
+    var carriedTag = _pickedUpTagIndex >= 0 && tags is not null && _pickedUpTagIndex < tags.Count
+                   ? tags[_pickedUpTagIndex]
+                   : null;
+
+    // The same icons on every tag, so they are resolved once per render rather than once per chip.
     var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
+    var reorderIcon = AllowReorder ? BitIconInfo.From(ReorderIcon, ReorderIconName ?? "GripperBarVertical") : null;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -139,12 +154,44 @@
                          @ondrop:preventDefault="true"
                          role="listitem"
                          draggable="@(CanDragTag(index) ? "true" : null)"
+                         @* The chip is named by the tag it stands for rather than by everything it holds:
+                            the name of a list item is otherwise read off its contents, and the contents of
+                            a chip are the handle that moves it and the button that removes it as well as
+                            the word itself - "Move blazor, blazor, Remove blazor" for a chip reading
+                            "blazor". A chip drawn by a TagTemplate is left named by what it draws, the
+                            value behind it no longer being what the eye is reading. *@
+                         aria-label="@(TagTemplate is null ? tag : null)"
                          aria-posinset="@(index + 1)"
                          aria-setsize="@tagCount"
                          aria-describedby="@(isTagRemovable ? tagHintId : fixedTagHintId)"
                          tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
-                         style="@BuildTagStyle(tag, isTagFocused, isTagRemovable)"
+                         style="@BuildTagStyle(tag, index, isTagFocused, isTagRemovable)"
                          class="@BuildTagClass(tag, index, isTagFocused, isTagRemovable)">
+                        @* Drawn only where there is somewhere to put the tag down: a handle on the only
+                           chip in the field picks a tag up and hands it back, which is chrome that does
+                           nothing on every chip that stands alone. *@
+                        @if (isInteractive && isTagEditing is false && AllowReorder && displayedTagCount > 1)
+                        {
+                            @* The handle that reorders a tag without a drag. Dragging a chip is the quick
+                               gesture, but it is one no touch screen, no switch and no head pointer can
+                               make, so the very same move is offered as two taps: one on the handle picks
+                               the tag up, one on the tag whose place it should take puts it down, and a
+                               second tap on the handle puts it back. Out of the tab order like the dismiss
+                               button, the keyboard reordering being Alt with the arrow keys. *@
+                            <button @onclick="() => HandleOnReorderClick(index)"
+                                    @onclick:stopPropagation="true"
+                                    @ondblclick:stopPropagation="true"
+                                    type="button"
+                                    tabindex="-1"
+                                    title="@(ReorderTitle ?? "Move")"
+                                    aria-pressed="@GetReorderPressed(index)"
+                                    aria-label="@GetReorderAriaLabel(tag, index, carriedTag)"
+                                    style="@Styles?.ReorderButton"
+                                    class="bit-tgi-rbt @Classes?.ReorderButton">
+                                <i style="@Styles?.ReorderIcon" class="bit-tgi-rdi @reorderIcon?.GetCssClasses() @Classes?.ReorderIcon" aria-hidden="true" />
+                            </button>
+                        }
+
                         @if (isTagEditing)
                         {
                             @* The little input that replaces the tag while it is being corrected in
@@ -257,6 +304,7 @@
                data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
                spellcheck="@((SpellCheck ?? false).ToString().ToLower())"
                aria-label="@(hasLabel ? null : AriaLabel)"
+               aria-invalid="@GetAriaInvalid()"
                aria-required="@(Required ? "true" : null)"
                aria-labelledby="@(hasLabel ? _labelId : null)"
                aria-describedby="@GetDescribedBy(hasDescription)"

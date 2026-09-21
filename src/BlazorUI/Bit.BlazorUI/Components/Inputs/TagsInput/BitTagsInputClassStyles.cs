@@ -56,9 +56,31 @@ public class BitTagsInputClassStyles
     public string? FixedTag { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the tag that has been picked up with its reorder handle and is
+    /// waiting to be put down.
+    /// </summary>
+    public string? PickedUpTag { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the tag a refused duplicate collided with, which is marked until the
+    /// user types again.
+    /// </summary>
+    public string? DuplicateTag { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the tag text.
     /// </summary>
     public string? TagText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the reorder handle AllowReorder draws on each tag.
+    /// </summary>
+    public string? ReorderButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of that reorder handle.
+    /// </summary>
+    public string? ReorderIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the dismiss button of each tag.

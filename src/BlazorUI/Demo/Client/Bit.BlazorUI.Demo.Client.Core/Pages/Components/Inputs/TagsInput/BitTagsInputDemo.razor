@@ -3,10 +3,10 @@
 
 <PageOutlet Url="components/tagsinput"
             Title="TagsInput"
-            Description="A tags (chips/tokens) input for Blazor: confirm a tag with Enter or a separator of your own, pick one from a suggestion list or accept nothing else, paste a whole separated list at once, cap the count and the length, reject what fails a pattern or a validator and hear why, normalize through a transformer, correct a chip in place, pin the ones that may not be removed, walk and reorder the chips from the keyboard or by dragging, fold a long list away, style each chip by its value, drive it all from code, and bind the list to an EditForm." />
+            Description="A tags (chips/tokens) input for Blazor: confirm a tag with Enter or a separator of your own, pick one from a suggestion list or accept nothing else, paste a whole separated list at once, cap the count and the length, reject what fails a pattern or a validator and hear why, normalize through a transformer, correct a chip in place, pin the ones that may not be removed, walk and reorder the chips from the keyboard, by dragging or by two taps where dragging is not an option, fold a long list away, style each chip by its value, drive it all from code, and bind the list to an EditForm." />
 
 <DemoPage Name="TagsInput"
-          Description="The TagsInput turns free text into a list of short values: the user types a tag, confirms it with Enter (or with a separator of your own), and it becomes a removable chip in front of the input. It binds to a collection of strings, offers known values through the browser's own suggestion list - or accepts nothing else - splits a pasted list into a tag each, and keeps the entries in shape on the way in: trimming, transforming, capping their length and their number, and rejecting the ones that repeat, that are too short, that fail a pattern or that a validator turns down, each rejection reported with the rule that caused it. The chips form a proper accessible list: one stop of the tab order that the arrow keys walk through, removable with Delete, correctable in place, movable by drag or with Alt and the arrows, with the ones a predicate pins in place carrying no dismiss button at all, and with every change announced to screen readers. It comes in three sizes, three variants and the whole accent palette, folds a long list away behind a chip, carries a label, a helper text, a prefix, a suffix, a counter, a clear button and a spinner for the suggestions it is still fetching, can be driven entirely from code, and takes part in an EditForm like any other input."
+          Description="The TagsInput turns free text into a list of short values: the user types a tag, confirms it with Enter (or with a separator of your own), and it becomes a removable chip in front of the input. It binds to a collection of strings, offers known values through the browser's own suggestion list - or accepts nothing else - splits a pasted list into a tag each, and keeps the entries in shape on the way in: trimming, transforming, capping their length and their number, and rejecting the ones that repeat, that are too short, that fail a pattern or that a validator turns down, each rejection reported with the rule that caused it. The chips form a proper accessible list: one stop of the tab order that the arrow keys walk through, removable with Delete, correctable in place, movable by drag, by two taps on the handle a chip grows or with Alt and the arrows, with the ones a predicate pins in place carrying no dismiss button at all, and with every change announced to screen readers. It comes in three sizes, three variants and the whole accent palette, folds a long list away behind a chip, carries a label, a helper text, a prefix, a suffix, a counter, a clear button and a spinner for the suggestions it is still fetching, can be driven entirely from code, and takes part in an EditForm like any other input."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -116,7 +116,12 @@
             values holding what is being typed are kept, which changes nothing about what the user is shown.
             Where the catalogue is fetched rather than held, <b>OnInput</b> is what triggers the fetch and
             <b>IsLoading</b> draws the spinner that says the field is waiting - an indeterminate progressbar, so
-            a screen reader hears the wait instead of missing it.
+            a screen reader hears the wait instead of missing it. <b>DebounceTime</b> waits for the typing to
+            stop before raising it, which turns a request per keystroke into a request per word
+            (<b>ThrottleTime</b> spaces them out instead, for a list that should keep up while the word is
+            still being typed). Only the callback waits: the text itself is tracked as it is typed, so the tag
+            Enter commits is never a keystroke behind, and the emptying that follows a committed tag is
+            reported at once, taking the pending call down with it.
         </div>
         <br />
         <div class="example-box">
@@ -143,9 +148,10 @@
             <BitTagsInput Label="Fetched while you type"
                           Suggestions="asyncSuggestions"
                           IsLoading="asyncLoading"
+                          DebounceTime="300"
                           OnInput="HandleAsyncInput"
                           Placeholder="Start typing a country..."
-                          Description="The list arrives half a second later, and the spinner says so meanwhile." />
+                          Description="Nothing is fetched until the typing stops for 300ms; the spinner says so meanwhile." />
         </div>
     </DemoExample>
 
@@ -193,6 +199,12 @@
             checksum, a rule depending on the other tags. A tag already in the list is refused by default and
             reported through <b>OnTagExists</b>; <b>Duplicates</b> lifts that, and <b>Comparison</b> decides which
             tags count as the same one. Every refusal reaches <b>OnInvalid</b> with the rule that caused it.
+            <br /><br />
+            A refusal is never silent: the field wears its invalid color - and says so through
+            <code>aria-invalid</code> - until the next keystroke answers it, and a tag refused as a duplicate
+            marks the chip already in the list that it collided with, since "you already have this one" is only
+            an answer if it says which one. <b>NoInvalidHighlight</b> turns the mark off where the refusal is
+            reported somewhere else entirely.
         </div>
         <br />
         <div class="example-box">
@@ -200,7 +212,7 @@
                           Transformer="NormalizeHashtag"
                           Separators="@([","])"
                           Placeholder="#Blazor, #WEB, # dot net"
-                          Description="Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate."
+                          Description="Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked."
                           OnTagExists="HandleTagExists" />
             @if (duplicateMessage.HasValue())
             {
@@ -256,21 +268,27 @@
 
     <DemoExample Title="Reordering" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            <b>AllowReorder</b> lets a tag be moved two equal ways. With a pointer, drop a chip onto the one whose
-            position it should take: the carried chip fades and the one under the pointer is outlined, so the
-            landing place is visible before the button is let go of. Without a pointer, hold <b>Alt</b> with the
-            arrow keys to walk the focused chip one position at a time, or <b>Alt+Home</b> / <b>Alt+End</b> to send
-            it to either end - which is what keeps reordering usable on a touch screen and with a screen reader.
-            Either way the focus travels with the tag and the move is announced. <b>OnReorder</b> reports the tag
-            and the two positions, which is what says <i>which</i> chip moved without diffing the list; the order
-            is part of the value, so the move is written back through <b>@@bind-Value</b> as well.
+            <b>AllowReorder</b> lets a tag be moved three equal ways, one for each kind of user. <b>Drag</b> a chip
+            onto the one whose position it should take: the carried chip fades and the one under the pointer is
+            outlined, so the landing place is visible before the button is let go of. <b>Tap the handle</b> the chip
+            grows at its start, then the tag whose place it should take - two taps rather than a drag, for every
+            pointer that cannot drag at all: a touch screen, a switch, a head pointer. A second tap on the handle,
+            on the lifted chip, on the field around it, or the <b>Escape</b> key puts it back down. From the
+            <b>keyboard</b>, hold <b>Alt</b> with the arrow keys to walk the focused chip one position at a time,
+            or <b>Alt+Home</b> / <b>Alt+End</b> to send it to either end. Whichever it was, the focus travels with
+            the tag and the move is announced. <b>ReorderIconName</b>, <b>ReorderTitle</b>,
+            <b>ReorderAriaLabelFormat</b> and <b>ReorderDropAriaLabelFormat</b> write the handle, and
+            <b>PickedUpAnnouncementFormat</b> and <b>PutBackAnnouncementFormat</b> what it says out loud.
+            <b>OnReorder</b> reports the tag and the two positions, which is what says <i>which</i> chip moved
+            without diffing the list; the order is part of the value, so the move is written back through
+            <b>@@bind-Value</b> as well.
         </div>
         <br />
         <div class="example-box">
-            <BitTagsInput Label="Drag a tag, or move it with Alt + arrows"
+            <BitTagsInput Label="Drag a tag, tap its handle, or move it with Alt + arrows"
                           AllowReorder
                           Placeholder="Add tag..."
-                          Description="Drag a chip onto another one, or focus one with Tab and hold Alt while pressing the arrow keys."
+                          Description="Drag a chip onto another one; or tap a handle and then the tag whose place it should take; or focus one with Tab and hold Alt while pressing the arrow keys."
                           DefaultValue="@(new List<string> { "first", "second", "third", "fourth" })"
                           OnReorder="HandleReorder" />
             @if (reorderMessage.HasValue())
@@ -316,7 +334,8 @@
             press, on the now empty input, that empties the list. <b>OnBeforeClear</b> runs first whichever of the
             three emptied the field and can call it off, which is where a confirmation belongs. Pressing the button
             takes the button away with everything else, so the caret is handed back to the input rather than
-            dropped on the page.
+            dropped on the page. <b>NoClearOnEscape</b> hands the key back to whatever surrounds the field, for a
+            form inside a modal or a callout where dismissing that is what the user means by pressing it.
         </div>
         <br />
         <div class="example-box">
@@ -374,7 +393,8 @@
             <b>Backspace</b> remove the focused one and hand the focus to its neighbour, <b>Enter</b> and <b>F2</b>
             open the inline edit, <b>Alt</b> with the arrows moves the tag, and <b>Escape</b> goes back to the
             input. Every one of those keys carries a browser default that is held back for it, so a gesture of the
-            field never turns into a gesture of the browser.
+            field never turns into a gesture of the browser. <b>NoClearOnEscape</b> leaves Escape alone
+            altogether, for a field inside a surface that closes on it.
             <br /><br />
             From the input, <b>Backspace</b> on an empty field removes the last tag - <b>NoBackspaceRemove</b>
             turns that off and <b>BackspaceEditsLastTag</b> turns it into a correction, putting the tag's text back
@@ -423,7 +443,8 @@
             A chip appearing, disappearing or changing place reaches no screen reader on its own - the list sits
             away from the caret - so the component says each of them out loud through a polite live region:
             <b>AddedAnnouncementFormat</b>, <b>AddedManyAnnouncementFormat</b>, <b>RemovedAnnouncementFormat</b>,
-            <b>ClearedAnnouncementFormat</b>, <b>EditedAnnouncementFormat</b>, <b>MovedAnnouncementFormat</b> and
+            <b>ClearedAnnouncementFormat</b>, <b>EditedAnnouncementFormat</b>, <b>MovedAnnouncementFormat</b>,
+            <b>PickedUpAnnouncementFormat</b>, <b>PutBackAnnouncementFormat</b> and
             <b>InvalidAnnouncementFormat</b>. Most take <code>{0}</code> for the tag - the move also
             <code>{1}</code> for the position it landed on and <code>{2}</code> for how many tags there are - and
             an empty string keeps that event silent. The two standing for a batch count instead of naming: reading
@@ -433,8 +454,10 @@
             The names of the parts follow the same idea: <b>TagsAriaLabel</b> names the list, <b>TagAriaDescription</b>
             is the sentence telling what the keyboard can do with the chip just reached (built from the gestures the
             field was actually given, and left out when there are none), <b>DismissAriaLabelFormat</b> and
-            <b>DismissTitle</b> name the dismiss button, <b>EditAriaLabelFormat</b> the little edit input, and
-            <b>ClearButtonAriaLabel</b> the button that empties the field. Each chip also carries its own position
+            <b>DismissTitle</b> name the dismiss button, <b>ReorderAriaLabelFormat</b>,
+            <b>ReorderDropAriaLabelFormat</b> and <b>ReorderTitle</b> the reorder handle,
+            <b>EditAriaLabelFormat</b> the little edit input, and <b>ClearButtonAriaLabel</b> the button that
+            empties the field. Each chip also carries its own position
             in the whole list, so "the third of six" stays true where <b>MaxDisplayedTags</b> folded the rest away.
         </div>
         <br />
@@ -583,18 +606,22 @@
             off, <b>OnInvalid</b> the one refused with the rule that refused it, and <b>OnInput</b> the text of the
             input as it is typed - which is what an external suggestion list is driven by. <b>OnInput</b> also
             reports the emptying the component does itself, so a list of your own is never left filtering on a word
-            that is already a chip. <b>OnFocusIn</b>, <b>OnFocusOut</b> and <b>OnKeyDown</b> report the plain input
-            events on top of them.
+            that is already a chip. <b>OnTagClick</b> turns a chip into a way in to whatever it stands for - the
+            card of the recipient, the filter the tag is built on - without taking the focus the click already
+            gives it. <b>OnFocusIn</b>, <b>OnFocusOut</b> and <b>OnKeyDown</b> report the plain input events on top
+            of them.
         </div>
         <br />
         <div class="example-box">
-            <BitTagsInput Label="Try adding 'block'"
+            <BitTagsInput Label="Try adding 'block', then click a chip"
                           Placeholder="Type 'block' to see OnBeforeAdd cancel the add"
+                          DefaultValue="@(new List<string> { "blazor" })"
                           OnBeforeAdd="HandleBeforeAdd"
                           OnBeforeRemove="HandleBeforeRemove"
                           OnAdd="HandleAdd"
                           OnRemove="HandleRemove"
                           OnInvalid="HandleInvalid"
+                          OnTagClick="HandleTagClick"
                           OnInput="text => typedText = text" />
             <div>Typing: @typedText</div>
             <div>Last event: @eventsLog</div>
@@ -738,10 +765,11 @@
         <div>
             <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b> reach
             every part by name - the label, the description, the counter, the input container, the affixes, the
-            wrapper of the tags, each tag and its text, the dismiss button and its icon, the fold chip, the input,
-            the little edit input, the loading spinner and the clear button - plus the three state slots
-            <b>Focused</b>, <b>FocusedTag</b> and <b>FixedTag</b>. Prefer <b>Classes</b> when your CSS should own
-            states such as hover, which inline styles cannot express.
+            wrapper of the tags, each tag and its text, the reorder handle and the dismiss button with their icons,
+            the fold chip, the input, the little edit input, the loading spinner and the clear button - plus the
+            state slots <b>Focused</b>, <b>FocusedTag</b>, <b>FixedTag</b>, <b>PickedUpTag</b> (the chip waiting to
+            be put down) and <b>DuplicateTag</b> (the chip a refused duplicate collided with). Prefer
+            <b>Classes</b> when your CSS should own states such as hover, which inline styles cannot express.
         </div>
         <br />
         <div class="example-box">

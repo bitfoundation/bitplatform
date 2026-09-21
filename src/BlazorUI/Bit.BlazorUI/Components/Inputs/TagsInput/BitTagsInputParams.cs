@@ -120,6 +120,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public StringComparison? Comparison { get; set; }
 
     /// <summary>
+    /// How long, in milliseconds, the field waits for the typing to stop before raising OnInput.
+    /// </summary>
+    public int? DebounceTime { get; set; }
+
+    /// <summary>
     /// A hint rendered under the field, referenced by the input through its aria-describedby attribute.
     /// </summary>
     public string? Description { get; set; }
@@ -275,6 +280,16 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoBorder { get; set; }
 
     /// <summary>
+    /// Leaves the Escape key alone, so that it empties neither the input nor the list of tags.
+    /// </summary>
+    public bool? NoClearOnEscape { get; set; }
+
+    /// <summary>
+    /// Stops the field from marking a tag it refused, and the tag a refused duplicate collided with.
+    /// </summary>
+    public bool? NoInvalidHighlight { get; set; }
+
+    /// <summary>
     /// Keeps the leading and trailing whitespace of a tag instead of trimming it away.
     /// </summary>
     public bool? NoTrim { get; set; }
@@ -283,6 +298,12 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     /// A regular expression that every tag has to match to be accepted.
     /// </summary>
     public string? Pattern { get; set; }
+
+    /// <summary>
+    /// The format of the message announced when a tag is picked up with its reorder handle, where {0} is
+    /// the tag.
+    /// </summary>
+    public string? PickedUpAnnouncementFormat { get; set; }
 
     /// <summary>
     /// The placeholder text of the input, shown while there is no tag in the list.
@@ -295,9 +316,40 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public string? Prefix { get; set; }
 
     /// <summary>
+    /// The format of the message announced when a picked up tag is put back, where {0} is the tag.
+    /// </summary>
+    public string? PutBackAnnouncementFormat { get; set; }
+
+    /// <summary>
     /// The format of the message announced by screen readers when a tag is removed, where {0} is the tag.
     /// </summary>
     public string? RemovedAnnouncementFormat { get; set; }
+
+    /// <summary>
+    /// The format of the accessible label of the reorder handle of each tag, where {0} is the tag.
+    /// </summary>
+    public string? ReorderAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// The format of the accessible label the other reorder handles take while a tag is picked up, where
+    /// {0} is the tag being carried.
+    /// </summary>
+    public string? ReorderDropAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// The icon of the reorder handle, as custom CSS classes for external icon libraries.
+    /// </summary>
+    public BitIconInfo? ReorderIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the reorder handle from the built-in Fluent UI icons.
+    /// </summary>
+    public string? ReorderIconName { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) of the reorder handle of each tag.
+    /// </summary>
+    public string? ReorderTitle { get; set; }
 
     /// <summary>
     /// Turns the Suggestions into the whole of what the field accepts.
@@ -364,6 +416,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     /// How much of the Color the tags are painted with.
     /// </summary>
     public BitVariant? TagVariant { get; set; }
+
+    /// <summary>
+    /// How long, in milliseconds, OnInput waits between two raises while the typing goes on.
+    /// </summary>
+    public int? ThrottleTime { get; set; }
 
     /// <summary>
     /// A function applied to the text of a tag before anything else is done with it.
@@ -486,6 +543,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         if (Comparison.HasValue && bitTagsInput.HasNotBeenSet(nameof(Comparison)))
         {
             bitTagsInput.Comparison = Comparison.Value;
+        }
+
+        if (DebounceTime.HasValue && bitTagsInput.HasNotBeenSet(nameof(DebounceTime)))
+        {
+            bitTagsInput.DebounceTime = DebounceTime.Value;
         }
 
         if (Description.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Description)))
@@ -646,6 +708,16 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.ClassBuilder.Reset();
         }
 
+        if (NoClearOnEscape.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoClearOnEscape)))
+        {
+            bitTagsInput.NoClearOnEscape = NoClearOnEscape.Value;
+        }
+
+        if (NoInvalidHighlight.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoInvalidHighlight)))
+        {
+            bitTagsInput.NoInvalidHighlight = NoInvalidHighlight.Value;
+        }
+
         if (NoTrim.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoTrim)))
         {
             bitTagsInput.NoTrim = NoTrim.Value;
@@ -656,6 +728,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.Pattern = Pattern;
 
             bitTagsInput.OnSetPattern();
+        }
+
+        if (PickedUpAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(PickedUpAnnouncementFormat)))
+        {
+            bitTagsInput.PickedUpAnnouncementFormat = PickedUpAnnouncementFormat;
         }
 
         if (Placeholder.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Placeholder)))
@@ -671,6 +748,36 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         if (RemovedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(RemovedAnnouncementFormat)))
         {
             bitTagsInput.RemovedAnnouncementFormat = RemovedAnnouncementFormat;
+        }
+
+        if (PutBackAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(PutBackAnnouncementFormat)))
+        {
+            bitTagsInput.PutBackAnnouncementFormat = PutBackAnnouncementFormat;
+        }
+
+        if (ReorderAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderAriaLabelFormat)))
+        {
+            bitTagsInput.ReorderAriaLabelFormat = ReorderAriaLabelFormat;
+        }
+
+        if (ReorderDropAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderDropAriaLabelFormat)))
+        {
+            bitTagsInput.ReorderDropAriaLabelFormat = ReorderDropAriaLabelFormat;
+        }
+
+        if (ReorderIcon is not null && bitTagsInput.HasNotBeenSet(nameof(ReorderIcon)))
+        {
+            bitTagsInput.ReorderIcon = ReorderIcon;
+        }
+
+        if (ReorderIconName.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderIconName)))
+        {
+            bitTagsInput.ReorderIconName = ReorderIconName;
+        }
+
+        if (ReorderTitle.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderTitle)))
+        {
+            bitTagsInput.ReorderTitle = ReorderTitle;
         }
 
         if (RestrictToSuggestions.HasValue && bitTagsInput.HasNotBeenSet(nameof(RestrictToSuggestions)))
@@ -744,6 +851,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TagVariant = TagVariant.Value;
 
             bitTagsInput.ClassBuilder.Reset();
+        }
+
+        if (ThrottleTime.HasValue && bitTagsInput.HasNotBeenSet(nameof(ThrottleTime)))
+        {
+            bitTagsInput.ThrottleTime = ThrottleTime.Value;
         }
 
         if (Transformer is not null && bitTagsInput.HasNotBeenSet(nameof(Transformer)))

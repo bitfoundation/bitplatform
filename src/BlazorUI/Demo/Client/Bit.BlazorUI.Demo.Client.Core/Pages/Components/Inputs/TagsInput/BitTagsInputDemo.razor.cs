@@ -133,6 +133,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "DebounceTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How long, in milliseconds, the field waits for the typing to stop before raising OnInput, which turns a suggestion list fetched from a server into one request per word rather than one per keystroke. Only the callback waits: the typed text is tracked as it is typed, and an emptying the component itself caused is reported at once, taking a pending callback down with it. 0 means no wait.",
+        },
+        new()
+        {
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
@@ -363,6 +370,20 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "NoClearOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Leaves the Escape key alone, so that it takes back neither the text being typed nor the tags the clear button would empty - which hands the key back to the modal or the callout the field sits in.",
+        },
+        new()
+        {
+            Name = "NoInvalidHighlight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the field from marking a tag it refused. The mark is what makes a rejection visible to everyone rather than only to a screen reader: the field wears its invalid color until the user types again, and a tag refused as a duplicate marks the one already in the list that it collided with.",
+        },
+        new()
+        {
             Name = "NoTrim",
             Type = "bool",
             DefaultValue = "false",
@@ -460,6 +481,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "OnTagClick",
+            Type = "EventCallback&lt;string&gt;",
+            DefaultValue = "",
+            Description = "Callback for when a tag is clicked, carrying the tag. It changes nothing about what the click already does, the tag still taking the focus; the dismiss button is not a click on the tag, and neither is the second click of the double click that opens the inline edit.",
+        },
+        new()
+        {
             Name = "OnTagExists",
             Type = "EventCallback<string>",
             Description = "Callback fired when a duplicate tag is attempted and Duplicates is false.",
@@ -470,6 +498,13 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A regular expression that every tag has to match to be accepted. An unusable expression is ignored rather than breaking the input.",
+        },
+        new()
+        {
+            Name = "PickedUpAnnouncementFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the message announced by screen readers when a tag is picked up with its reorder handle, where {0} is the tag. The default names the tag and says how to put it down. An empty string keeps the pick up from being announced.",
         },
         new()
         {
@@ -494,10 +529,52 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "PutBackAnnouncementFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the message announced by screen readers when a picked up tag is put back where it came from, where {0} is the tag. The default is \"{0} put back.\".",
+        },
+        new()
+        {
             Name = "RemovedAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
             Description = "The format of the message announced by screen readers when a tag is removed, where {0} is the tag. The default is \"{0} removed.\". An empty string keeps the removal from being announced.",
+        },
+        new()
+        {
+            Name = "ReorderAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the accessible label of the reorder handle of each tag, where {0} is the tag. The default is \"Move {0}\".",
+        },
+        new()
+        {
+            Name = "ReorderDropAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the accessible label the other reorder handles take while one tag is picked up, where {0} is the tag being carried. The default is \"Move {0} here\".",
+        },
+        new()
+        {
+            Name = "ReorderIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the reorder handle, as custom CSS classes for external icon libraries. It takes precedence over ReorderIconName.",
+        },
+        new()
+        {
+            Name = "ReorderIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the icon of the reorder handle from the built-in Fluent UI icons. It defaults to GripperBarVertical.",
+        },
+        new()
+        {
+            Name = "ReorderTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The title (tooltip) of the reorder handle of each tag. The default is \"Move\".",
         },
         new()
         {
@@ -609,6 +686,13 @@ public partial class BitTagsInputDemo
             Description = "How much of the Color the tags are painted with: Fill (the default) fills each chip with it, the way a BitTag is filled, Outline leaves the chip unfilled and draws the color as its rule and its text, and Text keeps only the text in it. It is independent of the Variant, which is about the frame of the field rather than the tags in it.",
             LinkType = LinkType.Link,
             Href = "#variant-enum",
+        },
+        new()
+        {
+            Name = "ThrottleTime",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "How long, in milliseconds, OnInput waits between two raises while the typing goes on, for a suggestion list that should keep up with the word rather than only answer once it is finished. DebounceTime wins over it when both are set. 0 means no limit.",
         },
         new()
         {
@@ -749,7 +833,7 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "Rule and helper text of a field failing validation, and its focus ring.",
+            Description = "Rule and helper text of a field failing validation and its focus ring, and the mark a refused tag leaves on the field and on the chip it collided with.",
         },
         new()
         {
@@ -846,6 +930,12 @@ public partial class BitTagsInputDemo
             Name = "--bit-TagsInput-dismiss-icon-size",
             DefaultValue = "1em",
             Description = "Glyph of a chip's dismiss button, relative to the chip's own text by default so it scales with the chip rather than with the field.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-reorder-icon-size",
+            DefaultValue = "1em of the chip's text",
+            Description = "The glyph of the reorder handle AllowReorder draws on each chip.",
         },
         new()
         {
@@ -1103,10 +1193,38 @@ public partial class BitTagsInputDemo
                 },
                 new()
                 {
+                    Name = "PickedUpTag",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the tag that has been picked up with its reorder handle and is waiting to be put down.",
+                },
+                new()
+                {
+                    Name = "DuplicateTag",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the tag a refused duplicate collided with, which is marked until the user types again.",
+                },
+                new()
+                {
                     Name = "TagText",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the tag text.",
+                },
+                new()
+                {
+                    Name = "ReorderButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the reorder handle AllowReorder draws on each tag.",
+                },
+                new()
+                {
+                    Name = "ReorderIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon of that reorder handle.",
                 },
                 new()
                 {
@@ -1633,6 +1751,11 @@ public partial class BitTagsInputDemo
     private void HandleInvalid(BitTagsInputInvalidArgs args)
     {
         eventsLog = $"Rejected '{args.Tag}' ({args.Reason})";
+    }
+
+    private void HandleTagClick(string tag)
+    {
+        eventsLog = $"Clicked: {tag}";
     }
 
     private Task ApiAddTag() => apiTagsInput.AddTagAsync("dotnet");

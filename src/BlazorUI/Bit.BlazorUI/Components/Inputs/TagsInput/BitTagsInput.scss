@@ -20,7 +20,9 @@
 //   --bit-TagsInput-gap                     room between the chips, the input and the affixes (default: per size)
 //   --bit-TagsInput-focus-color             color of the focus ring                           (default: the role's focus color)
 //   --bit-TagsInput-focus-border-color      rule around the focused field                     (default: the role's main color)
-//   --bit-TagsInput-invalid-color           rule and helper text of a field failing validation (default: $clr-err)
+//   --bit-TagsInput-invalid-color           rule and helper text of a field failing validation, and the
+//                                           mark a refused tag leaves on the field and on the chip it
+//                                           collided with                                     (default: $clr-err)
 //   --bit-TagsInput-disabled-color          text of a disabled field and of its chips         (default: $clr-fg-dis)
 //   --bit-TagsInput-disabled-background     fill of a disabled field and of its chips         (default: $clr-bg-dis)
 //   --bit-TagsInput-disabled-border-color   rule of a disabled field and of its chips         (default: $clr-brd-dis)
@@ -38,6 +40,7 @@
 //                                           dragged one would land on                         (default: per tag variant)
 //   --bit-TagsInput-tag-dragging-opacity    alpha of the chip being dragged                   (default: 0.4)
 //   --bit-TagsInput-dismiss-icon-size       glyph of a chip's dismiss button                  (default: 1em of the chip's text)
+//   --bit-TagsInput-reorder-icon-size       glyph of a chip's reorder handle                  (default: 1em of the chip's text)
 //   --bit-TagsInput-icon-size               glyph of the clear button and of the spinner      (default: per size, $siz-icon-*)
 //   --bit-TagsInput-spinner-color           the arc of the spinner IsLoading draws            (default: the role's main color)
 //   --bit-TagsInput-spinner-track-color     the track the arc turns in                        (default: $clr-brd-sec)
@@ -284,6 +287,7 @@
     }
 }
 
+.bit-tgi-rbt,
 .bit-tgi-dbt,
 .bit-tgi-cbt {
     padding: 0;
@@ -324,6 +328,61 @@
     &:focus-visible {
         outline: $shp-focus-ring-width solid var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring));
         outline-offset: 0;
+    }
+}
+
+//the reorder handle of a chip: the same target as the dismiss button on the other end of it - the full
+//height of the chip and a pad on either side of the glyph, which is all a chip this short can give a
+//pointer - and the grab cursor of the drag it is also the start of.
+.bit-tgi-rbt {
+    align-self: stretch;
+    cursor: grab;
+    padding-inline: spacing(0.375);
+    margin-inline-start: calc(-1 * #{spacing(0.125)});
+    font-size: var(--bit-TagsInput-reorder-icon-size, 1em);
+    transition: opacity $mot-duration-short $mot-easing;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            opacity: 0.75;
+        }
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring));
+        outline-offset: 0;
+    }
+}
+
+//the chip that has been picked up and is waiting to be put down: outlined rather than faded, since unlike
+//the dragged chip there is no second copy of it under the pointer to tell the two apart. The dashes are
+//what say "this one is in the air" without borrowing the solid ring that means "this one has the focus".
+.bit-tgi-tag-lft {
+    outline: $shp-border-width-thick dashed var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring));
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
+}
+
+//while a tag is carried, every other chip is a place to put it down and says so under the pointer. The
+//handle of the carried chip keeps the grab cursor, the press that put it in the air being the press that
+//takes it back out.
+.bit-tgi-pck {
+    .bit-tgi-tag:not(.bit-tgi-tag-lft) {
+        cursor: pointer;
+
+        .bit-tgi-rbt {
+            cursor: pointer;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                outline: $shp-focus-ring-width solid var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring));
+                outline-offset: calc(-1 * #{$shp-focus-ring-width});
+            }
+        }
     }
 }
 
@@ -387,6 +446,7 @@
 }
 
 .bit-tgi-dsi,
+.bit-tgi-rdi,
 .bit-tgi-cli {
     font-size: inherit;
 }
@@ -608,6 +668,45 @@
 }
 
 
+//A tag the field refused leaves the field wearing the invalid color until the user types again, which is
+//what makes a refusal visible to everyone rather than only to a screen reader - an Enter that appears to do
+//nothing is otherwise all a sighted user is given. It is declared after .bit-inv so that a field that is
+//both says the same thing either way, and it carries the very same colors: to the user the entry was
+//refused, whichever of the two turned it down.
+.bit-tgi-rjd {
+    .bit-tgi-cnt {
+        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+
+        &:focus-within {
+            @include focus-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
+
+            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+        }
+    }
+
+    &.bit-tgi-txt .bit-tgi-cnt:focus-within {
+        @include focus-underline-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
+
+        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+        }
+    }
+}
+
+//the tag a refused duplicate collided with: an inset outline rather than a repaint, so that a chip painted
+//by its variant - or by a class of the consumer's own - is still marked, and so that nothing in the row
+//moves by a pixel while the mark is on. It is the shape of the mark rather than only its color that says
+//"this is the one you already have".
+.bit-tgi-tag-dup {
+    outline: $shp-border-width-thick solid var(--bit-TagsInput-invalid-color, #{$clr-err});
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
+}
+
+
 //Windows High Contrast strips the background and the border colors an author paints with, which takes
 //the tags of every variant down with them: they are drawn with a surface color and, in the Fill variant,
 //a rule that is invisible on purpose. Both are re-established with the system colors here.
@@ -628,10 +727,24 @@
         outline-color: Highlight;
     }
 
+    //the mark on the chip a refused duplicate collided with is a color the forced palette has thrown away
+    //too, and it stands for something else entirely, so it is re-drawn in the one color the platform keeps
+    //for a link rather than in the highlight a focused element wears.
+    .bit-tgi-tag-dup {
+        outline-color: LinkText;
+    }
+
     //the chip being dragged is told apart by its alpha alone, which the forced palette keeps but which
     //reads as nothing next to the flat system colors around it, so it is marked with a rule as well.
     .bit-tgi-tag-drg {
         border-style: dashed;
+    }
+
+    //the chip waiting to be put down wears an outline in a color the forced palette has thrown away, so
+    //it is re-drawn in the system highlight along with every other outline of the field.
+    .bit-tgi-tag-lft,
+    .bit-tgi-rbt:focus-visible {
+        outline-color: Highlight;
     }
 
     //the track and the arc of the spinner would be painted the same system color and stop reading as

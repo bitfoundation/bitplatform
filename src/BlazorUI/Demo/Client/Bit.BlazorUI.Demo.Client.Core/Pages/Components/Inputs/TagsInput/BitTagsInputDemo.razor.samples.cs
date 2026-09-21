@@ -88,9 +88,10 @@ public partial class BitTagsInputDemo
 <BitTagsInput Label=""Fetched while you type""
               Suggestions=""asyncSuggestions""
               IsLoading=""asyncLoading""
+              DebounceTime=""300""
               OnInput=""HandleAsyncInput""
               Placeholder=""Start typing a country...""
-              Description=""The list arrives half a second later, and the spinner says so meanwhile."" />";
+              Description=""Nothing is fetched until the typing stops for 300ms; the spinner says so meanwhile."" />";
     private readonly string example5CsharpCode = @"
 private readonly string[] frameworkSuggestions = [""blazor"", ""react"", ""vue"", ""angular"", ""svelte""];
 private readonly string[] countrySuggestions = [""Argentina"", ""Australia"", ""Austria"", ""Belgium"", ""Brazil"",
@@ -172,7 +173,7 @@ private void HandleMaxTagsInvalid(BitTagsInputInvalidArgs args)
               Transformer=""NormalizeHashtag""
               Separators=""@(["",""])""
               Placeholder=""#Blazor, #WEB, # dot net""
-              Description=""Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate.""
+              Description=""Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked.""
               OnTagExists=""HandleTagExists"" />
 @if (duplicateMessage.HasValue())
 {
@@ -254,10 +255,10 @@ private void HandleEdit(BitTagsInputEditArgs args)
 }";
 
     private readonly string example9RazorCode = @"
-<BitTagsInput Label=""Drag a tag, or move it with Alt + arrows""
+<BitTagsInput Label=""Drag a tag, tap its handle, or move it with Alt + arrows""
               AllowReorder
               Placeholder=""Add tag...""
-              Description=""Drag a chip onto another one, or focus one with Tab and hold Alt while pressing the arrow keys.""
+              Description=""Drag a chip onto another one; or tap a handle and then the tag whose place it should take; or focus one with Tab and hold Alt while pressing the arrow keys.""
               DefaultValue=""@(new List<string> { ""first"", ""second"", ""third"", ""fourth"" })""
               OnReorder=""HandleReorder"" />
 @if (reorderMessage.HasValue())
@@ -501,13 +502,15 @@ private readonly ValidationTagsInputModel validationModel = new();
 private void HandleValidSubmit() => formSubmitted = true;";
 
     private readonly string example18RazorCode = @"
-<BitTagsInput Label=""Try adding 'block'""
+<BitTagsInput Label=""Try adding 'block', then click a chip""
               Placeholder=""Type 'block' to see OnBeforeAdd cancel the add""
+              DefaultValue=""@(new List<string> { ""blazor"" })""
               OnBeforeAdd=""HandleBeforeAdd""
               OnBeforeRemove=""HandleBeforeRemove""
               OnAdd=""HandleAdd""
               OnRemove=""HandleRemove""
               OnInvalid=""HandleInvalid""
+              OnTagClick=""HandleTagClick""
               OnInput=""text => typedText = text"" />
 
 <div>Typing: @typedText</div>
@@ -543,6 +546,11 @@ private void HandleRemove(string tag)
 private void HandleInvalid(BitTagsInputInvalidArgs args)
 {
     eventsLog = $""Rejected '{args.Tag}' ({args.Reason})"";
+}
+
+private void HandleTagClick(string tag)
+{
+    eventsLog = $""Clicked: {tag}"";
 }";
 
     private readonly string example19RazorCode = @"
