@@ -136,7 +136,7 @@ public partial class BitColorPickerDemo
             Name = "ReadOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Makes the color picker read-only: the value is still shown at full contrast, but nothing about it can be changed.",
+            Description = "Makes the color picker read-only: the value is still shown at full contrast and every control stays in the tab order, so the color can be read out, but nothing about it can be changed. The widgets that hold a value declare aria-readonly or the native readonly, and the buttons that would change the color declare aria-disabled.",
         },
         new()
         {
@@ -197,6 +197,15 @@ public partial class BitColorPickerDemo
             Description = "Custom CSS styles for different parts of the BitColorPicker.",
             LinkType = LinkType.Link,
             Href = "#color-picker-class-styles",
+        },
+        new()
+        {
+            Name = "Texts",
+            Type = "BitColorPickerTexts?",
+            DefaultValue = "null",
+            Description = "Every piece of text the picker writes for itself: the accessible names of its controls, the captions of its fields, and the sentences it announces the color with. This is the parameter that translates the component; an unset property keeps its English default.",
+            LinkType = LinkType.Link,
+            Href = "#color-picker-texts",
         },
     ];
 
@@ -317,6 +326,51 @@ public partial class BitColorPickerDemo
                 new() { Name = "Preset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for a single preset swatch." },
                 new() { Name = "SelectedPreset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the preset swatch of the current color, applied on top of Preset." },
             ]
+        },
+        new()
+        {
+            Id = "color-picker-texts",
+            Title = "BitColorPickerTexts",
+            Description = "Every piece of text the BitColorPicker writes for itself. The Format properties are string.Format templates, so a translation is free to reorder what they interpolate - or to leave a placeholder out, which is the way to drop the English ColorDescription from an announcement.",
+            Parameters =
+            [
+                new() { Name = "SaturationAreaLabel", Type = "string", DefaultValue = "Saturation and brightness", Description = "The accessible name of the saturation-brightness area." },
+                new() { Name = "SaturationAreaRoleDescription", Type = "string", DefaultValue = "2D slider", Description = "What that area calls itself through aria-roledescription, so that both axes it is driven on are announced." },
+                new() { Name = "SaturationValueFormat", Type = "string", DefaultValue = "{0}, Saturation {1}%, Brightness {2}%, {3}", Description = "What that area announces its value as. {0} the color description, {1} the saturation, {2} the brightness, {3} the hex." },
+                new() { Name = "HueLabel", Type = "string", DefaultValue = "Hue", Description = "The accessible name of the hue slider, and the tooltip of the hue channel field." },
+                new() { Name = "HueValueFormat", Type = "string", DefaultValue = "Hue {0} degrees", Description = "What the hue slider announces its value as, unit included. {0} the hue in degrees." },
+                new() { Name = "HueFieldLabel", Type = "string", DefaultValue = "H", Description = "The caption under the hue channel field, which has to fit the width of one field." },
+                new() { Name = "AlphaLabel", Type = "string", DefaultValue = "Alpha", Description = "The accessible name of the alpha slider, and the tooltip of the alpha field." },
+                new() { Name = "AlphaValueFormat", Type = "string", DefaultValue = "Alpha {0}%", Description = "What the alpha slider announces its value as. {0} the alpha as a percentage." },
+                new() { Name = "AlphaFieldLabel", Type = "string", DefaultValue = "A%", Description = "The caption under the alpha percentage field." },
+                new() { Name = "HexFieldLabel", Type = "string", DefaultValue = "Hex", Description = "The caption under the hexadecimal field." },
+                new() { Name = "RedLabel", Type = "string", DefaultValue = "Red", Description = "The tooltip and accessible name of the red channel field." },
+                new() { Name = "RedFieldLabel", Type = "string", DefaultValue = "R", Description = "The caption under the red channel field." },
+                new() { Name = "GreenLabel", Type = "string", DefaultValue = "Green", Description = "The tooltip and accessible name of the green channel field." },
+                new() { Name = "GreenFieldLabel", Type = "string", DefaultValue = "G", Description = "The caption under the green channel field." },
+                new() { Name = "BlueLabel", Type = "string", DefaultValue = "Blue", Description = "The tooltip and accessible name of the blue channel field." },
+                new() { Name = "BlueFieldLabel", Type = "string", DefaultValue = "B", Description = "The caption under the blue channel field." },
+                new() { Name = "SaturationLabel", Type = "string", DefaultValue = "Saturation", Description = "The tooltip and accessible name of the saturation channel field." },
+                new() { Name = "SaturationFieldLabel", Type = "string", DefaultValue = "S", Description = "The caption under the saturation channel field." },
+                new() { Name = "LightnessLabel", Type = "string", DefaultValue = "Lightness", Description = "The tooltip and accessible name of the lightness channel field of the HSL mode." },
+                new() { Name = "LightnessFieldLabel", Type = "string", DefaultValue = "L", Description = "The caption under the lightness channel field." },
+                new() { Name = "BrightnessLabel", Type = "string", DefaultValue = "Brightness", Description = "The tooltip and accessible name of the brightness channel field of the HSV mode." },
+                new() { Name = "BrightnessFieldLabel", Type = "string", DefaultValue = "V", Description = "The caption under the brightness channel field." },
+                new() { Name = "PickerLabelFormat", Type = "string", DefaultValue = "Color picker, {0}, Red {1} Green {2} Blue {3} selected.", Description = "What the picker calls itself when it has neither an AriaLabel nor a Label. {0} the color description, {1} red, {2} green, {3} blue." },
+                new() { Name = "PickerLabelWithAlphaFormat", Type = "string", DefaultValue = "Color picker, {0}, Red {1} Green {2} Blue {3} and Alpha {4}% selected.", Description = "The same, for a picker whose alpha slider is shown. {4} is the alpha as a percentage." },
+                new() { Name = "EyeDropperLabel", Type = "string", DefaultValue = "Pick a color from the screen", Description = "The tooltip and accessible name of the eye dropper button." },
+                new() { Name = "InputsModeFormat", Type = "string", DefaultValue = "Color inputs: {0}", Description = "The tooltip of the inputs mode switch. {0} the current BitColorInputsMode." },
+                new() { Name = "InputsModeSwitchFormat", Type = "string", DefaultValue = "Color inputs: {0}. Switch to the next set.", Description = "The accessible name of the inputs mode switch, which says what pressing it will do as well." },
+                new() { Name = "PresetsLabel", Type = "string", DefaultValue = "Color presets", Description = "The accessible name of the palette of preset swatches." },
+                new() { Name = "PresetLabelFormat", Type = "string", DefaultValue = "{0}, {1}", Description = "The accessible name of one swatch. {0} the color description, {1} the preset value as it was written." },
+                new() { Name = "ContrastRatioFormat", Type = "string", DefaultValue = "Contrast ratio {0} to 1", Description = "How the contrast ratio is read out, since the bare pair of numbers carries no unit. {0} the ratio." },
+                new() { Name = "ContrastAaBadge", Type = "string", DefaultValue = "AA", Description = "The caption of the badge for normal text." },
+                new() { Name = "ContrastAaFormat", Type = "string", DefaultValue = "WCAG AA for normal text: {0}", Description = "How that badge is read out. {0} the pass or fail label." },
+                new() { Name = "ContrastAaLargeBadge", Type = "string", DefaultValue = "AA Large", Description = "The caption of the badge for large text." },
+                new() { Name = "ContrastAaLargeFormat", Type = "string", DefaultValue = "WCAG AA for large text: {0}", Description = "How that badge is read out. {0} the pass or fail label." },
+                new() { Name = "ContrastPassLabel", Type = "string", DefaultValue = "pass", Description = "The verdict of a badge whose color clears the bar." },
+                new() { Name = "ContrastFailLabel", Type = "string", DefaultValue = "fail", Description = "The verdict of a badge whose color does not." },
+            ]
         }
     ];
 
@@ -375,17 +429,260 @@ public partial class BitColorPickerDemo
 
 
 
+    private readonly List<ComponentCssVariable> componentCssVariables =
+    [
+        new()
+        {
+            Name = "--bit-ColorPicker-width",
+            DefaultValue = "Per Size (33.5 spacing units at Medium)",
+            Description = "Width of the whole panel. A size class never overrides it, so this is how a panel is fitted to a popover or a sidebar the Size presets do not suit.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-background",
+            DefaultValue = "transparent",
+            Description = "Background behind the panel, for a picker that has to read as a surface of its own rather than as part of the one it sits on.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-padding",
+            DefaultValue = "0",
+            Description = "Padding around the panel, usually set together with a background and a radius.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-radius",
+            DefaultValue = "0",
+            Description = "Corner radius of the panel itself. The parts inside it keep their own radii.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-gap",
+            DefaultValue = "1 spacing unit",
+            Description = "Vertical rhythm between the rows of the panel: under the gradient, under each slider, above the contrast readout and above the palette.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-font-size",
+            DefaultValue = "Per Size, from the type ramp",
+            Description = "Text size of the panel, which the label and the text fields inherit.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-caption-font-size",
+            DefaultValue = "One step below the panel, per Size",
+            Description = "Text size of the captions under the fields and of the contrast readout.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-border-color",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of every border the panel draws: the gradient, both tracks, the thumbs, the preview, the fields, the buttons and the swatches.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-focus-color",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring on every focusable part of the picker.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-label-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the Label text.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-saturation-height",
+            DefaultValue = "Per Size (29.5 spacing units at Medium)",
+            Description = "Height of the saturation-brightness area. It is also the row that gives way when the panel is pinned to a height smaller than its content.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-saturation-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the saturation-brightness area.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-thumb-size",
+            DefaultValue = "Per Size (2.5 spacing units at Medium)",
+            Description = "Diameter of the saturation thumb and of the thumbs of both sliders, which is also what reserves the room they overhang their tracks by.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-thumb-color",
+            DefaultValue = "--bit-clr-ntr-white",
+            Description = "Fill of the hue and alpha slider thumbs.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-thumb-shadow",
+            DefaultValue = "--bit-shd-nm",
+            Description = "Elevation under the saturation thumb, which is what keeps it visible over a light area of the gradient.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-track-height",
+            DefaultValue = "Per Size (2.5 spacing units at Medium)",
+            Description = "Height of the hue and alpha tracks.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-track-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of both tracks.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-preview-size",
+            DefaultValue = "Per Size (6 spacing units at Medium)",
+            Description = "Width and height of the preview box.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-preview-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the preview box.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-button-size",
+            DefaultValue = "Per Size (3 spacing units at Medium)",
+            Description = "Square of the eye dropper and inputs-mode buttons. Keep it at or above 24px, which is the minimum pointer target WCAG 2.2 asks for.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-button-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph color of those two buttons.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-button-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of those two buttons.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-button-hover-background",
+            DefaultValue = "--bit-clr-bg-sec-hover",
+            Description = "Background of those buttons on hover, on pointer devices only.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-button-active-background",
+            DefaultValue = "--bit-clr-bg-sec-active",
+            Description = "Background of those buttons while pressed.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-icon-size",
+            DefaultValue = "Per Size (--bit-siz-icon-md at Medium)",
+            Description = "Glyph size inside the eye dropper and inputs-mode buttons.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-field-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color of the hexadecimal and channel fields.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-field-background",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of those fields.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-field-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of those fields.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-field-label-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the caption under a field.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-swatch-size",
+            DefaultValue = "Per Size (3 spacing units at Medium)",
+            Description = "Square of a preset swatch, and the column width a PresetsPerRow grid is laid out on.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-swatch-radius",
+            DefaultValue = "--bit-shp-radius-sm",
+            Description = "Corner radius of a preset swatch. The ring marking the selected one inherits it, so round swatches get a round ring.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-swatch-gap",
+            DefaultValue = "0.5 spacing units",
+            Description = "Space between preset swatches, in both directions.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-swatch-ring-color",
+            DefaultValue = "--bit-clr-ntr-white",
+            Description = "Inner ring that marks the swatch the picker is currently on.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-swatch-ring-shadow",
+            DefaultValue = "--bit-clr-ntr-black",
+            Description = "Outer ring drawn around the inner one, which is what keeps the mark readable on a swatch of the inner ring's own color.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-checkerboard-size",
+            DefaultValue = "0.75 spacing units (0.5 on a swatch)",
+            Description = "Square of the grid that transparency is read against, under the alpha track, the preview box and the swatches.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-checkerboard-color",
+            DefaultValue = "--bit-clr-brd-sec",
+            Description = "Darker square of that grid.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-checkerboard-background",
+            DefaultValue = "--bit-clr-ntr-white",
+            Description = "Lighter square of that grid.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-contrast-color",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the contrast ratio in the readout.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-contrast-pass-color",
+            DefaultValue = "--bit-clr-suc",
+            Description = "Color of a badge whose color clears the WCAG bar. The badge also carries a check mark, so the verdict never rests on color alone.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-contrast-fail-color",
+            DefaultValue = "--bit-clr-err",
+            Description = "Color of a badge that does not clear it, which also carries a cross.",
+        },
+    ];
+
+
+
     private string alphaColor = "#4D8CB3";
     private double alphaValue = 0.5;
     private string previewColor = "#5B8C5A";
 
-    private string inputsColor = "#B3804D";
     private string inputsAlphaColor = "#4DB39980";
-
     private BitColorInputsMode inputsMode = BitColorInputsMode.HexRgb;
     private string inputsModeColor = "#B34D6B";
     private string hslInputsColor = "hsl(150,45%,45%)";
-    private string hexInputsColor = "#4D6BB3";
 
     private static readonly string[] brandPresets =
     [
@@ -429,11 +726,59 @@ public partial class BitColorPickerDemo
     private string? changedColor;
     private string? changedHex;
     private string? changedRgba;
-
-    private string boundColor = "#B3B34D";
     private BitColorPicker? colorPickerRef;
 
     private string accessibilityColor = "#4DB3B3";
+
+    private string localizedColor = "#4DB3B3";
+    private static readonly BitColorPickerTexts persianTexts = new()
+    {
+        SaturationAreaLabel = "اشباع و روشنایی",
+        SaturationAreaRoleDescription = "لغزنده دو بعدی",
+        SaturationValueFormat = "اشباع {1}٪، روشنایی {2}٪، {3}",
+        HueLabel = "فام",
+        HueValueFormat = "فام {0} درجه",
+        HueFieldLabel = "ف",
+        AlphaLabel = "شفافیت",
+        AlphaValueFormat = "شفافیت {0}٪",
+        AlphaFieldLabel = "ش٪",
+        HexFieldLabel = "هگز",
+        RedLabel = "قرمز",
+        RedFieldLabel = "ق",
+        GreenLabel = "سبز",
+        GreenFieldLabel = "س",
+        BlueLabel = "آبی",
+        BlueFieldLabel = "آ",
+        SaturationLabel = "اشباع",
+        SaturationFieldLabel = "ا",
+        LightnessLabel = "روشنی",
+        LightnessFieldLabel = "ر",
+        BrightnessLabel = "روشنایی",
+        BrightnessFieldLabel = "ر",
+        PickerLabelFormat = "انتخابگر رنگ، قرمز {1} سبز {2} آبی {3} انتخاب شد.",
+        PickerLabelWithAlphaFormat = "انتخابگر رنگ، قرمز {1} سبز {2} آبی {3} و شفافیت {4}٪ انتخاب شد.",
+        EyeDropperLabel = "برداشتن رنگ از صفحه",
+        InputsModeFormat = "ورودی رنگ: {0}",
+        InputsModeSwitchFormat = "ورودی رنگ: {0}. رفتن به مجموعه بعدی.",
+        PresetsLabel = "رنگ های آماده",
+        PresetLabelFormat = "{1}",
+    };
+
+    private readonly BitColorPickerParams[] colorPickerParams =
+    [
+        new()
+        {
+            ShowInputs = true,
+            ShowPreview = true,
+            ShowAlphaSlider = true,
+            Presets = brandPresets,
+            PresetsPerRow = 6,
+            Format = BitColorFormat.Rgba,
+        }
+    ];
+    private string cascadedColor = "rgba(226,74,74,1)";
+    private string cascadedOtherColor = "rgba(74,155,226,1)";
+    private string cascadedSmallColor = "rgba(126,74,226,1)";
 
     private string smallColor = "#C25E5E";
     private string mediumColor = "#5EC27A";
@@ -471,7 +816,7 @@ public partial class BitColorPickerDemo
 
 <BitColorPicker IsEnabled=""false"" Color=""#B34D4D"" />
 
-<BitColorPicker ReadOnly Color=""#4D7FB3"" />";
+<BitColorPicker ReadOnly ShowInputs Color=""#4D7FB3"" />";
 
     private readonly string example2RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowPreview @bind-Color=""alphaColor"" @bind-Alpha=""alphaValue"" />
@@ -485,18 +830,11 @@ private double alphaValue = 0.5;
 private string previewColor = ""#5B8C5A"";";
 
     private readonly string example3RazorCode = @"
-<BitColorPicker ShowInputs ShowPreview @bind-Color=""inputsColor"" />
-<div>Color: @inputsColor</div>
-
 <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider
                 Format=""BitColorFormat.HexAlpha""
                 @bind-Color=""inputsAlphaColor"" />
-<div>Color: @inputsAlphaColor</div>";
-    private readonly string example3CsharpCode = @"
-private string inputsColor = ""#B3804D"";
-private string inputsAlphaColor = ""#4DB39980"";";
+<div>Color: @inputsAlphaColor</div>
 
-    private readonly string example4RazorCode = @"
 <BitColorPicker ShowInputs ShowPreview ShowInputsModeSwitch
                 @bind-InputsMode=""inputsMode"" @bind-Color=""inputsModeColor"" />
 <div>Mode: @inputsMode &nbsp; Color: @inputsModeColor</div>
@@ -504,19 +842,14 @@ private string inputsAlphaColor = ""#4DB39980"";";
 <BitColorPicker ShowInputs ShowPreview
                 InputsMode=""BitColorInputsMode.Hsl""
                 @bind-Color=""hslInputsColor"" />
-<div>Color: @hslInputsColor</div>
-
-<BitColorPicker ShowInputs ShowPreview
-                InputsMode=""BitColorInputsMode.Hex""
-                @bind-Color=""hexInputsColor"" />
-<div>Color: @hexInputsColor</div>";
-    private readonly string example4CsharpCode = @"
+<div>Color: @hslInputsColor</div>";
+    private readonly string example3CsharpCode = @"
+private string inputsAlphaColor = ""#4DB39980"";
 private BitColorInputsMode inputsMode = BitColorInputsMode.HexRgb;
 private string inputsModeColor = ""#B34D6B"";
-private string hslInputsColor = ""hsl(150,45%,45%)"";
-private string hexInputsColor = ""#4D6BB3"";";
+private string hslInputsColor = ""hsl(150,45%,45%)"";";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example4RazorCode = @"
 <BitColorPicker ShowPreview Presets=""brandPresets"" @bind-Color=""presetColor"" />
 <div>Color: @presetColor</div>
 
@@ -528,7 +861,7 @@ private string hexInputsColor = ""#4D6BB3"";";
 
 <BitColorPicker ShowPreview Presets=""rampPresets"" PresetsPerRow=""5"" @bind-Color=""rampPresetColor"" />
 <div>Color: @rampPresetColor</div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private static readonly string[] brandPresets =
 [
     ""#E24A4A"", ""#E2934A"", ""#E2D24A"", ""#7EE24A"", ""#4AE2C0"",
@@ -549,13 +882,13 @@ private static readonly string[] rampPresets =
 ];
 private string rampPresetColor = ""#4A9BE2"";";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color=""eyeDropperColor"" />
 <div>Color: @eyeDropperColor</div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private string eyeDropperColor = ""#5B8C5A"";";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitColorPicker ShowContrast ShowInputs ShowPreview
                 ContrastColor=""@contrastBackground""
                 @bind-Color=""contrastColor"" />
@@ -568,12 +901,12 @@ private string eyeDropperColor = ""#5B8C5A"";";
                 Format=""BitColorFormat.Rgba""
                 @bind-Color=""contrastOnDarkColor"" />
 <div>Color: @contrastOnDarkColor</div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private string contrastColor = ""#767676"";
 private string contrastBackground = ""#FFFFFF"";
 private string contrastOnDarkColor = ""rgba(122,200,255,1)"";";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowPreview Format=""selectedFormat"" @bind-Color=""formatColor"" />
 <div>Color: @formatColor</div>
 
@@ -596,11 +929,11 @@ private string contrastOnDarkColor = ""rgba(122,200,255,1)"";";
     <BitChoiceGroupOption Text=""Oklch"" Value=""BitColorFormat.Oklch"" />
     <BitChoiceGroupOption Text=""Oklcha"" Value=""BitColorFormat.Oklcha"" />
 </BitChoiceGroup>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private BitColorFormat selectedFormat = BitColorFormat.Hex;
 private string formatColor = ""#B34D8C"";";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitColorPicker Color=""oneWayColor"" ShowPreview />
 @foreach (var (label, color) in oneWayOptions)
 {
@@ -610,7 +943,7 @@ private string formatColor = ""#B34D8C"";";
 <BitColorPicker @bind-Color=""twoWayColor"" @bind-Alpha=""twoWayAlpha"" ShowAlphaSlider ShowPreview />
 <BitTextField Label=""Enter a color"" @bind-Value=""twoWayColor"" Style=""width: 220px;"" />
 <div>Alpha: @twoWayAlpha</div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private readonly (string Label, string Color)[] oneWayOptions =
 [
     (""Red"", ""#E24A4A""), (""Green"", ""#4AE27E""), (""Blue"", ""#4A7FE2"")
@@ -619,18 +952,28 @@ private string oneWayColor = ""#E24A4A"";
 private string twoWayColor = ""#4A9BE2"";
 private double twoWayAlpha = 1;";
 
-    private readonly string example10RazorCode = @"
-<BitColorPicker ShowAlphaSlider ShowPreview
+    private readonly string example9RazorCode = @"
+<BitColorPicker @ref=""colorPickerRef"" ShowAlphaSlider ShowPreview
                 OnChange=""HandleOnChange""
                 OnChangeEnd=""HandleOnChangeEnd"" />
 <div>OnChange: @changeCount times, last @changedColor</div>
-<div>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</div>";
-    private readonly string example10CsharpCode = @"
+<div>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</div>
+<BitButton OnClick=""() => colorPickerRef?.FocusAsync()"">Focus the picker</BitButton>
+
+<div>ColorDescription: @colorPickerRef?.ColorDescription</div>
+<div>Hex / HexAlpha: @colorPickerRef?.Hex / @colorPickerRef?.HexAlpha</div>
+<div>Rgb / Rgba: @colorPickerRef?.Rgb / @colorPickerRef?.Rgba</div>
+<div>Hsl: @colorPickerRef?.Hsl</div>
+<div>Hsv: @colorPickerRef?.Hsv</div>
+<div>Hwb: @colorPickerRef?.Hwb</div>
+<div>Oklch: @colorPickerRef?.Oklch</div>";
+    private readonly string example9CsharpCode = @"
 private int changeCount;
 private int changeEndCount;
 private string? changedColor;
 private string? changedHex;
 private string? changedRgba;
+private BitColorPicker? colorPickerRef;
 
 private void HandleOnChange(BitColorChangeEventArgs args)
 {
@@ -645,52 +988,115 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
     changedRgba = args.Rgba;
 }";
 
-    private readonly string example11RazorCode = @"
-<BitColorPicker @ref=""colorPickerRef"" @bind-Color=""boundColor"" ShowAlphaSlider ShowPreview />
-<div>Color: @boundColor</div>
-<div>ColorDescription: @colorPickerRef?.ColorDescription</div>
-<div>Hex: @colorPickerRef?.Hex</div>
-<div>HexAlpha: @colorPickerRef?.HexAlpha</div>
-<div>Rgb: @colorPickerRef?.Rgb</div>
-<div>Rgba: @colorPickerRef?.Rgba</div>
-<div>Hsl: @colorPickerRef?.Hsl</div>
-<div>Hsv: @colorPickerRef?.Hsv</div>
-<div>Hwb: @colorPickerRef?.Hwb</div>
-<div>Oklch: @colorPickerRef?.Oklch</div>";
-    private readonly string example11CsharpCode = @"
-private string boundColor = ""#B3B34D"";
-private BitColorPicker? colorPickerRef;";
-
-    private readonly string example12RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview
                 AriaLabel=""Choose the brand color""
                 @bind-Color=""accessibilityColor"" />
-<div>Color: @accessibilityColor</div>";
-    private readonly string example12CsharpCode = @"
-private string accessibilityColor = ""#4DB3B3"";";
+<div>Color: @accessibilityColor</div>
 
-    private readonly string example13RazorCode = @"
+<BitColorPicker ReadOnly ShowAlphaSlider ShowInputs ShowPreview
+                Presets=""brandPresets""
+                Color=""@accessibilityColor"" />
+
+<BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowInputs ShowPreview ShowInputsModeSwitch
+                Texts=""persianTexts""
+                Label=""رنگ برند""
+                Presets=""brandPresets""
+                @bind-Color=""localizedColor"" />";
+    private readonly string example10CsharpCode = @"
+private string accessibilityColor = ""#4DB3B3"";
+
+private string localizedColor = ""#4DB3B3"";
+private static readonly BitColorPickerTexts persianTexts = new()
+{
+    SaturationAreaLabel = ""اشباع و روشنایی"",
+    SaturationAreaRoleDescription = ""لغزنده دو بعدی"",
+    // The color description is written from an English vocabulary, so this translation simply
+    // leaves the {0} it would have been interpolated into out of the sentence.
+    SaturationValueFormat = ""اشباع {1}٪، روشنایی {2}٪، {3}"",
+    HueLabel = ""فام"",
+    HueValueFormat = ""فام {0} درجه"",
+    HueFieldLabel = ""ف"",
+    AlphaLabel = ""شفافیت"",
+    AlphaValueFormat = ""شفافیت {0}٪"",
+    AlphaFieldLabel = ""ش٪"",
+    HexFieldLabel = ""هگز"",
+    RedLabel = ""قرمز"",
+    RedFieldLabel = ""ق"",
+    GreenLabel = ""سبز"",
+    GreenFieldLabel = ""س"",
+    BlueLabel = ""آبی"",
+    BlueFieldLabel = ""آ"",
+    PickerLabelFormat = ""انتخابگر رنگ، قرمز {1} سبز {2} آبی {3} انتخاب شد."",
+    PickerLabelWithAlphaFormat = ""انتخابگر رنگ، قرمز {1} سبز {2} آبی {3} و شفافیت {4}٪ انتخاب شد."",
+    EyeDropperLabel = ""برداشتن رنگ از صفحه"",
+    InputsModeFormat = ""ورودی رنگ: {0}"",
+    InputsModeSwitchFormat = ""ورودی رنگ: {0}. رفتن به مجموعه بعدی."",
+    PresetsLabel = ""رنگ های آماده"",
+    PresetLabelFormat = ""{1}"",
+};";
+
+    private readonly string example11RazorCode = @"
+<BitParams Parameters=""@colorPickerParams"">
+    <BitColorPicker @bind-Color=""cascadedColor"" />
+    <div>Color: @cascadedColor</div>
+
+    <BitColorPicker @bind-Color=""cascadedOtherColor"" />
+    <div>Color: @cascadedOtherColor</div>
+
+    <BitColorPicker Size=""BitSize.Small"" @bind-Color=""cascadedSmallColor"" />
+</BitParams>
+
+
+<BitColorPicker @bind-Color=""cascadedSmallColor"" />";
+    private readonly string example11CsharpCode = @"
+private readonly BitColorPickerParams[] colorPickerParams =
+[
+    new()
+    {
+        ShowInputs = true,
+        ShowPreview = true,
+        ShowAlphaSlider = true,
+        Presets = brandPresets,
+        PresetsPerRow = 6,
+        Format = BitColorFormat.Rgba,
+    }
+];
+private string cascadedColor = ""rgba(226,74,74,1)"";
+private string cascadedOtherColor = ""rgba(74,155,226,1)"";
+private string cascadedSmallColor = ""rgba(126,74,226,1)"";";
+
+    private readonly string example12RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
-<BitColorPicker ShowEyeDropper EyeDropperIconName=""@BitIconName.Color"" />
+<BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch
+                EyeDropperIconName=""@BitIconName.Color""
+                InputsModeSwitchIconName=""@BitIconName.Switch"" />
 
-<BitColorPicker ShowEyeDropper EyeDropperIcon=""@BitIconInfo.Fa(""solid eye-dropper"")"" />
+<BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch
+                EyeDropperIcon=""@BitIconInfo.Fa(""solid eye-dropper"")""
+                InputsModeSwitchIcon=""@BitIconInfo.Fa(""solid right-left"")"" />
 
-<BitColorPicker ShowEyeDropper EyeDropperIcon=""@BitIconInfo.Bi(""eyedropper"")"" />";
+<BitColorPicker ShowEyeDropper ShowInputs ShowInputsModeSwitch
+                EyeDropperIcon=""@BitIconInfo.Bi(""eyedropper"")""
+                InputsModeSwitchIcon=""@BitIconInfo.Bi(""arrow-left-right"")"" />";
 
-    private readonly string example14RazorCode = @"
-<BitColorPicker Size=""BitSize.Small"" ShowAlphaSlider ShowPreview @bind-Color=""smallColor"" />
+    private readonly string example13RazorCode = @"
+<BitColorPicker Size=""BitSize.Small"" ShowAlphaSlider ShowInputs ShowPreview
+                Presets=""brandPresets"" @bind-Color=""smallColor"" />
 
-<BitColorPicker Size=""BitSize.Medium"" ShowAlphaSlider ShowPreview @bind-Color=""mediumColor"" />
+<BitColorPicker Size=""BitSize.Medium"" ShowAlphaSlider ShowInputs ShowPreview
+                Presets=""brandPresets"" @bind-Color=""mediumColor"" />
 
-<BitColorPicker Size=""BitSize.Large"" ShowAlphaSlider ShowPreview @bind-Color=""largeColor"" />";
-    private readonly string example14CsharpCode = @"
+<BitColorPicker Size=""BitSize.Large"" ShowAlphaSlider ShowInputs ShowPreview
+                Presets=""brandPresets"" @bind-Color=""largeColor"" />";
+    private readonly string example13CsharpCode = @"
 private string smallColor = ""#C25E5E"";
 private string mediumColor = ""#5EC27A"";
 private string largeColor = ""#5E7AC2"";";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .custom-class {
         width: 100px;
@@ -707,7 +1113,19 @@ private string largeColor = ""#5E7AC2"";";
     }
 
     .custom-preset-selected {
-        --bit-clp-prt-sel-clr: blueviolet;
+        --bit-ColorPicker-swatch-ring-color: blueviolet;
+    }
+
+    .themed-pickers {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        --bit-ColorPicker-radius: 0.75rem;
+        --bit-ColorPicker-padding: 0.75rem;
+        --bit-ColorPicker-background: var(--bit-clr-bg-sec);
+        --bit-ColorPicker-border-color: #7E4AE2;
+        --bit-ColorPicker-focus-color: #7E4AE2;
+        --bit-ColorPicker-field-background: var(--bit-clr-bg-pri);
     }
 </style>
 
@@ -724,9 +1142,25 @@ private string largeColor = ""#5E7AC2"";";
 <BitColorPicker ShowAlphaSlider ShowInputs Presets=""brandPresets""
                 Classes=""@(new() { FieldInput = ""custom-field"",
                                    Preset = ""custom-preset"",
-                                   SelectedPreset = ""custom-preset-selected"" })"" />";
+                                   SelectedPreset = ""custom-preset-selected"" })"" />
 
-    private readonly string example16RazorCode = @"
+<BitColorPicker ShowAlphaSlider ShowInputs ShowPreview Presets=""brandPresets""
+                Style=""--bit-ColorPicker-width: 18rem;
+                       --bit-ColorPicker-saturation-height: 8rem;
+                       --bit-ColorPicker-saturation-radius: 1rem;
+                       --bit-ColorPicker-track-height: 0.75rem;
+                       --bit-ColorPicker-thumb-size: 1.25rem;
+                       --bit-ColorPicker-swatch-size: 1.25rem;
+                       --bit-ColorPicker-swatch-radius: 50%;
+                       --bit-ColorPicker-border-color: #7E4AE2;
+                       --bit-ColorPicker-focus-color: #7E4AE2;"" />
+
+<div class=""themed-pickers"">
+    <BitColorPicker ShowInputs ShowPreview Presets=""brandPresets"" />
+    <BitColorPicker ShowInputs ShowPreview Size=""BitSize.Small"" />
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowPreview ShowInputs
                 Presets=""brandPresets"" @bind-Color=""rtlColor"" />
 <div>@rtlColor</div>";
