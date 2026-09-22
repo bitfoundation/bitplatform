@@ -138,20 +138,37 @@ public static partial class Program
                 : GetConnectionStringValue(azureBlobStorageConnectionString, "AccountKey");
             return AzureBlobStorage.FromSharedKey(accountName, accountKey, blobServiceClient.Uri);
             //#elif (filesStorage == "S3")
+            //#if (aspire == false)
             // Run through docker using `docker run -d -p 9000:9000 -p 9001:9001 -e "RUSTFS_ACCESS_KEY=rustfsadmin" -e "RUSTFS_SECRET_KEY=P@ssw0rd" -e "RUSTFS_CONSOLE_ADDRESS=:9001" -v rustfs-data:/data rustfs/rustfs`
             // Open RustFS console at http://127.0.0.1:9001/rustfs/console/
+            //#endif
             var s3ConnectionString = configuration.GetRequiredConnectionString("s3")!;
+            var s3Endpoint = GetConnectionStringValue(s3ConnectionString, "Endpoint");
+            var s3AccessKey = GetConnectionStringValue(s3ConnectionString, "AccessKey");
+            var s3SecretKey = GetConnectionStringValue(s3ConnectionString, "SecretKey");
+            var s3BucketName = GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files");
+
+            if (s3Endpoint.Contains(".r2.cloudflarestorage.com", StringComparison.OrdinalIgnoreCase))
+            {
+                // R2 does not implement AWS chunked ("streaming") payload signing, and FluentStorage turns that off
+                // only from this factory - which in exchange takes no AmazonS3Config (so no S3HttpClientFactory) and
+                // caps an object at 5GB. https://github.com/robinrodricks/FluentStorage/pull/167 removes both.
+                // The account id is the first label of the endpoint host: <account-id>.r2.cloudflarestorage.com.
+                var cloudflareAccountId = new Uri(s3Endpoint).Host.Split('.')[0];
+                return CloudflareR2Storage.FromCredentials(s3AccessKey, s3SecretKey, s3BucketName, cloudflareAccountId);
+            }
+
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
                 AuthenticationRegion = GetConnectionStringValue(s3ConnectionString, "Region", defaultValue: "us-east-1"),
-                ServiceURL = GetConnectionStringValue(s3ConnectionString, "Endpoint"),
+                ServiceURL = s3Endpoint,
                 ForcePathStyle = true,
                 HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
             };
-            return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: GetConnectionStringValue(s3ConnectionString, "AccessKey"),
-                secretAccessKey: GetConnectionStringValue(s3ConnectionString, "SecretKey"),
+            return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: s3AccessKey,
+                secretAccessKey: s3SecretKey,
                 sessionToken: null!,
-                bucketName: GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files"),
+                bucketName: s3BucketName,
                 clientConfig);
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
