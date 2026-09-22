@@ -1,4 +1,4 @@
-@page "/components/checkbox"
+﻿@page "/components/checkbox"
 @page "/components/check-box"
 
 <PageOutlet Url="components/checkbox"
@@ -127,7 +127,7 @@
             <b>DefaultIndeterminate</b> merely starts it there in uncontrolled mode. Screen readers announce it as mixed.
         </div>
         <br />
-        <BitCheckbox Label="Indeterminate checkbox" Indeterminate />
+        <BitCheckbox Label="Indeterminate checkbox" @bind-Indeterminate="basicIndeterminate" />
         <br />
         <BitCheckbox Label="Indeterminate by default" DefaultIndeterminate="true" />
         <br />
@@ -230,14 +230,14 @@
         </div>
         <br />
         <BitCheckbox @bind-Value="customCheckboxValue">
-            <BitIcon Style="border:1px solid gray;width:22px;height:22px"
+            <BitIcon Style="display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px"
                      IconName="@(customCheckboxValue ? BitIconName.Accept : null)" />
             <span>Custom basic checkbox</span>
         </BitCheckbox>
         <br />
         <div class="example-box">
             <BitCheckbox @bind-Value="customContentValue" @bind-Indeterminate="customContentIndeterminate">
-                <BitIcon Style="border:1px solid gray;width:22px;height:22px"
+                <BitIcon Style="display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px"
                          IconName="@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))" />
                 <span>Custom indeterminate checkbox</span>
             </BitCheckbox>

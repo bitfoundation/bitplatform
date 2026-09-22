@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Checkbox;
 
 public partial class BitCheckboxDemo
 {
@@ -81,7 +81,7 @@ public partial class BitCheckboxDemo
 </BitCheckbox>";
 
     private readonly string example6RazorCode = @"
-<BitCheckbox Label=""Indeterminate checkbox"" Indeterminate />
+<BitCheckbox Label=""Indeterminate checkbox"" @bind-Indeterminate=""basicIndeterminate"" />
 <BitCheckbox Label=""Indeterminate by default"" DefaultIndeterminate=""true"" />
 <BitCheckbox Label=""Disabled indeterminate checkbox"" Indeterminate IsEnabled=""false"" />
 
@@ -109,6 +109,8 @@ public partial class BitCheckboxDemo
 <div>subscribed: <b>@(subscribed?.ToString() ?? ""null"")</b></div>";
 
     private readonly string example6CsharpCode = @"
+private bool basicIndeterminate = true;
+
 private bool apple;
 private bool banana;
 private bool orange;
@@ -175,14 +177,14 @@ private bool twoWayIndeterminate = true;";
 
 
 <BitCheckbox @bind-Value=""customCheckboxValue"">
-    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+    <BitIcon Style=""display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px""
              IconName=""@(customCheckboxValue ? BitIconName.Accept : null)"" />
     <span>Custom basic checkbox</span>
 </BitCheckbox>
 
 
 <BitCheckbox @bind-Value=""customContentValue"" @bind-Indeterminate=""customContentIndeterminate"">
-    <BitIcon Style=""border:1px solid gray;width:22px;height:22px""
+    <BitIcon Style=""display:flex;align-items:center;justify-content:center;padding:0;border:1px solid gray;width:22px;height:22px""
              IconName=""@(customContentIndeterminate ? BitIconName.Fingerprint : (customContentValue ? BitIconName.Accept : null))"" />
     <span>Custom indeterminate checkbox</span>
 </BitCheckbox>
@@ -296,21 +298,29 @@ private bool readOnlyValue;";
     }
 </style>
 
-<EditForm Model=""validationModel""
-          OnValidSubmit=""HandleValidSubmit""
-          OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-    <BitCheckbox Label=""I agree with the terms and conditions.""
-                 AriaDescribedby=""terms-error""
-                 @bind-Value=""validationModel.TermsAgreement"" />
-    <div id=""terms-error"">
-        <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
-    </div>
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""validationModel""
+              OnValidSubmit=""HandleValidSubmit""
+              OnInvalidSubmit=""HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
+        <BitCheckbox Label=""I agree with the terms and conditions.""
+                     AriaDescribedby=""terms-error""
+                     @bind-Value=""validationModel.TermsAgreement"" />
+        <div id=""terms-error"">
+            <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+        </div>
 
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}";
 
     private readonly string example11CsharpCode = @"
+private string SuccessMessage = string.Empty;
 private BitCheckboxValidationModel validationModel = new();
 
 public class BitCheckboxValidationModel
@@ -319,9 +329,18 @@ public class BitCheckboxValidationModel
     public bool TermsAgreement { get; set; }
 }
 
-private async Task HandleValidSubmit() { }
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
 
-private void HandleInvalidSubmit() { }";
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
 
     private readonly string example12RazorCode = @"
 <BitCheckbox Label=""Focus me with Tab, toggle me with Space"" />

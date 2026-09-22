@@ -397,7 +397,11 @@
             --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt-hover));
         }
 
+        // Listed after the checked block so that a checkbox carrying both states - a one-way bound
+        // Indeterminate the component refuses to move while the click still moves Value - hovers as the
+        // mixed state it renders as at rest, rather than filling with the checked hover fill.
         &.bit-chb-ind {
+            --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
             --bit-chb-box-clr-brd: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));
             --bit-chb-ico-clr: var(--bit-Checkbox-check-color, var(--bit-chb-clr-txt-hover));
             --bit-chb-ico-clr-bg: var(--bit-Checkbox-indeterminate-color, var(--bit-chb-clr-hover));

@@ -775,6 +775,8 @@ public partial class BitCheckboxDemo
 
 
 
+    private bool basicIndeterminate = true;
+
     private bool apple;
     private bool banana;
     private bool orange;
