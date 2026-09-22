@@ -110,6 +110,20 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "ClearedAnnouncement",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "What a screen reader announces once the field has been emptied - by the clear button or by ClearAsync - in place of the default \"Cleared\". Emptying a field moves nothing and says nothing on its own, so without it the one interaction that throws the whole value away is the one a screen reader user gets no confirmation of. Set it to an empty string to keep the clearing from being announced at all.",
+        },
+        new()
+        {
+            Name = "ClearOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the clear button and what a filter or a search field is expected to do. It raises OnClear and is announced the same way a press on the button is, it leaves a read-only field alone, and it does not need ShowClearButton. OnEscape is still raised afterwards, and Escape keeps its own meaning while an input method editor is composing.",
+        },
+        new()
+        {
             Name = "CountStrategy",
             Type = "Func<string?, int>?",
             DefaultValue = "null",
@@ -218,6 +232,13 @@ public partial class BitTextFieldDemo : IDisposable
             Description = "Which end of the field the icon sits at, inside the frame. End (the default) puts it past the clear and reveal buttons, Start in front of the input. It follows the reading direction, so it mirrors itself in a right-to-left page.",
             LinkType = LinkType.Link,
             Href = "#icon-position-enum",
+        },
+        new()
+        {
+            Name = "IconTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The html title of the icon shown inside the text field, which the browser shows as its tooltip. It is only rendered while OnIconClick makes the icon a button, since a tooltip on a decorative mark says something only a pointer ever finds.",
         },
         new()
         {
@@ -367,6 +388,12 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "OnGhostTextAccepted",
             Type = "EventCallback<string?>",
             Description = "Callback invoked when the ghost text is accepted via Tab or Enter key, or click/touch. The accepted ghost text string is passed as the argument.",
+        },
+        new()
+        {
+            Name = "OnIconClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback for when the icon inside the field is clicked, which is what turns the icon into an action - opening a picker, copying the value, running a search - instead of a mark that only says what the field is for. Giving it a handler renders the icon as a real button: it takes a tab stop, answers Enter and Space, draws a focus ring of its own and is named by IconAriaLabel, so give that one a value whenever this one has a handler.",
         },
         new()
         {
@@ -684,6 +711,13 @@ public partial class BitTextFieldDemo : IDisposable
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's icon."
+                },
+                new()
+                {
+                    Name = "IconButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button the BitTextField's icon is wrapped in while it has an OnIconClick handler."
                 },
                 new()
                 {
@@ -1208,7 +1242,7 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "--bit-TextField-focus-color",
             DefaultValue = "The Accent role's focus color",
-            Description = "Color of the keyboard focus ring, of the underline of a focused Underlined field, and of the rings of the clear and reveal buttons.",
+            Description = "Color of the keyboard focus ring, of the underline of a focused Underlined field, and of the rings of the clear, reveal and icon buttons.",
         },
         new()
         {
@@ -1346,19 +1380,19 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "--bit-TextField-icon-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Color of the trailing icon at rest. While the field has focus the icon takes the accent color instead.",
+            Description = "Color of the icon at rest, whether it is a decorative glyph or the button an OnIconClick makes of it. While the field has focus the icon takes the accent color instead.",
         },
         new()
         {
             Name = "--bit-TextField-icon-size",
             DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the trailing icon and of the glyph of the reveal password button.",
+            Description = "Size of the icon and of the glyphs of the clear and reveal password buttons.",
         },
         new()
         {
             Name = "--bit-TextField-button-width",
             DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Width of the clear and reveal password buttons, which is what keeps them above the 24px minimum pointer target of WCAG 2.2.",
+            Description = "Width of the clear, reveal password and clickable icon buttons, which is what keeps them above the 24px minimum pointer target of WCAG 2.2.",
         },
         new()
         {
@@ -1370,13 +1404,13 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "--bit-TextField-button-hover-color",
             DefaultValue = "--bit-clr-fg-pri-hover",
-            Description = "Glyph color of the clear button while it is hovered.",
+            Description = "Glyph color of the clear button and of a clickable icon while they are hovered.",
         },
         new()
         {
             Name = "--bit-TextField-button-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background of the clear and reveal password buttons while they are hovered.",
+            Description = "Background of the clear, reveal password and clickable icon buttons while they are hovered.",
         },
         new()
         {
@@ -1476,6 +1510,8 @@ public partial class BitTextFieldDemo : IDisposable
     private string? defaultValueChanged;
 
     private string? countValue;
+
+    private int iconClickCount;
 
     private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;
 
@@ -1798,7 +1834,17 @@ public partial class BitTextFieldDemo : IDisposable
               IconName=""@BitIconName.Calculator""
               IconPosition=""BitIconPosition.Start"" />
 
-<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" IsEnabled=""false"" />";
+<BitTextField Label=""Disabled"" Prefix=""https://"" Suffix="".com"" IconName=""@BitIconName.Globe"" IsEnabled=""false"" />
+
+<BitTextField Label=""Clickable icon""
+              Placeholder=""Press the magnifier...""
+              IconName=""@BitIconName.Search""
+              IconTitle=""Search""
+              IconAriaLabel=""Search for what was typed""
+              OnIconClick=""@(() => iconClickCount++)"" />
+<div>The icon was pressed [@iconClickCount] times.</div>";
+    private readonly string example5CsharpCode = @"
+private int iconClickCount;";
 
     private readonly string example6RazorCode = @"
 <BitTextField Label=""Password"" Type=""BitInputType.Password"" />
@@ -1846,6 +1892,16 @@ private BitTextField? passwordRef;";
 
 <BitTextField Label=""ReadOnly (the button is disabled)"" ReadOnly ShowClearButton
               DefaultValue=""Read only value"" />
+
+<BitTextField Label=""With an announcement of its own""
+              ShowClearButton
+              DefaultValue=""hello@example.com""
+              ClearedAnnouncement=""The email address was cleared."" />
+
+<BitTextField Label=""Cleared by the Escape key""
+              ClearOnEscape
+              ShowClearButton
+              DefaultValue=""Press Escape in this field"" />
 
 <BitTextField @ref=""clearRef"" Label=""Cleared from the outside"" @bind-Value=""clearApiValue"" />
 <BitButton OnClick=""() => clearRef?.ClearAsync()"">ClearAsync</BitButton>
@@ -2218,7 +2274,13 @@ private BitTextField? selectionRef;";
               ShowCount
               MaxLength=""20""
               LabelPosition=""BitLabelPosition.Start""
-              Description=""The footer keeps its own line under the whole row."" />";
+              Description=""The footer keeps its own line under the whole row."" />
+
+<BitTextField Label=""Underlined + Top""
+              Underlined
+              LabelPosition=""BitLabelPosition.Top""
+              Placeholder=""Enter a text...""
+              Description=""The underlined variant lays its label out in a row of its own, and an explicit position takes that row apart."" />";
 
     private readonly string example15RazorCode = @"
 <BitTextField Label=""Loading"" Loading DefaultValue=""Checking..."" />

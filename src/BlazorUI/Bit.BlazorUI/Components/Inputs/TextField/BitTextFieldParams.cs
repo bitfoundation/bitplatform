@@ -103,6 +103,17 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
+    /// What a screen reader announces once the field has been emptied, in place of the default "Cleared".
+    /// An empty string keeps the clearing from being announced at all.
+    /// </summary>
+    public string? ClearedAnnouncement { get; set; }
+
+    /// <summary>
+    /// Empties the field when the Escape key is pressed in it, the keyboard counterpart of the clear button.
+    /// </summary>
+    public bool? ClearOnEscape { get; set; }
+
+    /// <summary>
     /// Decides how the characters of the value are counted for the counter rendered by <see cref="ShowCount"/>.
     /// </summary>
     public Func<string?, int>? CountStrategy { get; set; }
@@ -166,6 +177,11 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
     /// Which end of the field the icon sits at, inside the frame.
     /// </summary>
     public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
+    /// The html title of the icon, rendered while an OnIconClick handler makes the icon a button.
+    /// </summary>
+    public string? IconTitle { get; set; }
 
     /// <summary>
     /// Change the content of the input field when the user writes text (based on the 'oninput' HTML event).
@@ -484,6 +500,16 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
             bitTextField.ClearButtonTemplate = ClearButtonTemplate;
         }
 
+        if (ClearedAnnouncement is not null && bitTextField.HasNotBeenSet(nameof(ClearedAnnouncement)))
+        {
+            bitTextField.ClearedAnnouncement = ClearedAnnouncement;
+        }
+
+        if (ClearOnEscape.HasValue && bitTextField.HasNotBeenSet(nameof(ClearOnEscape)))
+        {
+            bitTextField.ClearOnEscape = ClearOnEscape.Value;
+        }
+
         if (CountStrategy is not null && bitTextField.HasNotBeenSet(nameof(CountStrategy)))
         {
             bitTextField.CountStrategy = CountStrategy;
@@ -549,6 +575,11 @@ public class BitTextFieldParams : BitComponentBaseParams, IBitComponentParams
         if (IconPosition.HasValue && bitTextField.HasNotBeenSet(nameof(IconPosition)))
         {
             bitTextField.IconPosition = IconPosition.Value;
+        }
+
+        if (IconTitle.HasValue() && bitTextField.HasNotBeenSet(nameof(IconTitle)))
+        {
+            bitTextField.IconTitle = IconTitle;
         }
 
         if (Immediate.HasValue && bitTextField.InheritedParameterHasNotBeenSet(nameof(Immediate)))

@@ -38,13 +38,15 @@
 //   --bit-TextField-label-gap               room between the label and the frame when the
 //                                           two share a row (LabelPosition Start/End)       (default: spacing(1))
 //   --bit-TextField-required-color          color of the asterisk of a required field       (default: $clr-req)
-//   --bit-TextField-icon-color              color of the trailing icon at rest              (default: $clr-fg-pri)
-//   --bit-TextField-icon-size               size of the trailing icon and of the glyphs of
-//                                           the clear and reveal buttons                    (default: per Size, $siz-icon-*)
-//   --bit-TextField-button-width            width of the clear and reveal buttons           (default: per Size, $siz-ctrl-*)
+//   --bit-TextField-icon-color              color of the icon at rest                       (default: $clr-fg-pri)
+//   --bit-TextField-icon-size               size of the icon and of the glyphs of the
+//                                           clear and reveal buttons                        (default: per Size, $siz-icon-*)
+//   --bit-TextField-button-width            width of the clear, reveal and icon buttons     (default: per Size, $siz-ctrl-*)
 //   --bit-TextField-button-color            glyph color of the clear and reveal buttons     (default: $clr-fg-sec for the clear one,
-//                                                                                            the accent for the reveal one)
-//   --bit-TextField-button-hover-color      glyph color of those buttons while hovered      (default: $clr-fg-pri-hover)
+//                                                                                            the accent for the reveal one; an icon
+//                                                                                            button keeps --bit-TextField-icon-color)
+//   --bit-TextField-button-hover-color      glyph color of those buttons, and of an icon
+//                                           button, while hovered                           (default: $clr-fg-pri-hover)
 //   --bit-TextField-button-hover-background background of those buttons while hovered       (default: $clr-bg-pri-hover)
 //   --bit-TextField-affix-color             color of the prefix and the suffix              (default: $clr-fg-pri)
 //   --bit-TextField-affix-background        fill behind the prefix and the suffix           (default: $clr-bg-sec, and none in the
@@ -118,6 +120,7 @@
         // Everything that sits inside the frame goes grey with it: an icon or a busy indicator left at
         // full contrast next to a greyed-out value reads as if that part of the field were still live.
         .bit-tfl-ico,
+        .bit-tfl-icb,
         .bit-tfl-lod,
         .bit-tfl-rpi {
             color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
@@ -144,14 +147,9 @@
                 border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TextField-disabled-border-color, #{$clr-brd-dis});
             }
 
-            .bit-tfl-lbl {
-                height: var(--bit-TextField-min-height, var(--bit-tfl-min-height));
-                margin-inline-end: spacing(1);
-                line-height: calc(var(--bit-TextField-min-height, var(--bit-tfl-min-height)) - #{spacing(1.25)});
-                padding-block: spacing(0.625);
-                padding-inline-start: spacing(1.5);
-            }
-
+            // Only what the disabled state actually changes is repeated here - the rule under the field,
+            // which takes the disabled color, and the frame, which the disabled border above would
+            // otherwise draw back around an underlined field. The label keeps the metrics of the variant.
             .bit-tfl-fgp {
                 flex: 1 1 0;
                 border: none;
@@ -443,6 +441,61 @@
     }
 }
 
+// The icon becomes a button when it is given something to do, and then it is a target rather than a mark:
+// it answers the pointer and the keyboard, draws a ring of its own, and takes the same width as the clear
+// and reveal buttons so the chrome of a field stays one row of equally sized targets.
+.bit-tfl-icb {
+    height: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    align-items: center;
+    outline: transparent;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0 spacing(0.5);
+    background-color: transparent;
+    color: var(--bit-TextField-icon-color, #{$clr-fg-pri});
+    width: var(--bit-TextField-button-width, var(--bit-tfl-btn-width));
+    min-height: var(--bit-tfl-inp-min-height);
+
+    // Only when it is the last thing in the frame: a suffix after it would otherwise leave a rounded
+    // hover chip sitting in the middle of the field.
+    &:last-child {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    // The leading one rounds the other corner instead, for the same reason.
+    &:first-child {
+        border-start-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-TextField-focus-color, var(--bit-tfl-clr-focus)));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-tfl-ico {
+        color: inherit;
+        min-width: unset;
+    }
+
+    @media (hover: hover) {
+        &:not(:disabled):hover {
+            color: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
+            background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+}
+
 .bit-tfl-lod {
     display: flex;
     flex-shrink: 0;
@@ -547,6 +600,7 @@
     // instead - next to the first line of the text, where the affordances of a single line field sit.
     .bit-tfl-cbt,
     .bit-tfl-rpb,
+    .bit-tfl-icb,
     .bit-tfl-lod,
     .bit-tfl-ico {
         height: var(--bit-tfl-inp-min-height);
@@ -609,6 +663,12 @@
 
 .bit-tfl-fcs {
     .bit-tfl-ico {
+        color: var(--bit-TextField-accent-color, var(--bit-tfl-clr));
+    }
+
+    // The button is what paints the glyph inside it, so the accent is handed to the button rather than to
+    // the icon it inherits from.
+    .bit-tfl-icb {
         color: var(--bit-TextField-accent-color, var(--bit-tfl-clr));
     }
 
@@ -736,6 +796,23 @@
 .bit-tfl-led {
     .bit-tfl-wrp {
         flex-direction: row-reverse;
+    }
+}
+
+// An explicit LabelPosition lays the wrapper out itself, so the metrics the underlined variant gives its
+// label - the fixed row height, the inset and the margin that line it up next to the input - are only right
+// while the two actually share the row the variant puts them on. Stacked above or below the field, or laid
+// out by the Start and End positions with a gap of their own, they would leave an indented, over-tall
+// caption, so they are handed back here.
+.bit-tfl-und.bit-tfl-ltp,
+.bit-tfl-und.bit-tfl-lbt,
+.bit-tfl-und.bit-tfl-lst,
+.bit-tfl-und.bit-tfl-led {
+    .bit-tfl-lbl {
+        height: auto;
+        margin-inline-end: 0;
+        padding-inline-start: 0;
+        line-height: spacing(2.5);
     }
 }
 
@@ -973,6 +1050,7 @@
         .bit-tfl-cnt,
         .bit-tfl-des span,
         .bit-tfl-ico,
+        .bit-tfl-icb,
         .bit-tfl-lod,
         .bit-tfl-rpi,
         .bit-tfl-cbt,

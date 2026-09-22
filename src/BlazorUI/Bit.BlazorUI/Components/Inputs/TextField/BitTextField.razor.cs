@@ -9,6 +9,9 @@ public partial class BitTextField : BitTextInputBase<string?>
 {
     private int _charCount;
     private bool _hasText;
+    private int _liveTextId;
+    private string? _liveText;
+    private string? _stateLiveText;
     private bool _hasFocus;
     private bool _jsSetup;
     private bool _ghostSetup;
@@ -151,6 +154,25 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
+    /// What a screen reader announces once the field has been emptied - by the clear button or by
+    /// <see cref="ClearAsync"/> - in place of the default "Cleared". Emptying a field moves nothing and
+    /// says nothing on its own, so without it the one interaction that throws the whole value away is the
+    /// one a screen reader user gets no confirmation of. Set it to an empty string to keep the clearing
+    /// from being announced at all.
+    /// </summary>
+    [Parameter] public string? ClearedAnnouncement { get; set; }
+
+    /// <summary>
+    /// Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the
+    /// clear button and what a filter or a search field is expected to do. It raises <see cref="OnClear"/>
+    /// and is announced the same way a press on the button is, it leaves a read-only field alone, and it
+    /// does not need <see cref="ShowClearButton"/>. <see cref="OnEscape"/> is still raised afterwards, so a
+    /// dialog that closes on Escape sees a field that is already empty. Escape keeps its own meaning while
+    /// an input method editor is composing, where it cancels the candidate rather than the value.
+    /// </summary>
+    [Parameter] public bool ClearOnEscape { get; set; }
+
+    /// <summary>
     /// Decides how the characters of the value are counted for the counter rendered by <see cref="ShowCount"/>.
     /// Leaving it unset counts the value the way the browser counts it against <see cref="MaxLength"/> - in
     /// UTF-16 code units - which makes an emoji count as two and a flag as four. A strategy of its own counts
@@ -269,6 +291,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// reading direction rather than the screen, so it mirrors itself in a right-to-left page.
     /// </summary>
     [Parameter] public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
+    /// The html title of the icon shown inside the text field, which the browser shows as its tooltip.
+    /// It is only rendered while <see cref="OnIconClick"/> makes the icon a button, since a tooltip on a
+    /// decorative mark says something only a pointer ever finds.
+    /// </summary>
+    [Parameter] public string? IconTitle { get; set; }
 
     /// <summary>
     /// Sets the inputmode html attribute of the input element.
@@ -412,6 +441,16 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Use this to clear or update the GhostText parameter after acceptance.
     /// </summary>
     [Parameter] public EventCallback<string?> OnGhostTextAccepted { get; set; }
+
+    /// <summary>
+    /// Callback for when the icon inside the field is clicked, which is what turns the icon into an action -
+    /// opening a picker, copying the value, running a search - instead of a mark that only says what the
+    /// field is for. Giving it a handler renders the icon as a real button: it takes a tab stop, answers
+    /// Enter and Space, draws a focus ring of its own and is named by <see cref="IconAriaLabel"/>, so give
+    /// that one a value whenever this one has a handler. Without a handler the icon stays a decorative
+    /// glyph that puts the caret in the input.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnIconClick { get; set; }
 
     /// <summary>
     /// Callback for every input event of the input element, which is what lets a field watch the text as it
@@ -803,6 +842,8 @@ public partial class BitTextField : BitTextInputBase<string?>
             _charCount = CountOf(Value);
         }
 
+        SyncLiveRegion();
+
         base.OnParametersSet();
     }
 
@@ -1012,7 +1053,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     // not empty - one counting words, say - and a field holding text would otherwise lose its clear button.
     private bool ShowClear => ShowClearButton && _hasText;
 
-    private bool NeedsCompositionGuard => Immediate || OnInput.HasDelegate || OnEnter.HasDelegate || OnEscape.HasDelegate;
+    private bool NeedsCompositionGuard => Immediate
+                                          || ClearOnEscape
+                                          || OnInput.HasDelegate
+                                          || OnEnter.HasDelegate
+                                          || OnEscape.HasDelegate;
 
     // A value above the limit can only arrive from the code rather than from the keyboard, which the
     // maxlength attribute holds back, so the counter says so instead of quietly reading a number above the
@@ -1062,16 +1107,49 @@ public partial class BitTextField : BitTextInputBase<string?>
     // splatted ones, so a null written over a splatted title would take that title away.
     private string? InputTitle => Title ?? GetInputAttribute("title");
 
+    // What the state of the field has to say out loud. The rejection wins over the other two, which say what
+    // the field is doing rather than what is wrong with it.
+    private string? StateLiveText => ErrorMessage.HasValue()
+                                        ? ErrorMessage
+                                        : Loading
+                                            ? (LoadingAriaLabel ?? "Loading")
+                                            : (GhostText.HasValue() ? GhostText : null);
+
     // A live region only announces what changes inside it after it is already on the page: one that is added
-    // along with its text is regularly missed altogether. The rejection of the value, the busy state and the
-    // inline suggestion all have to be announced the moment they show up, so a single empty region is kept in
-    // the markup and only its text comes and goes. The rejection wins over the other two, which say what the
-    // field is doing rather than what is wrong with it.
-    private string? LiveText => ErrorMessage.HasValue()
-                                    ? ErrorMessage
-                                    : Loading
-                                        ? (LoadingAriaLabel ?? "Loading")
-                                        : (GhostText.HasValue() ? GhostText : null);
+    // along with its text is regularly missed altogether. So a single empty region is kept in the markup and
+    // only its text comes and goes. The state is compared against what was last announced rather than against
+    // what the region holds, because an action - a clearing - may have taken the region over in the meantime,
+    // and the state coming back to what it already said would otherwise never be announced again.
+    private void SyncLiveRegion()
+    {
+        var text = StateLiveText;
+
+        if (text == _stateLiveText) return;
+
+        _stateLiveText = text;
+
+        Announce(text);
+    }
+
+    // Emptying the field moves nothing and says nothing on its own, so the one interaction that throws the
+    // whole value away is announced explicitly. An empty announcement is how a consumer asks for silence.
+    private void AnnounceCleared()
+    {
+        var text = ClearedAnnouncement ?? "Cleared";
+
+        if (text.HasNoValue()) return;
+
+        Announce(text);
+    }
+
+    // The message sits in a keyed element so that every announcement replaces the element rather than only
+    // rewriting a text: the same message said twice in a row would otherwise change nothing in the DOM, and
+    // a live region that did not change is a live region nothing is read out of.
+    private void Announce(string? text)
+    {
+        _liveText = text;
+        _liveTextId++;
+    }
 
     // The name a consumer wrote for the input itself wins over the visible label, the same way AriaLabel does:
     // pointing at an element of their own is an explicit naming of the field. It is read back off the splatted
@@ -1191,6 +1269,15 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
         else if (e.Key == "Escape")
         {
+            // The clearing comes first so that a handler closing a dialog or a panel on Escape sees a field
+            // that is already empty rather than one that empties itself behind it.
+            if (ClearOnEscape && ReadOnly is false)
+            {
+                await ClearValue();
+
+                await OnClear.InvokeAsync();
+            }
+
             await OnEscape.InvokeAsync(e);
         }
     }
@@ -1212,6 +1299,16 @@ public partial class BitTextField : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await InputElement.FocusAsync();
+    }
+
+    // The icon only becomes a button when it has something to do, so the guard is the same one every other
+    // handler carries: a disabled field answers nothing. A read-only one still does, since an action the icon
+    // stands for - copying the value, opening what it points at - is not an edit.
+    private async Task HandleOnIconClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnIconClick.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -1240,6 +1337,16 @@ public partial class BitTextField : BitTextInputBase<string?>
         // re-synced from what the value ended up being rather than from the text the event carried: an
         // internal change does not run OnParametersSet, and a trimmed value is shorter than what was typed.
         UpdateCharCount(CurrentValue);
+
+        // What the field committed is not always what the element reported: Trim takes the whitespace off
+        // on the way in, and a Value bound without a ValueChanged or an OnChange refuses the new text
+        // altogether. Blazor only patches the value attribute when it differs from the previous render, so
+        // a committed value that did not move - the same text with its spaces trimmed, or the old value
+        // kept - leaves the typed text sitting on screen under a field that holds something else.
+        if (string.Equals(e.Value?.ToString() ?? string.Empty, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal) is false)
+        {
+            await SyncInputElementValue();
+        }
     }
 
     private async Task HandleOnClearButtonClick()
@@ -1257,11 +1364,38 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         await SetCurrentValueAsStringAsync(string.Empty, true);
 
+        AnnounceCleared();
+
         // The counter is read from whatever the value ended up being rather than assumed to be zero: a
         // one-way bound field with no way to report a change keeps its value, and a counter saying zero
         // next to a full input would be a lie.
         _hasText = string.IsNullOrEmpty(CurrentValue) is false;
         _charCount = CountOf(CurrentValue);
+
+        await SyncInputElementValue();
+    }
+
+    // Blazor only patches the value attribute of the input when it differs from what the previous render
+    // produced, and clearing regularly produces no difference at all: on a field without Immediate the text
+    // that was typed never reached the value, and a Value bound without a ValueChanged cannot change either.
+    // Both would leave the old text sitting on screen under a field that believes it is empty, so the
+    // element is written to directly and ends up holding exactly what the value ended up being.
+    private async Task SyncInputElementValue()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsSetProperty(InputElement, "value", CurrentValueAsString ?? string.Empty);
+
+            // Writing the property raises no input event, so the auto growing - which listens for one -
+            // would leave the field at the height of text that is no longer in it.
+            if (IsMultilineElement && AutoHeight)
+            {
+                await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnRevealPasswordClick()

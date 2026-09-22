@@ -158,7 +158,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Icon &amp; affixes" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Icon &amp; affixes" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             An icon and the two affixes - a prefix and a suffix - sit inside the frame beside the input.
             <b>IconName</b> renders a glyph of the built-in Fluent UI set,
@@ -173,6 +173,12 @@
             of its own gets a name through <b>IconAriaLabel</b>, shown in the <a href="#example16">Accessibility</a> section.
             It picks up the <b>Accent</b> color while the field has focus, and the whole frame shows a text cursor and means
             it: a press on an affix, on the icon or on the busy indicator puts the caret in the input.
+            <br /><br />
+            <b>OnIconClick</b> turns the icon into an action instead - opening a picker, copying the value, running a search.
+            Giving it a handler renders the icon as a real button: it takes a tab stop, answers Enter and Space and draws a
+            focus ring of its own, so pair it with an <b>IconAriaLabel</b> that says what pressing it does, and with an
+            <b>IconTitle</b> for the tooltip. It keeps working on a read-only field, since an action the icon stands for is
+            not an edit, and it is disabled along with the field.
         </div>
         <br />
         <div class="example-box">
@@ -194,6 +200,14 @@
                           IconPosition="BitIconPosition.Start" />
             <br />
             <BitTextField Label="Disabled" Prefix="https://" Suffix=".com" IconName="@BitIconName.Globe" IsEnabled="false" />
+            <br />
+            <BitTextField Label="Clickable icon"
+                          Placeholder="Press the magnifier..."
+                          IconName="@BitIconName.Search"
+                          IconTitle="Search"
+                          IconAriaLabel="Search for what was typed"
+                          OnIconClick="@(() => iconClickCount++)" />
+            <div>The icon was pressed [@iconClickCount] times.</div>
         </div>
     </DemoExample>
 
@@ -250,7 +264,11 @@
             fires <b>OnClear</b> and returns the focus to the
             input so typing can continue right away. The button is a real button with an <b>ClearButtonAriaLabel</b>, so it is
             reachable by keyboard, and it is disabled in the read-only and disabled states. <b>ClearButtonIconName</b> swaps its
-            icon, and it works in the multiline mode too. A search input draws a clear affordance of its own in WebKit browsers,
+            icon, and it works in the multiline mode too. Emptying a field moves nothing and says nothing on its own, so the
+            field announces it through its live region - <b>ClearedAnnouncement</b> is what that announcement says instead of
+            the default "Cleared", and an empty string keeps it silent. <b>ClearOnEscape</b> puts the same clearing on the
+            Escape key, which is what a filter or a search field is expected to do; it needs no button of its own, leaves a
+            read-only field alone, and lets Escape keep its meaning while an input method editor is composing. A search input draws a clear affordance of its own in WebKit browsers,
             which is hidden while the clear button is on so that the field never shows two of them. The <b>ClearAsync</b> method
             does the same thing from code - without needing the button to be visible at all - and raises <b>OnClear</b> just
             like a click on it does.
@@ -274,6 +292,16 @@
             <br />
             <BitTextField Label="ReadOnly (the button is disabled)" ReadOnly ShowClearButton DefaultValue="Read only value" />
             <br />
+            <BitTextField Label="With an announcement of its own"
+                          ShowClearButton
+                          DefaultValue="hello@example.com"
+                          ClearedAnnouncement="The email address was cleared." />
+            <br />
+            <BitTextField Label="Cleared by the Escape key"
+                          ClearOnEscape
+                          ShowClearButton
+                          DefaultValue="Press Escape in this field" />
+            <br />
             <BitTextField @ref="clearRef" Label="Cleared from the outside" @bind-Value="clearApiValue" />
             <BitButton Style="margin-top: 0.5rem;" OnClick="() => clearRef?.ClearAsync()">ClearAsync</BitButton>
             <div>Value: [@clearApiValue]</div>
@@ -295,6 +323,10 @@
             from being saved along with an email address or a coupon code. It runs on the change event rather than on every
             keystroke, so a space can still be typed in the middle of a word while <b>Immediate</b> is on, and it leaves a
             <b>DefaultValue</b> alone, since that one is assigned as it is given.
+            <br /><br />
+            Whatever the field ends up holding is what is left on screen: a trimmed value, and the old value of a <b>Value</b>
+            bound without a <b>ValueChanged</b> or an <b>OnChange</b>, are both written back into the input, so the text under
+            the caret is never something the field is not actually holding.
         </div>
         <br />
         <div class="example-box">
@@ -613,6 +645,12 @@
                           MaxLength="20"
                           LabelPosition="BitLabelPosition.Start"
                           Description="The footer keeps its own line under the whole row." />
+            <br />
+            <BitTextField Label="Underlined + Top"
+                          Underlined
+                          LabelPosition="BitLabelPosition.Top"
+                          Placeholder="Enter a text..."
+                          Description="The underlined variant lays its label out in a row of its own, and an explicit position takes that row apart." />
         </div>
     </DemoExample>
 
@@ -676,6 +714,14 @@
             its own. The placeholder is painted from the theme rather than left to the grey the browser picks, which fails the
             contrast floor on a dark surface - but it still disappears the moment anything is typed, so it never carries what
             the <b>Label</b> and the <b>Description</b> should.
+            <br /><br />
+            The field keeps one polite live region of its own, which is what carries the things that happen away from the
+            caret: a rejection that arrives while the field still has focus, the busy state, an inline suggestion, and the
+            emptying of the field by the clear button - <b>ClearedAnnouncement</b> is what that last one says. They are
+            announced politely, so none of them ever cuts into what is being read.
+            <b>AutoComplete</b> is what says which piece of personal information a field collects, which a browser, a password
+            manager and an assistive technology all read; a field asking for a name, an address, an email or a credential
+            wants one (WCAG 2.2, Identify Input Purpose).
             <br /><br />
             In Windows High Contrast the whole palette collapses to the system pair, which would take four of the states of
             the field with it: the disabled field is redrawn in the system grey, the rejected frame becomes a dashed one

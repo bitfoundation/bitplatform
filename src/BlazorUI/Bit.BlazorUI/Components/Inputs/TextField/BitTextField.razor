@@ -314,8 +314,14 @@
     @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
        typed, only be announced once the reader is done with the current sentence. It is rendered whether or
        not it has anything to say, because a live region that arrives with its text already in it is the one
-       thing screen readers are known to miss. *@
-    <span role="status" class="bit-tfl-dsc">@LiveText</span>
+       thing screen readers are known to miss.
+       The message sits in a keyed element so that every announcement replaces the element rather than only
+       rewriting its text: the same message said twice in a row would otherwise change nothing in the DOM,
+       and a live region that did not change is a live region nothing is read out of. *@
+    <span role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          class="bit-tfl-dsc"><span @key="_liveTextId">@_liveText</span></span>
 </div>
 
 @code {
@@ -324,12 +330,33 @@
         @{
             var icon = BitIconInfo.From(Icon, IconName);
         }
-        <i style="@Styles?.Icon"
-           class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
-           role="@(IconAriaLabel.HasValue() ? "img" : null)"
-           aria-label="@IconAriaLabel"
-           aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
-           @onclick="HandleOnChromeClick"
-           @onmousedown:preventDefault />
+        @if (OnIconClick.HasDelegate)
+        {
+            @* An icon with something to do is a button and nothing else: a click handler on a decorative
+               glyph is an action only a pointer ever reaches. The name is the one the icon already carries,
+               and the glyph inside is hidden so the button is announced once rather than twice. *@
+            <button @onclick="HandleOnIconClick"
+                    type="button"
+                    title="@IconTitle"
+                    tabindex="@TabIndex"
+                    style="@Styles?.IconButton"
+                    aria-label="@IconAriaLabel"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-tfl-icb @Classes?.IconButton">
+                <i aria-hidden="true"
+                   style="@Styles?.Icon"
+                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon" />
+            </button>
+        }
+        else
+        {
+            <i style="@Styles?.Icon"
+               class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
+               role="@(IconAriaLabel.HasValue() ? "img" : null)"
+               aria-label="@IconAriaLabel"
+               aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
+               @onclick="HandleOnChromeClick"
+               @onmousedown:preventDefault />
+        }
     </text>;
 }

@@ -3630,6 +3630,423 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(component.Find(".bit-tfl-lbl").Id, input.GetAttribute("aria-labelledby"));
     }
 
+    [TestMethod]
+    public void BitTextFieldIconStaysAPlainGlyphWithoutAClickHandler()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Search");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-icb").Count);
+        Assert.AreEqual(1, component.FindAll("i.bit-tfl-ico").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldOnIconClickTurnsTheIconIntoANamedButton()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Search");
+            parameters.Add(p => p.IconTitle, "Search");
+            parameters.Add(p => p.IconAriaLabel, "Search for what was typed");
+            parameters.Add(p => p.OnIconClick, (MouseEventArgs _) => { });
+        });
+
+        var button = component.Find(".bit-tfl-icb");
+
+        Assert.AreEqual("button", button.GetAttribute("type"));
+        Assert.AreEqual("Search", button.GetAttribute("title"));
+        Assert.AreEqual("Search for what was typed", button.GetAttribute("aria-label"));
+
+        // The glyph inside a named button is announced by the button, so it is hidden rather than read twice.
+        var icon = component.Find(".bit-tfl-icb .bit-tfl-ico");
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.IsNull(icon.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldOnIconClickIsRaisedByTheIconButton()
+    {
+        var clicked = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Search");
+            parameters.Add(p => p.OnIconClick, (MouseEventArgs _) => clicked++);
+        });
+
+        component.Find(".bit-tfl-icb").Click();
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitTextFieldIconButtonKeepsWorkingOnAReadOnlyFieldAndStopsOnADisabledOne()
+    {
+        // An action the icon stands for - copying the value, opening what it points at - is not an edit,
+        // so only the disabled state takes it away.
+        var clicked = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.IconName, "Search");
+            parameters.Add(p => p.OnIconClick, (MouseEventArgs _) => clicked++);
+        });
+
+        component.Find(".bit-tfl-icb").Click();
+        Assert.AreEqual(1, clicked);
+        Assert.IsFalse(component.Find(".bit-tfl-icb").HasAttribute("disabled"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl-icb").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldLiveRegionIsPoliteAndAtomic()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        var liveRegion = component.Find("[role=status]");
+
+        Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
+        Assert.AreEqual("true", liveRegion.GetAttribute("aria-atomic"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitTextFieldClearingIsAnnouncedThroughTheLiveRegion(bool byTheButton)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent);
+
+        if (byTheButton)
+        {
+            component.Find(".bit-tfl-cbt").Click();
+        }
+        else
+        {
+            component.Instance.ClearAsync().GetAwaiter().GetResult();
+        }
+
+        Assert.AreEqual("Cleared", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearedAnnouncementReplacesTheDefaultOne()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ClearedAnnouncement, "The email address was cleared.");
+        });
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.AreEqual("The email address was cleared.", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldAnEmptyClearedAnnouncementKeepsTheClearingSilent()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ClearedAnnouncement, string.Empty);
+        });
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearingIsAnnouncedOverAStateThatHasNotMoved()
+    {
+        // The rejection is still on the field after the clearing, so the state has nothing new to say;
+        // what just happened is what the reader needs, and the state is not allowed to overwrite it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "admin");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ErrorMessage, "That user name is already taken.");
+        });
+
+        Assert.AreEqual("That user name is already taken.", component.Find("[role=status]").TextContent);
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.AreEqual("Cleared", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldTheStateIsAnnouncedAgainAfterAnActionTookTheRegionOver()
+    {
+        // The state is compared against what it last said rather than against what the region holds, so a
+        // rejection that comes back after a clearing took the region over is announced again.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "admin");
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ErrorMessage, "That user name is already taken.");
+        });
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.AreEqual("Cleared", component.Find("[role=status]").TextContent);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, null);
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "That user name is already taken.");
+        });
+
+        Assert.AreEqual("That user name is already taken.", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldParamsShouldApplyTheIconTitleAndTheClearedAnnouncement()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters,
+            [
+                new BitTextFieldParams
+                {
+                    IconName = "Search",
+                    IconTitle = "Cascaded title",
+                    ClearedAnnouncement = "Cascaded announcement.",
+                }
+            ]);
+            parameters.AddChildContent<BitTextField>(p =>
+            {
+                p.Add(x => x.DefaultValue, "hello");
+                p.Add(x => x.ShowClearButton, true);
+                p.Add(x => x.OnIconClick, (MouseEventArgs _) => { });
+            });
+        });
+
+        Assert.AreEqual("Cascaded title", component.Find(".bit-tfl-icb").GetAttribute("title"));
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.AreEqual("Cascaded announcement.", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearingWritesTheEmptyValueIntoTheElementItself()
+    {
+        // The text typed into a field without Immediate never reaches the value, so clearing produces no
+        // difference for Blazor to patch and the old text would stay on screen under an empty field.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        component.Find(".bit-tfl-inp").Input("uncommitted");
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last();
+
+        Assert.AreEqual("value", invocation.Arguments[1]);
+        Assert.AreEqual(string.Empty, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearingWritesBackWhatTheValueEndedUpBeing()
+    {
+        // A one-way bound field with no way to report a change keeps its value, so the element is put back
+        // to that value rather than emptied behind a model that still holds it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Value, "hello");
+        });
+
+        component.Instance.ClearAsync().GetAwaiter().GetResult();
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last();
+
+        Assert.AreEqual("hello", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearOnEscapeEmptiesTheFieldAndFiresOnClear()
+    {
+        var clearCount = 0;
+        var escapeCount = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+            parameters.Add(p => p.OnEscape, (KeyboardEventArgs _) => escapeCount++);
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
+        Assert.AreEqual(1, clearCount);
+        Assert.AreEqual(1, escapeCount);
+        Assert.AreEqual("Cleared", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearOnEscapeNeedsNoClearButton()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+
+        component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearOnEscapeLeavesAReadOnlyFieldAlone()
+    {
+        var clearCount = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("hello", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
+    public void BitTextFieldEscapeDoesNotClearWithoutTheParameter()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("hello", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearOnEscapeSetsUpTheCompositionGuard()
+    {
+        // Escape cancels the candidate of an input method editor, so a field that clears on Escape has to
+        // hide a composition session from the handler just like one carrying an OnEscape of its own.
+        RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldTrimmingIsWrittenBackIntoTheElement()
+    {
+        // The committed value does not move when only the whitespace around it was typed, so Blazor has
+        // nothing to patch and the untrimmed text would stay on screen next to a trimmed value.
+        var value = "bit";
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Trim, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tfl-inp").Change("  bit  ");
+
+        Assert.AreEqual("bit", value);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last();
+
+        Assert.AreEqual("value", invocation.Arguments[1]);
+        Assert.AreEqual("bit", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTextFieldAValueThatCannotChangeIsPutBackIntoTheElement()
+    {
+        // A Value bound without a ValueChanged and without an OnChange cannot take the new text, so what
+        // is on screen is put back to what the field actually holds.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Value, "hello");
+        });
+
+        component.Find(".bit-tfl-inp").Change("typed over it");
+
+        Assert.AreEqual("hello", component.Instance.Value);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last();
+
+        Assert.AreEqual("hello", invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitTextFieldAnOrdinaryChangeWritesNothingIntoTheElement()
+    {
+        // The value moved with what was typed, so Blazor patches the attribute on its own and the element
+        // is left alone rather than written to on every change of every field.
+        var value = string.Empty;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-tfl-inp").Change("typed");
+
+        Assert.AreEqual("typed", value);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearingAnAutoHeightFieldRemeasuresIt()
+    {
+        // Writing the value into the element raises no input event, so the auto growing would leave the
+        // field at the height of text that is no longer in it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, true);
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        component.Find(".bit-tfl-inp").Input("one two three");
+
+        var before = Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count;
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count > before);
+    }
+
     // Which end the icon sits at is a question about the order of the children of the frame, so the two
     // are located by their classes rather than by comparing element references.
     private static (int Icon, int InputWrapper) IndexOfIconAndInput(IRenderedComponent<BitTextField> component)
