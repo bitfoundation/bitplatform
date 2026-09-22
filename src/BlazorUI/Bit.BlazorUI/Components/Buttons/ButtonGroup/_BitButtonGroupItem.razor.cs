@@ -11,11 +11,14 @@ public partial class _BitButtonGroupItem<TItem> where TItem : class
 
 
     // The group needs the element references of its items to move the focus while the arrow keys
-    // are navigating the roving tabindex.
-    protected override void OnAfterRender(bool firstRender)
+    // are navigating the roving tabindex, and to give the focus away on AutoFocus and FocusAsync.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ButtonGroup?.RegisterItemElement(Item, _element);
+        if (ButtonGroup is not null)
+        {
+            await ButtonGroup.RegisterItemElement(Item, _element);
+        }
 
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

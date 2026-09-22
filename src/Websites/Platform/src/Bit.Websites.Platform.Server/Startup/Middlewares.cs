@@ -2,7 +2,9 @@
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.Json.Nodes;
 using Bit.Websites.Platform.Client.Shared;
+using Bit.Websites.Platform.Server.Services.Mcp;
 using Bit.Websites.Platform.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components;
@@ -68,8 +70,16 @@ public class Middlewares
 
         app.MapControllers();
 
-        // Exposes the tools of every MCP server of the repository's .mcp.json at bitplatform.dev/mcp.
+        // Exposes the tools of every MCP server the team develops against at bitplatform.dev/mcp, per release.
         app.MapMcp("/mcp");
+
+        // The releases ?v= accepts, newest first. Anything else, and no v at all, is answered by the newest.
+        // Written as nodes rather than serialized off a type, so no json context has to know about it.
+        app.MapGet("/mcp/versions", (McpVersions versions) => Results.Text(new JsonObject
+        {
+            ["latest"] = versions.Latest?.Name,
+            ["versions"] = new JsonArray([.. versions.Served.Select(version => (JsonNode)new JsonObject { ["name"] = version.Name, ["tag"] = version.Tag })])
+        }.ToJsonString(), "application/json"));
 
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 

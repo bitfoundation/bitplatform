@@ -133,11 +133,43 @@ registered in [`ISharedServiceCollectionExtensions`](/src/Shared/Infrastructure/
 | Policy | Requires | Typical use |
 |---|---|---|
 | `PRIVILEGED_ACCESS` | This session is within the user's privileged-session cap | High-value pages: dashboard, catalog, todo |
-| `ELEVATED_ACCESS` | The user re-authenticated recently (a 6-digit code, or the first minutes of a 2FA sign-in) | Dangerous actions: deleting an account, managing roles |
+| `ELEVATED_ACCESS` | The user re-authenticated recently (a passkey, a 6-digit code, or the first minutes of a 2FA sign-in) | Dangerous actions: deleting an account, managing roles |
 | `TENANT_SELECTED` | The token carries a tenant claim | Every endpoint that reads or writes tenant data |
 
 `ELEVATED_ACCESS` is time-boxed: the claim holds the moment elevation expires, and the policy compares it against
 the current time. A stale value is therefore harmless, which is why it can be carried across token refreshes.
+
+**Asking for it.** Call `AuthManager.TryEnterElevatedAccessMode` before the dangerous call and bail out when it
+answers false. An already-elevated session passes silently; otherwise
+[`ElevatedAccessModal`](/src/Client/Boilerplate.Client.Core/Components/Common/ElevatedAccessModal.razor) opens and
+offers whatever the account can actually produce:
+
+- **A passkey**, when this device has one enrolled - fingerprint, Face ID or Windows Hello. Nothing is sent unasked,
+  because the passkey is already the faster way; the send button is still there for whoever wants a code anyway.
+- **A 6-digit code from the authenticator app**, for an account with 2FA on. Nothing is sent to it unasked, because
+  it already generates its own codes; the send button is still there for whoever cannot reach the app.
+- **A 6-digit code sent to the account**, for everyone else. The modal sends it by itself as it opens. The server
+  delivers to every *confirmed* identifier - e-mail, sms - and also pushes it to the user's other sessions, but only
+  the ones `UserSession.Trusted` marks as hard to get into in their own right. It answers with the *channels* it
+  used, so the modal can say where to look instead of guessing. Which identifiers those are is not part of the
+  answer: the caller already holds them, on `UserDto` and in the access token's e-mail claim.
+
+All three land in `IdentityController.Refresh`, which is the single place elevation is granted.
+
+### Trusted sessions
+
+A secret pushed to a device is only as safe as the device it arrives on, so `UserSession.Trusted` records whether the
+session was opened in a way that is hard to fake - a completed second factor, a social provider, or a passkey. A
+password or a one-time code does not qualify, and neither does an OAuth grant, because somebody else's application is
+not the user's device. The column is written once at sign-in beside `UserSession.AuthenticationMethod`, which keeps
+the raw fact so the policy can be changed later without a guess.
+
+Three places push a secret and all three filter on it: the elevated-access code, the two-factor code, and the
+password-reset token. The last one matters most. `SendResetPasswordToken` is anonymous and its token resets the
+password outright, so a session opened with nothing but a password must not be able to pull one into itself -
+otherwise a leaked password alone is a takeover: sign in with it, allow notifications, ask to reset, and the proof
+that was supposed to reach the owner's inbox arrives on the attacker's own device instead. What the column does not
+do is defend a signed-in device somebody else is sitting at; that session is trusted, and rightly so.
 
 ### Feature policies
 

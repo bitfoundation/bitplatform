@@ -788,6 +788,7 @@
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
                         "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
+                        "src/Tests/Features/Identity/TrustedSessionTests.cs",
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
                         "src/Tests/Features/Identity/EmailUniquenessIndexTests.cs",
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
@@ -799,6 +800,7 @@
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
                         "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
+                        "src/Tests/Features/Identity/WebAuthnElevatedAccessTests.cs",
                         "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
                         "src/Tests/Features/Identity/AccountSectionDeepLinkTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
@@ -926,7 +928,10 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionDeviceContextTests.cs",
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
-                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs"
+                        "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs",
+                        // Its subject is Diagnostic/SendTestPushNotification - the one anonymous POST that binds
+                        // nothing but a route value, so a form body reaches AutoCsrfProtectionFilter intact.
+                        "src/Tests/Features/Antiforgery/AntiforgeryFormPostTests.cs"
                     ]
                 },
                 {
