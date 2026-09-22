@@ -55,6 +55,11 @@
 
     var suggestions = GetSuggestions();
 
+    // The sentence that says why the last tag was refused, and the one that says how many tags the field
+    // already holds: the first replaces the helper text while it stands, the second is only ever read out.
+    var invalidMessage = ShowInvalidMessage ? _invalidMessage : null;
+    var countDescription = GetTagCountDescription(tagCount);
+
     // A tag picked up with its handle and never put anywhere - because the parent has since taken it
     // away, because the fold has closed over it, or because the field no longer offers the reordering at
     // all - is put back down: a chip that is lifted with nowhere to land is only a chip drawn askew.
@@ -109,7 +114,7 @@
         }
         else if (Prefix.HasValue())
         {
-            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
+            <div id="@_prefixId" style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
         }
 
         @if (tagCount > 0)
@@ -155,12 +160,12 @@
                          role="listitem"
                          draggable="@(CanDragTag(index) ? "true" : null)"
                          @* The chip is named by the tag it stands for rather than by everything it holds:
-                            the name of a list item is otherwise read off its contents, and the contents of
-                            a chip are the handle that moves it and the button that removes it as well as
-                            the word itself - "Move blazor, blazor, Remove blazor" for a chip reading
-                            "blazor". A chip drawn by a TagTemplate is left named by what it draws, the
-                            value behind it no longer being what the eye is reading. *@
-                         aria-label="@(TagTemplate is null ? tag : null)"
+                            the contents of a chip are the handle that moves it and the button that removes
+                            it as well as the word itself, so a chip reading "blazor" would be read out as
+                            "Move blazor, blazor, Remove blazor". A chip a TagTemplate draws as something
+                            other than its value - "Ada Lovelace" over ada@@example.com - is named through
+                            GetTagName, the template being markup nothing can read a name off. *@
+                         aria-label="@TagName(tag)"
                          aria-posinset="@(index + 1)"
                          aria-setsize="@tagCount"
                          aria-describedby="@(isTagRemovable ? tagHintId : fixedTagHintId)"
@@ -205,6 +210,11 @@
                                main input - which a whole separated list may be pasted into at once - this
                                one carries it natively, and the browser stops the eleventh character
                                instead of the component silently cutting it off when the edit is committed. *@
+                            @* The InputMode, the EnterKeyHint and the SpellCheck belong to the values the
+                               field collects rather than to the one box they are typed into, so correcting
+                               a tag opens the same keyboard as adding one: an email field that offered the
+                               "@@" while a tag was added and a plain alphabet while the very same tag was
+                               corrected would be two fields in one. *@
                             <input @ref="_editInputRef"
                                    @oninput="HandleOnEditInput"
                                    @onkeydown="HandleOnEditKeyDown"
@@ -214,13 +224,16 @@
                                    @ondblclick:stopPropagation="true"
                                    type="text"
                                    autocorrect="off"
-                                   spellcheck="false"
                                    autocomplete="off"
                                    autocapitalize="none"
                                    value="@_editText"
+                                   size="@GetEditSize()"
+                                   inputmode="@_inputMode"
+                                   enterkeyhint="@_enterKeyHint"
                                    aria-label="@GetEditAriaLabel(tag)"
                                    style="@Styles?.EditInput"
                                    class="bit-tgi-eip @Classes?.EditInput"
+                                   spellcheck="@((SpellCheck ?? false).ToString().ToLower())"
                                    maxlength="@(MaxLength > 0 ? MaxLength : (int?)null)" />
                         }
                         else if (TagTemplate is not null)
@@ -303,11 +316,11 @@
                data-no-add-on-tab="@(NoAddOnTab ? "true" : null)"
                data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
                spellcheck="@((SpellCheck ?? false).ToString().ToLower())"
-               aria-label="@(hasLabel ? null : AriaLabel)"
+               aria-label="@GetAriaLabel(hasLabel)"
                aria-invalid="@GetAriaInvalid()"
                aria-required="@(Required ? "true" : null)"
-               aria-labelledby="@(hasLabel ? _labelId : null)"
-               aria-describedby="@GetDescribedBy(hasDescription)"
+               aria-labelledby="@GetLabelledBy(hasLabel)"
+               aria-describedby="@GetDescribedBy(hasDescription || invalidMessage is not null, countDescription is not null)"
                autocomplete="@(AutoComplete ?? "off")" />
 
         @* The field is waiting for something of its own - the suggestions being fetched for what is being
@@ -346,14 +359,25 @@
         }
         else if (Suffix.HasValue())
         {
-            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
+            <div id="@_suffixId" style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
         }
     </div>
 
-    @if (hasDescription || ShowCounter)
+    @if (hasDescription || invalidMessage is not null || ShowCounter)
     {
         <div class="bit-tgi-dsr">
-            @if (hasDescription)
+            @if (invalidMessage is not null)
+            {
+                @* The refusal takes the place of the helper text while it stands, and takes its id along
+                   with it: the field describes itself with whichever of the two is the answer to what was
+                   just done, and the input never points at an element that is not there. It is not hidden
+                   from screen readers - the live region says it once as it happens, and this is what a
+                   reader coming back to the field is told. *@
+                <div id="@_descriptionId"
+                     style="@Styles?.InvalidMessage"
+                     class="bit-tgi-dsc bit-tgi-ivm @Classes?.InvalidMessage">@invalidMessage</div>
+            }
+            else if (hasDescription)
             {
                 <div id="@_descriptionId"
                      style="@Styles?.Description"
@@ -378,6 +402,14 @@
                      class="bit-tgi-cnr @Classes?.Counter">@(MaxTags > 0 ? $"{tagCount}/{MaxTags}" : tagCount.ToString())</div>
             }
         </div>
+    }
+
+    @if (countDescription is not null)
+    {
+        @* How many tags the field already holds, referenced by the input rather than announced: the chips
+           sit away from the caret, so a reader landing in a field that is not empty is otherwise told only
+           that the input is. Read on arrival, and never while the field is being typed into. *@
+        <div id="@_countId" class="bit-tgi-cvs">@countDescription</div>
     }
 
     @if (tagHint is not null)

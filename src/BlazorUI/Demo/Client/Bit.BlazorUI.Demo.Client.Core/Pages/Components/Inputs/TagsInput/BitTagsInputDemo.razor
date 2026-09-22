@@ -113,7 +113,8 @@
             counts as one of them is decided by <b>Comparison</b>, and the tag that is stored is the suggestion
             rather than the spelling it was typed with, so a list to be grouped later never holds two spellings of
             one value. <b>MaxSuggestions</b> caps how many are written into the page at once - beyond it only the
-            values holding what is being typed are kept, which changes nothing about what the user is shown.
+            values holding what is being typed are kept, matched without regard to case the way the browser
+            filters the list it is handed, so what the user is shown does not change.
             Where the catalogue is fetched rather than held, <b>OnInput</b> is what triggers the fetch and
             <b>IsLoading</b> draws the spinner that says the field is waiting - an indeterminate progressbar, so
             a screen reader hears the wait instead of missing it. <b>DebounceTime</b> waits for the typing to
@@ -133,13 +134,9 @@
                           Suggestions="frameworkSuggestions"
                           RestrictToSuggestions
                           Comparison="StringComparison.OrdinalIgnoreCase"
+                          ShowInvalidMessage
                           Placeholder="Try 'BLAZOR'"
-                          Description="Anything else is refused, and BLAZOR is stored as blazor."
-                          OnInvalid="HandleSuggestionInvalid" />
-            @if (suggestionMessage.HasValue())
-            {
-                <div class="invalid-message">@suggestionMessage</div>
-            }
+                          Description="Anything else is refused, and BLAZOR is stored as blazor." />
             <BitTagsInput Label="A long catalogue, 5 offers at a time"
                           Suggestions="countrySuggestions"
                           MaxSuggestions="5"
@@ -172,18 +169,15 @@
             <BitTagsInput Label="Up to 3 tags"
                           MaxTags="3"
                           ShowCounter
+                          ShowInvalidMessage
                           Separators="@([","])"
                           Placeholder="Add up to 3 tags"
-                          @bind-Value="maxTagsValue"
-                          OnInvalid="HandleMaxTagsInvalid" />
-            @if (maxTagsMessage.HasValue())
-            {
-                <div class="invalid-message">@maxTagsMessage</div>
-            }
+                          @bind-Value="maxTagsValue" />
             <BitTagsInput Label="Between 3 and 10 characters"
                           MinLength="3"
                           MaxLength="10"
                           ShowCounter
+                          ShowInvalidMessage
                           Placeholder="Add tag..."
                           Description="Typing beyond the tenth character does nothing; shorter than three is refused." />
         </div>
@@ -200,44 +194,39 @@
             reported through <b>OnTagExists</b>; <b>Duplicates</b> lifts that, and <b>Comparison</b> decides which
             tags count as the same one. Every refusal reaches <b>OnInvalid</b> with the rule that caused it.
             <br /><br />
-            A refusal is never silent: the field wears its invalid color - and says so through
-            <code>aria-invalid</code> - until the next keystroke answers it, and a tag refused as a duplicate
-            marks the chip already in the list that it collided with, since "you already have this one" is only
-            an answer if it says which one. <b>NoInvalidHighlight</b> turns the mark off where the refusal is
-            reported somewhere else entirely.
+            A refusal is never silent. <b>ShowInvalidMessage</b> draws <i>why</i> under the field, where the
+            helper text stands - the same sentence screen readers are given, naming the limit the rule was built
+            on ("A tag must be at least 3 characters.") rather than leaving the user to guess; a red rule alone
+            is a message half the readers of a page never get. <b>GetInvalidMessage</b> rewrites that sentence
+            for wording of your own and for localization, and <b>InvalidAnnouncementFormat</b> writes the frame
+            it sits in (<code>{0}</code> the tag, <code>{1}</code> the reason). Alongside it the field wears its
+            invalid color - and says so through <code>aria-invalid</code> - until the next keystroke answers it,
+            and a tag refused as a duplicate marks the chip already in the list that it collided with, since "you
+            already have this one" is only an answer if it says which one. <b>NoInvalidHighlight</b> turns that
+            mark off, and <b>OnInvalid</b> (with <b>OnTagExists</b> for the duplicate alone) hands the refusal to
+            a report of your own.
         </div>
         <br />
         <div class="example-box">
             <BitTagsInput Label="Hashtags"
+                          ShowInvalidMessage
                           Transformer="NormalizeHashtag"
                           Separators="@([","])"
                           Placeholder="#Blazor, #WEB, # dot net"
-                          Description="Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked."
-                          OnTagExists="HandleTagExists" />
-            @if (duplicateMessage.HasValue())
-            {
-                <div class="invalid-message">@duplicateMessage</div>
-            }
+                          Description="Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked." />
             <BitTagsInput Label="Email addresses"
+                          ShowInvalidMessage
+                          GetInvalidMessage="GetEmailInvalidMessage"
                           Placeholder="name@example.com"
                           Separators="@([",", ";", " "])"
                           Pattern="@emailPattern"
-                          Description="Only well formed addresses are accepted."
-                          OnInvalid="HandlePatternInvalid" />
-            @if (patternMessage.HasValue())
-            {
-                <div class="invalid-message">@patternMessage</div>
-            }
+                          Description="Only well formed addresses are accepted, and the refusal is worded here rather than built." />
             <BitTagsInput Label="Known frameworks, duplicates allowed"
                           Duplicates
+                          ShowInvalidMessage
                           Validator="ValidateFramework"
                           Placeholder="blazor, react, vue, angular"
-                          Description="Only those four, and each of them as often as you like."
-                          OnInvalid="HandleValidatorInvalid" />
-            @if (validatorMessage.HasValue())
-            {
-                <div class="invalid-message">@validatorMessage</div>
-            }
+                          Description="Only those four, and each of them as often as you like." />
         </div>
     </DemoExample>
 
@@ -245,18 +234,24 @@
         <div>
             <b>EditableTags</b> lets a tag be corrected in place instead of being removed and typed again: double
             click a chip, or press <b>Enter</b> or <b>F2</b> on the focused one, and it turns into a little input
-            with its text selected. <b>Enter</b> commits, <b>Escape</b> puts the old text back, and leaving the
-            input commits too. The text goes through the same trimming, transformation and validation as a tag
-            being added - except that the tag is not a duplicate of itself and the ceiling cannot be reached, since
-            the list does not grow. Committing an empty text removes the tag, and <b>OnEdit</b> receives the old
-            and the new text and can call the change off.
+            with its text selected - carrying the same <b>InputMode</b>, <b>EnterKeyHint</b> and <b>SpellCheck</b>
+            as the field, since those belong to the values it collects rather than to the one box they are typed
+            into. <b>Enter</b> commits, <b>Escape</b> puts the old text back, and leaving the input commits too.
+            The text goes through the same trimming, transformation and validation as a tag being added - except
+            that the tag is not a duplicate of itself and the ceiling cannot be reached, since the list does not
+            grow. A correction those rules turn down is <i>handed back</i> in the still open input, caret at its
+            end, rather than being thrown away with the chip snapping back: an error is the one moment a field
+            must not lose what was just entered. Committing an empty text removes the tag, and <b>OnEdit</b>
+            receives the old and the new text and can call the change off.
         </div>
         <br />
         <div class="example-box">
             <BitTagsInput Label="Double click a tag to correct it"
                           EditableTags
-                          MinLength="2"
+                          MinLength="3"
+                          ShowInvalidMessage
                           Placeholder="Add tag..."
+                          Description="Correct one to a single letter: the refusal says why and hands the text back."
                           DefaultValue="@(new List<string> { "blazor", "dotnet", "web" })"
                           OnEdit="HandleEdit" />
             @if (editMessage.HasValue())
@@ -446,10 +441,16 @@
             <b>ClearedAnnouncementFormat</b>, <b>EditedAnnouncementFormat</b>, <b>MovedAnnouncementFormat</b>,
             <b>PickedUpAnnouncementFormat</b>, <b>PutBackAnnouncementFormat</b> and
             <b>InvalidAnnouncementFormat</b>. Most take <code>{0}</code> for the tag - the move also
-            <code>{1}</code> for the position it landed on and <code>{2}</code> for how many tags there are - and
-            an empty string keeps that event silent. The two standing for a batch count instead of naming: reading
-            fifty names out is not a confirmation but a wall, and the tags are in the list to be walked through
-            anyway.
+            <code>{1}</code> for the position it landed on and <code>{2}</code> for how many tags there are, the
+            refusal <code>{1}</code> for why it was turned down - and an empty string keeps that event silent. The
+            two standing for a batch count instead of naming: reading fifty names out is not a confirmation but a
+            wall, and the tags are in the list to be walked through anyway.
+            <br /><br />
+            The list itself sits away from the caret, so a reader landing in a field that already holds tags would
+            otherwise be told only that the input is empty: the input describes itself with how many there are -
+            "3 of 5 tags" where <b>MaxTags</b> sets a ceiling - which <b>TagCountAriaDescriptionFormat</b> writes.
+            It is referenced rather than announced, so it is read on arriving and never while the field is being
+            typed into.
             <br /><br />
             The names of the parts follow the same idea: <b>TagsAriaLabel</b> names the list, <b>TagAriaDescription</b>
             is the sentence telling what the keyboard can do with the chip just reached (built from the gestures the
@@ -459,6 +460,14 @@
             <b>EditAriaLabelFormat</b> the little edit input, and <b>ClearButtonAriaLabel</b> the button that
             empties the field. Each chip also carries its own position
             in the whole list, so "the third of six" stays true where <b>MaxDisplayedTags</b> folded the rest away.
+            <br /><br />
+            One thing a chip cannot give on its own is a 24&nbsp;CSS-pixel pointer target (WCAG 2.2, SC 2.5.8):
+            the dismiss button and the reorder handle take the full height of the chip and a pad on either side
+            of the glyph, which is all a chip as tall as a line of text has to give. Where that minimum has to be
+            met, grow the chips - <code>--bit-TagsInput-tag-min-height: 1.5rem</code> with a roomier
+            <code>--bit-TagsInput-tag-padding</code> - and widen the buttons through
+            <b>Classes.DismissButton</b>; the keyboard reaches both at any size, <b>Delete</b> removing the
+            focused chip and <b>Alt</b> with the arrows moving it.
         </div>
         <br />
         <div class="example-box">
@@ -479,9 +488,11 @@
             <BitTagsInput Label="Names of your own"
                           EditableTags
                           ShowClearButton
+                          MaxTags="5"
                           Placeholder="Add tag..."
                           TagsAriaLabel="Selected skills"
                           TagAriaDescription="Press Enter to rename this skill, or Delete to drop it."
+                          TagCountAriaDescriptionFormat="{0} of {1} skills chosen."
                           DismissAriaLabelFormat="Drop {0}"
                           DismissTitle="Drop"
                           EditAriaLabelFormat="Rename {0}"
@@ -495,10 +506,11 @@
             <b>Prefix</b> and <b>Suffix</b> draw a short text inside the field, at its start and at its end, which
             is not part of the value: the <code>To:</code> of a recipients field, the unit of a list of
             measurements. The prefix sits in front of the chips and the suffix after everything else, the clear
-            button included. <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take markup instead, for an icon or a
-            badge. Neither is announced with the field, so the meaning they carry has to be in the <b>Label</b> as
-            well - a reader hearing only "Tags, edit" over a field whose prefix says <code>To:</code> has no idea
-            what the tags are.
+            button included. Both are announced with the field - the input references them, ahead of the
+            <b>Description</b> - so a reader is told what a sighted user reads inside it.
+            <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take markup instead, for an icon or a badge; markup
+            is as likely to be a glyph as a word, so those are <i>not</i> announced and what they mean has to be
+            in the <b>Label</b> as well.
         </div>
         <br />
         <div class="example-box">
@@ -530,7 +542,11 @@
         <div>
             <b>TagTemplate</b> replaces the text of every chip with markup of your own, the tag being the context;
             the chip around it - its background, its focus ring, its dismiss button - is still the component's, so
-            a template only describes what goes inside. <b>GetTagClass</b> and <b>GetTagStyle</b> are what tell one
+            a template only describes what goes inside. Markup is not something a name can be read off, though, so
+            a chip drawing <i>Ada Lovelace</i> over the tag <code>ada@@example.com</code> is announced by neither
+            the one nor the other: <b>GetTagName</b> is what names it, and the name it gives is carried by the
+            chip, by its dismiss button, by its reorder handle, by its inline edit and by every announcement the
+            tag takes part in. <b>GetTagClass</b> and <b>GetTagStyle</b> are what tell one
             chip apart from the next: each receives a tag and returns what that particular chip should carry on top
             of the shared styling - the address that is not well formed drawn in red, each priority in a color of
             its own. They run for every drawn tag on every render, so they belong to a lookup rather than a
@@ -542,6 +558,15 @@
                 <TagTemplate Context="tag">
                     <BitIcon IconName="@BitIconName.Tag" Style="font-size: 0.75rem;" />
                     <span style="font-weight: 600;">@tag</span>
+                </TagTemplate>
+            </BitTagsInput>
+            <BitTagsInput Label="A template drawing something else, named by GetTagName"
+                          Placeholder="Add an address..."
+                          Description="The chips read as people; the value keeps the addresses, and so does the form."
+                          GetTagName="GetPersonName"
+                          DefaultValue="@(new List<string> { "ada@example.com", "grace@example.com" })">
+                <TagTemplate Context="tag">
+                    <span>@GetPersonName(tag)</span>
                 </TagTemplate>
             </BitTagsInput>
             <BitTagsInput Label="Recipients"
@@ -602,18 +627,22 @@
         <div>
             <b>OnBeforeAdd</b> and <b>OnBeforeRemove</b> run before the list changes and can call the change off
             with <b>args.Cancel</b>, which is the hook for a confirmation or a rule that lives on the server.
+            <b>OnBeforeAdd</b> can also <i>correct</i> the tag on its way in by writing to <b>args.Tag</b> - the
+            address an alias resolves to, the id a code stands for - and what it leaves there is what is added,
+            announced and reported.
             <b>OnAdd</b> receives every tag added in one go (a paste adds several), <b>OnRemove</b> the one taken
             off, <b>OnInvalid</b> the one refused with the rule that refused it, and <b>OnInput</b> the text of the
             input as it is typed - which is what an external suggestion list is driven by. <b>OnInput</b> also
             reports the emptying the component does itself, so a list of your own is never left filtering on a word
             that is already a chip. <b>OnTagClick</b> turns a chip into a way in to whatever it stands for - the
             card of the recipient, the filter the tag is built on - without taking the focus the click already
-            gives it. <b>OnFocusIn</b>, <b>OnFocusOut</b> and <b>OnKeyDown</b> report the plain input events on top
+            gives it, and <b>Enter</b> on the focused chip does the very same thing, so the way in is not one
+            only a pointer has (unless <b>EditableTags</b> has claimed that key for the inline edit). <b>OnFocusIn</b>, <b>OnFocusOut</b> and <b>OnKeyDown</b> report the plain input events on top
             of them.
         </div>
         <br />
         <div class="example-box">
-            <BitTagsInput Label="Try adding 'block', then click a chip"
+            <BitTagsInput Label="Try adding 'block', or 'me' to see the tag corrected on its way in"
                           Placeholder="Type 'block' to see OnBeforeAdd cancel the add"
                           DefaultValue="@(new List<string> { "blazor" })"
                           OnBeforeAdd="HandleBeforeAdd"
@@ -764,11 +793,12 @@
     <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b> reach
-            every part by name - the label, the description, the counter, the input container, the affixes, the
-            wrapper of the tags, each tag and its text, the reorder handle and the dismiss button with their icons,
-            the fold chip, the input, the little edit input, the loading spinner and the clear button - plus the
-            state slots <b>Focused</b>, <b>FocusedTag</b>, <b>FixedTag</b>, <b>PickedUpTag</b> (the chip waiting to
-            be put down) and <b>DuplicateTag</b> (the chip a refused duplicate collided with). Prefer
+            every part by name - the label, the description, the sentence a refusal is reported with, the counter,
+            the input container, the affixes, the wrapper of the tags, each tag and its text, the reorder handle
+            and the dismiss button with their icons, the fold chip, the input, the little edit input, the loading
+            spinner and the clear button - plus the state slots <b>Focused</b>, <b>FocusedTag</b>,
+            <b>FixedTag</b>, <b>EditingTag</b> (the chip being corrected), <b>PickedUpTag</b> (the chip waiting
+            to be put down) and <b>DuplicateTag</b> (the chip a refused duplicate collided with). Prefer
             <b>Classes</b> when your CSS should own states such as hover, which inline styles cannot express.
         </div>
         <br />

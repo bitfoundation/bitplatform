@@ -71,13 +71,9 @@ public partial class BitTagsInputDemo
               Suggestions=""frameworkSuggestions""
               RestrictToSuggestions
               Comparison=""StringComparison.OrdinalIgnoreCase""
+              ShowInvalidMessage
               Placeholder=""Try 'BLAZOR'""
-              Description=""Anything else is refused, and BLAZOR is stored as blazor.""
-              OnInvalid=""HandleSuggestionInvalid"" />
-@if (suggestionMessage.HasValue())
-{
-    <div class=""invalid-message"">@suggestionMessage</div>
-}
+              Description=""Anything else is refused, and BLAZOR is stored as blazor."" />
 
 <BitTagsInput Label=""A long catalogue, 5 offers at a time""
               Suggestions=""countrySuggestions""
@@ -100,14 +96,6 @@ private readonly string[] countrySuggestions = [""Argentina"", ""Australia"", ""
                                                 ""Iran"", ""Ireland"", ""Italy"", ""Japan"", ""Mexico"", ""Morocco"",
                                                 ""Netherlands"", ""New Zealand"", ""Norway"", ""Poland"", ""Portugal"",
                                                 ""Spain"", ""Sweden"", ""Switzerland"", ""Turkey"", ""Ukraine""];
-private string? suggestionMessage;
-
-private void HandleSuggestionInvalid(BitTagsInputInvalidArgs args)
-{
-    suggestionMessage = args.Reason == BitTagsInputInvalidReason.NotSuggested
-        ? $""'{args.Tag}' is not one of the suggested values.""
-        : $""'{args.Tag}' was refused ({args.Reason})."";
-}
 
 private bool asyncLoading;
 private int asyncRequestId;
@@ -142,101 +130,71 @@ private async Task HandleAsyncInput(string text)
 <BitTagsInput Label=""Up to 3 tags""
               MaxTags=""3""
               ShowCounter
+              ShowInvalidMessage
               Separators=""@(["",""])""
               Placeholder=""Add up to 3 tags""
-              @bind-Value=""maxTagsValue""
-              OnInvalid=""HandleMaxTagsInvalid"" />
-@if (maxTagsMessage.HasValue())
-{
-    <div class=""invalid-message"">@maxTagsMessage</div>
-}
+              @bind-Value=""maxTagsValue"" />
 
 <BitTagsInput Label=""Between 3 and 10 characters""
               MinLength=""3""
               MaxLength=""10""
               ShowCounter
+              ShowInvalidMessage
               Placeholder=""Add tag...""
               Description=""Typing beyond the tenth character does nothing; shorter than three is refused."" />";
     private readonly string example6CsharpCode = @"
-private ICollection<string>? maxTagsValue = [""blazor""];
-private string? maxTagsMessage;
-
-private void HandleMaxTagsInvalid(BitTagsInputInvalidArgs args)
-{
-    maxTagsMessage = args.Reason == BitTagsInputInvalidReason.MaxTags
-        ? $""'{args.Tag}' was refused: no more than 3 tags.""
-        : $""'{args.Tag}' was refused ({args.Reason})."";
-}";
+private ICollection<string>? maxTagsValue = [""blazor""];";
 
     private readonly string example7RazorCode = @"
 <BitTagsInput Label=""Hashtags""
+              ShowInvalidMessage
               Transformer=""NormalizeHashtag""
               Separators=""@(["",""])""
               Placeholder=""#Blazor, #WEB, # dot net""
-              Description=""Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked.""
-              OnTagExists=""HandleTagExists"" />
-@if (duplicateMessage.HasValue())
-{
-    <div class=""invalid-message"">@duplicateMessage</div>
-}
+              Description=""Lower cased, stripped of a leading # and of the whitespace inside - so the second spelling is a duplicate. Add one twice to see the chip it collided with marked."" />
 
 <BitTagsInput Label=""Email addresses""
+              ShowInvalidMessage
+              GetInvalidMessage=""GetEmailInvalidMessage""
               Placeholder=""name@example.com""
               Separators=""@(["","", "";"", "" ""])""
               Pattern=""@emailPattern""
-              Description=""Only well formed addresses are accepted.""
-              OnInvalid=""HandlePatternInvalid"" />
-@if (patternMessage.HasValue())
-{
-    <div class=""invalid-message"">@patternMessage</div>
-}
+              Description=""Only well formed addresses are accepted, and the refusal is worded here rather than built."" />
 
 <BitTagsInput Label=""Known frameworks, duplicates allowed""
               Duplicates
+              ShowInvalidMessage
               Validator=""ValidateFramework""
               Placeholder=""blazor, react, vue, angular""
-              Description=""Only those four, and each of them as often as you like.""
-              OnInvalid=""HandleValidatorInvalid"" />
-@if (validatorMessage.HasValue())
-{
-    <div class=""invalid-message"">@validatorMessage</div>
-}";
+              Description=""Only those four, and each of them as often as you like."" />";
     private readonly string example7CsharpCode = @"
 private const string emailPattern = @""^[^@\s]+@[^@\s]+\.[^@\s]+$"";
-private string? patternMessage;
-private string? validatorMessage;
-private string? duplicateMessage;
 
 private static string NormalizeHashtag(string tag)
 {
     return string.Concat(tag.TrimStart('#').Where(c => char.IsWhiteSpace(c) is false)).ToLowerInvariant();
 }
 
-private void HandleTagExists(string tag)
+// null leaves the built-in sentence in place, so only the pattern is worded here.
+private static string? GetEmailInvalidMessage(BitTagsInputInvalidArgs args)
 {
-    duplicateMessage = $""'{tag}' is already in the list."";
-}
-
-private void HandlePatternInvalid(BitTagsInputInvalidArgs args)
-{
-    patternMessage = $""'{args.Tag}' is not a valid email address."";
+    return args.Reason == BitTagsInputInvalidReason.Pattern
+        ? $""'{args.Tag}' is not an email address.""
+        : null;
 }
 
 private static bool ValidateFramework(string tag)
 {
     return tag is ""blazor"" or ""react"" or ""vue"" or ""angular"";
-}
-
-private void HandleValidatorInvalid(BitTagsInputInvalidArgs args)
-{
-    validatorMessage = $""'{args.Tag}' is not one of the known frameworks."";
 }";
 
     private readonly string example8RazorCode = @"
 <BitTagsInput Label=""Double click a tag to correct it""
               EditableTags
-              MinLength=""2""
+              MinLength=""3""
+              ShowInvalidMessage
               Placeholder=""Add tag...""
+              Description=""Correct one to a single letter: the refusal says why and hands the text back.""
               DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"", ""web"" })""
               OnEdit=""HandleEdit"" />
 @if (editMessage.HasValue())
@@ -433,6 +391,16 @@ private ICollection<string>? fixedTags = [""ada@example.com"", ""grace@example.c
     </TagTemplate>
 </BitTagsInput>
 
+<BitTagsInput Label=""A template drawing something else, named by GetTagName""
+              Placeholder=""Add an address...""
+              Description=""The chips read as people; the value keeps the addresses, and so does the form.""
+              GetTagName=""GetPersonName""
+              DefaultValue=""@(new List<string> { ""ada@example.com"", ""grace@example.com"" })"">
+    <TagTemplate Context=""tag"">
+        <span>@GetPersonName(tag)</span>
+    </TagTemplate>
+</BitTagsInput>
+
 <BitTagsInput Label=""Recipients""
               Separators=""@(["","", "";"", "" ""])""
               Placeholder=""Add an address...""
@@ -459,6 +427,15 @@ private static string? GetPriorityClass(string tag) => tag.ToLowerInvariant() sw
     ""medium"" => ""priority-medium"",
     ""low"" => ""priority-low"",
     _ => null
+};
+
+// A template draws the person rather than the address, so the chip is named the same way -
+// otherwise it is announced by neither the markup nor the value behind it.
+private static string GetPersonName(string tag) => tag switch
+{
+    ""ada@example.com"" => ""Ada Lovelace"",
+    ""grace@example.com"" => ""Grace Hopper"",
+    _ => tag
 };";
 
     private readonly string example17RazorCode = @"
@@ -502,7 +479,7 @@ private readonly ValidationTagsInputModel validationModel = new();
 private void HandleValidSubmit() => formSubmitted = true;";
 
     private readonly string example18RazorCode = @"
-<BitTagsInput Label=""Try adding 'block', then click a chip""
+<BitTagsInput Label=""Try adding 'block', or 'me' to see the tag corrected on its way in""
               Placeholder=""Type 'block' to see OnBeforeAdd cancel the add""
               DefaultValue=""@(new List<string> { ""blazor"" })""
               OnBeforeAdd=""HandleBeforeAdd""
@@ -525,6 +502,15 @@ private void HandleBeforeAdd(BitTagsInputBeforeArgs args)
     {
         args.Cancel = true;
         eventsLog = $""Adding '{args.Tag}' was cancelled by OnBeforeAdd."";
+        return;
+    }
+
+    // An alias the server knows the real spelling of: what the handler leaves in
+    // args.Tag is what the list is given.
+    if (args.Tag.Equals(""me"", StringComparison.OrdinalIgnoreCase))
+    {
+        args.Tag = ""ada@example.com"";
+        eventsLog = ""OnBeforeAdd resolved 'me' to ada@example.com."";
     }
 }
 

@@ -20,9 +20,9 @@
 //   --bit-TagsInput-gap                     room between the chips, the input and the affixes (default: per size)
 //   --bit-TagsInput-focus-color             color of the focus ring                           (default: the role's focus color)
 //   --bit-TagsInput-focus-border-color      rule around the focused field                     (default: the role's main color)
-//   --bit-TagsInput-invalid-color           rule and helper text of a field failing validation, and the
-//                                           mark a refused tag leaves on the field and on the chip it
-//                                           collided with                                     (default: $clr-err)
+//   --bit-TagsInput-invalid-color           rule and helper text of a field failing validation, the mark a
+//                                           refused tag leaves on the field and on the chip it collided
+//                                           with, and the sentence saying why it was refused  (default: $clr-err)
 //   --bit-TagsInput-disabled-color          text of a disabled field and of its chips         (default: $clr-fg-dis)
 //   --bit-TagsInput-disabled-background     fill of a disabled field and of its chips         (default: $clr-bg-dis)
 //   --bit-TagsInput-disabled-border-color   rule of a disabled field and of its chips         (default: $clr-brd-dis)
@@ -36,6 +36,9 @@
 //   --bit-TagsInput-tag-font-size           text size of a chip                               (default: per size, from the type ramp)
 //   --bit-TagsInput-tag-min-height          smallest height of a chip                         (default: per size)
 //   --bit-TagsInput-tag-max-width           widest a chip grows before its text is ellipsized (default: 100%)
+//   --bit-TagsInput-tag-hover-color         text of a chip an OnTagClick opens, under the
+//                                           pointer                                           (default: per tag variant)
+//   --bit-TagsInput-tag-hover-background    fill and rule of that chip while it is hovered    (default: per tag variant)
 //   --bit-TagsInput-tag-focus-color         inset ring of the focused chip and of the chip a
 //                                           dragged one would land on                         (default: per tag variant)
 //   --bit-TagsInput-tag-dragging-opacity    alpha of the chip being dragged                   (default: 0.4)
@@ -110,9 +113,17 @@
     font-size: calc(var(--bit-TagsInput-font-size, var(--bit-tgi-fontsize)) - #{spacing(0.25)});
 }
 
-//the announcement of an added, removed or rejected tag, and the sentence telling what the keyboard can
-//do with a tag: read out by screen readers, never drawn.
+//the sentence a refusal is reported with, standing where the helper text otherwise would: it carries the
+//invalid color, so the field says why in words as well as in the rule it wears - a message a color alone
+//has to carry is a message half the readers of the page never get.
+.bit-tgi-ivm {
+    color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+}
+
+//the announcement of an added, removed or rejected tag, the sentence telling what the keyboard can do with
+//a tag, and the count of the tags the input describes itself with: read out by screen readers, never drawn.
 .bit-tgi-lvr,
+.bit-tgi-cvs,
 .bit-tgi-vsh {
     border: 0;
     padding: 0;
@@ -232,8 +243,10 @@
 
 //the little input that replaces a tag while it is being corrected in place: it borrows the type and the
 //colors of the chip around it, so the tag does not visibly change into something else while it is edited.
-//It sizes itself to the text it holds through a field-sizing where that is supported, and falls back to a
-//width wide enough for a short tag everywhere else.
+//It sizes itself to the text it holds through a field-sizing where that is supported; everywhere else -
+//which is still most of Firefox and all of Safari - the size attribute the component writes off the text
+//is what governs the width, so no CSS width is declared here: one would override that attribute and leave
+//every engine but Chromium editing a long tag through a box a few characters wide.
 .bit-tgi-eip {
     border: none;
     outline: none;
@@ -244,9 +257,9 @@
     letter-spacing: inherit;
     box-sizing: content-box;
     background: none transparent;
-    width: spacing(8);
     field-sizing: content;
     min-width: spacing(4);
+    max-width: 100%;
 }
 
 //the chip standing for the tags folded away: it is drawn as one of them rather than as a button, since
@@ -275,9 +288,9 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-TagsInput-toggle-hover-color, var(--bit-tgi-tgl-clr-hover));
-            border-color: var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tgl-brd-hover));
-            background-color: var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tgl-bg-hover));
+            color: var(--bit-TagsInput-toggle-hover-color, var(--bit-tgi-tag-clr-hover));
+            border-color: var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-brd-hover));
+            background-color: var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-bg-hover));
         }
     }
 
@@ -358,6 +371,15 @@
     }
 }
 
+//the chip that is being corrected in place. The caret inside it is the only thing that says which tag is
+//being edited, and a caret is a thin line in a row of chips; the chip wears the same inset ring a focused
+//one does, so the eye finds it. A ring rather than a fill, since the little input has borrowed the colors
+//of the chip and repainting it now would be the tag changing into something else half way through.
+.bit-tgi-tag-edt {
+    outline: $shp-focus-ring-width solid var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring));
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
 //the chip that has been picked up and is waiting to be put down: outlined rather than faded, since unlike
 //the dragged chip there is no second copy of it under the pointer to tell the two apart. The dashes are
 //what say "this one is in the air" without borrowing the solid ring that means "this one has the focus".
@@ -390,6 +412,23 @@
 //would otherwise have given it on that side and does not read as a chip whose button failed to render.
 .bit-tgi-tag-fix {
     cursor: default;
+}
+
+//a chip a click opens: it says so under the pointer rather than wearing the caret of the field around it,
+//which is the one cursor that promises typing, and it answers the pointer with the very shading the fold
+//chip does - a target that does not react is a target the eye never finds. Declared after the fixed chip,
+//since a tag that is pinned in place is still a tag that opens; a chip that is being carried drops the
+//class altogether, the reordering owning the pointer while it is in the air.
+.bit-tgi-tag-clk {
+    cursor: pointer;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-TagsInput-tag-hover-color, var(--bit-tgi-tag-clr-hover));
+            border-color: var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-brd-hover));
+            background-color: var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-bg-hover));
+        }
+    }
 }
 
 //the spinner IsLoading draws at the end of the field, next to the clear button. It is sized off the
@@ -540,9 +579,9 @@
     --bit-tgi-tag-brd: var(--bit-tgi-clr);
     --bit-tgi-tag-bg: var(--bit-tgi-clr);
     --bit-tgi-tag-ring: var(--bit-tgi-clr-txt);
-    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-txt);
-    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
-    --bit-tgi-tgl-bg-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-txt);
+    --bit-tgi-tag-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-bg-hover: var(--bit-tgi-clr-hover);
 }
 
 //Outline: the chip is left unfilled and the color is drawn as its rule and its text.
@@ -551,9 +590,9 @@
     --bit-tgi-tag-brd: var(--bit-tgi-clr);
     --bit-tgi-tag-bg: transparent;
     --bit-tgi-tag-ring: var(--bit-tgi-clr);
-    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
-    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
-    --bit-tgi-tgl-bg-hover: transparent;
+    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-bg-hover: transparent;
 }
 
 //Text: only the text of the chip is painted, for tags that should not outweigh the field holding them.
@@ -562,9 +601,9 @@
     --bit-tgi-tag-brd: transparent;
     --bit-tgi-tag-bg: transparent;
     --bit-tgi-tag-ring: var(--bit-tgi-clr);
-    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
-    --bit-tgi-tgl-brd-hover: transparent;
-    --bit-tgi-tgl-bg-hover: transparent;
+    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-brd-hover: transparent;
+    --bit-tgi-tag-bg-hover: transparent;
 }
 
 //a read-only field still takes the caret (the tags are read and copied out of it), but nothing in it can
@@ -723,6 +762,7 @@
     .bit-tgi-tag:focus-visible,
     .bit-tgi-tgl:focus-visible,
     .bit-tgi-dbt:focus-visible,
+    .bit-tgi-tag-edt,
     .bit-tgi-tag-dro {
         outline-color: Highlight;
     }

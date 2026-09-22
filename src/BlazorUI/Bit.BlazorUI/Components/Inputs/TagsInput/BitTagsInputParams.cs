@@ -177,6 +177,17 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public BitEnterKeyHint? EnterKeyHint { get; set; }
 
     /// <summary>
+    /// The sentence that says why a tag was refused, for wording of your own and for localization.
+    /// </summary>
+    public Func<BitTagsInputInvalidArgs, string?>? GetInvalidMessage { get; set; }
+
+    /// <summary>
+    /// How a tag is called wherever the component names it: the accessible name of its chip and of its
+    /// buttons, and the announcements it takes part in. It defaults to the tag itself.
+    /// </summary>
+    public Func<string, string?>? GetTagName { get; set; }
+
+    /// <summary>
     /// A function returning extra CSS classes for a single tag.
     /// </summary>
     public Func<string, string?>? GetTagClass { get; set; }
@@ -373,6 +384,12 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     public bool? ShowCounter { get; set; }
 
     /// <summary>
+    /// Draws the sentence saying why the last tag was refused under the field, where the description
+    /// otherwise stands.
+    /// </summary>
+    public bool? ShowInvalidMessage { get; set; }
+
+    /// <summary>
     /// The size of the tags input.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -401,6 +418,12 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
     /// The sentence announced after each tag, telling what the keyboard can do with it.
     /// </summary>
     public string? TagAriaDescription { get; set; }
+
+    /// <summary>
+    /// The format of the sentence describing the input, where {0} is how many tags the list holds and {1}
+    /// the MaxTags ceiling.
+    /// </summary>
+    public string? TagCountAriaDescriptionFormat { get; set; }
 
     /// <summary>
     /// The accessible name of the list the tags form.
@@ -600,6 +623,16 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.EnterKeyHint = EnterKeyHint.Value;
 
             bitTagsInput.OnSetEnterKeyHint();
+        }
+
+        if (GetInvalidMessage is not null && bitTagsInput.HasNotBeenSet(nameof(GetInvalidMessage)))
+        {
+            bitTagsInput.GetInvalidMessage = GetInvalidMessage;
+        }
+
+        if (GetTagName is not null && bitTagsInput.HasNotBeenSet(nameof(GetTagName)))
+        {
+            bitTagsInput.GetTagName = GetTagName;
         }
 
         if (GetTagClass is not null && bitTagsInput.HasNotBeenSet(nameof(GetTagClass)))
@@ -802,6 +835,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.ShowCounter = ShowCounter.Value;
         }
 
+        if (ShowInvalidMessage.HasValue && bitTagsInput.HasNotBeenSet(nameof(ShowInvalidMessage)))
+        {
+            bitTagsInput.ShowInvalidMessage = ShowInvalidMessage.Value;
+        }
+
         if (Size.HasValue && bitTagsInput.HasNotBeenSet(nameof(Size)))
         {
             bitTagsInput.Size = Size.Value;
@@ -834,6 +872,11 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         if (TagAriaDescription is not null && bitTagsInput.HasNotBeenSet(nameof(TagAriaDescription)))
         {
             bitTagsInput.TagAriaDescription = TagAriaDescription;
+        }
+
+        if (TagCountAriaDescriptionFormat is not null && bitTagsInput.HasNotBeenSet(nameof(TagCountAriaDescriptionFormat)))
+        {
+            bitTagsInput.TagCountAriaDescriptionFormat = TagCountAriaDescriptionFormat;
         }
 
         if (TagsAriaLabel.HasValue() && bitTagsInput.HasNotBeenSet(nameof(TagsAriaLabel)))

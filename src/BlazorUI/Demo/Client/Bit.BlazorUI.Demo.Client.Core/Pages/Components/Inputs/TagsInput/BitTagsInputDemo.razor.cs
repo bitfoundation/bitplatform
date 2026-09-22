@@ -194,7 +194,7 @@ public partial class BitTagsInputDemo
             Name = "EditableTags",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a tag be corrected in place: double clicking a tag (or pressing Enter or F2 on the focused one) turns it into a little input, Enter commits the new text and Escape puts the old one back. Committing an empty text removes the tag.",
+            Description = "Lets a tag be corrected in place: double clicking a tag (or pressing Enter or F2 on the focused one) turns it into a little input, Enter commits the new text and Escape puts the old one back. The text goes through the same rules as a tag being added, and a correction they turn down is handed back in the still open input rather than being thrown away. Committing an empty text removes the tag.",
         },
         new()
         {
@@ -218,6 +218,22 @@ public partial class BitTagsInputDemo
             Description = "Sets the enterkeyhint html attribute of the input element, which decides the label a virtual keyboard draws on its return key. The key confirms a tag here, so Done and Next are the ones that describe it on a phone.",
             LinkType = LinkType.Link,
             Href = "#enter-key-hint-enum",
+        },
+        new()
+        {
+            Name = "GetInvalidMessage",
+            Type = "Func<BitTagsInputInvalidArgs, string?>?",
+            DefaultValue = "null",
+            Description = "The sentence that says why a tag was refused, for wording of your own and for localization. It receives the tag with the rule that turned it down and returns what the field announces - and draws under itself where ShowInvalidMessage is on. null falls back to the built-in sentence, an empty string keeps that refusal silent.",
+            LinkType = LinkType.Link,
+            Href = "#invalid-args",
+        },
+        new()
+        {
+            Name = "GetTagName",
+            Type = "Func<string, string?>?",
+            DefaultValue = "null",
+            Description = "How a tag is called wherever the component names it: the accessible name of its chip, of the dismiss button, of the reorder handle and of the inline edit, and the announcements it takes part in. It defaults to the tag itself, which a TagTemplate is exactly what breaks - a chip drawing \"Ada Lovelace\" over ada@example.com is announced by neither without this. null falls back to the tag.",
         },
         new()
         {
@@ -254,7 +270,7 @@ public partial class BitTagsInputDemo
             Name = "InvalidAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of the message announced by screen readers when a tag is rejected, where {0} is the tag. The default is \"{0} was not added.\". An empty string keeps the rejection from being announced.",
+            Description = "The format of the sentence a rejection is reported with, where {0} is the tag and {1} is why it was turned down (\"It is already in the list.\", \"A tag must be at least 3 characters.\"). The default is \"{0} was not added. {1}\". It is what screen readers announce and what ShowInvalidMessage draws. An empty string keeps a rejection from being announced.",
         },
         new()
         {
@@ -303,7 +319,7 @@ public partial class BitTagsInputDemo
             Name = "MaxSuggestions",
             Type = "int",
             DefaultValue = "0",
-            Description = "The number of values the suggestion list is allowed to offer at once. Beyond this ceiling only the values that hold what is being typed are offered, and only as many of them as it allows, which is what keeps a catalogue of thousands from being written into the page in full on every keystroke. 0 means all of them.",
+            Description = "The number of values the suggestion list is allowed to offer at once. Beyond this ceiling only the values that hold what is being typed are offered, and only as many of them as it allows, which is what keeps a catalogue of thousands from being written into the page in full on every keystroke. What holds what is being typed is decided without regard to case, the way the browser filters the list it is handed - the Comparison says when two tags are the same value, which is a different question. 0 means all of them.",
         },
         new()
         {
@@ -399,7 +415,7 @@ public partial class BitTagsInputDemo
         {
             Name = "OnBeforeAdd",
             Type = "EventCallback<BitTagsInputBeforeArgs>",
-            Description = "Callback invoked before a tag is added. Set args.Cancel = true to cancel the add.",
+            Description = "Callback invoked before a tag is added, carrying the tag every rule has already accepted. Set args.Cancel = true to call the add off, or write to args.Tag to correct the text on its way in - what the handler leaves there is what is added, announced and reported through OnAdd.",
             LinkType = LinkType.Link,
             Href = "#before-args",
         },
@@ -484,7 +500,7 @@ public partial class BitTagsInputDemo
             Name = "OnTagClick",
             Type = "EventCallback&lt;string&gt;",
             DefaultValue = "",
-            Description = "Callback for when a tag is clicked, carrying the tag. It changes nothing about what the click already does, the tag still taking the focus; the dismiss button is not a click on the tag, and neither is the second click of the double click that opens the inline edit.",
+            Description = "Callback for when a tag is clicked, carrying the tag. It changes nothing about what the click already does, the tag still taking the focus; the dismiss button is not a click on the tag, and neither is the second click of the double click that opens the inline edit. Enter on the focused chip does the same, unless EditableTags has claimed that key for the inline edit.",
         },
         new()
         {
@@ -518,7 +534,7 @@ public partial class BitTagsInputDemo
             Name = "Prefix",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A short text drawn at the start of the field, in front of the tags, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+            Description = "A short text drawn at the start of the field, in front of the tags, which is not part of the value: the \"To:\" of a recipients field, the \"#\" of a hashtag one. It is announced with the field, the input referencing it along with the Suffix and the Description.",
         },
         new()
         {
@@ -606,6 +622,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "ShowInvalidMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Draws the sentence saying why the last tag was refused under the field, in the invalid color, where the Description otherwise stands - so the refusal is read rather than only seen as a red rule. It is the very sentence a screen reader is given, and it stands until the next keystroke answers it.",
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -618,7 +641,7 @@ public partial class BitTagsInputDemo
             Name = "SpellCheck",
             Type = "bool?",
             DefaultValue = "false",
-            Description = "Sets the spellcheck html attribute of the input element. It is off by default, a tag being a value rather than a sentence - an identifier or a hashtag underlined in red says only that the dictionary has not heard of it.",
+            Description = "Sets the spellcheck html attribute of the input, and of the little input an inline edit opens. It is off by default, a tag being a value rather than a sentence - an identifier or a hashtag underlined in red says only that the dictionary has not heard of it.",
         },
         new()
         {
@@ -641,7 +664,7 @@ public partial class BitTagsInputDemo
             Name = "Suffix",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A short text drawn at the end of the field, after everything else, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+            Description = "A short text drawn at the end of the field, after everything else, which is not part of the value: the unit of a list of measurements. Like the Prefix it is announced with the field, the input referencing it.",
         },
         new()
         {
@@ -662,7 +685,14 @@ public partial class BitTagsInputDemo
             Name = "TagAriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The sentence announced after each tag, telling what the keyboard can do with the one that has just been reached. It defaults to a sentence built from what the component was actually given (the inline edit, the reordering), and is left out entirely when neither is on. An empty string keeps it from being rendered at all.",
+            Description = "The sentence announced after each tag, telling what the keyboard can do with the one that has just been reached. It defaults to a sentence built from what the component was actually given (the inline edit, the reordering, a click that opens the chip), and is left out entirely when there is none. An empty string keeps it from being rendered at all.",
+        },
+        new()
+        {
+            Name = "TagCountAriaDescriptionFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the sentence describing the input, where {0} is how many tags the list already holds and {1} the MaxTags ceiling (0 when there is none). The default is \"{0} tags.\" - or \"{0} of {1} tags.\" where there is a ceiling. It is referenced by the input rather than announced, so it is read on arriving in a field that is not empty. An empty string leaves it out.",
         },
         new()
         {
@@ -915,6 +945,18 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "--bit-TagsInput-tag-hover-color",
+            DefaultValue = "Per TagVariant",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it. A chip nothing opens does not react, a target that lights up without doing anything being a promise the field does not keep.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-tag-hover-background",
+            DefaultValue = "Per TagVariant",
+            Description = "The fill and the rule of that same chip while it is hovered.",
+        },
+        new()
+        {
             Name = "--bit-TagsInput-tag-focus-color",
             DefaultValue = "Per TagVariant",
             Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on.",
@@ -995,7 +1037,7 @@ public partial class BitTagsInputDemo
                     Name = "Tag",
                     Type = "string",
                     DefaultValue = "string.Empty",
-                    Description = "The tag text being added or removed.",
+                    Description = "The tag text being added or removed, after the trimming and the transformation. On an add it is also what the handler hands back: what is written to it is what the list is given, exactly as an OnEdit handler corrects a tag on its way in. Leaving it empty is not a way to call the add off, which is what Cancel is for.",
                 },
                 new()
                 {
@@ -1193,6 +1235,13 @@ public partial class BitTagsInputDemo
                 },
                 new()
                 {
+                    Name = "EditingTag",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the tag that is currently being corrected in place, which carries the little edit input instead of its text.",
+                },
+                new()
+                {
                     Name = "PickedUpTag",
                     Type = "string?",
                     DefaultValue = "null",
@@ -1295,6 +1344,13 @@ public partial class BitTagsInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the description (helper text) of the tags input.",
+                },
+                new()
+                {
+                    Name = "InvalidMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the sentence ShowInvalidMessage draws under the field when a tag is refused, which stands where the description otherwise would.",
                 },
             ]
         },
@@ -1564,7 +1620,6 @@ public partial class BitTagsInputDemo
 
 
     private ICollection<string>? maxTagsValue = ["blazor"];
-    private string? maxTagsMessage;
 
     private readonly string[] frameworkSuggestions = ["blazor", "react", "vue", "angular", "svelte"];
     private readonly string[] countrySuggestions = ["Argentina", "Australia", "Austria", "Belgium", "Brazil",
@@ -1573,7 +1628,6 @@ public partial class BitTagsInputDemo
                                                     "Iran", "Ireland", "Italy", "Japan", "Mexico", "Morocco",
                                                     "Netherlands", "New Zealand", "Norway", "Poland", "Portugal",
                                                     "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine"];
-    private string? suggestionMessage;
 
     private bool asyncLoading;
     private int asyncRequestId;
@@ -1582,10 +1636,7 @@ public partial class BitTagsInputDemo
     private ICollection<string>? fixedTags = ["ada@example.com", "grace@example.com"];
 
     private const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-    private string? patternMessage;
-    private string? validatorMessage;
 
-    private string? duplicateMessage;
     private string? editMessage;
     private string? clearedMessage;
     private string? beforeClearMessage;
@@ -1619,23 +1670,12 @@ public partial class BitTagsInputDemo
 
 
 
-    private void HandleMaxTagsInvalid(BitTagsInputInvalidArgs args)
+    // null leaves the built-in sentence in place, so only the pattern is worded here.
+    private static string? GetEmailInvalidMessage(BitTagsInputInvalidArgs args)
     {
-        maxTagsMessage = args.Reason == BitTagsInputInvalidReason.MaxTags
-            ? $"'{args.Tag}' was refused: no more than 3 tags."
-            : $"'{args.Tag}' was refused ({args.Reason}).";
-    }
-
-    private void HandlePatternInvalid(BitTagsInputInvalidArgs args)
-    {
-        patternMessage = $"'{args.Tag}' is not a valid email address.";
-    }
-
-    private void HandleSuggestionInvalid(BitTagsInputInvalidArgs args)
-    {
-        suggestionMessage = args.Reason == BitTagsInputInvalidReason.NotSuggested
-            ? $"'{args.Tag}' is not one of the suggested values."
-            : $"'{args.Tag}' was refused ({args.Reason}).";
+        return args.Reason == BitTagsInputInvalidReason.Pattern
+            ? $"'{args.Tag}' is not an email address."
+            : null;
     }
 
     private async Task HandleAsyncInput(string text)
@@ -1668,19 +1708,18 @@ public partial class BitTagsInputDemo
         return tag is "blazor" or "react" or "vue" or "angular";
     }
 
-    private void HandleValidatorInvalid(BitTagsInputInvalidArgs args)
+    // A template draws the person rather than the address, so the chip is named the same way - otherwise
+    // it is announced by neither the markup nor the value behind it.
+    private static string GetPersonName(string tag) => tag switch
     {
-        validatorMessage = $"'{args.Tag}' is not one of the known frameworks.";
-    }
+        "ada@example.com" => "Ada Lovelace",
+        "grace@example.com" => "Grace Hopper",
+        _ => tag
+    };
 
     private static string NormalizeHashtag(string tag)
     {
         return string.Concat(tag.TrimStart('#').Where(c => char.IsWhiteSpace(c) is false)).ToLowerInvariant();
-    }
-
-    private void HandleTagExists(string tag)
-    {
-        duplicateMessage = $"'{tag}' is already in the list.";
     }
 
     private void HandleEdit(BitTagsInputEditArgs args)
@@ -1730,6 +1769,15 @@ public partial class BitTagsInputDemo
         {
             args.Cancel = true;
             eventsLog = $"Adding '{args.Tag}' was cancelled by OnBeforeAdd.";
+            return;
+        }
+
+        // An alias the server knows the real spelling of: what the handler leaves in args.Tag is what
+        // the list is given.
+        if (args.Tag.Equals("me", StringComparison.OrdinalIgnoreCase))
+        {
+            args.Tag = "ada@example.com";
+            eventsLog = "OnBeforeAdd resolved 'me' to ada@example.com.";
         }
     }
 

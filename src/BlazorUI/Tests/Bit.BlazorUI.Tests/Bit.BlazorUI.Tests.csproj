@@ -108,6 +108,24 @@
         <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditor.ts" Link="ts-sources\BitRichTextEditor.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- The tags input is wired to its script by the same kind of strings, and every one of its
+             interop calls is made inside a catch that swallows a missing function: a rename compiles,
+             renders, passes every rendering test and then silently gives back a field whose Enter
+             submits the form and whose chips scroll the page. BitTagsInputBridgeContractTests reads
+             these three sources to fail on that drift. -->
+        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.ts" Link="ts-sources\BitTagsInput.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInputJsRuntimeExtensions.cs" Link="cs-sources\BitTagsInputJsRuntimeExtensions.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.razor" Link="cs-sources\BitTagsInput.razor">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Components\Inputs\TagsInput\BitTagsInput.razor.cs" Link="cs-sources\BitTagsInput.razor.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+
         <!-- The two C# halves of that same contract. They are internal types, so the test reads
              them as source rather than referencing them. -->
         <None Include="..\..\Bit.BlazorUI.Extras\Components\RichTextEditor\BitRichTextEditorSetupOptions.cs" Link="cs-sources\BitRichTextEditorSetupOptions.cs">

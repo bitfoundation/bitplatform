@@ -56,6 +56,12 @@ public class BitTagsInputClassStyles
     public string? FixedTag { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the tag that is currently being corrected in place, which carries
+    /// the little edit input instead of its text.
+    /// </summary>
+    public string? EditingTag { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the tag that has been picked up with its reorder handle and is
     /// waiting to be put down.
     /// </summary>
@@ -132,4 +138,10 @@ public class BitTagsInputClassStyles
     /// Custom CSS classes/styles for the description (helper text) of the BitTagsInput.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the sentence ShowInvalidMessage draws under the field when a tag is
+    /// refused, which stands where the description otherwise would.
+    /// </summary>
+    public string? InvalidMessage { get; set; }
 }
