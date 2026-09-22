@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 
 namespace Bit.BlazorUI;
@@ -492,7 +492,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
             try
             {
-                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(_Id);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, the observer went with it
             catch (JSException) { } // the element of the observer may already be gone with its parent
@@ -1496,7 +1496,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             {
                 if (_resizeObserverRegistered)
                 {
-                    await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                    await _js.BitObserversUnregisterResize(_Id);
                 }
 
                 await _js.BitCalloutClearCallout(_calloutId);

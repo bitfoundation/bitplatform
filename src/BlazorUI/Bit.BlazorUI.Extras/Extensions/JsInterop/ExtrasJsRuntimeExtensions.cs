@@ -4,7 +4,7 @@ internal static class ExtrasJsRuntimeExtensions
 {
     internal static ValueTask BitExtrasApplyRootClasses(this IJSRuntime jsRuntime, List<string> cssClasses, Dictionary<string, string> cssVariables)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.applyRootClasses", cssClasses, cssVariables);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.applyRootClasses", cssClasses, cssVariables);
     }
 
     internal static ValueTask BitExtrasCopyToClipboard(this IJSRuntime jsRuntime, string text)
@@ -14,22 +14,22 @@ internal static class ExtrasJsRuntimeExtensions
 
     internal static ValueTask BitExtrasGoToTop(this IJSRuntime jsRuntime, ElementReference element, BitScrollBehavior? behavior = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.goToTop", element, behavior?.ToString().ToLowerInvariant());
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.goToTop", element, behavior?.ToString().ToLowerInvariant());
     }
 
     internal static ValueTask BitExtrasGoToBottom(this IJSRuntime jsRuntime, ElementReference element, BitScrollBehavior? behavior = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.goToBottom", element, behavior?.ToString().ToLowerInvariant());
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.goToBottom", element, behavior?.ToString().ToLowerInvariant());
     }
 
     internal static ValueTask BitExtrasScrollTo(this IJSRuntime jsRuntime, ElementReference element, double? left, double? top, BitScrollBehavior? behavior = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollTo", element, left, top, behavior?.ToString().ToLowerInvariant());
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.scrollTo", element, left, top, behavior?.ToString().ToLowerInvariant());
     }
 
     internal static ValueTask BitExtrasScrollBy(this IJSRuntime jsRuntime, ElementReference element, double x, double y, BitScrollBehavior? behavior = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollBy", element, x, y, behavior?.ToString().ToLowerInvariant());
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.scrollBy", element, x, y, behavior?.ToString().ToLowerInvariant());
     }
 
     public static ValueTask BitExtrasInitScripts(this IJSRuntime jsRuntime, IEnumerable<string> scripts, bool isModule = false)
@@ -44,7 +44,7 @@ internal static class ExtrasJsRuntimeExtensions
 
     internal static ValueTask BitExtrasSetPreventKeys(this IJSRuntime jsRuntime, ElementReference element, string[] keys)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.setPreventKeys", element, keys);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.setPreventKeys", element, keys);
     }
 
     internal static ValueTask BitExtrasSetPreventKeys(this IJSRuntime jsRuntime, ElementReference element, string[] keys, string targetSelector, string scopeSelector)
@@ -64,16 +64,16 @@ internal static class ExtrasJsRuntimeExtensions
 
     internal static ValueTask BitExtrasDisposePreventKeys(this IJSRuntime jsRuntime, ElementReference element)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.disposePreventKeys", element);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.disposePreventKeys", element);
     }
 
     internal static ValueTask BitExtrasSetInputValue(this IJSRuntime jsRuntime, ElementReference element, string? value)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.setInputValue", element, value);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.setInputValue", element, value);
     }
 
-    internal static ValueTask BitExtrasScrollOptionIntoView(this IJSRuntime jsRuntime, string optionId)
+    internal static ValueTask BitExtrasScrollElementIntoView(this IJSRuntime jsRuntime, string elementId)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollOptionIntoView", optionId);
+        return jsRuntime.FastInvokeVoid("BitBlazorUI.Extras.scrollElementIntoView", elementId);
     }
 }

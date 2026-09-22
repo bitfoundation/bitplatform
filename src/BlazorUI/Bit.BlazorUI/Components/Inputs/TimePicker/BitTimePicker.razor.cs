@@ -1883,7 +1883,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         finally
         {
             // Owned here rather than left to the JS side, which only holds the reference while a callout or a
-            // swipe gesture is set up - leaking it in every other case.
+            // swipe gesture is set up - leaking it in every other case. Disposing after the JS cleanup keeps
+            // its callbacks on a live target, and the finally releases the reference even when that cleanup
+            // throws something other than JSDisconnectedException.
             _dotnetObj?.Dispose();
         }
     }

@@ -74,16 +74,19 @@
             }
         }
 
-        public static unregisterResize(id: string, element: HTMLElement, obj: DotNetObject) {
-            if (!element || !(element instanceof Element)) return;
-
+        // Takes the observer off whatever it was watching, by id alone. It disconnects rather than
+        // unobserving a given element: by the time a component tears down, the element it registered can
+        // already be gone with its parent, and an unobserve that misses would leave the observer alive and
+        // still holding the .NET reference. The reference itself is owned and disposed by the component -
+        // a breadcrumb stops observing when its auto-collapsing is turned off and goes on using the same
+        // reference for its callout, so releasing it here would break a component that is still on the page.
+        public static unregisterResize(id: string) {
             try {
                 const observer = Observers._resizeObservers[id];
                 if (!observer) return;
 
-                observer.unobserve(element);
+                observer.disconnect();
                 delete Observers._resizeObservers[id];
-                obj.dispose();
             } catch (err) {
                 console.error(err);
             }
