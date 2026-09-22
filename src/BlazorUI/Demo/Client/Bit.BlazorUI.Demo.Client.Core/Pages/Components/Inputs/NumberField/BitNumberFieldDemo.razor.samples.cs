@@ -463,6 +463,7 @@ private readonly BitNumberFieldParams[] numberFieldParams =
         Suffix = ""cm"",
         Underlined = true,
         ShowClearButton = true,
+        Accent = BitColor.Info,
         Mode = BitSpinButtonMode.Compact,
         Description = ""Between 0 and 500, in steps of 5.""
     }
@@ -600,6 +601,10 @@ private int? classesValue;";
         border: 2px solid brown;
     }
 
+    .custom-class *, .custom-class *::after {
+        border: none;
+    }
+
     .custom-root {
         height: 3rem;
         display: flex;
@@ -625,10 +630,32 @@ private int? classesValue;";
         transform: translate(0, 1.5px) scale(0.75);
     }
 
+    .custom-input {
+        padding: 0;
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
     .custom-input-wrapper {
         border-radius: 0;
         position: relative;
         border-width: 0 0 1px 0;
+    }
+
+    .custom-input-wrapper::after {
+        content: '';
+        width: 0;
+        height: 2px;
+        border: none;
+        position: absolute;
+        inset: 100% 0 0 50%;
+        background-color: blueviolet;
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .custom-focus .custom-input-wrapper::after {
+        left: 0;
+        width: 100%;
     }
 
     .custom-focus .custom-label {

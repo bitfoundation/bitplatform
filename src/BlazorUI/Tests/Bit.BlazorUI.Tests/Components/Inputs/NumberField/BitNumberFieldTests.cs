@@ -2589,6 +2589,8 @@ public class BitNumberFieldTests : BunitTestContext
 
         Assert.AreEqual("Out of range", component.Find(".bit-nfl-erm b").TextContent);
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+        // The template carries no text the live region can read, so it announces the rejection itself.
+        Assert.AreEqual("Invalid input", component.Find("[role=\"status\"]").TextContent);
     }
 
     [TestMethod]

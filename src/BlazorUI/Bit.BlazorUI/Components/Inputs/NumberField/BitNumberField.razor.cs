@@ -1310,7 +1310,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // with its text already in it is regularly missed altogether. The region is therefore always rendered and
     // only its text comes and goes. In HideInput mode the value takes it over, since a hidden input is not
     // exposed to assistive technologies at all and nothing else would ever announce the spinning.
-    private string? LiveText => HasErrorMessage ? ErrorMessage
+    // An ErrorMessageTemplate has no text on this side of the DOM to read out, so the region says that the
+    // value was rejected rather than staying silent and leaving the field sounding accepted.
+    private string? LiveText => HasErrorMessage ? (ErrorMessage.HasValue() ? ErrorMessage : "Invalid input")
                               : Loading ? (LoadingAriaLabel ?? "Loading")
                               : HideInput ? GetDisplayValueAsString()
                               : null;

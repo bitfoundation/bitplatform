@@ -66,14 +66,16 @@
 
     @* Without the input there is no element carrying the value and its name, so the two buttons are tied
        together into a group and the label of the field names the group instead. With the input present the
-       box is a plain wrapper: naming it as well would have a screen reader read the field twice. *@
+       box is a plain wrapper: naming it as well would have a screen reader read the field twice. And
+       aria-labelledby takes precedence over aria-label, so the group points at the visible label only
+       while no name of its own was given - the same rule LabelledBy applies to the input. *@
     <div title="@Title"
          @onclick="HandleOnInputContainerClick"
          style="@Styles?.InputContainer"
          class="bit-nfl-cnt@(HideInput ? " bit-nfl-hdi" : "") @Classes?.InputContainer"
          role="@(HideInput ? "group" : null)"
          aria-label="@(HideInput ? AriaLabel : null)"
-         aria-labelledby="@(HideInput && (Label.HasValue() || LabelTemplate is not null) ? _labelId : null)">
+         aria-labelledby="@(HideInput ? LabelledBy : null)">
         @if (PrefixTemplate is not null)
         {
             @PrefixTemplate
