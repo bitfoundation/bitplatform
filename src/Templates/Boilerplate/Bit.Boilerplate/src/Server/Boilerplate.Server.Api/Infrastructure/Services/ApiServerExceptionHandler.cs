@@ -52,7 +52,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
             { "ActivityId", Activity.Current?.Id },
             { "ParentActivityId", Activity.Current?.ParentId },
             { "ServerAppSessionId", appSessionId },
-            { "ServerAppVersion", typeof(ApiServerExceptionHandler).Assembly.GetName().Version },
+            { "ServerAppVersion", typeof(ApiServerExceptionHandler).Assembly.GetName().Version?.ToString(3) },
             { "Culture", CultureInfo.CurrentUICulture.Name },
             { "Environment", env.EnvironmentName },
             { "ServerDateTime", timeProvider.GetUtcNow().ToString("u") },

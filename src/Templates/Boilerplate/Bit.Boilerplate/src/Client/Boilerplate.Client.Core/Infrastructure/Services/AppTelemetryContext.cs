@@ -13,7 +13,7 @@ public class AppTelemetryContext : ITelemetryContext
 
     public virtual string? Platform { get; set; } = RuntimeInformation.OSDescription;
 
-    public virtual string? AppVersion { get; set; } = typeof(AppTelemetryContext).Assembly.GetName().Version?.ToString();
+    public virtual string? AppVersion { get; set; } = typeof(AppTelemetryContext).Assembly.GetName().Version?.ToString(3);
 
     public virtual string? WebView { get; set; }
 

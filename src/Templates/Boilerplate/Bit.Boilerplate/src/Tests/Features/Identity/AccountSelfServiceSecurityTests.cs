@@ -208,6 +208,30 @@ public class AccountSelfServiceSecurityTests
             "Reporting success while delivering the code nowhere leaves the account permanently unable to elevate.");
     }
 
+    /// <summary>
+    /// The prompt tells the user where to look for the code, and only this answer knows: the endpoint delivers to
+    /// <b>confirmed</b> identifiers, and nothing the client holds records which those are.
+    /// </summary>
+    [TestMethod]
+    public async Task SendElevatedAccessToken_Should_ReportTheConfirmedChannelsItUsed()
+    {
+        await using var server = await StartServer();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+
+        var userController = scope.ServiceProvider.GetRequiredService<IUserController>();
+
+        var sentTo = await userController.SendElevatedAccessToken(TestContext.CancellationToken);
+
+        Assert.IsTrue(sentTo.SentToEmail, "The account's e-mail is confirmed, so the answer has to report it as a destination.");
+
+        Assert.IsFalse(sentTo.SentToPhoneNumber, "This account has no confirmed phone number, so no SMS was sent and none may be claimed.");
+
+        Assert.IsFalse(sentTo.SentToOtherDevices,
+            "Nor may it claim a push: this session was opened with an e-mailed code, so nothing about it is trusted " +
+            "enough to receive one. See TrustedSessionTests.");
+    }
+
 
     private async Task<AppTestServer> StartServer()
     {

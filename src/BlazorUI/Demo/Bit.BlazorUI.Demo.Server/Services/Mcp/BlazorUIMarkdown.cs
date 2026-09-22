@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
@@ -443,12 +444,38 @@ public static class BlazorUIMarkdown
 
         var name = component.CascadingParams.Name;
 
-        var count = component.CascadingParams
+        var carried = component.CascadingParams
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Count(p => p.CanWrite);
+            .Where(p => p.CanWrite)
+            .Select(p => p.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var baseName = component.CascadingParams.BaseType is { } baseType && baseType != typeof(object)
+            ? baseType.Name
+            : null;
+
+        // Read off the compiled component rather than off its table: the parameters a params object
+        // leaves out are the ones a reader would otherwise assume are there, and the type is what
+        // has the last word on which exist. Inherited ones are included - they are exactly the set
+        // in question, since a params object derives from BitComponentBaseParams and so carries the
+        // BitComponentBase half of them and nothing of what an input base adds.
+        var missing = component.ComponentType is null ? [] : component.ComponentType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.IsDefined(typeof(ParameterAttribute)) && carried.Contains(p.Name) is false)
+            .Select(p => p.Name)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        var inherits = baseName is null ? string.Empty : $" - its own and the `{baseName}` ones alike";
 
         builder.AppendLine("## Cascading parameters").AppendLine();
-        builder.AppendLine($"`{name}` carries {count} of this component's parameters again as nullables - its own and the inherited ones alike - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+        builder.AppendLine($"`{name}` carries {carried.Count} of this component's parameters again as nullables{inherits} - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+
+        if (missing.Length > 0)
+        {
+            builder.AppendLine($"Not on it, so they are written on the instance itself: {string.Join(", ", missing.Select(n => $"`{n}`"))}.").AppendLine();
+        }
     }
 
     /// <summary>

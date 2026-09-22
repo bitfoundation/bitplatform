@@ -1,4 +1,4 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Shared;
+using Bit.BlazorUI.Demo.Client.Core.Shared;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
@@ -378,8 +378,8 @@ public static class ComponentCatalog
         ["ActionButton"] = "An icon-first, transparent button for inline actions like New, Edit or Share.",
         ["Button"] = "The primary way to trigger an action, in fill, outline and text variants, floating if needed.",
         ["ButtonGroup"] = "Joins related buttons into one unit, optionally single- or multi-select.",
-        ["MenuButton"] = "A button that opens a menu of related actions, with split and sticky modes.",
-        ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed.",
+        ["MenuButton"] = "A button that opens a menu of related actions, with submenus, check and choice items.",
+        ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed or the ARIA mode it is given.",
 
         // Inputs
         ["Calendar"] = "A full inline calendar for browsing and picking a date, with optional time.",

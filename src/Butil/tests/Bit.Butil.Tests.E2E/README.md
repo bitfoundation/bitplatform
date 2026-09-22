@@ -108,7 +108,7 @@ logic by hand (see its csproj), so a `dotnet publish -c Release` of it goes thro
 trimming a NuGet consumer gets. Serve the published `wwwroot` with any static server (SPA fallback to `index.html`)
 and set `BUTIL_E2E_BASE_URL` to it.
 
-CI runs all of the above in `.github/workflows/bit.ci.Butil.e2e.yml`.
+CI runs all of the above in the E2E stages of `.github/workflows/bit.ci.Butil.yml`.
 
 ## Harness pages
 
