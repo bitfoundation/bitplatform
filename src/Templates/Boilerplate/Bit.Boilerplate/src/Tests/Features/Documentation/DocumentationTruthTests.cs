@@ -71,7 +71,7 @@ public class DocumentationTruthTests
     /// <summary>The top-level directories a repository-relative path can start with.</summary>
     private static readonly string[] repositoryRoots =
         ["src/", ".docs/", ".github/", ".vscode/", ".grafana/", ".azure-devops/", ".template.config/",
-         ".agents/", ".claude/", ".gemini/", ".cursor/", ".junie/"];
+         ".agents/", ".claude/", ".gemini/", ".cursor/", ".junie/", ".codex/"];
 
     /// <summary>
     /// Paths that are correctly absent, each for a reason that is not "the documentation is stale". Keep this list

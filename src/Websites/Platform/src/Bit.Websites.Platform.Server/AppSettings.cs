@@ -10,18 +10,37 @@ public class AppSettings
 
     public OpenAIOptions OpenAI { get; set; } = default!;
 
-    public CodebaseMemorySettings CodebaseMemory { get; set; } = default!;
+    public McpSettings Mcp { get; set; } = default!;
+}
+
+public class McpSettings
+{
+    /// <summary>
+    /// The repository whose release tags become the versions /mcp answers for. Only its tags are used, so it
+    /// is cloned without a working tree, then fetched every <see cref="RefreshInterval"/>.
+    /// </summary>
+    public string? RepositoryUrl { get; set; }
+
+    /// <summary>
+    /// Holds the clone and one worktree per served version, each with an index and a documentation server per
+    /// library of its own. Empty leaves versioning off, and /mcp then serves only the third party tools.
+    /// </summary>
+    public string? SourcesDirectoryPath { get; set; }
+
+    /// <summary>
+    /// The lowest release served. Every non pre-release tag at or above it gets a version of its own, and a
+    /// caller that names no version, or one that is not served, gets the newest of them.
+    /// </summary>
+    public string MinimumVersion { get; set; } = "10.6.0";
+
+    /// <summary>How often a release tagged since the site started is picked up.</summary>
+    public TimeSpan RefreshInterval { get; set; } = TimeSpan.FromHours(6);
+
+    public CodebaseMemorySettings CodebaseMemory { get; set; } = new();
 }
 
 public class CodebaseMemorySettings
 {
-    /// <summary>
-    /// Git checkout to index for the chatbot, or empty to skip indexing on this machine. The root of the
-    /// checkout: only <see cref="Services.CodebaseMemoryIndexService.IndexedPaths"/> of it end up indexed,
-    /// which the site arranges by writing a .cbmignore there, so it wants a checkout of its own.
-    /// </summary>
-    public string? SourceRepositoryPath { get; set; }
-
     /// <summary>
     /// The site's own index and daemon directory, defaulting to one under the local application data.
     /// codebase-memory admits one client per data directory and refuses any whose path, or any parent
