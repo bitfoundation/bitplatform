@@ -18,6 +18,11 @@ public class BitCheckboxClassStyles
     public string? Checked { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description of the BitCheckbox.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the indeterminate state of the BitCheckbox.
     /// </summary>
     public string? Indeterminate { get; set; }
@@ -36,4 +41,9 @@ public class BitCheckboxClassStyles
     /// Custom CSS classes/styles for the label of the BitCheckbox.
     /// </summary>
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the spinner rendered inside the box while the BitCheckbox is busy.
+    /// </summary>
+    public string? Spinner { get; set; }
 }
