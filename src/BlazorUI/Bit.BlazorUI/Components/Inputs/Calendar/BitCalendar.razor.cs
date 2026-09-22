@@ -561,7 +561,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show month picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowMonthPickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowMonthPickerAsOverlay { get; set; }
 
     /// <summary>
     /// Whether the days of the previous and next months should be shown in the day picker.
@@ -580,7 +582,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Show time picker on top of date picker when visible.
     /// </summary>
-    [Parameter] public bool ShowTimePickerAsOverlay { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool ShowTimePickerAsOverlay { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display in the ShowTimePicker button using custom CSS classes for external icon libraries.
@@ -2424,6 +2428,13 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private static string? GetEventIndicatorColorClass(BitCalendarEvent evt)
     {
         return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-evi") : null;
+    }
+
+    // The card of an event in the details dialog is painted with the same color as its dot, so the stripe
+    // down its side is the dot said again beside what the dot stood for.
+    private static string? GetEventItemColorClass(BitCalendarEvent evt)
+    {
+        return evt.Color.HasValue ? BitCssClasses.Color(evt.Color, "bit-cal-emi") : null;
     }
 
     private IReadOnlyList<BitCalendarEvent> GetDayEvents(DateTime date)

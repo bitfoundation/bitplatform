@@ -717,16 +717,23 @@
     justify-content: center;
     background-color: $clr-bg-overlay;
     border-radius: var(--bit-Calendar-radius, #{$shp-radius-control});
+    animation: bit-cal-eov-in $mot-duration-short $mot-easing-decelerate;
 }
 
+// The dialog is a header that stays put above a list that scrolls, rather than one box that scrolls whole:
+// the date it is headed with is the only thing on the surface that says which day is open, so it is the one
+// thing that must not scroll away from the events it names.
 .bit-cal-emc {
     @include focus-anchor;
+    display: flex;
     cursor: default;
+    overflow: hidden;
     max-height: 80%;
-    overflow-y: auto;
+    gap: spacing(1);
     padding: $spa-dialog;
     box-sizing: border-box;
     min-width: spacing(20);
+    flex-flow: column nowrap;
     // The overlay is only as wide as the calendar it covers, which a small one is narrower than the dialog's
     // own ceiling - so the ceiling is whichever of the two is smaller and the dialog never runs past its edge.
     max-width: min(#{spacing(30)}, 100%);
@@ -735,35 +742,42 @@
     border-radius: $shp-radius-dialog;
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
     border: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
+    animation: bit-cal-emc-in $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-cal-emh {
+    flex: none;
     display: flex;
-    font-weight: $tg-fw-semibold;
+    gap: spacing(1);
     align-items: center;
-    font-size: $tg-fs-sm;
-    margin-bottom: spacing(1);
+    font-size: $tg-fs-md;
+    font-weight: $tg-fw-semibold;
     justify-content: space-between;
+    padding-bottom: spacing(0.75);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
 }
 
 .bit-cal-emx {
+    padding: 0;
+    flex: none;
     border: none;
     display: flex;
     cursor: pointer;
+    line-height: 1;
     align-items: center;
     color: $clr-fg-sec;
-    font-size: $tg-fs-sm;
+    font-size: $tg-fs-md;
     justify-content: center;
     background-color: transparent;
-    padding: spacing(0.25) spacing(1);
     // The 24px floor of WCAG 2.2's target-size minimum: the glyph alone is a few pixels short of it.
-    min-width: spacing(3);
-    min-height: spacing(3);
-    border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
-    transition: background-color $mot-duration-short $mot-easing;
+    width: spacing(3);
+    height: spacing(3);
+    border-radius: $shp-radius-full;
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
+            color: var(--bit-Calendar-color, #{$clr-fg-pri});
             background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
@@ -774,39 +788,105 @@
 }
 
 // The events of the day are a list of them, so they are marked up as one - a screen reader then says how
-// many there are before reading the first.
+// many there are before reading the first. The list is also what scrolls, so a day with a dozen events keeps
+// its date and its close button on screen.
 .bit-cal-eml {
     margin: 0;
     padding: 0;
+    display: flex;
+    flex: 1 1 auto;
     list-style: none;
+    overflow-y: auto;
+    gap: spacing(0.5);
+    scrollbar-width: thin;
+    flex-flow: column nowrap;
 }
 
+// Each event is a card of its own with a stripe of its color down its side - the dot of the day cell, said
+// again beside the event the dot stood for - rather than a hairline between one run of three lines and the
+// next.
 .bit-cal-emi {
-    padding: spacing(0.75) 0;
-    border-top: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});
+    position: relative;
+    padding: spacing(0.75) spacing(1);
+    padding-inline-start: spacing(1.5);
+    background-color: $clr-bg-sec;
+    border-radius: $shp-radius-surface;
 
-    &:first-of-type {
-        padding-top: 0;
-        border-top: none;
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: spacing(0.75);
+        inset-inline-start: spacing(0.5);
+        width: spacing(0.375);
+        border-radius: $shp-radius-full;
+        background-color: var(--bit-cal-evt-clr, var(--bit-Calendar-event-color, var(--bit-cal-clr)));
     }
 }
 
-.bit-cal-eit {
-    font-weight: $tg-fw-semibold;
-    font-size: $tg-fs-sm;
-    margin-bottom: spacing(0.25);
+// The default template lays the title out beside the time it runs at, with the body under both, so a list of
+// events reads as a column of titles rather than as three lines each. Only the default one: a template of an
+// app's own is laid out by the app, so the card stops at the surface and the stripe.
+.bit-cal-emi-dft {
+    display: grid;
+    align-items: baseline;
+    column-gap: spacing(1);
+    grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.bit-cal-eit {
+    min-width: 0;
+    grid-column: 1;
+    font-size: $tg-fs-sm;
+    overflow-wrap: break-word;
+    font-weight: $tg-fw-semibold;
+}
+
+// The time is a chip of the dialog's own background on the card's, so it reads as a tag on the title rather
+// than as a second line of it, and its digits are tabular so the times of a list line up under one another.
 .bit-cal-eis {
+    grid-column: 2;
+    justify-self: end;
+    white-space: nowrap;
     color: $clr-fg-sec;
     font-size: $tg-fs-xs;
-    margin-bottom: spacing(0.25);
+    background-color: $clr-bg-pri;
+    border-radius: $shp-radius-chip;
+    font-variant-numeric: tabular-nums;
+    padding: spacing(0.125) spacing(0.5);
 }
 
 .bit-cal-eib {
     font-size: $tg-fs-xs;
     white-space: pre-wrap;
+    grid-column: 1 / -1;
+    margin-top: spacing(0.5);
+    overflow-wrap: break-word;
     color: var(--bit-Calendar-color, #{$clr-fg-pri});
+}
+
+// The details are put on top of the calendar rather than appearing in its place: the overlay fades the days
+// back and the dialog grows the last of the way in over them. Both are timed by the motion token, so
+// prefers-reduced-motion collapses them to nothing on its own.
+@keyframes bit-cal-eov-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes bit-cal-emc-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 
@@ -820,8 +900,10 @@
         --bit-cal-clr-focus: #{role($tokens, focus)};
     }
 
-    // The color of a single event, set on its own dot, so a day can carry dots of several colors at once.
-    .bit-cal-evi-#{$role} {
+    // The color of a single event, set on its own dot and on the stripe of its card in the details dialog,
+    // so a day can carry several colors at once in both places.
+    .bit-cal-evi-#{$role},
+    .bit-cal-emi-#{$role} {
         --bit-cal-evt-clr: #{role($tokens, main)};
     }
 }
@@ -904,6 +986,17 @@
     // Today is painted Highlight in this palette, which CanvasText does not have to read against.
     .bit-cal-dtd .bit-cal-evi {
         background-color: HighlightText;
+    }
+
+    // The card of an event and the stripe down its side are both a background, which this palette strips:
+    // the card is given an edge of its own instead and the stripe keeps a system color.
+    .bit-cal-emi {
+        border: $shp-border-width $shp-border-style CanvasText;
+
+        &::before {
+            background-color: CanvasText;
+            forced-color-adjust: none;
+        }
     }
 
     // An outline rather than a border: it gives the calendar an edge in a palette that strips every

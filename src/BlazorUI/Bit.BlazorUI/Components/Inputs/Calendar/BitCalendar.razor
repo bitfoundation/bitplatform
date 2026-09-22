@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<DateTimeOffset?>
 
 @{
@@ -225,7 +225,11 @@
                                     var dayEvents = GetDayEvents(date);
                                     var opensEventDialog = ShowEventDetails && dayEvents.Count > 0;
                                     @* A read-only calendar still browses, so its days stay focusable - but they no
-                                       longer select anything, which aria-disabled is what reports. *@
+                                       longer select anything, which aria-disabled is what reports.
+
+                                       Only the selected cell carries aria-selected, the way the APG's own date
+                                       picker does: an explicit false on the other forty-one would have a screen
+                                       reader say "not selected" on every day arrowed over. *@
                                     <button @onclick="() => HandleDayClick(date, dayEvents)"
                                             @onkeydown="e => HandleDayKeyDown(e, date)"
                                             type="button"
@@ -241,9 +245,6 @@
                                             style="@style"
                                             class="bit-cal-dbt@(klass) @Classes?.DayButton"
                                             tabindex="@(date == focusableDay ? 0 : -1)"
-                                            @* Only the selected cell carries the state, the way the APG's own date
-                                               picker does: an explicit false on the other forty-one would have a
-                                               screen reader say "not selected" on every day arrowed over. *@
                                             aria-selected="@(isSelected ? "true" : null)">
                                         @if (DayCellTemplate is not null)
                                         {
@@ -381,6 +382,10 @@
                                     var monthName = GetMonthName(_currentYear, month);
                                     var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
                                     var selected = month == _currentMonth;
+
+                                    @* The current month and year are reported whether or not they are painted:
+                                       HighlightCurrentMonth decides how the grid looks, not what a screen reader
+                                       is able to find in it. *@
                                     <button @onclick="() => SelectMonth(month)"
                                             @onkeydown="e => HandleMonthKeyDown(e, month)"
                                             type="button"
@@ -390,9 +395,6 @@
                                             aria-label="@monthName"
                                             disabled="@disabled"
                                             aria-disabled="@(disabled ? "true" : null)"
-                                            @* The current month and year are reported whether or not they are
-                                               painted: HighlightCurrentMonth decides how the grid looks, not
-                                               what a screen reader is able to find in it. *@
                                             aria-current="@((todayYear == _currentYear && month == todayMonth) ? "date" : null)"
                                             tabindex="@(month == focusableMonth ? 0 : -1)"
                                             style="@Styles?.MonthButton"
@@ -726,8 +728,11 @@
                 <ul style="@Styles?.EventList" class="bit-cal-eml @Classes?.EventList">
                     @foreach (var evt in GetEventModalEvents())
                     {
-                        <li class="bit-cal-emi @Classes?.EventItem"
-                            style="@Styles?.EventItem">
+                        @* The card of an event is painted with its own color, the same one its dot on the
+                           day cell was; the default template adds the layout of its three parts, which a
+                           template of the app's own lays out itself. *@
+                        <li style="@Styles?.EventItem"
+                            class="bit-cal-emi @(EventTemplate is null ? "bit-cal-emi-dft" : null) @GetEventItemColorClass(evt) @Classes?.EventItem">
                             @if (EventTemplate is not null)
                             {
                                 @EventTemplate(evt)

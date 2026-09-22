@@ -145,7 +145,7 @@
         <div>
             <b>ShowMonthPicker</b> toggles the month and year grids, and <b>ShowMonthPickerAsOverlay</b> moves
             them on top of the day grid, reached from the month title. <b>HighlightSelectedMonth</b> marks the
-            month that is displayed and <b>HighlightCurrentMonth</b> the current one — worth turning on, since
+            month that is displayed and <b>HighlightCurrentMonth</b> the current one - worth turning on, since
             otherwise the month grid shows no sign of where you are.
         </div>
         <br /><br />
@@ -172,7 +172,7 @@
             <b>ShowTimePicker</b> adds an hour and minute picker beside the day grid, or on top of it with
             <b>ShowTimePickerAsOverlay</b>. <b>TimeFormat</b> switches between the 24-hour and 12-hour clocks,
             <b>ShowNowButton</b> hides the button that jumps to the current time, and <b>HourStep</b> /
-            <b>MinuteStep</b> lay a grid over the day and the hour that everything the picker produces lands on —
+            <b>MinuteStep</b> lay a grid over the day and the hour that everything the picker produces lands on -
             the spin buttons, the arrow and page keys, and what is typed. A <b>MinDate</b> or <b>MaxDate</b>
             carrying a time of day bounds the hours of the very day it falls on, so the picker cannot produce
             an instant outside of them.
@@ -242,7 +242,7 @@
         <div>
             <b>DayCellTemplate</b>, <b>MonthCellTemplate</b> and <b>YearCellTemplate</b> replace the content of a
             cell, while <b>HeaderTemplate</b> and <b>FooterTemplate</b> add markup of your own above and below
-            the pickers — a caption, a legend, or the actions a calendar is often given.
+            the pickers - a caption, a legend, or the actions a calendar is often given.
         </div>
         <br /><br />
         <div class="example-content">
@@ -305,7 +305,7 @@
         <div>
             The calendar reads the month and day names, the first day of the week, the date format, the AM/PM
             designators and the calendar system itself off its <b>Culture</b>, defaulting to the culture of the
-            app. A non-Gregorian calendar (Persian, Hebrew — including its thirteen-month leap years) needs
+            app. A non-Gregorian calendar (Persian, Hebrew - including its thirteen-month leap years) needs
             nothing else. See our
             <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs"
                      Target="_blank">CultureInfoHelper</BitLink> for how such a culture is built.
@@ -326,7 +326,7 @@
     <DemoExample Title="TimeZone" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>TimeZone</b> is the zone the days and the time picker are read and written in, defaulting to the
-            local one. The available zone data differs between runtimes — it depends on the OS and on project
+            local one. The available zone data differs between runtimes - it depends on the OS and on project
             settings such as InvariantTimezone
             (<BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
                       Target="_blank">more info</BitLink>).
@@ -392,12 +392,12 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" Id="example14">
         <div>
-            Every grid — days, months and years — follows the WAI-ARIA grid pattern: one cell is in the tab
+            Every grid - days, months and years - follows the WAI-ARIA grid pattern: one cell is in the tab
             sequence and the arrow keys move the focus between the rest.
             <br /><br />
             <ul>
                 <li><b>←</b> / <b>→</b>: previous/next cell, mirrored in right-to-left</li>
-                <li><b>↑</b> / <b>↓</b>: one row up/down — a week in the day grid, four cells in the others</li>
+                <li><b>↑</b> / <b>↓</b>: one row up/down - a week in the day grid, four cells in the others</li>
                 <li><b>Home</b> / <b>End</b>: first/last cell of the week, of the year, of the range</li>
                 <li><b>PageUp</b> / <b>PageDown</b>: previous/next month in the day grid, year in the month
                     grid, year range in the year grid</li>
@@ -412,8 +412,8 @@
             Crossing a month, year or range boundary navigates the calendar and keeps the focus on the cell, and
             disabled cells are skipped. Beyond that: <b>AriaLabel</b> names the whole calendar for a screen
             reader, each day is announced with its full date and its events, today and the current month and
-            year carry <code>aria-current="date"</code>, and every button — the arrows, the spin buttons, the
-            AM/PM pair — has a name and a state of its own, all of them overridable through the <b>*Title</b>
+            year carry <code>aria-current="date"</code>, and every button - the arrows, the spin buttons, the
+            AM/PM pair - has a name and a state of its own, all of them overridable through the <b>*Title</b>
             parameters.
         </div>
         <br /><br />
@@ -426,7 +426,7 @@
     <DemoExample Title="Multiple months" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>MonthCount</b> renders up to three consecutive months side by side, which browses a whole season
-            at once — the arrow keys, the selection and the events carry on across them. Such a strip always
+            at once - the arrow keys, the selection and the events carry on across them. Such a strip always
             draws six week rows, never draws the days of the adjacent months (each of them is a day of the pane
             beside it), and wraps onto the next line when it is given less width than it asks for.
             <b>PagedNavigation</b> makes the arrows move a whole page of months instead of one.
@@ -558,7 +558,7 @@
     <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root, while <b>Styles</b> and <b>Classes</b> reach every
-            part of the calendar on its own — see
+            part of the calendar on its own - see
             <BitLink Href="#calendar-class-styles">BitCalendarClassStyles</BitLink>. Prefer <b>Classes</b> when
             your CSS owns states such as hover and focus, which inline styles cannot express.
         </div>
