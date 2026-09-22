@@ -16,6 +16,8 @@ namespace Bit.Websites.Platform.Server.Services.Mcp;
 /// server - deployed, or one <see cref="McpVersionsService"/> runs on loopback for a released version -
 /// or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset
 /// of its tools, and such a tool is then exposed under a name and a description written here.
+/// <see cref="McpFeedbackTool"/> is the one tool no upstream provides: it is merged into the list and
+/// answered by this site.
 /// </summary>
 public partial class McpProxyService : IAsyncDisposable
 {
@@ -116,9 +118,17 @@ public partial class McpProxyService : IAsyncDisposable
     public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, CancellationToken cancellationToken)
         => (await ToolsOf(versions.Resolve(requestedVersion), cancellationToken)).Tools;
 
-    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, CallToolRequestParams request, CancellationToken cancellationToken)
+    /// <summary>
+    /// Answers one tool call. <paramref name="requestServices"/> belongs to the request being served and is
+    /// what the feedback tool is resolved from: it reaches the team's chat through scoped services, unlike
+    /// the proxying this singleton does for every other tool.
+    /// </summary>
+    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, IServiceProvider requestServices, CallToolRequestParams request, CancellationToken cancellationToken)
     {
         var version = versions.Resolve(requestedVersion);
+
+        if (request.Name is McpFeedbackTool.ToolName)
+            return await requestServices.GetRequiredService<McpFeedbackTool>().Call(request, version, cancellationToken);
 
         if ((await ToolsOf(version, cancellationToken)).UpstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
             throw new McpException($"Unknown tool: '{request.Name}'.");
@@ -287,19 +297,20 @@ public partial class McpProxyService : IAsyncDisposable
 
             var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: await ListTools(upstream, version, cancellationToken))));
 
-            List<Tool> mergedTools = [];
+            // This site's own tool leads the list; the upstreams fill in the rest behind it.
+            List<Tool> mergedTools = [McpFeedbackTool.Definition];
             Dictionary<string, Upstream> mergedUpstreamPerToolName = new(StringComparer.Ordinal);
 
             foreach (var (upstream, upstreamTools) in toolsPerUpstream)
             {
                 foreach (var tool in upstreamTools ?? [])
                 {
-                    if (mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
+                    if (tool.Name is McpFeedbackTool.ToolName || mergedUpstreamPerToolName.TryAdd(tool.Name, upstream) is false)
                     {
                         // Tool names are the only address an MCP client has, so two servers claiming the same
                         // name cannot both be exposed. The first one wins and the clash is reported.
                         logger.LogWarning("The {ToolName} tool of the {McpServerName} MCP server is not exposed because {OtherMcpServerName} already provides a tool with that name.",
-                            tool.Name, upstream.Name, mergedUpstreamPerToolName[tool.Name].Name);
+                            tool.Name, upstream.Name, mergedUpstreamPerToolName.GetValueOrDefault(tool.Name)?.Name ?? "this site");
                         continue;
                     }
 
