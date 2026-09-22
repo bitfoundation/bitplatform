@@ -198,6 +198,12 @@ private bool loadingValue;";
 
 <BitNumberField Label=""Custom icon"" TValue=""int?"" ShowClearButton ClearButtonIconName=""@BitIconName.Delete"" DefaultValue=""28"" />
 
+<BitNumberField Label=""ClearButtonTemplate"" TValue=""int?"" ShowClearButton DefaultValue=""28"">
+    <ClearButtonTemplate>
+        <b>&times;</b>
+    </ClearButtonTemplate>
+</BitNumberField>
+
 <BitNumberField Label=""OnClear & Escape (press Escape to clear)"" TValue=""int?"" ShowClearButton
                 DefaultValue=""28"" OnClear=""() => clearedCounter++"" />
 <div>cleared: @clearedCounter time(s)</div>";
@@ -211,7 +217,15 @@ private int clearedCounter;";
 
 <BitNumberField Label=""C2 (try typing a negative amount)"" DefaultValue=""1234.5"" NumberFormat=""C2"" />
 
-<BitNumberField Label=""000000"" DefaultValue=""1363"" NumberFormat=""000000"" />";
+<BitNumberField Label=""000000"" DefaultValue=""1363"" NumberFormat=""000000"" />
+
+<BitNumberField Label=""Culture=de-DE & NumberFormat=C2"" DefaultValue=""1234.5"" NumberFormat=""C2"" Culture=""germanCulture"" />
+
+<BitNumberField Label=""Culture=de-DE (type 1.234,5)"" TValue=""double?"" Culture=""germanCulture"" @bind-Value=""germanValue"" />
+<div>value: [@germanValue]</div>";
+    private readonly string example12CsharpCode = @"
+private double? germanValue;
+private readonly CultureInfo germanCulture = CultureInfo.GetCultureInfo(""de-DE"");";
 
     private readonly string example13RazorCode = @"
 <BitNumberField Label=""Immediate"" TValue=""int?"" @bind-Value=""immediateValue"" Immediate />
@@ -231,7 +245,9 @@ private int clearedCounter;";
 
 <BitNumberField InvertMouseWheel=""invertMouseWheel"" Label=""Click to focus, then Shift + Mouse Wheel"" TValue=""int"" />
 
-<BitNumberField NoMouseWheel Label=""NoMouseWheel (the wheel never changes it)"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />";
+<BitNumberField NoMouseWheel Label=""NoMouseWheel (the wheel never changes it)"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
+
+<BitNumberField Label=""EnterKeyHint=done (visible on a touch keyboard)"" TValue=""int?"" EnterKeyHint=""done"" />";
     private readonly string example13CsharpCode = @"
 private int? immediateValue;
 private double? immediateDecimalValue;
@@ -297,6 +313,10 @@ private string? CustomDigitsNormalizer(string? value)
                 OnEnter=""HandleEnter"" />
 <div>[@enterMessage]</div>
 
+<BitNumberField Label=""OnEscape (press Escape)"" TValue=""int?"" ShowClearButton DefaultValue=""9""
+                OnEscape=""() => escapeCounter++"" />
+<div>Escape pressed @escapeCounter time(s)</div>
+
 <BitNumberField Label=""OnKeyDown, OnKeyUp & OnClick"" TValue=""int?""
                 OnClick=""() => onClickCounter++""
                 OnKeyUp=""() => onKeyUpCounter++""
@@ -310,6 +330,7 @@ private int onDecrementCounter;
 private int onChangeCounter;
 private int onKeyUpCounter;
 private int onClickCounter;
+private int escapeCounter;
 private string? lastKey;
 private string? boundMessage;
 private string? enterMessage;

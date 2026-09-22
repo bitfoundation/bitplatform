@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -95,6 +97,12 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public int? ContinuousSpinInterval { get; set; }
 
     /// <summary>
+    /// The culture the value is written and read in. Left unset, a NumberFormat renders in the culture of
+    /// the current thread while the plain value stays invariant.
+    /// </summary>
+    public CultureInfo? Culture { get; set; }
+
+    /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     public string? DecrementAriaLabel { get; set; }
@@ -124,6 +132,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     /// A custom function to normalize the raw input string before it gets parsed into the value.
     /// </summary>
     public Func<string?, string?>? DigitsNormalizer { get; set; }
+
+    /// <summary>
+    /// The action label of the enter key on a virtual keyboard (enterkeyhint), e.g. "done", "next" or "go".
+    /// </summary>
+    public string? EnterKeyHint { get; set; }
 
     /// <summary>
     /// Stretches the number field to the full width of its container.
@@ -400,6 +413,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
+        if (Culture is not null && bitNumberField.HasNotBeenSet(nameof(Culture)))
+        {
+            bitNumberField.Culture = Culture;
+        }
+
         if (DecrementAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(DecrementAriaLabel)))
         {
             bitNumberField.DecrementAriaLabel = DecrementAriaLabel;
@@ -432,6 +450,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (DigitsNormalizer is not null && bitNumberField.HasNotBeenSet(nameof(DigitsNormalizer)))
         {
             bitNumberField.DigitsNormalizer = DigitsNormalizer;
+        }
+
+        if (EnterKeyHint.HasValue() && bitNumberField.HasNotBeenSet(nameof(EnterKeyHint)))
+        {
+            bitNumberField.EnterKeyHint = EnterKeyHint;
         }
 
         if (FullWidth.HasValue && bitNumberField.HasNotBeenSet(nameof(FullWidth)))

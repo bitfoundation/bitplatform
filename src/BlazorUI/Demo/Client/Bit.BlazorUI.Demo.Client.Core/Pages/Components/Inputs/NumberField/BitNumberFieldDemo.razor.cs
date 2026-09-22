@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
@@ -91,6 +93,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Culture",
+            Type = "CultureInfo?",
+            DefaultValue = "null",
+            Description = "The culture the value is written and read in. Left unset, a NumberFormat renders in the culture of the current thread while the plain (unformatted) value is written and parsed with the invariant culture. Setting it pins both to one culture, so the field shows and accepts that culture's separators regardless of the thread. The aria-valuenow/valuemin/valuemax attributes stay invariant either way, and the culture's rendering is announced through aria-valuetext.",
+        },
+        new()
+        {
             Name = "DecrementAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -141,6 +150,13 @@ public partial class BitNumberFieldDemo
             Type = "Func<string?, string?>?",
             DefaultValue = "null",
             Description = "A custom function to normalize the raw input string before it gets parsed into the value. When provided, it takes precedence over NormalizeDigits and lets the developer plug in their own culture-specific or domain-specific transformation.",
+        },
+        new()
+        {
+            Name = "EnterKeyHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The action label of the enter key on a virtual keyboard (enterkeyhint), e.g. \"done\", \"next\", \"go\", \"search\" or \"send\". On a numeric soft keyboard the key is otherwise unlabeled.",
         },
         new()
         {
@@ -398,6 +414,12 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "OnEscape",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when the Escape key is pressed on the input. It is invoked before the field clears itself (which it only does while a clear button is shown), so a handler is free to take the key for something else.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
@@ -510,6 +532,13 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Accessible label text for the clear button (for screen reader users), useful for localization.",
+        },
+        new()
+        {
+            Name = "ClearButtonTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template rendered inside the clear button in place of its icon. The button itself - its accessible name, its click and Escape handling - stays the same.",
         },
         new()
         {
@@ -1149,6 +1178,18 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "--bit-NumberField-button-active-color",
+            DefaultValue = "--bit-clr-fg-pri-active",
+            Description = "Glyph color of a pressed button, i.e. one being held down to spin continuously.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-button-active-background",
+            DefaultValue = "--bit-clr-bg-pri-active",
+            Description = "Fill of a pressed spin or clear button.",
+        },
+        new()
+        {
             Name = "--bit-NumberField-button-inert-color",
             DefaultValue = "--bit-clr-fg-dis",
             Description = "Glyph color of a button that is disabled or sitting on the bound it steps towards.",
@@ -1164,6 +1205,12 @@ public partial class BitNumberFieldDemo
             Name = "--bit-NumberField-button-icon-size",
             DefaultValue = "Per Size, from the type ramp",
             Description = "Size of the glyph inside those buttons.",
+        },
+        new()
+        {
+            Name = "--bit-NumberField-loading-color",
+            DefaultValue = "the Accent",
+            Description = "Color of the busy indicator.",
         },
         new()
         {
@@ -1214,6 +1261,9 @@ public partial class BitNumberFieldDemo
     private double twoWayValue;
     private int? uncontrolledValue;
 
+    private double? germanValue;
+    private readonly CultureInfo germanCulture = CultureInfo.GetCultureInfo("de-DE");
+
     private int? immediateValue;
     private double? immediateDecimalValue;
     private int? debounceValue;
@@ -1230,6 +1280,7 @@ public partial class BitNumberFieldDemo
     private int clearedCounter;
     private int onKeyUpCounter;
     private int onClickCounter;
+    private int escapeCounter;
     private string? lastKey;
     private string? boundMessage;
     private string? enterMessage;

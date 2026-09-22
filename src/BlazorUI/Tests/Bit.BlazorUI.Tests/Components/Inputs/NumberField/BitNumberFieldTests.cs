@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
@@ -2813,6 +2814,196 @@ public class BitNumberFieldTests : BunitTestContext
 
         // The label still points at the input, which is what associates the two for a click.
         Assert.AreEqual(input.Id, component.Find("label").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputWithoutAModeShouldStillRenderItsButtons()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.HideInput, true));
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-mcp"));
+        Assert.AreEqual(2, component.FindAll(".bit-nfl-cnt button").Count);
+
+        // Without HideInput no mode still means no buttons.
+        var plain = RenderComponent<BitNumberField<int>>();
+        Assert.AreEqual(0, plain.FindAll(".bit-nfl-cnt button").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldReadOnlyShouldRenderAriaReadOnly()
+    {
+        var readOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.AreEqual("true", readOnly.Find("input").GetAttribute("aria-readonly"));
+
+        var editable = RenderComponent<BitNumberField<int>>();
+        Assert.IsNull(editable.Find("input").GetAttribute("aria-readonly"));
+
+        // Only the text is protected here - the buttons, the arrows and the wheel still change the value,
+        // so the widget is not read-only.
+        var inputReadOnly = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.IsInputReadOnly, true));
+        Assert.IsNull(inputReadOnly.Find("input").GetAttribute("aria-readonly"));
+        Assert.IsTrue(inputReadOnly.Find("input").HasAttribute("readonly"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEmptyValueShouldNotRenderAnAriaValueText()
+    {
+        var component = RenderComponent<BitNumberField<int?>>();
+
+        var input = component.Find("input");
+
+        Assert.IsNull(input.GetAttribute("aria-valuetext"));
+        Assert.IsNull(input.GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldTurnOffTheTextEditingHelpersOfASoftKeyboard()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("false", input.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+        Assert.AreEqual("off", input.GetAttribute("autocapitalize"));
+        Assert.IsNull(input.GetAttribute("enterkeyhint"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderTheEnterKeyHintAndLetInputHtmlAttributesWin()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.EnterKeyHint, "done");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "spellcheck", "true" } });
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("done", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("true", input.GetAttribute("spellcheck"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldClearButtonTemplateShouldReplaceTheIconOnly()
+    {
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.ClearButtonTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<em>wipe</em>")));
+        });
+
+        var button = component.Find(".bit-nfl-cbt");
+
+        Assert.AreEqual("wipe", button.QuerySelector("em").TextContent);
+        Assert.IsNull(button.QuerySelector("i"));
+        Assert.AreEqual("Clear value", button.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEscapeShouldInvokeOnEscapeBeforeClearing()
+    {
+        var escapes = 0;
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.OnEscape, () => escapes++);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, escapes);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldEscapeShouldReachOnEscapeOnAReadOnlyField()
+    {
+        var escapes = 0;
+
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 7);
+            parameters.Add(p => p.OnEscape, () => escapes++);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, escapes);
+        Assert.AreEqual("7", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCultureShouldFormatAndParseInThatCulture()
+    {
+        var component = RenderComponent<BitNumberField<double?>>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("de-DE"));
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("1234,5", input.GetAttribute("value"));
+
+        // ARIA takes a plain invariant number, so what is on screen is carried by aria-valuetext instead.
+        Assert.AreEqual("1234.5", input.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("1234,5", input.GetAttribute("aria-valuetext"));
+
+        input.Change("1.234,5");
+
+        Assert.AreEqual(1234.5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCultureShouldDriveTheNumberFormat()
+    {
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("de-DE"));
+            parameters.Add(p => p.NumberFormat, "N2");
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        Assert.AreEqual("1.234,50", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldWithoutACultureShouldStayInvariant()
+    {
+        var component = RenderComponent<BitNumberField<double?>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1234.5);
+        });
+
+        Assert.AreEqual("1234.5", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldCarryTheCultureAndTheEnterKeyHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams
+                {
+                    EnterKeyHint = "next",
+                    Culture = CultureInfo.GetCultureInfo("de-DE")
+                }
+            });
+            parameters.AddChildContent<BitNumberField<double>>(p => p.Add(x => x.DefaultValue, 1234.5));
+        });
+
+        var input = component.Find("input");
+
+        Assert.AreEqual("next", input.GetAttribute("enterkeyhint"));
+        Assert.AreEqual("1234,5", input.GetAttribute("value"));
     }
 
     [TestMethod]

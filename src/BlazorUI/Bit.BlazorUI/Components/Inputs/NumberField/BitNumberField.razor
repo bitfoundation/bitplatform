@@ -87,7 +87,7 @@
             </div>
         }
 
-        @if (Mode == BitSpinButtonMode.Spread)
+        @if (EffectiveMode == BitSpinButtonMode.Spread)
         {
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
@@ -157,7 +157,7 @@
                    aria-posinset="@AriaPositionInSet"
                    aria-labelledby="@LabelledBy"
                    disabled="@(IsEnabled is false)"
-                   class="bit-nfl-inp@(Mode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
+                   class="bit-nfl-inp@(EffectiveMode == BitSpinButtonMode.Spread ? " bit-nfl-cin" : "") @Classes?.Input"
                    autocomplete="@(AutoComplete ?? "off")"
                    type="text"
                    role="spinbutton"
@@ -168,6 +168,11 @@
                    aria-valuetext="@GetAriaValueText()"
                    aria-invalid="@AriaInvalid"
                    aria-busy="@AriaBusy"
+                   spellcheck="@SpellCheck"
+                   autocorrect="@AutoCorrect"
+                   autocapitalize="@AutoCapitalize"
+                   enterkeyhint="@EnterKeyHint"
+                   aria-readonly="@AriaReadOnly"
                    aria-required="@(Required ? "true" : null)"
                    aria-disabled="@(IsEnabled is false ? "true" : null)" />
 
@@ -180,7 +185,14 @@
                         tabindex="-1"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
                         disabled="@(IsEnabled is false)">
-                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    @if (ClearButtonTemplate is not null)
+                    {
+                        @ClearButtonTemplate
+                    }
+                    else
+                    {
+                        <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    }
                 </button>
             }
 
@@ -204,7 +216,7 @@
             </div>
         }
 
-        @if (Mode == BitSpinButtonMode.Compact)
+        @if (EffectiveMode == BitSpinButtonMode.Compact)
         {
             <span style="@Styles?.ButtonsContainer" class="bit-nfl-act @Classes?.ButtonsContainer">
                 <button @ref="_buttonIncrement"
@@ -252,7 +264,7 @@
                 </button>
             </span>
         }
-        else if (Mode == BitSpinButtonMode.Inline)
+        else if (EffectiveMode == BitSpinButtonMode.Inline)
         {
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
@@ -296,7 +308,7 @@
                 </span>
             </button>
         }
-        else if (Mode == BitSpinButtonMode.Spread)
+        else if (EffectiveMode == BitSpinButtonMode.Spread)
         {
             <button @ref="_buttonIncrement"
                     @onpointerup="HandleOnPointerUpOrOut"

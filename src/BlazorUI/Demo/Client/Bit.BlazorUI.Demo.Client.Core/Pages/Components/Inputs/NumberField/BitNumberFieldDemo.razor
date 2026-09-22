@@ -10,7 +10,7 @@
 
 <DemoPage Name="NumberField"
           SecondaryNames="@(["NumberInput"])"
-          Description="A NumberField (also known as a number input or spin button) is a text field dedicated to numbers. It binds to any .NET numeric type - byte, sbyte, short, ushort, int, uint, long, ulong, float, double and decimal, plus every nullable variant - and never lets the value escape the range of that type. On top of plain typing it offers what a professional numeric editor is expected to have: Min/Max bounds that either clamp the value or let it through for a validator to report, a custom Step with optional snapping to its grid, rounding precision, .NET number formatting that never gets in the way of editing, increment/decrement buttons in three layouts with press-and-hold continuous spinning, a clear button, adornments and hints, the complete ARIA spinbutton keyboard set, Shift+mouse-wheel spinning, non-Latin digit input, and first-class EditForm integration."
+          Description="A NumberField (also known as a number input or spin button) is a text field dedicated to numbers. It binds to any .NET numeric type - byte, sbyte, short, ushort, int, uint, long, ulong, float, double and decimal, plus every nullable variant - and never lets the value escape the range of that type. On top of plain typing it offers what a professional numeric editor is expected to have: Min/Max bounds that either clamp the value or let it through for a validator to report, a custom Step with optional snapping to its grid, rounding precision, .NET number formatting - in the culture of your choosing - that never gets in the way of editing, increment/decrement buttons in three layouts with press-and-hold continuous spinning, a clear button, adornments and hints, the complete ARIA spinbutton keyboard set, Shift+mouse-wheel spinning, non-Latin digit input, and first-class EditForm integration."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -81,7 +81,8 @@
             <b>ContinuousSpinInterval</b> milliseconds; clicking one keeps the caret in the input, so the keyboard can take
             over from where the mouse left off. <b>IncrementIconName</b>/<b>DecrementIconName</b> and
             <b>IncrementTitle</b>/<b>DecrementTitle</b> decorate them.
-            <b>HideInput</b> drops the text box altogether and leaves a stepper: the buttons then become the tab stops,
+            <b>HideInput</b> drops the text box altogether and leaves a stepper (falling back to <b>Compact</b> when no mode is
+            given, since the buttons are then all there is): the buttons become the tab stops,
             respond to Enter and Space, and the value is published through a hidden live region for screen readers while a
             hidden input keeps the field posting with a plain HTML form.
         </div>
@@ -324,7 +325,8 @@
             in one click. It follows what is in the input rather than the bound value, so it also appears for text that failed
             to parse and has to be wiped, and it is never rendered on a read-only or empty field. It stays out of the tab
             order, keeping the input the single tab stop - <b>Escape</b> is its keyboard equivalent.
-            <b>ClearButtonIconName</b> and <b>ClearButtonAriaLabel</b> localize it, and <b>OnClear</b> reports it.
+            <b>ClearButtonIconName</b> and <b>ClearButtonAriaLabel</b> localize it, <b>ClearButtonTemplate</b> replaces what
+            it renders without touching how it behaves, and <b>OnClear</b> reports it.
         </div>
         <br />
         <div class="example-box">
@@ -332,20 +334,31 @@
             <br />
             <BitNumberField Label="Custom icon" TValue="int?" ShowClearButton ClearButtonIconName="@BitIconName.Delete" DefaultValue="28" />
             <br />
+            <BitNumberField Label="ClearButtonTemplate" TValue="int?" ShowClearButton DefaultValue="28">
+                <ClearButtonTemplate>
+                    <b>&times;</b>
+                </ClearButtonTemplate>
+            </BitNumberField>
+            <br />
             <BitNumberField Label="OnClear & Escape (press Escape to clear)" TValue="int?" ShowClearButton
                             DefaultValue="28" OnClear="() => clearedCounter++" />
             <div>cleared: @clearedCounter time(s)</div>
         </div>
     </DemoExample>
 
-    <DemoExample Title="NumberFormat" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Number format & culture" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>NumberFormat</b> formats the displayed value with the standard or custom .NET numeric format strings - <b>N0</b>
             for grouping, <b>C0</b> for currency, <b>000000</b> for zero padding. The formatting is display only: the bound
             value stays a plain number, and while the field is being edited the plain number is what you see, so there is never
             a currency symbol or a run of zeros to type around. Typing a formatted number works too - the separators and
-            symbols of the current culture are stripped before parsing, including the parentheses of accounting formats.
+            symbols are stripped before parsing, including the parentheses of accounting formats.
             Value-scaling formats such as percent <b>P</b> are not suitable, since the scaled text cannot be parsed back.
+            <b>Culture</b> decides whose separators those are. Left unset, a format follows the culture of the current thread
+            while the plain value stays invariant, which is what keeps a typed <b>1.5</b> meaning the same thing everywhere;
+            setting it pins both, so the field reads and writes that culture's numbers no matter where it runs. The
+            aria-value* attributes stay plain invariant numbers either way, and what is on screen is announced through
+            aria-valuetext.
         </div>
         <br />
         <div class="example-box">
@@ -356,6 +369,11 @@
             <BitNumberField Label="C2 (try typing a negative amount)" DefaultValue="1234.5" NumberFormat="C2" />
             <br />
             <BitNumberField Label="000000" DefaultValue="1363" NumberFormat="000000" />
+            <br />
+            <BitNumberField Label="Culture=de-DE & NumberFormat=C2" DefaultValue="1234.5" NumberFormat="C2" Culture="germanCulture" />
+            <br />
+            <BitNumberField Label="Culture=de-DE (type 1.234,5)" TValue="double?" Culture="germanCulture" @bind-Value="germanValue" />
+            <div>value: [@germanValue]</div>
         </div>
     </DemoExample>
 
@@ -370,6 +388,8 @@
             The wheel spins the value only while <b>Shift</b> is held and the field is focused, so page scrolling is never
             captured and a merely hovered field is never rewritten; <b>InvertMouseWheel</b> flips the direction and
             <b>NoMouseWheel</b> turns it off.
+            <b>EnterKeyHint</b> labels the enter key of a virtual keyboard ("done", "next", "go", ...), which a numeric soft
+            keyboard otherwise leaves blank; spell-checking and autocorrect are off throughout, a number being no word.
         </div>
         <br />
         <div class="example-box">
@@ -391,6 +411,8 @@
             <BitNumberField InvertMouseWheel="invertMouseWheel" Label="Click to focus, then Shift + Mouse Wheel" TValue="int" />
             <br />
             <BitNumberField NoMouseWheel Label="NoMouseWheel (the wheel never changes it)" TValue="int" Mode="BitSpinButtonMode.Compact" />
+            <br />
+            <BitNumberField Label="EnterKeyHint=done (visible on a touch keyboard)" TValue="int?" EnterKeyHint="done" />
         </div>
     </DemoExample>
 
@@ -428,7 +450,8 @@
             rather than on every further attempt, which is the hook for explaining why the value stopped moving.
             The raw input events are surfaced too: <b>OnKeyDown</b>/<b>OnKeyUp</b> report every key including the ones the
             field consumes itself, <b>OnEnter</b> is raised after the typed text is committed (so the value it sees is the one
-            just entered), <b>OnClick</b> reports clicks, and focus is covered by <b>OnFocus</b>, <b>OnFocusIn</b>,
+            just entered), <b>OnEscape</b> before the field clears itself (so a surface the field sits on can take the key
+            instead), <b>OnClick</b> reports clicks, and focus is covered by <b>OnFocus</b>, <b>OnFocusIn</b>,
             <b>OnFocusOut</b> and <b>OnBlur</b>.
         </div>
         <br />
@@ -452,6 +475,10 @@
                             @bind-Value="enterValue"
                             OnEnter="HandleEnter" />
             <div>[@enterMessage]</div>
+            <br />
+            <BitNumberField Label="OnEscape (press Escape)" TValue="int?" ShowClearButton DefaultValue="9"
+                            OnEscape="() => escapeCounter++" />
+            <div>Escape pressed @escapeCounter time(s)</div>
             <br />
             <BitNumberField Label="OnKeyDown, OnKeyUp & OnClick" TValue="int?"
                             OnClick="() => onClickCounter++"
@@ -548,6 +575,9 @@
             <b>ClearButtonAriaLabel</b> localize it - and stay out of the tab order, leaving the input as the single tab stop
             that handles the whole spinbutton keyboard set. In <b>HideInput</b> mode they become the tab stops instead, are
             tied together into a group named by the label, and the value is announced through a live region.
+            The spinbutton role replaces the native role of the input, and with it what the <b>Required</b> and
+            <b>ReadOnly</b> attributes would map into the accessibility tree on their own, so both states are written out as
+            aria-required and aria-readonly instead.
             On a touch device the stacked <b>Compact</b> buttons grow so each one clears the 24px minimum pointer target.
             <b>AriaSetSize</b> and <b>AriaPositionInSet</b> place the field within a larger group of related fields.
         </div>

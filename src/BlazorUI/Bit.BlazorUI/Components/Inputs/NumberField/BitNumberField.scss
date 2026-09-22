@@ -28,11 +28,14 @@
 //   --bit-NumberField-button-color              glyph color of the spin and clear buttons    (default: $clr-fg-pri / $clr-fg-sec)
 //   --bit-NumberField-button-hover-color        the same while hovered                       (default: $clr-fg-pri-hover)
 //   --bit-NumberField-button-hover-background   fill of a hovered spin or clear button       (default: $clr-bg-pri-hover)
+//   --bit-NumberField-button-active-color       glyph color of a pressed button              (default: $clr-fg-pri-active)
+//   --bit-NumberField-button-active-background  fill of a pressed spin or clear button       (default: $clr-bg-pri-active)
 //   --bit-NumberField-button-inert-color        glyph color of a button that is disabled or
 //                                               sitting on the bound it steps towards        (default: $clr-fg-dis)
 //   --bit-NumberField-button-width              width of a spin button and of the clear
 //                                               button                                       (default: per Size and Mode)
 //   --bit-NumberField-button-icon-size          size of the glyph inside those buttons       (default: per Size, from the type ramp)
+//   --bit-NumberField-loading-color             color of the busy indicator                  (default: the Accent)
 //   --bit-NumberField-disabled-color            text, label, hint and glyph color of a
 //                                               disabled field                               (default: $clr-fg-dis)
 //   --bit-NumberField-disabled-background       fill of a disabled field                     (default: $clr-bg-dis)
@@ -43,7 +46,9 @@
     align-items: center;
     column-gap: spacing(1.25);
     font-family: $tg-font-family;
-    font-size: var(--bit-nfl-fontsize);
+    // On the root as well as on the input, so that whatever a prefix, suffix or label template renders is
+    // sized with the field rather than with the page around it.
+    font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
 
     // The medium size is the default one, so its values sit on the root instead of only on .bit-nfl-md.
     --bit-nfl-height: #{$siz-ctrl-md};
@@ -302,6 +307,19 @@
             background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
+
+    &:active {
+        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
+    }
+
+    // The rounded end above belongs to the button only while it really is the end of the field. Anything
+    // rendered after it - the spin buttons, the icon, the suffix - puts it in the middle of the row, where
+    // the corner would show up as a stray pill the moment the button is hovered or held.
+    &:not(:last-child) {
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+    }
 }
 
 .bit-nfl-lod {
@@ -310,7 +328,7 @@
     align-items: center;
     justify-content: center;
     padding-inline: spacing(0.5);
-    color: var(--bit-nfl-clr);
+    color: var(--bit-NumberField-loading-color, var(--bit-nfl-clr));
 }
 
 .bit-nfl-cin {
@@ -321,6 +339,16 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+
+    // Same reasoning as the clear button: the stack only keeps the rounded end of the field while it is
+    // the end of it. An icon or a suffix after it moves it into the middle of the row.
+    &:not(:last-child) {
+        .bit-nfl-aup,
+        .bit-nfl-adn {
+            border-start-end-radius: 0;
+            border-end-end-radius: 0;
+        }
+    }
 }
 
 .bit-nfl-aup,
@@ -346,6 +374,15 @@
             color: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
             background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
+    }
+
+    // A button that is held down spins the value continuously, so it stays pressed for as long as the
+    // user keeps stepping - which is exactly when the feedback matters, and the one state a stepper is
+    // expected to show. It is not scoped to (hover: hover): on a touch screen this is the only feedback
+    // there is. The bound-reached state below turns it off again, along with the hover.
+    &:active {
+        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
     }
 
     // In HideInput mode the spin buttons become keyboard focusable (there is no input left to focus),
@@ -381,6 +418,11 @@
             color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
             background-color: transparent;
         }
+    }
+
+    &:active {
+        color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+        background-color: transparent;
     }
 
     @media (forced-colors: active) {

@@ -162,6 +162,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public int ContinuousSpinInterval { get; set; } = 75;
 
     /// <summary>
+    /// The culture the value is written and read in. Left unset, a <see cref="NumberFormat"/> renders in the
+    /// culture of the current thread while the plain (unformatted) value is written and parsed with the
+    /// invariant culture, which is what keeps the text of the input round-tripping through Blazor's own
+    /// numeric binding. Setting it pins both to one culture instead, so the field shows and accepts the
+    /// separators of that culture ("1.234,5" in German) regardless of what the thread happens to be set to.
+    /// The aria-valuenow/valuemin/valuemax attributes stay invariant either way - ARIA requires plain
+    /// decimal numbers there - and the culture's own rendering is announced through aria-valuetext.
+    /// </summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    /// <summary>
     /// Accessible label text for the decrement button (for screen reader users).
     /// </summary>
     [Parameter] public string? DecrementAriaLabel { get; set; }
@@ -220,6 +231,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
+    /// The action label of the enter key on a virtual keyboard (enterkeyhint), e.g. "done", "next", "go",
+    /// "search" or "send". On a numeric soft keyboard the key is otherwise unlabeled, so this is what tells
+    /// a mobile user whether finishing the field submits the form or moves on to the next one.
+    /// </summary>
+    [Parameter] public string? EnterKeyHint { get; set; }
+
+    /// <summary>
     /// An error message rendered under the field, which also marks the field as invalid and is announced
     /// through a polite live region the moment it appears. It is the way to report what a validator outside
     /// of an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/> found - a server-side check, a
@@ -245,9 +263,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Hides the text input element while keeping the increment/decrement buttons functional,
-    /// turning the component into a stepper-only control.
+    /// turning the component into a stepper-only control. Left without a <see cref="Mode"/> it falls back to
+    /// the compact stack, since there would otherwise be nothing left to render.
     /// </summary>
-    [Parameter] public bool HideInput { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool HideInput { get; set; }
 
     /// <summary>
     /// The aria label of the icon for the benefit of screen readers.
@@ -468,6 +488,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
 
     /// <summary>
+    /// Callback for when the Escape key is pressed on the input. It is invoked before the field clears
+    /// itself (which it only does while a clear button is shown), so a handler is free to take the key
+    /// for something else - closing the surface the field sits on, reverting an edit - and the argument
+    /// carries the event for that.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEscape { get; set; }
+
+    /// <summary>
     /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
@@ -570,6 +598,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// For external icon libraries, use <see cref="ClearButtonIcon"/> instead.
     /// </summary>
     [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
+    /// A custom template rendered inside the clear button in place of its icon. The button itself - its
+    /// accessible name, its click and Escape handling - stays the same, so only what it looks like changes.
+    /// </summary>
+    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// Accessible label text for the clear button (for screen reader users), useful for localization.
@@ -734,7 +768,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // The mode is on the root so the stylesheet can reach the whole field from the layout its buttons
         // are in - which is what lets the stacked pair grow to a usable pointer target on a touch device.
-        ClassBuilder.Register(() => Mode switch
+        ClassBuilder.Register(() => EffectiveMode switch
         {
             BitSpinButtonMode.Compact => "bit-nfl-mcp",
             BitSpinButtonMode.Inline => "bit-nfl-min",
@@ -945,7 +979,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             return false;
         }
 
-        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result) is false)
+        // A NumberFormat leaves nothing but digits, a dot and a minus sign behind (CleanValue above), so
+        // that branch always parses invariant; the plain text is parsed in the culture it was written in.
+        var parseCulture = NumberFormat is null ? ValueCulture : CultureInfo.InvariantCulture;
+
+        if (BindConverter.TryConvertTo(value, parseCulture, out result) is false)
         {
             // A number carrying whitespace between its digit groups ("1 234", or the non-breaking and
             // narrow no-break spaces that spreadsheets and web pages use for grouping) is a perfectly
@@ -956,7 +994,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             var unspaced = RemoveWhiteSpace(value);
             if (string.Equals(unspaced, value, StringComparison.Ordinal) ||
                 unspaced.HasNoValue() ||
-                BindConverter.TryConvertTo(unspaced, CultureInfo.InvariantCulture, out result) is false)
+                BindConverter.TryConvertTo(unspaced, parseCulture, out result) is false)
             {
                 parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
                 return false;
@@ -1124,6 +1162,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         var display = GetDisplayValueAsString();
 
+        // An empty field has no value to describe, and an empty aria-valuetext is worse than none at all:
+        // it is a text alternative, so a screen reader reads it in place of the (absent) number.
+        if (display.HasNoValue()) return null;
+
         return string.Equals(display, GetAriaValueNow(), StringComparison.Ordinal) ? null : display;
     }
 
@@ -1155,7 +1197,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // them to correct.
         if (string.Equals(current, FormatValueAsString(CurrentValue), StringComparison.Ordinal) is false) return current;
 
-        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, CultureInfo.InvariantCulture)?.ToString();
+        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, ValueCulture)?.ToString();
     }
 
     /// <summary>
@@ -1175,22 +1217,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (value is null) return null;
 
-        // The displayed text must round-trip through TryParseValueFromString, which parses with the
-        // invariant culture. A culture-sensitive ToString would render "1,5" in e.g. a German culture
-        // and then fail to parse (or worse, parse as 15, since ',' is the invariant group separator).
-        if (NumberFormat is null) return BindConverter.FormatValue(value, CultureInfo.InvariantCulture)?.ToString();
+        // The displayed text must round-trip through TryParseValueFromString, which parses the plain value
+        // with the very same culture. Left to the thread it would render "1,5" in e.g. a German culture and
+        // then fail to parse (or worse, parse as 15, since ',' is the invariant group separator), which is
+        // why the default here is the invariant culture rather than the current one.
+        if (NumberFormat is null) return BindConverter.FormatValue(value, ValueCulture)?.ToString();
 
-        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat)
-             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat)
+        var culture = FormatCulture;
+
+        return _typeOfValue == typeof(byte) ? Convert.ToByte(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(short) ? Convert.ToInt16(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(int) ? Convert.ToInt32(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(long) ? Convert.ToInt64(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(float) ? Convert.ToSingle(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(value).ToString(NumberFormat, culture)
+             : _typeOfValue == typeof(double) ? Convert.ToDouble(value).ToString(NumberFormat, culture)
              : "0";
     }
 
@@ -1200,6 +1245,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// whether there is something for the clear button (and the Escape key) to clear.
     /// </summary>
     private bool HasVisibleText() => GetDisplayValueAsString().HasValue();
+
+    // The two cultures the field works in, and why they are not the same one by default. The plain text of
+    // the input has to round-trip through the parse below, which is what Blazor's own numeric binding does
+    // with the invariant culture; a NumberFormat, on the other hand, is a rendering for the reader and has
+    // always followed the thread. An explicit Culture pins both to it.
+    // Without the text box the buttons are the whole component, so a HideInput field that was given no Mode
+    // would render nothing a user can see or reach. It falls back to the compact stack instead.
+    private BitSpinButtonMode? EffectiveMode => HideInput ? (Mode ?? BitSpinButtonMode.Compact) : Mode;
+
+    private CultureInfo ValueCulture => Culture ?? CultureInfo.InvariantCulture;
+
+    private CultureInfo FormatCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    // A number is never a word, so the text-editing helpers of a soft keyboard have nothing to correct here
+    // and only get in the way: a red squiggle under a perfectly good figure, or a capital letter offered for
+    // a field that accepts no letters. A consumer who wants them back writes them into InputHtmlAttributes.
+    private string SpellCheck => GetInputAttribute("spellcheck") ?? "false";
+
+    private string AutoCorrect => GetInputAttribute("autocorrect") ?? "off";
+
+    private string AutoCapitalize => GetInputAttribute("autocapitalize") ?? "off";
 
     private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
 
@@ -1250,6 +1316,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                               : null;
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+
+    // The spinbutton role replaces the native role of the input, and with it the readonly attribute's own
+    // mapping into the accessibility tree, so the state is written out - the same reasoning that writes out
+    // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
+    // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
+    private string? AriaReadOnly => ReadOnly ? "true" : GetInputAttribute("aria-readonly");
 
     // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
     // its own was given would quietly throw that name away. The visible label keeps naming the input
@@ -1351,6 +1423,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             return;
         }
 
+        // Escape is handled the same way round as Enter, and for the same reason: the consumer sees it even
+        // on a read-only field, and before the field acts on it. The clear button is deliberately kept out
+        // of the tab order (like the spin buttons), so Escape is the keyboard path to the clear action, as
+        // it is in BitSearchBox - it only acts when the button is actually rendered, i.e. there is something
+        // to clear and the field is not read-only.
+        if (e.Key is "Escape" && HasModifier(e) is false)
+        {
+            await OnEscape.InvokeAsync(e);
+
+            if (IsDisposed) return;
+
+            if (ReadOnly || InvalidValueBinding()) return;
+
+            if (ShowClearButton is false || HasVisibleText() is false) return;
+
+            await HandleOnClearButtonClick();
+            return;
+        }
+
         if (ReadOnly || InvalidValueBinding()) return;
 
         switch (e.Key)
@@ -1442,15 +1533,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             case "End":
                 if (HasModifier(e) || _hasExplicitMax is false) return;
                 await SetBoundValueAsync(_max);
-                break;
-
-            // The clear button is deliberately kept out of the tab order (like the spin buttons), so
-            // Escape provides the keyboard path to the clear action, as it does in BitSearchBox. It
-            // only acts when the clear button is actually rendered, i.e. there is something to clear.
-            case "Escape":
-                if (HasModifier(e) || ShowClearButton is false) return;
-                if (HasVisibleText() is false) return;
-                await HandleOnClearButtonClick();
                 break;
 
             default:
@@ -2048,16 +2130,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
-    /// Maps the current culture's group and decimal separators to their invariant equivalents
+    /// Maps the formatting culture's group and decimal separators to their invariant equivalents
     /// (group separators get removed, decimal separators become '.'). The group separators must be
     /// handled first: in cultures like German the group separator is '.' itself, which would
     /// otherwise collide with the invariant decimal point.
     /// </summary>
-    private static string? MapCultureSeparatorsToInvariant(string? value)
+    private string? MapCultureSeparatorsToInvariant(string? value)
     {
         if (value.HasNoValue()) return value;
 
-        var numberFormatInfo = CultureInfo.CurrentCulture.NumberFormat;
+        var numberFormatInfo = FormatCulture.NumberFormat;
         var result = value!;
 
         foreach (var groupSeparator in new[] { numberFormatInfo.NumberGroupSeparator, numberFormatInfo.CurrencyGroupSeparator })
