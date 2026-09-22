@@ -557,12 +557,7 @@ private readonly List<BitChoiceGroupItem<string>> deploymentItems =
 
 <BitChoiceGroup Label=""FullWidth + LabelPosition.Start (items at the far edge)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched item label (settings list)""
-                Items=""basicItems""
-                DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start""
-                FullWidth
-                Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })"" />";
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)"" Items=""basicItems"" DefaultValue=""@(""A"")"" LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel />";
     private readonly string example16CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> basicItems =
 [

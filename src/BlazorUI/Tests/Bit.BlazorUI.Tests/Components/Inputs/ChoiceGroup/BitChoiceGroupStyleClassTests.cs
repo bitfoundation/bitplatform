@@ -159,6 +159,25 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitChoiceGroupShouldOnlyMarkTheRootAsStretchItemLabelWhenAsked()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-chg-sil"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetItems());
+            parameters.Add(p => p.StretchItemLabel, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-chg-sil"));
+    }
+
+    [TestMethod]
     [DataRow(null, "bit-chg-led")]
     [DataRow(BitLabelPosition.End, "bit-chg-led")]
     [DataRow(BitLabelPosition.Start, "bit-chg-lst")]

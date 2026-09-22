@@ -529,10 +529,9 @@ private void ReverseDynamicOptions()
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched option label (settings list)""
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth
-                Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })""
+                LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel
                 TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -1079,6 +1078,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Recolored, and without the bold checked text""
@@ -1088,6 +1088,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
     <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>
 
 
@@ -1095,11 +1096,15 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroup Label=""Outline"" Variant=""BitVariant.Outline"" DefaultValue=""@(""A"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </BitChoiceGroup>
 
     <BitChoiceGroup Label=""Fill"" Variant=""BitVariant.Fill"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
         <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
         <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+        <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
     </BitChoiceGroup>
 </div>";
 

@@ -238,6 +238,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "StretchItemLabel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stretches the label of each item over the full width of its row and spreads its content, which puts the circle at the far edge of the row instead of right beside the item text. Combined with FullWidth and LabelPosition.Start it produces the text-at-the-start, circle-at-the-end list found in settings pages."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitChoiceGroupClassStyles?",
             DefaultValue = "null",

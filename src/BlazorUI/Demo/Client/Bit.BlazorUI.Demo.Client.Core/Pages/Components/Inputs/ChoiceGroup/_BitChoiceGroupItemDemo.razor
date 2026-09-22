@@ -266,7 +266,7 @@
 </DemoExample>
 
 <DemoExample Title="FullWidth" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
-    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPosition.Start now has room to push the items to the far edge; stretching the item label over that row as well turns it into the label-at-the-start, circle-at-the-end list found in settings pages.</div>
+    <div>Stretches the ChoiceGroup to the full width of its container instead of letting it hug its widest item, which is what lines a ChoiceGroup up with the other full width fields of a form. In the horizontal layout the items additionally share that width in equal columns. In the vertical layout every item row spans the full width, so LabelPosition.Start now has room to push the items to the far edge; adding StretchItemLabel, which stretches the label of each item over its row and spreads its content, turns that into the text-at-the-start, circle-at-the-end list found in settings pages.</div>
     <br />
     <div class="example-content column">
         <div class="example-box">
@@ -279,12 +279,7 @@
             <BitChoiceGroup Label="FullWidth + LabelPosition.Start (items at the far edge)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth />
         </div>
         <div class="example-box">
-            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + stretched item label (settings list)"
-                            Items="basicItems"
-                            DefaultValue="@("A")"
-                            LabelPosition="BitLabelPosition.Start"
-                            FullWidth
-                            Styles="@(new() { ItemLabel = "width: 100%; justify-content: space-between;" })" />
+            <BitChoiceGroup Label="FullWidth + LabelPosition.Start + StretchItemLabel (settings list)" Items="basicItems" DefaultValue="@("A")" LabelPosition="BitLabelPosition.Start" FullWidth StretchItemLabel />
         </div>
     </div>
 </DemoExample>
@@ -823,7 +818,7 @@
 </DemoExample>
 
 <DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
-    <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored and the keyboard arrow keys follow the text direction.</div>
+    <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored, and the arrow keys follow the text direction in Chromium and Firefox, where ArrowLeft moves to the next item. That mirroring is the native behavior of a radio group in those engines rather than something the component does, and WebKit does not do it: there the arrows keep the order of the markup, so ArrowRight moves to the next item and ArrowLeft to the previous one.</div>
     <br />
     <div dir="rtl" class="example-content">
         <BitChoiceGroup Label="ساده" Items="rtlItems" DefaultValue="@("A")" Dir="BitDir.Rtl" />

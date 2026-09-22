@@ -146,6 +146,22 @@
     }
 }
 
+// Stretches the label of each item over the full width of its row and spreads its content, so the circle
+// sits at the far edge of the row instead of right beside the item text - the settings list layout, once
+// LabelPosition.Start has put the text first. The card variants already stretch their item labels, so for
+// them this rule only adds the spreading. Excluded from the spreading is the icon and image tile
+// (.bit-chg-ili), which stacks its own content in a column and would have its parts pushed apart.
+.bit-chg-sil {
+    .bit-chg-itl {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .bit-chg-itl:not(.bit-chg-ili) {
+        justify-content: space-between;
+    }
+}
+
 // The position of the content of an item relative to its radio circle. The markup order inside an item
 // label is [prefix, circle, content, suffix], so each position is just the flex-direction that puts the
 // content on the requested side of the circle. These are custom properties rather than a direct

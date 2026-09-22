@@ -824,11 +824,10 @@ private readonly List<Order> deploymentCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />
 
-<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + stretched item label (settings list)""
+<BitChoiceGroup Label=""FullWidth + LabelPosition.Start + StretchItemLabel (settings list)""
                 Items=""basicCustoms""
                 DefaultValue=""@(""A"")""
-                LabelPosition=""BitLabelPosition.Start"" FullWidth
-                Styles=""@(new() { ItemLabel = ""width: 100%; justify-content: space-between;"" })""
+                LabelPosition=""BitLabelPosition.Start"" FullWidth StretchItemLabel
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) },
                                          Value = { Name = nameof(Order.ItemValue) } })"" />";
     private readonly string example16CsharpCode = @"

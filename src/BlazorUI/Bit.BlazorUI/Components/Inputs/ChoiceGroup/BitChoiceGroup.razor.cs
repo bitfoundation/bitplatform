@@ -197,6 +197,17 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Stretches the label of each item over the full width of its row and spreads its content, which puts
+    /// the circle at the far edge of the row instead of right beside the item text. Combined with
+    /// <see cref="FullWidth"/> and <see cref="BitLabelPosition.Start"/> it produces the text-at-the-start,
+    /// circle-at-the-end list found in settings pages. The card variants stretch their item labels already,
+    /// so this only adds the spreading to them; items rendered as image or icon tiles lay their own content
+    /// out and are not affected.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool StretchItemLabel { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.
     /// </summary>
     [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
@@ -403,6 +414,8 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         });
 
         ClassBuilder.Register(() => FullWidth ? "bit-chg-flw" : string.Empty);
+
+        ClassBuilder.Register(() => StretchItemLabel ? "bit-chg-sil" : string.Empty);
 
         ClassBuilder.Register(() => ReadOnly ? "bit-chg-rdo" : string.Empty);
 
