@@ -1,5 +1,9 @@
 name: bit platform CI - Bswup
 
+# One pipeline per package: the build/unit stage gates the browser and publish-gate stages below, so a
+# broken build fails once instead of burning a runner per E2E leg. See
+# src/Bswup/Tests/Bit.Bswup.Tests.E2E/README.md for what each E2E job proves and how to run it locally.
+
 on:
   workflow_dispatch:
   pull_request:
@@ -13,6 +17,9 @@ permissions:
   contents: read
 
 jobs:
+
+  # Stage 1 - build, MCP, hosting and JS unit tests. Every stage below depends on this one, so its `if:`
+  # is the single switch that skips the whole pipeline on Release/Prerelease/Version PRs.
   build-Bswup:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Bswup
@@ -64,7 +71,7 @@ jobs:
       run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
 
     - name: dotnet test (hosting - served assets, host documents and BswupProgress over HTTP, net8.0/net9.0/net10.0)
-      # Real-browser coverage (install, offline, updates, recovery) and the published-output gate run in bit.ci.Bswup.e2e.yml.
+      # Real-browser coverage (install, offline, updates, recovery) and the published-output gate are the stages below.
       run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Hosting/Bit.Bswup.Tests.Hosting.csproj --no-build
 
     # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
@@ -74,3 +81,121 @@ jobs:
         cd src/Bswup/Tests/bit-bswup-js
         npm ci
         npm test
+
+  # Stage 2 - every host shape (the Blazor Web App in the WebAssembly, WebAssembly without prerendering, Auto
+  # and Server render modes, and the standalone WebAssembly app on a sub-path) in Chromium, on each runtime the
+  # library ships for.
+  e2e-web:
+    needs: build-Bswup
+    name: Bswup E2E - browser (${{ matrix.framework }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [ net10.0, net9.0, net8.0 ]
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    - name: Build the harness host
+      run: dotnet build src/Bswup/Tests/Bit.Bswup.Tests.Harness.Web/Bit.Bswup.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Bswup/Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      env:
+        BSWUP_E2E_FRAMEWORK: ${{ matrix.framework }}
+        BSWUP_E2E_CONFIGURATION: Release
+        BSWUP_E2E_SKIP_BUILD: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Bswup &&
+        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        --report-trx --report-trx-filename bswup-e2e-web-${{ matrix.framework }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: bswup-e2e-web-${{ matrix.framework }}
+        path: '**/bswup-e2e-web-*.trx'
+        if-no-files-found: ignore
+
+  # Stage 3 - publishes the harness the way an app ships - trimmed WebAssembly clients, pre-compressed static
+  # assets, the service-worker manifests generated for publish - and runs the browser suite against that output.
+  # The integrity-checked install is the test that matters most here: it proves the published bytes match the
+  # hashes the published manifest carries, which a Debug build never shows.
+  publish-gate:
+    needs: build-Bswup
+    name: Bswup publish gate
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: 24
+
+    # TargetFrameworks=net10.0 on top of -f: -f alone does not reach project references, which then still
+    # evaluate (and, without their SDKs installed, fail on) every framework they target.
+    - name: Publish the harness host
+      run: >
+        dotnet publish src/Bswup/Tests/Bit.Bswup.Tests.Harness.Web/Bit.Bswup.Tests.Harness.Web.csproj
+        -c Release -f net10.0 -p:TargetFrameworks=net10.0 -o ${{ github.workspace }}/artifacts/bswup-harness
+
+    - name: Build the E2E suite
+      run: dotnet build src/Bswup/Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Bswup/Tests/Bit.Bswup.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests against the published host
+      env:
+        BSWUP_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/bswup-harness
+      run: >
+        cd src/Bswup &&
+        dotnet test --project Tests/Bit.Bswup.Tests.E2E/Bit.Bswup.Tests.E2E.csproj -c Release --no-build
+        --report-trx --report-trx-filename bswup-publish.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: bswup-publish
+        path: '**/bswup-publish.trx'
+        if-no-files-found: ignore
