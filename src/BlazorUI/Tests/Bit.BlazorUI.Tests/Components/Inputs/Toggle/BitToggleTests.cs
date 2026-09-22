@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -670,6 +673,75 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitToggleThumbTemplateShouldRenderInTheKnobAndFollowTheState()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, isOn ? "ON" : "OFF")));
+        });
+
+        Assert.AreEqual("OFF", com.Find(".bit-tgl-sta").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.Value, true));
+
+        Assert.AreEqual("ON", com.Find(".bit-tgl-sta").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleThumbTemplateShouldTakeTheKnobFromTheStateIconAndTheRoomierGeometryWithIt()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.OnIconName, "Accept");
+            parameters.Add(p => p.OffIconName, "Cancel");
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL")));
+        });
+
+        Assert.AreEqual("TPL", com.Find(".bit-tgl-sta").TextContent.Trim());
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-ico").Count);
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+    }
+
+    [TestMethod]
+    public void BitToggleThumbTemplateAloneShouldStillAskForTheRoomierGeometry()
+    {
+        var com = RenderComponent<BitToggle>();
+
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+
+        com.Render(parameters => parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL"))));
+
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+    }
+
+    [TestMethod]
+    public void BitToggleLoadingShouldTakeTheKnobBackFromTheThumbTemplate()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, "TPL")));
+        });
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.AreEqual(string.Empty, com.Find(".bit-tgl-sta").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleKnobShouldStayOutOfTheAccessibleName()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Dark mode");
+            parameters.Add(p => p.ThumbTemplate, (RenderFragment<bool>)(isOn => b => b.AddContent(0, isOn ? "ON" : "OFF")));
+        });
+
+        // The switch is named by its label and reports its state through aria-checked, so everything the knob
+        // carries - a glyph, a template, the spinner - is decoration that must not end up in the name.
+        Assert.AreEqual("true", com.Find(".bit-tgl-sta").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
     public void BitToggleEventsShouldFireInOrder()
     {
         var log = string.Empty;
@@ -952,7 +1024,9 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Title, title);
         });
 
-        Assert.AreEqual(title, com.Find("button").GetAttribute("title"));
+        // the tooltip sits on the root, so a hover anywhere on the toggle - its label included - brings it up
+        Assert.AreEqual(title, com.Find(".bit-tgl").GetAttribute("title"));
+        Assert.IsFalse(com.Find("button").HasAttribute("title"));
     }
 
     [TestMethod, DataRow("A detailed description")]
@@ -1517,5 +1591,371 @@ public class BitToggleTests : BunitTestContext
         button.Click();
 
         Assert.AreEqual(value is false, bitToggle.ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleAllowDisabledFocusShouldKeepADisabledToggleInTheTabOrder(bool allowDisabledFocus)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        var button = com.Find("button");
+
+        // the native attribute is what takes the switch out of the tab order, so it is the one that is dropped
+        Assert.AreEqual(allowDisabledFocus is false, button.HasAttribute("disabled"));
+
+        // whichever way the state is carried, it is still announced
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitToggleAllowDisabledFocusShouldStillRefuseTheChange()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+        });
+
+        com.Find("button").Click();
+
+        Assert.AreEqual("false", com.Find("button").GetAttribute("aria-checked"));
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleAutoFocusShouldNotLandOnAToggleThatCannotTakeTheFocus(bool allowDisabledFocus)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.AllowDisabledFocus, allowDisabledFocus);
+        });
+
+        Assert.AreEqual(allowDisabledFocus, com.Find("button").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitToggleParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitToggleParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitToggle)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitToggleParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitToggleParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitToggleParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitToggleShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitToggleParams
+            {
+                Inline = true,
+                FullWidth = true,
+                Text = "Cascaded text",
+                Title = "Cascaded title",
+                Size = BitSize.Large,
+                Color = BitColor.Success,
+                OnIconName = "Accept"
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitToggle>(0);
+                builder.AddAttribute(1, nameof(BitToggle.Label), "A label");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-suc"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-fwi"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-tic"));
+        Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
+        Assert.AreEqual("Cascaded text", com.Find(".bit-tgl-stx").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitToggleParams
+            {
+                Size = BitSize.Large,
+                Color = BitColor.Success,
+                Text = "Cascaded text",
+                Reversed = true
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitToggle>(0);
+                builder.AddAttribute(1, nameof(BitToggle.Size), BitSize.Small);
+                builder.AddAttribute(2, nameof(BitToggle.Color), BitColor.Error);
+                builder.AddAttribute(3, nameof(BitToggle.Text), "Own text");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-sm"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-err"));
+        Assert.AreEqual("Own text", com.Find(".bit-tgl-stx").TextContent.Trim());
+
+        // what the toggle left unset is still filled in by the cascade
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-rvs"));
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageShouldRenderItsOwnLineAndMarkTheToggleInvalid()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Two-factor authentication");
+            parameters.Add(p => p.ErrorMessage, "Required by your organization.");
+        });
+
+        var error = com.Find(".bit-tgl-erm");
+
+        Assert.AreEqual("Required by your organization.", error.TextContent.Trim());
+
+        // a message saying what is wrong with the state is a rejection of it, so it marks the toggle the
+        // same way the flag does instead of leaving a red line under a switch that still looks accepted
+        var root = com.Find(".bit-tgl");
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+
+        // the extra line only fits once the root is allowed to wrap, which the class turns on
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-her"));
+
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitToggleWithoutAnErrorMessageShouldNotRenderOneOrWrapTheRoot()
+    {
+        var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "No error"));
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-erm").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-tgl-her"));
+        Assert.IsFalse(root.ClassList.Contains("bit-inv"));
+        Assert.IsFalse(com.Find("button").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitToggleInvalidShouldMarkTheToggleWithoutRenderingAMessage()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Marked invalid");
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-invalid"));
+
+        // the flag says the state was rejected; it does not invent a line saying why
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-erm").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-tgl-her"));
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageTemplateShouldReplaceThePlainMessage()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Plain message");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-error");
+                builder.AddContent(2, "Templated message");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Templated message", com.Find(".bit-tgl-erm .custom-error").TextContent.Trim());
+
+        // only the plain text is announced, since a template is free to render anything at all
+        Assert.AreEqual("Plain message", com.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleLiveRegionShouldBeRenderedEmptyUntilThereIsAMessage()
+    {
+        var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "Live region"));
+
+        // a live region that arrives with its text already in it is the one thing screen readers are known
+        // to miss, so the region is always in the markup and only its text comes and goes
+        Assert.AreEqual(string.Empty, com.Find("[role=status]").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.ErrorMessage, "Rejected by the server."));
+
+        Assert.AreEqual("Rejected by the server.", com.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageShouldBeAnnouncedBeforeTheDescription()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.Text, "Enabled");
+            parameters.Add(p => p.Description, "Keeps a local copy.");
+            parameters.Add(p => p.ErrorMessage, "Not available on this plan.");
+        });
+
+        var describedBy = com.Find("button").GetAttribute("aria-describedby")!.Split(' ');
+
+        var stateTextId = com.Find(".bit-tgl-stx").Id;
+        var errorId = com.Find(".bit-tgl-erm").Id;
+        var descriptionId = com.Find(".bit-tgl-des").Id;
+
+        // what is wrong with the state is read before what the switch is for, which is the order the two
+        // lines are rendered in as well
+        CollectionAssert.AreEqual(new[] { stateTextId, errorId, descriptionId }, describedBy);
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageShouldNotBecomeTheAccessibleName()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.ErrorMessage, "Not available on this plan.");
+        });
+
+        var errorId = com.Find(".bit-tgl-erm").Id;
+
+        Assert.AreNotEqual(errorId, com.Find("button").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageStyleAndClassTest()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Rejected.");
+            parameters.Add(p => p.Styles, new BitToggleClassStyles
+            {
+                ErrorMessage = "font-style: italic",
+                ErrorMessageContainer = "margin-top: 1rem"
+            });
+            parameters.Add(p => p.Classes, new BitToggleClassStyles
+            {
+                ErrorMessage = "custom-error",
+                ErrorMessageContainer = "custom-error-container"
+            });
+        });
+
+        var container = com.Find(".bit-tgl-erm");
+
+        Assert.IsTrue(container.ClassList.Contains("custom-error-container"));
+        Assert.AreEqual("margin-top: 1rem", container.GetAttribute("style"));
+
+        Assert.AreEqual("font-style: italic", com.Find(".bit-tgl-erm .custom-error").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitToggleAValueTheEditContextRejectsShouldNotBeMarkedInvalidTwice()
+    {
+        var com = RenderComponent<BitToggleValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.TestModel, new BitToggleTestModel { Value = true });
+            parameters.Add(p => p.IsEnabled, true);
+        });
+
+        com.Find("form").Submit();
+
+        // the base class already registers the class for a value the EditContext rejected, so the component
+        // only adds it for a rejection of its own - two identical classes say nothing the one does not
+        Assert.AreEqual(1, com.Find(".bit-tgl").ClassList.Count(c => c == "bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitToggleParamsShouldCarryEveryValueParameterOfTheToggle()
+    {
+        // The params object is the cascading form of the toggle's own API, so a parameter added to the
+        // component without being added here is one a BitParams ancestor silently cannot set. Templates,
+        // callbacks and the value binding are deliberately left out: a cascaded default for them makes no sense.
+        var declared = typeof(BitToggle)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(p => p.GetCustomAttributes(typeof(ParameterAttribute), false).Length > 0)
+            .Where(p => p.PropertyType != typeof(RenderFragment)
+                     && p.PropertyType.IsGenericType is false
+                     && p.PropertyType.Name.StartsWith("EventCallback") is false)
+            .Select(p => p.Name)
+            .ToList();
+
+        var carried = typeof(BitToggleParams)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(p => p.Name)
+            .ToHashSet();
+
+        var missing = declared.Where(name => carried.Contains(name) is false).ToList();
+
+        Assert.AreEqual(0, missing.Count, "BitToggleParams is missing: " + string.Join(", ", missing));
+    }
+
+    [TestMethod]
+    public void BitToggleParamsUpdateParametersShouldNotOverwriteWhatTheToggleSetItself()
+    {
+        var @params = new BitToggleParams
+        {
+            Label = "Cascaded label",
+            AllowDisabledFocus = true,
+            AutoLoading = true,
+            Loading = true,
+            Role = "checkbox",
+            StopPropagation = true
+        };
+
+        var toggle = new BitToggle();
+
+        @params.UpdateParameters(toggle);
+
+        Assert.AreEqual("Cascaded label", toggle.Label);
+        Assert.IsTrue(toggle.AllowDisabledFocus);
+        Assert.IsTrue(toggle.AutoLoading);
+        Assert.IsTrue(toggle.Loading);
+        Assert.AreEqual("checkbox", toggle.Role);
+        Assert.IsTrue(toggle.StopPropagation);
     }
 }

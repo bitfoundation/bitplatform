@@ -18,6 +18,17 @@ public class BitToggleClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the line carrying the error message of the BitToggle.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitToggle.
+    /// Ignored when an ErrorMessageTemplate replaces the plain message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the BitToggle.
     /// </summary>
     public string? Container { get; set; }

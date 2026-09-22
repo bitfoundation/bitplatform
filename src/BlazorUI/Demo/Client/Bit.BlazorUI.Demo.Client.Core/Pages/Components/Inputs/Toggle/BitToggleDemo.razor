@@ -2,15 +2,16 @@
 
 <PageOutlet Url="components/toggle"
             Title="Toggle"
-            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, an icon or custom content inside its track, a description line, an automatic or manual loading state, cancellable changes, programmatic flipping, label placement on any side, and read-only and required modes." />
+            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, content inside its track or its knob, a description line, an error line for a state the app rejected, an automatic or manual loading state, cancellable changes, programmatic flipping, label placement on any side, cascading defaults through BitParams, and public CSS variables for everything the parameters do not cover." />
 
 <DemoPage Name="Toggle"
           SecondaryNames="@(["Switch"])"
-          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention that a later submit carries out; a switch inside a long form that ends in a Submit button is the one place not to use it. The knob slides between the two ends of the track, so the state is carried by position as much as by color, and the slide collapses to a jump wherever reduced motion is asked for. It is built on a real focusable button with the switch role, so Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch together with its state. Beyond the two plain states it can name each of them with a state text, put an icon or arbitrary content inside its track, explain itself in a description line, show a spinner for as long as the change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side of the knob."
+          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention a later submit carries out, so a switch inside a form that ends in a Submit button is the one place not to use it. It is built on a real focusable button carrying the switch role: Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch with its state. The knob carries that state by position as much as by color, and its slide collapses to a jump wherever reduced motion is asked for. Beyond the two plain states it can name each of them with a state text, carry content inside its track or its knob, explain itself in a description line, say why a state was rejected in an error line, show a spinner while a change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side. A BitParams ancestor sets the defaults of every toggle in a subtree, and a tier of public --bit-Toggle-* CSS variables covers the geometry, the palette and the motion that no parameter names."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
           GitHubUrl="Inputs/Toggle/BitToggle.razor"
           GitHubDemoUrl="Inputs/Toggle/BitToggleDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
@@ -50,12 +51,11 @@
     <DemoExample Title="Track content" RazorCode="@example3RazorCode" Id="example3">
         <div>
             <b>OnContent</b> and <b>OffContent</b> put arbitrary markup <i>inside</i> the track, on the side the knob
-            has just left - the compact "I/O", "ON/OFF" or ✓/✗ pattern that fits where there is no room for a state
-            text beside the toggle. The track widens to fit whatever is put in it instead of letting it overflow, and
-            the content is hidden from screen readers, which already learn the state from the switch itself. Both
-            sides are laid out on top of each other, so the track is as wide as the wider of the two and keeps that
-            width through a flip - the third toggle below, which only has an off side, does not shrink when it is
-            turned on.
+            has just left - the compact "I/O", "ON/OFF" or ✓/✗ pattern for where there is no room for a state text
+            beside the toggle. The track widens to fit instead of letting it overflow, and the content is hidden from
+            screen readers, which already learn the state from the switch. Both sides are stacked in the same cell, so
+            the track is as wide as the wider of the two and keeps that width through a flip - the third toggle below,
+            which only has an off side, does not shrink when it is turned on.
         </div>
         <br />
         <BitToggle Label="Text content">
@@ -73,14 +73,16 @@
         </BitToggle>
     </DemoExample>
 
-    <DemoExample Title="Icons" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Knob content" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>OnIconName</b> and <b>OffIconName</b> draw a glyph inside the knob itself, the way a native platform
-            switch marks its two states. The whole toggle steps up to a roomier geometry as soon as either of them is
-            set - and stays there in both states - so flipping it never resizes it under the pointer. Setting only one
-            of the two leaves the other state with a plain knob. The
-            <BitLink Href="#example17">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
-            these parameters.
+            <b>OnIconName</b> and <b>OffIconName</b> draw a glyph inside the knob itself, the way a native
+            platform switch marks its two states; <b>ThumbTemplate</b> puts arbitrary markup there instead and
+            receives the current state. Either way the whole toggle steps up to a roomier geometry - and stays
+            there in both states, so flipping it never resizes it under the pointer - and the knob stays hidden
+            from screen readers, which take the state from the switch. While the toggle is
+            <BitLink Href="#example6">loading</BitLink> the spinner takes the knob back from both. The
+            <BitLink Href="#example15">External Icons</BitLink> section shows the <b>BitIconInfo</b>
+            counterparts of the two icon parameters.
         </div>
         <br />
         <BitToggle Label="Both states" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" />
@@ -93,20 +95,66 @@
         </BitToggle>
         <br /><br />
         <BitToggle Label="Disabled" OnIconName="@BitIconName.Accept" OffIconName="@BitIconName.Cancel" IsEnabled="false" />
+        <br /><br /><br />
+        <div><b>ThumbTemplate</b>:</div>
+        <br />
+        <div class="example-box">
+            <BitToggle Label="Day / night" Size="BitSize.Large">
+                <ThumbTemplate Context="isOn">
+                    <span style="font-size:0.75rem">@(isOn ? "🌞" : "🌜")</span>
+                </ThumbTemplate>
+            </BitToggle>
+            <BitToggle Label="Busy" Size="BitSize.Large" Loading>
+                <ThumbTemplate Context="isOn">
+                    <span style="font-size:0.75rem">@(isOn ? "🌞" : "🌜")</span>
+                </ThumbTemplate>
+            </BitToggle>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Label" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Label &amp; layout" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            By default the label sits above the knob. <b>Inline</b> puts the two on a single line instead, which is
-            the usual shape of a settings row. When a plain string is not enough - a formatted phrase, an icon, a link
-            to what is being switched on - <b>LabelTemplate</b> replaces the label with arbitrary markup while it stays
-            part of the click target and keeps naming the switch for screen readers.
+            <b>LabelPosition</b> puts the label on any of the four sides of the knob and follows the reading
+            direction, so <b>Start</b> is the left in LTR and the right in RTL.
         </div>
-        <br /><br />
-        <div><b>Inline</b>:</div><br />
-        <BitToggle Label="This is an inline label" Inline />
-        <br /><br /><br /><br />
-        <div><b>LabelTemplate</b>:</div><br />
+        <br />
+        <div class="example-box">
+            <BitToggle Label="Top" LabelPosition="BitLabelPosition.Top" />
+            <BitToggle Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
+            <BitToggle Label="Start" LabelPosition="BitLabelPosition.Start" />
+            <BitToggle Label="End" LabelPosition="BitLabelPosition.End" />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>Inline</b> and <b>Reversed</b> reach the same four shapes with flags instead: <b>Inline</b> puts
+            the label and the knob on one line - the usual shape of a settings row - and <b>Reversed</b> flips
+            whichever of the two stacks is in use. An explicit <b>LabelPosition</b> wins over both.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggle Label="Inline" Inline />
+            <BitToggle Label="Reversed" Reversed />
+            <BitToggle Label="Reversed and inline" Reversed Inline />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>FullWidth</b> stretches the BitToggle across its container and pushes the label and the knob to
+            opposite edges - the layout of a settings list, where every row lines its switches up on the same
+            side. It shapes the single-line layouts, so it is paired with <b>Inline</b> below.
+        </div>
+        <br />
+        <div style="max-width:32rem">
+            <BitToggle Label="This is a full-width toggle" FullWidth Inline />
+            <br />
+            <BitToggle Label="This is a reversed full-width toggle" Reversed FullWidth Inline />
+        </div>
+        <br /><br /><br />
+        <div>
+            <b>LabelTemplate</b> replaces the plain string with arbitrary markup - a formatted phrase, an icon,
+            a link to what is being switched on - while it stays part of the click target and keeps naming the
+            switch for screen readers.
+        </div>
+        <br />
         <BitToggle>
             <LabelTemplate>
                 <div style="display:flex;align-items:center;gap:10px">
@@ -117,59 +165,7 @@
         </BitToggle>
     </DemoExample>
 
-    <DemoExample Title="Label position" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            <b>LabelPosition</b> places the label on any of the four sides of the knob: <b>Top</b> is the default
-            stacked layout, <b>Bottom</b> flips that stack, and <b>Start</b> and <b>End</b> put the two on one line -
-            the same shapes <b>Inline</b> and <b>Reversed</b> reach, expressed as one choice rather than two flags.
-            It takes precedence over both of them when set, and it follows the reading direction, so <b>Start</b> is
-            the left in LTR and the right in RTL.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitToggle Label="Top" LabelPosition="BitLabelPosition.Top" />
-            <BitToggle Label="Bottom" LabelPosition="BitLabelPosition.Bottom" />
-            <BitToggle Label="Start" LabelPosition="BitLabelPosition.Start" />
-            <BitToggle Label="End" LabelPosition="BitLabelPosition.End" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Reversed" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <b>Reversed</b> swaps the two sides, putting the knob before the label. On its own it flips the stacked
-            layout; combined with <b>Inline</b> it flips the single-line one. It is the two-flag shorthand of the
-            <BitLink Href="#example6">LabelPosition</BitLink> parameter above.
-        </div>
-        <br /><br />
-        <div><b>Default</b>:</div><br />
-        <BitToggle Label="This is a reversed label" Reversed />
-        <br /><br /><br /><br />
-        <div><b>Inline</b>:</div><br />
-        <BitToggle Label="This is a reversed inline label" Reversed Inline />
-    </DemoExample>
-
-    <DemoExample Title="FullWidth" RazorCode="@example8RazorCode" Id="example8">
-        <div>
-            <b>FullWidth</b> stretches the BitToggle across its container and pushes the label and the knob to
-            opposite edges - the layout of a settings list, where every row lines its switches up on the same side.
-            It is meant for the single-line shapes, so it is paired with <b>Inline</b> (or a <b>Start</b>/<b>End</b>
-            label position) below.
-        </div>
-        <br /><br />
-        <div><b>Default</b>:</div><br />
-        <BitToggle Label="This is a full-width toggle" FullWidth Inline />
-        <br /><br /><br /><br />
-        <div><b>Reversed</b>:</div><br />
-        <BitToggle Label="This is a reversed full-width toggle" Reversed FullWidth Inline />
-        <br /><br />
-        <BitToggle FullWidth Inline>
-            <LabelTemplate>
-                <BitActionButton FullWidth>go go go</BitActionButton>
-            </LabelTemplate>
-        </BitToggle>
-    </DemoExample>
-
-    <DemoExample Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Loading" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             A switch promises an immediate result, which is a promise a round trip to a server cannot always keep.
             <b>Loading</b> covers that gap: the knob turns into a spinner, the toggle keeps its current state and
@@ -192,9 +188,9 @@
         <BitToggle Label="Save to the server (AutoLoading)" AutoLoading @bind-Value="autoLoadingValue" OnChange="SaveTheToggle" />
         <br /><br /><br />
         <div>
-            The spinner takes the place of the knob's icon, so it works with or without one, and it is drawn to the
-            size of whichever knob it lands in - turning a toggle busy never resizes it in front of the person
-            waiting on it:
+            The spinner takes over the knob from whatever it was carrying - a glyph, a
+            <BitLink Href="#example4">template</BitLink>, nothing at all - and is drawn to the size of whichever
+            knob it lands in, so turning a toggle busy never resizes it in front of the person waiting on it:
         </div>
         <br />
         <div class="example-box">
@@ -204,7 +200,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Read-only &amp; Required" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Read-only &amp; Required" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             <b>ReadOnly</b> keeps the BitToggle focusable and lets screen readers announce it and its state, but
             clicking or pressing Space no longer changes it - unlike disabling, which takes it out of the interaction
@@ -218,13 +214,13 @@
         <div>
             <b>Required</b> marks the label with an asterisk and tells assistive technologies the choice has to be
             made. Because a switch is always in one of its two states, the rule that makes one of them wrong belongs
-            to the model - see the <BitLink Href="#example13">Validation</BitLink> section - rather than to the
+            to the model - see the <BitLink Href="#example10">Validation</BitLink> section - rather than to the
             browser's own required check.
         </div><br />
         <BitToggle Label="I accept the terms" Required />
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>Value</b> comes in the usual binding shapes. Passed one-way, the parameter dictates the state: the
             BitToggle renders whatever the expression says and a click cannot move it away from a fixed value. Bound
@@ -270,7 +266,7 @@
         <div>@(string.IsNullOrEmpty(methodChangeLog) ? "Nothing changed yet." : methodChangeLog)</div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             Three callbacks fire in a fixed order around a click: <b>OnClick</b> first, while the state is still the
             old one; then <b>OnChanging</b>, carrying the state the BitToggle is about to move to; and finally
@@ -289,7 +285,7 @@
             was, so a change can be refused instead of being reverted after the fact. It is awaited, so it can take
             its time - asking for confirmation, or checking with the server before letting the state through. While it
             is taking that time the BitToggle stops accepting clicks, so a second click cannot start a change that
-            races the one still being decided; use <BitLink Href="#example9">Loading</BitLink> alongside it when the
+            races the one still being decided; use <BitLink Href="#example6">Loading</BitLink> alongside it when the
             wait is long enough to be worth showing.
         </div><br />
         <BitToggle Label="Allow the change" @bind-Value="allowChange" />
@@ -326,7 +322,7 @@
         <div>@(string.IsNullOrEmpty(focusLog) ? "Not focused yet." : focusLog)</div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             Inside an <b>EditForm</b>, the BitToggle takes part in validation like any other input: bind it to a model
             property, let data annotations state the rule - here, that the terms must be agreed to - and a failed
@@ -356,22 +352,87 @@
                 <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
             }
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error styling and
+            <b>aria-invalid</b> on a state something else refused - a server, a rule spanning two controls -
+            and <b>ErrorMessage</b> adds the line that says why, on its own line under the toggle and above
+            any <BitLink Href="#example11">description</BitLink>. A message implies <b>Invalid</b>, so the
+            flag on its own is for marking a toggle whose explanation lives somewhere else. It is announced
+            by a live region the moment it appears, rather than waiting for the next focus.
+            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead; set the plain message alongside
+            it to keep the announcement.
+        </div>
+        <br />
+        <div style="max-width:32rem">
+            <BitToggle FullWidth Inline
+                       Label="Two-factor authentication"
+                       Description="Ask for a code from your authenticator app at every sign-in."
+                       ErrorMessage="@(twoFactorEnabled ? null : "Your organization requires two-factor authentication.")"
+                       @bind-Value="twoFactorEnabled" />
+            <br />
+            <BitToggle Label="Marked invalid, explained elsewhere" Invalid />
+            <br />
+            <BitToggle Label="Public profile" OnText="Anyone can see it">
+                <ErrorMessageTemplate>
+                    This conflicts with your
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">privacy settings</BitLink>.
+                </ErrorMessageTemplate>
+            </BitToggle>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Description" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            <b>Description</b> adds the second line of a settings row: the sentence that says what turning the switch
+            on actually does, where the label only names it. It takes a line of its own under the whole BitToggle in
+            every layout, and screen readers announce it after the name of the switch. In the single-line shapes a
+            described BitToggle spans its container - the layout a settings row wants anyway - while stacked it keeps
+            hugging its content. <b>DescriptionTemplate</b> puts arbitrary markup there instead. Where the explanation
+            should only be announced and never shown, use
+            <BitLink Href="#example12">AriaDescription</BitLink> instead.
+        </div>
+        <br />
+        <BitToggle Label="Auto renew"
+                   Description="The subscription is renewed one day before it expires." />
+        <br /><br /><br />
+        <div><b>Inline</b> and <b>FullWidth</b>, the usual shape of a settings list:</div>
+        <br />
+        <div style="max-width:32rem">
+            <BitToggle FullWidth Inline
+                       Label="Offline mode"
+                       Description="Keep a copy of the last synced data on this device." />
+            <br />
+            <BitToggle FullWidth Inline
+                       Label="Usage statistics"
+                       Description="Send anonymous usage data to help us prioritize what to build next." />
+        </div>
+        <br /><br /><br />
+        <div><b>DescriptionTemplate</b>:</div>
+        <br />
+        <BitToggle Label="Beta features">
+            <DescriptionTemplate>
+                Turning this on opts you into features that are still changing.
+                <BitLink Href="https://bitplatform.dev" Target="_blank">Learn more</BitLink>
+            </DescriptionTemplate>
+        </BitToggle>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             The BitToggle is a real focusable button carrying the <b>switch</b> role: Tab moves the focus to it and
             draws a focus ring, Space and Enter flip it, and screen readers announce it as a switch that is on or off.
             Its pointer target is never smaller than 24 by 24 CSS pixels, whatever size the track is drawn at, and the
             label and the state text are part of that target as well. <b>AutoFocus</b> puts the initial focus on it
-            when the page renders, and <b>Title</b> fills the native tooltip shown when the pointer rests on the knob.
+            when the page renders, and <b>Title</b> fills the native tooltip, which answers a hover anywhere on the
+            toggle rather than on the knob alone.
             <b>Role</b> is the escape hatch for the rare case where the switch semantics are wrong - setting it to
             <b>checkbox</b> makes the control announce itself as checked or unchecked instead of on or off, for a
             choice that only takes effect on a later submit.
         </div><br />
         <div class="example-box">
             <BitToggle Label="Focus me with Tab, flip me with Space" />
-            <BitToggle Label="Hover over my knob" Title="The native tooltip of the toggle" />
+            <BitToggle Label="Hover over me" Title="The native tooltip of the toggle" />
         </div>
         <br /><br /><br />
         <div>The <b>FocusAsync</b> method moves the focus programmatically:</div><br />
@@ -383,7 +444,7 @@
         <div>
             A BitToggle without a visible label needs an <b>AriaLabel</b> to have an accessible name, and
             <b>AriaDescription</b> adds a visually hidden description that screen readers read after the name -
-            the announced-only counterpart of the visible <BitLink Href="#example15">Description</BitLink>.
+            the announced-only counterpart of the visible <BitLink Href="#example11">Description</BitLink>.
         </div><br />
         <div class="example-box">
             <BitToggle AriaLabel="Dark mode" />
@@ -433,46 +494,48 @@
             <BitToggle Text="Dark mode" />
             <BitToggle Label="Notifications" OnText="Allowed" OffText="Blocked" />
         </div>
+        <br /><br /><br />
+        <div>
+            A disabled BitToggle leaves the tab order, which also takes its <b>Title</b> with it - and "why can I
+            not turn this on?" is usually exactly what that tooltip is there to answer.
+            <b>AllowDisabledFocus</b> keeps it reachable and hoverable instead, reporting the state through
+            <b>aria-disabled</b> rather than the native attribute, while still refusing every change. Tab through
+            the two below:
+        </div><br />
+        <div class="example-box">
+            <BitToggle Label="Disabled" IsEnabled="false" Title="Out of the tab order" />
+            <BitToggle Label="Disabled, still focusable" IsEnabled="false" AllowDisabledFocus
+                       Title="Available on the Pro plan" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Description" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode"
+                 Id="example13">
         <div>
-            <b>Description</b> adds the second line of a settings row: the sentence that says what turning the switch
-            on actually does, where the label only names it. It takes a line of its own under the whole BitToggle -
-            in every layout, including the single-line ones - and screen readers announce it after the name of the
-            switch, so the explanation is heard as well as read. In the single-line shapes the described BitToggle
-            spans its container - the layout a settings row wants anyway - while stacked it keeps hugging its
-            content. <b>DescriptionTemplate</b> puts arbitrary markup there instead of a plain string. Where the
-            explanation should only be announced and never shown, use
-            <BitLink Href="#example14">AriaDescription</BitLink> instead.
+            <b>BitParams</b> carries a <b>BitToggleParams</b> down to every BitToggle under it, so a settings
+            panel, a dialog or a whole page picks the size, the color, the layout and the on/off wording once
+            instead of on every switch in it. What it carries is a default and not an override: a toggle that
+            sets a parameter for itself keeps its own value, and only what it left unset is filled in - which is
+            what lets the one row that needs to stand out step out of the cascade without the panel having to know
+            about it. Every value parameter the BitToggle declares itself is on the params object, alongside the shared
+            ones every component has; the templates, the callbacks, the value binding and the inherited input
+            parameters - <b>ReadOnly</b>, <b>Required</b>, <b>Name</b> - are not.
         </div>
-        <br />
-        <BitToggle Label="Auto renew"
-                   Description="The subscription is renewed one day before it expires." />
-        <br /><br /><br />
-        <div><b>Inline</b> and <b>FullWidth</b>, the usual shape of a settings list:</div>
         <br />
         <div style="max-width:32rem">
-            <BitToggle FullWidth Inline
-                       Label="Offline mode"
-                       Description="Keep a copy of the last synced data on this device." />
-            <br />
-            <BitToggle FullWidth Inline
-                       Label="Usage statistics"
-                       Description="Send anonymous usage data to help us prioritize what to build next." />
+            <BitParams Parameters="@toggleParams">
+                <BitToggle Label="Offline mode" Description="Keep a copy of the last synced data on this device." />
+                <BitToggle Label="Usage statistics" />
+                <BitToggle Label="Delete after export" Color="BitColor.Error" OnText="Deleting" OffText="Keeping" />
+            </BitParams>
         </div>
-        <br /><br /><br />
-        <div><b>DescriptionTemplate</b>:</div>
-        <br />
-        <BitToggle Label="Beta features">
-            <DescriptionTemplate>
-                Turning this on opts you into features that are still changing.
-                <BitLink Href="https://bitplatform.dev" Target="_blank">Learn more</BitLink>
-            </DescriptionTemplate>
-        </BitToggle>
+        <br /><br />
+        <div class="example-box">
+            <BitToggle Label="Outside the cascade, and back to the defaults" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Color</b> picks the theme color the track fills with once the BitToggle is on, with <b>Primary</b> as
             the default; the off track stays neutral whichever color is picked, so it keeps reading as "off". The
@@ -521,7 +584,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The knob icons are not limited to the built-in icon font: <b>OnIcon</b> and <b>OffIcon</b> take a
             <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
@@ -550,7 +613,7 @@
                    OnIcon="@BitIconInfo.Bi("bell-fill")" OffIcon="@BitIconInfo.Bi("bell-slash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Size</b> scales the track, the knob, the label and the state text together: <b>Small</b> for dense
             lists and table rows, <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitToggle is a
@@ -583,15 +646,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
             The BitToggle can be restyled from the outside at three levels of reach. <b>Style</b> and <b>Class</b>
             apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name - the
-            root, the label, the description, the container, the button (which is the track), the track content and
-            each of its two sides on its own, the thumb, its icon, the spinner and the state text - plus a
-            <b>Checked</b> slot that
-            is applied only while the toggle is on, which is what lets the two states be painted differently without
-            a single line of state-tracking code.
+            root, the label, the description, the error line and the message inside it, the container, the button
+            (which is the track), the track content and each of its two sides on its own, the thumb, its icon, the
+            spinner and the state text - plus a <b>Checked</b> slot that is applied only while the toggle is on,
+            which is what lets the two states be painted differently without a single line of state-tracking code.
         </div>
         <br /><br />
         <div><b>Component's style &amp; class</b>:</div><br />
@@ -601,9 +663,9 @@
         <br /><br /><br />
         <div><b>Styles &amp; Classes</b>:</div><br />
         <BitToggle Label="Styles"
-                   Styles="@(new() { Root = "--toggle-background: lightgray;", Checked = "--toggle-background: #2ecc71;",
-                                     Thumb = "background: whitesmoke;",
-                                     Button = "background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px; --bit-tgl-pad: 2px; --bit-tgl-thb-size: 26px;" } )" />
+                   Styles="@(new() { Root = "--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;",
+                                     Checked = "--bit-Toggle-checked-background: #2ecc71;",
+                                     Thumb = "background: whitesmoke;" } )" />
         <br />
         <BitToggle Label="Classes"
                    Classes="@(new() { Thumb = "custom-thumb",
@@ -616,9 +678,35 @@
             <OnContent>ON</OnContent>
             <OffContent>OFF</OffContent>
         </BitToggle>
+        <br /><br /><br />
+        <div>
+            For what no parameter covers, the BitToggle reads a set of
+            <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root. They inherit, so a value on
+            <code>:root</code> or on any ancestor re-skins every toggle below it, and one on the <b>Style</b> of an
+            instance re-skins that one alone. The geometry ones belong on the root - the knob and the lane held open
+            for it are measured there - which is what the <b>Root</b> slot above and the <b>Style</b> parameter below
+            both are.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitToggle Label="iOS-sized, elevated knob" Value
+                       Style="--bit-Toggle-track-width: 3.25rem; --bit-Toggle-track-height: 2rem; --bit-Toggle-thumb-size: 1.75rem; --bit-Toggle-thumb-shadow: 0 0.125rem 0.25rem #0000004d;" />
+            <BitToggle Label="Square, slow, no dip" Value
+                       Style="--bit-Toggle-track-radius: 0.25rem; --bit-Toggle-thumb-radius: 0.125rem; --bit-Toggle-transition-duration: calc(var(--bit-mot-duration-short) * 4); --bit-Toggle-thumb-active-scale: 1;" />
+            <BitToggle Label="Its own palette" Value OnIconName="@BitIconName.Accept"
+                       Style="--bit-Toggle-checked-background: rebeccapurple; --bit-Toggle-checked-thumb-color: gold; --bit-Toggle-icon-color: rebeccapurple; --bit-Toggle-label-color: rebeccapurple;" />
+        </div>
+        <br /><br />
+        <div>Set once on an ancestor, inherited by every toggle inside it:</div>
+        <br />
+        <div class="example-box" style="--bit-Toggle-checked-background: var(--bit-clr-suc); --bit-Toggle-checked-hover-background: var(--bit-clr-suc-hover); --bit-Toggle-hover-track-background: var(--bit-clr-bg-sec); --bit-Toggle-label-font-weight: 400; --bit-Toggle-gap: 1rem;">
+            <BitToggle Label="Wi-Fi" Value />
+            <BitToggle Label="Bluetooth" />
+            <BitToggle Label="Airplane mode" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the BitToggle right-to-left. The knob then travels the other
             way - resting on the right when off and sliding to the left when on - and every side-aware layout follows
