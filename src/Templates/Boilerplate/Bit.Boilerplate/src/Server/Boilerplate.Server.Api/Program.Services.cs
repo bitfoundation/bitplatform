@@ -179,7 +179,9 @@ public static partial class Program
 
         //#if (filesStorage == "S3")
         services.AddSingleton<S3HttpClientFactory>();
-        services.AddHttpClient("S3");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("S3").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
         //#endif
 
         //#if (notification == true)
@@ -530,7 +532,7 @@ public static partial class Program
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(20);
+            c.Timeout = TimeSpan.FromSeconds(5);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
@@ -576,7 +578,9 @@ public static partial class Program
         });
 
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-        services.AddHttpClient("AI");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("AI").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
 
         if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
