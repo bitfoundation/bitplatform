@@ -132,6 +132,14 @@ public class BitFileInfo
     [JsonIgnore] public string? Message { get; internal set; }
 
     /// <summary>
+    /// The HTTP status code of the last upload or removal response this file received, which is what tells
+    /// an authorization problem from a payload that was too large or from a server that is temporarily down.
+    /// It is 0 when the request never reached the server at all - a network error, a timeout or an abort -
+    /// and null while no request of this file has come back yet.
+    /// </summary>
+    [JsonIgnore] public int? ResponseStatus { get; internal set; }
+
+    /// <summary>
     /// The status of the file in the BitFileUpload.
     /// </summary>
     [JsonIgnore] public BitFileUploadStatus Status { get; internal set; }

@@ -33,9 +33,16 @@ public class BitFileUploadClassStyles
     public string? FileItem { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload.
+    /// Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload,
+    /// and for the box that takes its place with a type glyph for a file that is not an image.
     /// </summary>
     public string? Preview { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the type glyph shown in place of the preview thumbnail
+    /// of a file item that is not an image.
+    /// </summary>
+    public string? PreviewIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the file name of each file item of the BitFileUpload.

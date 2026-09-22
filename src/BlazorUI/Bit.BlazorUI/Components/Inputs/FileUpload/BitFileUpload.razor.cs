@@ -7,8 +7,9 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitFileUpload wraps the HTML file input element(s) and uploads them to a given URL, with support for
-/// drag-and-drop, clipboard paste, folder and camera capture selection, image previews, chunked and resumable
-/// uploads, a concurrency limit, pause/cancel, automatic retries, validation, and server-side removal.
+/// drag-and-drop onto the component or onto drop zones of the app's own, clipboard paste, folder and camera
+/// capture selection, image previews, chunked and resumable uploads, a concurrency limit, pause/cancel,
+/// automatic retries, validation, and server-side removal.
 /// </summary>
 public partial class BitFileUpload : BitComponentBase
 {
@@ -25,6 +26,7 @@ public partial class BitFileUpload : BitComponentBase
     private DateTime _lastProgressRender = DateTime.MinValue;
     private bool _allowPaste = true;
     private bool _expandDirectories;
+    private string? _dropZoneSelector;
     private string? _dragClass;
     private string? _dragStyle;
     private string? _announcement;
@@ -135,6 +137,15 @@ public partial class BitFileUpload : BitComponentBase
     [Parameter] public TimeSpan? AutoRetryDelay { get; set; }
 
     /// <summary>
+    /// Custom delay before each automatic retry, which is what turns the fixed <see cref="AutoRetryDelay"/>
+    /// into a backoff: it receives the file - whose <see cref="BitFileInfo.ResponseStatus"/> says what the
+    /// server answered - and the number of the attempt about to be made, counting from 1, and returns how
+    /// long to wait before it. Returning null falls back to the <see cref="AutoRetryDelay"/>, which is also
+    /// what a provider that throws does, so a miscalculated delay never swallows the retry itself.
+    /// </summary>
+    [Parameter] public Func<BitFileInfo, int, TimeSpan?>? AutoRetryDelayProvider { get; set; }
+
+    /// <summary>
     /// Calculate the chunk size dynamically based on the user's Internet speed between 512 KB and 10 MB.
     /// </summary>
     [Parameter] public bool AutoChunkSize { get; set; }
@@ -242,6 +253,18 @@ public partial class BitFileUpload : BitComponentBase
     /// It also makes a dropped folder expand into its contents instead of being ignored.
     /// </summary>
     [Parameter] public bool Directory { get; set; }
+
+    /// <summary>
+    /// A CSS selector of one or more elements outside the component that accept a drop as well, which is how
+    /// a whole form, a card or the page itself becomes the drop target while the browse button stays where it
+    /// is. The root element of the component is always a drop zone and needs no selector of its own; the
+    /// elements this one names are matched whenever a drag reaches them, so one rendered after the component
+    /// - or replaced later on - is a drop zone from the moment it matches. While files are dragged over any
+    /// of them, all of them (the root included) carry the <see cref="Classes"/>.Dragging class and the
+    /// <see cref="Styles"/>.Dragging inline style, and the focus being inside one of them is also what lets
+    /// a paste land in this component.
+    /// </summary>
+    [Parameter] public string? DropZoneSelector { get; set; }
 
     /// <summary>
     /// The message shown for the files rejected for being already in the file list
@@ -576,6 +599,8 @@ public partial class BitFileUpload : BitComponentBase
     /// Whether a thumbnail of every selected image is shown at the head of its file item, produced
     /// entirely in the browser from an object URL that is handed back as soon as the file is removed or
     /// the component is reset. The same URL is on the <see cref="BitFileInfo.PreviewUrl"/> of each file.
+    /// A file that is not an image takes a glyph of its type in a box of the same size instead, so that
+    /// the names of a mixed list stay lined up along one edge.
     /// </summary>
     [Parameter] public bool ShowPreview { get; set; }
 
@@ -1029,6 +1054,7 @@ public partial class BitFileUpload : BitComponentBase
 
         // whatever this response says, the request it answers is over and the file is free again.
         file.IsRequestInFlight = false;
+        file.ResponseStatus = responseStatus;
 
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
@@ -1061,7 +1087,7 @@ public partial class BitFileUpload : BitComponentBase
             {
                 file.AutoRetryAttempts++;
 
-                if (AutoRetryDelay is { } delay && delay > TimeSpan.Zero)
+                if (GetAutoRetryDelay(file) is { } delay && delay > TimeSpan.Zero)
                 {
                     await Task.Delay(delay);
                 }
@@ -1176,11 +1202,12 @@ public partial class BitFileUpload : BitComponentBase
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
         _expandDirectories = Directory;
+        _dropZoneSelector = DropZoneSelector;
         _dragClass = GetDragClass();
         _dragStyle = Styles?.Dragging;
 
         _dropZoneRef = await _js.BitFileUploadSetupDragDrop(RootElement, _inputRef, _dragClass, _dragStyle,
-                                                           _allowDrop, _allowPaste, _expandDirectories);
+                                                           _allowDrop, _allowPaste, _expandDirectories, _dropZoneSelector);
 
         if (IsDisposed) return;
         if (_dropZoneRef is null) return;
@@ -1337,17 +1364,19 @@ public partial class BitFileUpload : BitComponentBase
         var dragStyle = Styles?.Dragging;
 
         if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
-            _dragClass == dragClass && _dragStyle == dragStyle) return;
+            _dropZoneSelector == DropZoneSelector && _dragClass == dragClass && _dragStyle == dragStyle) return;
 
         _allowDrop = AllowDrop;
         _allowPaste = AllowPaste;
         _expandDirectories = Directory;
+        _dropZoneSelector = DropZoneSelector;
         _dragClass = dragClass;
         _dragStyle = dragStyle;
 
         try
         {
-            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories, _dragClass, _dragStyle);
+            await _dropZoneRef.InvokeVoidAsync("update", _allowDrop, _allowPaste, _expandDirectories,
+                                               _dragClass, _dragStyle, _dropZoneSelector);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1637,6 +1666,23 @@ public partial class BitFileUpload : BitComponentBase
 
     // whether the file still has bytes to send, which is what tells an upload call that is worth
     // starting apart from one landing on an already settled batch.
+    // How long to wait before the attempt the file is about to make, its number being the number of
+    // automatic retries already spent on it - the first retry is attempt 1.
+    private TimeSpan? GetAutoRetryDelay(BitFileInfo file)
+    {
+        if (AutoRetryDelayProvider is null) return AutoRetryDelay;
+
+        try
+        {
+            return AutoRetryDelayProvider(file, file.AutoRetryAttempts) ?? AutoRetryDelay;
+        }
+        catch
+        {
+            // a provider that throws decides nothing, and the retry it was asked about still happens.
+            return AutoRetryDelay;
+        }
+    }
+
     private static bool HasPendingWork(BitFileInfo file)
     {
         return file.Status is not BitFileUploadStatus.Completed
@@ -2146,6 +2192,8 @@ public partial class BitFileUpload : BitComponentBase
 
             var response = await _httpClient.SendAsync(request);
 
+            fileInfo.ResponseStatus = (int)response.StatusCode;
+
             if (response.IsSuccessStatusCode)
             {
                 await UpdateStatus(BitFileUploadStatus.Removed, fileInfo);
@@ -2158,6 +2206,10 @@ public partial class BitFileUpload : BitComponentBase
         }
         catch (Exception ex)
         {
+            // the request never came back with a status of its own, which is reported the same way the
+            // upload side reports a request that never reached the server.
+            fileInfo.ResponseStatus = 0;
+
             // only the message of the exception, since this text is rendered right in the file item and
             // a full stack trace there says nothing to the user while telling a stranger far too much.
             fileInfo.Message = ex.Message;

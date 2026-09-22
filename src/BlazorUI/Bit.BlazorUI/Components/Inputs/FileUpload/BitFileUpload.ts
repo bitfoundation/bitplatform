@@ -95,11 +95,66 @@ namespace BitBlazorUI {
             dragStyle: string | null,
             allowDrop: boolean,
             allowPaste: boolean,
-            expandDirectories: boolean) {
+            expandDirectories: boolean,
+            dropZoneSelector: string | null) {
 
             let dragCounter = 0;
-            let originalStyle: string | null = null;
             let dragClasses = dragClass.split(' ').filter(c => c.length > 0);
+            // the inline style every zone carried before the drag state was applied to it, so that the
+            // element the app owns gets exactly its own style back rather than losing it.
+            const originalStyles = new Map<HTMLElement, string | null>();
+
+            // a page can well point two uploaders at one shared drop zone, so a drop landing in it is
+            // claimed by the first of them to see it rather than handed to every one of them.
+            const handledFlag = '__bitUplDrop';
+
+            function claim(e: Event) {
+                if ((e as any)[handledFlag]) return false;
+
+                (e as any)[handledFlag] = true;
+
+                return true;
+            }
+
+            // the root is always a drop zone; the selector adds whatever else the app nominates, which is
+            // how a whole form - or the page - accepts a drop while the browse button stays where it is.
+            // the drag listeners sit on the document and ask this rather than being attached to the zones
+            // themselves, so an element the app renders after this component - or replaces later on - is a
+            // drop zone from the moment it matches the selector, with nothing to re-attach.
+            function isInZone(target: EventTarget | null): boolean {
+                if (!(target instanceof Node)) return false;
+
+                if (dropZoneElement.contains(target)) return true;
+
+                if (!dropZoneSelector) return false;
+
+                const element = target instanceof Element ? target : target.parentElement;
+
+                try {
+                    return element?.closest(dropZoneSelector) != null;
+                } catch {
+                    // an invalid selector leaves the component with its own root as the only zone.
+                    return false;
+                }
+            }
+
+            function resolveZones(): HTMLElement[] {
+                const list: HTMLElement[] = [dropZoneElement];
+
+                if (!dropZoneSelector) return list;
+
+                try {
+                    document.querySelectorAll(dropZoneSelector).forEach(e => {
+                        if (e !== dropZoneElement && e instanceof HTMLElement) list.push(e);
+                    });
+                } catch { /* see isInZone */ }
+
+                return list;
+            }
+
+            // the zones the drag state is currently painted on, captured when it was applied so that it
+            // comes off exactly the elements it went on, whatever the DOM does in between.
+            let zones: HTMLElement[] = [];
 
             function hasFiles(e: DragEvent) {
                 return !!e.dataTransfer && Array.prototype.includes.call(e.dataTransfer.types, 'Files');
@@ -110,23 +165,33 @@ namespace BitBlazorUI {
             }
 
             function applyDragStyling() {
-                dropZoneElement.classList.add(...dragClasses);
+                zones = resolveZones();
 
-                if (!dragStyle) return;
-                originalStyle = dropZoneElement.getAttribute('style');
-                dropZoneElement.setAttribute('style', [originalStyle, dragStyle].filter(s => s).join(';'));
+                zones.forEach(zone => {
+                    zone.classList.add(...dragClasses);
+
+                    if (!dragStyle) return;
+                    const original = zone.getAttribute('style');
+                    originalStyles.set(zone, original);
+                    zone.setAttribute('style', [original, dragStyle].filter(s => s).join(';'));
+                });
             }
 
             function clearDragStyling() {
-                dropZoneElement.classList.remove(...dragClasses);
+                zones.forEach(zone => {
+                    zone.classList.remove(...dragClasses);
 
-                if (!dragStyle) return;
-                if (originalStyle) {
-                    dropZoneElement.setAttribute('style', originalStyle);
-                } else {
-                    dropZoneElement.removeAttribute('style');
-                }
-                originalStyle = null;
+                    if (!dragStyle) return;
+                    const original = originalStyles.get(zone);
+                    if (original) {
+                        zone.setAttribute('style', original);
+                    } else {
+                        zone.removeAttribute('style');
+                    }
+                    originalStyles.delete(zone);
+                });
+
+                zones = [];
             }
 
             function addDragState() {
@@ -146,6 +211,8 @@ namespace BitBlazorUI {
             }
 
             function onDragEnter(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
                 if (!canAcceptDrop(e)) return;
 
@@ -153,6 +220,8 @@ namespace BitBlazorUI {
             }
 
             function onDragOver(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 // the default must always be prevented, otherwise the browser navigates away
                 // to the dropped file and the app state gets lost.
                 e.preventDefault();
@@ -164,6 +233,8 @@ namespace BitBlazorUI {
             }
 
             function onDragLeave(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
                 if (!hasFiles(e)) return;
 
@@ -204,7 +275,14 @@ namespace BitBlazorUI {
             }
 
             function onDrop(e: DragEvent) {
+                if (!isInZone(e.target)) return;
+
                 e.preventDefault();
+
+                // two uploaders can well be pointed at one shared zone, and the files belong to
+                // whichever of them takes the drop rather than to both of them at once.
+                if (!claim(e)) return;
+
                 removeDragState(true);
 
                 if (!allowDrop || inputElement.disabled || !e.dataTransfer) return;
@@ -235,7 +313,7 @@ namespace BitBlazorUI {
                 if (!e.clipboardData || e.clipboardData.files.length === 0) return;
 
                 const focused = document.activeElement;
-                const isFocusedHere = focused !== null && (focused === inputElement || dropZoneElement.contains(focused));
+                const isFocusedHere = focused !== null && (focused === inputElement || isInZone(focused));
 
                 if (!isFocusedHere) {
                     if (focused !== null && focused !== document.body) return;
@@ -247,11 +325,11 @@ namespace BitBlazorUI {
                 setFiles(e.clipboardData.files);
             }
 
-            dropZoneElement.addEventListener("dragenter", onDragEnter);
-            dropZoneElement.addEventListener("dragover", onDragOver);
-            dropZoneElement.addEventListener("dragleave", onDragLeave);
-            dropZoneElement.addEventListener("drop", onDrop);
-            dropZoneElement.addEventListener('dragend', onDragCancel);
+            document.addEventListener('dragenter', onDragEnter);
+            document.addEventListener('dragover', onDragOver);
+            document.addEventListener('dragleave', onDragLeave);
+            document.addEventListener('drop', onDrop);
+            document.addEventListener('dragend', onDragCancel);
             document.addEventListener('paste', onPaste);
             // the window listener only cleans the state up, it never prevents the default,
             // so a drop landing anywhere else on the page keeps behaving as it did.
@@ -264,11 +342,27 @@ namespace BitBlazorUI {
                     newAllowPaste: boolean,
                     newExpandDirectories: boolean,
                     newDragClass: string,
-                    newDragStyle: string | null) => {
+                    newDragStyle: string | null,
+                    newDropZoneSelector: string | null) => {
 
                     allowDrop = newAllowDrop;
                     allowPaste = newAllowPaste;
                     expandDirectories = newExpandDirectories;
+
+                    if (newDropZoneSelector !== dropZoneSelector) {
+                        // the zones of the old selector are already wearing the drag state, and only they
+                        // can be asked to take it off again.
+                        const isDragging = dragCounter > 0;
+                        if (isDragging) {
+                            clearDragStyling();
+                        }
+
+                        dropZoneSelector = newDropZoneSelector;
+
+                        if (isDragging) {
+                            applyDragStyling();
+                        }
+                    }
 
                     if (newDragClass !== dragClass || newDragStyle !== dragStyle) {
                         // an ongoing drag is already showing the old class and style, which have to come off
@@ -292,11 +386,15 @@ namespace BitBlazorUI {
                     }
                 },
                 dispose: () => {
-                    dropZoneElement.removeEventListener('dragenter', onDragEnter);
-                    dropZoneElement.removeEventListener('dragover', onDragOver);
-                    dropZoneElement.removeEventListener('dragleave', onDragLeave);
-                    dropZoneElement.removeEventListener("drop", onDrop);
-                    dropZoneElement.removeEventListener('dragend', onDragCancel);
+                    // a zone the app owns outlives this component, so anything painted on it while a drag
+                    // was still in flight has to come off before the listeners that would have done it go.
+                    removeDragState(true);
+
+                    document.removeEventListener('dragenter', onDragEnter);
+                    document.removeEventListener('dragover', onDragOver);
+                    document.removeEventListener('dragleave', onDragLeave);
+                    document.removeEventListener('drop', onDrop);
+                    document.removeEventListener('dragend', onDragCancel);
                     document.removeEventListener('paste', onPaste);
                     window.removeEventListener('dragend', onDragCancel);
                     window.removeEventListener('drop', onDragCancel);

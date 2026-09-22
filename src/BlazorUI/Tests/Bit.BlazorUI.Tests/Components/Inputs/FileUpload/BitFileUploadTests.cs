@@ -1596,7 +1596,7 @@ public class BitFileUploadTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFileUploadShouldNotRenderThePreviewOfANonImageFile()
+    public void BitFileUploadShouldNotRenderAThumbnailForANonImageFile()
     {
         SetupFiles([new() { Name = "notes.txt", Size = 100, FileId = "1", Index = 0 }]);
 
@@ -1607,7 +1607,10 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.IsEmpty(com.FindAll(".bit-upl-prv"));
+        // only an image has a thumbnail of its own; the box is still there, carrying a type glyph,
+        // so the names of a mixed list stay lined up along one edge.
+        Assert.IsEmpty(com.FindAll("img.bit-upl-prv"));
+        Assert.HasCount(1, com.FindAll(".bit-upl-prv.bit-upl-pvi"));
     }
 
     [TestMethod]
@@ -2995,6 +2998,198 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
         Assert.HasCount(1, com.FindAll(".bit-upl-itm"));
         Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfTheUploadResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        BitFileInfo? failed = null;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.OnUploadFailed, file => failed = file);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 413, "too large"));
+
+        // the status is what tells an expired token from a payload the server refused from a network
+        // that dropped, none of which the response body is obliged to say anything about.
+        Assert.IsNotNull(failed);
+        Assert.AreEqual(413, failed.ResponseStatus);
+        Assert.AreEqual("too large", failed.Message);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfASuccessfulUploadResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.IsNull(com.Instance.Files[0].ResponseStatus);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 201, "done"));
+
+        Assert.AreEqual(201, com.Instance.Files[0].ResponseStatus);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheHttpStatusOfTheRemovalResponse()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "file-1", Index = 0 }]);
+
+        SetupHttpClient(HttpStatusCode.Forbidden);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 200, "done"));
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.RemoveFailed, com.Instance.Files[0].Status);
+        Assert.AreEqual(403, com.Instance.Files[0].ResponseStatus);
+    }
+
+    [TestMethod,
+       DataRow("photo.png", "image/png", "Photo2"),
+       DataRow("clip.mp4", "video/mp4", "Video"),
+       DataRow("report.pdf", "", "PDF"),
+       DataRow("sheet.xlsx", "", "ExcelDocument"),
+       DataRow("bundle.zip", "", "ZipFolder"),
+       DataRow("data.bin", "", "Page")
+    ]
+    public void BitFileUploadShouldShowATypeGlyphForAFileWithoutAThumbnail(string name, string contentType, string glyph)
+    {
+        SetupFiles([new() { Name = name, ContentType = contentType, Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+        });
+
+        SelectFiles(com);
+
+        // the preview box is there whatever the file is, so the names of a mixed list line up; only an
+        // image ever carries a thumbnail of its own, and the browser is what produces that.
+        var preview = com.Find(".bit-upl-prv");
+
+        Assert.AreEqual("DIV", preview.TagName);
+        Assert.Contains("bit-upl-pvi", preview.ClassName);
+        Assert.Contains($"bit-icon--{glyph}", preview.InnerHtml);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldShowTheThumbnailOfAnImageThatHasOne()
+    {
+        SetupFiles([new() { Name = "photo.png", ContentType = "image/png", Size = 100, FileId = "1", Index = 0,
+                            PreviewUrl = "blob:preview" }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+        });
+
+        SelectFiles(com);
+
+        var preview = com.Find(".bit-upl-prv");
+
+        Assert.AreEqual("IMG", preview.TagName);
+        Assert.AreEqual("blob:preview", preview.GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNotShowAPreviewBoxWithoutShowPreview()
+    {
+        SetupFiles([new() { Name = "report.pdf", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>();
+
+        SelectFiles(com);
+
+        Assert.IsEmpty(com.FindAll(".bit-upl-prv"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldAskTheAutoRetryDelayProviderForEachAttempt()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        List<int> attempts = [];
+        List<int?> statuses = [];
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AutoRetries, 2);
+            parameters.Add(p => p.AutoRetryDelayProvider, (file, attempt) =>
+            {
+                attempts.Add(attempt);
+                statuses.Add(file.ResponseStatus);
+
+                return TimeSpan.Zero;
+            });
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 503, "busy"));
+
+        // the attempts count from 1, and the file carries the status of the response that failed, which
+        // is what a backoff answering a 503 differently from a 429 reads.
+        Assert.AreEqual("1,2", string.Join(",", attempts));
+        Assert.AreEqual("503,503", string.Join(",", statuses));
+        Assert.AreEqual(BitFileUploadStatus.Failed, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldStillRetryWhenTheAutoRetryDelayProviderThrows()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AutoRetries, 1);
+            parameters.Add(p => p.AutoRetryDelayProvider, (_, _) => throw new InvalidOperationException("boom"));
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
+
+        // a provider that throws decides nothing, and the retry it was asked about still happens.
+        Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPassTheDropZoneSelectorToTheDragDropSetup()
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.DropZoneSelector, "#zone");
+        });
+
+        var invocation = Context.JSInterop.Invocations
+                                .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop");
+
+        // the selector is the last argument of the setup, and it is what makes an element the app owns
+        // a drop zone of this component.
+        Assert.AreEqual("#zone", invocation.Arguments[^1]);
     }
 
     private void SetupFiles(BitFileInfo[] files)

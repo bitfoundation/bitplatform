@@ -6,7 +6,7 @@
             Description="An upload component that sends files to a server endpoint over HTTP, with browse, drag-and-drop, paste, folder and camera selection, chunked transfers, progress, retries and validation." />
 
 <DemoPage Name="FileUpload"
-          Description="BitFileUpload is the transport half of working with files: it takes the files the user hands over and uploads them to a server endpoint over HTTP. Files arrive through the file dialog, a drag out of the OS, a clipboard paste, a whole folder or the camera on a phone, and go out automatically on selection or on demand, as a single request per file or in chunks. Every file reports its own progress and can be paused, resumed, canceled, retried and removed from the server again, and selections are validated on arrival against size, count, extension, MIME type, duplicate, image dimension and custom rules. The upload and remove requests are customizable down to a per-request async provider, which is what makes an expiring token or a presigned URL work over a long transfer, and the whole control is themable, templatable and announced to screen readers. For plain file selection without any uploading, reach for the BitFileInput component instead."
+          Description="BitFileUpload is the transport half of working with files: it takes the files the user hands over and uploads them to a server endpoint over HTTP. Files arrive through the file dialog, a drag out of the OS onto the component or onto a drop zone of your own, a clipboard paste, a whole folder or the camera on a phone, and go out automatically on selection or on demand, as a single request per file or in chunks. Every file reports its own progress and can be paused, resumed, canceled, retried and removed from the server again, and selections are validated on arrival against size, count, extension, MIME type, duplicate, image dimension and custom rules. The upload and remove requests are customizable down to a per-request async provider, which is what makes an expiring token or a presigned URL work over a long transfer, and the whole control is themable, templatable and announced to screen readers. For plain file selection without any uploading, reach for the BitFileInput component instead."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -27,7 +27,8 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" />
     </DemoExample>
 
-    <DemoExample Title="AllowDrop & AllowPaste" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+    <DemoExample Title="Drop zone" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode"
+                 CodeFiles="@example2CodeFiles" Id="example2">
         <div>
             The two alternative routes switch off independently. <b>AllowDrop</b> controls dropping files out of the
             OS: turning it off shows a "no drop" cursor and still swallows the event, so the browser does not
@@ -41,6 +42,25 @@
         <BitCheckbox @bind-Value="allowPaste" Label="AllowPaste" />
         <br />
         <BitFileUpload Label="Select, drop or paste files" UploadUrl="@UploadUrl" AllowDrop="allowDrop" AllowPaste="allowPaste" />
+
+        <br /><br /><br />
+
+        <div>
+            The component itself is always a drop zone, and <b>DropZoneSelector</b> nominates more of them: any
+            element matching the selector takes a drop as well, so a whole form, a card or the page becomes the
+            target while the browse button stays where it is. The element is matched when the drag reaches it, so
+            one rendered later works with nothing to re-wire, and while a drag is in flight every zone - this
+            component included - carries <b>Classes.Dragging</b> and <b>Styles.Dragging</b>, which is the hook the
+            card below highlights itself with. Having the focus inside a zone also lets a paste land in the
+            component.
+        </div>
+        <br />
+        <div id="fileupload-drop-zone" class="drop-zone">
+            <div>Drop files anywhere in this card</div>
+            <BitFileUpload Label="...or browse for them" UploadUrl="@UploadUrl" Multiple
+                           DropZoneSelector="#fileupload-drop-zone"
+                           Classes="@(new() { Dragging = "drop-zone-dragging" })" />
+        </div>
     </DemoExample>
 
     <DemoExample Title="Description" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
@@ -215,14 +235,22 @@
                        Description="Opens the front camera on a mobile device." />
     </DemoExample>
 
-    <DemoExample Title="Image preview & dimensions" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Preview & image dimensions" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>ShowPreview</b> puts a thumbnail of every selected image at the head of its item, so the user can
             confirm they picked the right picture before a byte goes out. It is produced in the browser from an
             object URL - nothing is uploaded to render it - and the URL is handed back as soon as the file is removed
             or the component is reset, which is what keeps a long-lived page from holding every picture ever picked.
-            <b>BitFileInfo.PreviewUrl</b> exposes the same URL to a custom <b>FileViewTemplate</b>.
+            <b>BitFileInfo.PreviewUrl</b> exposes the same URL to a custom <b>FileViewTemplate</b>. Only an image has
+            a thumbnail of its own, so every other kind of file takes a glyph of its type - read off the content type,
+            falling back to the extension - in a box of exactly the same size, which is what keeps the names of a
+            mixed list lined up along one edge.
         </div>
+        <br />
+        <div>A mixed selection - pick an image, a PDF and an archive to compare:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple ShowPreview
+                       ShowRemoveButton RemoveUrl="@RemoveUrl" />
         <br />
         <div>
             A limit in bytes is a poor way to say "nothing bigger than 4K": what matters for an image is its pixels.
@@ -266,13 +294,23 @@
             once the whole batch has reached a terminal state. Try a file over 1 MB to see <b>OnInvalid</b> at work.
         </div>
         <br />
+        <div>
+            Each callback receives the <b>BitFileInfo</b> of the file, which carries what the server said about it:
+            <b>ResponseStatus</b> is the HTTP status code of its last upload or removal response - 0 when the request
+            never reached the server at all - and <b>Message</b> is the response body. That is what tells an expired
+            token (401) from a payload the server refused (413) from a network that dropped, so a failure can be
+            answered instead of only reported.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple MaxSize="1024 * 1024 * 1"
                        OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All files are uploaded")"
                        OnInvalid="@(files => onInvalidText = $"{files.Length} file(s) rejected: {string.Join(", ", files.Select(f => f.Name))}")"
+                       OnUploadFailed="@(info => onUploadFailedText = $"{info.Name} failed with status {info.ResponseStatus}")"
                        OnUploading="@(info => info.HttpHeaders = new Dictionary<string, string> { {"key1", "value1"} })" />
         <br />
         <div>@onAllUploadsCompleteText</div>
         <div>@onInvalidText</div>
+        <div>@onUploadFailedText</div>
     </DemoExample>
 
     <DemoExample Title="Chunked" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
@@ -366,6 +404,13 @@
         </div>
         <br />
         <div>
+            Hammering a server that is already struggling with evenly spaced retries is what turns a blip into an
+            outage, so <b>AutoRetryDelayProvider</b> replaces the fixed delay with one worked out per attempt - it
+            receives the file, whose <b>ResponseStatus</b> says what came back, and the number of the attempt about
+            to be made, and the usual answer is an exponential backoff with a little jitter.
+        </div>
+        <br />
+        <div>
             Once the budget is exhausted the file settles as failed and the item offers a retry button - distinct
             from the upload button of a never-started file in both icon and wording, so a second attempt never reads
             as a first one. Pressing it tries again with a fresh budget, exactly like calling <b>Upload(file)</b>
@@ -390,6 +435,14 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@NonExistingUploadUrl"
                        AutoRetries="2" AutoRetryDelay="TimeSpan.FromSeconds(1)"
                        ShouldAutoRetry="@((file, status) => true)"
+                       RetryButtonTitle="Try again" />
+        <br /><br />
+        <div>The same, backing off 1s, 2s then 4s instead of retrying on a fixed beat:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@NonExistingUploadUrl"
+                       AutoRetries="3"
+                       ShouldAutoRetry="@((file, status) => true)"
+                       AutoRetryDelayProvider="@BackOff"
                        RetryButtonTitle="Try again" />
     </DemoExample>
 
@@ -842,9 +895,10 @@
         <div>
             <b>Style</b> and <b>Class</b> land on the root element. For anything deeper, <b>Styles</b> and
             <b>Classes</b> reach the individual parts - the browse button, the description, the file list, each item,
-            its name, size, percentage, progress bar, status message and every action button and icon - and their
-            <b>Dragging</b> entry applies to the root only while files are dragged over the component, which is how
-            the examples below restyle the drop state without touching the idle look.
+            its preview, name, size, percentage, progress bar, status message and every action button and icon - and
+            their <b>Dragging</b> entry applies only while files are dragged over the component (or over one of its
+            <BitLink Href="#example2">drop zones</BitLink>), which is how the examples below restyle the drop state
+            without touching the idle look.
         </div>
 
         <br /><br />

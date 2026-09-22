@@ -85,6 +85,13 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "AutoRetryDelayProvider",
+            Type = "Func<BitFileInfo, int, TimeSpan?>?",
+            DefaultValue = "null",
+            Description = "Custom delay before each automatic retry, which is what turns the fixed AutoRetryDelay into a backoff: it receives the file - whose ResponseStatus says what the server answered - and the number of the attempt about to be made, counting from 1, and returns how long to wait before it. Returning null falls back to the AutoRetryDelay, which is also what a provider that throws does, so a miscalculated delay never swallows the retry itself."
+        },
+        new()
+        {
             Name = "AutoUpload",
             Type = "bool",
             DefaultValue = "false",
@@ -188,6 +195,13 @@ public partial class BitFileUploadDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to select folders (directories) instead of files, rendered as the webkitdirectory attribute. All files inside the selected folder and its subfolders will be added to the file list. It also makes a dropped folder expand into its contents instead of being ignored.",
+        },
+        new()
+        {
+            Name = "DropZoneSelector",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A CSS selector of one or more elements outside the component that accept a drop as well, which is how a whole form, a card or the page itself becomes the drop target while the browse button stays where it is. The root element is always a drop zone and needs no selector of its own; the elements this one names are matched whenever a drag reaches them, so one rendered later is a drop zone from the moment it matches. While files are dragged over any of them, all of them carry the Classes.Dragging class and the Styles.Dragging inline style, and the focus being inside one of them is also what lets a paste land in this component.",
         },
         new()
         {
@@ -559,7 +573,7 @@ public partial class BitFileUploadDemo
             Name = "ShowPreview",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether a thumbnail of every selected image is shown at the head of its file item, produced entirely in the browser from an object URL that is handed back as soon as the file is removed or the component is reset. The same URL is on the PreviewUrl of each file."
+            Description = "Whether a thumbnail of every selected image is shown at the head of its file item, produced entirely in the browser from an object URL that is handed back as soon as the file is removed or the component is reset. The same URL is on the PreviewUrl of each file. A file that is not an image takes a glyph of its type in a box of the same size instead, so that the names of a mixed list stay lined up along one edge."
         },
         new()
         {
@@ -853,6 +867,13 @@ public partial class BitFileUploadDemo
                },
                new()
                {
+                   Name = "ResponseStatus",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The HTTP status code of the last upload or removal response this file received, which is what tells an authorization problem from a payload that was too large or from a server that is temporarily down. It is 0 when the request never reached the server at all - a network error, a timeout or an abort - and null while no request of this file has come back yet."
+               },
+               new()
+               {
                    Name = "Status",
                    Type = "BitFileUploadStatus",
                    DefaultValue = "Pending",
@@ -929,7 +950,14 @@ public partial class BitFileUploadDemo
                    Name = "Preview",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload."
+                   Description = "Custom CSS classes/styles for the image preview thumbnail of each file item of the BitFileUpload, and for the box that takes its place with a type glyph for a file that is not an image."
+               },
+               new()
+               {
+                   Name = "PreviewIcon",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the type glyph shown in place of the preview thumbnail of a file item that is not an image."
                },
                new()
                {
@@ -1429,6 +1457,12 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "--bit-FileUpload-item-font-weight",
+            DefaultValue = "--bit-tg-fw-light",
+            Description = "Text weight of a file item's name.",
+        },
+        new()
+        {
             Name = "--bit-FileUpload-success-color",
             DefaultValue = "--bit-clr-suc",
             Description = "Status line of a completed file.",
@@ -1456,6 +1490,24 @@ public partial class BitFileUploadDemo
             Name = "--bit-FileUpload-preview-radius",
             DefaultValue = "--bit-shp-radius-control",
             Description = "Corner radius of the image preview thumbnail.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preview-background",
+            DefaultValue = "--bit-clr-bg-sec",
+            Description = "Fill of the box that stands in for the thumbnail of a file that is not an image.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preview-icon-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The file type glyph inside that box.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preview-icon-size",
+            DefaultValue = "Per Size (--bit-siz-icon-sm / -md / -lg)",
+            Description = "Size of that glyph.",
         },
         new()
         {
@@ -1570,6 +1622,7 @@ public partial class BitFileUploadDemo
     private int tokenRequestCount;
     private BitVariant variant = BitVariant.Fill;
     private string onInvalidText = string.Empty;
+    private string onUploadFailedText = string.Empty;
     private string onAllUploadsCompleteText = "No File";
     private string UploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadNonChunkedFile";
     private string ChunkedUploadUrl => $"{_configuration.GetApiServerAddress()}FileUpload/UploadChunkedFile";
@@ -1619,6 +1672,12 @@ public partial class BitFileUploadDemo
     private static string? ValidateEmptyFile(BitFileInfo file)
     {
         return file.Size == 0 ? "Empty files cannot be uploaded." : null;
+    }
+
+    // 1s, 2s, 4s, ... with a little jitter, so a batch that failed together does not come back together.
+    private static TimeSpan? BackOff(BitFileInfo file, int attempt)
+    {
+        return TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)) + TimeSpan.FromMilliseconds(Random.Shared.Next(250));
     }
 
     private static string? ValidateImageDimensions(BitFileInfo file)
@@ -1709,11 +1768,40 @@ private string UploadUrl = ""/Upload"";";
 <BitCheckbox @bind-Value=""allowDrop"" Label=""AllowDrop"" />
 <BitCheckbox @bind-Value=""allowPaste"" Label=""AllowPaste"" />
 
-<BitFileUpload Label=""Select, drop or paste files"" UploadUrl=""@UploadUrl"" AllowDrop=""allowDrop"" AllowPaste=""allowPaste"" />";
+<BitFileUpload Label=""Select, drop or paste files"" UploadUrl=""@UploadUrl"" AllowDrop=""allowDrop"" AllowPaste=""allowPaste"" />
+
+<div id=""fileupload-drop-zone"" class=""drop-zone"">
+    <div>Drop files anywhere in this card</div>
+    <BitFileUpload Label=""...or browse for them"" UploadUrl=""@UploadUrl"" Multiple
+                   DropZoneSelector=""#fileupload-drop-zone""
+                   Classes=""@(new() { Dragging = ""drop-zone-dragging"" })"" />
+</div>";
     private readonly string example2CsharpCode = @"
 private bool allowDrop = true;
 private bool allowPaste = true;
 private string UploadUrl = ""/Upload"";";
+    private const string example2ScssCode = @"
+// every drop zone carries Classes.Dragging while files are dragged over any of them,
+// which is the hook the card highlights itself with.
+.drop-zone {
+    gap: 1rem;
+    display: flex;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    border: 2px dashed var(--bit-clr-brd-pri);
+    transition: border-color 0.2s, background-color 0.2s;
+
+    &.drop-zone-dragging {
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-bg-sec);
+    }
+}";
+    private readonly DemoCodeFile[] example2CodeFiles =
+    [
+        new("BitFileUploadDemo.razor.scss", example2ScssCode),
+    ];
 
     private readonly string example3RazorCode = @"
 <BitFileUpload Label=""Browse for a document"" UploadUrl=""@UploadUrl"" Accept="".pdf,.docx"" MaxSize=""1024 * 1024 * 5""
@@ -1801,6 +1889,9 @@ private string UploadUrl = ""/Upload"";";
 </style>
 
 
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple ShowPreview
+               ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
 <BitFileUpload Label=""Select or drag and drop images"" UploadUrl=""@UploadUrl"" Multiple ShowPreview
                Accept=""image/*"" ReadImageDimensions FileValidator=""@ValidateImageDimensions""
                ShowRemoveButton RemoveUrl=""@RemoveUrl""
@@ -1836,13 +1927,16 @@ private static string? ValidateImageDimensions(BitFileInfo file)
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple MaxSize=""1024 * 1024 * 1""
                OnAllUploadsComplete=""@(() => onAllUploadsCompleteText = ""All files are uploaded"")""
                OnInvalid=""@(files => onInvalidText = $""{files.Length} file(s) rejected: {string.Join("", "", files.Select(f => f.Name))}"")""
+               OnUploadFailed=""@(info => onUploadFailedText = $""{info.Name} failed with status {info.ResponseStatus}"")""
                OnUploading=""@(info => info.HttpHeaders = new Dictionary<string, string> { {""key1"", ""value1""} })"" />
 
 <div>@onAllUploadsCompleteText</div>
-<div>@onInvalidText</div>";
+<div>@onInvalidText</div>
+<div>@onUploadFailedText</div>";
     private readonly string example10CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string onInvalidText = string.Empty;
+private string onUploadFailedText = string.Empty;
 private string onAllUploadsCompleteText = ""No File"";";
 
     private readonly string example11RazorCode = @"
@@ -1897,10 +1991,22 @@ private Task<Dictionary<string, string>> GetFreshAuthHeaders()
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@NonExistingUploadUrl""
                AutoRetries=""2"" AutoRetryDelay=""TimeSpan.FromSeconds(1)""
                ShouldAutoRetry=""@((file, status) => true)""
+               RetryButtonTitle=""Try again"" />
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@NonExistingUploadUrl""
+               AutoRetries=""3""
+               ShouldAutoRetry=""@((file, status) => true)""
+               AutoRetryDelayProvider=""@BackOff""
                RetryButtonTitle=""Try again"" />";
     private readonly string example13CsharpCode = @"
 private string UploadUrl = ""/Upload"";
-private string NonExistingUploadUrl = ""/MissingUploadEndpoint"";";
+private string NonExistingUploadUrl = ""/MissingUploadEndpoint"";
+
+// 1s, 2s, 4s, ... with a little jitter, so a batch that failed together does not come back together.
+private static TimeSpan? BackOff(BitFileInfo file, int attempt)
+{
+    return TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)) + TimeSpan.FromMilliseconds(Random.Shared.Next(250));
+}";
 
     private readonly string example14RazorCode = @"
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple ConcurrentUploads=""2"" />

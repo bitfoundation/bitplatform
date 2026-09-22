@@ -97,6 +97,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     public TimeSpan? AutoRetryDelay { get; set; }
 
     /// <summary>
+    /// Custom delay before each automatic retry, which is what turns the fixed <see cref="AutoRetryDelay"/>
+    /// into a backoff: it receives the file - whose <see cref="BitFileInfo.ResponseStatus"/> says what the
+    /// server answered - and the number of the attempt about to be made, counting from 1, and returns how
+    /// long to wait before it. Returning null falls back to the <see cref="AutoRetryDelay"/>, which is also
+    /// what a provider that throws does, so a miscalculated delay never swallows the retry itself.
+    /// </summary>
+    public Func<BitFileInfo, int, TimeSpan?>? AutoRetryDelayProvider { get; set; }
+
+    /// <summary>
     /// Whether the selected files start uploading the moment they are selected, skipping the per-file
     /// upload button entirely, for the cases where the selection itself expresses the intent to upload.
     /// </summary>
@@ -185,6 +194,17 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     /// It also makes a dropped folder expand into its contents instead of being ignored.
     /// </summary>
     public bool? Directory { get; set; }
+
+    /// <summary>
+    /// A CSS selector of one or more elements outside the component that accept a drop as well, which is how
+    /// a whole form, a card or the page itself becomes the drop target while the browse button stays where it
+    /// is. The root element of the component is always a drop zone and needs no selector of its own; the
+    /// elements this one names are matched whenever a drag reaches them, so one rendered after the component
+    /// - or replaced later on - is a drop zone from the moment it matches. While files are dragged over any
+    /// of them, all of them (the root included) carry the Classes.Dragging class and the Styles.Dragging
+    /// inline style, and the focus being inside one of them is also what lets a paste land in this component.
+    /// </summary>
+    public string? DropZoneSelector { get; set; }
 
     /// <summary>
     /// The message shown for the files rejected for being already in the file list
@@ -446,6 +466,8 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     /// Whether a thumbnail of every selected image is shown at the head of its file item, produced
     /// entirely in the browser from an object URL that is handed back as soon as the file is removed or
     /// the component is reset. The same URL is on the <see cref="BitFileInfo.PreviewUrl"/> of each file.
+    /// A file that is not an image takes a glyph of its type in a box of the same size instead, so that
+    /// the names of a mixed list stay lined up along one edge.
     /// </summary>
     public bool? ShowPreview { get; set; }
 
@@ -644,6 +666,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.AutoRetryDelay = AutoRetryDelay.Value;
         }
 
+        if (AutoRetryDelayProvider is not null && bitFileUpload.HasNotBeenSet(nameof(AutoRetryDelayProvider)))
+        {
+            bitFileUpload.AutoRetryDelayProvider = AutoRetryDelayProvider;
+        }
+
         if (AutoUpload.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoUpload)))
         {
             bitFileUpload.AutoUpload = AutoUpload.Value;
@@ -711,6 +738,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         if (Directory.HasValue && bitFileUpload.HasNotBeenSet(nameof(Directory)))
         {
             bitFileUpload.Directory = Directory.Value;
+        }
+
+        if (DropZoneSelector.HasValue() && bitFileUpload.HasNotBeenSet(nameof(DropZoneSelector)))
+        {
+            bitFileUpload.DropZoneSelector = DropZoneSelector;
         }
 
         if (DuplicateErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(DuplicateErrorMessage)))

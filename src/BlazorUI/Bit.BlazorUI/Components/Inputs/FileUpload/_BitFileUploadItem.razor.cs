@@ -111,6 +111,35 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
         return Math.Min(file.Size, file.TotalUploadedSize + file.LastChunkUploadedSize);
     }
 
+    // The glyph standing in for a file that has no thumbnail of its own. The content type the browser
+    // reports is asked first, since it is what the file really is, and the extension only answers for the
+    // types a browser leaves blank - a .zip or a .csv on a machine that has nothing registered for them.
+    private static string GetFileGlyph(BitFileInfo file)
+    {
+        var contentType = file.ContentType;
+
+        if (contentType.HasValue())
+        {
+            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)) return "Photo2";
+            if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase)) return "Video";
+            if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase)) return "MusicInCollection";
+            if (contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase)) return "PDF";
+            if (contentType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)) return "TextDocument";
+        }
+
+        return Path.GetExtension(file.Name).ToLowerInvariant() switch
+        {
+            ".pdf" => "PDF",
+            ".doc" or ".docx" or ".rtf" or ".odt" => "WordDocument",
+            ".xls" or ".xlsx" or ".csv" or ".ods" => "ExcelDocument",
+            ".ppt" or ".pptx" or ".odp" => "PowerPointDocument",
+            ".zip" or ".rar" or ".7z" or ".tar" or ".gz" => "ZipFolder",
+            ".txt" or ".md" or ".log" => "TextDocument",
+            ".json" or ".xml" or ".html" or ".htm" or ".css" or ".js" or ".ts" or ".cs" => "FileCode",
+            _ => "Page"
+        };
+    }
+
     private string FormatSize(long size)
     {
         return FileUpload.FileSizeFormatter is null ? FileSizeHumanizer.Humanize(size) : FileUpload.FileSizeFormatter(size);

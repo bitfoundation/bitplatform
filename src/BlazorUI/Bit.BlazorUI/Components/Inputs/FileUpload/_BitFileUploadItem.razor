@@ -16,17 +16,32 @@
     <div role="listitem"
          style="@FileUpload.Styles?.FileItem"
          class="bit-upl-itm @GetFileElClass(Item.Status) @FileUpload.Classes?.FileItem">
-        @if (FileUpload.ShowPreview && Item.PreviewUrl is not null)
+        @if (FileUpload.ShowPreview)
         {
-            @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
-               the alt is empty on purpose: the thumbnail is decorative and its name is already
-               right next to it, so announcing it again would just repeat the same text. *@
-            <img src="@Item.PreviewUrl"
-                 alt=""
-                 draggable="false"
-                 decoding="async"
-                 style="@FileUpload.Styles?.Preview"
-                 class="bit-upl-prv @FileUpload.Classes?.Preview" />
+            if (Item.PreviewUrl is not null)
+            {
+                @* draggable is off so that dragging a thumbnail does not start a drag over the drop zone itself.
+                   the alt is empty on purpose: the thumbnail is decorative and its name is already
+                   right next to it, so announcing it again would just repeat the same text. *@
+                <img src="@Item.PreviewUrl"
+                     alt=""
+                     draggable="false"
+                     decoding="async"
+                     style="@FileUpload.Styles?.Preview"
+                     class="bit-upl-prv @FileUpload.Classes?.Preview" />
+            }
+            else
+            {
+                @* only an image has a thumbnail of its own, and a list of mixed files would otherwise be
+                   ragged - every other kind takes a glyph of its type in a box of exactly the same size.
+                   it says nothing a screen reader has not already been told by the name beside it. *@
+                <div aria-hidden="true"
+                     style="@FileUpload.Styles?.Preview"
+                     class="bit-upl-prv bit-upl-pvi @FileUpload.Classes?.Preview">
+                    <i style="@FileUpload.Styles?.PreviewIcon"
+                       class="bit-icon bit-icon--@GetFileGlyph(Item) @FileUpload.Classes?.PreviewIcon" />
+                </div>
+            }
         }
         <div class="bit-upl-fic">
             <div title="@Item.Name" class="bit-upl-fnc">

@@ -31,6 +31,7 @@
 //   --bit-FileUpload-item-radius                file item corner radius                        (default: $shp-radius-surface)
 //   --bit-FileUpload-item-padding               padding around the name, size and progress     (default: spacing(1) spacing(2))
 //   --bit-FileUpload-item-font-size             file name size                                 (default: per size)
+//   --bit-FileUpload-item-font-weight           file name weight                               (default: $tg-fw-light)
 //
 //   --bit-FileUpload-success-color              status line of a completed file                (default: $clr-suc)
 //   --bit-FileUpload-error-color                status line of a failed or rejected file       (default: $clr-err)
@@ -38,6 +39,10 @@
 //
 //   --bit-FileUpload-preview-size               image thumbnail side                           (default: per size)
 //   --bit-FileUpload-preview-radius             image thumbnail corner radius                  (default: $shp-radius-control)
+//   --bit-FileUpload-preview-background         box standing in for the thumbnail of a file
+//                                               that is not an image                           (default: $clr-bg-sec)
+//   --bit-FileUpload-preview-icon-color         the type glyph inside that box                 (default: $clr-fg-sec)
+//   --bit-FileUpload-preview-icon-size          that glyph's size                              (default: per size, $siz-icon-*)
 //
 //   --bit-FileUpload-progress-color             filled part of the progress bar                (default: the Color role's main color)
 //   --bit-FileUpload-progress-track-color       unfilled part of the progress bar              (default: $clr-bg-sec)
@@ -247,8 +252,8 @@
 .bit-upl-itm {
     display: flex;
     overflow: hidden;
-    font-weight: $tg-fw-light;
     align-items: center;
+    font-weight: var(--bit-FileUpload-item-font-weight, #{$tg-fw-light});
     flex-flow: row nowrap;
     justify-content: space-between;
     color: var(--bit-FileUpload-item-color, #{$clr-fg-pri});
@@ -297,6 +302,22 @@
     border-radius: var(--bit-FileUpload-preview-radius, #{$shp-radius-control});
     width: var(--bit-FileUpload-preview-size, var(--bit-upl-prv-size));
     height: var(--bit-FileUpload-preview-size, var(--bit-upl-prv-size));
+}
+
+// the box a file that is not an image takes instead of a thumbnail, so that a list of mixed files lines
+// its names up along one edge rather than stepping in and out with every kind of file.
+.bit-upl-pvi {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-FileUpload-preview-icon-color, #{$clr-fg-sec});
+    background-color: var(--bit-FileUpload-preview-background, #{$clr-bg-sec});
+
+    i {
+        line-height: 1;
+        color: inherit;
+        font-size: var(--bit-FileUpload-preview-icon-size, var(--bit-upl-ico-fontsize));
+    }
 }
 
 .bit-upl-fic {
