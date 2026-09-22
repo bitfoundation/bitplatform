@@ -113,7 +113,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => "image/webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => "image/webp",
-            _ => "application/octet-stream" // The *Original kinds keep the uploaded format, whatever it was.
+            // Only the *Original kinds keep the uploaded format, so only they pay for the lookup - the kinds every
+            // rendered page asks for are answered above without touching the database.
+            _ => await DbContext.Attachments.Where(att => att.Id == attachmentId && att.Kind == kind)
+                                            .Select(att => att.ContentType)
+                                            .FirstOrDefaultAsync(cancellationToken) ?? "application/octet-stream"
         };
 
         return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
@@ -296,6 +300,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 ? sourceImage.ToByteArray(MagickFormat.WebP)
                 : sourceImage.ToByteArray();
 
+            // The format these bytes really are, which for the *Original kinds is the only record of it.
+            attachment.ContentType = imageResizeContext.NeedsResize
+                ? "image/webp"
+                : MagickFormatInfo.Create(sourceImage.Format)?.MimeType;
+
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
 
             //#if (module == "Sales" || module == "Admin")
@@ -359,29 +368,31 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         //  ---------------------------------------------------------------------------------------------
         //  PHASE 2 - everything validated; now mutate.
         //
-        //  A re-upload does NOT delete and re-insert the rows. Attachment's key is composite - { Id, Kind }
-        //  (AttachmentConfiguration) - and GetFilePath is deterministic over exactly those two values, so a
-        //  re-upload produces rows whose keys AND Path are byte-identical to the existing ones. Removing and
-        //  re-adding them in one SaveChangesAsync would also throw: EF cannot track a second instance with a
-        //  key it already tracks, even when the tracked one is marked Deleted.
+        //  A re-upload updates the rows in place instead of deleting and re-inserting them: Attachment's key is
+        //  composite - { Id, Kind } (AttachmentConfiguration) - and EF cannot track a second instance with a key it
+        //  already tracks, even when the tracked one is marked Deleted. Only ContentType can actually differ,
+        //  since GetFilePath is a pure function of those same two values.
         //
         //  For the same reason there is no stale blob to clean up: the new key IS the old key, so the writes
         //  below overwrite in place.
         //  ---------------------------------------------------------------------------------------------
-        var existingKinds = await DbContext.Attachments
+        var existingAttachments = await DbContext.Attachments
             .Where(att => att.Id == attachmentId)
-            .Select(att => att.Kind)
-            .ToArrayAsync(cancellationToken);
+            .ToDictionaryAsync(att => att.Kind, cancellationToken);
 
-        var newAttachments = preparedUploads.Select(u => u.Attachment)
-                                            .Where(att => existingKinds.Contains(att.Kind) is false)
-                                            .ToArray();
-
-        if (newAttachments.Length > 0)
+        foreach (var (attachment, _) in preparedUploads)
         {
-            await DbContext.Attachments.AddRangeAsync(newAttachments, cancellationToken);
-            await DbContext.SaveChangesAsync(cancellationToken);
+            if (existingAttachments.TryGetValue(attachment.Kind, out var existingAttachment))
+            {
+                existingAttachment.ContentType = attachment.ContentType;
+            }
+            else
+            {
+                await DbContext.Attachments.AddAsync(attachment, cancellationToken);
+            }
         }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
 
         var wroteAnyBlob = false;
 
@@ -389,7 +400,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             foreach (var (attachment, storedBytes) in preparedUploads)
             {
-                await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+                // SetBytes would leave the content type to be guessed from the key, which not every kind names.
+                using MemoryStream storedStream = new(storedBytes);
+                await blobStorage.SetObject(attachment.Path, storedStream, attachment.ContentType, cancellationToken: cancellationToken);
                 wroteAnyBlob = true;
             }
         }
@@ -438,14 +451,12 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     /// <summary>
-    /// Deterministic for every kind: no part of the key comes from the uploaded file name. The *Original kinds
-    /// deliberately carry NO extension - deriving one from the upload meant a png -> jpg re-upload computed a
-    /// different key, so the old blob was left referenced by no row and outside every deletion path, and
-    /// <see cref="GetAttachment"/> (which has no file name) computed a key that could never match what was stored.
+    /// A pure function of { Id, Kind }: no part of the key comes from the uploaded file, so a png -> jpg re-upload
+    /// lands on the very key it replaces and leaves no blob behind that no row names. The *Original kinds therefore
+    /// carry no extension, and <c>Attachment.ContentType</c> is what records the format they were stored in.
     /// <br/>
-    /// Environment variables are expanded over the CONFIGURED directory prefix only, never over anything the
-    /// client influenced - the file name used to flow into ExpandEnvironmentVariables, so a name ending
-    /// ".%TEMP%" expanded a server environment value straight into the storage key.
+    /// Environment variables are expanded over the CONFIGURED directory prefix only, never over anything the client
+    /// influenced - a file name ending ".%TEMP%" used to expand a server environment value into the storage key.
     /// </summary>
     private string GetFilePath(Guid attachmentId, AttachmentKind kind) => GetFilePath(AppSettings, attachmentId, kind);
 
@@ -479,7 +490,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => $"{directory}{attachmentId}_{kind}.webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => $"{directory}{attachmentId}_{kind}.webp",
-            _ => $"{directory}{attachmentId}_{kind}"
+            _ => $"{directory}{attachmentId}_{kind}" // The *Original kinds; their format lives in Attachment.ContentType.
         };
     }
 

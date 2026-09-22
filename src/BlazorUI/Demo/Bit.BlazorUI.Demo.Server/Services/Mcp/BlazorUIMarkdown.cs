@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Reflection;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
@@ -113,6 +114,8 @@ public static class BlazorUIMarkdown
 
         AppendInherited(builder, component);
         AppendBindable(builder, component);
+        AppendCascadingParams(builder, component);
+        AppendCssVariables(builder, component);
 
         foreach (var type in component.OwnTypes)
         {
@@ -293,6 +296,21 @@ public static class BlazorUIMarkdown
             return builder.ToString();
         }
 
+        // An extension container is a name nobody writes: what reflection finds on it is the
+        // compiler's implementation of members that are written on another type entirely. So it is
+        // answered with that type, and with the members under the names they are actually read by.
+        if (type.IsExtensionContainer)
+        {
+            foreach (var group in BlazorUIExtensionMembers.All.Where(g => g.Container == clr))
+            {
+                builder.AppendLine($"Read off `{group.ReceiverName}` rather than off this type: `{group.ReceiverName}.{group.Members[0].Name}`, which `GetBitBlazorUIType(typeName: \"{group.ReceiverName}\")` answers with in full.").AppendLine();
+
+                BlazorUIReflection.AppendExtensionMembers(builder, group.Members);
+            }
+
+            return Truncate(builder.ToString());
+        }
+
         BlazorUIReflection.AppendMembers(builder, clr, type.Name);
 
         return Truncate(builder.ToString());
@@ -409,6 +427,31 @@ public static class BlazorUIMarkdown
     }
 
     /// <summary>
+    /// The parameters object an ancestor can set this component's defaults with, which is written
+    /// nowhere in the parameter table: the table is what markup sets on one instance, and this is
+    /// the same set again as nullables, provided to a whole subtree at once.
+    /// <para>
+    /// Named rather than tabulated. Its members are the parameters printed above, and the
+    /// inherited ones, with a <c>?</c> on them, so a second table of sixty rows would say what the
+    /// first one already said; what a reader cannot get from the names is how the two meet - per
+    /// parameter, and as a default the instance's own markup still beats.
+    /// </para>
+    /// </summary>
+    private static void AppendCascadingParams(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.CascadingParams is null) return;
+
+        var name = component.CascadingParams.Name;
+
+        var count = component.CascadingParams
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Count(p => p.CanWrite);
+
+        builder.AppendLine("## Cascading parameters").AppendLine();
+        builder.AppendLine($"`{name}` carries {count} of this component's parameters again as nullables - its own and the inherited ones alike - and a `BitParams` provides one to a whole subtree: `<BitParams Parameters=\"@(new[] {{ new {name} {{ /* the shared ones */ }} }})\">`. Every `{component.Name}` below it takes each parameter it did not write for itself from there - a default rather than an override, parameter by parameter, so one instance steps out of the group it is in by writing that one parameter and nothing else. `GetBitBlazorUIType(typeName: \"{name}\")` lists its members; `GetBitBlazorUIComponent(name: \"BitParams\")` is the component that provides them.").AppendLine();
+    }
+
+    /// <summary>
     /// What a type named beside a component is - a class it takes an instance of, an enum one of
     /// its parameters is, or a component of its own that goes inside its markup. The third is the
     /// one worth telling apart: a <c>BitDropdownOption</c> that reads as a class is one an agent
@@ -428,6 +471,28 @@ public static class BlazorUIMarkdown
 
         builder.AppendLine($"## {heading}").AppendLine();
         AppendMemberRows(builder, members);
+        builder.AppendLine();
+    }
+
+    /// <summary>
+    /// The public custom properties the component reads off its root. Stated with how they are set
+    /// rather than only listed: the one thing an agent needs beyond the names is that they inherit,
+    /// so a `:root` rule, an ancestor's style and an instance's `Style` are all valid places for one.
+    /// </summary>
+    private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.CssVariables.Count == 0) return;
+
+        builder.AppendLine("## CSS variables").AppendLine();
+        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it alone.").AppendLine();
+        builder.AppendLine("| Variable | Default | Description |");
+        builder.AppendLine("| --- | --- | --- |");
+
+        foreach (var variable in component.CssVariables)
+        {
+            builder.AppendLine($"| `{variable.Name}` | {Cell(variable.Default)} | {Cell(variable.Description)} |");
+        }
+
         builder.AppendLine();
     }
 

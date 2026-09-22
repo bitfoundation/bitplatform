@@ -75,6 +75,25 @@ public sealed record BlazorUIComponent
     public IReadOnlyList<ComponentMember> Parameters { get; init; } = [];
     public IReadOnlyList<ComponentMember> PublicMembers { get; init; } = [];
 
+    /// <summary>
+    /// The public CSS custom properties the component reads off its root, each with its default and
+    /// what it changes. They are the theming surface a stylesheet reaches rather than a parameter
+    /// markup sets, and the demo page's own table is the only place they are written down.
+    /// </summary>
+    public IReadOnlyList<ComponentMember> CssVariables { get; init; } = [];
+
+    /// <summary>
+    /// The parameters object this component accepts through <c>BitParams</c>, when it has one: its
+    /// own parameter table again as nullables, which a cascade fills the unset ones of each
+    /// instance from.
+    /// <para>
+    /// Read off the component's own <c>[CascadingParameter]</c> rather than from a list here, so a
+    /// component that gains one is documented the moment it compiles - and left out of the
+    /// parameter table itself, which is what markup sets rather than what an ancestor provides.
+    /// </para>
+    /// </summary>
+    public Type? CascadingParams { get; init; }
+
     /// <summary>The classes and enums this component owns, in full - nothing else documents them.</summary>
     public IReadOnlyList<ComponentSubType> OwnTypes { get; init; } = [];
 
@@ -229,6 +248,8 @@ public static class BlazorUIComponentCatalog
                 Inherited = inherited,
                 Parameters = parameters,
                 PublicMembers = MergeMembers(tables?.PublicMembers, componentType, parameters),
+                CssVariables = tables?.CssVariables ?? [],
+                CascadingParams = CascadingParamsOf(componentType),
                 OwnTypes = own,
                 SharedTypes = shared,
                 Examples = demo?.Examples ?? []
@@ -294,6 +315,26 @@ public static class BlazorUIComponentCatalog
                             b.Name,
                             [.. b.Parameters.Select(p => p.Name)]))
                         .Reverse()];
+    }
+
+    /// <summary>
+    /// The parameters object a component takes from a <c>BitParams</c> ancestor - the
+    /// <c>[CascadingParameter]</c> it declares of an <c>IBitComponentParams</c> type - or null for
+    /// a component that takes none.
+    /// <para>
+    /// Derived rather than listed: every component that gains a <c>...Params</c> class gets the
+    /// line that names it without this server being told, and a component whose cascade is
+    /// something else entirely (a theme, a direction) is not mistaken for one that has it.
+    /// </para>
+    /// </summary>
+    private static Type? CascadingParamsOf(Type? componentType)
+    {
+        if (componentType is null) return null;
+
+        return componentType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.IsDefined(typeof(CascadingParameterAttribute)))
+            .Select(p => p.PropertyType)
+            .FirstOrDefault(t => typeof(IBitComponentParams).IsAssignableFrom(t));
     }
 
     /// <summary>

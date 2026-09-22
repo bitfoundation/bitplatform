@@ -55,8 +55,7 @@ public partial class AccessTokenCookieUITests : AppPageTest
     {
         await Page.GotoAsync(new Uri(pageBase, PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(TestData.DefaultTestEmail);
-        await Page.GetByPlaceholder(AppStrings.PasswordPlaceholder).FillAsync(TestData.DefaultTestPassword);
+        await SignInPanelUtils.FillCredentials(Page, TestData.DefaultTestEmail, TestData.DefaultTestPassword);
 
         var updateSession = Page.WaitForResponseAsync(response => response.Url.Contains(UpdateSessionUri, StringComparison.OrdinalIgnoreCase));
 

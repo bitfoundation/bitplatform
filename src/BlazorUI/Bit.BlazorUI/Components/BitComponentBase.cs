@@ -515,8 +515,20 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </returns>
     public async ValueTask DisposeAsync()
     {
-        await DisposeAsync(true);
-        GC.SuppressFinalize(this);
+        try
+        {
+            await DisposeAsync(true);
+        }
+        // A circuit on its way down cancels the interop calls that are still in flight rather than refusing them
+        // with a JSDisconnectedException, so a component unregistering its listeners is answered with a
+        // cancellation - which the renderer then logs as an unhandled disposal error. Every DisposeAsync
+        // override would otherwise have to catch it beside the JSDisconnectedException it already catches, and
+        // there is nothing a disposal could do about it in any case: the component is going, and so is the page.
+        catch (OperationCanceledException) { }
+        finally
+        {
+            GC.SuppressFinalize(this);
+        }
     }
 
     /// <summary>

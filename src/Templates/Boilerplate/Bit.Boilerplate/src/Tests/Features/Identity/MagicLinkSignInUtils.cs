@@ -38,7 +38,7 @@ public static class MagicLinkSignInUtils
         // Filled through FillEnsuringStable because with pre-rendering on, this panel is on screen before the app is
         // interactive: a value typed into the pre-rendered input is discarded when hydration swaps that subtree out, and
         // the send button - which only enables once the debounced e-mail is committed - then stays disabled for good.
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
+        await SignInPanelUtils.FillEmail(page, email);
 
         // The button stays disabled until the debounced e-mail value is committed, so Playwright waits for it to enable.
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SendMagicLinkButtonText }).ClickAsync();

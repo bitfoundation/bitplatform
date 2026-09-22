@@ -90,6 +90,13 @@ public partial class DemoPage
     [Parameter] public List<ComponentSubClass> SubClasses { get; set; } = [];
     [Parameter] public List<ComponentSubEnum> SubEnums { get; set; } = [];
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
+
+    /// <summary>
+    /// The public CSS custom properties the component reads off its root. Rendered as its own section
+    /// between the examples and the API tables, since they are the theming surface a stylesheet reaches
+    /// rather than a parameter markup sets.
+    /// </summary>
+    [Parameter] public List<ComponentCssVariable> CssVariables { get; set; } = [];
     [Parameter] public string? GitHubUrl { get; set; }
     [Parameter] public string? GitHubExtrasUrl { get; set; }
     [Parameter] public string? GitHubLegacyUrl { get; set; }
@@ -233,6 +240,13 @@ public partial class DemoPage
         {
             _isBackfillScheduled = false; // the circuit is already gone; there is nobody left to fill in for
         }
+        catch (OperationCanceledException)
+        {
+            // A circuit on its way down cancels the calls still in flight rather than refusing them, so this
+            // is the same "there is nobody left to fill in for" - and draining the queue into a page that is
+            // being torn down, the way the handler below does, would build every example for nobody.
+            _isBackfillScheduled = false;
+        }
         catch (Exception ex)
         {
             // Anything else - a script that predates requestIdleWork, a torn-down circuit. The flag
@@ -267,6 +281,7 @@ public partial class DemoPage
                 await mount();
             }
             catch (JSDisconnectedException) { return; } // the circuit is gone; there is nobody left to fill in for
+            catch (OperationCanceledException) { return; } // it is going, and the rest would be built for nobody
             catch (ObjectDisposedException) { } // that example is already gone; the next one may not be
             catch (Exception ex) { ExceptionHandler.Handle(ex); } // one bad example must not strand the rest
         }
@@ -293,6 +308,7 @@ public partial class DemoPage
                 if (await mount()) break;
             }
             catch (JSDisconnectedException) { return; } // the circuit is gone, and with it the idle queue
+            catch (OperationCanceledException) { return; } // it is going, and with it the idle queue
             catch (ObjectDisposedException) { } // that example is already gone; the next one may not be
             catch (Exception ex)
             {
@@ -335,6 +351,7 @@ public partial class DemoPage
                 await JSRuntime.UnobserveVisibility(_jsKey);
             }
             catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+            catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
             catch (Exception ex) { ExceptionHandler.Handle(ex); } // the tables are up either way
         }
 
@@ -355,6 +372,7 @@ public partial class DemoPage
                     await JSRuntime.UnobserveVisibility(_jsKey);
                 }
                 catch (JSDisconnectedException) { } // the circuit is already gone, nothing left to unregister
+                catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
 
                 _dotnetObj.Dispose();
                 _dotnetObj = null;
@@ -367,6 +385,7 @@ public partial class DemoPage
                     await JSRuntime.CancelIdleWork(_jsKey);
                 }
                 catch (JSDisconnectedException) { }
+                catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
 
                 _idleObj.Dispose();
                 _idleObj = null;

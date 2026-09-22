@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 //#if (api == "Integrated")
+using Microsoft.EntityFrameworkCore;
 using Boilerplate.Server.Api.Infrastructure.Data;
 //#endif
 using Boilerplate.Server.Web.Infrastructure.Services;

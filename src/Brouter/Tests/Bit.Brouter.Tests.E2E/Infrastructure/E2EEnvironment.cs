@@ -46,7 +46,7 @@ public static class E2EEnvironment
     public static bool FrameworkReportsRendererName(string framework) => framework is not "net8.0";
 
     /// <summary>NavigationManager.NotFound, which lets static rendering answer 404, only exists from .NET 10 on.</summary>
-    public static bool FrameworkHasNotFound(string framework) => framework is "net10.0";
+    public static bool FrameworkHasNotFound(string framework) => framework is not ("net8.0" or "net9.0");
 
     private static string? Read(string name)
     {

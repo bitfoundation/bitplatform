@@ -64,7 +64,7 @@ private List<BitButtonGroupItem> iconItems =
 private List<BitButtonGroupItem> onlyIconItems =
 [
     new() { Text = ""Add"", IconName = BitIconName.Add },
-    new() { IconName = BitIconName.Edit },
+    new() { IconName = BitIconName.Edit, AriaLabel = ""Edit"" },
     new() { Text = ""Delete"", IconName = BitIconName.Delete }
 ];";
 
@@ -88,6 +88,7 @@ private List<BitButtonGroupItem> reversedIconItems =
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""toggledItems"" @bind-ToggleKey=""toggleKey"" />
 <div>Toggle key: @toggleKey</div>
 <BitButton OnClick=""@(() => toggleKey = ""forward"")"">Forward</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => toggleKey = null)"">Clear</BitButton>
 
 <BitButtonGroup Toggle Variant=""BitVariant.Outline"" Items=""changeToggledItems"" DefaultToggleKey=""forward"" OnToggleChange=""(BitButtonGroupItem i) => onChangeToggleItem = i"" />
 <div>Changed toggle: @onChangeToggleItem?.Key , @onChangeToggleItem?.IsToggled</div>
@@ -424,8 +425,8 @@ private List<BitButtonGroupItem> toggleTitleItems =
                 Items=""a11yItems""
                 DefaultToggleKey=""start"" />
 
-<BitButtonGroup AriaLabel=""Text alignment (selection follows focus)""
-                SelectOnFocus
+<BitButtonGroup AriaLabel=""Text alignment (committed with Space)""
+                SelectOnFocus=""false""
                 Variant=""BitVariant.Outline""
                 SelectionMode=""BitButtonGroupSelectionMode.Single""
                 Items=""selectOnFocusItems""
@@ -439,8 +440,22 @@ private List<BitButtonGroupItem> toggleTitleItems =
 <BitButtonGroup AriaLabel=""Operations""
                 Navigable=""false""
                 Variant=""BitVariant.Outline""
-                Items=""basicItems"" />";
+                Items=""basicItems"" />
+
+<BitButtonGroup @ref=""focusGroup""
+                AriaLabel=""Operations""
+                Variant=""BitVariant.Outline""
+                Items=""basicItems"" />
+<BitButton Variant=""BitVariant.Outline"" OnClick=""FocusTheGroup"">Focus the group</BitButton>";
     private readonly string example20CsharpCode = @"
+private BitButtonGroup<BitButtonGroupItem>? focusGroup;
+
+// FocusAsync returns a ValueTask, which an EventCallback cannot be assigned directly.
+private async Task FocusTheGroup()
+{
+    if (focusGroup is not null) await focusGroup.FocusAsync();
+}
+
 private List<BitButtonGroupItem> a11yItems =
 [
     new() { Key = ""start"", Text = ""Start"", IconName = BitIconName.AlignLeft, AriaLabel = ""Align start"" },
@@ -466,6 +481,30 @@ private List<BitButtonGroupItem> basicItems =
 ];";
 
     private readonly string example21RazorCode = @"
+<BitParams Parameters=""buttonGroupParams"">
+    <BitButtonGroup Items=""basicItems"" />
+    <BitButtonGroup Items=""basicItems"" />
+    <BitButtonGroup Items=""basicItems"" Variant=""BitVariant.Text"" />
+</BitParams>
+
+<BitButtonGroup Items=""basicItems"" />";
+    private readonly string example21CsharpCode = @"
+private readonly BitButtonGroupParams[] buttonGroupParams =
+[
+    new()
+    {
+        Variant = BitVariant.Outline,
+        Rounded = true,
+        Justified = true,
+    }
+];
+
+private List<BitButtonGroupItem> basicItems =
+[
+    new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Color=""BitColor.Primary"" Variant=""BitVariant.Text"" Items=""basicItems"" />
@@ -612,13 +651,13 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private List<BitButtonGroupItem> basicItems = 
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
     
 <BitButtonGroup Variant=""BitVariant.Fill"" Items=""externalIconItems"" />
@@ -626,7 +665,7 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Items=""externalIconItems"" />
 
 <BitButtonGroup Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Items=""externalIconItems"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private List<BitButtonGroupItem> externalIconItems =
 [
     new() { Text = ""Add"", Icon = ""fa-solid fa-plus"" },
@@ -634,7 +673,7 @@ private List<BitButtonGroupItem> externalIconItems =
     new() { Text = ""Delete"", Icon = BitIconInfo.Fa(""solid trash"") }
 ];";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Size=""BitSize.Small"" Variant=""BitVariant.Text"" Items=""basicItems"" />
@@ -646,13 +685,13 @@ private List<BitButtonGroupItem> externalIconItems =
 <BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Fill"" Items=""basicItems"" />
 <BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Outline"" Items=""basicItems"" />
 <BitButtonGroup Size=""BitSize.Large"" Variant=""BitVariant.Text"" Items=""basicItems"" />";
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private List<BitButtonGroupItem> basicItems =
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
 ];";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -689,6 +728,8 @@ private List<BitButtonGroupItem> basicItems =
 
 <BitButtonGroup Items=""styleClassItems"" Variant=""BitVariant.Text"" />
 
+<BitButtonGroup Items=""cssVarItems"" />
+
 <BitButtonGroup Items=""basicItems""
                 Variant=""BitVariant.Text""
                 Styles=""@(new() { Button = ""color: darkcyan; border-color: deepskyblue; background-color: azure;"" })"" />
@@ -696,10 +737,24 @@ private List<BitButtonGroupItem> basicItems =
 <BitButtonGroup Items=""basicItems""
                 Variant=""BitVariant.Text""
                 Classes=""@(new() { Button = ""custom-btn"" })"" />";
-    private readonly string example24CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 private List<BitButtonGroupItem> basicItems =
 [
     new() { Text = ""Add"" }, new() { Text = ""Edit"" }, new() { Text = ""Delete"" }
+];
+
+private List<BitButtonGroupItem> cssVarItems =
+[
+    new() { Text = ""Add"", IconName = BitIconName.Add },
+    new() { Text = ""Edit"", IconName = BitIconName.Edit },
+    new()
+    {
+        Text = ""Delete"",
+        IconName = BitIconName.Delete,
+        Style = ""--bit-ButtonGroup-color: var(--bit-clr-err-text);"" +
+                ""--bit-ButtonGroup-background: var(--bit-clr-err);"" +
+                ""--bit-ButtonGroup-hover-background: var(--bit-clr-err-hover);"",
+    },
 ];
 
 private List<BitButtonGroupItem> styleClassItems =
@@ -718,13 +773,13 @@ private List<BitButtonGroupItem> styleClassItems =
     }
 ];";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Fill"" Items=""rtlItems"" />
 
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Outline"" Items=""rtlItems"" />
 
 <BitButtonGroup Dir=""BitDir.Rtl"" Variant=""BitVariant.Text"" Items=""rtlItems"" />";
-    private readonly string example25CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 private List<BitButtonGroupItem> rtlItems =
 [
     new() { Text = ""اضافه کردن"", IconName = BitIconName.Add },

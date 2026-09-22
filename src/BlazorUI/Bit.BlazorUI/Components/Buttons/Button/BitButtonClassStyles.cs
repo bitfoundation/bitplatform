@@ -11,22 +11,22 @@ public class BitButtonClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the icon element.
+    /// Custom class or style applied to the icon element (the glyph, or the image rendered for IconUrl).
     /// </summary>
     public string? Icon { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the internal container.
+    /// Custom class or style applied to the column that holds the primary and secondary lines of text.
     /// </summary>
     public string? Container { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the primary section.
+    /// Custom class or style applied to the primary line of text.
     /// </summary>
     public string? Primary { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the secondary section.
+    /// Custom class or style applied to the secondary line of text.
     /// </summary>
     public string? Secondary { get; set; }
 
@@ -36,17 +36,17 @@ public class BitButtonClassStyles
     public string? HiddenContent { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the loading container.
+    /// Custom class or style applied to the container of the spinner and its label in the loading state.
     /// </summary>
     public string? LoadingContainer { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the spinner element.
+    /// Custom class or style applied to the loading spinner element.
     /// </summary>
     public string? Spinner { get; set; }
 
     /// <summary>
-    /// Custom class or style applied to the loading label.
+    /// Custom class or style applied to the loading label element.
     /// </summary>
     public string? LoadingLabel { get; set; }
 }

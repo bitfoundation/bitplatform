@@ -9,7 +9,6 @@ namespace Bit.BlazorUI;
 public partial class BitActionButton : BitComponentBase
 {
     private string? _rel;
-    private string? _tabIndex;
     private bool _showLoading;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
@@ -45,12 +44,22 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Detailed description of the button for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
+    /// <remarks>
+    /// It is rendered as visually hidden text beside the button and read after its name, not as part of it.
+    /// An <c>aria-describedby</c> written on the component by hand is kept and this description is added to it,
+    /// since the attribute is a list of ids.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// If true, adds an <c>aria-hidden</c> attribute instructing screen readers to ignore the button.
     /// </summary>
     [Parameter] public bool AriaHidden { get; set; }
+
+    /// <summary>
+    /// If true, the action button automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
     /// If true, enters the loading state automatically while awaiting the OnClick event and prevents subsequent clicks by default.
@@ -78,7 +87,8 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The general color of the button that applies to the icon and text of the action button.
+    /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
+    /// foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -91,7 +101,15 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public string? Download { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the component should expand to occupy the full available width.
+    /// The id of the form element that the action button is associated with (rendered as the <c>form</c> attribute).
+    /// Allows a submit/reset button to be placed outside of its form element.
+    /// </summary>
+    [Parameter] public string? FormId { get; set; }
+
+    /// <summary>
+    /// Stretches the action button across the full available width. The icon and the content stay next to each other
+    /// with <see cref="BitIconPosition.Start"/>; <see cref="BitIconPosition.End"/> reverses the inner wrapper, so the
+    /// growing content pushes them to the opposite edges.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }
@@ -141,14 +159,23 @@ public partial class BitActionButton : BitComponentBase
     /// <remarks>
     /// Set this property to <see langword="true"/> to render the component with only its icon visible.
     /// When <see langword="false"/>, both icon and text are shown if available.
+    /// <br />
+    /// The button then takes the square shape of an icon button, so give it an <see cref="BitComponentBase.AriaLabel"/>:
+    /// with the content dropped it has no text left to name it with.
     /// </remarks>
-    [Parameter] public bool IconOnly { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool IconOnly { get; set; }
 
     /// <summary>
     /// Gets or sets the position of the icon relative to the component's content.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitIconPosition? IconPosition { get; set; }
+
+    /// <summary>
+    /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    [Parameter] public string? IconUrl { get; set; }
 
     /// <summary>
     /// Determines whether the action button is in loading mode or not.
@@ -172,6 +199,18 @@ public partial class BitActionButton : BitComponentBase
     /// The custom template used to replace the default loading indicator inside the action button in the loading state.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps the content of the action button on a single line and ends it with an ellipsis where it does not fit.
+    /// </summary>
+    /// <remarks>
+    /// The content wraps onto as many lines as it needs by default, which is what keeps a long label readable.
+    /// Turn this on where the layout has a width of its own to protect - a stretched row in a settings list, a
+    /// toolbar, a cell of a grid - and pair it with a <see cref="Title"/> so the part that was cut off is still
+    /// reachable. It has no effect on a button left to hug its content, which is never narrower than its text.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoWrap { get; set; }
 
     /// <summary>
     /// Gets or sets the callback that is invoked when the component is clicked.
@@ -247,10 +286,17 @@ public partial class BitActionButton : BitComponentBase
     [Parameter] public string? Title { get; set; }
 
     /// <summary>
-    /// Adds an underline to the action button text, useful for link-style buttons.
+    /// Underlines the text of the action button, which thickens on hover, for the link-style use inside running text.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
+
+
+
+    /// <summary>
+    /// Gives focus to the root element of the action button.
+    /// </summary>
+    public ValueTask FocusAsync() => RootElement.FocusAsync();
 
 
 
@@ -284,7 +330,11 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-acb-fwi" : string.Empty);
 
+        ClassBuilder.Register(() => IconOnly ? "bit-acb-ion" : string.Empty);
+
         ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
+
+        ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -308,10 +358,6 @@ public partial class BitActionButton : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
-
-        _tabIndex = IsEnabled
-            ? TabIndex
-            : AllowDisabledFocus ? TabIndex : "-1";
 
         _buttonType = ButtonType ?? (EditContext is null ? BitButtonType.Button : BitButtonType.Submit);
 
@@ -370,6 +416,27 @@ public partial class BitActionButton : BitComponentBase
     }
 
 
+
+    private string? GetTabIndex(bool ariaHidden)
+    {
+        // A control hidden from assistive technologies must not be reachable by Tab either, or a keyboard
+        // user lands on something a screen reader has nothing to say about.
+        if (ariaHidden) return "-1";
+
+        if (IsEnabled is false)
+        {
+            if (AllowDisabledFocus is false) return "-1";
+
+            // The disabled anchor has no href, and an anchor without one is only focusable with an explicit tabindex.
+            return Href.HasValue() ? TabIndex ?? "0" : TabIndex;
+        }
+
+        // The href is dropped while loading, so the anchor needs an explicit tabindex to keep the focus a keyboard
+        // user gave it - otherwise it jumps to the document the moment the click starts the loading state.
+        if (IsLoading && Href.HasValue()) return TabIndex ?? "0";
+
+        return TabIndex;
+    }
 
     private void UpdateLoadingVisuals()
     {

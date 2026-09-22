@@ -316,6 +316,16 @@ public static class BlazorUISearchIndex
                     member.Description ?? string.Empty, member.Type));
             }
 
+            // The custom properties are the half of a component's look that no parameter reaches, so
+            // a search for "action button hover background" has to land on one rather than on the
+            // nearest enum. The default rides in the boosted text the way a parameter's type does:
+            // it is what names the global token the variable falls back to.
+            foreach (var variable in component.CssVariables)
+            {
+                entries.Add(new Entry("CSS variable", variable.Name, component.Name, call,
+                    variable.Description ?? string.Empty, variable.Default ?? string.Empty));
+            }
+
             foreach (var type in component.OwnTypes)
             {
                 // The member names go in the body rather than in the boosted text: a class-styles bag
@@ -340,6 +350,20 @@ public static class BlazorUISearchIndex
                 $"GetBitBlazorUIType(typeName: \"{type.Name}\")",
                 type.Summary ?? string.Empty,
                 type.Clr.IsEnum ? string.Join(' ', Enum.GetNames(type.Clr)) : string.Empty));
+        }
+
+        // A name one package adds to another package's type is written on the type it extends and
+        // stored nowhere near it, so a search for "material dark" has to be told about it here or
+        // it lands on the theming chapter that merely mentions it. Indexed under the name it is
+        // read by - BitThemePresets.MaterialDark - which is also what a query is likely to type.
+        foreach (var group in BlazorUIExtensionMembers.All)
+        {
+            foreach (var member in group.Members)
+            {
+                entries.Add(new Entry("Extension member", $"{group.ReceiverName}.{member.Name}", group.Package.PackageId,
+                    $"GetBitBlazorUIType(typeName: \"{group.ReceiverName}\")",
+                    member.Summary ?? string.Empty, member.Value ?? string.Empty));
+            }
         }
 
         entries.AddRange(ThemingChapters());

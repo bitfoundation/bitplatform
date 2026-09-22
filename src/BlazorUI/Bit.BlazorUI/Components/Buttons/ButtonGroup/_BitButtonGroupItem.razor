@@ -4,21 +4,30 @@
 @{
     var isEnabled = ButtonGroup.IsEnabled && ButtonGroup.GetIsEnabled(Item);
     var isLoading = ButtonGroup.GetIsLoading(Item);
-    var isInteractive = isEnabled && isLoading is false;
+    // An item the Multiple mode's MaxToggles cap has taken out of reach is activated to no effect until one of
+    // the toggled items is un-toggled, so it says so rather than answering a click with silence. It is not given
+    // the disabled attribute, since it is not disabled but temporarily out of reach - and a disabled button is
+    // not focusable, which would leave a hole in the group's keyboard navigation.
+    var isInteractive = isEnabled && isLoading is false && ButtonGroup.GetIsToggleCapped(Item) is false;
     var template = ButtonGroup.GetTemplate(Item);
     var href = ButtonGroup.GetHref(Item);
+    // A disabled or loading link loses its href, and with it the implicit link role, so the role is put back -
+    // unless the selection mode already gives the item a role of its own.
+    var anchorRole = ButtonGroup.GetItemRole() ?? (isInteractive ? null : "link");
 }
 
 @if (href.HasNoValue())
 {
     <button @ref="_element" type="button"
             @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+            @onfocus="() => ButtonGroup.HandleOnItemFocus(Item)"
             role="@ButtonGroup.GetItemRole()"
             tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+            autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
             disabled="@(isEnabled is false && ButtonGroup.DisabledInteractive is false)"
             aria-disabled="@(isInteractive ? null : "true")"
             aria-busy="@(isLoading ? "true" : null)"
-            aria-label="@ButtonGroup.GetAriaLabel(Item)"
+            aria-label="@ButtonGroup.GetItemAriaLabel(Item)"
             aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
             aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
             title="@ButtonGroup.GetItemTitle(Item)"
@@ -31,14 +40,17 @@ else
 {
     <a @ref="_element"
        @onclick="() => ButtonGroup.HandleOnItemClick(Item)"
+       @onfocus="() => ButtonGroup.HandleOnItemFocus(Item)"
        href="@(isInteractive ? href : null)"
        target="@ButtonGroup.GetTarget(Item)"
-       role="@ButtonGroup.GetItemRole()"
+       rel="@(isInteractive ? ButtonGroup.GetItemRel(Item) : null)"
+       role="@anchorRole"
        tabindex="@ButtonGroup.GetItemTabIndex(Item)"
+       autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
        aria-disabled="@(isInteractive ? null : "true")"
        aria-busy="@(isLoading ? "true" : null)"
-       aria-label="@ButtonGroup.GetAriaLabel(Item)"
-       aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
+       aria-label="@ButtonGroup.GetItemAriaLabel(Item)"
+       aria-current="@ButtonGroup.GetItemAriaCurrent(Item)"
        aria-checked="@ButtonGroup.GetItemAriaChecked(Item)"
        title="@ButtonGroup.GetItemTitle(Item)"
        style="@ButtonGroup.GetItemStyle(Item)"
@@ -53,7 +65,7 @@ else
         @if (ButtonGroup.ShowSelectionIndicator && ButtonGroup._Mode is not BitButtonGroupSelectionMode.None)
         {
             @* The indicator always occupies its space so that toggling an item never shifts the layout. *@
-            <span style="@ButtonGroup.Styles?.SelectionIndicator" class="bit-btg-sin @ButtonGroup.Classes?.SelectionIndicator" />
+            <span aria-hidden="true" style="@ButtonGroup.Styles?.SelectionIndicator" class="bit-btg-sin @ButtonGroup.Classes?.SelectionIndicator" />
         }
 
         @if (template is not null)
@@ -68,14 +80,14 @@ else
         {
             @if (isLoading)
             {
-                <div style="@ButtonGroup.Styles?.Spinner" class="bit-btg-spn @ButtonGroup.Classes?.Spinner" />
+                <span aria-hidden="true" style="@ButtonGroup.Styles?.Spinner" class="bit-btg-spn @ButtonGroup.Classes?.Spinner" />
             }
             else
             {
                 var icon = ButtonGroup.GetItemIcon(Item);
                 @if (icon is not null)
                 {
-                    <i style="@ButtonGroup.Styles?.Icon" class="@icon.GetCssClasses() @ButtonGroup.Classes?.Icon" />
+                    <i aria-hidden="true" style="@ButtonGroup.Styles?.Icon" class="bit-btg-ico @icon.GetCssClasses() @ButtonGroup.Classes?.Icon" />
                 }
             }
 

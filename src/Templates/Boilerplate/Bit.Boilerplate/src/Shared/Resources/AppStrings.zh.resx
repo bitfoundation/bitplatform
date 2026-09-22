@@ -699,7 +699,7 @@
     <value>转到今天</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>以最短时间轻松创建您的多模式（WASM、服务器、混合、预渲染）Blazor 应用！</value>
+    <value>你看到的一切都已经能用了 - 网页、Android、iOS、Windows 和 macOS。让它成为你的，然后发布。</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>首页</value>
@@ -717,13 +717,13 @@
     <value>了解更多</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>一套跨多个平台的 .NET 开发者工具</value>
+    <value>开箱即全功能的应用，覆盖所有平台</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>一套高性能、易自定义且美观的 Blazor 组件</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>一个功能丰富的 .NET 项目模板，无缝工作于各处</value>
+    <value>这个应用的起点：一切都已接好，源码完全属于你。</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Boilerplate 使用 ASP.NET Core、Identity、Web API、EF Core 和 Blazor 构建。</value>
@@ -1030,9 +1030,6 @@
   </data>
   <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>2FA 令牌已生成并发送给您。</value>
-  </data>
-  <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>请输入我们刚刚发送给您的提升访问令牌或您的认证器应用代码以继续。</value>
   </data>
   <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} 是您在 Boilerplate 中的代码。</value>
@@ -2156,4 +2153,61 @@
     <value>代表您使用此应用的助手。</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>验证</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>确认是你本人</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>此更改会影响你的账户安全。</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>使用指纹或 Face ID</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>无需等待验证码。</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>请输入你的 6 位验证码</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>该验证码无效。请检查后重试。</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>打开你的身份验证器应用，输入它为此账户显示的验证码。</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>在上方验证，或改为获取验证码。</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>给我发送验证码</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>重新发送验证码</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>{0:m\:ss} 后可重新发送</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>验证码已在发送途中。请使用该验证码，或在其失效后再次获取。</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>你的邮箱</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>你的手机</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>你其他已登录的设备</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>此账户没有已确认的邮箱或手机号可用于接收验证码。</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>我们已将验证码发送至 {0}。</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>我们已将验证码发送至 {0} 和 {1}。</value>
+  </data>
 </root>

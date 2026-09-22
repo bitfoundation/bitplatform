@@ -58,10 +58,10 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual(BitThemePresets.Light, fluent.LightTheme);
         Assert.AreEqual(BitThemePresets.Dark, fluent.DarkTheme);
 
-        Assert.AreEqual(BitExtraThemePresets.Fluent2Light, BitThemeSwitcher.DefaultDesignSystems[1].LightTheme);
-        Assert.AreEqual(BitExtraThemePresets.Fluent2Dark, BitThemeSwitcher.DefaultDesignSystems[1].DarkTheme);
-        Assert.AreEqual(BitExtraThemePresets.MaterialDark, BitThemeSwitcher.DefaultDesignSystems[2].DarkTheme);
-        Assert.AreEqual(BitExtraThemePresets.CupertinoLight, BitThemeSwitcher.DefaultDesignSystems[3].LightTheme);
+        Assert.AreEqual(BitThemePresets.Fluent2Light, BitThemeSwitcher.DefaultDesignSystems[1].LightTheme);
+        Assert.AreEqual(BitThemePresets.Fluent2Dark, BitThemeSwitcher.DefaultDesignSystems[1].DarkTheme);
+        Assert.AreEqual(BitThemePresets.MaterialDark, BitThemeSwitcher.DefaultDesignSystems[2].DarkTheme);
+        Assert.AreEqual(BitThemePresets.CupertinoLight, BitThemeSwitcher.DefaultDesignSystems[3].LightTheme);
 
         Assert.AreEqual("Fluent", SelectedDesignSystem(component));
     }
