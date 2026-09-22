@@ -10,15 +10,73 @@
             style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemSeparator"
             class="bit-mnb-isp @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemSeparator"></li>
     }
+    else if (MenuButton.GetIsHeader(Item))
+    {
+        @* A group label names the run of items under it and does nothing else, so it stays out of the menu's
+           own semantics: a presentational row is skipped by the keyboard navigation and by the reader's
+           item-by-item reading, instead of being announced as a menu item that cannot be activated. *@
+        <li role="presentation"
+            title="@MenuButton.GetTitle(Item)"
+            style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemHeader"
+            class="bit-mnb-ihd @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemHeader">
+            @{
+                var headerTemplate = MenuButton.GetTemplate(Item);
+            }
+            @if (headerTemplate is not null)
+            {
+                @headerTemplate(Item)
+            }
+            else
+            {
+                @MenuButton.GetText(Item)
+            }
+        </li>
+    }
     else
     {
         var template = MenuButton.GetTemplate(Item);
         var isEnabled = MenuButton.IsEnabled && MenuButton.GetIsEnabled(Item);
-        var href = MenuButton.GetHref(Item);
+        // An item that opens a submenu is not a command of its own, so the three things that would make it
+        // one - a link, a check state, a click of its own - give way to the submenu it carries.
+        var hasSubmenu = _hasSubmenu;
+        var href = hasSubmenu ? null : MenuButton.GetHref(Item);
         var target = MenuButton.GetTarget(Item);
+        // A row that opens a submenu is a way further in rather than a state, so neither kind of mark
+        // belongs on it.
+        var radioGroup = hasSubmenu ? null : MenuButton.GetRadioGroup(Item);
+        var checkable = hasSubmenu is false && (radioGroup.HasValue() || MenuButton.GetCheckable(Item));
+        var isChecked = checkable && MenuButton.GetIsChecked(Item);
+        var secondaryText = MenuButton.GetSecondaryText(Item);
+        // Once any item of the menu is checkable every item reserves the check column, so the labels line up
+        // instead of shifting by the width of a glyph from one row to the next.
+        var hasCheckColumn = ShowCheckColumn;
+        // A checkable item is a checkbox that happens to live in a menu, so it is announced with its own role
+        // and its state - and the state is what changes on activation, which a plain menuitem cannot say.
+        var role = radioGroup.HasValue() ? "menuitemradio" : checkable ? "menuitemcheckbox" : "menuitem";
+        // The pointer is only listened to in a menu that has a submenu somewhere in it: every other menu
+        // would be paying for a round trip per row hovered and have nothing to do with it.
+        var pointerAttributes = MenuButton.HasSubmenus
+            ? new Dictionary<string, object>
+                {
+                    ["onmouseenter"] = EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnPointerEnter)
+                }
+            : null;
+        // Only the rows that carry a submenu listen for the key that walks into it; the rest are served by
+        // the one handler on the menu around them.
+        if (hasSubmenu && pointerAttributes is not null)
+        {
+            pointerAttributes["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnItemKeyDown);
+        }
 
         RenderFragment content =
             @<text>
+                @if (hasCheckColumn)
+                {
+                    <i aria-hidden="true"
+                       style="@MenuButton.Styles?.ItemCheckIcon"
+                       class="bit-mnb-ick @MenuButton.GetCheckIconCss(Item) @MenuButton.Classes?.ItemCheckIcon" />
+                }
+
                 @if (template is not null)
                 {
                     @template(Item)
@@ -32,42 +90,117 @@
                     var itemIcon = MenuButton.GetIcon(Item);
                     @if (itemIcon is not null)
                     {
-                        <i style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
+                        <i aria-hidden="true" style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
                     }
                     <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
                         @MenuButton.GetText(Item)
                     </span>
+                    @if (secondaryText.HasValue())
+                    {
+                        @* Part of the item's accessible name rather than a decoration: a shortcut or a count
+                           is read after the label, which is the order it is written in. *@
+                        <span style="@MenuButton.Styles?.ItemSecondaryText" class="bit-mnb-isc @MenuButton.Classes?.ItemSecondaryText">
+                            @secondaryText
+                        </span>
+                    }
+                }
+
+                @if (hasSubmenu)
+                {
+                    @* The chevron says the row opens a submenu rather than running a command. It carries no
+                       name of its own: aria-haspopup on the row is what announces the same thing. *@
+                    <i aria-hidden="true"
+                       style="@MenuButton.Styles?.ItemChevron"
+                       class="bit-mnb-sch @MenuButton.GetSubmenuChevronCss() @MenuButton.Classes?.ItemChevron" />
                 }
             </text>;
 
         <li role="presentation" style="@MenuButton.Styles?.ItemWrapper" class="@MenuButton.Classes?.ItemWrapper">
             @if (isEnabled && href.HasValue())
             {
-                <a @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
-                   role="menuitem"
+                <a @attributes="pointerAttributes"
+                   @onclick="HandleOnClick" @onclick:stopPropagation
+                   role="@role"
                    href="@href"
-                   tabindex="0"
+                   tabindex="-1"
                    target="@target"
                    rel="@(target is "_blank" ? "noopener noreferrer" : null)"
                    title="@MenuButton.GetTitle(Item)"
+                   aria-label="@MenuButton.GetAriaLabel(Item)"
+                   aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                    style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                   class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                   class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                 </a>
             }
             else
             {
-                <button @onclick="() => MenuButton.HandleOnItemClick(Item)" @onclick:stopPropagation
-                        role="menuitem"
-                        type="@MenuButton._buttonType.GetValue()"
+                @* The items are never in the tab sequence: the menu is entered by opening it, and the focus is
+                   moved between the items with the arrow keys from there (the APG menu button pattern), so a
+                   tabindex of 0 would put every row of an open menu into the page's tab order.
+                   Only a row that opens a submenu carries an id: the submenu is named after it, and it names
+                   the submenu back while that is open.
+                   Every note about the button stays out here rather than between its attributes: a Razor
+                   comment is markup, and inside a tag it is parsed as attributes instead - which renders
+                   every word of it onto the element. *@
+                <button @ref="_itemRef" @attributes="pointerAttributes"
+                        @onclick="HandleOnClick" @onclick:stopPropagation
+                        role="@role"
+                        id="@(hasSubmenu ? _itemId : null)"
+                        form="@(hasSubmenu ? null : MenuButton.FormId)"
+                        type="@(hasSubmenu ? "button" : MenuButton._buttonType.GetValue())"
                         title="@MenuButton.GetTitle(Item)"
-                        tabindex="@(isEnabled ? 0 : -1)"
-                        disabled="@(isEnabled is false)"
-                        aria-disabled="@(isEnabled is false)"
+                        tabindex="-1"
+                        disabled="@(isEnabled is false && MenuButton.DisabledInteractive is false)"
+                        aria-disabled="@(isEnabled is false ? "true" : null)"
+                        aria-label="@MenuButton.GetAriaLabel(Item)"
+                        aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
+                        aria-haspopup="@(hasSubmenu ? "menu" : null)"
+                        aria-controls="@(hasSubmenu && _isSubmenuOpen ? _submenuMenuId : null)"
+                        aria-expanded="@(hasSubmenu ? _isSubmenuOpen.ToString().ToLower() : null)"
                         style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                        class="bit-mnb-itm @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                        class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @(_isSubmenuOpen ? "bit-mnb-osb" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                 </button>
+            }
+
+            @if (hasSubmenu)
+            {
+                @* The submenu is a callout of its own, moved to the body while it is open the way the menu
+                   around it is, so nothing the menu clips or stacks reaches it. It is rendered from the
+                   first render and kept hidden, which is what lets the nested options inside it register
+                   themselves before anything asks whether there are any. The keys pressed in it are its
+                   own: being in the body already keeps them from the menu it was opened from, and the
+                   markup says so rather than leaving it to where the element happens to be. *@
+                <div @onkeydown="HandleOnSubmenuKeyDown" @onkeydown:stopPropagation="true"
+                     @onmouseenter="HandleOnSubmenuPointerEnter"
+                     id="@_submenuId"
+                     dir="@MenuButton.Dir?.ToString().ToLower()"
+                     style="@MenuButton.Styles?.Submenu"
+                     class="bit-mnb-cal bit-mnb-sub @MenuButton.GetMenuCalloutCss(_isSubmenuOpen) @MenuButton.Classes?.Submenu">
+                    <ul role="menu"
+                        id="@_submenuMenuId"
+                        aria-labelledby="@_itemId"
+                        style="@MenuButton.Styles?.CalloutContainer"
+                        class="bit-mnb-cul @MenuButton.Classes?.CalloutContainer">
+                        @if (ChildrenFragment is not null)
+                        {
+                            @ChildrenFragment
+                        }
+                        else
+                        {
+                            var childItems = MenuButton.GetChildItems(Item);
+                            var childCheckColumn = childItems.Exists(MenuButton.GetHasCheckMark);
+                            @for (int i = 0; i < childItems.Count; i++)
+                            {
+                                var child = childItems[i];
+                                <_BitMenuButtonItem @key="@MenuButton.GetItemKey(child, i.ToString())"
+                                                    MenuButton="MenuButton" Item="child" Level="@(Level + 1)"
+                                                    ShowCheckColumn="childCheckColumn" />
+                            }
+                        }
+                    </ul>
+                </div>
             }
         </li>
     }

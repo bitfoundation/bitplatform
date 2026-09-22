@@ -84,7 +84,10 @@ public static partial class Program
 
         //#if (signalR == true)
         app.MapHub<Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
-        app.MapMcp(OAuthResources.McpPath).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.McpPath)); // Chatbot tools. Isolated from /dev-mcp.
+
+        // Chatbot tools. Isolated from /dev-mcp. Served under the api version the controllers carry as well.
+        foreach (var path in new[] { OAuthResources.McpPath, $"{OAuthResources.McpPath}/v1" })
+            app.MapMcp(path).RequireAuthorization(OAuthEndpoints.AuthorizationFor(OAuthResources.McpPath));
         //#endif
 
         // The feature AND two factor, for the app's own bearer scheme or a token issued for this resource; every

@@ -31,5 +31,15 @@ public enum BitToggleButtonAriaMode
     /// <br />
     /// Use it when the content of the toggle button already conveys the state, like a play/pause button.
     /// </summary>
-    None
+    None,
+
+    /// <summary>
+    /// Renders <c>aria-expanded</c> instead of <c>aria-pressed</c>, for the disclosure pattern: a toggle button
+    /// whose checked state is another part of the page being shown.
+    /// <br />
+    /// A screen reader announces such a button as collapsed or expanded rather than as pressed, which is what
+    /// tells the user that something appeared elsewhere. Pair it with <c>AriaControls</c> pointing at the
+    /// element it reveals.
+    /// </summary>
+    Expanded
 }
