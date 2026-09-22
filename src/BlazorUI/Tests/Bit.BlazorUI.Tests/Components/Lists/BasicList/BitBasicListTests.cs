@@ -53,7 +53,7 @@ public class BitBasicListTests : BunitTestContext
             //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
             var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
-#if NET10_0
+#if NET10_0_OR_GREATER
             maxItemCount += overscanItemsCount;
 #endif
 

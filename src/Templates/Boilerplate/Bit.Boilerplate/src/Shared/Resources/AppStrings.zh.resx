@@ -699,7 +699,7 @@
     <value>转到今天</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>以最短时间轻松创建您的多模式（WASM、服务器、混合、预渲染）Blazor 应用！</value>
+    <value>你看到的一切都已经能用了 - 网页、Android、iOS、Windows 和 macOS。让它成为你的，然后发布。</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>首页</value>
@@ -717,13 +717,13 @@
     <value>了解更多</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>一套跨多个平台的 .NET 开发者工具</value>
+    <value>开箱即全功能的应用，覆盖所有平台</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>一套高性能、易自定义且美观的 Blazor 组件</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>一个功能丰富的 .NET 项目模板，无缝工作于各处</value>
+    <value>这个应用的起点：一切都已接好，源码完全属于你。</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>Boilerplate 使用 ASP.NET Core、Identity、Web API、EF Core 和 Blazor 构建。</value>

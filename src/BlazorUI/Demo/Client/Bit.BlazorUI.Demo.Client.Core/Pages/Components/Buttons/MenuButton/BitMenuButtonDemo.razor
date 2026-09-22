@@ -3,12 +3,14 @@
 @inherits AppComponentBase
 
 <PageOutlet Url="components/menubutton" Title="MenuButton"
-            Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, separator and link items, a loading state, and full keyboard navigation with proper ARIA menu semantics." />
+            Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, nested submenus, check and single-choice items, group headers, separators, links, keyboard shortcuts, a loading state, and full keyboard navigation with proper ARIA menu semantics." />
 
 <div>
     <DemoPage Name="MenuButton"
-              Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, separator and link items, a loading state, and full keyboard navigation with proper ARIA menu semantics."
+              SecondaryNames="@(["DropdownButton", "SplitButton", "Menu"])"
+              Description="A menu button combines a button with a callout menu of related actions or links. It supports split and sticky modes, toggle behavior, nested submenus, check and single-choice items, group headers, separators, links, keyboard shortcuts, a loading state, and full keyboard navigation with proper ARIA menu semantics."
               Parameters="componentParameters" SubClasses="componentSubClasses" SubEnums="componentSubEnums"
+              CssVariables="componentCssVariables"
               GitHubUrl="Buttons/MenuButton/BitMenuButton.razor" GitHubDemoUrl="Buttons/MenuButton/BitMenuButtonDemo.razor">
         <NotesTemplate>
             <BitText>
@@ -25,19 +27,27 @@
                     <BitTag Color="BitColor.SecondaryBackground">BitMenuButtonOption</BitTag>
                 </BitLink> component
                 <br /><br />
-                The component follows the WAI-ARIA menu button pattern:
+                The component follows the WAI-ARIA menu button pattern. The button is the only thing in the tab
+                order; from it,
                 <BitTag Color="BitColor.SecondaryBackground">Enter</BitTag>,
-                <BitTag Color="BitColor.SecondaryBackground">Space</BitTag>,
-                and the arrow keys open the callout,
+                <BitTag Color="BitColor.SecondaryBackground">Space</BitTag>
+                and the arrow keys open the menu and move the focus into it. Inside,
                 <BitTag Color="BitColor.SecondaryBackground">↑</BitTag>
                 /
                 <BitTag Color="BitColor.SecondaryBackground">↓</BitTag> and
                 <BitTag Color="BitColor.SecondaryBackground">Home</BitTag>
                 /
                 <BitTag Color="BitColor.SecondaryBackground">End</BitTag>
-                navigate the items, typing a character jumps to the next matching item, and
+                move between the items (wrapping around, and stepping over the separators and the group headers),
+                typing jumps to the item that starts with what was typed - the keystrokes that arrive within a
+                second of each other are one search string, and the same character pressed again cycles through
+                the items under it -
+                <BitTag Color="BitColor.SecondaryBackground">Enter</BitTag>
+                or
+                <BitTag Color="BitColor.SecondaryBackground">Space</BitTag>
+                activates the focused item, and
                 <BitTag Color="BitColor.SecondaryBackground">Esc</BitTag> or
-                <BitTag Color="BitColor.SecondaryBackground">Tab</BitTag> closes it,
+                <BitTag Color="BitColor.SecondaryBackground">Tab</BitTag> closes the menu,
                 returning the focus to the button.
             </BitText>
         </NotesTemplate>

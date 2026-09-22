@@ -102,8 +102,15 @@ public static class TestAccountUtils
             await using var scope = server.WebApp.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+            // The role id first, not ur.Role!.Name: a bulk delete whose predicate needs a join becomes a subquery over
+            // the table being deleted from, which MySQL refuses. MakeGlobalAdmin resolves it the same way.
+            var globalAdminRoleId = await dbContext.Roles
+                .Where(r => r.Name == AppRoles.GlobalAdmin)
+                .Select(r => r.Id)
+                .SingleAsync();
+
             await dbContext.UserRoles
-                .Where(ur => ur.UserId == userId && ur.Role!.Name == AppRoles.GlobalAdmin)
+                .Where(ur => ur.UserId == userId && ur.RoleId == globalAdminRoleId)
                 .ExecuteDeleteAsync();
         }
     }

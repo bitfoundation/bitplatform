@@ -75,8 +75,15 @@ public partial class OAuthClientManagementController : AppControllerBase, IOAuth
 
         // What actually ends access: a refresh whose session is gone is refused, and access tokens expire in minutes.
         // The session is deleted, not the grant - the grant cascades with it, and it is the session that holds a token.
+        // Through the grants, not session.OAuthGrant: a delete whose predicate walks a navigation becomes a subquery
+        // over the table being deleted from, which MySQL refuses. OAuthGrants is a different table, and staying a
+        // queryable avoids the collection parameter its provider cannot map either.
+        var grantedSessionIds = DbContext.OAuthGrants
+            .Where(grant => grant.ClientId == request.ClientId)
+            .Select(grant => grant.UserSessionId);
+
         var revoked = await DbContext.UserSessions
-            .Where(session => session.OAuthGrant!.ClientId == request.ClientId)
+            .Where(session => grantedSessionIds.Contains(session.Id))
             .ExecuteDeleteAsync(cancellationToken);
 
         return revoked;

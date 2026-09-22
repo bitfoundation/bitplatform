@@ -117,6 +117,40 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
+    /// <c>/healthz/v1</c> is the same report under the api version the controllers carry, behind the same feature.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_AnswerUnderTheApiVersionToo()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+        using (var anonymousResponse = await anonymousClient.GetAsync("healthz/v1", TestContext.CancellationToken))
+        {
+            Assert.AreEqual(HttpStatusCode.Unauthorized, anonymousResponse.StatusCode, "The versioned path must not be a way around the feature.");
+        }
+
+        await using var adminScope = server.WebApp.Services.CreateAsyncScope();
+        await adminScope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await adminScope.ServiceProvider.GetRequiredService<HttpClient>().GetAsync("healthz/v1", TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+
+        var report = await response.Content.ReadFromJsonAsync(
+            adminScope.ServiceProvider.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+
+        Assert.IsNotNull(report);
+        Assert.Contains("live", report.Entries["binStorage"].Tags);
+    }
+
+    /// <summary>
     /// A remote dependency must neither hang <c>/health</c> nor make it answer 503, so every check outside
     /// <c>localChecks</c> needs a timeout, reports Degraded and stays out of <c>/alive</c>. The optional ones are
     /// configured below, as development only registers them then (Sms aside: it would initialize the static Twilio client).
