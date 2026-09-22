@@ -26,6 +26,19 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the choice group component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple choice group components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitChoiceGroupParams.ParamName)]
+    public BitChoiceGroupParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Id of an element to use as the aria label for the ChoiceGroup.
     /// </summary>
     [Parameter] public string? AriaLabelledBy { get; set; }
@@ -337,8 +350,11 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
         catch (JSException) { } // a JS-side failure while reading the marker order is not fatal, keep the current order
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChoiceGroupParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         // Opt-in: a pure reorder of existing options registers/unregisters nothing, so flag the DOM

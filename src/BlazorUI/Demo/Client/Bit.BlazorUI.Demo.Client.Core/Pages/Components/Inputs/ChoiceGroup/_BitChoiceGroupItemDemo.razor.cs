@@ -223,4 +223,14 @@ public partial class _BitChoiceGroupItemDemo
     {
         successMessage = string.Empty;
     }
+
+    private readonly BitChoiceGroupParams[] choiceGroupParams =
+    [
+        new()
+        {
+            Gap = "0.5rem",
+            FullWidth = true,
+            Variant = BitVariant.Outline,
+        }
+    ];
 }

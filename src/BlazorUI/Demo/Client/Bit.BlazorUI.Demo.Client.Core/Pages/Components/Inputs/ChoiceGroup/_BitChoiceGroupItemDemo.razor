@@ -358,7 +358,36 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <div>
+        <b>BitParams</b> carries a <b>BitChoiceGroupParams</b> down to every ChoiceGroup under it, so a form, a panel, or a whole page
+        sets the shared look once instead of on every group. What it carries is a default and not an override: a group that writes a
+        parameter for itself keeps its own value, and only what it left unset is filled in from the cascade, which is what lets one group
+        step out of the cascade it is in without the cascade having to know about it. Each parameter is filled in on its own, so a group
+        can take its <b>Variant</b> from the cascade and its <b>Gap</b> from its own markup. What a <b>BitChoiceGroupParams</b> does not
+        carry is what the ChoiceGroup is generic over - the items themselves, the templates rendering one, the comparer, the name selectors
+        and the event callbacks - so each group keeps writing those for itself, and one cascade serves the groups of all three item APIs.
+    </div>
+    <br />
+    <div class="example-content column">
+        <BitParams Parameters="@choiceGroupParams">
+            <BitChoiceGroup Label="Takes the variant, the gap and the full width from the cascade"
+                            Items="basicItems"
+                            DefaultValue="@("A")" />
+
+            <BitChoiceGroup Label="So does this one, without repeating any of it"
+                            Items="basicItems"
+                            DefaultValue="@("B")" />
+
+            <BitChoiceGroup Label="Its own Variant, the cascaded rest"
+                            Variant="BitVariant.Fill"
+                            Items="basicItems"
+                            DefaultValue="@("C")" />
+        </BitParams>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
         <div>Colors the radio circle and the checked state of the items using the BitColor palette, with Primary being the default.</div>
         <br />
         <div>
@@ -663,7 +692,7 @@
     </div>
     </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+<DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
     <div>Renders icons from external libraries like Font Awesome or Bootstrap Icons using the Icon parameter, instead of the built-in icon font used by IconName.</div>
 
     <br />
@@ -682,7 +711,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+<DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and item spacing together.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -746,7 +775,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+<DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
     <div>Customizes the appearance at every level: Style and Class on the root element, per-item styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the items.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -817,7 +846,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
     <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored, and the arrow keys follow the text direction in Chromium and Firefox, where ArrowLeft moves to the next item. That mirroring is the native behavior of a radio group in those engines rather than something the component does, and WebKit does not do it: there the arrows keep the order of the markup, so ArrowRight moves to the next item and ArrowLeft to the previous one.</div>
     <br />
     <div dir="rtl" class="example-content">

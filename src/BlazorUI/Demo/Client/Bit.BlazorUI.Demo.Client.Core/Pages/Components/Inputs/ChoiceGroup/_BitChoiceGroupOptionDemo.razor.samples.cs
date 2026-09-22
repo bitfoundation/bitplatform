@@ -630,6 +630,48 @@ private bool showAutoFocus;";
 private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
 
     private readonly string example21RazorCode = @"
+<BitParams Parameters=""@choiceGroupParams"">
+    <BitChoiceGroup Label=""Takes the variant, the gap and the full width from the cascade""
+                    DefaultValue=""@(""A"")""
+                    TItem=""BitChoiceGroupOption<string>""
+                    TValue=""string"">
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    </BitChoiceGroup>
+
+    <BitChoiceGroup Label=""So does this one, without repeating any of it""
+                    DefaultValue=""@(""B"")""
+                    TItem=""BitChoiceGroupOption<string>""
+                    TValue=""string"">
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    </BitChoiceGroup>
+
+    <BitChoiceGroup Label=""Its own Variant, the cascaded rest""
+                    Variant=""BitVariant.Fill""
+                    DefaultValue=""@(""C"")""
+                    TItem=""BitChoiceGroupOption<string>""
+                    TValue=""string"">
+        <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+        <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+        <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    </BitChoiceGroup>
+</BitParams>";
+
+    private readonly string example21CsharpCode = @"
+private readonly BitChoiceGroupParams[] choiceGroupParams =
+[
+    new()
+    {
+        Gap = ""0.5rem"",
+        FullWidth = true,
+        Variant = BitVariant.Outline,
+    }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitChoiceGroup Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -872,7 +914,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -894,7 +936,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" Icon=""@BitIconInfo.Bi(""calendar-month"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitChoiceGroup Size=""BitSize.Small"" Label=""Small"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -976,7 +1018,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsEnabled=""false"" />
 </BitChoiceGroup>";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -1108,7 +1150,7 @@ private BitChoiceGroup<BitChoiceGroupOption<string>, string>? focusRef;";
     </BitChoiceGroup>
 </div>";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />

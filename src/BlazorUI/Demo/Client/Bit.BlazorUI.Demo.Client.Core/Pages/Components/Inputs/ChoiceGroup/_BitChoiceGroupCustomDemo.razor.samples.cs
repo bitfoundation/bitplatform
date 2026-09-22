@@ -1022,6 +1022,36 @@ private readonly List<Order> basicCustoms =
 ];";
 
     private readonly string example21RazorCode = @"
+<BitParams Parameters=""@choiceGroupParams"">
+    <BitChoiceGroup Label=""Takes the variant, the gap and the full width from the cascade""
+                    Items=""basicCustoms""
+                    DefaultValue=""@(""A"")""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+
+    <BitChoiceGroup Label=""So does this one, without repeating any of it""
+                    Items=""basicCustoms""
+                    DefaultValue=""@(""B"")""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+
+    <BitChoiceGroup Label=""Its own Variant, the cascaded rest""
+                    Variant=""BitVariant.Fill""
+                    Items=""basicCustoms""
+                    DefaultValue=""@(""C"")""
+                    NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
+</BitParams>";
+
+    private readonly string example21CsharpCode = @"
+private readonly BitChoiceGroupParams[] choiceGroupParams =
+[
+    new()
+    {
+        Gap = ""0.5rem"",
+        FullWidth = true,
+        Variant = BitVariant.Outline,
+    }
+];";
+
+    private readonly string example22RazorCode = @"
 <BitChoiceGroup Color=""BitColor.Primary""
                 Label=""Primary"" 
                 Horizontal
@@ -1280,7 +1310,7 @@ private readonly List<Order> basicCustoms =
                 Items=""basicCustoms""
                 DefaultValue=""basicCustoms[0].ItemValue""
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -1295,7 +1325,7 @@ private readonly List<Order> basicCustoms =
     new() { Name = ""Custom D"", ItemValue = ""D"" }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -1319,7 +1349,7 @@ private readonly List<Order> basicCustoms =
                 NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, 
                                          Value = { Name = nameof(Order.ItemValue) }, 
                                          Icon = { Name = nameof(Order.Icon) } })"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 public class Order
 {
     public string? Name { get; set; }
@@ -1334,7 +1364,7 @@ private readonly List<Order> externalIconCustoms =
     new() { Name = ""Month"", ItemValue = ""Month"", Icon = BitIconInfo.Bi(""calendar-month"") }
 ];";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitChoiceGroup Size=""BitSize.Small""
                 Label=""Small""
                 Items=""basicCustoms""
@@ -1406,7 +1436,7 @@ private readonly List<Order> externalIconCustoms =
                                           Value = { Selector = i => i.ItemValue },
                                           IconName = { Selector = i => i.IconName },
                                           IsEnabled = { Selector = i => i.IsDisabled is false } })"" Horizontal />";
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -1430,7 +1460,7 @@ private readonly List<Order> iconCustoms =
     new() { Name = ""Month"", ItemValue = ""Month"", IconName = BitIconName.Calendar, IsDisabled = true }
 ];";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -1539,7 +1569,7 @@ private readonly List<Order> iconCustoms =
                     DefaultValue=""@(""B"")""
                     NameSelectors=""@(new() { Text = { Name = nameof(Order.Name) }, Value = { Name = nameof(Order.ItemValue) } })"" />
 </div>";
-    private readonly string example24CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
@@ -1564,7 +1594,7 @@ private readonly List<Order> itemStyleClassCustoms =
     new() { Name = ""Custom D"", ItemValue = ""D"", Class = ""custom-item"" }
 ];";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitChoiceGroup Label=""Ø³Ø§Ø¯Ù‡""
                 Dir=""BitDir.Rtl""
                 DefaultValue=""@(""A"")""
@@ -1577,7 +1607,7 @@ private readonly List<Order> itemStyleClassCustoms =
                 DefaultValue=""@(""A"")""
                 Items=""rtlCustoms""
                 NameSelectors=""@(new() { Text = { Selector = i => i.Name }, Value = { Selector = i => i.ItemValue } })"" />";
-    private readonly string example25CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 public class Order
 {
     public string Name { get; set; }
