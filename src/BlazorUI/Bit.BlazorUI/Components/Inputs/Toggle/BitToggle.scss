@@ -23,8 +23,9 @@
 //                                            content when disabled, and the focus ring of
 //                                            a disabled toggle AllowDisabledFocus keeps
 //                                            in the tab order                              (default: $clr-fg-dis)
-//   --bit-Toggle-error-color                 stroke, checked fill, state text and focus
-//                                            ring while the value is invalid               (default: $clr-err)
+//   --bit-Toggle-error-color                 stroke, checked fill, state text, error
+//                                            message and focus ring while the state
+//                                            is invalid                                    (default: $clr-err)
 //   --bit-Toggle-required-color              the asterisk of a required toggle             (default: $clr-req)
 //   --bit-Toggle-focus-color                 focus ring color                              (default: the role's focus color)
 //   --bit-Toggle-track-width                 smallest width of the track; it still grows
@@ -41,14 +42,16 @@
 //   --bit-Toggle-icon-size                   the glyph inside the knob                     (default: 3/5 of the knob it sits in)
 //   --bit-Toggle-spinner-size                diameter of the loading spinner               (default: 4/5 of the knob it lands in)
 //   --bit-Toggle-spinner-width               thickness of the spinner's ring               (default: $siz-spinner-stroke)
-//   --bit-Toggle-gap                         room between the track and the label, and
-//                                            between the track and the state text          (default: spacing(1))
+//   --bit-Toggle-gap                         room between the parts: the track and the
+//                                            label, the track and the state text, and the
+//                                            toggle and the lines under it                 (default: spacing(1))
 //   --bit-Toggle-content-padding             inset of the track content from the ends of
 //                                            the track                                     (default: per size)
 //   --bit-Toggle-label-font-size             the label                                     (default: per size, from the type ramp)
 //   --bit-Toggle-label-font-weight           the label                                     (default: $tg-fw-semibold)
 //   --bit-Toggle-text-font-size              the state text                                (default: per size, from the type ramp)
 //   --bit-Toggle-description-font-size       the description                               (default: per size, one step below the label)
+//   --bit-Toggle-error-font-size             the error message line                        (default: as the description)
 //   --bit-Toggle-content-font-size           the content carried inside the track          (default: per size, from the type ramp)
 //   --bit-Toggle-transition-duration         how long the knob takes to cross the track,
 //                                            and every color with it                       (default: $mot-duration-short, which is already 0 under reduced motion)
@@ -62,19 +65,23 @@
     font-family: $tg-font-family;
     gap: var(--bit-Toggle-gap, #{spacing(1)});
 
-    // The description is placed off two custom properties rather than off a pile of :not() selectors, so
-    // it follows the very cascade that decides the flex direction: every block below that sets a direction
-    // sets these along with it, and whichever direction wins brings its own placement with it.
-    //   - order: in the two column-reverse shapes the items are laid out bottom to top, so the description
-    //     has to be ordered first to end up last on the page;
-    //   - basis: it takes a whole line of its own, which in a row is a full-width basis that forces a wrap,
-    //     while in a column every item already has a line and a basis would set its height instead;
+    // The two lines that sit under the toggle - the error message and the description - are placed off a
+    // handful of custom properties rather than off a pile of :not() selectors, so they follow the very
+    // cascade that decides the flex direction: every block below that sets a direction sets these along with
+    // it, and whichever direction wins brings its own placement with it.
+    //   - order: in the two column-reverse shapes the items are laid out bottom to top, so the two lines have
+    //     to be ordered first to end up last on the page - and in the opposite order to each other, since the
+    //     error belongs above the description whichever way the axis runs;
+    //   - basis: each takes a whole line of its own, which in a row is a full-width basis that forces a wrap,
+    //     while in a column every item already has a line and a basis would set its height instead. One
+    //     property covers both lines, which never want different values;
     //   - width: a wrapping flex box is as wide as all of its items laid out in a single row, so a described
     //     toggle whose shape is a row spans its container - the shape of a settings row - instead of carrying
     //     the width of its description trailing after the knob. Stacked, every item already has its own line
     //     and the toggle keeps hugging its content.
-    --bit-tgl-des-order: 1;
-    --bit-tgl-des-basis: auto;
+    --bit-tgl-erm-order: 1;
+    --bit-tgl-des-order: 2;
+    --bit-tgl-line-basis: auto;
     --bit-tgl-hds-width: fit-content;
 
     // The geometry of the switch. The track and the knob come from the theme's switch tokens through
@@ -142,7 +149,11 @@
         }
     }
 
-    &.bit-inv {
+    // Disabled wins over invalid. The two blocks carry the same specificity and this one comes second, so
+    // without the guard a disabled toggle marked invalid would be painted in the vivid error color - a
+    // checked one filled with it outright - which promises a correction that a control nobody can reach
+    // cannot take. Being inert is the stronger statement, and the message line keeps saying what is wrong.
+    &.bit-inv:not(.bit-dis) {
         --bit-tgl-trk-clr-brd: var(--bit-Toggle-error-color, #{$clr-err});
 
         .bit-tgl-btn:focus-visible {
@@ -186,22 +197,24 @@
 .bit-tgl-inl {
     align-items: center;
     flex-direction: row;
-    --bit-tgl-des-basis: 100%;
+    --bit-tgl-line-basis: 100%;
     --bit-tgl-hds-width: 100%;
 }
 
 .bit-tgl-rvs {
     display: flex;
     flex-direction: column-reverse;
-    --bit-tgl-des-order: -1;
+    --bit-tgl-erm-order: -1;
+    --bit-tgl-des-order: -2;
 
     // Only the single-line shape ends the label, where it is the far side of the row that the knob has left.
     // Stacked, the label is still a line of its own above or below the knob, and stays where reading starts -
     // the same way LabelPosition.Bottom, which reaches the very same layout, keeps it.
     &.bit-tgl-inl {
         flex-direction: row-reverse;
-        --bit-tgl-des-order: 1;
-        --bit-tgl-des-basis: 100%;
+        --bit-tgl-erm-order: 1;
+        --bit-tgl-des-order: 2;
+        --bit-tgl-line-basis: 100%;
         --bit-tgl-hds-width: 100%;
 
         .bit-tgl-lbl {
@@ -217,8 +230,9 @@
 .bit-tgl.bit-tgl-ltp {
     align-items: stretch;
     flex-direction: column;
-    --bit-tgl-des-order: 1;
-    --bit-tgl-des-basis: auto;
+    --bit-tgl-erm-order: 1;
+    --bit-tgl-des-order: 2;
+    --bit-tgl-line-basis: auto;
     --bit-tgl-hds-width: fit-content;
 
     .bit-tgl-lbl {
@@ -229,8 +243,9 @@
 .bit-tgl.bit-tgl-lbt {
     align-items: stretch;
     flex-direction: column-reverse;
-    --bit-tgl-des-order: -1;
-    --bit-tgl-des-basis: auto;
+    --bit-tgl-erm-order: -1;
+    --bit-tgl-des-order: -2;
+    --bit-tgl-line-basis: auto;
     --bit-tgl-hds-width: fit-content;
 
     .bit-tgl-lbl {
@@ -241,8 +256,9 @@
 .bit-tgl.bit-tgl-lst {
     align-items: center;
     flex-direction: row;
-    --bit-tgl-des-order: 1;
-    --bit-tgl-des-basis: 100%;
+    --bit-tgl-erm-order: 1;
+    --bit-tgl-des-order: 2;
+    --bit-tgl-line-basis: 100%;
     --bit-tgl-hds-width: 100%;
 
     .bit-tgl-lbl {
@@ -253,8 +269,9 @@
 .bit-tgl.bit-tgl-lnd {
     align-items: center;
     flex-direction: row-reverse;
-    --bit-tgl-des-order: 1;
-    --bit-tgl-des-basis: 100%;
+    --bit-tgl-erm-order: 1;
+    --bit-tgl-des-order: 2;
+    --bit-tgl-line-basis: 100%;
     --bit-tgl-hds-width: 100%;
 
     .bit-tgl-lbl {
@@ -279,24 +296,36 @@
     }
 }
 
-// A description takes a line of its own under the toggle, which the single-line shapes only have room for
-// once the root is allowed to wrap. Turned on with the description rather than always, so a toggle without
-// one keeps a root that cannot break its label away from its knob.
-.bit-tgl-hds {
+// A description or an error message takes a line of its own under the toggle, which the single-line shapes
+// only have room for once the root is allowed to wrap. Turned on with the line rather than always, so a
+// toggle carrying neither keeps a root that cannot break its label away from its knob.
+.bit-tgl-hds, .bit-tgl-her {
     flex-wrap: wrap;
     width: var(--bit-tgl-hds-width);
 }
 
-// FullWidth wins over the width a description asks for, whichever shape the toggle takes.
-.bit-tgl-fwi.bit-tgl-hds {
+// FullWidth wins over the width either line asks for, whichever shape the toggle takes.
+.bit-tgl-fwi.bit-tgl-hds, .bit-tgl-fwi.bit-tgl-her {
     width: 100%;
 }
 
 .bit-tgl-des {
     order: var(--bit-tgl-des-order);
-    flex-basis: var(--bit-tgl-des-basis);
+    flex-basis: var(--bit-tgl-line-basis);
     color: var(--bit-Toggle-description-color, #{$clr-fg-sec});
     font-size: var(--bit-Toggle-description-font-size, var(--bit-tgl-des-fontsize));
+}
+
+// The error message. It sits above the description in every shape - what is wrong with the state is the
+// first thing to read under the switch, while the description only says what the switch is for - and it
+// keeps the error color in the disabled state, where it is information about the state rather than an
+// affordance that has been taken away. A long message wraps inside its line instead of widening the toggle.
+.bit-tgl-erm {
+    order: var(--bit-tgl-erm-order);
+    overflow-wrap: break-word;
+    flex-basis: var(--bit-tgl-line-basis);
+    color: var(--bit-Toggle-error-color, #{$clr-err});
+    font-size: var(--bit-Toggle-error-font-size, var(--bit-tgl-des-fontsize));
 }
 
 // A read-only or loading toggle stays focusable and legible, but nothing about it invites a click anymore.

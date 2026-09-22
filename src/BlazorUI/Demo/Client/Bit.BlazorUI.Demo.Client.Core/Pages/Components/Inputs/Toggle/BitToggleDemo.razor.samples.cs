@@ -261,8 +261,25 @@ private void LogOnBlur()
     <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+</EditForm>
+
+<BitToggle FullWidth Inline
+           Label=""Two-factor authentication""
+           Description=""Ask for a code from your authenticator app at every sign-in.""
+           ErrorMessage=""@(twoFactorEnabled ? null : ""Your organization requires two-factor authentication."")""
+           @bind-Value=""twoFactorEnabled"" />
+
+<BitToggle Label=""Marked invalid, explained elsewhere"" Invalid />
+
+<BitToggle Label=""Public profile"" OnText=""Anyone can see it"">
+    <ErrorMessageTemplate>
+        This conflicts with your
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">privacy settings</BitLink>.
+    </ErrorMessageTemplate>
+</BitToggle>";
     private readonly string example10CsharpCode = @"
+private bool twoFactorEnabled;
+
 private BitToggleValidationModel validationModel = new();
 
 public class BitToggleValidationModel

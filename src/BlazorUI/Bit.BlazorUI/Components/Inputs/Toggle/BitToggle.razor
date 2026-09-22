@@ -66,7 +66,7 @@
                 aria-required="@(Required ? "true" : null)"
                 aria-labelledby="@(_labelledById.HasValue() ? _labelledById : null)"
                 aria-describedby="@(_describedById.HasValue() ? _describedById : null)"
-                aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                aria-invalid="@(IsInvalid ? "true" : null)"
                 aria-disabled="@(IsEnabled is false || IsLoading ? "true" : null)">
 
             @* The knob is taken out of the flow and slid between the two ends of the track, while the lane it
@@ -111,6 +111,25 @@
         }
     </div>
 
+    @* The error line sits under the toggle, above the description: what is wrong with the state is the first
+       thing to read under the switch, while the description only says what the switch is for. It is written
+       before the description here as well, so that the markup order, the order the two lines are painted in
+       and the order they are announced in all say the same thing. It carries no live role of its own - the
+       region at the end of the component is what announces it, so it is never read out twice. *@
+    @if (HasErrorMessage)
+    {
+        <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-tgl-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
     @* A line of its own under the toggle: rendered outside the button, so it describes the switch through
        aria-describedby instead of leaking into the accessible name the way content inside it would. *@
     @if (HasDescription)
@@ -132,6 +151,12 @@
     {
         <span id="@_ariaDescriptionId" class="bit-tgl-dsc">@AriaDescription</span>
     }
+
+    @* A status rather than an alert: a rejected state must not steal the focus or interrupt what is being
+       read, only be announced once the reader is done with the current sentence. It is rendered whether or
+       not it has anything to say, because a live region that arrives with its text already in it is the one
+       thing screen readers are known to miss. *@
+    <span role="status" class="bit-tgl-dsc">@LiveText</span>
 
     @* The form value carrier: hidden from both the tab order and assistive technologies, which the switch
        button in front of it already covers. Required deliberately stays off it: the native attribute on a

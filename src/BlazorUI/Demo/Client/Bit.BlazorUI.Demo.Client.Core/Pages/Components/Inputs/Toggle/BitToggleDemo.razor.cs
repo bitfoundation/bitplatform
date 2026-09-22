@@ -87,6 +87,20 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the toggle saying why its state was rejected, which marks it invalid in the same way Invalid does and is announced by a live region the moment it shows up.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the toggle invalid in the same way. Only the plain ErrorMessage is announced.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -98,6 +112,13 @@ public partial class BitToggleDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the label and the knob in a single line together.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading EditContext the same look and the same aria-invalid attribute a failing data annotation gives it.",
         },
         new()
         {
@@ -347,6 +368,20 @@ public partial class BitToggleDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the description of the BitToggle."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the line carrying the error message of the BitToggle."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the error message of the BitToggle. Ignored when an ErrorMessageTemplate replaces the plain message."
                 },
                 new()
                 {
@@ -735,7 +770,7 @@ public partial class BitToggleDemo
         {
             Name = "--bit-Toggle-error-color",
             DefaultValue = "$clr-err",
-            Description = "Track stroke, checked fill, state text and focus ring while the value is invalid.",
+            Description = "Track stroke, checked fill, state text, error message and focus ring while the state is invalid.",
         },
         new()
         {
@@ -825,7 +860,7 @@ public partial class BitToggleDemo
         {
             Name = "--bit-Toggle-gap",
             DefaultValue = "spacing(1)",
-            Description = "Room between the track and the label, and between the track and the state text.",
+            Description = "Room between the parts of the toggle: the track and the label, the track and the state text, and the toggle and the lines under it.",
         },
         new()
         {
@@ -856,6 +891,12 @@ public partial class BitToggleDemo
             Name = "--bit-Toggle-description-font-size",
             DefaultValue = "Per size, one step below the label",
             Description = "The description line.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-error-font-size",
+            DefaultValue = "As the description",
+            Description = "The error message line.",
         },
         new()
         {
@@ -910,6 +951,7 @@ public partial class BitToggleDemo
     private BitToggle toggleRef = default!;
 
     private string successMessage = string.Empty;
+    private bool twoFactorEnabled;
     private BitToggleValidationModel validationModel = new();
 
 

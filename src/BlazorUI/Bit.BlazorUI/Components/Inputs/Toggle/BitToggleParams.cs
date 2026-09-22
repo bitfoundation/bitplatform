@@ -76,6 +76,12 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     public string? Description { get; set; }
 
     /// <summary>
+    /// A line under the toggle saying why its state was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -84,6 +90,12 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
     /// Renders the label and the knob in a single line together.
     /// </summary>
     public bool? Inline { get; set; }
+
+    /// <summary>
+    /// Marks the state of the toggle as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// Label of the toggle.
@@ -244,6 +256,13 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.ClassBuilder.Reset();
         }
 
+        if (ErrorMessage.HasValue() && bitToggle.HasNotBeenSet(nameof(ErrorMessage)))
+        {
+            bitToggle.ErrorMessage = ErrorMessage;
+
+            bitToggle.ClassBuilder.Reset();
+        }
+
         if (FullWidth.HasValue && bitToggle.HasNotBeenSet(nameof(FullWidth)))
         {
             bitToggle.FullWidth = FullWidth.Value;
@@ -254,6 +273,13 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
         if (Inline.HasValue && bitToggle.HasNotBeenSet(nameof(Inline)))
         {
             bitToggle.Inline = Inline.Value;
+
+            bitToggle.ClassBuilder.Reset();
+        }
+
+        if (Invalid.HasValue && bitToggle.HasNotBeenSet(nameof(Invalid)))
+        {
+            bitToggle.Invalid = Invalid.Value;
 
             bitToggle.ClassBuilder.Reset();
         }

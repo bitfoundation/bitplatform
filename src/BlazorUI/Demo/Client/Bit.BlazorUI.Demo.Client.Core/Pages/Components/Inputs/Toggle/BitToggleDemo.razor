@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/toggle"
             Title="Toggle"
-            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, content inside its track or its knob, a description line, an automatic or manual loading state, cancellable changes, programmatic flipping, label placement on any side, cascading defaults through BitParams, and public CSS variables for everything the parameters do not cover." />
+            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, content inside its track or its knob, a description line, an error line for a state the app rejected, an automatic or manual loading state, cancellable changes, programmatic flipping, label placement on any side, cascading defaults through BitParams, and public CSS variables for everything the parameters do not cover." />
 
 <DemoPage Name="Toggle"
           SecondaryNames="@(["Switch"])"
-          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention a later submit carries out, so a switch inside a form that ends in a Submit button is the one place not to use it. It is built on a real focusable button carrying the switch role: Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch with its state. The knob carries that state by position as much as by color, and its slide collapses to a jump wherever reduced motion is asked for. Beyond the two plain states it can name each of them with a state text, carry content inside its track or its knob, explain itself in a description line, show a spinner while a change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side. A BitParams ancestor sets the defaults of every toggle in a subtree, and a tier of public --bit-Toggle-* CSS variables covers the geometry, the palette and the motion that no parameter names."
+          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention a later submit carries out, so a switch inside a form that ends in a Submit button is the one place not to use it. It is built on a real focusable button carrying the switch role: Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch with its state. The knob carries that state by position as much as by color, and its slide collapses to a jump wherever reduced motion is asked for. Beyond the two plain states it can name each of them with a state text, carry content inside its track or its knob, explain itself in a description line, say why a state was rejected in an error line, show a spinner while a change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side. A BitParams ancestor sets the defaults of every toggle in a subtree, and a tier of public --bit-Toggle-* CSS variables covers the geometry, the palette and the motion that no parameter names."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -352,6 +352,34 @@
                 <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
             }
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error styling and
+            <b>aria-invalid</b> on a state something else refused - a server, a rule spanning two controls -
+            and <b>ErrorMessage</b> adds the line that says why, on its own line under the toggle and above
+            any <BitLink Href="#example11">description</BitLink>. A message implies <b>Invalid</b>, so the
+            flag on its own is for marking a toggle whose explanation lives somewhere else. It is announced
+            by a live region the moment it appears, rather than waiting for the next focus.
+            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead; set the plain message alongside
+            it to keep the announcement.
+        </div>
+        <br />
+        <div style="max-width:32rem">
+            <BitToggle FullWidth Inline
+                       Label="Two-factor authentication"
+                       Description="Ask for a code from your authenticator app at every sign-in."
+                       ErrorMessage="@(twoFactorEnabled ? null : "Your organization requires two-factor authentication.")"
+                       @bind-Value="twoFactorEnabled" />
+            <br />
+            <BitToggle Label="Marked invalid, explained elsewhere" Invalid />
+            <br />
+            <BitToggle Label="Public profile" OnText="Anyone can see it">
+                <ErrorMessageTemplate>
+                    This conflicts with your
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">privacy settings</BitLink>.
+                </ErrorMessageTemplate>
+            </BitToggle>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Description" RazorCode="@example11RazorCode" Id="example11">
@@ -622,11 +650,10 @@
         <div>
             The BitToggle can be restyled from the outside at three levels of reach. <b>Style</b> and <b>Class</b>
             apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name - the
-            root, the label, the description, the container, the button (which is the track), the track content and
-            each of its two sides on its own, the thumb, its icon, the spinner and the state text - plus a
-            <b>Checked</b> slot that
-            is applied only while the toggle is on, which is what lets the two states be painted differently without
-            a single line of state-tracking code.
+            root, the label, the description, the error line and the message inside it, the container, the button
+            (which is the track), the track content and each of its two sides on its own, the thumb, its icon, the
+            spinner and the state text - plus a <b>Checked</b> slot that is applied only while the toggle is on,
+            which is what lets the two states be painted differently without a single line of state-tracking code.
         </div>
         <br /><br />
         <div><b>Component's style &amp; class</b>:</div><br />

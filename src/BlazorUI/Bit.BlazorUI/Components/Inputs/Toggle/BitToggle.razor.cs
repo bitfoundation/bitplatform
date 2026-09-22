@@ -5,13 +5,14 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.
 /// For example, “On/Off”, “Show/Hide”. It supports state texts, custom content inside the track, an icon or a
-/// template inside the knob, a description, a loading state, cancellable changes, read-only and required modes,
-/// label placement on any side, and it is fully operable from the keyboard.
+/// template inside the knob, a description, an error message, a loading state, cancellable changes, read-only
+/// and required modes, label placement on any side, and it is fully operable from the keyboard.
 /// </summary>
 public partial class BitToggle : BitInputBase<bool>
 {
     private bool _isChanging;
     private bool _autoLoading;
+    private string? _errorId;
     private string? _labelId;
     private string? _buttonId;
     private string? _stateText;
@@ -132,6 +133,29 @@ public partial class BitToggle : BitInputBase<bool>
     public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
+    /// A line under the toggle saying why its state was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about - a server that refused to save the new state,
+    /// a rule spanning two controls. A toggle inside an <c>EditForm</c> already gets its messages from the
+    /// cascading EditContext through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Custom content of the error message, replacing the plain <see cref="ErrorMessage"/> text and marking
+    /// the toggle invalid in the same way.
+    /// </summary>
+    /// <remarks>
+    /// Only the plain <see cref="ErrorMessage"/> is announced by the live region, since a template is free
+    /// to render anything at all - set both to have a message that is both formatted and announced.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -142,6 +166,18 @@ public partial class BitToggle : BitInputBase<bool>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Inline { get; set; }
+
+    /// <summary>
+    /// Marks the state of the toggle as invalid, giving a state rejected by something other than the cascading
+    /// EditContext - a server, a rule of the app, a validator of its own - the same look and the same
+    /// <c>aria-invalid</c> attribute that a failing data annotation gives it.
+    /// </summary>
+    /// <remarks>
+    /// A toggle failing its own validation stays invalid regardless of this parameter. Pair it with
+    /// <see cref="ErrorMessage"/> to say what is wrong; a message on its own already implies this state.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// Label of the toggle.
@@ -335,9 +371,9 @@ public partial class BitToggle : BitInputBase<bool>
     /// The native tooltip of the toggle, shown when the pointer rests anywhere on it.
     /// </summary>
     /// <remarks>
-    /// It sits on the root rather than on the track, so the label answers a hover as well. On a disabled
-    /// toggle it is only reachable with <see cref="AllowDisabledFocus"/>, which is what keeps the toggle
-    /// answering the pointer at all.
+    /// It sits on the root rather than on the track, so the label answers a hover as well - which is what
+    /// keeps it reachable on a disabled toggle, whose track itself stops answering the pointer.
+    /// <see cref="AllowDisabledFocus"/> gives the track back too, along with the tab stop.
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
@@ -404,6 +440,15 @@ public partial class BitToggle : BitInputBase<bool>
         // for once the root is allowed to wrap - so the wrapping is turned on only when there is one.
         ClassBuilder.Register(() => HasDescription ? "bit-tgl-hds" : string.Empty);
 
+        // An error message asks for the same extra line, and for the same reason, so it turns the same
+        // wrapping on through a class of its own rather than by widening what the description class means.
+        ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
+
+        // The invalid look is already registered by the base class for a value the EditContext rejected, so
+        // a state rejected by the app is only marked here when the base has not marked it already - two
+        // identical classes on one element say nothing the one does not.
+        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
@@ -420,6 +465,7 @@ public partial class BitToggle : BitInputBase<bool>
 
     protected override void OnInitialized()
     {
+        _errorId = $"BitToggle-{UniqueId}-error";
         _labelId = $"BitToggle-{UniqueId}-label";
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
@@ -518,6 +564,34 @@ public partial class BitToggle : BitInputBase<bool>
     /// Whether the toggle carries a visible description, which is what the extra line under it is rendered for.
     /// </summary>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// Whether the toggle carries a visible error message, which is what the error line is rendered for.
+    /// </summary>
+    private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    /// <summary>
+    /// Whether the app itself has rejected the state of the toggle, by the flag or by a message saying why.
+    /// </summary>
+    /// <remarks>
+    /// A message saying what is wrong with the state is a rejection of it, so it marks the toggle the same
+    /// way the flag does instead of leaving a red line under a switch that still looks accepted.
+    /// </remarks>
+    private bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// Whether the switch reports itself as invalid, from the app or from the cascading EditContext.
+    /// </summary>
+    private bool IsInvalid => HasError || ValueInvalid is true;
+
+    /// <summary>
+    /// What the live region carries, which is the plain error message and nothing else.
+    /// </summary>
+    /// <remarks>
+    /// Only the plain text, never the template: a template is free to render anything at all, and a live
+    /// region reading out a block of markup is worse than one saying nothing.
+    /// </remarks>
+    private string? LiveText => ErrorMessage.HasValue() ? ErrorMessage : null;
 
     /// <summary>
     /// Whether the toggle is busy, from the <see cref="Loading"/> parameter or from
@@ -667,6 +741,7 @@ public partial class BitToggle : BitInputBase<bool>
         _describedById = string.Join(' ', new[]
         {
             _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
+            HasErrorMessage ? _errorId : null,
             HasDescription ? _descriptionId : null,
             AriaDescription.HasValue() ? _ariaDescriptionId : null,
             AriaDescribedby.HasValue() ? AriaDescribedby : null
