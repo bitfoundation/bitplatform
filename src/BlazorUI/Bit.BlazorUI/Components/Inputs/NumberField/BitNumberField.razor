@@ -68,14 +68,19 @@
        together into a group and the label of the field names the group instead. With the input present the
        box is a plain wrapper: naming it as well would have a screen reader read the field twice. And
        aria-labelledby takes precedence over aria-label, so the group points at the visible label only
-       while no name of its own was given - the same rule LabelledBy applies to the input. *@
+       while no name of its own was given - the same rule LabelledBy applies to the input.
+       Where the field sits in a set of them belongs on whatever is exposed: the input normally, but in
+       HideInput mode the input is hidden from assistive technologies altogether and the group around it
+       is all that is left to carry the position. *@
     <div title="@Title"
          @onclick="HandleOnInputContainerClick"
          style="@Styles?.InputContainer"
          class="bit-nfl-cnt@(HideInput ? " bit-nfl-hdi" : "") @Classes?.InputContainer"
          role="@(HideInput ? "group" : null)"
          aria-label="@(HideInput ? AriaLabel : null)"
-         aria-labelledby="@(HideInput ? LabelledBy : null)">
+         aria-labelledby="@(HideInput ? LabelledBy : null)"
+         aria-setsize="@(HideInput ? AriaSetSize : null)"
+         aria-posinset="@(HideInput ? AriaPositionInSet : null)">
         @if (PrefixTemplate is not null)
         {
             @PrefixTemplate
@@ -173,10 +178,10 @@
                    spellcheck="@SpellCheck"
                    autocorrect="@AutoCorrect"
                    autocapitalize="@AutoCapitalize"
-                   enterkeyhint="@EnterKeyHint"
+                   enterkeyhint="@EffectiveEnterKeyHint"
                    aria-readonly="@AriaReadOnly"
-                   aria-required="@(Required ? "true" : null)"
-                   aria-disabled="@(IsEnabled is false ? "true" : null)" />
+                   aria-required="@AriaRequired"
+                   aria-disabled="@AriaDisabled" />
 
             @if (ShowClearButton && ReadOnly is false && HasVisibleText())
             {

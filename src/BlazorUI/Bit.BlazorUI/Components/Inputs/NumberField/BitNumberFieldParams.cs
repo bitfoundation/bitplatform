@@ -467,6 +467,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (HideInput.HasValue && bitNumberField.HasNotBeenSet(nameof(HideInput)))
         {
             bitNumberField.HideInput = HideInput.Value;
+
+            bitNumberField.ClassBuilder.Reset();
         }
 
         if (Icon is not null && bitNumberField.HasNotBeenSet(nameof(Icon)))
@@ -536,6 +538,8 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (Mode.HasValue && bitNumberField.HasNotBeenSet(nameof(Mode)))
         {
             bitNumberField.Mode = Mode.Value;
+
+            bitNumberField.ClassBuilder.Reset();
         }
 
         if (NoBorder.HasValue && bitNumberField.HasNotBeenSet(nameof(NoBorder)))

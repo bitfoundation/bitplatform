@@ -1292,9 +1292,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
                 // The unit or the currency sits beside the field rather than inside its value, so without
-                // this a screen reader reads out a bare number and never says what it is counted in.
-                Prefix.HasValue() ? _prefixId : null,
-                Suffix.HasValue() ? _suffixId : null
+                // this a screen reader reads out a bare number and never says what it is counted in. A
+                // template takes the whole slot over, id and all, so there is nothing left to point at.
+                PrefixTemplate is null && Prefix.HasValue() ? _prefixId : null,
+                SuffixTemplate is null && Suffix.HasValue() ? _suffixId : null
             }.Where(id => id.HasValue()));
 
             return ids.HasValue() ? ids : null;
@@ -1324,6 +1325,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
     // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
     private string? AriaReadOnly => ReadOnly ? "true" : GetInputAttribute("aria-readonly");
+
+    private string? AriaRequired => Required ? "true" : GetInputAttribute("aria-required");
+
+    private string? AriaDisabled => IsEnabled is false ? "true" : GetInputAttribute("aria-disabled");
+
+    // The parameter is the hint of the component, but the attribute is one a consumer may just as well have
+    // splatted in through InputHtmlAttributes; an unset parameter reads theirs back rather than erasing it.
+    private string? EffectiveEnterKeyHint => EnterKeyHint ?? GetInputAttribute("enterkeyhint");
 
     // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
     // its own was given would quietly throw that name away. The visible label keeps naming the input
