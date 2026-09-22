@@ -15,7 +15,7 @@
 {
     <div role="listitem"
          style="@FileUpload.Styles?.FileItem"
-         class="bit-upl-itm @GetFileElClass(Item.Status) @FileUpload.Classes?.FileItem">
+         class="bit-upl-itm @GetFileElClass(Item) @FileUpload.Classes?.FileItem">
         @if (FileUpload.ShowPreview)
         {
             if (Item.PreviewUrl is not null)
@@ -48,12 +48,16 @@
                 <div style="@FileUpload.Styles?.FileName" class="bit-upl-fn @FileUpload.Classes?.FileName">@Item.Name</div>
             </div>
             <div class="bit-upl-fsc">
+                @* a file that is already on the server never travels anywhere from here, so it has one size
+                   rather than a count running up to it - "1.2 MB/1.2 MB" reads as a transfer that just ran. *@
                 <span style="@FileUpload.Styles?.FileSize" class="bit-upl-fs @FileUpload.Classes?.FileSize">
-                    @($"{FormatSize(GetFileUploadSize(Item))}/{FormatSize(Item.Size)}")
+                    @(Item.IsPreloaded
+                        ? FormatSize(Item.Size)
+                        : $"{FormatSize(GetFileUploadSize(Item))}/{FormatSize(Item.Size)}")
                 </span>
                 @* a file that was never going to be sent has no progress to report, and a "0%" next to
                    the reason it was turned away only reads as something that failed halfway. *@
-                @if (Item.Status != BitFileUploadStatus.NotAllowed)
+                @if (Item.Status != BitFileUploadStatus.NotAllowed && Item.IsPreloaded is false)
                 {
                     <span style="@FileUpload.Styles?.Percentage" class="bit-upl-pct @FileUpload.Classes?.Percentage">
                         @fileUploadPercent%

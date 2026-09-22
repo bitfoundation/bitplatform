@@ -23,7 +23,7 @@ public partial class BitFileUploadDemo
             Name = "AllowDuplicates",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is rejected with the DuplicateErrorMessage instead of being uploaded a second time, becoming eligible again once the file it duplicates is removed.",
+            Description = "Whether a file that is already in the file list can be selected again. When disabled, a newly selected file matching an existing one by name, size and last modified time is rejected with the DuplicateErrorMessage instead of being uploaded a second time, becoming eligible again once the file it duplicates is removed. A file of PreloadedFiles counts as one already in the list, matched by name and size alone since a server reports no modification time.",
         },
         new()
         {
@@ -453,6 +453,22 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "PreloadedFileMessage",
+            Type = "string",
+            DefaultValue = "Already uploaded",
+            Description = "The status message shown for the files of PreloadedFiles, which are already on the server rather than freshly uploaded and would otherwise read as an upload that just succeeded."
+        },
+        new()
+        {
+            Name = "PreloadedFiles",
+            Type = "IReadOnlyCollection<BitFileInfo>?",
+            DefaultValue = "null",
+            Description = "The files that are already on the server, shown in the list from the start so that a form editing a record can present the attachments it already has next to the ones the user is adding. They carry no content on this side, so they are never uploaded: each starts out completed, counts towards MaxCount and MaxTotalSize like any other file, and its remove button deletes it from the server through the RemoveUrl with its FileId in the BIT_FILE_ID header. The list is built from the collection again whenever the files in it change - which files, by their FileId, rather than which array they arrive in - and the instances in it are the very ones the list then holds, so their Status is where to read what became of each of them.",
+            LinkType = LinkType.Link,
+            Href = "#file-info"
+        },
+        new()
+        {
             Name = "QueuedUploadMessage",
             Type = "string",
             DefaultValue = "Waiting to upload",
@@ -790,7 +806,7 @@ public partial class BitFileUploadDemo
                {
                    Name = "Index",
                    Type = "int",
-                   Description = "The index of the selected file."
+                   Description = "The index of the file among the ones picked in this browser, which is what names the transfer behind it. A preloaded file was never picked and has no transfer of its own, so its index is -1."
                },
                new()
                {
@@ -857,6 +873,13 @@ public partial class BitFileUploadDemo
                    Type = "bool",
                    DefaultValue = "false",
                    Description = "Whether the file is waiting in the upload queue for a free slot of the ConcurrentUploads limit, which is what tells a file that is about to start apart from one that was never asked to upload."
+               },
+               new()
+               {
+                   Name = "IsPreloaded",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Whether the file was handed over through the PreloadedFiles parameter instead of being picked in the browser, which is to say it is already on the server: there is no content on this side to send, so it is never uploaded, and removing it deletes it from the server through the RemoveUrl."
                },
                new()
                {
@@ -1309,7 +1332,7 @@ public partial class BitFileUploadDemo
             Name = "Reset",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Resets the file upload, clearing the file list and the upload state.",
+            Description = "Resets the file upload, clearing the file list and the upload state. The files of PreloadedFiles stay, since they belong to the record rather than to this selection - except the ones already deleted from the server, which nothing on this side brings back.",
         }
     ];
 
@@ -1463,6 +1486,12 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "--bit-FileUpload-list-max-height",
+            DefaultValue = "none",
+            Description = "Tallest the file list grows before it scrolls, for a folder or a long batch.",
+        },
+        new()
+        {
             Name = "--bit-FileUpload-success-color",
             DefaultValue = "--bit-clr-suc",
             Description = "Status line of a completed file.",
@@ -1478,6 +1507,12 @@ public partial class BitFileUploadDemo
             Name = "--bit-FileUpload-paused-color",
             DefaultValue = "The Color role's main color",
             Description = "Status line of a paused or canceled file.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-preloaded-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Status line of a file that was already on the server when the list was built.",
         },
         new()
         {
@@ -1634,8 +1669,35 @@ public partial class BitFileUploadDemo
     // keeps its identity across renders instead of re-rendering every uploader under it.
     private BitFileUploadParams[]? fileUploadParams;
 
+    // The attachments the record being edited already has, exactly as a server would report them: an id the
+    // remove endpoint knows each file by, a name, a size, and a thumbnail URL for the ones worth previewing.
+    private IReadOnlyCollection<BitFileInfo>? attachments;
+    private int attachmentsRevision;
+
+    private void LoadAttachments()
+    {
+        attachmentsRevision++;
+
+        // a new collection is what the component reads as a new record; handing the same one over again
+        // would leave the list exactly as the user has since edited it.
+        attachments =
+        [
+            new() { FileId = $"invoice-{attachmentsRevision}", Name = "invoice.pdf", Size = 82_140, ContentType = "application/pdf" },
+            new()
+            {
+                FileId = $"logo-{attachmentsRevision}",
+                Name = "logo.png",
+                Size = 15_300,
+                ContentType = "image/png",
+                PreviewUrl = "_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-blue.png"
+            }
+        ];
+    }
+
     protected override void OnInitialized()
     {
+        LoadAttachments();
+
         fileUploadParams =
         [
             new()
@@ -2420,6 +2482,46 @@ private string UploadUrl = ""/Upload"";
 private BitVariant variant = BitVariant.Fill;";
 
     private readonly string example21RazorCode = @"
+<BitFileUpload Label=""Add more attachments"" UploadUrl=""@UploadUrl"" RemoveUrl=""@RemoveUrl""
+               Multiple Append ShowPreview ShowRemoveButton
+               PreloadedFiles=""@attachments""
+               PreloadedFileMessage=""Saved with this record""
+               Description=""Remove an existing attachment or add new ones."" />
+
+<BitButton OnClick=""LoadAttachments"">Reload the record</BitButton>";
+    private readonly string example21CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";
+
+private IReadOnlyCollection<BitFileInfo>? attachments;
+
+protected override void OnInitialized() => LoadAttachments();
+
+private void LoadAttachments()
+{
+    // a new collection is what the component reads as a new record; handing the same one over again
+    // would leave the list exactly as the user has since edited it.
+    attachments =
+    [
+        // the FileId is the server's own id of the file: it travels in the BIT_FILE_ID header
+        // of the request the remove button sends to the RemoveUrl.
+        new() { FileId = ""a2f1..."", Name = ""invoice.pdf"", Size = 82_140, ContentType = ""application/pdf"" },
+        new()
+        {
+            FileId = ""9c07..."",
+            Name = ""logo.png"",
+            Size = 15_300,
+            ContentType = ""image/png"",
+            PreviewUrl = ""/thumbnails/9c07.png""
+        }
+    ];
+}
+
+// what to save: the ones the user deleted have come back marked as removed.
+private IEnumerable<BitFileInfo> RemainingAttachments =>
+    attachments?.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
+
+    private readonly string example22RazorCode = @"
 <BitParams Parameters=""@fileUploadParams"">
     <BitFileUpload Label=""Takes the endpoint, the limits and the look from the cascade"" />
 
@@ -2431,7 +2533,7 @@ private BitVariant variant = BitVariant.Fill;";
 
 
 <BitFileUpload Label=""Outside the cascade, and back to the defaults"" UploadUrl=""@UploadUrl"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 
 private readonly BitFileUploadParams[] fileUploadParams =
@@ -2448,7 +2550,7 @@ private readonly BitFileUploadParams[] fileUploadParams =
     }
 ];";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitFileUpload Label=""Primary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Primary"" />
 <BitFileUpload Label=""Secondary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Secondary"" />
 <BitFileUpload Label=""Tertiary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Tertiary"" />
@@ -2467,10 +2569,10 @@ private readonly BitFileUploadParams[] fileUploadParams =
 <BitFileUpload Label=""PrimaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.PrimaryBorder"" />
 <BitFileUpload Label=""SecondaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.SecondaryBorder"" />
 <BitFileUpload Label=""TertiaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.TertiaryBorder"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome:</div>
@@ -2512,21 +2614,21 @@ private string UploadUrl = ""/Upload"";";
                RetryIcon=""@BitIconInfo.Bi(""arrow-repeat"")""
                CancelIcon=""@BitIconInfo.Bi(""x-circle"")""
                RemoveIcon=""@BitIconInfo.Bi(""trash"")"" />";
-    private readonly string example23CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
-
-    private readonly string example24RazorCode = @"
-<BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
-
-<BitFileUpload Label=""Medium"" UploadUrl=""@UploadUrl"" Size=""BitSize.Medium"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
-
-<BitFileUpload Label=""Large"" UploadUrl=""@UploadUrl"" Size=""BitSize.Large"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
     private readonly string example24CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
 
     private readonly string example25RazorCode = @"
+<BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
+<BitFileUpload Label=""Medium"" UploadUrl=""@UploadUrl"" Size=""BitSize.Medium"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
+<BitFileUpload Label=""Large"" UploadUrl=""@UploadUrl"" Size=""BitSize.Large"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
+    private readonly string example25CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";";
+
+    private readonly string example26RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -2607,7 +2709,7 @@ private string RemoveUrl = ""/Remove"";";
                    UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
 </div>";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <div dir=""rtl"">
     <BitFileUpload Dir=""BitDir.Rtl""
                    Label=""انتخاب یا رها کردن فایل""

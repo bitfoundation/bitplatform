@@ -32,10 +32,14 @@
 //   --bit-FileUpload-item-padding               padding around the name, size and progress     (default: spacing(1) spacing(2))
 //   --bit-FileUpload-item-font-size             file name size                                 (default: per size)
 //   --bit-FileUpload-item-font-weight           file name weight                               (default: $tg-fw-light)
+//   --bit-FileUpload-list-max-height            tallest the file list grows before it
+//                                               scrolls, for a folder or a long batch          (default: none)
 //
 //   --bit-FileUpload-success-color              status line of a completed file                (default: $clr-suc)
 //   --bit-FileUpload-error-color                status line of a failed or rejected file       (default: $clr-err)
 //   --bit-FileUpload-paused-color               status line of a paused or canceled file       (default: the Color role's main color)
+//   --bit-FileUpload-preloaded-color            status line of a file that was already on
+//                                               the server when the list was built             (default: $clr-fg-sec)
 //
 //   --bit-FileUpload-preview-size               image thumbnail side                           (default: per size)
 //   --bit-FileUpload-preview-radius             image thumbnail corner radius                  (default: $shp-radius-control)
@@ -247,6 +251,14 @@
     display: flex;
     flex-flow: column nowrap;
     gap: var(--bit-FileUpload-gap, #{spacing(0.5)});
+    // A folder or a long batch can put hundreds of items in this list, which would otherwise push the rest
+    // of the form off the screen. The list is left unbounded by default - a height nobody asked for would
+    // be as surprising as no bound at all - and scrolls as soon as one is set.
+    max-height: var(--bit-FileUpload-list-max-height, none);
+    overflow-y: auto;
+    // the items carry the action buttons a keyboard reaches them by, and a button scrolled to by Tab must
+    // not be flush against the edge it came in at.
+    scroll-padding-block: var(--bit-FileUpload-gap, #{spacing(0.5)});
 }
 
 .bit-upl-itm {
@@ -292,6 +304,14 @@
 .bit-upl-psd {
     .bit-upl-us {
         color: var(--bit-FileUpload-paused-color, var(--bit-upl-clr));
+    }
+}
+
+// a file that was already on the server when the list was built is a state rather than an outcome, so it
+// stays in the secondary foreground instead of taking the success color of an upload that just landed.
+.bit-upl-pre {
+    .bit-upl-us {
+        color: var(--bit-FileUpload-preloaded-color, #{$clr-fg-sec});
     }
 }
 

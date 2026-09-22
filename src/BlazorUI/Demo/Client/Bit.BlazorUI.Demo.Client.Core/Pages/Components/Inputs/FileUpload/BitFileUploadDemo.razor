@@ -740,7 +740,7 @@
         <div>
             The browse button is the visual weight the component carries, and <b>Variant</b> decides how much of it
             there is. <b>Fill</b> - the default - paints it in a solid block of the
-            <BitLink Href="#example22">Color</BitLink>, for when uploading is the main thing the screen is for.
+            <BitLink Href="#example23">Color</BitLink>, for when uploading is the main thing the screen is for.
             <b>Outline</b> keeps only the rule around it, for an uploader among other form fields. <b>Text</b> drops
             both rule and fill, for a secondary affordance. The drop indicator and the file list follow along, and a
             disabled component drops the role colors entirely for the neutral disabled look, whichever variant it
@@ -758,7 +758,39 @@
         <BitFileUpload Label="Disabled" UploadUrl="@UploadUrl" Variant="variant" IsEnabled="false" />
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <DemoExample Title="Preloaded files" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <div>
+            A form editing a record usually opens with attachments already on the server, and
+            <b>PreloadedFiles</b> is how they get into the list beside the ones the user is about to add.
+            They carry no content on this side, so they are never uploaded: each starts out completed, shows
+            its size alone rather than a transfer that just ran, says so through
+            <b>PreloadedFileMessage</b>, and counts towards <b>MaxCount</b> and <b>MaxTotalSize</b> like any
+            other file. Give each one the server's own id as its <b>FileId</b> - that is what travels in the
+            <b>BIT_FILE_ID</b> header when the remove button deletes it through the
+            <BitLink Href="#example4">RemoveUrl</BitLink> - and a <b>PreviewUrl</b> pointing at a thumbnail
+            the server serves, which <b>ShowPreview</b> renders like a locally generated one.
+        </div>
+        <br />
+        <div>
+            The list is rebuilt whenever the files in the collection change - which files, by their
+            <b>FileId</b>, not which array they arrive in - so a record that loads late lands in the list
+            while one written inline in the markup does not undo the user's edits on every render. The
+            instances are adopted rather than copied, so each one's <b>Status</b> is where to read what
+            became of it - <b>Removed</b> for the ones the user deleted - when the form is saved. They also
+            survive what clears the rest: browsing without <b>Append</b> replaces the selection and
+            <b>Reset</b> empties it, and both leave the record's own files where they are.
+        </div>
+        <br />
+        <BitFileUpload Label="Add more attachments" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+                       Multiple Append ShowPreview ShowRemoveButton
+                       PreloadedFiles="@attachments"
+                       PreloadedFileMessage="Saved with this record"
+                       Description="Remove an existing attachment or add new ones." />
+        <br />
+        <BitButton OnClick="LoadAttachments">Reload the record</BitButton>
+    </DemoExample>
+
+    <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
         <div>
             <b>BitParams</b> carries a <b>BitFileUploadParams</b> down to every file upload under it, so a form, a
             card or a whole page sets the shared endpoint, the shared limits and the shared look once instead of on
@@ -783,7 +815,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <DemoExample Title="Color" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
         <div>
             <b>Color</b> picks the role the component speaks in, and it is not only the browse button: the dashed
             drop indicator, the progress bar of every running file, the paused status message, the removal spinner,
@@ -818,7 +850,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+    <DemoExample Title="External Icons" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
         <div>
             The action button icons are not limited to the built-in icon font: <b>UploadIcon</b>, <b>RetryIcon</b>,
             <b>PauseIcon</b>, <b>CancelIcon</b> and <b>RemoveIcon</b> take a
@@ -875,7 +907,7 @@
                        RemoveIcon="@BitIconInfo.Bi("trash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+    <DemoExample Title="Size" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
         <div>
             <b>Size</b> scales the whole control in one move - the height, padding and font of the browse button, the
             text of the file items and their size line, the action buttons and their icons, and the preview
@@ -891,7 +923,7 @@
         <BitFileUpload Label="Large" UploadUrl="@UploadUrl" Size="BitSize.Large" ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="Style & Class" RazorCode="@example26RazorCode" Id="example26">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element. For anything deeper, <b>Styles</b> and
             <b>Classes</b> reach the individual parts - the browse button, the description, the file list, each item,
@@ -966,7 +998,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
+    <DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27">
         <div>
             Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout - the browse button, the file names,
             sizes, progress bars and action buttons all follow - and the localizable texts (the <b>Label</b>, the

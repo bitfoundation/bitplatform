@@ -3203,6 +3203,379 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual("#zone", invocation.Arguments[^1]);
     }
 
+    [TestMethod]
+    public void BitFileUploadShouldRenderThePreloadedFilesAsAlreadyUploaded()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        var file = com.Instance.Files.Single();
+
+        Assert.IsTrue(file.IsPreloaded);
+        Assert.AreEqual(BitFileUploadStatus.Completed, file.Status);
+        // the whole file is on the server already.
+        Assert.AreEqual(100, file.TotalUploadedSize);
+        // it takes no part in the transfer, though, so it neither inflates the batch nor reports one
+        // nobody has started as finished.
+        Assert.AreEqual(0, com.Instance.TotalSize);
+        Assert.AreEqual(0, com.Instance.OverallUploadProgress);
+        Assert.AreEqual("Already uploaded", com.Find(".bit-upl-us").TextContent.Trim());
+        // a file that never travelled from here shows its size alone rather than a count running up to it.
+        Assert.AreEqual(0, com.FindAll(".bit-upl-pct").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldGiveThePreloadedFilesAnIdWhenTheyArriveWithoutOne()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 1 }
+            ]);
+        });
+
+        // the id names the file in the BIT_FILE_ID header of its remove request, so it cannot stay empty.
+        Assert.IsTrue(com.Instance.Files.Single().FileId.HasValue());
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNeverUploadAPreloadedFile()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+
+        // there is no content on this side to send, so no request is even attempted for it.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
+        Assert.AreEqual(BitFileUploadStatus.Completed, com.Instance.Files.Single().Status);
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.UploadStatus);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldCountThePreloadedFilesTowardsTheListLimits()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.MaxCount, 1);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        // the file that is already on the server holds the only slot the list has.
+        Assert.AreEqual(BitFileUploadStatus.NotAllowed, com.Instance.Files[1].Status);
+        Assert.AreEqual("The maximum number of files is exceeded", com.Instance.Files[1].Message);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldKeepThePreloadedFilesThroughASelectionThatReplacesTheList()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        // a selection replaces the selection, not the record: the attachments are still on the server.
+        Assert.HasCount(2, com.Instance.Files);
+        Assert.IsTrue(com.Instance.Files[0].IsPreloaded);
+        Assert.AreEqual("b.txt", com.Instance.Files[1].Name);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldAddressThePickedFilesByTheirOwnIndexBesideThePreloadedOnes()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 40));
+
+        // the index names the uploader of the picked file, which the preloaded one ahead of it in the
+        // list has none of - so the progress belongs to the second item rather than to the first.
+        Assert.AreEqual(40, com.Instance.Files[1].LastChunkUploadedSize);
+        Assert.AreEqual(0, com.Instance.Files[0].LastChunkUploadedSize);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldRemoveAPreloadedFileFromTheServer()
+    {
+        var handler = SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.AreEqual("server-1", handler.LastRequest!.Headers.GetValues("BIT_FILE_ID").Single());
+        // there is no uploader holding anything for it, so nothing is asked to hand anything back.
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.release"]);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotBringARemovedPreloadedFileBackWhileTheCollectionStaysTheSame()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        IReadOnlyCollection<BitFileInfo> files = [new() { Name = "a.txt", Size = 100, FileId = "server-1" }];
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, files);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        com.Render(parameters => parameters.Add(p => p.PreloadedFiles, files));
+
+        // the same collection is the same record, and the render it arrives on is not a reason to undo
+        // what the user has done to the list since.
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
+        Assert.AreEqual(0, com.FindAll(".bit-upl-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRebuildThePreloadedFilesWhenTheCollectionIsReplaced()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "b.txt", Size = 200, FileId = "server-2" }
+            ]);
+        });
+
+        // a new collection is a new record, so the preloaded part of the list is built from it again.
+        Assert.AreEqual("b.txt", com.Instance.Files.Single().Name);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderACustomMessageForThePreloadedFiles()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFileMessage, "Saved with this record");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        Assert.AreEqual("Saved with this record", com.Find(".bit-upl-us").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldKeepThePreloadedFilesThroughAReset()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Reset());
+
+        // a reset undoes the selection, and what is on the server was never part of it - which is also
+        // what keeps AutoReset from hiding the attachments of the record on every browse.
+        Assert.AreEqual("a.txt", com.Instance.Files.Single().Name);
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.UploadStatus);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotBringAPreloadedFileDeletedFromTheServerBackOnAReset()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+        await com.InvokeAsync(() => com.Instance.Reset());
+
+        // the file is gone from the server, and nothing on this side gets to claim otherwise.
+        Assert.IsEmpty(com.Instance.Files);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRejectASelectedFileThatTheRecordAlreadyHas()
+    {
+        // a file picked here carries the modification time of the file system, which the server never
+        // reports, so the two are compared on the name and the size they do have in common.
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0, LastModified = 1700000000000 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        Assert.AreEqual(BitFileUploadStatus.NotAllowed, com.Instance.Files[1].Status);
+        Assert.AreEqual("The file is already selected", com.Instance.Files[1].Message);
+        // the attachment the record has is never the one turned away.
+        Assert.AreEqual(BitFileUploadStatus.Completed, com.Instance.Files[0].Status);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldTakeASelectedFileBackOnceTheRecordsCopyOfItIsRemoved()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0, LastModified = 1700000000000 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.AllowDuplicates, false);
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        // the rule is re-read over the whole list on every change, so deleting the copy on the server
+        // is what makes the file picked here uploadable after all.
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.Files[1].Status);
+        Assert.IsNull(com.Instance.Files[1].Message);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldNotRebuildThePreloadedFilesForACollectionWrittenInline()
+    {
+        SetupHttpClient(HttpStatusCode.OK);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.RemoveUrl, "https://localhost/remove");
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
+
+        // another array holding the same file is what every render of a collection written inline in the
+        // markup hands over, and it says nothing about the record having changed.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files.Single().Status);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldRenderAPreloadedFileAsNeitherSucceededNorFailed()
+    {
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        var item = com.Find(".bit-upl-itm");
+
+        // an upload that just landed is the green one; a file that was already there is a state, not an
+        // outcome, and takes a class of its own so it can be colored - and restyled - as one.
+        Assert.IsTrue(item.ClassList.Contains("bit-upl-pre"));
+        Assert.IsFalse(item.ClassList.Contains("bit-upl-uld"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldAnnounceThePreloadedFilesApartFromTheSelectedOnes()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "a.txt", Size = 100, FileId = "server-1" }
+            ]);
+        });
+
+        // nothing has been selected or uploaded in this visit yet, whatever the record already holds.
+        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "No file selected. 1 already attached.");
+
+        SelectFiles(com);
+
+        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "1 file selected. 1 already attached.");
+    }
+
     private void SetupFiles(BitFileInfo[] files)
     {
         Context.JSInterop.Setup<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", _ => true).SetResult(files);

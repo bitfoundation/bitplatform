@@ -145,9 +145,12 @@ public partial class _BitFileUploadItem : ComponentBase, IDisposable
         return FileUpload.FileSizeFormatter is null ? FileSizeHumanizer.Humanize(size) : FileUpload.FileSizeFormatter(size);
     }
 
-    private static string GetFileElClass(BitFileUploadStatus status)
-        => status switch
+    private static string GetFileElClass(BitFileInfo file)
+        => file.Status switch
         {
+            // a file that was already on the server when the list was built is a state rather than an
+            // outcome, so it reads as neutral instead of taking the green of an upload that just landed.
+            BitFileUploadStatus.Completed when file.IsPreloaded => $"{ROOT_ELEMENT_CLASS}-pre",
             BitFileUploadStatus.Completed => $"{ROOT_ELEMENT_CLASS}-uld",
             BitFileUploadStatus.Failed or BitFileUploadStatus.NotAllowed or BitFileUploadStatus.RemoveFailed => $"{ROOT_ELEMENT_CLASS}-fld",
             BitFileUploadStatus.Paused or BitFileUploadStatus.Canceled => $"{ROOT_ELEMENT_CLASS}-psd",

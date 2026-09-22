@@ -32,7 +32,8 @@ public class BitFileInfo
     [JsonPropertyName("fileId")] public string FileId { get; set; } = string.Empty;
 
     /// <summary>
-    /// The index of the selected file.
+    /// The index of the file among the ones picked in this browser, which is what names the transfer behind
+    /// it. A preloaded file was never picked and has no transfer of its own, so its index is -1.
     /// </summary>
     [JsonPropertyName("index")] public int Index { get; set; }
 
@@ -94,6 +95,14 @@ public class BitFileInfo
     /// which is what tells a file that is about to start apart from one that was never asked to upload.
     /// </summary>
     [JsonIgnore] public bool IsQueued { get; internal set; }
+
+    /// <summary>
+    /// Whether the file was handed over through the PreloadedFiles parameter of the BitFileUpload instead of
+    /// being picked in the browser, which is to say it is already on the server: there is no content on this
+    /// side to send, so it is never uploaded, and removing it deletes it from the server through the
+    /// RemoveUrl exactly like a file whose bytes got there through this component.
+    /// </summary>
+    [JsonIgnore] public bool IsPreloaded { get; internal set; }
 
 
     // Whether a request of this file is on the wire right now. A second request for the same file would

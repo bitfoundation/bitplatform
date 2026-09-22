@@ -348,6 +348,12 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     public string? PauseIconName { get; set; }
 
     /// <summary>
+    /// The status message shown for the files of the PreloadedFiles parameter, which are already on the
+    /// server rather than freshly uploaded and would otherwise read as an upload that just succeeded.
+    /// </summary>
+    public string? PreloadedFileMessage { get; set; }
+
+    /// <summary>
     /// The message shown for the files waiting in the queue for a free slot of the <see cref="ConcurrentUploads"/>
     /// limit, which is what tells a file that is about to start apart from one that was never asked to upload.
     /// </summary>
@@ -861,6 +867,11 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         if (PauseIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(PauseIconName)))
         {
             bitFileUpload.PauseIconName = PauseIconName;
+        }
+
+        if (PreloadedFileMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(PreloadedFileMessage)))
+        {
+            bitFileUpload.PreloadedFileMessage = PreloadedFileMessage!;
         }
 
         if (QueuedUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(QueuedUploadMessage)))
