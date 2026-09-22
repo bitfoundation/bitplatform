@@ -9,29 +9,38 @@ public partial class TelegramBotApiClient
 
     [AutoInject] private HttpClient httpClient = default!;
     [AutoInject] private AppSettings appSettings = default!;
+    [AutoInject] private ILogger<TelegramBotApiClient> logger = default!;
 
-    public async Task SendMessageAsync(string message, CancellationToken cancellationToken)
+    /// <returns>
+    /// Whether the message reached every chat it was meant for - false when nothing was sent at all. A caller
+    /// that tells someone their message is on its way has to know this; the ones that do not may ignore it.
+    /// </returns>
+    public async Task<bool> SendMessageAsync(string message, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(appSettings.TelegramBotSettings.Token) || appSettings.TelegramBotSettings.ChatIds.Length < 1 || string.IsNullOrEmpty(message))
         {
-            return;
+            return false;
         }
+
+        var delivered = true;
 
         foreach (var chatId in appSettings.TelegramBotSettings.ChatIds)
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return;
+                return false;
             }
             var splitMesasge = GetSplitMessage(message);
             foreach (var item in splitMesasge)
             {
-                await SendMessageAsync(chatId, item, cancellationToken);
+                delivered &= await SendMessageAsync(chatId, item, cancellationToken);
             }
         }
+
+        return delivered;
     }
 
-    private async Task SendMessageAsync(string chatId, string message, CancellationToken cancellationToken)
+    private async Task<bool> SendMessageAsync(string chatId, string message, CancellationToken cancellationToken)
     {
         var payload = new
         {
@@ -41,8 +50,17 @@ public partial class TelegramBotApiClient
         };
         var json = JsonSerializer.Serialize(value: payload);
         var apiUrl = new Uri(uriString: $"https://api.telegram.org/bot{appSettings.TelegramBotSettings.Token}/sendMessage");
-        await httpClient.PostAsync(requestUri: apiUrl,
+        var response = await httpClient.PostAsync(requestUri: apiUrl,
             content: new StringContent(content: json, encoding: Encoding.UTF8, mediaType: "application/json"), cancellationToken);
+
+        if (response.IsSuccessStatusCode) return true;
+
+        // The body names the reason - a revoked token, a chat the bot was removed from, a markdown entity it
+        // could not parse - and without it a message that never arrived leaves nothing behind to look at.
+        logger.LogError("Sending a message to the {TelegramChatId} Telegram chat failed with {StatusCode}: {TelegramResponse}",
+            chatId, response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken));
+
+        return false;
     }
 
     private IEnumerable<string> GetSplitMessage(string message)
