@@ -104,9 +104,9 @@ namespace BitBlazorUI {
             // element the app owns gets exactly its own style back rather than losing it.
             const originalStyles = new Map<HTMLElement, string | null>();
 
-            // a page can well point two uploaders at one shared drop zone, so a drop landing in it is
-            // claimed by the first of them to see it rather than handed to every one of them.
-            const handledFlag = '__bitUplDrop';
+            // a page can well point two uploaders at one shared zone, so a drop or a paste landing in it
+            // is claimed by the first of them to see it rather than handed to every one of them.
+            const handledFlag = '__bitUplHandled';
 
             function claim(e: Event) {
                 if ((e as any)[handledFlag]) return false;
@@ -164,16 +164,37 @@ namespace BitBlazorUI {
                 return allowDrop && !inputElement.disabled && hasFiles(e);
             }
 
+            function paintZone(zone: HTMLElement) {
+                zone.classList.add(...dragClasses);
+
+                if (!dragStyle) return;
+                const original = zone.getAttribute('style');
+                originalStyles.set(zone, original);
+                zone.setAttribute('style', [original, dragStyle].filter(s => s).join(';'));
+            }
+
             function applyDragStyling() {
                 zones = resolveZones();
 
-                zones.forEach(zone => {
-                    zone.classList.add(...dragClasses);
+                zones.forEach(zone => paintZone(zone));
+            }
 
-                    if (!dragStyle) return;
-                    const original = zone.getAttribute('style');
-                    originalStyles.set(zone, original);
-                    zone.setAttribute('style', [original, dragStyle].filter(s => s).join(';'));
+            // a zone can be rendered - or start matching the selector - while the drag is already in
+            // flight, and a zone that takes the drop is a zone that shows it is about to. the ones already
+            // painted are left alone so that the style they had before the drag is remembered once rather
+            // than overwritten with the dragging one.
+            // the painted zones are asked by containment rather than by running the selector again, so this
+            // costs nothing on a dragover, which fires several times a second.
+            function isPainted(target: EventTarget | null) {
+                return target instanceof Node && zones.some(zone => zone.contains(target));
+            }
+
+            function syncDragStyling() {
+                resolveZones().forEach(zone => {
+                    if (zones.indexOf(zone) >= 0) return;
+
+                    zones.push(zone);
+                    paintZone(zone);
                 });
             }
 
@@ -196,7 +217,10 @@ namespace BitBlazorUI {
 
             function addDragState() {
                 dragCounter++;
-                if (dragCounter > 1) return;
+                if (dragCounter > 1) {
+                    syncDragStyling();
+                    return;
+                }
 
                 applyDragStyling();
             }
@@ -228,8 +252,16 @@ namespace BitBlazorUI {
 
                 if (!e.dataTransfer) return;
 
+                const accepts = canAcceptDrop(e);
+
                 // gives the OS the correct drag cursor (a copy badge or a no-drop sign).
-                e.dataTransfer.dropEffect = canAcceptDrop(e) ? 'copy' : 'none';
+                e.dataTransfer.dropEffect = accepts ? 'copy' : 'none';
+
+                // a zone can also come up underneath a pointer that is already over it, which leaves no
+                // dragenter of its own for it to be noticed by.
+                if (accepts && dragCounter > 0 && !isPainted(e.target)) {
+                    syncDragStyling();
+                }
             }
 
             function onDragLeave(e: DragEvent) {
@@ -306,8 +338,7 @@ namespace BitBlazorUI {
             // nor the hidden file input can ever hold it, so the listener sits on the document and decides
             // for itself whether the paste was meant for this component: the focus being somewhere inside
             // it, or nothing on the page holding the focus at all. in that second case the paste belongs to
-            // no one in particular, so the first paste enabled upload on the page takes it and marks the
-            // event, otherwise a second one would end up with a copy of the same files.
+            // no one in particular, so whichever paste enabled upload on the page sees it first takes it.
             function onPaste(e: ClipboardEvent) {
                 if (!allowPaste || inputElement.disabled) return;
                 if (!e.clipboardData || e.clipboardData.files.length === 0) return;
@@ -315,12 +346,12 @@ namespace BitBlazorUI {
                 const focused = document.activeElement;
                 const isFocusedHere = focused !== null && (focused === inputElement || isInZone(focused));
 
-                if (!isFocusedHere) {
-                    if (focused !== null && focused !== document.body) return;
-                    if ((e as any).bitPasteHandled) return;
+                // the focus sitting inside some unrelated element is a paste meant for that element.
+                if (!isFocusedHere && focused !== null && focused !== document.body) return;
 
-                    (e as any).bitPasteHandled = true;
-                }
+                // the focus can be inside a zone two uploaders share just as well as it can be nowhere at
+                // all, so either way the files belong to one of them rather than to both at once.
+                if (!claim(e)) return;
 
                 setFiles(e.clipboardData.files);
             }

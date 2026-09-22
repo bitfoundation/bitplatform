@@ -611,6 +611,10 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileUpload);
 
+        // the working chunk size is only worth deriving again when one of the two parameters it comes from
+        // actually moves, exactly as the generated setter of each of them decides.
+        var chunkSizeChanged = false;
+
         if (Accept.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Accept)))
         {
             bitFileUpload.Accept = Accept;
@@ -648,6 +652,8 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         if (AutoChunkSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoChunkSize)))
         {
+            chunkSizeChanged = chunkSizeChanged || bitFileUpload.AutoChunkSize != AutoChunkSize.Value;
+
             bitFileUpload.AutoChunkSize = AutoChunkSize.Value;
         }
 
@@ -703,6 +709,8 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         if (ChunkSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(ChunkSize)))
         {
+            chunkSizeChanged = chunkSizeChanged || bitFileUpload.ChunkSize != ChunkSize.Value;
+
             bitFileUpload.ChunkSize = ChunkSize.Value;
         }
 
@@ -1037,8 +1045,10 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         }
 
         // The working chunk size is derived from ChunkSize and AutoChunkSize by a setter that assigning
-        // the properties here goes around, so it is derived again once both of them are in place.
-        if (ChunkSize.HasValue || AutoChunkSize.HasValue)
+        // the properties here goes around, so it is derived again once both of them are in place. Deriving
+        // it on every parameter set instead would throw away the speed AutoChunkSize has measured, since
+        // this runs on each render of whatever holds the BitParams rather than only when one of them moves.
+        if (chunkSizeChanged)
         {
             bitFileUpload.OnSetChunkSize();
         }

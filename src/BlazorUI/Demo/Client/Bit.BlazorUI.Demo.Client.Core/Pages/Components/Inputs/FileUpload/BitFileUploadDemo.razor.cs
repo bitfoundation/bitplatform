@@ -1458,7 +1458,7 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-item-font-weight",
-            DefaultValue = "--bit-tg-fw-light",
+            DefaultValue = "--bit-tpg-fw-light",
             Description = "Text weight of a file item's name.",
         },
         new()
