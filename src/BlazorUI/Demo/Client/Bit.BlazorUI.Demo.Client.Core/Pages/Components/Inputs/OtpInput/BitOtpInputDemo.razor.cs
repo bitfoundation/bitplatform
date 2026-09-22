@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.OtpInput;
 
@@ -792,7 +792,7 @@ public partial class BitOtpInputDemo
             Type = BitInputType.Number,
             Variant = BitVariant.Fill,
             NormalizeDigits = true,
-            PasteTransformer = v => System.Text.RegularExpressions.Regex.Match(v, "[0-9]{6}").Value,
+            PasteTransformer = v => System.Text.RegularExpressions.Regex.Match(v, @"\p{Nd}{6}").Value,
         }
     ];
 
@@ -1204,7 +1204,7 @@ private readonly BitOtpInputParams[] otpInputParams =
         Type = BitInputType.Number,
         Variant = BitVariant.Fill,
         NormalizeDigits = true,
-        PasteTransformer = v => System.Text.RegularExpressions.Regex.Match(v, ""[0-9]{6}"").Value,
+        PasteTransformer = v => System.Text.RegularExpressions.Regex.Match(v, @""\p{Nd}{6}"").Value,
     }
 ];";
 
