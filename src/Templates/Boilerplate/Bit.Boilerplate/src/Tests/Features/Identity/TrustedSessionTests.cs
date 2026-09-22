@@ -57,6 +57,39 @@ public class TrustedSessionTests
     }
 
     /// <summary>
+    /// The invariant <c>Trusted = user.TwoFactorEnabled</c> rests on: with 2fa on, a one-time code cannot finish a
+    /// sign-in by itself. SignInOrTwoFactorAsync answers TwoFactorRequired on the OTP path too, so no session exists
+    /// until the second factor passes - were that to change, the flag would start trusting code-only sessions.
+    /// </summary>
+    [TestMethod]
+    public async Task AnOtpSignIn_Should_OpenNoSession_WhenTwoFactorIsEnabled()
+    {
+        await using var server = await StartServer();
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+
+        await DevMcpTestUtils.EnableTwoFactorAndSignInWithIt(server, scope, email, userId, TestContext.CancellationToken);
+
+        await scope.ServiceProvider.GetRequiredService<IIdentityController>()
+                                   .SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
+
+        var otp = await server.WaitForCapturedEmail(email,
+            capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
+
+        var sessionsBefore = await CountSessions(server, userId);
+
+        var requiresTwoFactor = await scope.ServiceProvider.GetRequiredService<AuthManager>()
+            .SignIn(new() { Email = email, Otp = otp.Token }, TestContext.CancellationToken);
+
+        Assert.IsTrue(requiresTwoFactor,
+            "A valid one-time code on a 2fa account must still be challenged. Without that, the code alone opens a " +
+            "session that Trusted then marks as hard to get into - and the next code is pushed straight to it.");
+
+        Assert.AreEqual(sessionsBefore, await CountSessions(server, userId),
+            "Nothing may be written before the second factor passes.");
+    }
+
+    /// <summary>
     /// The untrusted session an account starts with must not survive as a device the next code could be pushed to.
     /// </summary>
     [TestMethod]
@@ -220,6 +253,15 @@ public class TrustedSessionTests
             Password = "P@ssw0rdP@ssw0rd", // The password DevMcpTestUtils set on this account.
             TwoFactorCode = DevMcpTestUtils.ComputeTotp(sharedKey)
         }, TestContext.CancellationToken);
+    }
+
+    /// <summary>How many sessions the account holds, so a test can assert that a refused sign-in wrote none.</summary>
+    private async Task<int> CountSessions(AppTestServer server, Guid userId)
+    {
+        await using var dbScope = server.WebApp.Services.CreateAsyncScope();
+
+        return await dbScope.ServiceProvider.GetRequiredService<AppDbContext>()
+            .UserSessions.CountAsync(us => us.UserId == userId, TestContext.CancellationToken);
     }
 
     /// <summary>Reads the row behind the access token this scope currently holds.</summary>
