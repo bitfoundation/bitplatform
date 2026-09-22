@@ -132,6 +132,18 @@ namespace BitBlazorUI {
             return false;
         }
 
+        // The inline completion: the whole term goes into the field and the part the user has not typed is
+        // left selected, so the very next keystroke replaces it and backspace takes it away again.
+        public static fillAndSelect(input: HTMLInputElement, value: string, selectionStart: number) {
+            if (!input) return;
+
+            input.value = value;
+
+            try {
+                input.setSelectionRange(selectionStart, value.length);
+            } catch (e) { /* an input that does not support selection just keeps its caret */ }
+        }
+
         public static moveCursorToEnd(inputElement: HTMLInputElement) {
             if (!inputElement) return;
 

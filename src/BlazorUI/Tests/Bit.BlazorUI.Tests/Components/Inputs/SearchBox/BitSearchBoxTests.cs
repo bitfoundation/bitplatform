@@ -2240,6 +2240,278 @@ public class BitSearchBoxTests : BunitTestContext
 
 
 
+    #region inline auto completion
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldCompleteTheTypedTermInPlace()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count > 0);
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Single();
+
+        // The rest of the first match is appended to what was typed and left selected, so the next
+        // keystroke replaces it rather than landing behind it. The typed part keeps the casing it was
+        // typed with: re-casing it under the caret is what makes a completion feel like it is fighting back.
+        Assert.AreEqual("apple", invocation.Arguments[1]);
+        Assert.AreEqual(2, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldKeepTheTypedTermUncommitted()
+    {
+        string? boundValue = null;
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Bind(p => p.Value, boundValue, v => boundValue = v);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count > 0);
+
+        // Only the input element is written to: the completion is accepted by enter, by the search
+        // button or by tabbing out, and until then the value still follows what the user typed.
+        Assert.AreEqual("ap", boundValue);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldOnlyCompleteAnItemThatStartsWithTheTerm()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // "Apple" matches "pple" the way every other suggestion is matched, but completing it would
+        // mean rewriting what the user already typed instead of adding to it.
+        FocusAndType(component, "pple");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotPutBackWhatBackspaceTakesAway()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Backspace" });
+        component.Find(".bit-srb-inp").Input("a");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+
+        // ... while the very next character typed is completed again.
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "p" });
+        component.Find(".bit-srb-inp").Input("ap");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 2);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotPutBackTextThatWasCutOut()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "appl");
+
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        // A cut or a drag out of the field takes text away without a key ever being pressed, and
+        // completing the shorter term again would simply put it back.
+        component.Find(".bit-srb-inp").Input("ap");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotCompletePastTheMaxLength()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.MaxLength, 3);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxAutoFillSuggestItemShouldNotRunWhileTheFieldIsNotBeingTypedIn()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        // A value that arrives from the outside must not rewrite a field nobody is typing into.
+        component.Render(parameters => parameters.Add(p => p.Value, "ap"));
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxEscapeShouldTakeBackTheInlineCompletion()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoFillSuggestItem, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+        component.WaitForState(() => Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count == 1);
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // Dismissing the list gives the typed term back rather than leaving the completion behind.
+        component.WaitForAssertion(() =>
+            Assert.AreEqual("ap", Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Last().Arguments[2]));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutAutoFillSuggestItemShouldNotCompleteAnything()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxInlineAutoCompletionShouldBeAdvertisedToAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.AreEqual("list", component.Find(".bit-srb-inp").GetAttribute("aria-autocomplete"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoFillSuggestItem, true));
+
+        Assert.AreEqual("both", component.Find(".bit-srb-inp").GetAttribute("aria-autocomplete"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxNullSuggestItemsShouldBeDroppedInsteadOfBeingRendered()
+    {
+        var items = new List<string> { "Apple", null!, "Apricot" };
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, items);
+            // A filter function of the app's own is free not to guard against a null item.
+            parameters.Add(p => p.SuggestFilterFunction, (string? term, string? item) => true);
+        });
+
+        FocusAndType(component, "ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldTakeTheSuggestPoliciesFromTheCascade()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitSearchBoxParams
+            {
+                Immediate = true,
+                AutoFillSuggestItem = true,
+                MinSuggestTriggerChars = 1,
+                SuggestFilterFunction = (term, item) => item?.StartsWith("B", StringComparison.OrdinalIgnoreCase) is true,
+                AnnouncementProvider = args => $"{args.SuggestItems.Count} found"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitSearchBox>(0);
+                builder.AddAttribute(1, nameof(BitSearchBox.SuggestItems), Fruits);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("both", component.Find(".bit-srb-inp").GetAttribute("aria-autocomplete"));
+
+        component.Find(".bit-srb-inp").FocusIn();
+        component.Find(".bit-srb-inp").Input("ap");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
+
+        // The matching and the announcing of every search box under the cascade are its own policies.
+        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.AreEqual("2 found", component.Find(".bit-srb-lvr").TextContent.Replace("​", string.Empty).Trim());
+    }
+
+    #endregion
+
+
+
     #region min chars hint
 
     [TestMethod]

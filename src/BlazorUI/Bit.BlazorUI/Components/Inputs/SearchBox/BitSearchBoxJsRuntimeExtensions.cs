@@ -12,6 +12,11 @@ internal static class BitSearchBoxJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.moveCursorToEnd", input);
     }
 
+    internal static ValueTask BitSearchBoxFillAndSelect(this IJSRuntime jsRuntime, ElementReference input, string value, int selectionStart)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.fillAndSelect", input, value, selectionStart);
+    }
+
     internal static ValueTask BitSearchBoxScrollItemIntoView(this IJSRuntime jsRuntime, string containerId, string itemId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.scrollItemIntoView", containerId, itemId);

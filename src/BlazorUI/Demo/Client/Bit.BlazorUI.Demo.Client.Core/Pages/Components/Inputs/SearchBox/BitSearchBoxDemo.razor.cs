@@ -38,6 +38,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "AutoFillSuggestItem",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Completes what is being typed with the first suggest item that starts with it, appending the rest of that item into the field and selecting the appended part. The completion is written into the input element only: the bound value keeps following what the user typed until enter, the search button or tabbing out accepts it, and escape puts the typed term back.",
+        },
+        new()
+        {
             Name = "AutoSelectSuggestItem",
             Type = "bool",
             DefaultValue = "false",
@@ -758,6 +765,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-clear-button-icon-size",
+            DefaultValue = "Three quarters of --bit-SearchBox-icon-size",
+            Description = "Glyph size of the clear button, which is drawn smaller than the leading icon.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-clear-button-hover-color",
             DefaultValue = "$clr-fg-pri-hover",
             Description = "Glyph color of the hovered clear button.",
@@ -902,9 +915,21 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "--bit-SearchBox-item-hover-color",
+            DefaultValue = "The item color",
+            Description = "Text color of a hovered suggest item, which a hover background dark enough to need its own text color has to be paired with.",
+        },
+        new()
+        {
             Name = "--bit-SearchBox-item-selected-background",
             DefaultValue = "$clr-bg-sec",
             Description = "Background of the suggest item the arrow keys highlight.",
+        },
+        new()
+        {
+            Name = "--bit-SearchBox-item-selected-color",
+            DefaultValue = "The item color",
+            Description = "Text color of the suggest item the arrow keys highlight.",
         },
         new()
         {
@@ -1641,11 +1666,6 @@ public partial class BitSearchBoxDemo
     private readonly List<string> eventLogs = [];
 
     private string? searchValue;
-    private string? searchValueWithSuggestFilterFunction;
-    private string? searchValueWithSearchDelay;
-    private string? searchValueWithMinSearchLength;
-    private string? searchValueWithMaxSuggestedItems;
-    private string? searchValueWithItemsProvider;
     private string? selectedSuggestItem;
 
     private string? announcedText;
@@ -1668,6 +1688,7 @@ public partial class BitSearchBoxDemo
             FullWidth = true,
             Size = BitSize.Small,
             HighlightSuggestItems = true,
+            AutoFillSuggestItem = true,
             MinSuggestTriggerChars = 1,
             NoResultsText = "No matching item found.",
             SuggestItemsAriaLabel = "Matching items",

@@ -30,6 +30,8 @@
 //   --bit-SearchBox-affix-color                 text color of the prefix and of the suffix         (default: $clr-fg-pri)
 //   --bit-SearchBox-affix-background            background of the prefix and of the suffix         (default: $clr-bg-sec)
 //   --bit-SearchBox-clear-button-color          glyph color of the clear button                    (default: $clr-fg-sec)
+//   --bit-SearchBox-clear-button-icon-size      glyph size of the clear button, which is drawn
+//                                               smaller than the leading icon                      (default: three quarters of the icon size)
 //   --bit-SearchBox-clear-button-hover-color    glyph color of the hovered clear button            (default: $clr-fg-pri-hover)
 //   --bit-SearchBox-clear-button-hover-background      background of the hovered clear button      (default: $clr-bg-pri-hover)
 //   --bit-SearchBox-clear-button-active-background     background of the pressed clear button      (default: $clr-bg-pri-active)
@@ -61,7 +63,9 @@
 //   --bit-SearchBox-item-padding                padding of a suggest item                          (default: spacing(0.5) spacing(1))
 //   --bit-SearchBox-item-font-size              text size inside the callout                       (default: per size, from the type ramp)
 //   --bit-SearchBox-item-hover-background       background of a hovered suggest item               (default: $clr-bg-pri-hover)
+//   --bit-SearchBox-item-hover-color            text color of a hovered suggest item               (default: the item color)
 //   --bit-SearchBox-item-selected-background    background of the item the arrow keys highlight    (default: $clr-bg-sec)
+//   --bit-SearchBox-item-selected-color         text color of the item the arrow keys highlight    (default: the item color)
 //   --bit-SearchBox-item-selected-border-color  ring drawn inside the item the arrow keys
 //                                               highlight, which is where the keyboard is         (default: the role's focus color)
 //   --bit-SearchBox-highlight-color             text color of the matched part of an item          (default: inherited from the item)
@@ -374,7 +378,9 @@
         text-align: center;
         margin: 0 spacing(0.5);
         line-height: spacing(2);
-        font-size: calc(var(--bit-srb-iconsize) * 0.75);
+        // Deliberately smaller than the leading icon: the clear button is an affordance to reach for, not
+        // one to read the field by, and at the same size it competes with the text beside it.
+        font-size: var(--bit-SearchBox-clear-button-icon-size, calc(var(--bit-srb-iconsize) * 0.75));
         color: var(--bit-SearchBox-clear-button-color, #{$clr-fg-sec});
     }
 
@@ -666,9 +672,11 @@
     @media (hover: hover) {
         .bit-srb-itm:hover {
             background-color: transparent;
+            color: var(--bit-SearchBox-item-color, #{$clr-fg-pri});
         }
 
         .bit-srb-sel:hover {
+            color: var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
             background-color: var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec});
         }
     }
@@ -881,6 +889,9 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
+            // A row whose background is repainted needs its text repainted with it: a hover surface dark
+            // enough to read against is the usual reason to set one, and the default text would vanish on it.
+            color: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
         }
     }
 }
@@ -892,6 +903,7 @@
 // 1.4.11 against the callout behind it. So the row is ringed as well, inside its own box so that the
 // scroll container it sits in can never clip the ring away.
 .bit-srb-sel {
+    color: var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
     background-color: var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec});
     outline: $shp-focus-ring-width $shp-border-style var(--bit-SearchBox-item-selected-border-color, var(--bit-srb-clr-focus, #{$clr-pri-focus}));
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
@@ -899,6 +911,7 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
+            color: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
         }
     }
 }

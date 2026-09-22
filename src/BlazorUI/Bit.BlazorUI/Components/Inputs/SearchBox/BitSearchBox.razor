@@ -93,7 +93,7 @@
                    role="@(_hasSuggestSource ? "combobox" : "searchbox")"
                    aria-haspopup="@(_hasSuggestSource ? "listbox" : null)"
                    aria-controls="@(_hasSuggestSource ? _scrollContainerId : null)"
-                   aria-autocomplete="@(_hasSuggestSource ? "list" : null)"
+                   aria-autocomplete="@(_hasSuggestSource ? (AutoFillSuggestItem ? "both" : "list") : null)"
                    aria-expanded="@(_hasSuggestSource ? (_isOpen ? "true" : "false") : null)"
                    aria-activedescendant="@(_isOpen && _selectedIndex > -1 ? GetItemId(_selectedIndex) : null)"
                    autocomplete="@(AutoComplete ?? (_hasSuggestSource ? "off" : null))" />

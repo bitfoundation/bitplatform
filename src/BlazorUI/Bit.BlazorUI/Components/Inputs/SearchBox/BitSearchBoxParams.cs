@@ -27,6 +27,13 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Builds the text that the screen reader announces through the live region of the search box whenever
+    /// the suggest items change, in place of the built-in English announcements. It is the hook for
+    /// localizing them, which is a decision a whole app makes once rather than every field of it.
+    /// </summary>
+    public Func<BitSearchBoxAnnouncementArgs, string?>? AnnouncementProvider { get; set; }
+
+    /// <summary>
     /// Detailed description of the search box for the benefit of screen readers (rendered into <c>aria-describedby</c>).
     /// </summary>
     public string? AriaDescription { get; set; }
@@ -51,6 +58,12 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     /// If true, the input automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
     /// </summary>
     public bool? AutoFocus { get; set; }
+
+    /// <summary>
+    /// Completes what is being typed with the first suggest item that starts with it, selecting the part
+    /// the user has not typed.
+    /// </summary>
+    public bool? AutoFillSuggestItem { get; set; }
 
     /// <summary>
     /// Automatically highlights the first suggest item as soon as the suggest list opens.
@@ -298,6 +311,12 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
     public bool? SuggestIgnoreDiacritics { get; set; }
 
     /// <summary>
+    /// Custom search function to be used in place of the default search algorithm, so that how a term is
+    /// matched against the suggest items is decided once for every search box under the cascade.
+    /// </summary>
+    public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
+
+    /// <summary>
     /// The accessible label (aria-label) of the suggest items list.
     /// </summary>
     public string? SuggestItemsAriaLabel { get; set; }
@@ -340,6 +359,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
         // generator writes for it; the ones it inherits from the input base classes have a record of
         // their own, which is what HasNotBeenSetOnInputBase reads (see BitInputBase).
 
+        if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
+        {
+            bitSearchBox.AnnouncementProvider = AnnouncementProvider;
+        }
+
         if (AriaDescription.HasValue() && bitSearchBox.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitSearchBox.AriaDescription = AriaDescription;
@@ -363,6 +387,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
         if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSetOnInputBase(nameof(AutoFocus)))
         {
             bitSearchBox.AutoFocus = AutoFocus.Value;
+        }
+
+        if (AutoFillSuggestItem.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoFillSuggestItem)))
+        {
+            bitSearchBox.AutoFillSuggestItem = AutoFillSuggestItem.Value;
         }
 
         if (AutoSelectSuggestItem.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoSelectSuggestItem)))
@@ -629,6 +658,11 @@ public class BitSearchBoxParams : BitComponentBaseParams, IBitComponentParams
         if (SuggestIgnoreDiacritics.HasValue && bitSearchBox.HasNotBeenSet(nameof(SuggestIgnoreDiacritics)))
         {
             bitSearchBox.SuggestIgnoreDiacritics = SuggestIgnoreDiacritics.Value;
+        }
+
+        if (SuggestFilterFunction is not null && bitSearchBox.HasNotBeenSet(nameof(SuggestFilterFunction)))
+        {
+            bitSearchBox.SuggestFilterFunction = SuggestFilterFunction;
         }
 
         if (SuggestItemsAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SuggestItemsAriaLabel)))

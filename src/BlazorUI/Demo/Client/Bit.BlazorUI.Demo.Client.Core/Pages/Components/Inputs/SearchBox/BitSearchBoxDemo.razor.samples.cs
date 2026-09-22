@@ -224,12 +224,10 @@ private void HandleOnKeyDown(KeyboardEventArgs args) => Log($""OnKeyDown: {args.
 <div>SearchValue: @searchValue</div>
 
 
-<BitSearchBox @bind-Value=""@searchValueWithSuggestFilterFunction""
-              Immediate
+<BitSearchBox Immediate
               Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()""
               SuggestFilterFunction=""@SearchFunc"" />
-<div>SearchValue: @searchValueWithSuggestFilterFunction</div>
 
 
 <BitSearchBox Immediate
@@ -240,63 +238,29 @@ private void HandleOnKeyDown(KeyboardEventArgs args) => Log($""OnKeyDown: {args.
               SuggestItems=""GetAccentedSuggestedItems()"" />
 
 
-<BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
-              Immediate
-              Placeholder=""e.g. app""
+<BitSearchBox Immediate
+              DebounceTime=""500""
+              MaxSuggestCount=""3""
               MinSuggestTriggerChars=""1""
+              Placeholder=""e.g. a""
               SuggestItems=""GetSuggestedItems()"" />
-<div>SearchValue: @searchValueWithMinSearchLength</div>
-
-
-<BitSearchBox @bind-Value=""@searchValueWithMaxSuggestedItems""
-              Immediate
-              Placeholder=""e.g. app""
-              MaxSuggestCount=""2""
-              SuggestItems=""GetSuggestedItems()"" />
-<div>SearchValue: @searchValueWithMaxSuggestedItems</div>
-
-
-<BitSearchBox @bind-Value=""@searchValueWithSearchDelay""
-              Immediate
-              DebounceTime=""2000""
-              Placeholder=""e.g. app""
-              SuggestItems=""GetSuggestedItems()"" />
-<div>SearchValue: @searchValueWithSearchDelay</div>
-
-
-<BitSearchBox @bind-Value=""@searchValueWithItemsProvider""
-              Immediate
-              DebounceTime=""300""
-              Placeholder=""e.g. pro""
-              SuggestItemsProvider=""LoadItems"" />
-<div>SearchValue: @searchValueWithItemsProvider</div>
 
 
 <BitSearchBox Immediate
-              Placeholder=""e.g. app""
-              SuggestItems=""GetSuggestedItems()""
+              DebounceTime=""300""
+              Placeholder=""e.g. pro""
+              SuggestItemsProvider=""LoadItems""
               OnSuggestItemSelect=""i => selectedSuggestItem = i"" />
 <div>Selected item: @selectedSuggestItem</div>
 
 
-<BitSearchBox Modeless
-              Immediate
-              DebounceTime=""300""
-              Placeholder=""e.g. pro""
-              SuggestItemsProvider=""LoadItems"" />
-
-
 <BitSearchBox Immediate
+              Modeless
               FixedCalloutWidth
               Placeholder=""e.g. app""
               SuggestItems=""GetLongSuggestedItems()"" />";
     private readonly string example11CsharpCode = @"
 private string? searchValue;
-private string? searchValueWithSuggestFilterFunction;
-private string? searchValueWithSearchDelay;
-private string? searchValueWithMinSearchLength;
-private string? searchValueWithMaxSuggestedItems;
-private string? searchValueWithItemsProvider;
 private string? selectedSuggestItem;
 
 private List<string> GetSuggestedItems() =>
@@ -441,6 +405,14 @@ private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsP
               AutoSelectSuggestItem
               MinSuggestTriggerChars=""1""
               Placeholder=""e.g. app""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox Immediate
+              AutoFillSuggestItem
+              HighlightSuggestItems
+              MinSuggestTriggerChars=""1""
+              Placeholder=""e.g. ap""
               SuggestItems=""GetSuggestedItems()"" />
 
 
@@ -610,6 +582,7 @@ private readonly BitSearchBoxParams[] searchBoxParams =
         FullWidth = true,
         Size = BitSize.Small,
         HighlightSuggestItems = true,
+        AutoFillSuggestItem = true,
         MinSuggestTriggerChars = 1,
         NoResultsText = ""No matching item found."",
         SuggestItemsAriaLabel = ""Matching items"",
@@ -878,6 +851,8 @@ private readonly BitSearchBoxParams[] searchBoxParams =
               Styles=""@(new() { Callout = ""--bit-SearchBox-callout-radius: 0.75rem;"" +
                                           ""--bit-SearchBox-item-min-height: 2.5rem;"" +
                                           ""--bit-SearchBox-item-hover-background: #ede9fe;"" +
+                                          ""--bit-SearchBox-item-selected-background: #6d28d9;"" +
+                                          ""--bit-SearchBox-item-selected-color: #ffffff;"" +
                                           ""--bit-SearchBox-highlight-color: #6d28d9;"" })"" />";
     private readonly string example20CsharpCode = @"
 private List<string> GetSuggestedItems() =>

@@ -14,22 +14,27 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private bool _isOpen;
     private bool _isLoading;
+    private bool _autoFilled;
+    private bool _isDeleting;
     private string? _inputMode;
     private bool _inputHasFocus;
     private bool _inputHasValue;
     private bool _suppressSearch;
     private bool _searchTriggered;
     private bool _suggestFailed;
+    private int _lastTypedLength;
     private bool _hasSuggestSource;
     private string? _announcement;
     private string? _foldedTerm;
     private string? _foldedTermKey;
     private bool _announcementMarker;
     private int _selectedIndex = -1;
+    private string? _pendingAutoFill;
     private string? _enterKeyHint = "search";
     private string? _calloutSizeClass;
     private string? _calloutColorClass;
     private string? _registeredShortcut;
+    private string? _pendingAutoFillTerm;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
@@ -87,6 +92,20 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// does not know.
     /// </summary>
     [Parameter] public bool? AutoCorrect { get; set; }
+
+    /// <summary>
+    /// Completes what is being typed with the first suggest item that starts with it, appending the rest of
+    /// that item into the field and selecting the appended part - the inline auto-completion of a browser's
+    /// address bar. Carrying on typing replaces the selection, so the completion never gets in the way, and
+    /// backspace takes it away instead of putting it straight back. Enter, the search button and tabbing out
+    /// all accept whatever the field shows, and escape puts the typed term back.
+    /// </summary>
+    /// <remarks>
+    /// The completion is written into the input element only: the bound value keeps following what the user
+    /// typed until it is accepted. It is skipped when the item would exceed <see cref="MaxLength"/>, and, like
+    /// every other suggest behavior, it needs <see cref="BitTextInputBase{TValue}.Immediate"/> to run while typing.
+    /// </remarks>
+    [Parameter] public bool AutoFillSuggestItem { get; set; }
 
     /// <summary>
     /// Automatically highlights the first suggest item as soon as the suggest list opens,
@@ -850,6 +869,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        await ApplyPendingAutoFill();
+
         // The shortcut listens on the document rather than on the input, so it is the one piece of the
         // component that has to be taken back off again - and re-registered whenever its value changes,
         // which is how an app that swaps it at runtime is not left with the previous one still armed.
@@ -976,7 +997,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        SetInputHasValue(e.Value?.ToString());
+        // Whatever the user just typed replaced the inline completion, so the field is back to holding
+        // nothing but their own text until the next search completes it again.
+        _autoFilled = false;
+
+        var text = e.Value?.ToString();
+
+        // Text that got shorter was taken away rather than typed, however it was taken away: the key flag
+        // below only sees the keyboard, and a cut or a drag out of the field never reaches it.
+        _isDeleting |= (text?.Length ?? 0) < _lastTypedLength;
+
+        _lastTypedLength = text?.Length ?? 0;
+
+        SetInputHasValue(text);
 
         await base.HandleOnStringValueInputAsync(e);
     }
@@ -1109,6 +1142,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false) return;
 
+        // Which key produced the edit is the one thing the input event does not say, and inline
+        // auto-completion turns on it: a completion that comes straight back after backspace would
+        // make the added text impossible to delete.
+        _isDeleting = e.Key is "Backspace" or "Delete";
+
         await OnKeyDown.InvokeAsync(e);
 
         switch (e.Key)
@@ -1201,6 +1239,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             _selectedIndex = -1;
 
+            // Dismissing the list takes back the part of the term the component wrote rather than the user,
+            // which is what escape means in a combobox that completes inline (see the WAI-ARIA pattern).
+            if (_autoFilled)
+            {
+                await SetInputElementValue(CurrentValueAsString);
+            }
+
             await CloseCallout();
 
             return;
@@ -1282,6 +1327,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     private async Task SetInputElementValue(string? value)
     {
+        _autoFilled = false;
+        _pendingAutoFill = null;
+        _lastTypedLength = value?.Length ?? 0;
+
         SetInputHasValue(value);
 
         if (IsDisposed) return;
@@ -1289,6 +1338,77 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         try
         {
             await _js.BitUtilsSetProperty(InputElement, "value", value);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    /// <summary>
+    /// Works out the inline completion of the typed term: the first suggest item that starts with it, whose
+    /// added part is left selected so that carrying on typing replaces it. Only the input element is ever
+    /// written to - the bound value keeps following what the user typed until the completion is accepted -
+    /// and the writing itself waits for the render this search queues, which patches the value attribute
+    /// from the previous term to the new one and would wipe a completion applied before it.
+    /// </summary>
+    private void AutoFillFirstSuggestItem(bool openCallout)
+    {
+        if (AutoFillSuggestItem is false || openCallout is false) return;
+
+        if (IsEnabled is false || ReadOnly || IsDisposed) return;
+
+        // Deleting has to uncover the term rather than have it completed again on the spot, and a search
+        // nobody is typing into (one a bound value or ShowSuggestItems started) must not rewrite the field.
+        if (_isDeleting || _inputHasFocus is false) return;
+
+        if (_viewSuggestedItems.Count == 0) return;
+
+        var term = CurrentValueAsString;
+
+        if (term.HasNoValue()) return;
+
+        var item = _viewSuggestedItems[0];
+
+        if (item.Length <= term!.Length) return;
+
+        // Completing past the limit the input enforces would hand the user text they cannot type themselves.
+        if (MaxLength >= 0 && item.Length > MaxLength) return;
+
+        // Folding keeps the length of a string, so an index into the folded item still cuts the original one.
+        if (Fold(item).StartsWith(FoldTerm(term), StringComparison.OrdinalIgnoreCase) is false) return;
+
+        // The typed part is kept exactly as it was typed - re-casing it under the caret is what makes an
+        // inline completion feel like the field is fighting back - and only the rest of the item is added.
+        _pendingAutoFillTerm = term;
+        _pendingAutoFill = term + item[term.Length..];
+    }
+
+    private async Task ApplyPendingAutoFill()
+    {
+        if (_pendingAutoFill is null) return;
+
+        var value = _pendingAutoFill;
+        var term = _pendingAutoFillTerm;
+
+        _pendingAutoFill = null;
+        _pendingAutoFillTerm = null;
+
+        // A keystroke that landed between the search and this render has already replaced the term the
+        // completion was worked out for, so writing it now would put back text the user has moved past.
+        if (term != CurrentValueAsString || _inputHasFocus is false) return;
+
+        await FillInputElement(value, term!.Length);
+    }
+
+    private async Task FillInputElement(string value, int selectionStart)
+    {
+        SetInputHasValue(value);
+
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitSearchBoxFillAndSelect(InputElement, value, selectionStart);
+
+            _autoFilled = true;
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1511,6 +1631,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         _selectedIndex = AutoSelectSuggestItem && _viewSuggestedItems.Count > 0 ? 0 : -1;
 
+        AutoFillFirstSuggestItem(openCallout);
+
         Announce(openCallout, force);
 
         if (openCallout)
@@ -1577,6 +1699,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private IEnumerable<string> Limit(IEnumerable<string> items)
     {
+        // A null slips through an IEnumerable<string> a provider built, and every row is rendered, matched
+        // and completed as a string, so one would take the whole component down on the next render.
+        items = items.Where(i => i is not null);
+
         return MaxSuggestCount > 0 ? items.Take(MaxSuggestCount) : items;
     }
 

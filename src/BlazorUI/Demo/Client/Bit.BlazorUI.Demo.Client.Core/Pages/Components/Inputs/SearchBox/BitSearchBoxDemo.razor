@@ -370,8 +370,8 @@
                 <b>SuggestFilterFunction</b> replaces the default case-insensitive "contains" matching;
                 <b>SuggestIgnoreDiacritics</b> keeps it but folds the accents away on both sides, so "Jose" finds "José".
                 <b>MinSuggestTriggerChars</b> (3) sets how many characters are needed before searching,
-                <b>MaxSuggestCount</b> (5) caps the rendered suggestions, and <b>DebounceTime</b> keeps a remote provider
-                from being called on every keystroke. A superseded provider call is cancelled through the
+                <b>MaxSuggestCount</b> (5) caps the rendered suggestions, and <b>DebounceTime</b> keeps the search from
+                running on every keystroke, which is what a remote provider needs. A superseded provider call is cancelled through the
                 <b>CancellationToken</b> of its request, so a slow response can never overwrite a newer one.
                 <br /><br />
                 <b>Modeless</b> removes the invisible overlay that captures the first outside click, and
@@ -392,13 +392,10 @@
                 <div>SearchValue: @searchValue</div>
                 <br /><br /><br />
                 <div><b>SuggestFilterFunction</b> (starts-with)</div><br />
-                <BitSearchBox @bind-Value="@searchValueWithSuggestFilterFunction"
-                              Immediate
+                <BitSearchBox Immediate
                               Placeholder="e.g. app"
                               SuggestItems="GetSuggestedItems()"
                               SuggestFilterFunction="@SearchFunc" />
-                <br />
-                <div>SearchValue: @searchValueWithSuggestFilterFunction</div>
                 <br /><br /><br />
                 <div><b>SuggestIgnoreDiacritics</b> (type "jose" or "muller")</div><br />
                 <BitSearchBox Immediate
@@ -408,59 +405,26 @@
                               Placeholder="e.g. jose"
                               SuggestItems="GetAccentedSuggestedItems()" />
                 <br /><br /><br />
-                <div><b>MinSuggestTriggerChars(1)</b></div><br />
-                <BitSearchBox @bind-Value="@searchValueWithMinSearchLength"
-                              Immediate
-                              Placeholder="e.g. app"
+                <div><b>MinSuggestTriggerChars</b>, <b>MaxSuggestCount</b> &amp; <b>DebounceTime</b></div><br />
+                <BitSearchBox Immediate
+                              DebounceTime="500"
+                              MaxSuggestCount="3"
                               MinSuggestTriggerChars="1"
+                              Placeholder="e.g. a"
                               SuggestItems="GetSuggestedItems()" />
-                <br />
-                <div>SearchValue: @searchValueWithMinSearchLength</div>
                 <br /><br /><br />
-                <div><b>MaxSuggestCount(2)</b></div><br />
-                <BitSearchBox @bind-Value="@searchValueWithMaxSuggestedItems"
-                              Immediate
-                              Placeholder="e.g. app"
-                              MaxSuggestCount="2"
-                              SuggestItems="GetSuggestedItems()" />
-                <br />
-                <div>SearchValue: @searchValueWithMaxSuggestedItems</div>
-                <br /><br /><br />
-                <div><b>DebounceTime(2000)</b></div><br />
-                <BitSearchBox @bind-Value="@searchValueWithSearchDelay"
-                              Immediate
-                              DebounceTime="2000"
-                              Placeholder="e.g. app"
-                              SuggestItems="GetSuggestedItems()" />
-                <br />
-                <div>SearchValue: @searchValueWithSearchDelay</div>
-                <br /><br /><br />
-                <div><b>SuggestItemsProvider</b></div><br />
-                <BitSearchBox @bind-Value="@searchValueWithItemsProvider"
-                              Immediate
+                <div><b>SuggestItemsProvider</b> &amp; <b>OnSuggestItemSelect</b></div><br />
+                <BitSearchBox Immediate
                               DebounceTime="300"
                               Placeholder="e.g. pro"
-                              SuggestItemsProvider="LoadItems" />
-                <br />
-                <div>SearchValue: @searchValueWithItemsProvider</div>
-                <br /><br /><br />
-                <div><b>OnSuggestItemSelect</b></div><br />
-                <BitSearchBox Immediate
-                              Placeholder="e.g. app"
-                              SuggestItems="GetSuggestedItems()"
+                              SuggestItemsProvider="LoadItems"
                               OnSuggestItemSelect="i => selectedSuggestItem = i" />
                 <br />
                 <div>Selected item: @selectedSuggestItem</div>
                 <br /><br /><br />
-                <div><b>Modeless</b></div><br />
-                <BitSearchBox Modeless
-                              Immediate
-                              DebounceTime="300"
-                              Placeholder="e.g. pro"
-                              SuggestItemsProvider="LoadItems" />
-                <br /><br /><br />
-                <div><b>FixedCalloutWidth</b></div><br />
+                <div><b>Modeless</b> &amp; <b>FixedCalloutWidth</b></div><br />
                 <BitSearchBox Immediate
+                              Modeless
                               FixedCalloutWidth
                               Placeholder="e.g. app"
                               SuggestItems="GetLongSuggestedItems()" />
@@ -470,26 +434,26 @@
         <DemoExample Title="Suggest Callout" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 Everything inside the suggest callout is customizable. <b>HighlightSuggestItems</b> emphasizes the matched
-                part of every suggestion so the user can see why a row was returned (a term that does not appear as a whole
-                in the item, which is what a multi-word term or a server-side match usually produces, has each of its words
-                highlighted instead), <b>SuggestItemTemplate</b> takes over the rendering of a whole row, and
-                <b>CalloutHeaderTemplate</b> / <b>CalloutFooterTemplate</b> pin custom content above and below the
+                part of every suggestion, falling back to each word of a term that does not appear in the item as a whole -
+                what a multi-word term or a server-side match usually produces. <b>SuggestItemTemplate</b> takes over a
+                whole row, and <b>CalloutHeaderTemplate</b> / <b>CalloutFooterTemplate</b> pin content above and below the
                 scrollable list.
                 <br /><br />
-                <b>NoResultsText</b> (or <b>NoResultsTemplate</b>) keeps the callout open with an explanatory message when a
-                search returns nothing, instead of silently closing it, <b>SuggestFailedText</b> /
-                <b>SuggestFailedTemplate</b> report a search that could not run at all - a provider that threw, which
-                without them looks exactly like a search that found nothing and leaves the user retyping a term that was
-                never the problem (<b>OnSuggestFailed</b> hands the same exception to the log), <b>LoadingText</b> /
-                <b>LoadingTemplate</b> show progress while an async <b>SuggestItemsProvider</b> is still running, and
-                <b>MinSuggestTriggerCharsText</b> explains the third silent state: a term that is still shorter than
-                <b>MinSuggestTriggerChars</b>, which otherwise looks exactly like a search that found nothing. It is a
-                composite format receiving how many characters are still missing, and it also replaces the built-in
-                sentence announced to screen readers.
+                Three outcomes otherwise look the same - a callout with nothing in it - so each gets its own message:
+                <b>NoResultsText</b> / <b>NoResultsTemplate</b> for a search that found nothing,
+                <b>SuggestFailedText</b> / <b>SuggestFailedTemplate</b> for one that could not run at all
+                (<b>OnSuggestFailed</b> hands the exception to the log), and <b>MinSuggestTriggerCharsText</b> for a term
+                still shorter than <b>MinSuggestTriggerChars</b> - a composite format receiving how many characters are
+                missing. <b>LoadingText</b> / <b>LoadingTemplate</b> show progress while an async
+                <b>SuggestItemsProvider</b> is running. Each text also replaces the built-in sentence announced to screen
+                readers.
                 <br /><br />
-                <b>AutoSelectSuggestItem</b> pre-highlights the first suggestion so enter picks it right away, and
-                <b>ShowSuggestItemsOnFocus</b> combined with <b>MinSuggestTriggerChars="0"</b> opens the list as soon as the
-                field is focused, which is the usual way to surface default or recent searches.
+                <b>AutoSelectSuggestItem</b> pre-highlights the first suggestion so enter picks it right away.
+                <b>AutoFillSuggestItem</b> completes the typed term with it in place and selects the added part - the
+                inline completion of a browser's address bar: typing on replaces it, backspace removes it, escape puts the
+                typed term back, and the bound value only takes the completion once enter, the search button or tab accepts
+                it. <b>ShowSuggestItemsOnFocus</b> with <b>MinSuggestTriggerChars="0"</b> opens the list on focus, which is
+                how default or recent searches are surfaced.
             </div>
             <br />
             <div class="example-box">
@@ -566,6 +530,14 @@
                               AutoSelectSuggestItem
                               MinSuggestTriggerChars="1"
                               Placeholder="e.g. app"
+                              SuggestItems="GetSuggestedItems()" />
+                <br /><br /><br />
+                <div><b>AutoFillSuggestItem</b> (type "ap")</div><br />
+                <BitSearchBox Immediate
+                              AutoFillSuggestItem
+                              HighlightSuggestItems
+                              MinSuggestTriggerChars="1"
+                              Placeholder="e.g. ap"
                               SuggestItems="GetSuggestedItems()" />
                 <br /><br /><br />
                 <div><b>ShowSuggestItemsOnFocus</b> (recent searches)</div><br />
@@ -1025,6 +997,8 @@
                               Styles="@(new() { Callout = "--bit-SearchBox-callout-radius: 0.75rem;" +
                                                           "--bit-SearchBox-item-min-height: 2.5rem;" +
                                                           "--bit-SearchBox-item-hover-background: #ede9fe;" +
+                                                          "--bit-SearchBox-item-selected-background: #6d28d9;" +
+                                                          "--bit-SearchBox-item-selected-color: #ffffff;" +
                                                           "--bit-SearchBox-highlight-color: #6d28d9;" })" />
             </div>
         </DemoExample>
