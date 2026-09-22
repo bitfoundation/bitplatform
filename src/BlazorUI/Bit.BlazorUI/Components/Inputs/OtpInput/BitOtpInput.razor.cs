@@ -422,6 +422,29 @@ public partial class BitOtpInput : BitInputBase<string?>
         return _inputRefs[Math.Clamp(index, 0, _inputRefs.Length - 1)].FocusAsync();
     }
 
+    /// <summary>
+    /// Gives focus to the input holding the first character of the code.
+    /// </summary>
+    /// <remarks>
+    /// The inherited overloads are overridden rather than left alone because an argument list of none is
+    /// resolved to the parameterless one of the base class rather than to the <see cref="FocusAsync(int)"/>
+    /// above, which would leave the plainest call of the four the only one that is not refused before the
+    /// first render - the element references of an OTP input are bound once its inputs have been rendered,
+    /// and the inherited overload would ask the browser for an element that is not there yet.
+    /// </remarks>
+    public override ValueTask FocusAsync() => FocusAsync(0);
+
+    /// <inheritdoc cref="FocusAsync()" path="/summary"/>
+    /// <param name="preventScroll">A Boolean value indicating whether or not the browser should scroll
+    /// the document to bring the newly-focused element into view.</param>
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (IsRendered is false || _inputRefs.Length == 0) return ValueTask.CompletedTask;
+
+        return _inputRefs[0].FocusAsync(preventScroll);
+    }
+
 
 
     [JSInvokable("SetValue")]
@@ -1462,6 +1485,12 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         var oldLength = oldValue.Length;
         var newLength = newValue.Length;
+
+        // An input event reporting exactly what the input was already showing (a step of an IME, or a
+        // keystroke the browser took back on its own) leaves nothing to write. It is answered before the
+        // single character shortcut below, which would otherwise take a Mask of one character as the
+        // character that had just been typed and write the masking glyph into the code itself.
+        if (newValue == oldValue) return string.Empty;
 
         if (newLength == 1) return newValue;
         if (newLength < oldLength) return newValue;

@@ -6,6 +6,7 @@
 //   --bit-OtpInput-input-size              width and height of every box                 (default: per size, $siz-ctrl-*)
 //   --bit-OtpInput-input-width             width alone, for a box wider than it is tall  (default: --bit-OtpInput-input-size)
 //   --bit-OtpInput-input-height            height alone                                  (default: --bit-OtpInput-input-size)
+//   --bit-OtpInput-font-family             typeface of the whole component               (default: $tg-font-family)
 //   --bit-OtpInput-font-size               size of the code, the label and the hint      (default: per size, from the type ramp)
 //   --bit-OtpInput-label-font-size         size of the label above the inputs            (default: the size of the code)
 //   --bit-OtpInput-label-font-weight       weight of the label above the inputs          (default: $tg-fw-semibold)
@@ -42,7 +43,10 @@
     width: fit-content;
     box-sizing: border-box;
     flex-direction: column;
-    font-family: $tg-font-family;
+    //a code is the one piece of text in a form that is read character by character rather than as a word, so
+    //setting it in a tabular or a monospaced face - where a zero cannot be mistaken for an O - is a design
+    //decision worth making once for a whole application rather than per instance.
+    font-family: var(--bit-OtpInput-font-family, #{$tg-font-family});
     font-size: var(--bit-OtpInput-font-size, var(--bit-otp-fontsize));
 }
 
@@ -203,6 +207,23 @@
     &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
+    }
+
+    //a one-time code is filled far more often than it is typed - that is what the one-time-code autofill,
+    //the WebOTP request and the password managers are all there for - so the colors a Chromium or a WebKit
+    //engine paints an auto filled control with are what the row would usually be seen in. They are declared
+    //with an internal rule no author declaration wins against, and in a dark scheme they are a pale blue box
+    //holding the light character of the theme, which is the code itself falling under the contrast minimum.
+    //Both halves are taken back: the character through the one property the engines do read back from the
+    //author, and the box by never letting the auto fill transition arrive, since the engine animates that
+    //color rather than painting it outright. The states are listed one by one because the engines match the
+    //auto filled control with a selector per state rather than with the bare one.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        caret-color: var(--bit-OtpInput-color, #{$clr-fg-pri});
+        -webkit-text-fill-color: var(--bit-OtpInput-color, #{$clr-fg-pri});
+        transition: border-color $mot-duration-short $mot-easing, background-color 0s 10000s;
     }
 }
 
@@ -406,6 +427,10 @@
         color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
         border-color: var(--bit-OtpInput-disabled-border-color, #{$clr-brd-dis});
         background-color: var(--bit-OtpInput-disabled-background, #{$clr-bg-dis});
+        //a box that was auto filled before the component was turned off - a code being submitted is disabled
+        //while the answer is awaited - still carries the fill color of the rule above, and a text fill wins
+        //over a color whatever the two selectors weigh, so the dimmed one has to be declared in kind.
+        -webkit-text-fill-color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
 
         //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
         //staying the only thing in the component that still reads as enabled.

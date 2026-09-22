@@ -6,7 +6,7 @@
             Description="A one-time password (OTP) input for Blazor: a row of single character boxes bound to one string, with auto advancing focus, full keyboard navigation, whole-code copy and paste, SMS auto fill, masking, grouping separators, an accessible described group, busy and error states, and public CSS variables." />
 
 <DemoPage Name="OtpInput"
-          Description="The OTP input collects a one-time passcode as a row of single character boxes bound to one string value. Typing advances the focus, the keyboard takes the code apart character by character, a pasted or SMS-filled code is cleaned up and spread over the boxes, and copying from any box hands over the whole code rather than the one character it holds. The accepted characters are narrowed by the input type or a regular expression, case folded and normalized to ASCII on the way in; what is rejected outright is reported rather than silently dropped. It binds and validates like any other Blazor input, raises a callback the moment the code is complete, shows the wait while that code is being checked and the error state of one the server refused, and re-skins through BitParams and the public CSS variables."
+          Description="A one-time passcode entered as a row of single character boxes bound to one string value. Typing advances the focus, the keyboard walks and edits the code, a pasted or SMS-filled code is cleaned up and spread over the boxes, and a copy hands over the whole code. Accepted characters are narrowed by the input type or a regular expression, case folded and normalized to ASCII; a rejection is reported rather than silently dropped. It binds and validates like any other Blazor input, raises a callback the moment the code is complete, and carries the busy and error states of the round trip that follows."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -22,27 +22,25 @@
         <br />
         <div>
             The row behaves as the single field it stands for. Backspace clears the box it is pressed in and
-            stays there, so the character can be retyped at once, and only on an already empty box does it
-            delete the character before it and follow it; Delete clears without moving; the arrows walk the row
-            and Home and End jump to the first and last character. Focusing a box selects what it holds, so
-            typing replaces rather than appends - which is also why the space bar is refused like any other
-            character no code is made of. A click in a gap or on a separator lands in the box the typing is
-            meant to carry on in.
+            stays there, so the character can be retyped at once; only on an already empty box does it delete
+            the character before it and follow it. Delete clears without moving, the arrows walk the row, Home
+            and End jump to the first and last character. Focusing a box selects what it holds, so typing
+            replaces rather than appends - which is why the space bar is refused like any other character no
+            code is made of. A click in a gap or on a separator lands in the box the typing carries on in.
         </div>
         <br />
         <div>
             <b>IsEnabled</b> dims the component and drops it out of the tab order; <b>ReadOnly</b> keeps it
-            readable and copyable, which is what a confirmed code should look like. <b>AutoFocus</b> lands in
-            the first box left to fill, <b>AutoShift</b> makes Backspace and Delete pull the rest of the code
-            one box along instead of leaving a hole, and <b>BlurOnFill</b> drops the focus on the last
-            character, getting a phone keyboard out of the way of the button below.
+            readable and copyable. <b>AutoFocus</b> lands in the first box left to fill, <b>AutoShift</b> makes
+            Backspace and Delete pull the rest of the code one box along instead of leaving a hole, and
+            <b>BlurOnFill</b> drops the focus on the last character, getting a phone keyboard out of the way.
         </div>
         <br />
         <div>
             <b>Sequential</b> keeps the code free of holes: a click or a paste past the first empty box is
-            pulled back to it. The value is the boxes joined together and an empty one contributes nothing, so
-            without it a character typed into the middle of an empty row is reported as the first of the code.
-            A complete code is left alone and stays correctable.
+            pulled back to it. Without it a character typed into the middle of an empty row is reported as the
+            first of the code, since the value is the boxes joined together. A complete code is left alone and
+            stays correctable.
         </div>
         <br /><br />
         <div>Basic</div><br />
@@ -132,26 +130,25 @@
         </div>
         <br />
         <div>
-            Only <b>Password</b> and <b>Tel</b> are rendered as their own element. A native number input would
-            carry spin buttons, react to the mouse wheel and report an empty value for characters a number
-            accepts but a code does not (<code>e</code>, <code>-</code>); <b>Email</b> and <b>Url</b> carry a
-            constraint validation a single character can never satisfy, which would keep a plain HTML form from
-            ever submitting. All three are text inputs that keep only their keyboard, through
-            <code>inputmode</code>.
+            Only <b>Password</b> and <b>Tel</b> are rendered as their own element. <b>Number</b> would carry spin
+            buttons, react to the mouse wheel and report an empty value for characters a number accepts but a
+            code does not (<code>e</code>, <code>-</code>); <b>Email</b> and <b>Url</b> carry a constraint
+            validation a single character can never satisfy, which would keep a plain HTML form from ever
+            submitting. All three are text inputs that keep only their keyboard, through <code>inputmode</code>.
         </div>
         <br />
         <div>
             <b>InputMode</b> asks for a keyboard on its own, changing neither the element nor the accepted
             characters. It defaults to the one the <b>Type</b> implies, so it is only needed for the exceptions:
-            <b>Tel</b> on a code of digits brings up the telephone keypad, whose keys are noticeably larger than
-            the numeric ones on most Android keyboards.
+            <b>Tel</b> on a code of digits brings up the telephone keypad, whose keys are larger than the
+            numeric ones on most Android keyboards.
         </div>
         <br />
         <div>
             A code of digits is not always written in ASCII - a Persian message carries it as <code>۱۲۳۴۵۶</code>,
             an Arabic one as <code>١٢٣٤٥٦</code>. <b>NormalizeDigits</b> folds every other numbering system into
-            ASCII as it is typed or pasted, before the <b>Type</b> and the <b>Pattern</b> decide what to accept,
-            so the value stays the ASCII form a server expects.
+            ASCII on the way in, before the <b>Type</b> and the <b>Pattern</b> decide what to accept, so the
+            value stays the ASCII form a server expects.
         </div>
         <br />
         <BitOtpInput Label="Text" Type="BitInputType.Text" />
@@ -336,9 +333,8 @@
             <b>SingleTabStop</b> turns the component into one stop of the tab order: only the first box stays
             reachable with Tab, the rest are left to the auto advancing focus, the arrow keys and the mouse. The
             boxes still take the focus on a click and through <b>FocusAsync</b>. <b>TabIndex</b> composes with it
-            rather than fighting it - a box taken out of the order has no position left to be given - and is
-            worth using sparingly, since a positive value pulls the component out of the document order for
-            everyone.
+            - a box taken out of the order has no position left to be given - and is worth using sparingly,
+            since a positive value pulls the component out of the document order for everyone.
         </div>
         <br />
         <div>
@@ -373,8 +369,10 @@
         <div>
             A one-time code is copied far more often than typed, and all three ways it arrives in one go end in
             the same place: <code>autocomplete="one-time-code"</code> on every box, which is what makes iOS and
-            Safari offer the code that just arrived by SMS; the WebOTP API, which the component requests itself
-            where it exists; and a paste anywhere in the row.
+            Safari offer the code that just arrived by SMS; the WebOTP API, requested by the component itself
+            where it exists; and a paste anywhere in the row. A box the browser fills keeps the colors of the
+            theme rather than the pale blue a Chromium or a WebKit engine paints an autofilled control with,
+            which in a dark scheme would be the code itself falling under the contrast minimum.
         </div>
         <br />
         <div>
@@ -382,15 +380,15 @@
             <b>Pattern</b> rejects are dropped instead of the paste being refused, so a code copied as
             <code>123-456</code>, wrapped over two lines or surrounded by the words of the message still fills
             the boxes; <b>Uppercase</b>, <b>Lowercase</b> and <b>NormalizeDigits</b> apply to it too. Characters
-            with no glyph at all always go - bidi marks, zero width joiners, a byte order mark, control
-            characters - since one of them would hand the server a code the user cannot see.
+            with no glyph - bidi marks, zero width joiners, a byte order mark, control characters - always go,
+            since one of them would hand the server a code the user cannot see.
         </div>
         <br />
         <div>
             Where it lands depends on its length: a code that fills the component starts at the first box
             whichever one received it, a shorter one is inserted where it was pasted and replaces only as many
-            characters as it brings, a longer one keeps its first <b>Length</b>. <b>Sequential</b> applies here
-            too and keeps a chunk from landing past the first empty box.
+            characters as it brings, a longer one keeps its first <b>Length</b>. <b>Sequential</b> keeps a chunk
+            from landing past the first empty box.
         </div>
         <br />
         <div>
@@ -402,10 +400,9 @@
         </div>
         <br />
         <div>
-            The way back out is handled too: a copy from any box hands over the whole code rather than the one
-            character that box holds, and a cut empties the boxes afterwards. A code that is not shown - a
-            <b>Mask</b> or a <b>Password</b> <b>Type</b> - is left off the clipboard, for the same reason a
-            password input refuses to be copied at all.
+            On the way back out, a copy from any box hands over the whole code rather than the one character
+            that box holds, and a cut empties the boxes afterwards. A code that is not shown - a <b>Mask</b> or
+            a <b>Password</b> <b>Type</b> - is kept off the clipboard, the way a password input is.
         </div>
         <br />
         <div>
@@ -561,25 +558,24 @@
         <div>
             Entering a one-time code is a round trip, and these are its two halves. Such a code is almost never
             wrong in a way a validator can see - it is the right length and made of the right characters, and
-            only the server that issued it knows it has expired - so the wait and the answer are both states of
-            the component rather than of an <code>EditContext</code>.
+            only the server that issued it knows it has expired - so both are states of the component rather
+            than of an <code>EditContext</code>.
         </div>
         <br />
         <div>
             <b>IsLoading</b> is the middle of the trip: an indeterminate bar under the boxes, the
             <b>Description</b> put into the component's live region so the wait is announced as well as drawn,
-            <code>aria-busy</code> on the group, and the code held still exactly the way <b>ReadOnly</b> does -
-            nothing typed, deleted, pasted or cut over a code already submitted, and no further SMS request. What
-            it does not block is your own <b>Clear</b>.
+            <code>aria-busy</code> on the group, and the code held still the way <b>ReadOnly</b> does - nothing
+            typed, deleted, pasted or cut over a code already submitted, and no further SMS request. What it
+            does not block is your own <b>Clear</b>.
         </div>
         <br />
         <div>
             <b>Invalid</b> is the answer that came back rejected, painted in the error color and marked
-            <code>aria-invalid</code>. It is independent of an <b>EditForm</b>, which renders the very same state
-            on its own, so the two divide the work: data annotations catch a code that is too short before it is
-            sent, <b>Invalid</b> catches the one that was sent and refused. Pair it with <b>Description</b>, the
-            sentence the server answered with - which is also what keeps colour from being the only carrier of
-            the message, since that sentence is both drawn and announced.
+            <code>aria-invalid</code>. An <b>EditForm</b> renders the very same state on its own, so the two
+            divide the work: data annotations catch a code that is too short before it is sent, <b>Invalid</b>
+            catches the one that was sent and refused. Pair it with <b>Description</b>, the sentence the server
+            answered with, which keeps color from being the only carrier of the message.
         </div>
         <br />
         <div>
@@ -628,7 +624,9 @@
             <b>Length</b> and <b>Type</b>, which the server issuing the code decides; <b>Pattern</b>,
             <b>Uppercase</b> and <b>NormalizeDigits</b> for the alphabets your users write in; and
             <b>PasteTransformer</b>, the one regular expression that pulls your codes out of the messages they
-            arrive in.
+            arrive in. <b>ReadOnly</b> and <b>Required</b> travel with them, so a review step can hold every
+            code on the screen still at once. What identifies a single field - <b>Value</b>,
+            <b>DefaultValue</b>, <b>Name</b> - is deliberately not carried.
         </div>
         <br />
         <div>
@@ -738,6 +736,9 @@
             <br />
             <BitOtpInput Label="A ticket stub, wider than it is tall" Length="6" Uppercase Merged
                          Style="--bit-OtpInput-input-width: 2.75rem; --bit-OtpInput-input-height: 3.5rem; --bit-OtpInput-border-width: 2px; --bit-OtpInput-background: var(--bit-clr-bg-sec); --bit-OtpInput-radius: 0.25rem;" />
+            <br />
+            <BitOtpInput Label="Set in the monospaced face of the theme" Length="6" Uppercase DefaultValue="0OI1L5"
+                         Style="--bit-OtpInput-font-family: var(--bit-tpg-font-family-mono);" />
         </div>
         <br />
         <div>Set once on an ancestor, inherited by every code entry inside it:</div>

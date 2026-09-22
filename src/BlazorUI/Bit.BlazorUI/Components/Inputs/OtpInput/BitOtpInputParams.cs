@@ -3,7 +3,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitOtpInput"/> component.
 /// </summary>
-public class BitOtpInputParams : BitComponentBaseParams, IBitComponentParams
+public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitOtpInput"/> cascading parameters within <see cref="BitParams"/>.
@@ -274,7 +274,7 @@ public class BitOtpInputParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitOtpInput is null) return;
 
-        UpdateBaseParameters(bitOtpInput);
+        UpdateInputBaseParameters(bitOtpInput);
 
         if (Accent.HasValue && bitOtpInput.HasNotBeenSet(nameof(Accent)))
         {

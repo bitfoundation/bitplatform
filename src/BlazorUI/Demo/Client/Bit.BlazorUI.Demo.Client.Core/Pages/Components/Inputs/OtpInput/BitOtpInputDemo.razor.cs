@@ -584,6 +584,12 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "--bit-OtpInput-font-family",
+            DefaultValue = "--bit-tpg-font-family",
+            Description = "Typeface of the whole component, which is where a tabular or monospaced face for the code is set - the one piece of text in a form that is read character by character.",
+        },
+        new()
+        {
             Name = "--bit-OtpInput-font-size",
             DefaultValue = "--bit-tpg-fs-xs / --bit-tpg-fs-sm / --bit-tpg-fs-md, per Size",
             Description = "Size of the code, inherited by the label and the placeholder.",
@@ -776,7 +782,7 @@ public partial class BitOtpInputDemo
         {
             Name = "FocusAsync",
             Type = "(int index = 0) => ValueTask",
-            Description = "Gives focus to a specific input element of the BitOtpInput. The index is clamped into the range of the rendered inputs, and calling it before the component has rendered does nothing rather than asking the browser for an element that is not there yet.",
+            Description = "Gives focus to a specific input element of the BitOtpInput. The index is clamped into the range of the rendered inputs, and calling it before the component has rendered does nothing rather than asking the browser for an element that is not there yet. The two inherited overloads, FocusAsync() and FocusAsync(bool preventScroll), land on the input holding the first character and are refused before the first render just the same.",
         }
     ];
 
@@ -1309,6 +1315,9 @@ private readonly BitOtpInputParams[] otpInputParams =
 
 <BitOtpInput Label=""A ticket stub, wider than it is tall"" Length=""6"" Uppercase Merged
              Style=""--bit-OtpInput-input-width: 2.75rem; --bit-OtpInput-input-height: 3.5rem; --bit-OtpInput-border-width: 2px; --bit-OtpInput-background: var(--bit-clr-bg-sec); --bit-OtpInput-radius: 0.25rem;"" />
+
+<BitOtpInput Label=""Set in the monospaced face of the theme"" Length=""6"" Uppercase DefaultValue=""0OI1L5""
+             Style=""--bit-OtpInput-font-family: var(--bit-tpg-font-family-mono);"" />
 
 
 <div style=""--bit-OtpInput-radius: 999px; --bit-OtpInput-focus-border-color: var(--bit-clr-suc); --bit-OtpInput-focus-color: var(--bit-clr-suc-focus);"">
