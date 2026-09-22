@@ -104,7 +104,13 @@
                     </span>
                 }
 
-                <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
+                @* The whole presentation of an item is hidden from assistive technologies, because the item
+                   already carries a name of its own above. That covers an ItemTemplate as well as the two
+                   built-in glyphs: a template that draws a number or a face would otherwise append it to
+                   that name, leaving the third of five items announced as "3 of 5, 3". *@
+                <div aria-hidden="true"
+                     style="@Styles?.IconContainer"
+                     class="bit-rtg-ict @Classes?.IconContainer">
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(new BitRatingItemContext(index, max, percentage, displayValue, CurrentValue))
@@ -113,12 +119,10 @@
                     {
                         @* The base layer swaps to the filled glyph once the item is complete, so the two layers
                            cannot show a seam between them at 100%. *@
-                        <i aria-hidden="true"
-                           style="@Styles?.UnselectedIcon"
+                        <i style="@Styles?.UnselectedIcon"
                            class="bit-rtg-iem @(percentage == 100 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
                         </i>
-                        <i aria-hidden="true"
-                           style="@GetFillStyle(percentage)"
+                        <i style="@GetFillStyle(percentage)"
                            class="bit-rtg-ifl @(percentage > 0 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
                         </i>
                     }
@@ -168,7 +172,9 @@
        announced through this live region instead of being rounded into a radio that would misreport it. *@
     @if (ReadOnly is false)
     {
-        <span class="bit-rtg-alb" aria-live="polite">@_LiveValueText</span>
+        @* Atomic, so the value is announced as the one string it is - "4 of 5" and not the "4" that changed
+           about it - which is also what the library's other announcement regions do. *@
+        <span class="bit-rtg-alb" aria-live="polite" aria-atomic="true">@_LiveValueText</span>
     }
 
     @* A read-only rating named by its own visible label would announce the label and lose the value it

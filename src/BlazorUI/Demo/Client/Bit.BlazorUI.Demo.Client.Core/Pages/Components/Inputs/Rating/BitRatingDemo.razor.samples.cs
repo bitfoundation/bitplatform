@@ -256,8 +256,11 @@ private void HandleOnChanging(BitRatingChangeArgs args)
 
     <DataAnnotationsValidator />
 
-    <BitRating Required AllowZeroStars Label=""Your rate"" @bind-Value=""ValidationModel.Value"" />
-    <ValidationMessage For=""@(() => ValidationModel.Value)"" />
+    <BitRating Required AllowZeroStars
+               Label=""Your rate""
+               aria-describedby=""rating-validation-message""
+               @bind-Value=""ValidationModel.Value"" />
+    <ValidationMessage id=""rating-validation-message"" For=""@(() => ValidationModel.Value)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
@@ -415,7 +418,7 @@ private readonly BitRatingParams[] ratingParams =
 
 <BitRating DefaultValue=""3.5"" Style=""--bit-Rating-color: goldenrod; --bit-Rating-hover-color: darkorange; --bit-Rating-unselected-color: #d8c9a3;"" />
 
-<BitRating DefaultValue=""3"" Style=""--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25;"" />
+<BitRating DefaultValue=""3"" Style=""--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25; --bit-Rating-active-scale: 0.8; --bit-Rating-active-color: crimson;"" />
 
 <div>
     Rated

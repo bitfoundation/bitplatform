@@ -24,19 +24,23 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
     /// <summary>
     /// Lets the current value be cleared, by clicking the item that is already selected or by pressing
     /// Delete or Backspace. Clearing sets the value to 0, so it also makes 0 a reachable value the same
-    /// way <see cref="AllowZeroStars"/> does.
+    /// way <see cref="AllowZeroStars"/> does, and the items empty under a pointer resting on the committed
+    /// value, since the preview is the value a click would commit.
     /// </summary>
     public bool? AllowClear { get; set; }
 
     /// <summary>
-    /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
-    /// unless <see cref="AllowClear"/> is also set.
+    /// Puts the unrated 0 in the range of the rating, so a value of 0 is kept instead of being pulled up to
+    /// the smallest step and the rating can start empty. The keys that reach the ends of the range - Home and
+    /// the 0 key - reach it, while the pointer always commits at least one step and Delete stays behind
+    /// <see cref="AllowClear"/>.
     /// </summary>
     public bool? AllowZeroStars { get; set; }
 
     /// <summary>
-    /// Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.
-    /// Placeholder {0} is the current rating and placeholder {1} is the max: for example, "Select {0} of {1} stars".
+    /// Names each individual rating item - not the rating as a whole - for screen readers. Placeholder {0} is
+    /// the rating that item stands for, which is its one-based position, and placeholder {1} is the max: for
+    /// example, "Select {0} of {1} stars" names the third of five items "Select 3 of 5 stars".
     /// </summary>
     public string? AriaLabelFormat { get; set; }
 
@@ -69,7 +73,9 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
     public string? Description { get; set; }
 
     /// <summary>
-    /// Names the rating as a whole from its current value and the max, used whenever the AriaLabel is not provided.
+    /// Names the rating as a whole from its current value and the max, which arrive as the first and the
+    /// second argument. It is used whenever the AriaLabel is not set, and like that label it wins over the
+    /// visible <see cref="Label"/>.
     /// </summary>
     public Func<double, double, string>? GetAriaLabel { get; set; }
 
@@ -93,7 +99,8 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
 
     /// <summary>
     /// The native tooltips of the rating items, in order, shown when hovering over each one, and used as the
-    /// accessible name of the item unless the AriaLabelFormat overrides it.
+    /// accessible name of the item unless the AriaLabelFormat overrides it. The items of a read-only or
+    /// disabled rating take no pointer events, so their tooltips never appear there.
     /// </summary>
     public IList<string>? ItemTitles { get; set; }
 
@@ -120,7 +127,8 @@ public class BitRatingParams : BitInputBaseParams, IBitComponentParams
 
     /// <summary>
     /// The smallest change of the value the user can make, as a fraction of a single item.
-    /// The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable, and so on.
+    /// The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable, and so on;
+    /// anything at or above 1, and anything at or below 0, leaves the items whole.
     /// It is also the floor of the scale unless <see cref="AllowZeroStars"/> or <see cref="AllowClear"/>
     /// opens up the unrated 0.
     /// </summary>

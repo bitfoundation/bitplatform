@@ -5,7 +5,7 @@
             Description="A keyboard-accessible star rating with fractional precision down to any step, a live hover preview, horizontal or vertical layout, a label, clearing, per-item icons and tooltips, custom items and read-only display." />
 
 <DemoPage Name="Rating"
-          Description="BitRating turns an opinion into a row of stars: hover to preview what a click would give, click to commit it. Precision splits every item into as many selectable steps as you ask for, so halves, quarters and tenths are reachable with the pointer and, stepping by that same Precision, with the arrow keys - while a bound value of any precision is always drawn exactly, which is what turns the same component into the read-only 4.3-out-of-5 summary beside a review count. The whole row is a single tab stop following the WAI-ARIA radiogroup pattern, named by its own label and answering to the arrow, Home, End, Page and digit keys."
+          Description="BitRating turns an opinion into a row of stars: hover to preview what a click would give, click to commit it. Precision splits every item into as many selectable steps as you ask for, so halves, quarters and tenths are reachable with the pointer and with the arrow keys alike, while a bound value of any precision is always drawn exactly - which is what makes the same component the read-only 4.3-out-of-5 summary beside a review count. The whole row is a single tab stop following the WAI-ARIA radiogroup pattern."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -152,10 +152,16 @@
         <div>
             A rating starts at its smallest step - a whole item at the default Precision - unless it is told
             that "not rated" is a legitimate answer. <b>AllowZeroStars</b> says exactly that: a value of 0 is
-            kept instead of being pulled up, so the rating can start empty - though the user still cannot get
-            back to it. <b>AllowClear</b> adds that way back: clicking the item that is already selected, or
-            pressing <b>Delete</b> or <b>Backspace</b>, returns the rating to 0, which is why it opens up the
-            0 on its own.
+            kept instead of being pulled up, so the rating can start empty. That makes 0 part of the scale
+            rather than an action, so the keys that reach the ends of the range - <b>Home</b> and <b>0</b> -
+            reach it while the pointer, which always commits at least one step, cannot.
+        </div>
+        <br />
+        <div>
+            <b>AllowClear</b> is clearing as an action: clicking the item that is already selected, or
+            pressing <b>Delete</b> or <b>Backspace</b>, returns the rating to 0 - which is why it opens up the
+            0 on its own. Because the preview is always the value a click would commit, the items empty while
+            the pointer rests on the committed value, so clearing is discovered rather than explained.
         </div>
         <br />
         <div class="example-box">
@@ -167,11 +173,11 @@
             <BitRating Precision="0.5" @bind-Value="noZeroHalfValue" />
             <BitLabel>Value: @noZeroHalfValue</BitLabel>
             <br />
-            <div>AllowZeroStars (starts empty, but cannot be emptied again):</div>
+            <div>AllowZeroStars (starts empty; only Home or the 0 key gets back there):</div>
             <BitRating AllowZeroStars @bind-Value="allowZeroValue" />
             <BitLabel>Value: @allowZeroValue</BitLabel>
             <br />
-            <div>AllowClear (click the selected item, or press Delete, to clear):</div>
+            <div>AllowClear (hover the selected item to watch the row empty, then click - or press Delete):</div>
             <BitRating AllowClear @bind-Value="allowClearValue" />
             <BitLabel>Value: @allowClearValue</BitLabel>
         </div>
@@ -204,8 +210,9 @@
             what is bound. <b>OnHoverChange</b> reports that previewed value as it changes, and null once the
             pointer leaves - which is all a caption needs to follow the pointer, down to a half step at a
             fractional Precision. <b>NoHoverPreview</b> turns off the preview the component paints, for a page
-            that competes with it or draws one of its own - the items still grow under the pointer, since that
-            is an affordance and not a value, and OnHoverChange goes on reporting.
+            that competes with it or draws one of its own - the items still grow under the pointer and dip
+            under a press, since those are affordances and not values, and OnHoverChange goes on reporting.
+            The press is what carries a touch device, which has no hover to preview with at all.
         </div>
         <br />
         <div class="example-box">
@@ -276,7 +283,9 @@
             (the one the shown value lands in, which the numbered scale below rings), and both the previewed
             <b>DisplayValue</b> and the committed <b>Value</b>. A template renders as a whole, so a partial fill
             is yours to express if it matters; when all you need is a different glyph per position,
-            <a href="components/rating#example9"><b>GetSelectedIcon</b></a> keeps the built-in one.
+            <a href="components/rating#example9"><b>GetSelectedIcon</b></a> keeps the built-in one. The drawing
+            is hidden from assistive technologies just as the built-in glyphs are, so the numbers and faces
+            below are not appended to the names the items already carry.
         </div>
         <br />
         <div class="example-box">
@@ -354,6 +363,14 @@
             number input, so <b>Name</b> also makes the rating readable by a plain form post.
         </div>
         <br />
+        <div>
+            <code>aria-invalid</code> says that something is wrong but not what, so the failure message is
+            given an <b>id</b> and pointed at from the rating. A splatted <code>aria-describedby</code> is
+            carried over rather than replaced - both it and the component's own <b>Description</b> are kept,
+            since the attribute is a list - so the reason is announced with the field instead of only being
+            visible under it.
+        </div>
+        <br />
         <div class="example-box">
             @if (string.IsNullOrEmpty(SuccessMessage))
             {
@@ -361,8 +378,11 @@
 
                     <DataAnnotationsValidator />
 
-                    <BitRating Required AllowZeroStars Label="Your rate" @bind-Value="ValidationModel.Value" />
-                    <ValidationMessage For="@(() => ValidationModel.Value)" />
+                    <BitRating Required AllowZeroStars
+                               Label="Your rate"
+                               aria-describedby="rating-validation-message"
+                               @bind-Value="ValidationModel.Value" />
+                    <ValidationMessage id="rating-validation-message" For="@(() => ValidationModel.Value)" />
 
                     <br />
 
@@ -386,7 +406,8 @@
             <li><b>→</b> / <b>↑</b> raise the value by one step, <b>←</b> / <b>↓</b> lower it</li>
             <li><b>Shift</b> with an arrow, or <b>PageUp</b> / <b>PageDown</b>, moves a whole item - so a rating split into tenths is five presses wide rather than fifty</li>
             <li><b>Home</b> / <b>End</b> jump to the ends of the scale</li>
-            <li><b>1</b> … <b>9</b> jump straight to that rating</li>
+            <li><b>Space</b> / <b>Enter</b> commit the item the focus is on, whole</li>
+            <li><b>1</b> … <b>9</b> jump straight to that rating, and <b>0</b> to the bottom of the scale - which is the unrated 0 once <b>AllowZeroStars</b> or <b>AllowClear</b> has opened it up</li>
             <li><b>Delete</b> / <b>Backspace</b> clear it, where <b>AllowClear</b> permits</li>
         </ul>
         <div>
@@ -446,8 +467,7 @@
             bound to - which is all it takes to restyle the scale by the score it shows. The first rating below
             derives its <a href="components/rating#example18"><b>Color</b></a> from its own value, turning from
             red through orange to green as the score climbs; the second derives its icons the same way, so a low
-            score frowns and a high one smiles. No dedicated API is involved: just callbacks and parameters that
-            close over the bound value.
+            score frowns and a high one smiles. No dedicated API is involved.
         </div>
         <br />
         <div class="example-box">
@@ -491,10 +511,11 @@
     <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Color</b> picks the theme color the filled part of the items is painted in, with <b>Primary</b> as
-            the default. The unfilled part stays neutral whatever the color is, so it keeps reading as "not rated
-            yet" instead of as a second, dimmer accent. The semantic colors tie the rating to what the score
-            means, while the <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on
-            non-default surfaces like the inverted panel below.
+            the default; the hover shade, the press shade and the focus ring all come from the same role. The
+            unfilled part stays neutral whatever the color is, so it keeps reading as "not rated yet" instead
+            of as a second, dimmer accent. The semantic colors tie the rating to what the score means, while
+            the <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on non-default
+            surfaces like the inverted panel below.
         </div>
         <br />
         <div class="example-box">
@@ -617,8 +638,8 @@
             <div>Its own palette:</div>
             <BitRating DefaultValue="3.5" Style="--bit-Rating-color: goldenrod; --bit-Rating-hover-color: darkorange; --bit-Rating-unselected-color: #d8c9a3;" />
             <br />
-            <div>Bigger glyphs, room between them, a livelier press:</div>
-            <BitRating DefaultValue="3" Style="--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25;" />
+            <div>Bigger glyphs, room between them, and a livelier press (hold an item down):</div>
+            <BitRating DefaultValue="3" Style="--bit-Rating-size: 2rem; --bit-Rating-gap: 0.5rem; --bit-Rating-hover-scale: 1.25; --bit-Rating-active-scale: 0.8; --bit-Rating-active-color: crimson;" />
             <br />
             <div>Shrunk to the glyph, for a rating that sits inside a line of text:</div>
             <div>

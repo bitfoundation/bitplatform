@@ -6,6 +6,8 @@
 //   --bit-Rating-unselected-color   color of the unfilled part of the items        (default: $clr-fg-ter)
 //   --bit-Rating-hover-color        color of the filled part while the pointer is
 //                                   previewing a value over the items             (default: the role's hover color)
+//   --bit-Rating-active-color       color of the filled part while an item is
+//                                   being pressed                                 (default: the role's active color)
 //   --bit-Rating-focus-color        color of the keyboard focus ring of an item    (default: the role's focus color)
 //   --bit-Rating-disabled-color     color of both parts when IsEnabled is false    (default: $clr-fg-dis)
 //   --bit-Rating-invalid-color      color of both parts, and of the focus ring,
@@ -18,6 +20,7 @@
 //   --bit-Rating-gap                extra room between the items                   (default: 0)
 //   --bit-Rating-radius             corner radius of an item and its focus ring    (default: $shp-radius-control)
 //   --bit-Rating-hover-scale        how much the hovered item grows                (default: 1.1; 1 turns it off)
+//   --bit-Rating-active-scale       how much the pressed item dips                 (default: 0.9; 1 turns it off)
 //   --bit-Rating-label-color        text color of the label                        (default: $clr-fg-pri)
 //   --bit-Rating-label-font-size    text size of the label                         (default: per size, $tg-fs-xs/sm/md)
 //   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-fw-semibold)
@@ -62,6 +65,23 @@
         &:not(.bit-dis):not(.bit-rtg-rdl) .bit-rtg-btn:hover .bit-rtg-ict {
             transform: scale(var(--bit-Rating-hover-scale, 1.1));
         }
+    }
+
+    // The press, which is the one piece of interaction feedback a touch device gets: there is no hover
+    // there, so without it a tap on an item is answered by nothing until the new value lands - and by
+    // nothing at all when the value it lands on is the one already committed. So neither half of it is
+    // gated by the hover query the two rules above are in. Declared after that block rather than inside
+    // it so that a press outranks the hover it happens under on a pointer device, on source order.
+    &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl) .bit-rtg-cnt:active .bit-rtg-ifl {
+        color: var(--bit-Rating-active-color, var(--bit-rtg-clr-active));
+    }
+
+    // Dipping rather than growing: the item is already grown by the hover it is pressed under on a
+    // pointer device, so a press that grew it further would read as more of the same instead of as a
+    // press. NoHoverPreview is not excluded from either rule - it turns off the preview of a value,
+    // and a press is not one.
+    &:not(.bit-dis):not(.bit-rtg-rdl) .bit-rtg-btn:active .bit-rtg-ict {
+        transform: scale(var(--bit-Rating-active-scale, 0.9));
     }
 
     &.bit-dis {
@@ -144,6 +164,16 @@
     justify-content: center;
     box-sizing: border-box;
     background-color: transparent;
+    // A rating invites being dragged across - it looks like a slider - and every item carries a name of its
+    // own for screen readers, so a drag would otherwise select those hidden names and leave the row streaked
+    // with a selection highlight.
+    user-select: none;
+    -webkit-user-select: none;
+    // manipulation drops the double-tap-to-zoom wait, so a tap on an item commits at once instead of a third
+    // of a second later, and the platform's own tap flash gives way to the press state below - which is drawn
+    // in the rating's own colors and around the item's own corners.
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     padding: var(--bit-Rating-padding, #{spacing(0.25)});
     // A star is a small glyph, and its own box would be a pointer target well under the 24px minimum of
     // WCAG 2.2 (SC 2.5.8) at every size below Large - and the items of a row are adjacent, so the spacing
@@ -324,6 +354,7 @@
     .bit-rtg-#{$role} {
         --bit-rtg-clr: #{role($tokens, main)};
         --bit-rtg-clr-hover: #{role($tokens, hover)};
+        --bit-rtg-clr-active: #{role($tokens, active)};
         --bit-rtg-clr-focus: #{role($tokens, focus)};
     }
 }
@@ -341,6 +372,28 @@
     .bit-rtg-ifl {
         forced-color-adjust: none;
         color: Highlight;
+    }
+
+    // Opting the glyphs out of the forced palette above is what lets the two of them stay told apart, but it
+    // also leaves every other author color of theirs standing - so each state that repaints them has to be
+    // brought back into the palette by hand. The hover and press shades and the error color are all theme
+    // colors, and a forced palette has replaced the theme wholesale; the fill therefore keeps the one system
+    // color that means "selected" through all three, and the states are carried by what does survive a forced
+    // palette: the focus outline, the required asterisk and the validation message beside the field.
+    // Repeated selector for selector, so that it is only source order deciding between them.
+    .bit-rtg:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl,
+    .bit-rtg:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl) .bit-rtg-cnt:active .bit-rtg-ifl {
+        color: Highlight;
+    }
+
+    .bit-rtg.bit-inv {
+        .bit-rtg-iem {
+            color: ButtonText;
+        }
+
+        .bit-rtg-ifl {
+            color: Highlight;
+        }
     }
 
     .bit-rtg.bit-dis {

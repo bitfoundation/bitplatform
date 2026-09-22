@@ -1063,6 +1063,10 @@ public class BitRatingTests : BunitTestContext
         var live = component.Find("[aria-live]");
 
         Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 3.5, 5), live.TextContent);
+
+        // Announced as the one string it is, rather than as whichever part of it changed.
+        Assert.AreEqual("polite", live.GetAttribute("aria-live"));
+        Assert.AreEqual("true", live.GetAttribute("aria-atomic"));
     }
 
     [TestMethod]
@@ -1807,6 +1811,167 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-seg")[4].Click();
 
         Assert.AreEqual(0d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingAllowClearShouldPreviewTheClear()
+    {
+        double value = 3;
+        double? hovered = null;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnHoverChange, (double? v) => hovered = v);
+        });
+
+        // The preview is the value a click would commit, and a click on the committed value clears it, so
+        // the items empty rather than showing the value the pointer happens to be over.
+        component.FindAll(".bit-rtg-btn")[2].MouseOver();
+
+        Assert.AreEqual(0d, hovered);
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[0].GetAttribute("style"), "width:0%");
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:0%");
+
+        // Any other item previews itself as usual, and the committed value is untouched throughout.
+        component.FindAll(".bit-rtg-btn")[4].MouseOver();
+
+        Assert.AreEqual(5d, hovered);
+        Assert.AreEqual(3d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingAllowClearShouldPreviewTheClearOfAFractionalValue()
+    {
+        double value = 2.5;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The leading half of the third item is the 2.5 that is already committed, so hovering it previews
+        // the clear; the trailing half is a 3 like any other step.
+        component.FindAll(".bit-rtg-seg")[4].MouseOver();
+
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[1].GetAttribute("style"), "width:0%");
+
+        component.FindAll(".bit-rtg-seg")[5].MouseOver();
+
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:100%");
+    }
+
+    [TestMethod]
+    public void BitRatingShouldPreviewTheCommittedValueWithoutAllowClear()
+    {
+        double? hovered = null;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.OnHoverChange, (double? v) => hovered = v);
+        });
+
+        // Nothing is cleared without AllowClear, so the committed value previews as itself.
+        component.FindAll(".bit-rtg-btn")[2].MouseOver();
+
+        Assert.AreEqual(3d, hovered);
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:100%");
+    }
+
+    [TestMethod,
+        DataRow("Home"),
+        DataRow("0")
+    ]
+    public void BitRatingAllowZeroStarsShouldPutZeroWithinReachOfTheRangeKeys(string key)
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowZeroStars, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // AllowZeroStars puts 0 in the range, and the keys that reach the ends of the range reach it -
+        // unlike the pointer, which always commits at least one step, and unlike Delete, which is the
+        // clearing key and stays behind AllowClear.
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(0d, value);
+    }
+
+    [TestMethod,
+        DataRow("Home"),
+        DataRow("0")
+    ]
+    public void BitRatingWithoutAllowZeroStarsShouldHoldTheRangeKeysAtTheFloor(string key)
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs { Key = key });
+
+        // Without it the floor is a single step, so the same keys stop there instead of clearing.
+        Assert.AreEqual(1d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldHideTheDrawingOfEveryItemFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3);
+        });
+
+        // Every item names itself, so its drawing is presentation only - which is what keeps an ItemTemplate
+        // that renders a number or a face from being appended to that name.
+        foreach (var iconContainer in component.FindAll(".bit-rtg-ict"))
+        {
+            Assert.AreEqual("true", iconContainer.GetAttribute("aria-hidden"));
+        }
+    }
+
+    [TestMethod]
+    public void BitRatingShouldHideTheDrawingOfAnItemTemplateToo()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3);
+            parameters.Add(p => p.ItemTemplate, (BitRatingItemContext context) =>
+                (builder) =>
+                {
+                    builder.OpenElement(0, "span");
+                    builder.AddContent(1, context.Index);
+                    builder.CloseElement();
+                });
+        });
+
+        var containers = component.FindAll(".bit-rtg-ict");
+
+        Assert.AreEqual(3, containers.Count);
+        Assert.AreEqual("true", containers[0].GetAttribute("aria-hidden"));
+
+        // The name of the item is the hidden label alone, and not that label plus the number the template drew.
+        Assert.AreEqual("1 of 3", component.FindAll(".bit-rtg-btn > .bit-rtg-alb")[0].TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(-1d),
+        DataRow(double.NaN)
+    ]
+    public void BitRatingShouldFallBackToWholeItemsForAnUnusablePrecision(double precision)
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, precision);
+        });
+
+        // A precision that asks for no steps, or for infinitely many, leaves the items whole.
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-seg").Count);
+        Assert.AreEqual("1", component.Find(".bit-input-hidden").GetAttribute("step"));
     }
 
     [TestMethod]

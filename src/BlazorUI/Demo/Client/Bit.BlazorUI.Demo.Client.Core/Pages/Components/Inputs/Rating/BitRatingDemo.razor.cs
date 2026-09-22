@@ -16,14 +16,14 @@ public partial class BitRatingDemo
             Name = "AllowZeroStars",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard unless AllowClear is also set.",
+            Description = "Puts the unrated 0 in the range of the rating, so a value of 0 is kept instead of being pulled up to the smallest step and the rating can start empty. The keys that reach the ends of the range - Home and the 0 key - reach it, while the pointer always commits at least one step and Delete stays behind AllowClear.",
         },
         new()
         {
             Name = "AriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers. Placeholder {0} is the current rating and placeholder {1} is the max. Without it an item is named by its ItemTitles tooltip, and failing that by its position in the scale.",
+            Description = "Names each individual rating item - not the rating as a whole - for screen readers. Placeholder {0} is the rating that item stands for, which is its one-based position, and placeholder {1} is the max. Without it an item is named by its ItemTitles tooltip, and failing that by its position in the scale.",
         },
         new()
         {
@@ -76,7 +76,7 @@ public partial class BitRatingDemo
             Name = "GetAriaLabel",
             Type = "Func<double, double, string>?",
             DefaultValue = "null",
-            Description = "Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if the AriaLabel parameter is not provided. The first argument is the current value and the second one is the max.",
+            Description = "Names the rating as a whole from its current value and the max, which arrive as the first and the second argument. It is used whenever AriaLabel is not set, and like that label it wins over the visible Label. A read-only rating has to carry its value in its name, since its items are hidden behind that single name; this is how to word it.",
         },
         new()
         {
@@ -108,7 +108,7 @@ public partial class BitRatingDemo
             Name = "ItemTemplate",
             Type = "RenderFragment<BitRatingItemContext>?",
             DefaultValue = "null",
-            Description = "Replaces the default pair of icons of every rating item with custom content.",
+            Description = "Replaces the default pair of icons of every rating item with custom content. The template draws the item and nothing else: the item keeps its hit area, hover preview, keyboard handling and name, and the drawing is hidden from assistive technologies as the built-in glyphs are.",
             LinkType = LinkType.Link,
             Href = "#rating-item-context",
         },
@@ -117,7 +117,7 @@ public partial class BitRatingDemo
             Name = "ItemTitles",
             Type = "IList<string>?",
             DefaultValue = "null",
-            Description = "The native tooltips of the rating items, in order, shown when hovering over each one, and used as the accessible name of the item unless AriaLabelFormat overrides it. Items beyond the end of the list simply get no tooltip.",
+            Description = "The native tooltips of the rating items, in order, shown when hovering over each one, and used as the accessible name of the item unless AriaLabelFormat overrides it. Items beyond the end of the list simply get no tooltip, and the items of a read-only or disabled rating take no pointer events, so their tooltips never appear there.",
         },
         new()
         {
@@ -187,7 +187,7 @@ public partial class BitRatingDemo
             Name = "Precision",
             Type = "double",
             DefaultValue = "1",
-            Description = "The smallest change of the value the user can make, as a fraction of a single item. The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable. It constrains what the user can pick, not what can be displayed, and it is also the floor of the scale unless AllowZeroStars or AllowClear opens up the unrated 0.",
+            Description = "The smallest change of the value the user can make, as a fraction of a single item. The default of 1 only allows whole items, 0.5 adds halves, 0.1 makes every tenth selectable; anything at or above 1, and anything at or below 0, leaves the items whole. It constrains what the user can pick, not what can be displayed, and it is also the floor of the scale unless AllowZeroStars or AllowClear opens up the unrated 0.",
         },
         new()
         {
@@ -304,7 +304,7 @@ public partial class BitRatingDemo
                     Name = "Button",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the rating's button.",
+                    Description = "Custom CSS classes/styles for the button of each rating item, which is the pointer target that holds the glyphs and carries the data-is-current attribute marking the item the shown value lands in.",
                 },
                 new()
                 {
@@ -538,6 +538,12 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "--bit-Rating-active-color",
+            DefaultValue = "The Color role's active color",
+            Description = "Color of the filled part while an item is being pressed, which on a touch device - where there is no hover - is the only feedback a tap gets before the new value lands.",
+        },
+        new()
+        {
             Name = "--bit-Rating-focus-color",
             DefaultValue = "The Color role's focus color",
             Description = "Color of the keyboard focus ring of an item.",
@@ -589,6 +595,12 @@ public partial class BitRatingDemo
             Name = "--bit-Rating-hover-scale",
             DefaultValue = "1.1",
             Description = "How much the item under the pointer grows, which is the affordance that says the items are there to be pressed. A value of 1 turns it off.",
+        },
+        new()
+        {
+            Name = "--bit-Rating-active-scale",
+            DefaultValue = "0.9",
+            Description = "How much the item being pressed dips - it shrinks rather than grows, since a pointer has already grown it by hovering it. A value of 1 turns it off.",
         },
         new()
         {
