@@ -3,9 +3,11 @@
 
 @* read by the javascript side at the moment of a copy, so that turning the masking on and off never
    has to tear the listeners (and the pending WebOTP request behind them) down and set them up again. *@
+@* No aria-label on the root: it is a generic element, where the attribute is prohibited and dropped by
+   assistive technologies anyway, and the group below is the element that the name of the code belongs on.
+   The AriaLabel is therefore rendered there instead of being rendered twice. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
@@ -138,6 +140,18 @@
             }
         </div>
     }
+
+    @* The answer of a server that rejected the code arrives while the focus is usually nowhere near the
+       boxes, so the error state alone reaches nobody who cannot see it: aria-invalid is only announced when
+       the focus lands on a box, and a description is only read out with the group it names. This is the
+       status message of WCAG 2.2 SC 4.1.3 for exactly that moment. It is rendered at all times and left
+       empty, since a live region added to the page with its text already in it is not announced by most
+       screen readers, and it only ever holds the plain Description of a component whose Invalid state is
+       on, so a countdown or a "resend the code" link, which belongs in a DescriptionTemplate, is never
+       announced on every tick. *@
+    <div role="status"
+         aria-live="polite"
+         class="bit-otp-sts">@_statusMessage</div>
 
     @if (Name.HasValue())
     {

@@ -14,6 +14,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     private bool _isSetup;
     private bool _autoFocused;
     private bool _setupSmsAutoFill;
+    private string? _statusMessage;
     private string _labelId = default!;
     private string? _lastFilledValue;
     private Regex? _patternRegex;
@@ -41,6 +42,19 @@ public partial class BitOtpInput : BitInputBase<string?>
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Provides the cascading parameters of the BitOtpInput component, supplied by a <see cref="BitParams"/>
+    /// ancestor. Each of them is a default rather than an override: a component that writes a parameter for
+    /// itself keeps its own value, and only what it left unset is filled in from here.
+    /// </summary>
+    /// <remarks>
+    /// The intended use is to allow shared configuration or settings to be applied to multiple otp input components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitOtpInputParams.ParamName)]
+    public BitOtpInputParams? CascadingParameters { get; set; }
 
 
 
@@ -76,6 +90,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// through its aria-describedby so that screen readers announce it along with the name of the group.
     /// It is where the sentence that turns a row of empty boxes into a question the user can answer
     /// belongs: where the code was sent, how long it is good for, or what a server that rejected it said.
+    /// While <see cref="Invalid"/> is on it also sits in the live region of the component, so a rejection is
+    /// announced at once rather than waiting for the focus to come back to the code.
     /// </summary>
     [Parameter] public string? Description { get; set; }
 
@@ -85,6 +101,17 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// button or a countdown put in here is announced with the group as well.
     /// </summary>
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// Stretches the row of inputs across the width it is given and lets the inputs share it evenly, instead
+    /// of drawing them at the fixed width of their <see cref="Size"/>. It is what keeps a long code from
+    /// running off the side of a narrow screen, and what lines a code entry up with the full width fields
+    /// above and below it on a sign-in form. Only the axis the code is laid out on is affected: the height
+    /// of the inputs stays the one of the size class, and a <see cref="Vertical"/> row stretches its inputs
+    /// across the column instead of stacking more of them.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// Label displayed above the inputs.
@@ -107,8 +134,10 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// Paints the inputs with the error state without an EditContext taking part in it, which is what
     /// reports a code that the server has rejected ("that code is not correct, try again"): the failure
     /// only becomes known once the code has been submitted, so there is nothing for a validator to see.
-    /// It also marks the inputs with aria-invalid, and a failing validation of an EditContext still shows
-    /// the very same state on its own.
+    /// It also marks the inputs with aria-invalid, puts the <see cref="Description"/> into the live region of
+    /// the component so that the rejection is announced at the moment it arrives rather than when the focus
+    /// comes back to the code, and a failing validation of an EditContext still shows the very same state on
+    /// its own.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Invalid { get; set; }
@@ -503,6 +532,8 @@ public partial class BitOtpInput : BitInputBase<string?>
         });
 
         ClassBuilder.Register(() => Vertical ? "bit-otp-vrt" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-otp-fwi" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -522,14 +553,28 @@ public partial class BitOtpInput : BitInputBase<string?>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitOtpInputParams))]
     protected override void OnParametersSet()
     {
+        // Applied before anything below reads a parameter, so that the Length, the restrictions and the
+        // value all follow what the cascade filled in rather than what the component was left with.
+        CascadingParameters?.UpdateParameters(this);
+
         // The Length is a plain parameter, so it can change at any time. Everything that is sized by it
         // has to follow, otherwise the render loop below would index past the end of these arrays.
         if (_length != NormalizedLength)
         {
             ResizeInputs();
         }
+
+        // The sentence the server answered with, put into the live region while the error state is on and
+        // taken back out of it as the state is cleared, so that the very same description is announced again
+        // when the next attempt is rejected too, and a second attempt rejected with another sentence is
+        // announced with that one. Assigning the text it already holds changes nothing in the DOM and is
+        // therefore not announced, which is what keeps a state that merely re-renders quiet. A
+        // DescriptionTemplate is markup rather than text, so there is nothing to copy into the region and
+        // the consumer keeps the announcement of it.
+        _statusMessage = Invalid && DescriptionTemplate is null ? Description : null;
 
         // Narrowing the set of characters that the code may hold has to reach the characters that are
         // already in the inputs too, otherwise the component would keep showing (and reporting) a code
@@ -899,7 +944,8 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsStaleIndex(index)) return;
 
         var oldValue = _inputValues[index];
-        var newValue = e.Value?.ToString()?.Trim() ?? string.Empty;
+        var rawValue = e.Value?.ToString() ?? string.Empty;
+        var newValue = rawValue.Trim();
 
         // What the input showed before this event, which is the masking text while a Mask is set. The
         // diff below has to subtract exactly that from the new value to end up with what was typed.
@@ -1014,6 +1060,17 @@ public partial class BitOtpInput : BitInputBase<string?>
         {
             // The keydown handler owns this clear: it already wrote the resulting values (and ran the
             // auto shift) while this method was awaiting above, so nothing is written here.
+        }
+        else if (pendingShift is false && rawValue.Length > 0)
+        {
+            // The input is holding whitespace and nothing else, which is what a pressed space bar leaves
+            // behind: the focused input is selected, so the space replaces the character that was in it.
+            // No code is ever made of whitespace, and taking the branch below would let an invisible
+            // keystroke delete a character the user had already typed, so it is refused the way any other
+            // rejected character is.
+            _inputValues[index] = oldValue;
+
+            await OnInvalid.InvokeAsync((rawValue, index));
         }
         else if (pendingShift)
         {
@@ -1278,6 +1335,11 @@ public partial class BitOtpInput : BitInputBase<string?>
         // with characters the user cannot see and hand the server a code it never issued. The control
         // characters are dropped for the very same reason. Neither of them is a character a code is ever
         // made of, so no input type and no pattern has to be consulted about them.
+        // Whitespace belongs to the very same set: a code is copied out of messages that wrap and space it,
+        // and a space typed into a box would fill it with a character that cannot be seen and cannot be told
+        // apart from an empty box.
+        if (char.IsWhiteSpace(value)) return false;
+
         if (char.IsControl(value) || char.GetUnicodeCategory(value) is UnicodeCategory.Format) return false;
 
         // A character outside of the basic plane (an emoji above all) is a pair of chars rather than one,
@@ -1333,9 +1395,9 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         if (value.HasNoValue()) return string.Empty;
 
-        // Codes are copied out of a message that often wraps or spaces them, so every kind of
-        // whitespace is dropped rather than the space character alone.
-        return new string([.. TransformValue(value!).Where(c => char.IsWhiteSpace(c) is false && IsAllowedChar(c))]);
+        // Every kind of whitespace is dropped by IsAllowedChar rather than the space character alone, which
+        // is what lets a code copied out of a message that wraps or spaces it still fill the inputs.
+        return new string([.. TransformValue(value!).Where(IsAllowedChar)]);
     }
 
     private string TransformPastedValue(string value)
