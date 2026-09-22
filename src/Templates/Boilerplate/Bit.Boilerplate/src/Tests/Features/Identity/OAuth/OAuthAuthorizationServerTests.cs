@@ -456,6 +456,19 @@ public class OAuthAuthorizationServerTests
         Assert.IsNull(grantedSession.DeviceInfo,
             "DeviceInfo is for devices. Putting the app's name there is what made the sessions list guess an " +
             "operating system from it and show Visual Studio under an Apple logo.");
+
+        await using (var dbScope = server.WebApp.Services.CreateAsyncScope())
+        {
+            var trusted = await dbScope.ServiceProvider.GetRequiredService<AppDbContext>()
+                .UserSessions.Where(us => us.Id == grantedSession.Id)
+                .Select(us => us.Trusted)
+                .SingleAsync(TestContext.CancellationToken);
+
+            Assert.IsFalse(trusted,
+                "A grant is somebody else's application, never the user's own device - so it must never be a place the " +
+                "elevated-access code, the second factor or a password-reset token gets pushed to. The column is only " +
+                "written by IdentityController.SignIn, and this asserts OAuthTokenService never starts writing it too.");
+        }
     }
 
     /// <summary>

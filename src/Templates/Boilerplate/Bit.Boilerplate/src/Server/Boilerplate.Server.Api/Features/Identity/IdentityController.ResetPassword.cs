@@ -56,7 +56,7 @@ public partial class IdentityController
 
         //#if (signalR == true)
         var userConnectionIds = await DbContext.UserSessions
-            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.SignalRConnectionId != null)
+            .Where(us => us.NotificationStatus == UserSessionNotificationStatus.Allowed && us.UserId == user.Id && us.Trusted && us.SignalRConnectionId != null)
             .Select(us => us.SignalRConnectionId!)
             .ToArrayAsync(cancellationToken);
         sendMessagesTasks.Add(appHubContext.Clients.Clients(userConnectionIds).SendAsync(SharedAppMessages.SHOW_MESSAGE, message, null, cancellationToken));
@@ -67,7 +67,7 @@ public partial class IdentityController
         {
             Message = message,
             UserRelatedPush = true
-        }, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id, cancellationToken: cancellationToken));
+        }, customSubscriptionFilter: s => s.UserSession!.UserId == user.Id && s.UserSession.Trusted, cancellationToken: cancellationToken));
         //#endif
 
         await Task.WhenAll(sendMessagesTasks);

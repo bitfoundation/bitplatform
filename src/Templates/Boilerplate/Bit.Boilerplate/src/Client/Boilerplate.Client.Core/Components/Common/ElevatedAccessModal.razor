@@ -1,0 +1,104 @@
+@inherits AppComponentBase
+
+@* Shown by the ElevatedAccessService to collect the proof that AuthPolicies.ELEVATED_ACCESS asks for. *@
+
+<section class="elevated-access">
+    <BitStack Gap="0">
+        <BitStack Horizontal Gap="0.75rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="header-stack">
+            <div class="badge header-badge">
+                <BitIcon IconName="@BitIconName.Shield" />
+            </div>
+
+            <BitStack Gap="0.125rem" Grows Shrinkable>
+                <BitText Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold">
+                    @Localizer[nameof(AppStrings.ElevatedAccessTitle)]
+                </BitText>
+                <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                    @Localizer[nameof(AppStrings.ElevatedAccessSubtitle)]
+                </BitText>
+            </BitStack>
+
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       IconName="@BitIconName.ChromeClose"
+                       OnClick="WrapHandled(() => Complete(false))"
+                       Title="@Localizer[nameof(AppStrings.Cancel)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]" />
+        </BitStack>
+
+        <BitStack Gap="1.25rem" Class="body-stack">
+            @if (passkeyAvailable)
+            {
+                <BitCard Border="BitColorKind.Secondary" FullWidth Class="passkey-card">
+                    <BitStack Horizontal Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                        <div class="badge passkey-badge">
+                            <BitIcon IconName="@BitIconName.Fingerprint" />
+                        </div>
+
+                        <BitStack Gap="0.125rem" Grows Shrinkable>
+                            <BitText Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.ElevatedAccessPasskeyTitle)]</BitText>
+                            <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                                @Localizer[nameof(AppStrings.ElevatedAccessPasskeySubtitle)]
+                            </BitText>
+                        </BitStack>
+
+                        <BitButton IsLoading="isPasskeyRunning"
+                                   IsEnabled="IsBusy is false"
+                                   ButtonType="BitButtonType.Button"
+                                   OnClick="WrapHandled(ElevateWithPasskey)">
+                            @Localizer[nameof(AppStrings.Verify)]
+                        </BitButton>
+                    </BitStack>
+                </BitCard>
+
+                <BitSeparator Border="BitColorKind.Secondary" Background="BitColorKind.Primary" Decorative>
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                        @Localizer[nameof(AppStrings.Or)]
+                    </BitText>
+                </BitSeparator>
+            }
+
+            <BitStack HorizontalAlign="BitAlignment.Center">
+                <BitOtpInput @bind-Value="code"
+                             AutoFocus
+                             NoValidate
+                             Sequential
+                             Length="6"
+                             NormalizeDigits
+                             Invalid="isCodeInvalid"
+                             IsLoading="isVerifying"
+                             IsEnabled="isPasskeyRunning is false"
+                             Size="BitSize.Large"
+                             Separator="-"
+                             SeparatorInterval="3"
+                             Type="BitInputType.Number"
+                             InputMode="BitInputMode.Tel"
+                             Label="@CodeLabel"
+                             Description="@CodeDescription"
+                             OnChange="@(_ => isCodeInvalid = false)"
+                             OnFill="WrapHandled(async (string? _) => await Verify())" />
+            </BitStack>
+
+            <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="actions-stack">
+                <BitButton Variant="BitVariant.Text"
+                           Color="BitColor.Tertiary"
+                           IsLoading="isSending"
+                           IsEnabled="@(IsBusy is false && resendAvailableIn is null)"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="WrapHandled(SendCode)">
+                    @SendButtonText
+                </BitButton>
+
+                <BitSpacer />
+
+                <BitButton IsLoading="isVerifying"
+                           IsEnabled="CanVerify"
+                           ButtonType="BitButtonType.Button"
+                           OnClick="WrapHandled(Verify)">
+                    @Localizer[nameof(AppStrings.Confirm)]
+                </BitButton>
+            </BitStack>
+        </BitStack>
+    </BitStack>
+</section>
