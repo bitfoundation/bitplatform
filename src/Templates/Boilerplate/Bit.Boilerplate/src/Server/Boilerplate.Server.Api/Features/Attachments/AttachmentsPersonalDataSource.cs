@@ -98,7 +98,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
     /// </summary>
     private static string BuildFileName(AttachmentKind kind, string? contentType)
     {
-        // Off the stored content type rather than the blob key, so a row written before the key carried one still names its format.
+        // From the row: the *Original kinds' key carries no extension (See AttachmentController.GetFilePath).
         var extension = string.IsNullOrEmpty(contentType) ? string.Empty : $".{contentType.Split('/')[^1].Split('+')[0]}";
 
         return $"{kind}{extension}";
