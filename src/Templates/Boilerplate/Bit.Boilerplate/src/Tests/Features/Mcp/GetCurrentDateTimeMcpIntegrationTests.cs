@@ -1,6 +1,7 @@
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Microsoft.Extensions.Time.Testing;
+using Boilerplate.Tests.Features.DevMcp;
 
 namespace Boilerplate.Tests.Features.Mcp;
 
@@ -106,5 +107,36 @@ public partial class GetCurrentDateTimeMcpIntegrationTests
         Assert.Contains(expectedUtc.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture), text,
             $"Tool result did not contain the faked current date/time. Result: '{text}'.");
         Assert.Contains("UTC", text, $"Tool result did not mention the requested timezone. Result: '{text}'.");
+    }
+
+    /// <summary>
+    /// <c>/mcp/v1</c> is the same server under the api version the controllers carry, behind the same authorization -
+    /// and still the chatbot's tools rather than /dev-mcp's, which <c>ConfigureSessionOptions</c> picks by path.
+    /// </summary>
+    [TestMethod]
+    public async Task McpEndpoint_Should_AnswerUnderTheApiVersionToo()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(s => s.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized,
+            await DevMcpTestUtils.ProbeInitialize(server.WebAppServerAddress, "mcp/v1", accessToken: null, TestContext.CancellationToken),
+            "The versioned path must reject an anonymous caller, exactly as /mcp does.");
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        await scope.ServiceProvider.GetRequiredService<AuthManager>().SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        await using var mcpClient = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(scope), "mcp/v1", TestContext.CancellationToken);
+
+        var tools = await mcpClient.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
+
+        Assert.Contains(t => t.Name == "GetCurrentDateTime", tools, "/mcp/v1 must advertise the chatbot tools.");
+        Assert.DoesNotContain(t => t.Name == "GetHangfireStats", tools, "/dev-mcp's tools belong to /dev-mcp alone.");
     }
 }

@@ -699,7 +699,7 @@
     <value>आज पर जाएँ</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>अपना मल्टी-मोड (WASM, सर्वर, हाइब्रिड, पूर्व-रेंडरिंग) Blazor ऐप सबसे कम समय में आसानी से बनाएँ!</value>
+    <value>यहाँ आप जो कुछ भी देख रहे हैं वह पहले से काम कर रहा है - वेब, Android, iOS, Windows और macOS पर। इसे अपना बनाइए और प्रकाशित कीजिए।</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>होम</value>
@@ -717,13 +717,13 @@
     <value>और जानें</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>एकाधिक प्लेटफ़ॉर्म्स पर .NET डेवलपर्स के लिए उपकरणों का सेट</value>
+    <value>हर प्लेटफ़ॉर्म पर पूरी तरह तैयार ऐप, पहले ही दिन से</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>प्रदर्शनकारी, आसानी से अनुकूलित करने योग्य और सुंदर Blazor घटकों का सेट</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>एक सुविधा-समृद्ध .NET प्रोजेक्ट टेम्पलेट जो हर जगह सहजता से काम करता है</value>
+    <value>इस ऐप के पीछे की शुरुआत: सब कुछ पहले से जुड़ा हुआ, और सोर्स कोड पूरी तरह आपका।</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>बॉयलरप्लेट ASP.NET Core, Identity, Web API, EF Core और Blazor के साथ बनाया गया है।</value>
