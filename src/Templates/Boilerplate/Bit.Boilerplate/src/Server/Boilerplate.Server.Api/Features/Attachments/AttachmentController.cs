@@ -90,9 +90,6 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
     //#endif
 
-    // The *Original kinds carry the uploaded format in their key and so need the extension in the route (See
-    // GetFilePath); the resized ones are always WebP. Taking it from the route is what keeps this endpoint - the one
-    // every rendered page hits - free of a database round trip.
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
     [HttpGet("{attachmentId}/{kind}/{extension:length(1,8)}")]
