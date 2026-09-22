@@ -2,7 +2,7 @@
     "mcpServers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=10.6"
+            "url": "https://bitplatform.dev/mcp?v=10.6.2"
         },
         "dev-mcp": {
             "type": "http",

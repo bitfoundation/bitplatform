@@ -1,25 +1,29 @@
-﻿using System.Text.Json;
+using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 
-namespace Bit.Websites.Platform.Server.Services;
+namespace Bit.Websites.Platform.Server.Services.Mcp;
 
 /// <summary>
 /// Backs this site's /mcp endpoint by fanning it out to the MCP servers below: the documentation servers
 /// of the bit platform libraries plus the third party ones the team relies on. A single connection to
-/// bitplatform.dev/mcp therefore exposes the tools of all of them at once. An upstream is either a remote
-/// http server or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to
-/// a subset of its tools, and such a tool is then exposed under a name and a description written here, rather
-/// than the ones its own server gives it.
+/// bitplatform.dev/mcp therefore exposes the tools of all of them at once. An upstream is either an http
+/// server - deployed, or one <see cref="McpVersionsService"/> runs on loopback for a released version -
+/// or a local stdio process this site spawns and keeps alive. An upstream may be narrowed down to a subset
+/// of its tools, and such a tool is then exposed under a name and a description written here.
 /// </summary>
 public partial class McpProxyService : IAsyncDisposable
 {
     [AutoInject] private ILogger<McpProxyService> logger = default!;
     [AutoInject] private ILoggerFactory loggerFactory = default!;
     [AutoInject] private IOptionsMonitor<AppSettings> appSettings = default!;
+    [AutoInject] private CodebaseMemoryCli codebaseMemory = default!;
+    [AutoInject] private McpVersions versions = default!;
 
     /// <summary>
     /// The description DeepWiki gives its ask_question tool says no more than that it answers questions about a
@@ -45,44 +49,24 @@ public partial class McpProxyService : IAsyncDisposable
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository, never the caller's own workspace, not even a project created from a bit template.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites and the build time projects, and none of the bit libraries: BlazorUI, Bmotion, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, routing or the service worker goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
     /// detail no caller should have to know: it is stripped from the advertised schemas and filled in from
-    /// <see cref="CodebaseMemoryIndexService.ProjectName"/> on the way through.
+    /// the release the caller connected with on the way through.
     /// </summary>
     private const string codebaseMemoryUpstreamName = "CodebaseMemory";
 
     /// <summary>
-    /// The proxied servers. Not static: each holds the session this site keeps open to that server.
+    /// Only three read tools are listed: trace_path binds calls by bare method name, which misleads across this
+    /// monorepo, and get_architecture only counts nodes.
     /// </summary>
-    private readonly Upstream[] upstreams =
+    private static readonly ExposedTool[] codebaseMemoryTools =
     [
-        new("MicrosoftLearn", new("https://learn.microsoft.com/api/mcp")),
-        // Only ask_question is exposed: it answers against the whole repository by itself, while the
-        // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
-        // of a repository, which is a slower and far more token hungry way to reach the same answer.
-        // Renamed, as a developer may have DeepWiki's own server installed next to this one.
-        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)]),
-        new("bitBlazorUI", new("https://blazorui.bitplatform.dev/mcp")),
-        new("bitBrouter", new("https://brouter.bitplatform.dev/mcp")),
-        new("bitButil", new("https://butil.bitplatform.dev/mcp")),
-        new("bitBswup", new("https://bswup.bitplatform.dev/mcp")),
-        new("bitMotion", new("https://bmotion.bitplatform.dev/mcp")),
-        // codebase-memory-mcp (a stdio child process npx fetches) serves a graph index of the repository
-        // configured at AppSettings:CodebaseMemory:SourceRepositoryPath, so agents can answer from the
-        // source itself rather than from documentation. Renamed, as a developer's own codebase-memory
-        // server answers about their project under the original names. Only three read tools are listed:
-        // trace_path binds calls by bare method name, which misleads across this monorepo, and
-        // get_architecture only counts nodes. The command below is the default one, resolved again per
-        // connection where configuration can replace it.
-        new(codebaseMemoryUpstreamName, CodebaseMemoryIndexService.ResolveCommand(null), CodebaseMemoryIndexService.ResolveArguments(null),
-        [
-            new("search_graph", "FindBitPlatformSymbols", $"Finds classes, methods, routes and other symbols by keywords (query) or by a regex over their names (name_pattern), returning the qualified names GetBitPlatformSymbolSource takes. Page with offset while has_more is true. {bitPlatformSourceScope}"),
-            new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. {bitPlatformSourceScope}"),
-            new("get_code_snippet", "GetBitPlatformSymbolSource", $"Returns the full source of one class, method or other symbol, addressed by a qualified name FindBitPlatformSymbols or SearchBitPlatformCode returned. A short name answers with candidates when it is ambiguous. {bitPlatformSourceScope}")
-        ])
+        new("search_graph", "FindBitPlatformSymbols", $"Finds classes, methods, routes and other symbols by keywords (query) or by a regex over their names (name_pattern), returning the qualified names GetBitPlatformSymbolSource takes. Page with offset while has_more is true. {bitPlatformSourceScope}"),
+        new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. {bitPlatformSourceScope}"),
+        new("get_code_snippet", "GetBitPlatformSymbolSource", $"Returns the full source of one class, method or other symbol, addressed by a qualified name FindBitPlatformSymbols or SearchBitPlatformCode returned. A short name answers with candidates when it is ambiguous. {bitPlatformSourceScope}")
     ];
 
     /// <summary>
@@ -97,40 +81,62 @@ public partial class McpProxyService : IAsyncDisposable
     /// </summary>
     private static readonly TimeSpan failedToolsCacheLifetime = TimeSpan.FromMinutes(1);
 
-    private readonly SemaphoreSlim toolsSync = new(1, 1);
+    /// <summary>
+    /// The upstreams every caller shares, whichever version they asked for: the third party servers, and the
+    /// source code index, which serves every version out of one process.
+    /// </summary>
+    private readonly Upstream[] sharedUpstreams =
+    [
+        new("MicrosoftLearn", new("https://learn.microsoft.com/api/mcp")),
+        // Only ask_question is exposed: it answers against the whole repository by itself, while the
+        // read_wiki_structure and read_wiki_contents tools of the same server dump the generated wiki
+        // of a repository, which is a slower and far more token hungry way to reach the same answer.
+        // Renamed, as a developer may have DeepWiki's own server installed next to this one.
+        new("DeepWiki", new("https://mcp.deepwiki.com/mcp"), [new("ask_question", "AskGitHubRepository", askQuestionDescription)])
+    ];
 
-    private Tool[] tools = [];
-    private DateTimeOffset toolsExpiresAt;
-    private Dictionary<string, Upstream> upstreamPerToolName = new(StringComparer.Ordinal);
+    /// <summary>
+    /// The per release upstreams, keyed by release name - plus the empty key, for a caller who arrives before
+    /// any release is ready. Each holds the session this site keeps open to that server.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, VersionUpstreams> upstreamsPerVersion = new(StringComparer.Ordinal);
 
-    public async ValueTask<IReadOnlyList<Tool>> ListTools(CancellationToken cancellationToken)
+    private readonly ConcurrentDictionary<string, ToolSet> toolSetPerVersion = new(StringComparer.Ordinal);
+
+    private readonly Lock codebaseMemorySync = new();
+
+    /// <summary>
+    /// codebase-memory (a stdio child process npx fetches by default) serves one index per released version of
+    /// the repository, and every tool of it takes the project to answer from. Renamed, as a developer's own
+    /// codebase-memory server answers about their project under the original names. Null while no version is
+    /// indexed, since there would be nothing for it to answer from.
+    /// </summary>
+    private Upstream? codebaseMemoryUpstream;
+
+    public async ValueTask<IReadOnlyList<Tool>> ListTools(string? requestedVersion, CancellationToken cancellationToken)
+        => (await ToolsOf(versions.Resolve(requestedVersion), cancellationToken)).Tools;
+
+    public async ValueTask<CallToolResult> CallTool(string? requestedVersion, CallToolRequestParams request, CancellationToken cancellationToken)
     {
-        await RefreshToolsIfExpired(cancellationToken);
+        var version = versions.Resolve(requestedVersion);
 
-        return tools;
-    }
-
-    public async ValueTask<CallToolResult> CallTool(CallToolRequestParams request, CancellationToken cancellationToken)
-    {
-        await RefreshToolsIfExpired(cancellationToken);
-
-        if (upstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
+        if ((await ToolsOf(version, cancellationToken)).UpstreamPerToolName.TryGetValue(request.Name, out var upstream) is false)
             throw new McpException($"Unknown tool: '{request.Name}'.");
 
-        return await CallTool(upstream, request, cancellationToken);
+        return await CallTool(upstream, version, request, cancellationToken);
     }
 
-    private async ValueTask<CallToolResult> CallTool(Upstream upstream, CallToolRequestParams request, CancellationToken cancellationToken)
+    private async ValueTask<CallToolResult> CallTool(Upstream upstream, McpVersion? version, CallToolRequestParams request, CancellationToken cancellationToken)
     {
         var arguments = request.Arguments;
 
         if (upstream.Name is codebaseMemoryUpstreamName)
         {
-            var projectName = CodebaseMemoryIndexService.ProjectName
+            var projectName = version?.CodebaseMemoryProject
                 ?? throw new McpException("The source code index is still being built, retry in a minute.");
 
             // Stripped from the advertised schema, so it is filled in here - overwriting any value a caller
-            // sends anyway, since this site serves exactly one index.
+            // sends anyway, since the release they connected with decides which index answers.
             Dictionary<string, JsonElement> augmentedArguments = arguments is null ? [] : new(arguments);
             augmentedArguments["project"] = JsonSerializer.SerializeToElement(projectName);
             arguments = augmentedArguments;
@@ -149,9 +155,9 @@ public partial class McpProxyService : IAsyncDisposable
         catch (Exception exp) when (exp is not OperationCanceledException)
         {
             // The upstream session is long lived and shared by every caller of this site, so a redeploy of
-            // the upstream can end it at any moment. Reconnecting and retrying once turns that into a
-            // slower call rather than a failed one. A tool that itself fails does not land here: it reports
-            // that through an IsError result instead of an exception.
+            // the upstream, or a restart of a per version site, can end it at any moment. Reconnecting and
+            // retrying once turns that into a slower call rather than a failed one. A tool that itself fails
+            // does not land here: it reports that through an IsError result instead of an exception.
             logger.LogWarning(exp, "Calling {ToolName} on the {McpServerName} MCP server failed, reconnecting and retrying once.", request.Name, upstream.Name);
 
             await Disconnect(upstream);
@@ -161,16 +167,54 @@ public partial class McpProxyService : IAsyncDisposable
 
         foreach (var block in result.Content.OfType<TextContentBlock>())
         {
-            block.Text = AdaptResultText(upstream, block.Text, result.IsError is true);
+            block.Text = AdaptResultText(upstream, version, block.Text, result.IsError is true);
         }
 
         // get_code_snippet repeats its answer as structured content.
         if (result.StructuredContent is { } structuredContent)
         {
-            result.StructuredContent = JsonSerializer.Deserialize<JsonElement>(AdaptResultText(upstream, structuredContent.GetRawText(), result.IsError is true));
+            result.StructuredContent = JsonSerializer.Deserialize<JsonElement>(AdaptResultText(upstream, version, structuredContent.GetRawText(), result.IsError is true));
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// The upstreams that answer for one release: the shared ones, plus that release's own documentation sites
+    /// and its index. Until a release is ready the shared ones are all there is - nothing here ever answers
+    /// out of the development branch, which belongs to no release a caller could be using.
+    /// </summary>
+    private Upstream[] UpstreamsOf(McpVersion? version)
+    {
+        var entry = upstreamsPerVersion.GetOrAdd(version?.Name ?? "", _ => new());
+
+        lock (entry.Sync)
+        {
+            if (entry.Upstreams.Length > 0 && ReferenceEquals(entry.Version, version)) return entry.Upstreams;
+
+            // A release whose sites restarted comes back as a new record on new ports, so the sessions held
+            // against the old ones are dropped. The shared ones, and the one stdio process, stay.
+            foreach (var stale in entry.Upstreams.Where(upstream => upstream.Url is not null && sharedUpstreams.Contains(upstream) is false))
+            {
+                _ = Disconnect(stale);
+            }
+
+            entry.Version = version;
+            entry.Upstreams = version is null
+                ? sharedUpstreams
+                : [.. sharedUpstreams, .. version.DocumentationEndpoints.Select(site => new Upstream(site.Key, site.Value)), CodebaseMemoryUpstream()];
+
+            return entry.Upstreams;
+        }
+    }
+
+    /// <summary>One process for every version, since each of its tools names the index to answer from.</summary>
+    private Upstream CodebaseMemoryUpstream()
+    {
+        lock (codebaseMemorySync)
+        {
+            return codebaseMemoryUpstream ??= new(codebaseMemoryUpstreamName, codebaseMemory.Command, codebaseMemory.Arguments, codebaseMemoryTools);
+        }
     }
 
     /// <summary>
@@ -216,41 +260,32 @@ public partial class McpProxyService : IAsyncDisposable
     /// this machine that callers do not need, as a qualified name resolves without that prefix too. Tool names are
     /// renamed in errors only, since an answer can quote source code that mentions them.
     /// </summary>
-    private string AdaptResultText(Upstream upstream, string text, bool isError)
+    private static string AdaptResultText(Upstream upstream, McpVersion? version, string text, bool isError)
     {
-        if (upstream.Name is codebaseMemoryUpstreamName)
+        if (upstream.Name is codebaseMemoryUpstreamName && version is not null)
         {
-            if (CodebaseMemoryIndexService.ProjectName is { } projectName)
-            {
-                text = text.Replace($"{projectName}.", null, StringComparison.Ordinal);
-            }
+            text = text.Replace($"{version.CodebaseMemoryProject}.", null, StringComparison.Ordinal);
 
-            if (appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath is { Length: > 0 } repositoryPath)
-            {
-                var repositoryRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(repositoryPath)).Replace('\\', '/');
-                text = text.Replace($"{repositoryRoot}/", null, StringComparison.OrdinalIgnoreCase);
-            }
+            var worktreeRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(version.WorktreePath)).Replace('\\', '/');
+            text = text.Replace($"{worktreeRoot}/", null, StringComparison.OrdinalIgnoreCase);
         }
 
         return isError ? RenameTools(upstream, text) : text;
     }
 
-    private async ValueTask RefreshToolsIfExpired(CancellationToken cancellationToken)
+    private async ValueTask<ToolSet> ToolsOf(McpVersion? version, CancellationToken cancellationToken)
     {
-        if (DateTimeOffset.UtcNow < toolsExpiresAt) return;
+        var toolSet = toolSetPerVersion.GetOrAdd(version?.Name ?? "", _ => new());
 
-        await toolsSync.WaitAsync(cancellationToken);
+        if (DateTimeOffset.UtcNow < toolSet.ExpiresAt && toolSet.Generation == versions.Generation) return toolSet;
+
+        await toolSet.Sync.WaitAsync(cancellationToken);
 
         try
         {
-            if (DateTimeOffset.UtcNow < toolsExpiresAt) return;
+            if (DateTimeOffset.UtcNow < toolSet.ExpiresAt && toolSet.Generation == versions.Generation) return toolSet;
 
-            // The CodebaseMemory upstream is only live where a source repository is configured; elsewhere
-            // there is no index to serve and spawning its process would fail on every refresh.
-            var activeUpstreams = upstreams.Where(upstream => upstream.Name is not codebaseMemoryUpstreamName
-                                                              || string.IsNullOrWhiteSpace(appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath) is false);
-
-            var toolsPerUpstream = await Task.WhenAll(activeUpstreams.Select(async upstream => (upstream, tools: await ListTools(upstream, cancellationToken))));
+            var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: await ListTools(upstream, version, cancellationToken))));
 
             List<Tool> mergedTools = [];
             Dictionary<string, Upstream> mergedUpstreamPerToolName = new(StringComparer.Ordinal);
@@ -272,20 +307,23 @@ public partial class McpProxyService : IAsyncDisposable
                 }
             }
 
-            tools = [.. mergedTools];
-            upstreamPerToolName = mergedUpstreamPerToolName;
-            toolsExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
+            toolSet.Tools = [.. mergedTools];
+            toolSet.UpstreamPerToolName = mergedUpstreamPerToolName;
+            toolSet.Generation = versions.Generation;
+            toolSet.ExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
+
+            return toolSet;
         }
         finally
         {
-            toolsSync.Release();
+            toolSet.Sync.Release();
         }
     }
 
     /// <returns>
     /// The tools of <paramref name="upstream"/> that it is configured to expose, or null if they could not be listed.
     /// </returns>
-    private async Task<IReadOnlyList<Tool>?> ListTools(Upstream upstream, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<Tool>?> ListTools(Upstream upstream, McpVersion? version, CancellationToken cancellationToken)
     {
         try
         {
@@ -353,7 +391,7 @@ public partial class McpProxyService : IAsyncDisposable
         {
             // A single unreachable server must not empty out the whole endpoint: the tools of every other
             // server stay available and this one is picked up again by the next refresh.
-            logger.LogError(exp, "Listing the tools of the {McpServerName} MCP server ({McpServerAddress}) failed.", upstream.Name, upstream.Address);
+            logger.LogError(exp, "Listing the tools of the {McpServerName} MCP server ({McpServerAddress}) of version {VersionName} failed.", upstream.Name, upstream.Address, version?.Name);
 
             await Disconnect(upstream);
 
@@ -382,21 +420,12 @@ public partial class McpProxyService : IAsyncDisposable
                 : new StdioClientTransport(new()
                 {
                     Name = upstream.Name,
-                    // Configured like the index service, so both halves reach the server the same way.
-                    Command = upstream.Name is codebaseMemoryUpstreamName
-                        ? CodebaseMemoryIndexService.ResolveCommand(appSettings.CurrentValue.CodebaseMemory)
-                        : upstream.Command!,
-                    Arguments = upstream.Name is codebaseMemoryUpstreamName
-                        ? CodebaseMemoryIndexService.ResolveArguments(appSettings.CurrentValue.CodebaseMemory)
-                        : upstream.Arguments,
-                    // The data directory the index was built in, which no other client on this machine holds.
-                    EnvironmentVariables = upstream.Name is codebaseMemoryUpstreamName
-                        ? CodebaseMemoryIndexService.BuildEnvironment(appSettings.CurrentValue.CodebaseMemory)
-                        : null,
-                    // The server's git watcher follows its working directory, so pulls into the repository re-index it.
-                    WorkingDirectory = upstream.Name is codebaseMemoryUpstreamName
-                        ? appSettings.CurrentValue.CodebaseMemory?.SourceRepositoryPath
-                        : null
+                    Command = upstream.Command!,
+                    Arguments = upstream.Arguments,
+                    // The data directory the indexes were built in, which no other client on this machine holds.
+                    EnvironmentVariables = upstream.Name is codebaseMemoryUpstreamName ? codebaseMemory.Environment : null,
+                    // Nothing to watch: every indexed worktree sits on a tag and never moves.
+                    WorkingDirectory = upstream.Name is codebaseMemoryUpstreamName ? appSettings.CurrentValue.Mcp?.SourcesDirectoryPath : null
                 }, loggerFactory);
 
             return upstream.Client ??= await McpClient.CreateAsync(transport, new()
@@ -436,12 +465,37 @@ public partial class McpProxyService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var upstream in upstreams)
+        foreach (var upstream in sharedUpstreams.Concat(upstreamsPerVersion.Values.SelectMany(entry => entry.Upstreams)).Distinct())
         {
             await Disconnect(upstream);
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>The upstreams of one version, and the version record they were built from.</summary>
+    private sealed class VersionUpstreams
+    {
+        public McpVersion? Version { get; set; }
+
+        public Upstream[] Upstreams { get; set; } = [];
+
+        public Lock Sync { get; } = new();
+    }
+
+    /// <summary>The merged tool list of one version, and which upstream each of its tools came from.</summary>
+    private sealed class ToolSet
+    {
+        public Tool[] Tools { get; set; } = [];
+
+        public Dictionary<string, Upstream> UpstreamPerToolName { get; set; } = new(StringComparer.Ordinal);
+
+        public DateTimeOffset ExpiresAt { get; set; }
+
+        /// <summary>The <see cref="McpVersions.Generation"/> this was merged against.</summary>
+        public int Generation { get; set; } = -1;
+
+        public SemaphoreSlim Sync { get; } = new(1, 1);
     }
 
     /// <param name="Name">

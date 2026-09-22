@@ -64,8 +64,8 @@ siteverify
 packageid
 apis
 Middlewares
-minioadmin
-minio
+rustfsadmin
+rustfs
 openid
 Signing
 sqlserver

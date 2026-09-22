@@ -699,7 +699,7 @@
     <value>برو به امروز</value>
   </data>
     <data name="HomeMessage" xml:space="preserve">
-    <value>برنامه blazor مالتی مد (WASM, Server, Hybrid, pre-rendering) خود را به آسانی و در سریع‌ترین زمان بسازید</value>
+    <value>هر چیزی که می‌بینید همین حالا کار می‌کند؛ روی وب، اندروید، iOS، ویندوز و مک. آن را از آنِ خود کنید و منتشر کنید.</value>
   </data>
     <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>پروژه Boilerplate با ASP.NET Core, Identity, Web API, EF Core و Blazor ساخته شده</value>
@@ -720,13 +720,13 @@
     <value>بیشتر بدانید</value>
   </data>
     <data name="BitPlatformMessage" xml:space="preserve">
-    <value>ابزارهایی برای دولوپرهای دات نت در پلتفرهای گوناگون</value>
+    <value>یک اپ کامل روی هر پلتفرمی، از همان روز اول</value>
   </data>
     <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>مجموعه ای از کمپوننتهای کارا، ساده و زیبای بلیزری</value>
   </data>
     <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>تمپلیت پروژه ای فول امکانات که همه جا کار میکند</value>
+    <value>نقطه‌ی شروع همین اپ: همه‌چیز از قبل به هم وصل شده و سورس‌کد کاملاً مال خودتان است.</value>
   </data>
     <data name="NewPassword" xml:space="preserve">
     <value>رمز عبور جدید</value>
@@ -1030,9 +1030,6 @@
   </data>
     <data name="TfaTokenSentMessage" xml:space="preserve">
     <value>توکن 2FA تولید و برای شما ارسال شده است.</value>
-  </data>
-    <data name="EnterElevatedAccessToken" xml:space="preserve">
-    <value>لطفا کد ۶ رقمی که ارسال کردیم یا کد Authenticator app خود را وارد کنید</value>
   </data>
     <data name="ElevatedAccessTokenShortText" xml:space="preserve">
     <value>{0} کد شماست در Boilerplate</value>
@@ -2156,4 +2153,61 @@
     <value>استفاده از دستیار این برنامه از طرف شما.</value>
   </data>
   <!--#endif -->
+    <data name="Verify" xml:space="preserve">
+    <value>تأیید</value>
+  </data>
+    <data name="ElevatedAccessTitle" xml:space="preserve">
+    <value>مطمئن شویم خودتان هستید</value>
+  </data>
+    <data name="ElevatedAccessSubtitle" xml:space="preserve">
+    <value>این تغییر امنیت حساب شما را تحت تأثیر قرار می‌دهد.</value>
+  </data>
+    <data name="ElevatedAccessPasskeyTitle" xml:space="preserve">
+    <value>استفاده از اثر انگشت یا Face ID</value>
+  </data>
+    <data name="ElevatedAccessPasskeySubtitle" xml:space="preserve">
+    <value>نیازی به انتظار برای کد نیست.</value>
+  </data>
+    <data name="ElevatedAccessCodeLabel" xml:space="preserve">
+    <value>کد ۶ رقمی خود را وارد کنید</value>
+  </data>
+    <data name="ElevatedAccessInvalidCode" xml:space="preserve">
+    <value>این کد درست نبود. بررسی کنید و دوباره تلاش کنید.</value>
+  </data>
+    <data name="ElevatedAccessUseAuthenticatorApp" xml:space="preserve">
+    <value>برنامهٔ احراز هویت خود را باز کنید و کدی را که برای این حساب نشان می‌دهد وارد کنید.</value>
+  </data>
+    <data name="ElevatedAccessUsePasskeyOrAskForCode" xml:space="preserve">
+    <value>از بالا تأیید کنید، یا به جایش درخواست کد بدهید.</value>
+  </data>
+    <data name="ElevatedAccessSendCode" xml:space="preserve">
+    <value>برایم کد بفرست</value>
+  </data>
+    <data name="ElevatedAccessResendCode" xml:space="preserve">
+    <value>ارسال دوبارهٔ کد</value>
+  </data>
+    <data name="ElevatedAccessResendIn" xml:space="preserve">
+    <value>ارسال دوباره تا {0:m\:ss}</value>
+  </data>
+    <data name="ElevatedAccessCodeAlreadySent" xml:space="preserve">
+    <value>کدی همین حالا در راه است. از همان استفاده کنید، یا پس از انقضایش دوباره درخواست دهید.</value>
+  </data>
+    <data name="ElevatedAccessChannelEmail" xml:space="preserve">
+    <value>ایمیل شما</value>
+  </data>
+    <data name="ElevatedAccessChannelPhone" xml:space="preserve">
+    <value>تلفن شما</value>
+  </data>
+    <data name="ElevatedAccessChannelOtherDevices" xml:space="preserve">
+    <value>دستگاه‌های دیگر شما</value>
+  </data>
+    <data name="ElevatedAccessNoChannel" xml:space="preserve">
+    <value>هیچ ایمیل یا شمارهٔ تلفن تأییدشده‌ای روی این حساب نیست که کد به آن فرستاده شود.</value>
+  </data>
+    <data name="ElevatedAccessSentTo" xml:space="preserve">
+    <value>کد را به {0} فرستادیم.</value>
+  </data>
+    <data name="ElevatedAccessSentToMany" xml:space="preserve">
+    <value>کد را به {0} و {1} فرستادیم.</value>
+  </data>
 </root>

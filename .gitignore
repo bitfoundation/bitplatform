@@ -280,3 +280,6 @@ _book
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 
 custom.aprof
+
+# Written at the root of every release worktree by the Platform website's CodebaseMemoryCli.
+/.cbmignore

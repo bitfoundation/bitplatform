@@ -104,6 +104,7 @@ public partial class MainLayout : IDisposable
             await _appShellRef.GoToTop(BitScrollBehavior.Instant);
         }
         catch (JSDisconnectedException) { } // the circuit is already gone, and with it the page being scrolled
+        catch (OperationCanceledException) { } // it is going: an interop call in flight is cancelled, not refused
         catch (Exception exp)
         {
             // Fire-and-forget, so a rethrow here would be an unobserved task and nobody would hear it.
