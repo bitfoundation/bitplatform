@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -159,6 +159,8 @@ public static class Services
         services.AddSingleton<McpProxyService>();
         services.AddHostedService<McpVersionsService>();
 
+        services.AddScoped<McpFeedbackTool>();
+
         services.AddMcpServer(options =>
         {
             options.ServerInfo = new()
@@ -167,7 +169,7 @@ public static class Services
                 Title = "bit platform",
                 Version = typeof(Services).Assembly.GetName().Version!.ToString()
             };
-            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Brouter, Butil, Bswup and Motion documentation servers, plus a source code index of the bitfoundation/bitplatform repository. Connect with ?v=10.6.2 to get the answers of that release; without it, the newest one answers.";
+            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Brouter, Butil, Bswup and Motion documentation servers, plus a source code index of the bitfoundation/bitplatform repository.";
         })
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since
@@ -178,7 +180,7 @@ public static class Services
                 Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), cancellationToken)]
             })
             .WithCallToolHandler((request, cancellationToken) =>
-                request.Services!.GetRequiredService<McpProxyService>().CallTool(RequestedVersion(request.Services!), request.Params!, cancellationToken));
+                request.Services!.GetRequiredService<McpProxyService>().CallTool(RequestedVersion(request.Services!), request.Services!, request.Params!, cancellationToken));
     }
 
     /// <summary>
