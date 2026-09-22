@@ -421,9 +421,9 @@ services.AddScoped(sp =>
 
     return new Fido2Configuration
     {
-        ServerDomain = webAppUrl.Host,
+        RPID = webAppUrl.Host,
         TimestampDriftTolerance = 1000,
-        ServerName = "Boilerplate WebAuthn",
+        RPName = "Boilerplate WebAuthn",
         Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
         ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
     };

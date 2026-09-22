@@ -537,7 +537,7 @@ public static partial class Program
 
         });
 
-        // ServerDomain (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
+        // RPID (the WebAuthn RP ID) is resolved PER REQUEST from GetWebAppUrl(), which honours a
         // caller-supplied origin. See ".docs/24 - Security note" for what that means for Blazor Hybrid passkeys.
         services.AddScoped(sp =>
         {
@@ -546,9 +546,9 @@ public static partial class Program
 
             var options = new Fido2Configuration
             {
-                ServerDomain = webAppUrl.Host,
+                RPID = webAppUrl.Host,
                 TimestampDriftTolerance = 1000,
-                ServerName = "Boilerplate WebAuthn",
+                RPName = "Boilerplate WebAuthn",
                 Origins = new HashSet<string>([webAppUrl.AbsoluteUri]),
                 ServerIcon = new Uri(webAppUrl, "images/icons/bit-logo.png").ToString()
             };

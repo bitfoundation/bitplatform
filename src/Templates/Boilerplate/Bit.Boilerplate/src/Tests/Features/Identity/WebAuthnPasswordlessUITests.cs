@@ -46,7 +46,7 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
         // The test host runs Blazor Server, so the WebAuthn options (and their RP ID) are produced by a SERVER-SIDE call
         // to the identity API through the app's internal HttpClient, whose base address is the ServerAddress config
         // (127.0.0.1 by default). Point that at the localhost origin so the RP ID the server derives from the request
-        // Host (See HttpRequestExtensions.GetWebAppUrl -> Fido2Configuration.ServerDomain) matches the browser's
+        // Host (See HttpRequestExtensions.GetWebAppUrl -> Fido2Configuration.RPID) matches the browser's
         // localhost origin - otherwise credentials.create() fails with "relying party ID is not ... the current domain".
         await server.Build(configureTestConfigurations: configuration => configuration["ServerAddress"] = appBaseUrl.ToString())
             .Start(TestContext.CancellationToken);
