@@ -96,7 +96,8 @@ public class BitOtpInputParams : BitComponentBaseParams, IBitComponentParams
     public bool? Invalid { get; set; }
 
     /// <summary>
-    /// Puts the component into the busy state of a code that has been submitted and is being checked.
+    /// Puts the component into the busy state of a code that has been submitted and is being checked, which
+    /// draws a progress bar under the inputs, holds the code still and announces the wait.
     /// <br />
     /// <see cref="BitOtpInput.IsLoading"/>.
     /// </summary>

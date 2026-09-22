@@ -8,6 +8,7 @@
 //   --bit-OtpInput-input-height            height alone                                  (default: --bit-OtpInput-input-size)
 //   --bit-OtpInput-font-size               size of the code, the label and the hint      (default: per size, from the type ramp)
 //   --bit-OtpInput-label-font-size         size of the label above the inputs            (default: the size of the code)
+//   --bit-OtpInput-label-font-weight       weight of the label above the inputs          (default: $tg-fw-semibold)
 //   --bit-OtpInput-description-font-size   size of the helper text under the inputs      (default: the ramp step below the code)
 //   --bit-OtpInput-font-weight             weight of the character inside a box          (default: $tg-fw-regular)
 //   --bit-OtpInput-radius                  corner radius of a box, and of the two ends
@@ -53,8 +54,8 @@
 .bit-otp-lbl {
     margin: 0;
     display: block;
-    font-weight: $tg-fw-semibold;
     font-size: var(--bit-OtpInput-label-font-size, inherit);
+    font-weight: var(--bit-OtpInput-label-font-weight, #{$tg-fw-semibold});
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;

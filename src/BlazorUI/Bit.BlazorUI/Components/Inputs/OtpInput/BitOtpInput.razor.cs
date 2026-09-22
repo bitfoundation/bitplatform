@@ -90,8 +90,9 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// through its aria-describedby so that screen readers announce it along with the name of the group.
     /// It is where the sentence that turns a row of empty boxes into a question the user can answer
     /// belongs: where the code was sent, how long it is good for, or what a server that rejected it said.
-    /// While <see cref="Invalid"/> is on it also sits in the live region of the component, so a rejection is
-    /// announced at once rather than waiting for the focus to come back to the code.
+    /// While <see cref="Invalid"/> or <see cref="IsLoading"/> is on it also sits in the live region of the
+    /// component, so the wait for the answer and a rejection are announced at the moment they happen rather
+    /// than waiting for the focus to come back to the code.
     /// </summary>
     [Parameter] public string? Description { get; set; }
 
@@ -146,8 +147,10 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// Puts the component into the busy state of a code that has been submitted and is being checked, which
     /// is the step between the <see cref="OnFill"/> and the answer that either lets the user through or sets
     /// the <see cref="Invalid"/>. It paints an indeterminate progress bar under the inputs, marks the group
-    /// with aria-busy so that the wait is announced rather than only shown, and holds the code still the way
-    /// the <see cref="BitInputBase{TValue}.ReadOnly"/> does, so that nothing can be typed over a code whose
+    /// with aria-busy so that the changes inside it are not announced one by one while the code is being
+    /// checked, puts the <see cref="Description"/> into the live region of the component so that the wait
+    /// itself is announced rather than only drawn, and holds the code still the way the
+    /// <see cref="BitInputBase{TValue}.ReadOnly"/> does, so that nothing can be typed over a code whose
     /// answer is already on its way.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -567,14 +570,17 @@ public partial class BitOtpInput : BitInputBase<string?>
             ResizeInputs();
         }
 
-        // The sentence the server answered with, put into the live region while the error state is on and
-        // taken back out of it as the state is cleared, so that the very same description is announced again
-        // when the next attempt is rejected too, and a second attempt rejected with another sentence is
-        // announced with that one. Assigning the text it already holds changes nothing in the DOM and is
-        // therefore not announced, which is what keeps a state that merely re-renders quiet. A
+        // The sentence that goes with the two states the component paints for a code that has left the
+        // page - the wait of a code being checked and the rejection that may come back - put into the live
+        // region while either of them is on and taken back out of it as they are cleared, so that the very
+        // same description is announced again when the next attempt is rejected too, and a second attempt
+        // rejected with another sentence is announced with that one. The busy state needs it as much as the
+        // error one does: aria-busy asks a screen reader to hold off on the changes inside the group, it
+        // never announces the wait itself. Assigning the text it already holds changes nothing in the DOM
+        // and is therefore not announced, which is what keeps a state that merely re-renders quiet. A
         // DescriptionTemplate is markup rather than text, so there is nothing to copy into the region and
         // the consumer keeps the announcement of it.
-        _statusMessage = Invalid && DescriptionTemplate is null ? Description : null;
+        _statusMessage = (Invalid || IsLoading) && DescriptionTemplate is null ? Description : null;
 
         // Narrowing the set of characters that the code may hold has to reach the characters that are
         // already in the inputs too, otherwise the component would keep showing (and reporting) a code

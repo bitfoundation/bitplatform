@@ -50,7 +50,7 @@ public partial class BitOtpInputDemo
             Name = "Description",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The description (helper text) rendered under the inputs, which the group of the inputs references through its aria-describedby so that screen readers announce it along with the name of the group. It is where the sentence that turns a row of empty boxes into a question the user can answer belongs: where the code was sent, how long it is good for, or what a server that rejected it said. While Invalid is on it also sits in the live region of the component, so a rejection is announced at once rather than waiting for the focus to come back to the code.",
+            Description = "The description (helper text) rendered under the inputs, which the group of the inputs references through its aria-describedby so that screen readers announce it along with the name of the group. It is where the sentence that turns a row of empty boxes into a question the user can answer belongs: where the code was sent, how long it is good for, or what a server that rejected it said. While Invalid or IsLoading is on it also sits in the live region of the component, so the wait for the answer and a rejection are announced at the moment they happen rather than waiting for the focus to come back to the code.",
         },
         new()
         {
@@ -94,7 +94,7 @@ public partial class BitOtpInputDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Puts the component into the busy state of a code that has been submitted and is being checked, which is the step between the OnFill and the answer that either lets the user through or sets the Invalid. It paints an indeterminate progress bar under the inputs, marks the group with aria-busy so that the wait is announced rather than only shown, and holds the code still the way the ReadOnly does, so that nothing can be typed, pasted or cut over a code whose answer is already on its way. The Clear of the consumer is deliberately not blocked by it.",
+            Description = "Puts the component into the busy state of a code that has been submitted and is being checked, which is the step between the OnFill and the answer that either lets the user through or sets the Invalid. It paints an indeterminate progress bar under the inputs, marks the group with aria-busy so that the changes inside it are not announced one by one while the code is being checked, puts the Description into the live region of the component so that the wait itself is announced rather than only drawn, and holds the code still the way the ReadOnly does, so that nothing can be typed, pasted or cut over a code whose answer is already on its way. The Clear of the consumer is deliberately not blocked by it.",
         },
         new()
         {
@@ -596,6 +596,12 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "--bit-OtpInput-label-font-weight",
+            DefaultValue = "--bit-tpg-fw-semibold",
+            Description = "Weight of the label above the inputs.",
+        },
+        new()
+        {
             Name = "--bit-OtpInput-description-font-size",
             DefaultValue = "--bit-tpg-fs-2xs / --bit-tpg-fs-xs / --bit-tpg-fs-sm, per Size",
             Description = "Size of the helper text under the inputs, one step of the type ramp below the code.",
@@ -889,7 +895,7 @@ public partial class BitOtpInputDemo
 
 <BitOtpInput BlurOnFill Length=""4"" />
 
-<BitOtpInput Sequential Length=""6"" Type=""BitInputType.Number"" />";
+<BitOtpInput Sequential Length=""6"" />";
 
     private readonly string example2RazorCode = @"
 <BitOtpInput Label=""OTP"" />
@@ -906,10 +912,10 @@ public partial class BitOtpInputDemo
     </LabelTemplate>
 </BitOtpInput>
 
-<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number""
+<BitOtpInput Label=""Verification code"" Length=""6""
              Description=""We sent a 6 digit code to +1 555 0100. It stays valid for 10 minutes."" />
 
-<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number"">
+<BitOtpInput Label=""Verification code"" Length=""6"">
     <DescriptionTemplate>
         <BitStack Horizontal FitWidth Gap=""0.25rem"" VerticalAlign=""BitAlignment.Center"">
             <BitText Typography=""BitTypography.Caption1"">Didn't get it?</BitText>

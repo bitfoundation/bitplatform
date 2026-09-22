@@ -2682,6 +2682,48 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitOtpInputShouldAnnounceTheDescriptionWhileTheCodeIsBeingChecked()
+    {
+        // aria-busy asks a screen reader to hold off on the changes inside the group, it never announces
+        // the wait itself, so the sentence that says the code is being checked has to reach the live region
+        // the very same way the sentence of a rejected code does.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Enter the code we sent you.");
+        });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Description, "Checking the code…");
+        });
+
+        Assert.AreEqual("Checking the code…", com.Find(".bit-otp-sts").TextContent);
+
+        // The answer came back rejected: the busy state goes and the error state arrives, so the region
+        // keeps announcing and moves on to the sentence of the rejection.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Invalid, true);
+            parameters.Add(p => p.Description, "That code is not correct.");
+        });
+
+        Assert.AreEqual("That code is not correct.", com.Find(".bit-otp-sts").TextContent);
+
+        // Neither state is on any more, so the region goes quiet and the next rejection is announced again
+        // even when it comes back with the very same sentence.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Invalid, false);
+        });
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-otp-sts").TextContent);
+    }
+
+    [TestMethod]
     public void BitOtpInputShouldLeaveTheAnnouncementOfADescriptionTemplateToItsOwnMarkup()
     {
         var com = RenderComponent<BitOtpInput>(parameters =>

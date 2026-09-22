@@ -56,8 +56,9 @@
     @* The description is referenced by the group rather than by each input on purpose: an aria-describedby
        on every one of them would make a screen reader read the whole hint again at every single character
        of the code. *@
-    @* The code is being checked, which is a wait the user is in the middle of rather than a piece of
-       decoration, so it is announced on the group that holds the code instead of only being drawn. *@
+    @* The code is being checked, so the group is marked as busy: what an assistive technology takes from
+       it is that the changes inside are not worth announcing one by one until the answer is back. The wait
+       itself is carried by the live region at the bottom, which the Description is copied into. *@
     <div role="group"
          style="@Styles?.InputsWrapper"
          class="bit-otp-iwr @Classes?.InputsWrapper"
@@ -118,8 +119,8 @@
 
     @if (IsLoading)
     {
-        @* The wait itself is carried by the aria-busy of the group above, so the bar is nothing but the
-           drawing of it and is kept away from the screen readers that already announce the group. *@
+        @* The wait itself is carried by the live region below, so the bar is nothing but the drawing of it
+           and is kept away from the screen readers that are already being told about it in words. *@
         <div aria-hidden="true"
              style="@Styles?.Loader"
              class="bit-otp-ldr @Classes?.Loader"></div>
@@ -141,14 +142,15 @@
         </div>
     }
 
-    @* The answer of a server that rejected the code arrives while the focus is usually nowhere near the
-       boxes, so the error state alone reaches nobody who cannot see it: aria-invalid is only announced when
+    @* The two halves of the round trip a code is sent on - the wait while it is being checked and the
+       answer of a server that rejected it - both happen while the focus is usually nowhere near the boxes,
+       so neither reaches anybody who cannot see it: the bar is drawn, aria-invalid is only announced when
        the focus lands on a box, and a description is only read out with the group it names. This is the
-       status message of WCAG 2.2 SC 4.1.3 for exactly that moment. It is rendered at all times and left
-       empty, since a live region added to the page with its text already in it is not announced by most
-       screen readers, and it only ever holds the plain Description of a component whose Invalid state is
-       on, so a countdown or a "resend the code" link, which belongs in a DescriptionTemplate, is never
-       announced on every tick. *@
+       status message of WCAG 2.2 SC 4.1.3 for exactly those two moments. It is rendered at all times and
+       left empty, since a live region added to the page with its text already in it is not announced by
+       most screen readers, and it only ever holds the plain Description of a component whose Invalid or
+       IsLoading state is on, so a countdown or a "resend the code" link, which belongs in a
+       DescriptionTemplate, is never announced on every tick. *@
     <div role="status"
          aria-live="polite"
          class="bit-otp-sts">@_statusMessage</div>
