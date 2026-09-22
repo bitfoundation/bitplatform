@@ -58,6 +58,14 @@ public partial class BitSlider : BitInputBase<double>
     // that came after it would then be snapped to the marks as if it were a keystroke.
     private EventCallback<PointerEventArgs> _onPointerDown;
 
+    // The draggable band is a range input like the others, so pressing it focuses it - and it is the one input
+    // of the three that is deliberately outside the accessibility tree. Focus left standing there would go on
+    // moving the whole range on every arrow key with nothing to announce it, so the press is remembered here
+    // and the focus handed back to a thumb as soon as it ends.
+    private bool _bandPressed;
+    private EventCallback<PointerEventArgs> _onTrackPointerDown;
+    private EventCallback<PointerEventArgs> _onTrackPointerUp;
+
     // The marks themselves, and the values they sit at - sorted and deduplicated. Both are looked up several
     // times a render and again on every step of a drag, and building a series of up to two hundred of them
     // that many times a second is work nothing asked for. The marks are drawn from the parameters alone, so
@@ -66,10 +74,10 @@ public partial class BitSlider : BitInputBase<double>
     private List<BitSliderMark>? _marks;
     private List<double>? _markValues;
 
-    // The width the value labels hold open, counted in characters of the longest text the scale reads at
-    // either of its ends. A label that grows with the number it carries - 9 to 10, 99 to 100 - resizes the
-    // track it stands beside, which moves the rail out from under the very thumb being dragged and shifts a
-    // vertical slider sideways as it is used. Reserving the widest end is what keeps the geometry still.
+    // The width the value labels hold open, counted in characters of the longest text the scale reads. A
+    // label that grows with the number it carries - 9 to 10, 99 to 100 - resizes the track it stands beside,
+    // which moves the rail out from under the very thumb being dragged and shifts a vertical slider sideways
+    // as it is used. Holding the widest text open is what keeps the geometry still.
     private int? _valueChars;
 
     private ElementReference _lowerInputRef;
@@ -564,6 +572,8 @@ public partial class BitSlider : BitInputBase<double>
 
         _onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnKeyDown);
         _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
+        _onTrackPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerDown);
+        _onTrackPointerUp = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnTrackPointerUpAsync);
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
@@ -1063,12 +1073,47 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
-    /// The room the value labels hold open, in characters. The two ends of the scale are the longest a
-    /// numeric label normally reads, so reserving their width keeps the track from resizing as the value
-    /// moves - the `ch` unit and the tabular figures the labels are set in agree on what a digit is wide.
-    /// It is a floor and not a width: a label that does turn out longer still grows past it.
+    /// The number of values a label is measured over before the scale is taken to be too fine to walk. A
+    /// slider with more steps than this is a numeric one in all but name, and its ends are its longest labels.
     /// </summary>
-    private int _ValueChars => _valueChars ??= Math.Max(GetDisplayValue(_Min).Length, GetDisplayValue(_Max).Length);
+    private const int MaxMeasuredValues = 100;
+
+    /// <summary>
+    /// The room the value labels hold open, in characters. Reserving the width of the longest text the scale
+    /// reads keeps the track from resizing as the value moves - the `ch` unit and the tabular figures the
+    /// labels are set in agree on what a digit is wide. It is a floor and not a width: a label that does turn
+    /// out longer still grows past it.
+    /// </summary>
+    /// <remarks>
+    /// A numeric label is longest at one end of the scale or the other, so the two ends measure the whole of
+    /// it. <see cref="GetValueText"/> promises nothing of the kind - a scale reading Low, Medium, High is
+    /// widest in the middle - so a slider that builds its own text is measured over every value it can read,
+    /// as long as there are few enough of them to be worth walking.
+    /// </remarks>
+    private int _ValueChars => _valueChars ??= MeasureValueChars();
+
+    private int MeasureValueChars()
+    {
+        var chars = Math.Max(GetDisplayValue(_Min).Length, GetDisplayValue(_Max).Length);
+
+        if (GetValueText is null) return chars;
+
+        var range = _Range;
+
+        if (double.IsFinite(range) is false || range <= 0) return chars;
+
+        var step = _Step;
+        var count = Math.Floor(range / step);
+
+        if (count is > MaxMeasuredValues or <= 1) return chars;
+
+        for (var i = 1; i < (int)count; i++)
+        {
+            chars = Math.Max(chars, GetDisplayValue(Denoise(_Min + i * step)).Length);
+        }
+
+        return chars;
+    }
 
     /// <summary>
     /// The style of a value label: the room it holds open, followed by whatever the caller has styled it
@@ -1526,6 +1571,48 @@ public partial class BitSlider : BitInputBase<double>
         await OnRangeChangeEnd.InvokeAsync(new BitSliderRangeValue(LowerValue, UpperValue));
 
         await ResyncInputAsync(e.Value?.ToString(), LowerValue, v => _rawBar = v);
+
+        await ReleaseBandFocusAsync();
+    }
+
+    /// <summary>
+    /// Notes that the band is being pressed, and clears what a key left behind the way every other press does.
+    /// </summary>
+    private void HandleOnTrackPointerDown(PointerEventArgs e)
+    {
+        HandleOnPointerDown(e);
+
+        _bandPressed = true;
+    }
+
+    /// <summary>
+    /// The end of a band drag. The change event is the other end of the same gesture, so whichever of the two
+    /// arrives first hands the focus back and the other finds nothing left to do; a press that moved the band
+    /// nowhere fires no change at all, which is why the pointer is listened to as well.
+    /// </summary>
+    private Task HandleOnTrackPointerUpAsync(PointerEventArgs e) => ReleaseBandFocusAsync();
+
+    /// <summary>
+    /// Hands the focus a band press took back to the lower thumb.
+    /// </summary>
+    /// <remarks>
+    /// The band is not a tab stop and is outside the accessibility tree, since it selects nothing the two
+    /// thumbs do not already carry. That makes it the wrong place for the focus to come to rest: every arrow
+    /// key would move the whole range with nothing announcing it, and a screen reader would find itself on an
+    /// element it cannot see. The lower thumb is where a keyboard picks the range up instead - the first of
+    /// its two tab stops, and the end the band's own value stands for.
+    /// </remarks>
+    private async Task ReleaseBandFocusAsync()
+    {
+        if (_bandPressed is false) return;
+
+        _bandPressed = false;
+
+        if (IsDisposed) return;
+
+        // The thumb is already on the screen - the pointer was just on it - so there is nothing to scroll to,
+        // and scrolling to it would move the page out from under the gesture that has only now finished.
+        await _lowerInputRef.FocusAsync(true);
     }
 
     /// <summary>

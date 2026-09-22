@@ -42,11 +42,16 @@
 //   --bit-Slider-mark-active-color       a mark the fill has reached, drawn on top of it     (default: the role's on-color)
 //   --bit-Slider-mark-label-color        the text under a mark                               (default: $clr-fg-sec)
 //   --bit-Slider-mark-label-font-size    size of that text                                   (default: per size, one ramp step below the value labels)
+//   --bit-Slider-mark-label-height       height of the row the mark labels stand in under a
+//                                        horizontal track, which is the room a taller label -
+//                                        an icon, a second line - has to be given            (default: 1.5em of that text; an upright slider measures its own row instead)
 //   --bit-Slider-thumb-label-color       text of the floating label that rides on a thumb    (default: the role's on-color)
 //   --bit-Slider-thumb-label-background  background of that label                            (default: the accent color)
 //   --bit-Slider-thumb-label-radius      its corner radius                                   (default: $shp-radius-popup)
 //   --bit-Slider-thumb-label-padding     its padding                                         (default: spacing(0.25) spacing(0.75))
 //   --bit-Slider-thumb-label-font-size   its font size                                       (default: as the mark labels)
+//   --bit-Slider-thumb-label-room        room held open above a horizontal slider for that
+//                                        label to rise into                                  (default: 2.75x its font size; set it to 0 to let the label overlap what is above)
 //   --bit-Slider-origin-color            the tick marking where the fill grows out of        (default: $clr-fg-sec)
 //   --bit-Slider-origin-width            thickness of that tick                              (default: $shp-border-width-thick)
 //   --bit-Slider-transition-duration     how long the fill and the thumbs take to follow a
@@ -104,6 +109,13 @@
         .bit-sld-mrk {
             background-color: var(--bit-Slider-disabled-color, #{$clr-bg-dis});
         }
+
+        // The floating label is a chip of the accent, so it gives it up with everything else - left
+        // alone it would be the one part of a disabled slider still painted in full color.
+        .bit-sld-tlb {
+            color: $clr-fg-dis;
+            background-color: var(--bit-Slider-disabled-color, #{$clr-bg-dis});
+        }
     }
 
     // A read-only slider is a picture of a value rather than a control, so the pointer says so. The value
@@ -125,6 +137,11 @@
 
         .bit-sld-thb {
             border-color: var(--bit-Slider-invalid-color, #{$clr-err});
+        }
+
+        .bit-sld-tlb {
+            color: $clr-err-text;
+            background-color: var(--bit-Slider-invalid-color, #{$clr-err});
         }
     }
 }
@@ -499,9 +516,11 @@
 // A zero-width flex box centres whatever overflows it on its own position, in either direction, which is
 // what keeps the mark labels centred under their ticks without a transform that RTL would have to undo.
 .bit-sld-mks {
-    height: 1.5em;
     position: relative;
     margin-inline: calc(var(--bit-sld-thumb) / 2);
+    // The labels inside are taken out of the flow, so the row is what reserves the space under the track
+    // for them - and a label taller than a line of text has to be given the room by hand.
+    height: var(--bit-Slider-mark-label-height, 1.5em);
     // The row and the offset of the labels inside it are measured in em, so the font size of the labels is set
     // here rather than on each of them: without it the row would be sized by whatever the page happens to be in
     // and would not follow the size class the way the labels standing in it do.
@@ -541,6 +560,17 @@
     left: 50%;
     translate: -50%;
     bottom: calc(100% + #{spacing(0.75)});
+}
+
+// The floating label of a horizontal slider stands above the track, which is where the caption - and
+// whatever else the page has put above the slider - already is. The room it needs is therefore held
+// open rather than borrowed, so a label that appears mid-drag never lands on top of something else,
+// and the value it shows never covers what the slider is for. An upright slider needs none: its label
+// stands beside the track, on the side the mark labels are not on.
+.bit-sld-tlo:not(.bit-sld-vrt) > .bit-sld-cnt,
+.bit-sld-tla:not(.bit-sld-vrt) > .bit-sld-cnt {
+    margin-block-start: var(--bit-Slider-thumb-label-room,
+                            calc(var(--bit-Slider-thumb-label-font-size, var(--bit-sld-font-size-sub)) * 2.75));
 }
 
 .bit-sld-tlo .bit-sld-tlb {
@@ -666,13 +696,15 @@
         width: var(--bit-sld-thumb);
     }
 
-    // The floating label moves to the side of the thumb, since above it is where the next value is.
+    // The floating label moves to the side of the thumb, since above it is where the next value is. It
+    // goes to the inline-start side, which is the one the mark labels never take: those stand in a
+    // column of their own after the track, so a label riding up the other side would cross them.
     .bit-sld-tlb {
         left: unset;
         bottom: unset;
         top: 50%;
         translate: 0 -50%;
-        inset-inline-start: calc(100% + #{spacing(0.75)});
+        inset-inline-end: calc(100% + #{spacing(0.75)});
     }
 
     // Rotating the input maps its increasing direction - to the right - onto up, so ArrowUp and ArrowRight

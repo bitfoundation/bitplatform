@@ -586,6 +586,56 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldMeasureTheReservedWidthOverEveryValueAGetValueTextReads()
+    {
+        // A numeric label is longest at one end of the scale or the other, but text built by hand promises
+        // nothing of the kind: here the widest word sits in the middle, and reserving only the ends would
+        // leave the label - and the track beside it - growing as the thumb passes over it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => new[] { "Low", "Fair", "Excellent", "Fine", "Top" }[(int)v]);
+        });
+
+        // "Excellent" is nine characters; the two ends read three.
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotWalkAScaleTooFineToMeasure()
+    {
+        // A scale with more values than anyone would label one by one is a numeric one in all but name, so
+        // it is measured at its ends rather than walked from one to the other.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.GetValueText, (double v) => v == 500 ? "the middle of it" : $"{v:0}");
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLeaveANumericScaleUnwalked()
+    {
+        // Without a GetValueText there is nothing to walk for: the format is monotonic in the number, so the
+        // ends of the scale are its longest labels.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.ValueFormat, "0");
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:1ch");
+    }
+
+    [TestMethod]
     public void BitSliderShouldLetTheCallersValueLabelStyleWinOverTheReservedWidth()
     {
         var com = RenderComponent<BitSlider>(parameters =>
@@ -3231,6 +3281,100 @@ public class BitSliderTests : BunitTestContext
         StringAssert.Contains(bar.GetAttribute("style"), "opacity:0.5");
     }
 
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackWhenABandDragEnds()
+    {
+        // Pressing the band focuses it, as pressing any input does, and the band is the one input of the
+        // three that is deliberately outside the accessibility tree. Left there, the focus would go on moving
+        // the whole range on every arrow key with nothing to announce it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.Input("50");
+        bar.Change("50");
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackFromABandPressThatMovedNothing()
+    {
+        // A press that moves the band nowhere fires no change at all, so the pointer is what the focus comes
+        // back on.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.PointerUp();
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHandTheFocusBackOnlyOncePerBandPress()
+    {
+        // The pointer and the change are the two ends of one gesture, so whichever arrives first hands the
+        // focus back and the other finds nothing left to do.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        bar.PointerDown();
+        bar.Input("50");
+        bar.PointerUp();
+        bar.Change("50");
+
+        Assert.AreEqual(1, CountFocusCalls());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotTakeTheFocusWithoutABandPress()
+    {
+        // Nothing but a press on the band puts the focus anywhere it has to be taken back from, so a thumb
+        // being dragged is left holding it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("30");
+        com.Find(".bit-sld-inp-lwr").Change("30");
+
+        Assert.AreEqual(0, CountFocusCalls());
+    }
+
+    private int CountFocusCalls()
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+    }
+
     #endregion
 
     #region Accessibility
@@ -3456,6 +3600,29 @@ public class BitSliderTests : BunitTestContext
         var com = RenderComponent<BitSlider>();
 
         Assert.IsFalse(com.Find(".bit-sld-inp").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldKeepTheValueLabelsOutOfTheAccessibilityTree(bool ranged)
+    {
+        // The thumb beside a value label already announces the very number the label reads, so a reader given
+        // both would say it twice - and on a range, four times over two thumbs.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.ShowValue, true);
+            parameters.Add(p => p.DefaultValue, 4D);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var labels = com.FindAll(".bit-sld-vlb");
+
+        Assert.AreEqual(ranged ? 2 : 1, labels.Count);
+        Assert.IsTrue(labels.All(l => l.GetAttribute("aria-hidden") == "true"));
     }
 
     [TestMethod,

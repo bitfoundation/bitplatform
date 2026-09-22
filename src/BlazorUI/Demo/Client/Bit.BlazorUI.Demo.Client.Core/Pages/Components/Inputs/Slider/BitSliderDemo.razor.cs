@@ -564,6 +564,12 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "--bit-Slider-mark-label-height",
+            DefaultValue = "1.5em of that text",
+            Description = "Height of the row the mark labels stand in under a horizontal track. The labels are taken out of the flow, so the row is what reserves the space under the track for them - a MarkLabelTemplate taller than a line of text has to be given the room here. An upright slider measures its own row against the length of the track.",
+        },
+        new()
+        {
             Name = "--bit-Slider-thumb-label-color",
             DefaultValue = "The Color role's on-color",
             Description = "Text of the floating label that rides along with a thumb.",
@@ -591,6 +597,12 @@ public partial class BitSliderDemo
             Name = "--bit-Slider-thumb-label-font-size",
             DefaultValue = "As the mark labels",
             Description = "Its font size.",
+        },
+        new()
+        {
+            Name = "--bit-Slider-thumb-label-room",
+            DefaultValue = "2.75x the label's font size",
+            Description = "The room held open above a horizontal slider for the floating label to rise into, so it never lands on the caption or on whatever else the page has put above the slider. Set it to 0 to take the room back and let the label overlap. An upright slider needs none: its label stands beside the track.",
         },
         new()
         {

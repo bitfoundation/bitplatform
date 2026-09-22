@@ -230,9 +230,11 @@
     <DemoExample Title="Thumb label" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             <b>ThumbLabel</b> puts the value on the thumb. <b>Auto</b> shows it only while the slider is hovered,
-            dragged or focused; <b>On</b> keeps it there permanently. It follows both ends of a range, takes the
-            same <b>ValueFormat</b> the other labels do, and moves beside the thumb once the slider stands upright.
-            Pair it with <b>ShowValue="false"</b> to keep the row compact.
+            dragged or focused; <b>On</b> keeps it there permanently. It follows both ends of a range and takes the
+            same <b>ValueFormat</b> the other labels do. A horizontal slider holds the room the label rises into
+            open above its track - <b>--bit-Slider-thumb-label-room</b> - so an Auto label appearing mid-drag never
+            lands on the caption; an upright one puts the label beside the thumb, on the side the mark labels do
+            not take. Pair it with <b>ShowValue="false"</b> to keep the row compact.
         </div>
         <div>
             <b>ThumbLabelTemplate</b> replaces its content with markup of your own - an icon that changes with the
@@ -564,10 +566,12 @@
             every thumb points at through <b>aria-describedby</b>, so it is announced after the name and the value;
             an id you pointed the inputs at yourself, a validation message among them, is kept alongside it rather
             than replaced. A range is wrapped in a labelled <b>group</b>, as the multi-thumb pattern asks.
-            <b>Required</b> is announced through <b>aria-required</b> and marked with the usual asterisk. Each
-            thumb's grab area is at least 24px across whatever size it is drawn at, meeting the minimum pointer
-            target of WCAG 2.2, and a drag answers with the accent's pressed shade the way a keyboard focus answers
-            with a ring.
+            <b>Required</b> is announced through <b>aria-required</b> and marked with the usual asterisk. The
+            labels the slider draws - the value beside the track, the text under a mark - are left out of the
+            accessibility tree, since the thumb beside them announces the same value and a reader given both would
+            say every number twice. Each thumb's grab area is at least 24px across whatever size it is drawn at,
+            meeting the minimum pointer target of WCAG 2.2, and a drag answers with the accent's pressed shade the
+            way a keyboard focus answers with a ring.
         </div>
         <br />
         <div class="example-box">
@@ -778,7 +782,8 @@
         <div>
             For what no parameter and no part covers, the slider reads a set of
             <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root: the geometry of the thumb
-            and the rail, every color of every state, the type of the labels and the look of the floating one. They
+            and the rail, every color of every state, the type of the labels, the room the mark labels and the
+            floating one are given, and the look of that floating label. They
             inherit, so a value on <code>:root</code> or any ancestor re-skins every slider below it while one on
             <b>Style</b> re-skins that instance alone, and anything left unset falls back to the theme token beside
             it - which is how a reshaped slider still follows the Material or Cupertino preset.
