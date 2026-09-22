@@ -27,6 +27,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private bool _previousParsingAttemptFailed;
     private string? _incomingValueBeforeParsing;
     private ValidationMessageStore? _parsingValidationMessages;
+    private readonly HashSet<string> _assignedInputParameters = [];
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
 
@@ -146,12 +147,28 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
     public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
 
+    /// <summary>
+    /// Determines whether a parameter declared by one of the input base classes was left unset on the component.
+    /// </summary>
+    /// <remarks>
+    /// The generated <c>HasNotBeenSet</c> of a component only knows the parameters that component declares itself,
+    /// and <see cref="BitComponentBase.HasNotBeenSet"/> only the ones of the root base class, so the parameters of
+    /// the input tiers in between are tracked here. That is what lets a <c>BitParams</c> ancestor fill in a
+    /// <see cref="ReadOnly"/> or a <see cref="Required"/> without overwriting the value the markup already gave it.
+    /// </remarks>
+    /// <param name="name">The name of the parameter to check.</param>
+    public virtual bool InheritedParameterHasNotBeenSet(string name)
+    {
+        return _assignedInputParameters.Contains(name) is false;
+    }
+
 
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
         ValueHasBeenSet = false;
         DefaultValueHasBeenSet = false;
+        _assignedInputParameters.Clear();
 
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
 
@@ -160,42 +177,50 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             switch (parameter.Key)
             {
                 case nameof(NoValidate):
+                    _assignedInputParameters.Add(parameter.Key);
                     NoValidate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DefaultValue):
+                    _assignedInputParameters.Add(parameter.Key);
                     DefaultValueHasBeenSet = true;
                     DefaultValue = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(CascadedEditContext):
+                    _assignedInputParameters.Add(parameter.Key);
                     CascadedEditContext = (EditContext?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DisplayName):
+                    _assignedInputParameters.Add(parameter.Key);
                     DisplayName = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(InputHtmlAttributes):
+                    _assignedInputParameters.Add(parameter.Key);
                     InputHtmlAttributes = (Dictionary<string, object>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Name):
+                    _assignedInputParameters.Add(parameter.Key);
                     Name = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(OnChange):
+                    _assignedInputParameters.Add(parameter.Key);
                     OnChange = (EventCallback<TValue?>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ReadOnly):
+                    _assignedInputParameters.Add(parameter.Key);
                     var readOnly = (bool)parameter.Value;
                     if (ReadOnly != readOnly) ClassBuilder.Reset();
                     ReadOnly = readOnly;
@@ -203,6 +228,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Required):
+                    _assignedInputParameters.Add(parameter.Key);
                     var required = (bool)parameter.Value;
                     if (Required != required) ClassBuilder.Reset();
                     Required = required;
@@ -210,17 +236,20 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                     break;
 
                 case nameof(Value):
+                    _assignedInputParameters.Add(parameter.Key);
                     ValueHasBeenSet = true;
                     Value = (TValue?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueChanged):
+                    _assignedInputParameters.Add(parameter.Key);
                     ValueChanged = (EventCallback<TValue>)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ValueExpression):
+                    _assignedInputParameters.Add(parameter.Key);
                     ValueExpression = (Expression<Func<TValue>>?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;

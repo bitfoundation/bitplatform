@@ -94,6 +94,19 @@
         }
     }
 
+    // The public custom properties are inherited, so one scope re-skins every field inside it without a
+    // single rule naming a part of the component.
+    .tfl-brand-scope {
+        --bit-TextField-radius: 0.75rem;
+        --bit-TextField-border-width: 2px;
+        --bit-TextField-border-color: #7c4dff;
+        --bit-TextField-hover-border-color: #b388ff;
+        --bit-TextField-focus-color: #7c4dff;
+        --bit-TextField-label-color: #7c4dff;
+        --bit-TextField-placeholder-color: #9e86d4;
+        --bit-TextField-count-color: #7c4dff;
+    }
+
     .validation-message {
         color: red;
     }

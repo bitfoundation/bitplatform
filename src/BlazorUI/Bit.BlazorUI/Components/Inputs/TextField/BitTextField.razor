@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -37,11 +37,20 @@
             else if (Prefix.HasValue())
             {
                 <div style="@Styles?.PrefixContainer"
-                     class="bit-tfl-pre @Classes?.PrefixContainer">
+                     class="bit-tfl-pre @Classes?.PrefixContainer"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     <span style="@Styles?.Prefix" class="@Classes?.Prefix">
                         @Prefix
                     </span>
                 </div>
+            }
+
+            @* The icon is written once and placed on whichever end IconPosition asks for, so a leading and a
+               trailing one are the same mark with the same name rather than two pieces of markup drifting apart. *@
+            @if (HasIcon && IconPosition is BitIconPosition.Start)
+            {
+                @IconFragment
             }
 
             <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
@@ -60,6 +69,7 @@
                               name="@Name"
                               id="@_inputId"
                               wrap="@Wrap"
+                              title="@InputTitle"
                               rows="@(Rows ?? 1)"
                               tabindex="@TabIndex"
                               readonly="@ReadOnly"
@@ -78,7 +88,7 @@
                               minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
                               spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                               autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
-                              aria-label="@AriaLabel"
+                              aria-label="@InputAriaLabel"
                               aria-busy="@AriaBusy"
                               aria-invalid="@AriaInvalid"
                               aria-labelledby="@LabelledBy"
@@ -99,6 +109,7 @@
                            name="@Name"
                            id="@_inputId"
                            type="@_inputType"
+                           title="@InputTitle"
                            readonly="@ReadOnly"
                            required="@Required"
                            tabindex="@TabIndex"
@@ -117,7 +128,7 @@
                            minlength="@(MinLength >= 0 ? (int?)MinLength : null)"
                            spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                            autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
-                           aria-label="@AriaLabel"
+                           aria-label="@InputAriaLabel"
                            aria-busy="@AriaBusy"
                            aria-invalid="@AriaInvalid"
                            aria-labelledby="@LabelledBy"
@@ -137,7 +148,9 @@
                 @* The indicator is only drawn here; what it means is announced by the live region at the end
                    of the component, which is already on the page by the time the busy state shows up. *@
                 <div style="@Styles?.Loading"
-                     class="bit-tfl-lod @Classes?.Loading">
+                     class="bit-tfl-lod @Classes?.Loading"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     @if (LoadingTemplate is not null)
                     {
                         @LoadingTemplate
@@ -201,14 +214,9 @@
                 </button>
             }
 
-            @if (Icon is not null || IconName.HasValue())
+            @if (HasIcon && IconPosition is not BitIconPosition.Start)
             {
-                var icon = BitIconInfo.From(Icon, IconName);
-                <i style="@Styles?.Icon"
-                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
-                   role="@(IconAriaLabel.HasValue() ? "img" : null)"
-                   aria-label="@IconAriaLabel"
-                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
+                @IconFragment
             }
 
             @if (SuffixTemplate is not null)
@@ -218,7 +226,9 @@
             else if (Suffix.HasValue())
             {
                 <div style="@Styles?.SuffixContainer"
-                     class="bit-tfl-suf @Classes?.SuffixContainer">
+                     class="bit-tfl-suf @Classes?.SuffixContainer"
+                     @onclick="HandleOnChromeClick"
+                     @onmousedown:preventDefault>
                     <span style="@Styles?.Suffix"
                           class="@Classes?.Suffix">
                         @Suffix
@@ -304,6 +314,49 @@
     @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
        typed, only be announced once the reader is done with the current sentence. It is rendered whether or
        not it has anything to say, because a live region that arrives with its text already in it is the one
-       thing screen readers are known to miss. *@
-    <span role="status" class="bit-tfl-dsc">@LiveText</span>
+       thing screen readers are known to miss.
+       The message sits in a keyed element so that every announcement replaces the element rather than only
+       rewriting its text: the same message said twice in a row would otherwise change nothing in the DOM,
+       and a live region that did not change is a live region nothing is read out of. *@
+    <span role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          class="bit-tfl-dsc"><span @key="_liveTextId">@_liveText</span></span>
 </div>
+
+@code {
+    private RenderFragment IconFragment =>
+    @<text>
+        @{
+            var icon = BitIconInfo.From(Icon, IconName);
+        }
+        @if (OnIconClick.HasDelegate)
+        {
+            @* An icon with something to do is a button and nothing else: a click handler on a decorative
+               glyph is an action only a pointer ever reaches. The name is the one the icon already carries,
+               and the glyph inside is hidden so the button is announced once rather than twice. *@
+            <button @onclick="HandleOnIconClick"
+                    type="button"
+                    title="@IconTitle"
+                    tabindex="@TabIndex"
+                    style="@Styles?.IconButton"
+                    aria-label="@IconAriaLabel"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-tfl-icb @Classes?.IconButton">
+                <i aria-hidden="true"
+                   style="@Styles?.Icon"
+                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon" />
+            </button>
+        }
+        else
+        {
+            <i style="@Styles?.Icon"
+               class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
+               role="@(IconAriaLabel.HasValue() ? "img" : null)"
+               aria-label="@IconAriaLabel"
+               aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")"
+               @onclick="HandleOnChromeClick"
+               @onmousedown:preventDefault />
+        }
+    </text>;
+}

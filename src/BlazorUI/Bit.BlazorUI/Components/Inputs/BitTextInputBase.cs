@@ -6,6 +6,7 @@
 /// <typeparam name="TValue"></typeparam>
 public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 {
+    private readonly HashSet<string> _assignedTextInputParameters = [];
     private readonly BitInputRateLimiter<ChangeEventArgs> _rateLimiter = new();
 
 
@@ -38,6 +39,8 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
+        _assignedTextInputParameters.Clear();
+
         var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>); ;
 
         foreach (var parameter in parametersDictionary!)
@@ -45,26 +48,31 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
             switch (parameter.Key)
             {
                 case nameof(AutoComplete):
+                    _assignedTextInputParameters.Add(parameter.Key);
                     AutoComplete = (string?)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(AutoFocus):
+                    _assignedTextInputParameters.Add(parameter.Key);
                     AutoFocus = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(DebounceTime):
+                    _assignedTextInputParameters.Add(parameter.Key);
                     DebounceTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(Immediate):
+                    _assignedTextInputParameters.Add(parameter.Key);
                     Immediate = (bool)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
                 case nameof(ThrottleTime):
+                    _assignedTextInputParameters.Add(parameter.Key);
                     ThrottleTime = (int)parameter.Value;
                     parametersDictionary.Remove(parameter.Key);
                     break;
@@ -72,6 +80,12 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
         }
 
         return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+    }
+
+    /// <inheritdoc/>
+    public override bool InheritedParameterHasNotBeenSet(string name)
+    {
+        return _assignedTextInputParameters.Contains(name) is false && base.InheritedParameterHasNotBeenSet(name);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -78,6 +78,12 @@ public class BitTextFieldClassStyles
     public string? Icon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the button the BitTextField's icon is wrapped in while it has an
+    /// <c>OnIconClick</c> handler.
+    /// </summary>
+    public string? IconButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitTextField's suffix container.
     /// </summary>
     public string? SuffixContainer { get; set; }
