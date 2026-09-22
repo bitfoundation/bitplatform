@@ -11,6 +11,23 @@
     padding: rem2(5px);
 }
 
+// The public CSS variables of the picker, set on a wrapper so they reach both the field and the callout -
+// the callout is rendered as a sibling of the root, so it inherits from the same ancestor rather than from
+// the root itself.
+.custom-vars {
+    --bit-CircularTimePicker-color: #6b3fa0;
+    --bit-CircularTimePicker-text-color: #fff;
+    --bit-CircularTimePicker-focus-color: #b58cf0;
+    --bit-CircularTimePicker-border-radius: 1rem;
+    --bit-CircularTimePicker-callout-radius: 1.25rem;
+    --bit-CircularTimePicker-clock-background: #f4efff;
+    --bit-CircularTimePicker-number-color: #3a2358;
+    --bit-CircularTimePicker-number-hover-background: #e4d8fb;
+    --bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;
+    --bit-CircularTimePicker-pointer-width: 3px;
+    --bit-CircularTimePicker-pin-size: 10px;
+}
+
 .event-log {
     gap: rem2(2px);
     display: flex;

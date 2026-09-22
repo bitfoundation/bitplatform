@@ -4,6 +4,8 @@
     <DataAnnotationsValidator />
 
     <BitCircularTimePicker AllowTextInput
+                           Required="@Required"
+                           Standalone="@Standalone"
                            MinTime="@MinTime"
                            MaxTime="@MaxTime"
                            InvalidErrorMessage="@InvalidErrorMessage"
@@ -17,6 +19,10 @@
 
 @code {
     [Parameter] public BitCircularTimePickerTestModel TestModel { get; set; } = new();
+
+    [Parameter] public bool Required { get; set; }
+
+    [Parameter] public bool Standalone { get; set; }
 
     [Parameter] public TimeSpan? MinTime { get; set; }
 

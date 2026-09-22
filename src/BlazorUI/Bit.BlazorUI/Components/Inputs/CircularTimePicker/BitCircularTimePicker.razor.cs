@@ -44,6 +44,20 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the circular time picker component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple circular time picker
+    /// components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCircularTimePickerParams.ParamName)]
+    public BitCircularTimePickerParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Whether the TimePicker allows input a time string directly or not.
     /// </summary>
     /// <remarks>
@@ -730,15 +744,38 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         SetDefaultValue();
 
-        _hour = CurrentValue?.Hours;
-        _minute = CurrentValue?.Minutes;
-        _second = CurrentValue?.Seconds;
+        ReadPartsFromValue();
 
         _view = GetInitialView();
 
         OnValueChanged += HandleOnValueChanged;
 
         base.OnInitialized();
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCircularTimePickerParams))]
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
+    }
+
+    // Re-runs the [CallOnSet] hooks of the parameters a BitParams cascade filled in, which the cascade
+    // itself bypasses by assigning the properties directly. Only the hooks whose parameters actually
+    // changed are run: the dial is moved back to its starting view by the second of them, and doing that on
+    // every parameters-set would undo the view the person had switched to on any re-render around the picker.
+    internal void ApplyCascadedParameters(bool cultureChanged, bool viewChanged)
+    {
+        if (cultureChanged)
+        {
+            OnSetCulture();
+        }
+
+        if (viewChanged)
+        {
+            OnSetEditMode();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -881,6 +918,20 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await OpenCallout();
 
         await OnClick.InvokeAsync();
+    }
+
+    // The label of a standalone picker is attached to nothing, since the only input it has is the hidden one
+    // carrying the value, so the click that a label would normally hand to its control is handed to the dial.
+    private async Task HandleOnLabelClick()
+    {
+        if (Standalone is false) return;
+        if (IsEnabled is false || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _clockRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private void OnSetCulture()
@@ -1409,9 +1460,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
-        _hour = CurrentValue?.Hours;
-        _minute = CurrentValue?.Minutes;
-        _second = CurrentValue?.Seconds;
+        ReadPartsFromValue();
+    }
+
+    // The value is a TimeSpan, so it can run past the end of a day or before its start. The field writes the
+    // time of day it lands on, so the dial is set from that same time of day rather than from the raw parts -
+    // which would hand a negative span to the hand as a negative angle and to the toolbar as "-01".
+    private void ReadPartsFromValue()
+    {
+        var time = BitTimeSteps.ToTimeOfDay(CurrentValue);
+
+        _hour = time?.Hours;
+        _minute = time?.Minutes;
+        _second = time?.Seconds;
     }
 
     private bool IsAm()
@@ -1643,11 +1704,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 // actually been given a value.
                 if (IsInteractive && CurrentPart.HasValue) await CommitView();
                 break;
-
-            case "Escape":
-                await CloseCallout();
-                break;
         }
+    }
+
+    // Escape dismisses the picker from anywhere inside the callout. It is handled on the callout rather than
+    // on the dial so it reaches the key wherever the focus is - the toolbar, an action button, a template -
+    // which is what a dialog has to answer with however it was entered. A standalone picker has no callout to
+    // close, and CloseCallout leaves it alone.
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+
+        await CloseCallout();
     }
 
     private async Task HandleOnClockWheel(WheelEventArgs e)
@@ -1887,6 +1955,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add("bit-ctp-rdl");
         }
 
+        // A picker with a field shows a rejected value on that field, which is the part of it the error
+        // message sits under. A standalone one has no field, so the state has to reach the only thing it
+        // puts on the page - the dial.
+        if (Standalone && ValueInvalid is true)
+        {
+            classes.Add("bit-inv");
+        }
+
         return string.Join(' ', classes).Trim();
     }
 
@@ -1918,6 +1994,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         BitCircularTimePickerView.Minute => "m",
         _ => "s"
     };
+
+    // The name of the dial. A picker with a field is named by that field, so the dial only says which part of
+    // the time it is on. A standalone one has no field the user can reach - the value rides in a hidden input
+    // and the label is not attached to anything - so the dial carries the name of the picker as well, ahead of
+    // the part, which is what keeps a page of standalone pickers from reading out as three identical listboxes.
+    private string ClockAriaLabel
+    {
+        get
+        {
+            if (Standalone is false) return ViewTitle;
+
+            var name = AriaLabel.HasValue() ? AriaLabel : Label;
+
+            return name.HasValue() ? $"{name} {ViewTitle}" : ViewTitle;
+        }
+    }
 
     private string ViewTitle => _view switch
     {
@@ -2186,7 +2278,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (value.HasValue is false) return null;
 
-        DateTime time = DateTime.Today.Add(value.Value);
+        DateTime time = DateTime.Today.Add(BitTimeSteps.ToTimeOfDay(value)!.Value);
 
         return time.ToString(GetValueFormat(), _culture);
     }

@@ -8,15 +8,22 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
+    @*
+        The label is attached to the input only where the input is the control being operated. A standalone
+        picker carries its value in an input nobody can see or tab to, so a label pointing at it would send
+        the focus off the screen on every click; it moves the focus to the dial instead, which is the part
+        that is actually there, and the dial takes the name of the field along with it.
+    *@
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_inputId">
+        <label id="@_labelId" for="@(Standalone ? null : _inputId)" @onclick="HandleOnLabelClick">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-ctp-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+        <label style="@Styles?.Label" class="bit-ctp-lbl @Classes?.Label" id="@_labelId"
+               for="@(Standalone ? null : _inputId)" @onclick="HandleOnLabelClick">
             @Label
         </label>
     }
@@ -67,14 +74,16 @@
         @*
             The value carrier of a standalone picker, so that one still posts and validates like any other
             field. It is invisible, so it is taken out of the tab order: a tab stop nobody can see is a
-            place the focus disappears into on the way to the dial, which is the part being operated.
+            place the focus disappears into on the way to the dial, which is the part being operated. It is
+            kept out of the accessibility tree along with it - the dial carries the name and reads out the
+            value, so an unreachable text box beside it would only be a second copy of the same field.
         *@
         <input @ref="InputElement" @attributes="InputHtmlAttributes"
                type="text"
                name="@Name"
                id="@_inputId"
                tabindex="-1"
-               aria-label="@AriaLabel"
+               aria-hidden="true"
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(IsEnabled is false)"
@@ -104,8 +113,13 @@
         The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
         off and the focus leaving it dismisses it; standalone it is a group of controls that is part of the page
         like any other, where announcing a dialog would announce one the user can never leave.
+
+        Escape is handled here rather than on the dial, so it dismisses the picker from whatever part of it
+        holds the focus - the toolbar, an action button, anything a template put inside - and not only from
+        the one control that happens to own a key handler of its own.
     *@
     <div @attributes=@CalloutHtmlAttributes
+         @onkeydown="HandleOnCalloutKeyDown"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
          aria-label="@CalloutAriaLabel"
@@ -237,9 +251,16 @@
                      role="listbox"
                      tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
                      data-bit-wheel="@(IsWheelSpinEnabled ? "1" : null)"
-                     aria-label="@ViewTitle"
+                     aria-label="@ClockAriaLabel"
                      aria-disabled="@(IsEnabled ? null : "true")"
                      aria-readonly="@(ReadOnly ? "true" : null)"
+                     @*
+                         A standalone picker has no field to carry the state of the value: the input it posts
+                         through is hidden from assistive technology, so the dial - the control the person
+                         actually operates - is what says the value is required and what says it was rejected.
+                     *@
+                     aria-required="@(Standalone && Required ? "true" : null)"
+                     aria-invalid="@(Standalone && ValueInvalid is true ? "true" : null)"
                      aria-activedescendant="@_activeDescendantId"
                      style="@Styles?.ClockFace"
                      class="bit-ctp-clf @Classes?.ClockFace">
