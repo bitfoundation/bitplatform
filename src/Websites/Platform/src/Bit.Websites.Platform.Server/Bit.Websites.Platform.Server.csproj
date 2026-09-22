@@ -24,7 +24,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.0" />
+        <PackageReference Include="Meziantou.Framework.Win32.Jobs" Version="4.0.3" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />

@@ -106,6 +106,32 @@ public partial class IdentityController
     }
 
 
+    /// <summary>
+    /// Elevates the calling session against a passkey instead of the 6-digit code, returning when that window closes
+    /// (<see cref="AuthPolicies.ELEVATED_ACCESS"/>). The assertion is asked for with <c>UserVerification.Required</c>.
+    /// </summary>
+    private async Task<DateTimeOffset> ElevateByWebAuthn(User user, JsonElement clientResponse, CancellationToken cancellationToken)
+    {
+        if (await userManager.IsLockedOutAsync(user))
+            throw UserLockedOutException(user);
+
+        var assertion = clientResponse.Deserialize(jsonSerializerOptions.GetTypeInfo<AuthenticatorAssertionRawResponse>())
+                        ?? throw new BadRequestException(nameof(AppStrings.InvalidToken)).WithData("Reason", "Invalid WebAuthn client response.");
+
+        var (verifyResult, credential, assertionOptionsCacheKey) = await Verify(assertion, cancellationToken);
+
+        // GetWebAuthnAssertionOptions is anonymous and takes the user ids to offer from its caller, so without this
+        // anyone holding a refresh token could elevate with somebody else's passkey.
+        if (credential.UserId != user.Id)
+            throw new UnauthorizedException().WithData("Reason", "The WebAuthn credential belongs to another user.");
+
+        credential.SignCount = verifyResult.SignCount;
+
+        await cache.RemoveAsync(assertionOptionsCacheKey, token: cancellationToken); // One assertion, one elevation.
+
+        return NewElevatedSessionExpiresOn();
+    }
+
     private async Task<(VerifyAssertionResult VerifyResult, WebAuthnCredential Credential, string AssertionOptionsCacheKey)> Verify(AuthenticatorAssertionRawResponse clientResponse, CancellationToken cancellationToken)
     {
         var response = JsonSerializer.Deserialize(clientResponse.Response.ClientDataJson, jsonSerializerOptions.GetTypeInfo<AuthenticatorResponse>())
