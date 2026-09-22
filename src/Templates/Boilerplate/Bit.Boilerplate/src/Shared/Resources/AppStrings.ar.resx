@@ -699,7 +699,7 @@
     <value>الانتقال إلى اليوم</value>
   </data>
   <data name="HomeMessage" xml:space="preserve">
-    <value>أنشئ تطبيق Blazor متعدد الوضعيات (WASM، خادم، هجين، ما قبل التصيير) بسهولة في أقصر وقت ممكن!</value>
+    <value>كل ما تراه هنا يعمل بالفعل، على الويب وأندرويد وiOS وويندوز وماك. اجعله لك وانشره.</value>
   </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>الرئيسية</value>
@@ -717,13 +717,13 @@
     <value>تعرف على المزيد</value>
   </data>
   <data name="BitPlatformMessage" xml:space="preserve">
-    <value>مجموعة أدوات لمطوري .NET عبر منصات متعددة</value>
+    <value>تطبيق كامل المزايا على كل المنصات، منذ اليوم الأول</value>
   </data>
   <data name="BitBlazorUIMessage" xml:space="preserve">
     <value>مجموعة مكونات Blazor عالية الأداء، سهلة التخصيص وجميلة</value>
   </data>
   <data name="BitProjectTemplateMessage" xml:space="preserve">
-    <value>قالب مشروع .NET غني بالميزات يعمل بسلاسة في كل مكان</value>
+    <value>نقطة الانطلاق وراء هذا التطبيق: كل شيء جاهز ومتصل، والكود المصدري ملك لك بالكامل.</value>
   </data>
   <data name="DescriptionMetaTagValue" xml:space="preserve">
     <value>تم بناء الـ Boilerplate باستخدام ASP.NET Core، Identity، Web API، EF Core و Blazor</value>

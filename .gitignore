@@ -281,5 +281,5 @@ _book
 
 custom.aprof
 
-# Written at the root of its own checkout by the Platform website's CodebaseMemoryIndexService.
+# Written at the root of every release worktree by the Platform website's CodebaseMemoryCli.
 /.cbmignore
