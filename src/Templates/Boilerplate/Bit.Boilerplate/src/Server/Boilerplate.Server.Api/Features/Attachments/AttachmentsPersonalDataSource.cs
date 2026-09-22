@@ -1,5 +1,4 @@
 //+:cnd:noEmit
-using ImageMagick;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentStorage.Storage;
@@ -51,7 +50,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             .AsNoTracking()
             .Where(attachment => attachment.Id == userId && profileImageKinds.Contains(attachment.Kind))
             .OrderBy(attachment => attachment.Kind)
-            .Select(attachment => new { attachment.Kind, attachment.CreatedOn, attachment.Path })
+            .Select(attachment => new { attachment.Kind, attachment.CreatedOn, attachment.Path, attachment.ContentType })
             .ToArrayAsync(cancellationToken);
 
         List<object> export = [];
@@ -63,7 +62,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
                 attachment.Kind,
                 attachment.CreatedOn,
                 // Name of the image inside files/attachments/, or null when the stored file could not be found.
-                File = attachment.Path is null ? null : await BuildFileName(attachment.Kind, attachment.Path, cancellationToken)
+                File = attachment.Path is null ? null : BuildFileName(attachment.Kind, attachment.ContentType)
             });
         }
 
@@ -75,7 +74,7 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
         var blobs = await dbContext.Attachments
             .AsNoTracking()
             .Where(attachment => attachment.Id == userId && profileImageKinds.Contains(attachment.Kind) && attachment.Path != null)
-            .Select(attachment => new { attachment.Kind, Path = attachment.Path! })
+            .Select(attachment => new { attachment.Kind, Path = attachment.Path!, attachment.ContentType })
             .ToArrayAsync(cancellationToken);
 
         List<PersonalDataFile> files = [];
@@ -87,57 +86,22 @@ public partial class AttachmentsPersonalDataSource : IPersonalDataSource
             if (await blobStorage.ObjectExists(blob.Path, cancellationToken) is false)
                 continue;
 
-            files.Add(new(await BuildFileName(blob.Kind, blob.Path, cancellationToken), ct => blobStorage.OpenRead(blob.Path, ct)));
+            files.Add(new(BuildFileName(blob.Kind, blob.ContentType), ct => blobStorage.OpenRead(blob.Path, ct)));
         }
 
         return [.. files];
     }
 
     /// <summary>
-    /// The kind is the name, so the two profile images do not arrive as two unrelated files. The <c>*Original</c>
-    /// kinds are stored under a path with no extension (See <c>AttachmentController.GetFilePath</c>), so theirs comes
-    /// from the bytes: a file the subject has to guess the format of is a poor answer to an Article 20 request.
+    /// The kind is the name, so the two profile images do not arrive as two unrelated files. A file the subject has
+    /// to guess the format of is a poor answer to an Article 20 request, hence the extension.
     /// </summary>
-    private async Task<string> BuildFileName(AttachmentKind kind, string blobPath, CancellationToken cancellationToken)
+    private static string BuildFileName(AttachmentKind kind, string? contentType)
     {
-        var extension = Path.GetExtension(blobPath);
-
-        if (string.IsNullOrEmpty(extension))
-        {
-            extension = await ReadFormatExtension(blobPath, cancellationToken);
-        }
+        // Off the stored content type rather than the blob key, so a row written before the key carried one still names its format.
+        var extension = string.IsNullOrEmpty(contentType) ? string.Empty : $".{contentType.Split('/')[^1].Split('+')[0]}";
 
         return $"{kind}{extension}";
-    }
-
-    /// <summary>
-    /// The upload re-encodes every kind it stores, so the bytes really are one of the formats Magick names - and it
-    /// names one from the header alone. A blob that is missing or unreadable keeps today's extension-less name rather
-    /// than failing the whole export.
-    /// </summary>
-    private async Task<string> ReadFormatExtension(string blobPath, CancellationToken cancellationToken)
-    {
-        const int headerBytes = 64 * 1024;
-
-        try
-        {
-            await using var blob = await blobStorage.OpenRead(blobPath, cancellationToken);
-
-            if (blob is null)
-                return string.Empty;
-
-            // Copied into memory because the header has to be seekable, and capped because only the header is read.
-            var buffer = new byte[headerBytes];
-            var read = await blob.ReadAtLeastAsync(buffer, headerBytes, throwOnEndOfStream: false, cancellationToken);
-
-            using MemoryStream header = new(buffer, 0, read, writable: false);
-
-            return $".{new MagickImageInfo(header).Format.ToString().ToLowerInvariant()}";
-        }
-        catch (MagickException)
-        {
-            return string.Empty;
-        }
     }
 
     public async Task PrepareErase(PersonalDataErasureContext context, CancellationToken cancellationToken)

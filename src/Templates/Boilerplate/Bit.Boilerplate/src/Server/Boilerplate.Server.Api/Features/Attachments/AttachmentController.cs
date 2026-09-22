@@ -74,7 +74,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// all the client needs to build the attachment url it puts in the message.
     /// <para>
     /// The id is minted here rather than accepted from the client: an attachment id is the whole address of a blob
-    /// (See <see cref="GetFilePath(Guid, AttachmentKind)"/>), so a caller-chosen one would let a user overwrite somebody else's attachment -
+    /// (See <see cref="GetFilePath(Guid, AttachmentKind, string?)"/>), so a caller-chosen one would let a user overwrite somebody else's attachment -
     /// their profile picture included - by naming its id.
     /// </para>
     /// </summary>
@@ -90,16 +90,24 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
     //#endif
 
+    // The *Original kinds carry the uploaded format in their key and so need the extension in the route (See
+    // GetFilePath); the resized ones are always WebP. Taking it from the route is what keeps this endpoint - the one
+    // every rendered page hits - free of a database round trip.
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
+    [HttpGet("{attachmentId}/{kind}/{extension:length(1,8)}")]
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true, SkipOutputCache = true, CacheTagTemplate = ResponseCacheService.AttachmentCacheTagTemplate)]
-    public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAttachment(Guid attachmentId, AttachmentKind kind, string? extension = null, CancellationToken cancellationToken = default)
     {
         // If the backend is hosted behind a CDN (which is recommended for production), the GetAttachment method's returned stream will be cached on CDN edge servers.
         // Alternatively, you can generate URLs that allow clients to download files directly from the file storage, further reducing the load on the backend.
         // If security is a concern, you can generate short-lived signed URLs for the file storage. These signed URLs can be validated either at the CDN edge or on the file storage server, ensuring that only authorized users can access the files.
 
-        var filePath = GetFilePath(attachmentId, kind);
+        // Bounded before it reaches the storage key; the route constraint caps the length, this caps the charset.
+        if (extension is not null && extension.All(char.IsAsciiLetterOrDigit) is false)
+            throw new BadRequestException().WithData("Reason", "The extension is not a file extension.");
+
+        var filePath = GetFilePath(attachmentId, kind, extension);
 
         if (await blobStorage.ObjectExists(filePath, cancellationToken) is false)
             throw new ResourceNotFoundException().WithData("Reason", "The attachment does not exist.");
@@ -113,7 +121,8 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => "image/webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => "image/webp",
-            _ => "application/octet-stream" // The *Original kinds keep the uploaded format, whatever it was.
+            // Off the same extension the key was built from, so the two can never disagree.
+            _ => MagickFormatInfo.Create($"a.{extension}")?.MimeType ?? "application/octet-stream"
         };
 
         return File(await blobStorage.OpenRead(filePath, cancellationToken), mimeType, enableRangeProcessing: true);
@@ -233,11 +242,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
 
         foreach (var kind in kinds)
         {
+            // Path is assigned once the format is known, below: for the *Original kinds it is part of the key.
             var attachment = new Attachment
             {
                 Id = attachmentId,
                 Kind = kind,
-                Path = GetFilePath(attachmentId, kind),
                 CreatedOn = TimeProvider.GetUtcNow(),
             };
 
@@ -295,6 +304,14 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             var storedBytes = imageResizeContext.NeedsResize
                 ? sourceImage.ToByteArray(MagickFormat.WebP)
                 : sourceImage.ToByteArray();
+
+            // What the *Original kinds actually stored, and therefore what their key ends in.
+            attachment.ContentType = imageResizeContext.NeedsResize
+                ? "image/webp"
+                : MagickFormatInfo.Create(sourceImage.Format)?.MimeType;
+
+            attachment.Path = GetFilePath(attachmentId, kind,
+                imageResizeContext.NeedsResize ? null : sourceImage.Format.ToString().ToLowerInvariant());
 
             updateResizeDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds, new KeyValuePair<string, object?>("kind", kind.ToString()));
 
@@ -359,29 +376,37 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         //  ---------------------------------------------------------------------------------------------
         //  PHASE 2 - everything validated; now mutate.
         //
-        //  A re-upload does NOT delete and re-insert the rows. Attachment's key is composite - { Id, Kind }
-        //  (AttachmentConfiguration) - and GetFilePath is deterministic over exactly those two values, so a
-        //  re-upload produces rows whose keys AND Path are byte-identical to the existing ones. Removing and
-        //  re-adding them in one SaveChangesAsync would also throw: EF cannot track a second instance with a
-        //  key it already tracks, even when the tracked one is marked Deleted.
+        //  A re-upload updates the rows in place instead of deleting and re-inserting them: Attachment's key is
+        //  composite - { Id, Kind } (AttachmentConfiguration) - and EF cannot track a second instance with a key it
+        //  already tracks, even when the tracked one is marked Deleted.
         //
-        //  For the same reason there is no stale blob to clean up: the new key IS the old key, so the writes
-        //  below overwrite in place.
+        //  Path is NOT stable across a re-upload - the *Original kinds end in the uploaded format (See GetFilePath) -
+        //  so a png -> jpg replacement lands under a new key, and the blob it supersedes has to go with it.
         //  ---------------------------------------------------------------------------------------------
-        var existingKinds = await DbContext.Attachments
+        var existingAttachments = await DbContext.Attachments
             .Where(att => att.Id == attachmentId)
-            .Select(att => att.Kind)
-            .ToArrayAsync(cancellationToken);
+            .ToDictionaryAsync(att => att.Kind, cancellationToken);
 
-        var newAttachments = preparedUploads.Select(u => u.Attachment)
-                                            .Where(att => existingKinds.Contains(att.Kind) is false)
-                                            .ToArray();
+        List<string> supersededPaths = [];
 
-        if (newAttachments.Length > 0)
+        foreach (var (attachment, _) in preparedUploads)
         {
-            await DbContext.Attachments.AddRangeAsync(newAttachments, cancellationToken);
-            await DbContext.SaveChangesAsync(cancellationToken);
+            if (existingAttachments.TryGetValue(attachment.Kind, out var existingAttachment) is false)
+            {
+                await DbContext.Attachments.AddAsync(attachment, cancellationToken);
+                continue;
+            }
+
+            if (existingAttachment.Path is not null && existingAttachment.Path != attachment.Path)
+            {
+                supersededPaths.Add(existingAttachment.Path);
+            }
+
+            existingAttachment.Path = attachment.Path;
+            existingAttachment.ContentType = attachment.ContentType;
         }
+
+        await DbContext.SaveChangesAsync(cancellationToken);
 
         var wroteAnyBlob = false;
 
@@ -389,15 +414,23 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             foreach (var (attachment, storedBytes) in preparedUploads)
             {
-                await blobStorage.SetBytes(attachment.Path, storedBytes, cancellationToken: cancellationToken);
+                // SetBytes would leave the content type to be guessed from the key, which not every kind names.
+                using MemoryStream storedStream = new(storedBytes);
+                await blobStorage.SetObject(attachment.Path, storedStream, attachment.ContentType, cancellationToken: cancellationToken);
                 wroteAnyBlob = true;
+            }
+
+            // Only now: until the replacement is written, the superseded blob is the sole copy.
+            foreach (var supersededPath in supersededPaths)
+            {
+                await blobStorage.DeleteSingleObject(supersededPath, cancellationToken);
             }
         }
         finally
         {
-            // The replacement is stored under the very key the old bytes were (See GetFilePath), so nothing else
-            // invalidates the copies already on the edge and in browsers. In the finally because a second kind that
-            // fails still leaves the first one replaced, and the edge still holding what it replaced.
+            // A client's url is keyed by { Id, Kind }, not by the blob key, so even a replacement under a new key
+            // leaves the old response on the edge. In the finally because a second kind that fails still leaves
+            // the first one replaced, and the edge still holding what it replaced.
             if (wroteAnyBlob)
             {
                 await responseCacheService.PurgeAttachmentCache(attachmentId);
@@ -438,23 +471,23 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
 
     /// <summary>
-    /// Deterministic for every kind: no part of the key comes from the uploaded file name. The *Original kinds
-    /// deliberately carry NO extension - deriving one from the upload meant a png -> jpg re-upload computed a
-    /// different key, so the old blob was left referenced by no row and outside every deletion path, and
-    /// <see cref="GetAttachment"/> (which has no file name) computed a key that could never match what was stored.
+    /// No part of the key comes from the uploaded file NAME. The resized kinds are re-encoded to WebP, so theirs is a
+    /// pure function of { Id, Kind }; the *Original kinds keep the uploaded format and take <paramref name="extension"/>
+    /// - from the decoded image on upload, from the route on a read. That makes their key unstable across a png -> jpg
+    /// re-upload, which is why <see cref="UploadAttachment"/> deletes the blob the new key supersedes.
     /// <br/>
-    /// Environment variables are expanded over the CONFIGURED directory prefix only, never over anything the
-    /// client influenced - the file name used to flow into ExpandEnvironmentVariables, so a name ending
-    /// ".%TEMP%" expanded a server environment value straight into the storage key.
+    /// Environment variables are expanded over the CONFIGURED directory prefix only, never over anything the client
+    /// influenced - a file name ending ".%TEMP%" used to expand a server environment value into the storage key, and
+    /// an extension off the route is charset-checked before it reaches here for the same reason.
     /// </summary>
-    private string GetFilePath(Guid attachmentId, AttachmentKind kind) => GetFilePath(AppSettings, attachmentId, kind);
+    private string GetFilePath(Guid attachmentId, AttachmentKind kind, string? extension = null) => GetFilePath(AppSettings, attachmentId, kind, extension);
 
-    /// <inheritdoc cref="GetFilePath(Guid, AttachmentKind)"/>
+    /// <inheritdoc cref="GetFilePath(Guid, AttachmentKind, string?)"/>
     /// <remarks>
-    /// Static so that whoever needs a blob can work out where it is without asking this controller or the database
-    /// for it - <c>AppChatbot</c> reads an attached image straight off storage this way.
+    /// Static so that whoever needs a blob whose kind fixes its format can work out where it is without asking this
+    /// controller or the database for it - <c>AppChatbot</c> reads an attached image straight off storage this way.
     /// </remarks>
-    public static string GetFilePath(ServerApiSettings appSettings, Guid attachmentId, AttachmentKind kind)
+    public static string GetFilePath(ServerApiSettings appSettings, Guid attachmentId, AttachmentKind kind, string? extension = null)
     {
         var directory = kind switch
         {
@@ -479,7 +512,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
             AttachmentKind.AiChatImage => $"{directory}{attachmentId}_{kind}.webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => $"{directory}{attachmentId}_{kind}.webp",
-            _ => $"{directory}{attachmentId}_{kind}"
+            _ => extension is null ? $"{directory}{attachmentId}_{kind}" : $"{directory}{attachmentId}_{kind}.{extension}"
         };
     }
 
