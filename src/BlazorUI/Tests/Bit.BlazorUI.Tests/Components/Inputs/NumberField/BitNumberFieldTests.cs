@@ -277,21 +277,29 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         var ntfWrapper = component.Find(".bit-nfl-cnt");
+        var input = component.Find("input");
 
         if (string.IsNullOrEmpty(title) is false)
         {
             Assert.AreEqual(title, ntfWrapper.GetAttribute("title"));
         }
 
+        // The wrapper is a plain box with no role of its own, which makes every aria-* attribute on it
+        // invalid and ignored; the name and the set position belong on the element carrying the
+        // spinbutton role, and naming the wrapper as well would have the field read out twice.
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-label"));
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-setsize"));
+        Assert.IsNull(ntfWrapper.GetAttribute("aria-posinset"));
+
         if (string.IsNullOrEmpty(ariaLabel) is false)
         {
-            Assert.AreEqual(ariaLabel, ntfWrapper.GetAttribute("aria-label"));
+            Assert.AreEqual(ariaLabel, input.GetAttribute("aria-label"));
         }
 
         if (ariaSetSize is not null)
         {
-            Assert.AreEqual(ariaSetSize.ToString(), ntfWrapper.GetAttribute("aria-setsize"));
-            Assert.AreEqual(ariaPositionInSet.ToString(), ntfWrapper.GetAttribute("aria-posinset"));
+            Assert.AreEqual(ariaSetSize.ToString(), input.GetAttribute("aria-setsize"));
+            Assert.AreEqual(ariaPositionInSet.ToString(), input.GetAttribute("aria-posinset"));
         }
     }
 
@@ -893,17 +901,19 @@ public class BitNumberFieldTests : BunitTestContext
 
         // aria-describedby is an id reference, so the description text is rendered into a visually
         // hidden element of its own and the input points at that element.
+        // The always-present live region shares the visually hidden class, so the description is the one
+        // carrying an id.
         if (ariaDescription is null)
         {
             Assert.IsNull(input.GetAttribute("aria-describedby"));
-            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc").Count);
+            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc[id]").Count);
         }
         else
         {
             var describedById = input.GetAttribute("aria-describedby");
             Assert.IsFalse(string.IsNullOrEmpty(describedById));
 
-            var description = component.Find(".bit-nfl-dsc");
+            var description = component.Find(".bit-nfl-dsc[id]");
             Assert.AreEqual(describedById, description.Id);
             Assert.AreEqual(ariaDescription, description.TextContent);
         }
@@ -2077,13 +2087,12 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 4);
         });
 
-        var liveRegion = component.Find("span.bit-nfl-lvr");
-        Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
+        var liveRegion = component.Find("span[role=status]");
         Assert.AreEqual("4", liveRegion.TextContent.Trim());
 
         component.Find("button.bit-nfl-sbn:last-of-type").PointerDown();
 
-        Assert.AreEqual("5", component.Find("span.bit-nfl-lvr").TextContent.Trim());
+        Assert.AreEqual("5", component.Find("span[role=status]").TextContent.Trim());
     }
 
     [TestMethod]
@@ -2496,5 +2505,326 @@ public class BitNumberFieldTests : BunitTestContext
         var buttons = comp.FindAll("button");
 
         await comp.InvokeAsync(() => buttons[^1].TriggerEvent("onpointerdown", new PointerEventArgs()));
+    }
+
+    [TestMethod,
+         DataRow(null, "bit-nfl-md"),
+         DataRow(BitSize.Small, "bit-nfl-sm"),
+         DataRow(BitSize.Medium, "bit-nfl-md"),
+         DataRow(BitSize.Large, "bit-nfl-lg")
+    ]
+    public void BitNumberFieldShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+         DataRow(null, ""),
+         DataRow(BitSpinButtonMode.Compact, "bit-nfl-mcp"),
+         DataRow(BitSpinButtonMode.Inline, "bit-nfl-min"),
+         DataRow(BitSpinButtonMode.Spread, "bit-nfl-msp")
+    ]
+    public void BitNumberFieldShouldRenderTheModeClass(BitSpinButtonMode? mode, string expectedClass)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, mode);
+        });
+
+        var classList = component.Find(".bit-nfl").ClassList;
+
+        if (expectedClass.HasValue())
+        {
+            Assert.IsTrue(classList.Contains(expectedClass));
+        }
+        else
+        {
+            Assert.IsFalse(classList.Contains("bit-nfl-mcp"));
+            Assert.IsFalse(classList.Contains("bit-nfl-min"));
+            Assert.IsFalse(classList.Contains("bit-nfl-msp"));
+        }
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageShouldMarkTheFieldInvalidAndDescribeIt()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "Too many items.");
+        });
+
+        var error = component.Find(".bit-nfl-erm");
+        Assert.AreEqual("Too many items.", error.TextContent.Trim());
+
+        var input = component.Find("input");
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.IsTrue(input.GetAttribute("aria-describedby").Split(' ').Contains(error.Id));
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
+
+        // The message is announced by the single live region rather than by a live role of its own, so it
+        // is never read out twice.
+        Assert.AreEqual("Too many items.", component.Find("span[role=status]").TextContent.Trim());
+        Assert.IsNull(error.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldErrorMessageTemplateShouldRenderInPlaceOfTheMessage()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "b");
+                builder.AddContent(1, "Out of range");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("Out of range", component.Find(".bit-nfl-erm b").TextContent);
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldInvalidShouldMarkTheFieldWithoutAMessage()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotRenderAriaInvalidWhenValid()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        Assert.IsNull(component.Find("input").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPrefixAndSuffixShouldBeReferencedByTheInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "$");
+            parameters.Add(p => p.Suffix, "per month");
+        });
+
+        var ids = component.Find("input").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-pre span").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-suf span").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldKeepAConsumerWrittenAriaDescribedBy()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Between 1 and 9.");
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-describedby", "outside-hint" } });
+        });
+
+        var ids = component.Find("input").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains("outside-hint"));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-des").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputShouldGroupAndNameItsButtons()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Label, "Quantity");
+        });
+
+        var container = component.Find(".bit-nfl-cnt");
+
+        Assert.AreEqual("group", container.GetAttribute("role"));
+        Assert.AreEqual(component.Find("label").Id, container.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldFillWhatTheFieldLeftUnset()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams
+                {
+                    Size = BitSize.Large,
+                    Mode = BitSpinButtonMode.Compact,
+                    Min = "2",
+                    Max = "8",
+                    Step = "2",
+                    Suffix = "kg",
+                    Underlined = true
+                }
+            });
+            parameters.AddChildContent<BitNumberField<int>>();
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-mcp"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-und"));
+        Assert.AreEqual("kg", component.Find(".bit-nfl-suf span").TextContent.Trim());
+
+        // Min/Max are strings parsed by setters of their own, so a cascaded value only reaches the bounds
+        // when the params object calls them.
+        var input = component.Find("input");
+        Assert.AreEqual("2", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("8", input.GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldNotOverrideTheFieldsOwnValues()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams { Size = BitSize.Large, Underlined = true }
+            });
+            parameters.AddChildContent<BitNumberField<int>>(p => p.Add(x => x.Size, BitSize.Small));
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nfl-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-nfl-und"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldCascadingParametersShouldCarryTheBaseParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new IBitComponentParams[]
+            {
+                new BitNumberFieldParams { Dir = BitDir.Rtl, IsEnabled = false }
+            });
+            parameters.AddChildContent<BitNumberField<int>>();
+        });
+
+        var root = component.Find(".bit-nfl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+    }
+
+
+    [TestMethod]
+    public void BitNumberFieldLoadingShouldRenderABusyIndicatorAndAnnounceIt()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingAriaLabel, "Recalculating");
+        });
+
+        var indicator = component.Find(".bit-nfl-lod");
+        Assert.AreEqual("true", indicator.GetAttribute("aria-hidden"));
+
+        Assert.AreEqual("true", component.Find("input").GetAttribute("aria-busy"));
+        Assert.AreEqual("Recalculating", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLoadingShouldRenderForAStepperOnlyFieldToo()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-nfl-lod").Count);
+        Assert.AreEqual("Loading", component.Find("span[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldLoadingTemplateShouldReplaceTheSpinner()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "em");
+                builder.AddContent(1, "wait");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("wait", component.Find(".bit-nfl-lod em").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotRenderABusyIndicatorWhenNotLoading()
+    {
+        var component = RenderComponent<BitNumberField<int>>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-lod").Count);
+        Assert.IsNull(component.Find("input").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldRequiredShouldRenderAriaRequired()
+    {
+        var required = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.Required, true));
+        Assert.AreEqual("true", required.Find("input").GetAttribute("aria-required"));
+
+        var optional = RenderComponent<BitNumberField<int>>();
+        Assert.IsNull(optional.Find("input").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldAriaLabelShouldNotBeShadowedByTheVisibleLabel()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Label, "The visible label");
+            parameters.Add(p => p.AriaLabel, "A name of its own");
+        });
+
+        var input = component.Find("input");
+
+        // aria-labelledby wins over aria-label, so it is left off where a name of its own was given.
+        Assert.IsNull(input.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("A name of its own", input.GetAttribute("aria-label"));
+
+        // The label still points at the input, which is what associates the two for a click.
+        Assert.AreEqual(input.Id, component.Find("label").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputLabelShouldNotPointAtTheHiddenInput()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Inline);
+            parameters.Add(p => p.Label, "Quantity");
+        });
+
+        Assert.IsNull(component.Find("label").GetAttribute("for"));
     }
 }

@@ -31,6 +31,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string _inputMode;
     private readonly string _labelId;
     private readonly string _inputId;
+    private readonly string _errorId;
+    private readonly string _prefixId;
+    private readonly string _ariaDescriptionId;
+    private readonly string _suffixId;
     private readonly string _descriptionId;
     private readonly string _defaultInputMode;
     private readonly Type _typeOfValue;
@@ -66,6 +70,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
+        _errorId = $"BitNumberField-{UniqueId}-error";
+        _ariaDescriptionId = $"BitNumberField-{UniqueId}-aria-description";
+        _prefixId = $"BitNumberField-{UniqueId}-prefix";
+        _suffixId = $"BitNumberField-{UniqueId}-suffix";
         _descriptionId = $"BitNumberField-{UniqueId}-description";
 
         _defaultInputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
@@ -75,6 +83,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the number field component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple number field components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitNumberFieldParams.ParamName)]
+    public BitNumberFieldParams? CascadingParameters { get; set; }
 
 
 
@@ -199,6 +220,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
 
     /// <summary>
+    /// An error message rendered under the field, which also marks the field as invalid and is announced
+    /// through a polite live region the moment it appears. It is the way to report what a validator outside
+    /// of an <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/> found - a server-side check, a
+    /// business rule - without having to build a form around the field. A failing EditContext validation
+    /// already marks the field on its own, so the two never have to be combined.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// A custom template rendered in place of the <see cref="ErrorMessage"/>, marking the field invalid and
+    /// referenced by the input through its aria-describedby attribute just the same.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Stretches the number field to the full width of its container. By default the field only
     /// takes the width it needs, which keeps a stepper from spanning a whole form row.
     /// </summary>
@@ -279,6 +317,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
+    /// Marks the field as invalid without a message of its own, for a rejection that is already explained
+    /// elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field
+    /// and renders aria-invalid exactly as a failing validation does.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
+
+    /// <summary>
     /// Reverses the direction of the value change when the user spins the value using the mouse wheel
     /// (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).
     /// </summary>
@@ -309,6 +355,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// Shows a busy indicator inside the field, which is what tells the user that something is running
+    /// against the value - a price being recalculated, a quantity being checked against stock. The field
+    /// stays editable while it is on, so the typing and the stepping are never interrupted by it.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
+    /// What a screen reader announces while <see cref="Loading"/> is on, in place of the default "Loading".
+    /// It is announced whichever indicator is drawn, so a <see cref="LoadingTemplate"/> drawing a bare
+    /// spinner of its own still tells an assistive technology that something is running.
+    /// </summary>
+    [Parameter] public string? LoadingAriaLabel { get; set; }
+
+    /// <summary>
+    /// The custom content of the busy indicator, which replaces the default spinner.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+
+    /// <summary>
     /// The minimum value of the number field. Values below it get clamped to it, both when typed and when spinning.
     /// It is a string to support any numeric type of the field; an unparsable value falls back to the type's MinValue.
     /// </summary>
@@ -329,7 +394,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Inline (side by side at the end) or Spread (one on each side). When null (default), no buttons render,
     /// while the value can still be changed using the arrow keys and the mouse wheel.
     /// </summary>
-    [Parameter] public BitSpinButtonMode? Mode { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
     /// Removes the border of the number field, which is what you want when it sits inside a surface
@@ -522,6 +588,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public bool ShowClearButton { get; set; }
 
     /// <summary>
+    /// Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type
+    /// scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the
+    /// other controls of the same size around it (Medium by default).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Snaps the committed value to the nearest multiple of the <see cref="Step"/> (anchored at the
     /// <see cref="Min"/> when one is provided), so typed values align to the same grid that the
     /// increment/decrement stepping produces. Without it, typed values are kept as-is (aside from
@@ -641,9 +715,32 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => FullWidth ? "bit-nfl-fwd" : string.Empty);
 
-        // The description is a third child of the root flex box, which the row label layouts have to
-        // wrap onto a line of its own; the class is what scopes that to the fields that need it.
-        ClassBuilder.Register(() => Description.HasValue() || DescriptionTemplate is not null ? "bit-nfl-hds" : string.Empty);
+        // The description and the error message are further children of the root flex box, which the row
+        // label layouts have to wrap onto a line of their own; the class is what scopes that to the fields
+        // that need it.
+        ClassBuilder.Register(() => HasDescription || HasErrorMessage ? "bit-nfl-hds" : string.Empty);
+
+        // The base class already marks a value the EditContext rejected, so the forced state only adds the
+        // class where that one did not, instead of rendering it twice on a field that is invalid both ways.
+        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
+        ClassBuilder.Register(() => Size switch
+        {
+            BitSize.Small => "bit-nfl-sm",
+            BitSize.Medium => "bit-nfl-md",
+            BitSize.Large => "bit-nfl-lg",
+            _ => "bit-nfl-md"
+        });
+
+        // The mode is on the root so the stylesheet can reach the whole field from the layout its buttons
+        // are in - which is what lets the stacked pair grow to a usable pointer target on a touch device.
+        ClassBuilder.Register(() => Mode switch
+        {
+            BitSpinButtonMode.Compact => "bit-nfl-mcp",
+            BitSpinButtonMode.Inline => "bit-nfl-min",
+            BitSpinButtonMode.Spread => "bit-nfl-msp",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => NoBorder ? "bit-nfl-nbd" : string.Empty);
 
@@ -708,8 +805,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await base.OnInitializedAsync();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNumberFieldParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         // Whether digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) is
         // currently active. The Min/Max/Step string parameters are parsed through this normalization,
         // so their cached numeric values (and the derived precision) must be recomputed whenever the
@@ -1100,6 +1200,79 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// whether there is something for the clear button (and the Escape key) to clear.
     /// </summary>
     private bool HasVisibleText() => GetDisplayValueAsString().HasValue();
+
+    private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
+
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A message saying what is wrong with the value is a rejection of it, so it marks the field the same way
+    // the forced state does instead of drawing a red line under a field that still looks accepted.
+    private bool HasError => Invalid || HasErrorMessage;
+
+    /// <summary>
+    /// The ids the input points aria-describedby at, in reading order: what is wrong with the value first,
+    /// then the visible hint, then the screen-reader-only one. A consumer is free to write the attribute on
+    /// the input by hand, so whatever they wrote is kept and these ids are added to it rather than replacing
+    /// it - the attribute is a list of ids.
+    /// </summary>
+    private string? AriaDescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                GetInputAttribute("aria-describedby"),
+                HasErrorMessage ? _errorId : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null,
+                // The unit or the currency sits beside the field rather than inside its value, so without
+                // this a screen reader reads out a bare number and never says what it is counted in.
+                Prefix.HasValue() ? _prefixId : null,
+                Suffix.HasValue() ? _suffixId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
+
+    // The forced invalid state and the one the base class derives from the EditContext are the same thing to
+    // a screen reader; the base class writes the latter into the splatted attributes, so the value of the
+    // consumer is read back here instead of being overwritten by the explicit attribute of the input.
+    private string? AriaInvalid => HasError ? "true" : GetInputAttribute("aria-invalid");
+
+    // A live region only announces what changes inside it after it is already on the page: one that arrives
+    // with its text already in it is regularly missed altogether. The region is therefore always rendered and
+    // only its text comes and goes. In HideInput mode the value takes it over, since a hidden input is not
+    // exposed to assistive technologies at all and nothing else would ever announce the spinning.
+    private string? LiveText => HasErrorMessage ? ErrorMessage
+                              : Loading ? (LoadingAriaLabel ?? "Loading")
+                              : HideInput ? GetDisplayValueAsString()
+                              : null;
+
+    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+
+    // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
+    // its own was given would quietly throw that name away. The visible label keeps naming the input
+    // through the for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => (Label.HasValue() || LabelTemplate is not null) && AriaLabel.HasNoValue()
+                                    ? _labelId
+                                    : null;
+
+    // The busy indicator is sized in pixels rather than by its own size enum, whose smallest step is
+    // already taller than the whole field, so it follows the size of the number field instead.
+    private int LoadingSize => Size switch
+    {
+        BitSize.Small => 16,
+        BitSize.Large => 24,
+        _ => 20
+    };
+
+    private string? GetInputAttribute(string name)
+    {
+        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
+                ? value?.ToString()
+                : null;
+    }
 
     /// <summary>
     /// The effective range, with the bounds ordered so that a misconfigured Min greater than Max
@@ -1938,7 +2111,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return value;
     }
 
-    private void OnSetMin()
+    internal void OnSetMin()
     {
         var min = CleanValue(NormalizeNumericParameter(Min));
         if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
@@ -1956,7 +2129,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetMax()
+    internal void OnSetMax()
     {
         var max = CleanValue(NormalizeNumericParameter(Max));
         if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
@@ -1971,7 +2144,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetStep()
+    internal void OnSetStep()
     {
         var step = CleanValue(NormalizeNumericParameter(Step));
         if (BindConverter.TryConvertTo(step, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
@@ -1991,7 +2164,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         OnSetPrecision();
     }
 
-    private void OnSetPageStep()
+    internal void OnSetPageStep()
     {
         var pageStep = CleanValue(NormalizeNumericParameter(PageStep));
         if (BindConverter.TryConvertTo(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
@@ -2007,12 +2180,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void OnSetPrecision()
+    internal void OnSetPrecision()
     {
         _precision = Precision ?? CalculatePrecision();
     }
 
-    private void OnSetInputMode()
+    internal void OnSetInputMode()
     {
         _inputMode = InputMode?.ToString().ToLowerInvariant() ?? _defaultInputMode;
     }
