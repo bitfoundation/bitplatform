@@ -22,6 +22,19 @@ public partial class BitCheckbox : BitInputBase<bool>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the checkbox component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple checkbox components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCheckboxParams.ParamName)]
+    public BitCheckboxParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Keeps the disabled checkbox focusable and discoverable by assistive technologies.
     /// When enabled, the disabled state is conveyed using the <c>aria-disabled</c> attribute instead of the
     /// native <c>disabled</c> attribute, so the checkbox remains in the tab order while its toggling is suppressed.
@@ -329,8 +342,14 @@ public partial class BitCheckbox : BitInputBase<bool>
 
 
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCheckboxParams))]
     protected override async Task OnInitializedAsync()
     {
+        // The cascade is read here as well as in OnParametersSet because DefaultIndeterminate is acted on while
+        // initializing, which is before OnParametersSet has run for the first time - a cascaded one applied only
+        // there would arrive after the state it is the default for has already been settled.
+        CascadingParameters?.UpdateParameters(this);
+
         _inputId = $"BitCheckbox-{UniqueId}-input";
         _descriptionId = $"BitCheckbox-{UniqueId}-description";
         _ariaDescriptionId = $"BitCheckbox-{UniqueId}-aria-description";
@@ -345,6 +364,13 @@ public partial class BitCheckbox : BitInputBase<bool>
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        base.OnParametersSet();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -561,6 +587,21 @@ public partial class BitCheckbox : BitInputBase<bool>
     private void OnSetIndeterminate()
     {
         _ = SetIndeterminate();
+    }
+
+    /// <summary>
+    /// Pushes a mixed state that arrived from <see cref="BitCheckboxParams"/> onto the element, the way the
+    /// setter of an <see cref="Indeterminate"/> written on the component itself does.
+    /// </summary>
+    /// <remarks>
+    /// Skipped before the first render, where there is no element to push onto yet: the state the checkbox
+    /// starts out with is pushed from <see cref="OnAfterRenderAsync(bool)"/> instead.
+    /// </remarks>
+    internal void OnSetIndeterminateFromParams()
+    {
+        if (IsRendered is false) return;
+
+        OnSetIndeterminate();
     }
 
     private Task HandleOnBlur(FocusEventArgs e) => OnBlur.InvokeAsync(e);

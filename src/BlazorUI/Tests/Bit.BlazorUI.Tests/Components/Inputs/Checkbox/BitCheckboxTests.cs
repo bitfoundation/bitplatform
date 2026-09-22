@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1310,6 +1312,308 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(1, changingCount);
         Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
         Assert.IsFalse(component.Find(".bit-chb").ClassList.Contains("bit-chb-ind"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitCheckboxParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitCheckbox)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitCheckboxParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitCheckboxParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitCheckboxParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitCheckboxParametersShouldAllBeReachableThroughTheCascadingParameters()
+    {
+        // The cascading parameters are the shared configuration of every checkbox of an application, so a
+        // parameter that is added to the component and forgotten here is one that cannot be set once for the
+        // whole of it. The templates and the callbacks are left out: neither is a shared default.
+        var missing = typeof(BitCheckbox).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                         .Where(p => p.DeclaringType == typeof(BitCheckbox))
+                                         .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                         .Where(p => p.PropertyType != typeof(RenderFragment))
+                                         .Where(p => p.PropertyType.IsGenericType is false ||
+                                                     p.PropertyType.GetGenericTypeDefinition() != typeof(EventCallback<>))
+                                         .Where(p => typeof(BitCheckboxParams).GetProperty(p.Name) is null)
+                                         .Select(p => p.Name)
+                                         .ToArray();
+
+        Assert.AreEqual(0, missing.Length, $"{nameof(BitCheckboxParams)} is missing: {string.Join(", ", missing)}");
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldApplyCascadingParametersFromBitParams()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCheckboxParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Label = "Cascaded Label",
+                Title = "Cascaded Title",
+                CheckIconName = "Add",
+                FullWidth = true,
+                Reversed = true,
+                NoWrap = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var checkbox = component.Find(".bit-chb");
+
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-suc"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-lg"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-fwi"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-rvs"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-nwr"));
+        Assert.AreEqual("Cascaded Label", component.Find(".bit-chb-txt").TextContent.Trim());
+        Assert.AreEqual("Cascaded Title", component.Find(".bit-chb-lbl").GetAttribute("title"));
+        Assert.IsTrue(component.Find(".bit-chb-ico").ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxDirectParametersShouldOverrideCascadingParameters()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCheckboxParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                Title = "Cascaded Title",
+                CheckIconName = "Add"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.AddAttribute(1, nameof(BitCheckbox.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitCheckbox.Size), BitSize.Small);
+                builder.AddAttribute(3, nameof(BitCheckbox.Title), "Direct Title");
+                builder.CloseComponent();
+            });
+        });
+
+        var checkbox = component.Find(".bit-chb");
+
+        // Direct parameters should override cascading ones
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-err"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-sm"));
+        Assert.AreEqual("Direct Title", component.Find(".bit-chb-lbl").GetAttribute("title"));
+
+        // CheckIconName from cascading params should still apply (not overridden)
+        Assert.IsTrue(component.Find(".bit-chb-ico").ClassList.Contains("bit-icon--Add"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxParamsUpdateParametersShouldSetAllProperties()
+    {
+        var @params = new BitCheckboxParams
+        {
+            AllowDisabledFocus = true,
+            AriaControls = "the-list",
+            AriaDescribedby = "the-hint",
+            AriaDescription = "Test description",
+            AriaLabelledby = "the-heading",
+            AriaPositionInSet = 2,
+            AriaSetSize = 7,
+            AutoFocus = true,
+            AutoLoading = true,
+            CheckIcon = BitIconInfo.Fa("solid check"),
+            CheckIconAriaLabel = "Checked",
+            CheckIconName = "Accept",
+            Color = BitColor.Warning,
+            DefaultIndeterminate = true,
+            Description = "Test description line",
+            FullWidth = true,
+            Indeterminate = true,
+            IndeterminateIcon = BitIconInfo.Fa("solid minus"),
+            IndeterminateIconName = "Remove",
+            Label = "Test Label",
+            LabelPosition = BitLabelPosition.Top,
+            Loading = true,
+            NoWrap = true,
+            Reversed = true,
+            Size = BitSize.Small,
+            StopPropagation = true,
+            ThreeState = true,
+            Title = "Test Title",
+            UncheckedIcon = BitIconInfo.Fa("regular square"),
+            UncheckedIconName = "Cancel",
+            AriaLabel = "Test Aria Label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitCheckbox>().Instance;
+
+        Assert.IsTrue(instance.AllowDisabledFocus);
+        Assert.AreEqual("the-list", instance.AriaControls);
+        Assert.AreEqual("the-hint", instance.AriaDescribedby);
+        Assert.AreEqual("Test description", instance.AriaDescription);
+        Assert.AreEqual("the-heading", instance.AriaLabelledby);
+        Assert.AreEqual(2, instance.AriaPositionInSet);
+        Assert.AreEqual(7, instance.AriaSetSize);
+        Assert.IsTrue(instance.AutoFocus);
+        Assert.IsTrue(instance.AutoLoading);
+        Assert.AreEqual(@params.CheckIcon, instance.CheckIcon);
+        Assert.AreEqual("Checked", instance.CheckIconAriaLabel);
+        Assert.AreEqual("Accept", instance.CheckIconName);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.IsTrue(instance.DefaultIndeterminate);
+        Assert.AreEqual("Test description line", instance.Description);
+        Assert.IsTrue(instance.FullWidth);
+        Assert.IsTrue(instance.Indeterminate);
+        Assert.AreEqual(@params.IndeterminateIcon, instance.IndeterminateIcon);
+        Assert.AreEqual("Remove", instance.IndeterminateIconName);
+        Assert.AreEqual("Test Label", instance.Label);
+        Assert.AreEqual(BitLabelPosition.Top, instance.LabelPosition);
+        Assert.IsTrue(instance.Loading);
+        Assert.IsTrue(instance.NoWrap);
+        Assert.IsTrue(instance.Reversed);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.IsTrue(instance.StopPropagation);
+        Assert.IsTrue(instance.ThreeState);
+        Assert.AreEqual("Test Title", instance.Title);
+        Assert.AreEqual(@params.UncheckedIcon, instance.UncheckedIcon);
+        Assert.AreEqual("Cancel", instance.UncheckedIconName);
+        Assert.AreEqual("Test Aria Label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitCheckboxParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        var @params = new BitCheckboxParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            Title = "Params Title"
+        };
+
+        // First render with direct parameters
+        var component = RenderComponent<BitCheckbox>(p =>
+        {
+            p.Add(x => x.Color, BitColor.Error);
+            p.Add(x => x.Size, BitSize.Small);
+            p.Add(x => x.Title, "Existing Title");
+        });
+
+        var instance = component.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.Title);
+
+        // Now try to update with param, should not overwrite since properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.Title);
+    }
+
+    [TestMethod]
+    public void BitCheckboxParamsShouldApplyClassesAndStyles()
+    {
+        var classes = new BitCheckboxClassStyles
+        {
+            Root = "custom-root",
+            Container = "custom-container",
+            Box = "custom-box",
+            Icon = "custom-icon",
+            Label = "custom-label",
+            Description = "custom-description"
+        };
+
+        var styles = new BitCheckboxClassStyles
+        {
+            Root = "color: red;",
+            Container = "margin: 5px;",
+            Box = "padding: 10px;",
+            Icon = "opacity: 0.5;",
+            Label = "font-weight: bold;",
+            Description = "font-size: 10px;"
+        };
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCheckboxParams
+            {
+                Classes = classes,
+                Styles = styles,
+                Label = "Label",
+                Description = "Description"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var checkbox = component.Find(".bit-chb");
+        var container = component.Find(".bit-chb-lbl");
+        var box = component.Find(".bit-chb-box");
+        var icon = component.Find(".bit-chb-ico");
+        var label = component.Find(".bit-chb-txt");
+        var description = component.Find(".bit-chb-des");
+
+        Assert.IsTrue(checkbox.ClassList.Contains("custom-root"));
+        Assert.IsTrue(container.ClassList.Contains("custom-container"));
+        Assert.IsTrue(box.ClassList.Contains("custom-box"));
+        Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.IsTrue(description.ClassList.Contains("custom-description"));
+
+        Assert.IsTrue(checkbox.GetAttribute("style")?.Contains("color: red;"));
+        Assert.AreEqual("margin: 5px;", container.GetAttribute("style"));
+        Assert.AreEqual("padding: 10px;", box.GetAttribute("style"));
+        Assert.AreEqual("opacity: 0.5;", icon.GetAttribute("style"));
+        Assert.AreEqual("font-weight: bold;", label.GetAttribute("style"));
+        Assert.AreEqual("font-size: 10px;", description.GetAttribute("style"));
     }
 
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;

@@ -399,6 +399,33 @@ private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
 }";
 
     private readonly string example14RazorCode = @"
+<div class=""settings-panel"">
+    <BitParams Parameters=""@checkboxParams"">
+        <BitCheckbox Label=""Wi-Fi"" DefaultValue=""true"" />
+
+        <BitCheckbox Label=""Bluetooth"" />
+
+        <BitCheckbox Reversed=""false"" Label=""Its own placement"" />
+    </BitParams>
+</div>
+
+
+<div class=""settings-panel"">
+    <BitCheckbox Label=""Outside the cascade"" />
+</div>";
+
+    private readonly string example14CsharpCode = @"
+private readonly BitCheckboxParams[] checkboxParams =
+[
+    new()
+    {
+        FullWidth = true,
+        Reversed = true,
+        CheckIconName = BitIconName.Heart,
+    }
+];";
+
+    private readonly string example15RazorCode = @"
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Value />
@@ -538,7 +565,7 @@ private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
 <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""fa-solid fa-house"")"" />
@@ -560,7 +587,7 @@ private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
 
 <BitCheckbox Label=""Square (UncheckedIcon)"" UncheckedIcon=""@BitIconInfo.Bi(""app"")"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Value />
@@ -573,7 +600,7 @@ private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Value />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -648,7 +675,7 @@ private async Task HandleSlowChanging(BitCheckboxChangeArgs args)
     <BitCheckbox Label=""Crash reports"" Description=""Stack traces only, never your data."" />
 </div>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";

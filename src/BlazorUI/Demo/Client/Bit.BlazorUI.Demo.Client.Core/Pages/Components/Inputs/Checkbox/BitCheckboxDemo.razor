@@ -39,7 +39,7 @@
             checked state, <b>UncheckedIconName</b> puts an always-visible icon in the otherwise empty unchecked box -
             which by default only previews the check mark on hover - and <b>IndeterminateIconName</b> replaces the
             filled square of the indeterminate state. For icons from external libraries, the
-            <BitLink Href="#example15">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
+            <BitLink Href="#example16">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
             these parameters. The glyph is hidden from screen readers - the checkbox already announces its own
             state - unless <b>CheckIconAriaLabel</b> names it, which is worth doing only where a custom icon
             says something the label does not.
@@ -445,7 +445,32 @@
         <div>Saved: <b>@savedCount</b> time(s)</div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>BitParams</b> carries a <b>BitCheckboxParams</b> down to every checkbox under it, so a settings panel, a form, or a
+            whole page sets the shared shape of its checkboxes once instead of on every one of them. What it carries is a default
+            and not an override: a checkbox that writes a parameter for itself keeps its own value, and only what it left unset is
+            filled in from the cascade, which is what lets one checkbox step out of the group it is in without the group having to
+            know about it. Every parameter of the component is on the params object, and each of them is filled in on its own, so a
+            checkbox can take its <b>CheckIconName</b> from the cascade and its <b>Reversed</b> from its own markup.
+        </div>
+        <br />
+        <div class="settings-panel">
+            <BitParams Parameters="@checkboxParams">
+                <BitCheckbox Label="Wi-Fi" DefaultValue="true" />
+
+                <BitCheckbox Label="Bluetooth" />
+
+                <BitCheckbox Reversed="false" Label="Its own placement" />
+            </BitParams>
+        </div>
+        <br /><br /><br />
+        <div class="settings-panel">
+            <BitCheckbox Label="Outside the cascade" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Color</b> picks the theme color the checked box and the indeterminate square fill with, with
             <b>Primary</b> as the default. The semantic colors - <b>Success</b>, <b>Warning</b>, <b>Error</b> and
@@ -667,7 +692,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The per-state icons are not limited to the built-in icon font: <b>CheckIcon</b>, <b>UncheckedIcon</b> and
             <b>IndeterminateIcon</b> take a <b>BitIconInfo</b> - or a raw CSS class string - that can point at any
@@ -701,7 +726,7 @@
         <BitCheckbox Label="Square (UncheckedIcon)" UncheckedIcon="@BitIconInfo.Bi("app")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Size</b> scales the box, its icon and the label together: <b>Small</b> for dense lists and table rows,
             <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitCheckbox is a primary control or
@@ -735,7 +760,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, which inline styles and a single class cover well.
             For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts - box, icon, label,
@@ -797,7 +822,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout for right-to-left languages: the box
             moves to the right of the label and the spacing follows, so the BitCheckbox reads naturally inside an

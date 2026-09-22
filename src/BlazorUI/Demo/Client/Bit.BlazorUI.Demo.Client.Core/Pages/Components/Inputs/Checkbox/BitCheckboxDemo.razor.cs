@@ -813,6 +813,16 @@ public partial class BitCheckboxDemo
 
     private int savedCount;
 
+    private readonly BitCheckboxParams[] checkboxParams =
+    [
+        new()
+        {
+            FullWidth = true,
+            Reversed = true,
+            CheckIconName = BitIconName.Heart,
+        }
+    ];
+
 
 
     private void HandleSelectAllChange(bool value)
