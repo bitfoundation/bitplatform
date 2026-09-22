@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Mcp;
@@ -351,6 +351,57 @@ public class ComponentCatalogTests : McpTestBase
         var without = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" });
 
         Assert.DoesNotContain("## Cascading parameters", without, "A component that takes no params object claims one.");
+    }
+
+    /// <summary>
+    /// What a params object does NOT carry, which is the half of the cascade a reader cannot infer.
+    /// <para>
+    /// Every <c>...Params</c> derives from <c>BitComponentBaseParams</c>, so it carries that half of
+    /// the inherited parameters and nothing of what a base below it adds: <c>BitCalendar</c> closes
+    /// <c>BitInputBase&lt;DateTimeOffset?&gt;</c>, and its <c>Value</c>, its validation and its
+    /// callbacks stay on the instance. Nor are the event callbacks of any component on one. An
+    /// answer that says only what is there reads as if everything is, which is the assumption that
+    /// produces a <c>BitCalendarParams</c> with a <c>Value</c> on it that does not compile.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitCalendar", "Value")]
+    [DataRow("BitCalendar", "OnSelectDate")]
+    [DataRow("BitButton", "OnClick")]
+    [DataRow("BitStack", "ChildContent")]
+    public async Task A_params_object_names_the_parameters_it_does_not_carry(string component, string parameter)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "Not on it", $"{component}'s answer does not say what its params object leaves out.");
+        StringAssert.Contains(answer, $"`{parameter}`", $"{component}'s answer does not name {parameter} at all.");
+
+        var missing = answer[answer.IndexOf("Not on it", StringComparison.Ordinal)..]
+                            .Split('\n', 2, StringSplitOptions.None)[0];
+
+        StringAssert.Contains(missing, $"`{parameter}`", $"{component}'s params object is not said to leave {parameter} out.");
+    }
+
+    /// <summary>
+    /// The members a params object takes from <c>BitComponentBaseParams</c>, which its own answer
+    /// would otherwise leave out: the tables are read with <c>DeclaredOnly</c>, so a type whose base
+    /// is a real class answers as if <c>Class</c>, <c>Style</c> and <c>IsEnabled</c> were not on it
+    /// - while the component's own answer counts them in the total it quotes.
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitCalendarParams")]
+    [DataRow("BitButtonParams")]
+    public async Task A_params_type_names_what_it_inherits(string paramsType)
+    {
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName = paramsType });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "Inherited from `BitComponentBaseParams`", $"{paramsType} does not name the base it takes members from.");
+        StringAssert.Contains(answer, "`IsEnabled`", $"{paramsType} answers without the inherited members.");
+        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitComponentBaseParams\")", $"{paramsType} does not say where the inherited members are documented.");
     }
 
     /// <summary>
