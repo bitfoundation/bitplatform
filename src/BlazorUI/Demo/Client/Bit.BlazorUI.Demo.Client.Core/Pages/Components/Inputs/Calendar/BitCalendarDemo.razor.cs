@@ -1920,6 +1920,20 @@ public partial class BitCalendarDemo
     private bool showMonthPickerAsOverlay;
 
     private DateTimeOffset? seasonDate;
+
+    private readonly BitCalendarParams[] calendarParams =
+    [
+        new()
+        {
+            ShowWeekNumbers = true,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
+            HighlightCurrentMonth = true,
+            MinDate = DateTimeOffset.Now.AddMonths(-1),
+            MaxDate = DateTimeOffset.Now.AddMonths(1),
+        }
+    ];
+
     private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;
     private DateTimeOffset? boundedDateTime = DateTime.Today.AddHours(12);
     private DateTimeOffset boundedMinDate = DateTime.Today.AddHours(9).AddMinutes(30);

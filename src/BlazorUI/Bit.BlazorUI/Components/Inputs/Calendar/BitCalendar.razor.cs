@@ -132,6 +132,19 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the calendar component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple calendar components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitCalendarParams.ParamName)]
+    public BitCalendarParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Whether selecting the already selected day deselects it, clearing the value.
     /// </summary>
     [Parameter] public bool AllowDeselect { get; set; }
@@ -783,8 +796,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         base.OnInitialized();
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCalendarParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         base.OnParametersSet();
 
         BuildEventsLookup();
@@ -921,7 +937,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         OnSetParameters(resetPickers: false);
     }
 
-    private void OnSetParameters() => OnSetParameters(true);
+    // Internal rather than private so that BitCalendarParams can run the pass again after it has filled in the
+    // parameters the view is built from: the cascade reaches the component after OnInitialized has already run it.
+    internal void OnSetParameters() => OnSetParameters(true);
 
     private void OnSetParameters(bool resetPickers)
     {

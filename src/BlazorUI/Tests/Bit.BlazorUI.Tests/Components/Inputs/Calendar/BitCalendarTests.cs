@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -2683,5 +2684,321 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-dbt").First(b => b.Id!.EndsWith("day-2026-01-20")).Click();
 
         Assert.AreEqual(new DateTime(2026, 1, 20, 10, 0, 0), value!.Value.DateTime);
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldHaveCorrectParamName()
+    {
+        var paramName = BitCalendarParams.ParamName;
+        var expectedName = $"{nameof(BitParams)}.{nameof(BitCalendar)}";
+
+        Assert.AreEqual(expectedName, paramName);
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitCalendarParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitCalendarParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldApplyCascadingParametersFromBitParams()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCalendarParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                ShowWeekNumbers = true,
+                ShowGoToToday = false,
+                AriaLabel = "Cascaded Label"
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCalendar>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var calendar = component.Find(".bit-cal");
+
+        Assert.IsTrue(calendar.ClassList.Contains("bit-cal-suc"));
+        Assert.IsTrue(calendar.ClassList.Contains("bit-cal-lg"));
+        Assert.AreEqual("Cascaded Label", calendar.GetAttribute("aria-label"));
+        Assert.IsTrue(component.FindAll(".bit-cal-wnm").Count > 0);
+        Assert.AreEqual(0, component.FindAll(".bit-cal-gtb").Count);
+    }
+
+    [TestMethod]
+    public void BitCalendarDirectParametersShouldOverrideCascadingParameters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCalendarParams
+            {
+                Color = BitColor.Success,
+                Size = BitSize.Large,
+                ShowWeekNumbers = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCalendar>(0);
+                builder.AddAttribute(1, nameof(BitCalendar.Color), BitColor.Error);
+                builder.AddAttribute(2, nameof(BitCalendar.Size), BitSize.Small);
+                builder.CloseComponent();
+            });
+        });
+
+        var calendar = component.Find(".bit-cal");
+
+        // Direct parameters should override cascading ones
+        Assert.IsTrue(calendar.ClassList.Contains("bit-cal-err"));
+        Assert.IsTrue(calendar.ClassList.Contains("bit-cal-sm"));
+
+        // ShowWeekNumbers from cascading params should still apply (not overridden)
+        Assert.IsTrue(component.FindAll(".bit-cal-wnm").Count > 0);
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsUpdateParametersShouldSetAllProperties()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var maxDate = DateTimeOffset.Now.AddMonths(1);
+        var minDate = DateTimeOffset.Now.AddMonths(-1);
+        var today = new DateTimeOffset(2021, 3, 15, 0, 0, 0, TimeSpan.Zero);
+        var startingValue = new DateTimeOffset(2021, 3, 10, 9, 30, 0, TimeSpan.Zero);
+
+        var @params = new BitCalendarParams
+        {
+            AllowDeselect = true,
+            Color = BitColor.Warning,
+            ContinuousSpinDelay = 500,
+            ContinuousSpinInterval = 90,
+            Culture = CultureInfo.InvariantCulture,
+            DateFormat = "yyyy/MM/dd",
+            DisableFuture = true,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            FixedWeeks = true,
+            GoToTodayTitle = "Cascaded today",
+            HighlightCurrentMonth = true,
+            HighlightSelectedMonth = true,
+            HighlightToday = false,
+            HourStep = 2,
+            InvalidErrorMessage = "Cascaded invalid",
+            MaxDate = maxDate,
+            MinDate = minDate,
+            MinuteStep = 5,
+            MonthCount = 2,
+            MonthPickerToggleTitle = "Cascaded month toggle",
+            PagedNavigation = true,
+            ShowEventDetails = false,
+            ShowGoToToday = false,
+            ShowMonthPicker = false,
+            ShowNowButton = false,
+            ShowOutsideDays = false,
+            ShowTimePicker = true,
+            ShowWeekNumbers = true,
+            Size = BitSize.Small,
+            StartingValue = startingValue,
+            TimeFormat = BitTimeFormat.TwelveHours,
+            TimePickerHourTitle = "Cascaded hour",
+            TimeZone = TimeZoneInfo.Utc,
+            Today = today,
+            WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
+            WeekNumbersHeaderTitle = "Cascaded week",
+            AriaLabel = "Cascaded Label",
+            IsEnabled = false,
+            TabIndex = "5"
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCalendar>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var instance = component.FindComponent<BitCalendar>().Instance;
+
+        Assert.IsTrue(instance.AllowDeselect);
+        Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(500, instance.ContinuousSpinDelay);
+        Assert.AreEqual(90, instance.ContinuousSpinInterval);
+        Assert.AreEqual(CultureInfo.InvariantCulture, instance.Culture);
+        Assert.AreEqual("yyyy/MM/dd", instance.DateFormat);
+        Assert.IsTrue(instance.DisableFuture);
+        Assert.AreEqual(DayOfWeek.Monday, instance.FirstDayOfWeek);
+        Assert.IsTrue(instance.FixedWeeks);
+        Assert.AreEqual("Cascaded today", instance.GoToTodayTitle);
+        Assert.IsTrue(instance.HighlightCurrentMonth);
+        Assert.IsTrue(instance.HighlightSelectedMonth);
+        Assert.IsFalse(instance.HighlightToday);
+        Assert.AreEqual(2, instance.HourStep);
+        Assert.AreEqual("Cascaded invalid", instance.InvalidErrorMessage);
+        Assert.AreEqual(maxDate, instance.MaxDate);
+        Assert.AreEqual(minDate, instance.MinDate);
+        Assert.AreEqual(5, instance.MinuteStep);
+        Assert.AreEqual(2, instance.MonthCount);
+        Assert.AreEqual("Cascaded month toggle", instance.MonthPickerToggleTitle);
+        Assert.IsTrue(instance.PagedNavigation);
+        Assert.IsFalse(instance.ShowEventDetails);
+        Assert.IsFalse(instance.ShowGoToToday);
+        Assert.IsFalse(instance.ShowMonthPicker);
+        Assert.IsFalse(instance.ShowNowButton);
+        Assert.IsFalse(instance.ShowOutsideDays);
+        Assert.IsTrue(instance.ShowTimePicker);
+        Assert.IsTrue(instance.ShowWeekNumbers);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual(startingValue, instance.StartingValue);
+        Assert.AreEqual(BitTimeFormat.TwelveHours, instance.TimeFormat);
+        Assert.AreEqual("Cascaded hour", instance.TimePickerHourTitle);
+        Assert.AreEqual(TimeZoneInfo.Utc, instance.TimeZone);
+        Assert.AreEqual(today, instance.Today);
+        Assert.AreEqual(CalendarWeekRule.FirstFourDayWeek, instance.WeekNumberRule);
+        Assert.AreEqual("Cascaded week", instance.WeekNumbersHeaderTitle);
+        Assert.AreEqual("Cascaded Label", instance.AriaLabel);
+        Assert.IsFalse(instance.IsEnabled);
+        Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsUpdateParametersShouldNotOverwriteExistingValues()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var @params = new BitCalendarParams
+        {
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+            GoToTodayTitle = "Params Title"
+        };
+
+        // First render with direct parameters
+        var component = RenderComponent<BitCalendar>(p =>
+        {
+            p.Add(x => x.Color, BitColor.Error);
+            p.Add(x => x.Size, BitSize.Small);
+            p.Add(x => x.GoToTodayTitle, "Existing Title");
+        });
+
+        var instance = component.Instance;
+
+        // Verify initial values
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.GoToTodayTitle);
+
+        // Now try to update with param, should not overwrite since properties were already set
+        @params.UpdateParameters(instance);
+
+        // Values should remain unchanged because HasNotBeenSet returns false
+        Assert.AreEqual(BitColor.Error, instance.Color);
+        Assert.AreEqual(BitSize.Small, instance.Size);
+        Assert.AreEqual("Existing Title", instance.GoToTodayTitle);
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldApplyClassesAndStyles()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var classes = new BitCalendarClassStyles
+        {
+            Root = "custom-root",
+            Container = "custom-container",
+            DaysGrid = "custom-grid"
+        };
+
+        var styles = new BitCalendarClassStyles
+        {
+            Root = "color: red;",
+            Container = "margin: 5px;",
+            DaysGrid = "padding: 10px;"
+        };
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCalendarParams { Classes = classes, Styles = styles }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCalendar>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var calendar = component.Find(".bit-cal");
+        var container = component.Find(".bit-cal-cnt");
+        var grid = component.Find(".bit-cal-grd");
+
+        Assert.IsTrue(calendar.ClassList.Contains("custom-root"));
+        Assert.IsTrue(container.ClassList.Contains("custom-container"));
+        Assert.IsTrue(grid.ClassList.Contains("custom-grid"));
+        Assert.IsTrue(calendar.GetAttribute("style")?.Contains("color: red;"));
+        Assert.AreEqual("margin: 5px;", container.GetAttribute("style"));
+        Assert.AreEqual("padding: 10px;", grid.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldRebuildTheViewForWhatItCarries()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitCalendarParams
+            {
+                // Each of these is a parameter the calendar builds its view from, and the cascade reaches the
+                // component only after the pass that reads them has already run once.
+                MonthCount = 3,
+                Culture = CultureInfo.InvariantCulture,
+                TimeZone = TimeZoneInfo.Utc,
+                StartingValue = new DateTimeOffset(2021, 3, 10, 0, 0, 0, TimeSpan.Zero)
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCalendar>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var calendar = component.Find(".bit-cal");
+
+        Assert.IsTrue(calendar.ClassList.Contains("bit-cal-mcv"));
+        Assert.AreEqual(3, component.FindAll(".bit-cal-dwp").Count);
+
+        // The strip opens on the month the cascaded StartingValue falls in, which only the rebuilt view knows about.
+        Assert.IsTrue(component.FindAll(".bit-cal-dbt").Any(b => b.Id!.EndsWith("day-2021-03-10")));
     }
 }

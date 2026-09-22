@@ -391,6 +391,33 @@ private void HandleInvalidSubmit()
 private DateTimeOffset? seasonDate;";
 
     private readonly string example16RazorCode = @"
+@* The params object carries a default down to every calendar under it, and never overwrites what one set itself. *@
+<BitParams Parameters=""@calendarParams"">
+    <BitCalendar />
+
+    <BitCalendar />
+
+    <BitCalendar ShowMonthPicker=""false"" MinDate=""DateTimeOffset.Now.AddDays(-2)"" />
+</BitParams>
+
+<BitCalendar />
+
+@code {
+    private readonly BitCalendarParams[] calendarParams =
+    [
+        new()
+        {
+            ShowWeekNumbers = true,
+            FirstDayOfWeek = DayOfWeek.Monday,
+            WeekNumberRule = CalendarWeekRule.FirstFourDayWeek,
+            HighlightCurrentMonth = true,
+            MinDate = DateTimeOffset.Now.AddMonths(-1),
+            MaxDate = DateTimeOffset.Now.AddMonths(1),
+        }
+    ];
+}";
+
+    private readonly string example17RazorCode = @"
 <BitCalendar Color=""BitColor.Primary"" HighlightCurrentMonth />
 
 <BitCalendar Color=""BitColor.Secondary"" HighlightCurrentMonth />
@@ -425,7 +452,7 @@ private DateTimeOffset? seasonDate;";
 
 <BitCalendar Color=""BitColor.TertiaryBorder"" HighlightCurrentMonth />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCalendar GoToTodayIcon=""@BitIconInfo.Fa(""solid calendar-day"")""
@@ -445,14 +472,14 @@ private DateTimeOffset? seasonDate;";
              TimePickerIncreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-up"")""
              TimePickerDecreaseMinuteIcon=""@BitIconInfo.Bi(""chevron-down"")"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitCalendar Size=""BitSize.Small"" ShowWeekNumbers />
 
 <BitCalendar Size=""BitSize.Medium"" ShowWeekNumbers />
 
 <BitCalendar Size=""BitSize.Large"" ShowWeekNumbers />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -565,7 +592,7 @@ private DateTimeOffset? seasonDate;";
     <BitCalendar Events=""@calendarEvents"" />
 </div>";
 
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private DateTimeOffset? cssVarsDate = DateTimeOffset.Now.AddDays(2);
 
 private List<BitCalendarEvent> calendarEvents =
@@ -594,6 +621,6 @@ private List<BitCalendarEvent> calendarEvents =
             StartTime = new TimeOnly(11, 30) }
 ];";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCalendar Dir=""BitDir.Rtl"" ShowTimePicker ShowWeekNumbers />";
 }
