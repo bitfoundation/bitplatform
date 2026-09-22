@@ -74,13 +74,13 @@ public partial class WebAuthnPasswordlessUITests : AppPageTest
 
         // Enrolling a passkey is a privileged operation: PasswordlessTab.EnablePasswordless calls
         // AuthManager.TryEnterElevatedAccessMode BEFORE the ceremony, and a session that signed in through a magic link
-        // OTP is not elevated, so an elevated access token is e-mailed and its OTP prompt opens. Nothing else happens
-        // until that prompt is answered - credentials.create() is never reached and no snackbar ever shows.
-        // (See WebAuthnEnrolmentElevationTests for the server side half of the same rule.)
-        // The code goes into the prompt's own BitOtpInput, addressed through the prompt (a BitModal, ".bit-mdl"):
-        // this page already renders another one in its two-factor section, and that one comes first in the DOM, so
-        // filling "the page's OTP input" submits the code as a 2fa enable attempt and leaves the prompt unanswered.
-        var elevatedAccessPrompt = Page.Locator(".bit-mdl").Filter(new() { HasText = AppStrings.EnterElevatedAccessToken });
+        // OTP is not elevated, so the ElevatedAccessModal opens and e-mails a code by itself (the account has no
+        // authenticator app). Nothing else happens until it is answered - credentials.create() is never reached and no
+        // snackbar ever shows. (See WebAuthnEnrolmentElevationTests for the server side half of the same rule.)
+        // The code goes into the modal's own BitOtpInput, addressed through the modal (".bit-mdl"): this page already
+        // renders another one in its two-factor section, and that one comes first in the DOM, so filling "the page's
+        // OTP input" submits the code as a 2fa enable attempt and leaves the modal unanswered.
+        var elevatedAccessPrompt = Page.Locator(".bit-mdl", new() { Has = Page.Locator(".elevated-access") });
         await Expect(elevatedAccessPrompt).ToBeVisibleAsync();
 
         var elevatedAccessEmail = await server.WaitForCapturedEmail(email,

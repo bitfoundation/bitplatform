@@ -1,0 +1,63 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    min-width: 24rem;
+    max-width: 26rem;
+    max-height: $bit-env-height-available;
+
+    @include lt-sm {
+        min-width: unset;
+        max-width: unset;
+    }
+}
+
+::deep {
+    .header-stack {
+        padding: 1rem;
+        border-block-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .body-stack {
+        padding: 1.25rem 1rem;
+    }
+
+    .badge {
+        display: flex;
+        flex-shrink: 0;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            font-size: 1.125rem;
+        }
+    }
+
+    .header-badge {
+        background-color: color-mix(in srgb, #{$bit-color-foreground-secondary} 12%, transparent);
+
+        i {
+            color: $bit-color-foreground-secondary;
+        }
+    }
+
+    .passkey-badge {
+        background-color: color-mix(in srgb, #{$bit-color-primary} 14%, transparent);
+
+        i {
+            color: $bit-color-primary;
+        }
+    }
+
+    .passkey-card {
+        padding: 0.875rem;
+    }
+
+    // Room for the tallest state of the send button, so the row never reflows.
+    .actions-stack {
+        min-height: 2rem;
+    }
+}
