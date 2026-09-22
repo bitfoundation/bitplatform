@@ -148,15 +148,9 @@ public static partial class Program
             var s3SecretKey = GetConnectionStringValue(s3ConnectionString, "SecretKey");
             var s3BucketName = GetConnectionStringValue(s3ConnectionString, "BucketName", defaultValue: "files");
 
-            if (s3Endpoint.Contains(".r2.cloudflarestorage.com", StringComparison.OrdinalIgnoreCase))
-            {
-                // R2 does not implement AWS chunked ("streaming") payload signing, and FluentStorage turns that off
-                // only from this factory - which in exchange takes no AmazonS3Config (so no S3HttpClientFactory) and
-                // caps an object at 5GB. https://github.com/robinrodricks/FluentStorage/pull/167 removes both.
-                // The account id is the first label of the endpoint host: <account-id>.r2.cloudflarestorage.com.
-                var cloudflareAccountId = new Uri(s3Endpoint).Host.Split('.')[0];
-                return CloudflareR2Storage.FromCredentials(s3AccessKey, s3SecretKey, s3BucketName, cloudflareAccountId);
-            }
+            // Cloudflare R2 implements neither AWS chunked ("streaming") payload signing nor the FULL_OBJECT
+            // checksum the SDK starts a multipart upload with. An unsigned payload requires https, which R2 is.
+            var isCloudflareR2 = s3Endpoint.Contains(".r2.cloudflarestorage.com", StringComparison.OrdinalIgnoreCase);
 
             var clientConfig = new Amazon.S3.AmazonS3Config
             {
@@ -165,11 +159,19 @@ public static partial class Program
                 ForcePathStyle = true,
                 HttpClientFactory = sp.GetRequiredService<S3HttpClientFactory>()
             };
+
+            if (isCloudflareR2)
+            {
+                clientConfig.RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED;
+                clientConfig.ResponseChecksumValidation = Amazon.Runtime.ResponseChecksumValidation.WHEN_REQUIRED;
+            }
+
             return AwsS3Storage.FromThirdPartyCredentials(accessKeyId: s3AccessKey,
                 secretAccessKey: s3SecretKey,
                 sessionToken: null!,
                 bucketName: s3BucketName,
-                clientConfig);
+                clientConfig,
+                payloadSigning: isCloudflareR2 is false);
             //#else
             throw new NotImplementedException("Install and configure any storage supported by fluent storage (https://github.com/robinrodricks/FluentStorage/wiki/Blob-Storage)");
             //#endif
@@ -177,7 +179,9 @@ public static partial class Program
 
         //#if (filesStorage == "S3")
         services.AddSingleton<S3HttpClientFactory>();
-        services.AddHttpClient("S3");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("S3").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
         //#endif
 
         //#if (notification == true)
@@ -528,7 +532,7 @@ public static partial class Program
 
         services.AddHttpClient<NugetStatisticsService>(c =>
         {
-            c.Timeout = TimeSpan.FromSeconds(20);
+            c.Timeout = TimeSpan.FromSeconds(5);
             c.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org");
             c.DefaultRequestVersion = HttpVersion.Version11;
         });
@@ -574,7 +578,9 @@ public static partial class Program
         });
 
         //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-        services.AddHttpClient("AI");
+#pragma warning disable EXTEXP0001 // RemoveAllResilienceHandlers is still marked experimental.
+        services.AddHttpClient("AI").RemoveAllResilienceHandlers();
+#pragma warning restore EXTEXP0001
 
         if (string.IsNullOrWhiteSpace(appSettings.AI?.OpenAI?.ChatApiKey) is false)
         {
