@@ -111,4 +111,4 @@ BSWUP_E2E_PUBLISHED_HOST=$PWD/../../artifacts/bswup-harness dotnet test Tests/Bi
 The published host serves trimmed clients, pre-compressed assets and the manifests generated for publish;
 the integrity-checked install proves the bytes it serves are the ones those manifests describe.
 
-CI runs all of the above in `.github/workflows/bit.ci.Bswup.e2e.yml`.
+CI runs all of the above in the E2E stages of `.github/workflows/bit.ci.Bswup.yml`.
