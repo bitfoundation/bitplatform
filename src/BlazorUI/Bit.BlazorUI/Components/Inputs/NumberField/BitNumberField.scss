@@ -236,6 +236,13 @@
     }
 }
 
+// On a fine pointer the stack stays compact because the input beside it achieves the same thing at a
+// full-sized target, which is the equivalent-control exception SC 2.5.8 allows for. HideInput takes that
+// input away, so there the pair has to clear the minimum on every pointer.
+.bit-nfl-mcp .bit-nfl-hdi {
+    height: max(var(--bit-NumberField-height, var(--bit-nfl-height)), #{spacing(6)});
+}
+
 .bit-nfl-inp {
     margin: 0;
     outline: 0;
@@ -446,7 +453,32 @@
 
 .bit-nfl-sbn {
     height: 100%;
+    border-radius: 0;
     width: var(--bit-NumberField-button-width, var(--bit-nfl-btn-width));
+
+    // The rounded corners belong to the button only where it really is the end of the field: the
+    // decrement button of the Spread layout at the start, the trailing button of either layout at the
+    // end. The Inline pair's first button sits in the middle of the row, where a corner of its own
+    // would show as a stray pill as soon as it is hovered or held.
+    &:first-child {
+        border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+
+    &:last-child {
+        border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+}
+
+.bit-nfl-hdi:not(:has(.bit-nfl-pre)) .bit-nfl-act {
+    .bit-nfl-aup {
+        border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
+
+    .bit-nfl-adn {
+        border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    }
 }
 
 .bit-nfl-aic {
@@ -505,6 +537,20 @@
     }
 }
 
+// The prefix and the suffix carry a fill of their own and sit flush against the ends of the field, so
+// without a corner they draw a square block over its rounded end - barely visible at the Fluent radius,
+// glaring at the Material one or at a pill. They only take the corner while they really are at an end;
+// anything rendered past them (a spin button of the Spread layout) owns it instead.
+.bit-nfl-pre:first-child {
+    border-start-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-start-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+}
+
+.bit-nfl-suf:last-child {
+    border-start-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+    border-end-end-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
+}
+
 .bit-nfl-dsc {
     border: 0;
     padding: 0;
@@ -530,7 +576,7 @@
         content: "*";
         position: absolute;
         top: spacing(-0.625);
-        font-size: $tg-fs-sm;
+        font-size: var(--bit-NumberField-font-size, var(--bit-nfl-fontsize));
         inset-inline-end: spacing(-1.25);
         color: var(--bit-NumberField-required-color, #{$clr-req});
     }
@@ -550,6 +596,18 @@
     .bit-nfl-cnt {
         border-radius: 0;
         border-width: 0 0 var(--bit-NumberField-border-width, #{$shp-border-width}) 0;
+    }
+
+    // The field itself is square in this variant, so nothing sitting against its edges keeps a corner
+    // either - a rounded prefix or spin button against a straight bottom rule reads as a misalignment.
+    .bit-nfl-inp,
+    .bit-nfl-pre,
+    .bit-nfl-suf,
+    .bit-nfl-cbt,
+    .bit-nfl-sbn,
+    .bit-nfl-aup,
+    .bit-nfl-adn {
+        border-radius: 0;
     }
 }
 

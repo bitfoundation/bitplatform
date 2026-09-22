@@ -1,4 +1,4 @@
-@page "/components/numberfield"
+﻿@page "/components/numberfield"
 @page "/components/numerictextfield"
 @page "/components/numeric-text-field"
 @page "/components/spinbutton"
@@ -82,9 +82,9 @@
             over from where the mouse left off. <b>IncrementIconName</b>/<b>DecrementIconName</b> and
             <b>IncrementTitle</b>/<b>DecrementTitle</b> decorate them.
             <b>HideInput</b> drops the text box altogether and leaves a stepper (falling back to <b>Compact</b> when no mode is
-            given, since the buttons are then all there is): the buttons become the tab stops,
-            respond to Enter and Space, and the value is published through a hidden live region for screen readers while a
-            hidden input keeps the field posting with a plain HTML form.
+            given, since the buttons are then all there is): the buttons become the tab stops, respond to Enter and Space,
+            and the value is published through a hidden live region for screen readers while a hidden input keeps the field
+            posting with a plain HTML form.
         </div>
         <br />
         <div class="example-box">
@@ -386,8 +386,8 @@
             <b>ReadOnly</b> stops typing, the buttons, the keys and the wheel alike, while the value stays focusable and
             copyable; <b>IsInputReadOnly</b> blocks only the typing, leaving a stepper with a protected text box.
             The wheel spins the value only while <b>Shift</b> is held and the field is focused, so page scrolling is never
-            captured and a merely hovered field is never rewritten; <b>InvertMouseWheel</b> flips the direction and
-            <b>NoMouseWheel</b> turns it off.
+            captured and a merely hovered field is never rewritten - on either axis, since Shift turns the scroll horizontal
+            on macOS; <b>InvertMouseWheel</b> flips the direction and <b>NoMouseWheel</b> turns it off.
             <b>EnterKeyHint</b> labels the enter key of a virtual keyboard ("done", "next", "go", ...), which a numeric soft
             keyboard otherwise leaves blank; spell-checking and autocorrect are off throughout, a number being no word.
         </div>
@@ -498,7 +498,8 @@
             and the callbacks all applied, and do nothing once the value sits on the bound they would move towards.
             <b>ClearAsync</b> wipes whatever the field is showing and raises <b>OnClear</b> without requiring the clear button.
             All three respect the disabled and read-only states and are safe to call from a background thread.
-            <b>FocusAsync</b> moves the caret into the field, and <b>InputElement</b> exposes the element reference.
+            <b>FocusAsync</b> moves the caret into the field - or onto the increment button in <b>HideInput</b> mode, where a
+            hidden input cannot take it - and <b>InputElement</b> exposes the element reference.
         </div>
         <br />
         <div class="example-box">
@@ -573,12 +574,15 @@
             does with a <b>NumberFormat</b> or non-Latin digits; <b>AriaValueText</b> overrides the reading with a phrase.
             The icon-only buttons always carry a name - <b>IncrementAriaLabel</b>, <b>DecrementAriaLabel</b> and
             <b>ClearButtonAriaLabel</b> localize it - and stay out of the tab order, leaving the input as the single tab stop
-            that handles the whole spinbutton keyboard set. In <b>HideInput</b> mode they become the tab stops instead, are
-            tied together into a group named by the label, and the value is announced through a live region.
+            that handles the whole spinbutton keyboard set. They still step the value when an assistive technology activates
+            them directly - a double tap in TalkBack or VoiceOver, a voice command - and not only under a real pointer. In <b>HideInput</b> mode they become the tab stops instead, are
+            tied together into a group named by the label, and the value is announced through a live region; the group also
+            carries the description, the error message and the prefix/suffix, which the hidden input cannot.
             The spinbutton role replaces the native role of the input, and with it what the <b>Required</b> and
             <b>ReadOnly</b> attributes would map into the accessibility tree on their own, so both states are written out as
             aria-required and aria-readonly instead.
-            On a touch device the stacked <b>Compact</b> buttons grow so each one clears the 24px minimum pointer target.
+            On a touch device the stacked <b>Compact</b> buttons grow so each one clears the 24px minimum pointer target, as
+            they do on any pointer in <b>HideInput</b> mode, where there is no input left to reach the same value with.
             <b>AriaSetSize</b> and <b>AriaPositionInSet</b> place the field within a larger group of related fields.
         </div>
         <br />

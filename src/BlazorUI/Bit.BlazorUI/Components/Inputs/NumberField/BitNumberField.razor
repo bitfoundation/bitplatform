@@ -71,7 +71,8 @@
        while no name of its own was given - the same rule LabelledBy applies to the input.
        Where the field sits in a set of them belongs on whatever is exposed: the input normally, but in
        HideInput mode the input is hidden from assistive technologies altogether and the group around it
-       is all that is left to carry the position. *@
+       is all that is left to carry the position - and, for the same reason, what the hint, the error
+       message and the prefix/suffix have to be announced through. *@
     <div title="@Title"
          @onclick="HandleOnInputContainerClick"
          style="@Styles?.InputContainer"
@@ -80,7 +81,8 @@
          aria-label="@(HideInput ? AriaLabel : null)"
          aria-labelledby="@(HideInput ? LabelledBy : null)"
          aria-setsize="@(HideInput ? AriaSetSize : null)"
-         aria-posinset="@(HideInput ? AriaPositionInSet : null)">
+         aria-posinset="@(HideInput ? AriaPositionInSet : null)"
+         aria-describedby="@(HideInput ? AriaDescribedBy : null)">
         @if (PrefixTemplate is not null)
         {
             @PrefixTemplate
@@ -99,9 +101,10 @@
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointercancel="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(false)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                    @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
@@ -229,12 +232,13 @@
                 <button @ref="_buttonIncrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointercancel="HandleOnPointerUpOrOut"
                         @onpointerdown="() => HandleOnPointerDown(true)"
                         @onpointerdown:preventDefault
-                        @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                        @onclick="(e) => HandleOnButtonClick(e, true)"
                         type="button"
                         tabindex="@spinTabIndex"
-                        data-is-focusable="@(HideInput ? "true" : "false")"
+                        autofocus="@(HideInput && AutoFocus)"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup@(incrementBlockedClass) @Classes?.IncrementButton"
                         disabled="@spinDisabled"
@@ -251,12 +255,12 @@
                 <button @ref="_buttonDecrement"
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
+                        @onpointercancel="HandleOnPointerUpOrOut"
                         @onpointerdown="() => HandleOnPointerDown(false)"
                         @onpointerdown:preventDefault
-                        @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                        @onclick="(e) => HandleOnButtonClick(e, false)"
                         type="button"
                         tabindex="@spinTabIndex"
-                        data-is-focusable="@(HideInput ? "true" : "false")"
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn@(decrementBlockedClass) @Classes?.DecrementButton"
                         disabled="@spinDisabled"
@@ -276,9 +280,10 @@
             <button @ref="_buttonDecrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointercancel="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(false)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
+                    @onclick="(e) => HandleOnButtonClick(e, false)"
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
@@ -297,11 +302,13 @@
             <button @ref="_buttonIncrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointercancel="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(true)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                    @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"
@@ -320,11 +327,13 @@
             <button @ref="_buttonIncrement"
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
+                    @onpointercancel="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(true)"
                     @onpointerdown:preventDefault
-                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
+                    @onclick="(e) => HandleOnButtonClick(e, true)"
                     type="button"
                     tabindex="@spinTabIndex"
+                    autofocus="@(HideInput && AutoFocus)"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"

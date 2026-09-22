@@ -712,6 +712,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     });
 
     /// <summary>
+    /// Moves the focus into the field. In <see cref="HideInput"/> mode there is no input left to focus -
+    /// a hidden one cannot take it - so the increment button does instead, it being the tab stop the
+    /// stepper is operated from.
+    /// </summary>
+    public override ValueTask FocusAsync() => HideInput ? _buttonIncrement.FocusAsync() : base.FocusAsync();
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+        => HideInput ? _buttonIncrement.FocusAsync(preventScroll) : base.FocusAsync(preventScroll);
+
+    /// <summary>
     /// The shared body of <see cref="IncrementAsync"/>/<see cref="DecrementAsync"/>. It is dispatched
     /// through InvokeAsync so that a call arriving from a background thread (a timer, a SignalR message)
     /// still mutates the component on its own renderer's synchronization context.
@@ -1581,16 +1592,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
-    /// Activates an increment/decrement button from the keyboard. The buttons are driven by pointer
-    /// events (to support the press-and-hold continuous spin), which the browser does not synthesize
-    /// for a keyboard activation, so Enter/Space are handled explicitly. This only matters while the
-    /// buttons are reachable by keyboard, i.e. in <see cref="HideInput"/> mode.
+    /// Activates an increment/decrement button from everything that is not a pointer. The buttons are
+    /// driven by pointer events, which is what the press-and-hold continuous spin needs, but a keyboard
+    /// activation (Enter/Space on the focused button), an assistive technology's own one (a double tap
+    /// in TalkBack or VoiceOver, a browse-mode Enter in NVDA or JAWS, a voice command) and a
+    /// programmatic <c>click()</c> all arrive as a bare click with no pointer sequence behind them, so
+    /// the button would otherwise do nothing at all for any of them.
+    /// A click a real pointer produced carries a detail of at least one and is ignored here: the
+    /// pointerdown that preceded it has already stepped the value.
     /// </summary>
-    private async Task HandleOnButtonKeyDown(KeyboardEventArgs e, bool isIncrement)
+    private async Task HandleOnButtonClick(MouseEventArgs e, bool isIncrement)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (e.Detail != 0) return;
 
-        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
         if (IsSpinBlocked(isIncrement)) return;
 
@@ -1785,9 +1800,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // merely hovered field would silently change data while the user is scrolling the page.
         if (_hasFocus is false) return;
 
-        if (e.DeltaY == 0) return;
+        // Holding Shift turns a vertical scroll into a horizontal one on macOS (and on a mouse with
+        // a tilt wheel), so the gesture arrives on deltaX there. Either axis spins the value, which is
+        // what makes the wheel work the same on every platform.
+        var delta = e.DeltaY != 0 ? e.DeltaY : e.DeltaX;
 
-        var isIncrement = (e.DeltaY < 0) != InvertMouseWheel;
+        if (delta == 0) return;
+
+        var isIncrement = (delta < 0) != InvertMouseWheel;
 
         await CommitPendingInputValue();
 

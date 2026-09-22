@@ -2113,11 +2113,8 @@ public class BitNumberFieldTests : BunitTestContext
         }
     }
 
-    [TestMethod,
-         DataRow("Enter"),
-         DataRow(" ")
-    ]
-    public void BitNumberFieldHideInputButtonsShouldRespondToEnterAndSpace(string key)
+    [TestMethod]
+    public void BitNumberFieldSpinButtonsShouldRespondToANonPointerActivation()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -2126,10 +2123,51 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 1);
         });
 
+        // Enter and Space on the focused button, an assistive technology's activation gesture and a
+        // programmatic click all arrive as a bare click with a detail of zero and no pointer sequence
+        // behind them, which is the only thing that reaches the button in those cases.
         // Inline mode renders the decrement button first and the increment button second.
-        component.FindAll("button.bit-nfl-sbn")[1].KeyDown(new KeyboardEventArgs { Key = key });
+        component.FindAll("button.bit-nfl-sbn")[1].Click(new MouseEventArgs { Detail = 0 });
 
         Assert.AreEqual(2, component.Instance.Value);
+
+        component.FindAll("button.bit-nfl-sbn")[0].Click(new MouseEventArgs { Detail = 0 });
+
+        Assert.AreEqual(1, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinButtonsShouldNotStepTwiceForOnePointerPress()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.DefaultValue, 1);
+        });
+
+        var incrementButton = component.Find(".bit-nfl-aup");
+
+        // A real press steps on the pointerdown (which is what the press-and-hold spin needs), so the
+        // click the browser fires after it - carrying a detail of at least one - must not step again.
+        incrementButton.PointerDown();
+        incrementButton.PointerUp();
+        incrementButton.Click(new MouseEventArgs { Detail = 1 });
+
+        Assert.AreEqual(2, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldHideInputShouldFocusTheIncrementButton()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+        });
+
+        // A hidden input cannot take the focus, so the public FocusAsync has to land on the button the
+        // stepper is operated from. An element reference that was never captured throws here, which is
+        // what makes this assert the button and not the hidden input.
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
     }
 
     [TestMethod,
@@ -3019,5 +3057,92 @@ public class BitNumberFieldTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find("label").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputGroupShouldCarryWhatDescribesTheField()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.Description, "How many boxes");
+            parameters.Add(p => p.ErrorMessage, "Too many");
+            parameters.Add(p => p.Suffix, "boxes");
+        });
+
+        // The hidden input is not exposed to assistive technologies at all, so the group around the
+        // buttons is what the hint, the error message and the suffix have to be announced through.
+        var ids = component.Find(".bit-nfl-cnt").GetAttribute("aria-describedby").Split(' ');
+
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-erm").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-des").Id));
+        Assert.IsTrue(ids.Contains(component.Find(".bit-nfl-suf span").Id));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldWithoutHideInputShouldLeaveTheDescriptionsOnTheInputAlone()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Description, "How many boxes");
+        });
+
+        // With the input exposed, naming the wrapper as well would have it read twice.
+        Assert.IsNull(component.Find(".bit-nfl-cnt").GetAttribute("aria-describedby"));
+        Assert.IsNotNull(component.Find("input").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+         DataRow(-1d, false, 2),
+         DataRow(1d, false, 0),
+         DataRow(-1d, true, 0),
+         DataRow(1d, true, 2)
+    ]
+    public void BitNumberFieldShiftWheelShouldSpinOnTheHorizontalDeltaToo(double deltaX, bool invert, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.InvertMouseWheel, invert);
+        });
+
+        var input = component.Find("input");
+        input.Focus();
+
+        // Holding Shift turns a vertical scroll into a horizontal one on macOS (and on a mouse with a
+        // tilt wheel), so the gesture arrives on deltaX there and has to spin the value just the same.
+        input.Wheel(new WheelEventArgs { DeltaX = deltaX, DeltaY = 0, ShiftKey = true });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldSpinButtonsShouldStopTheContinuousSpinOnACancelledPointer()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+        });
+
+        // A pointer the browser takes over - a long-press context menu, a scroll gesture - is cancelled
+        // rather than released, so without this handler the held button would go on spinning forever.
+        component.Find(".bit-nfl-aup").TriggerEvent("onpointercancel", new PointerEventArgs());
+        component.Find(".bit-nfl-adn").TriggerEvent("onpointercancel", new PointerEventArgs());
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHideInputShouldAutoFocusTheIncrementButton()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.HideInput, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        // There is no input left to autofocus in this mode, so the parameter lands on the button the
+        // stepper opens on instead of doing nothing at all.
+        Assert.IsTrue(component.Find(".bit-nfl-aup").HasAttribute("autofocus"));
+        Assert.IsFalse(component.Find(".bit-nfl-adn").HasAttribute("autofocus"));
     }
 }
