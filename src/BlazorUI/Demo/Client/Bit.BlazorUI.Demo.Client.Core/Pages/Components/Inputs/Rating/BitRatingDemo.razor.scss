@@ -21,12 +21,24 @@
         box-shadow: dodgerblue 0 0 1rem;
     }
 
+    .custom-label {
+        color: dodgerblue;
+        text-transform: uppercase;
+    }
+
     .custom-selected {
         color: seagreen;
     }
 
     .custom-unselected {
         color: mediumseagreen;
+    }
+
+    // data-is-current marks the item the shown value lands in - the fourth of a 3.5, and the one under the
+    // pointer while a hover preview is running.
+    .ringed-item[data-is-current="true"] {
+        outline: 1px dashed $bit-color-primary;
+        outline-offset: -1px;
     }
 
     // The numbered scale of the ItemTemplate example: a plain badge that fills once its item does.
@@ -47,6 +59,12 @@
         color: $bit-color-primary-text;
         border-color: $bit-color-primary;
         background-color: $bit-color-primary;
+    }
+
+    // IsCurrent is the item the value lands in, which is the last of the filled run rather than all of it.
+    .number-item-current {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
     }
 
     // The mood faces of the ItemTemplate example, greyed out until their item is the selected one.

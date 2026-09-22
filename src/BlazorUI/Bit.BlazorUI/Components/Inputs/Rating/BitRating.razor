@@ -9,112 +9,179 @@
     var displayValue = _DisplayValue;
     var tabbableIndex = _TabbableIndex;
     var interactive = IsEnabled && ReadOnly is false;
+    var labelledBy = _AriaLabelledBy;
+    var describedBy = _AriaDescribedBy;
 }
 
 @* A read-only rating is no longer a set of choices but a picture of a value, so it drops the radiogroup
    and is announced as a single labelled image instead of a group of unreachable radios. That also takes
-   aria-required and aria-disabled with it: neither is supported on the img role, and an unchangeable
-   picture of a value has nothing to require or disable in the first place. *@
+   the four states of a field with it - aria-readonly, aria-required, aria-disabled and aria-invalid - none
+   of which the img role supports, and none of which an unchangeable picture of a value has anything to say
+   about: there is nothing to require, disable or correct in the first place. *@
+@* A name given by reference wins over one given inline, so only one of aria-labelledby and aria-label
+   is ever rendered: the visible label names the group when there is one, the explicit strings when not. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onkeydown="HandleOnKeyDown"
+     @onfocusin="HandleOnFocusIn"
+     @onfocusout="HandleOnFocusOut"
      @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@_AriaLabel"
      role="@(ReadOnly ? "img" : "radiogroup")"
-     aria-readonly="@(ReadOnly ? "true" : null)"
-     aria-invalid="@(ValueInvalid is true ? "true" : null)"
+     aria-labelledby="@labelledBy"
+     aria-describedby="@describedBy"
+     aria-label="@_AriaLabelAttribute"
+     aria-invalid="@(ReadOnly is false && ValueInvalid is true ? "true" : null)"
      aria-required="@(ReadOnly is false && Required ? "true" : null)"
      aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)"
      aria-orientation="@(ReadOnly is false && Vertical ? "vertical" : null)">
 
-    @for (int item = 1; item <= max; item++)
+    @* Not a label element: with no single input to point a "for" at, a label here would label nothing;
+       the group is named through aria-labelledby referencing this id instead. *@
+    @if (HasLabel)
     {
-        var index = item;
-        var percentage = GetPercentage(index);
-        var isCurrent = index == CurrentValue;
-        // A per-item icon replaces the shared pair for that position only, which is what turns a plain
-        // scale into one that changes shape as it fills - a frown at one end and a grin at the other.
-        var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
-        var itemUnselectedIcon = GetUnselectedIcon?.Invoke(index) ?? unselectedIcon;
-
-        <button @ref="_itemRefs[index - 1]"
-                @onclick="() => HandleOnClick(index)"
-                @onmouseover="() => HandleOnHover(index)"
-                type="button"
-                title="@GetItemTitle(index)"
-                style="@Styles?.Button"
-                role="@(ReadOnly ? null : "radio")"
-                class="bit-rtg-btn @Classes?.Button"
-                autofocus="@(AutoFocus && index == tabbableIndex)"
-                aria-hidden="@(ReadOnly ? "true" : null)"
-                aria-setsize="@(ReadOnly ? null : max.ToString())"
-                aria-posinset="@(ReadOnly ? null : index.ToString())"
-                aria-checked="@(ReadOnly ? null : (isCurrent ? "true" : "false"))"
-                data-is-current="@(isCurrent ? "true" : "false")"
-                disabled="@(IsEnabled is false || ReadOnly)"
-                tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
-
-            @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
-               of an interactive rating carries one. The items of a read-only rating are aria-hidden behind
-               the single label of the group, which leaves them nothing to name. *@
-            @if (ReadOnly is false)
+        <div id="@_labelId"
+             style="@Styles?.LabelContainer"
+             class="bit-rtg-lbc @Classes?.LabelContainer">
+            @if (LabelTemplate is not null)
             {
-                <span class="bit-rtg-alb">
-                    @GetItemAriaLabel(index)
-                </span>
+                @LabelTemplate
             }
-
-            <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
-                @if (ItemTemplate is not null)
-                {
-                    @ItemTemplate(new BitRatingItemContext(index, max, percentage, displayValue, CurrentValue))
-                }
-                else
-                {
-                    @* The base layer swaps to the filled glyph once the item is complete, so the two layers
-                       cannot show a seam between them at 100%. *@
-                    <i aria-hidden="true"
-                       style="@Styles?.UnselectedIcon"
-                       class="bit-rtg-iem @(percentage == 100 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
-                    </i>
-                    <i aria-hidden="true"
-                       style="@GetFillStyle(percentage)"
-                       class="bit-rtg-ifl @(percentage > 0 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
-                    </i>
-                }
-            </div>
-
-            @* Below a precision of a whole item, the item is covered by transparent slices that each commit
-               their own fraction. They are decorative overlays rather than extra tab stops: the item keeps
-               being the single radio of the group, and the keyboard reaches the same fractions with the
-               arrow keys, which step by the Precision. *@
-            @if (steps > 1 && interactive)
+            else
             {
-                for (int step = 1; step <= steps; step++)
-                {
-                    var stepValue = GetStepValue(index, step);
+                <span style="@Styles?.Label" class="bit-rtg-lbl @Classes?.Label">@Label</span>
+            }
+        </div>
+    }
 
-                    <span aria-hidden="true"
-                          class="bit-rtg-seg"
-                          @onclick="() => HandleOnClick(stepValue)"
-                          @onclick:stopPropagation="true"
-                          @onmouseover="() => HandleOnHover(stepValue)"
-                          @onmouseover:stopPropagation="true"
-                          style="@GetSegmentStyle(step)">
+    @* The items live in a box of their own so that the row (or the bottom-up column) they form is laid out
+       independently of where the label sits beside them. Its mouseleave ends a preview the pointer walks out
+       of onto the label, which is still inside the root and so would not end it there. *@
+    <div @onmouseleave="HandleOnMouseLeave"
+         style="@Styles?.Container"
+         class="bit-rtg-cnt @Classes?.Container">
+
+        @for (int item = 1; item <= max; item++)
+        {
+            var index = item;
+            var percentage = GetPercentage(index);
+            // Checked is the exact committed value, which only a whole one ever is - a radio cannot be half
+            // checked. Current is the item the displayed value lands in, fractional or previewed, which is
+            // the styling hook for "the one being picked" rather than a state of the radio.
+            var isChecked = index == CurrentValue;
+            var isCurrent = index == Math.Ceiling(displayValue);
+            // A per-item icon replaces the shared pair for that position only, which is what turns a plain
+            // scale into one that changes shape as it fills - a frown at one end and a grin at the other.
+            var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
+            var itemUnselectedIcon = GetUnselectedIcon?.Invoke(index) ?? unselectedIcon;
+
+            <button @ref="_itemRefs[index - 1]"
+                    @onclick="() => HandleOnClick(index)"
+                    @onmouseover="() => HandleOnHover(index)"
+                    type="button"
+                    title="@GetItemTitle(index)"
+                    style="@Styles?.Button"
+                    role="@(ReadOnly ? null : "radio")"
+                    class="bit-rtg-btn @Classes?.Button"
+                    autofocus="@(AutoFocus && index == tabbableIndex)"
+                    aria-hidden="@(ReadOnly ? "true" : null)"
+                    aria-setsize="@(ReadOnly ? null : max.ToString())"
+                    aria-posinset="@(ReadOnly ? null : index.ToString())"
+                    aria-checked="@(ReadOnly ? null : (isChecked ? "true" : "false"))"
+                    data-is-current="@(isCurrent ? "true" : "false")"
+                    disabled="@(IsEnabled is false || ReadOnly)"
+                    tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
+
+                @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
+                   of an interactive rating carries one. The items of a read-only rating are aria-hidden behind
+                   the single label of the group, which leaves them nothing to name. *@
+                @if (ReadOnly is false)
+                {
+                    <span class="bit-rtg-alb">
+                        @GetItemAriaLabel(index)
                     </span>
                 }
+
+                @* The whole presentation of an item is hidden from assistive technologies, because the item
+                   already carries a name of its own above. That covers an ItemTemplate as well as the two
+                   built-in glyphs: a template that draws a number or a face would otherwise append it to
+                   that name, leaving the third of five items announced as "3 of 5, 3". *@
+                <div aria-hidden="true"
+                     style="@Styles?.IconContainer"
+                     class="bit-rtg-ict @Classes?.IconContainer">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(new BitRatingItemContext(index, max, percentage, displayValue, CurrentValue))
+                    }
+                    else
+                    {
+                        @* The base layer swaps to the filled glyph once the item is complete, so the two layers
+                           cannot show a seam between them at 100%. *@
+                        <i style="@Styles?.UnselectedIcon"
+                           class="bit-rtg-iem @(percentage == 100 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
+                        </i>
+                        <i style="@GetFillStyle(percentage)"
+                           class="bit-rtg-ifl @(percentage > 0 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
+                        </i>
+                    }
+                </div>
+
+                @* Below a precision of a whole item, the item is covered by transparent slices that each commit
+                   their own fraction. They are decorative overlays rather than extra tab stops: the item keeps
+                   being the single radio of the group, and the keyboard reaches the same fractions with the
+                   arrow keys, which step by the Precision. *@
+                @if (steps > 1 && interactive)
+                {
+                    for (int step = 1; step <= steps; step++)
+                    {
+                        var stepValue = GetStepValue(index, step);
+
+                        <span aria-hidden="true"
+                              class="bit-rtg-seg"
+                              @onclick="() => HandleOnClick(stepValue)"
+                              @onclick:stopPropagation="true"
+                              @onmouseover="() => HandleOnHover(stepValue)"
+                              @onmouseover:stopPropagation="true"
+                              style="@GetSegmentStyle(step)">
+                        </span>
+                    }
+                }
+            </button>
+        }
+    </div>
+
+    @if (HasDescription)
+    {
+        <div id="@_descriptionId"
+             style="@Styles?.Description"
+             class="bit-rtg-dsc @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
             }
-        </button>
+            else
+            {
+                @Description
+            }
+        </div>
     }
 
     @* A fractional value checks none of the radios - 3.5 is neither three stars nor four - so it is
        announced through this live region instead of being rounded into a radio that would misreport it. *@
     @if (ReadOnly is false)
     {
-        <span class="bit-rtg-alb" aria-live="polite">@_LiveValueText</span>
+        @* Atomic, so the value is announced as the one string it is - "4 of 5" and not the "4" that changed
+           about it - which is also what the library's other announcement regions do. *@
+        <span class="bit-rtg-alb" aria-live="polite" aria-atomic="true">@_LiveValueText</span>
+    }
+
+    @* A read-only rating named by its own visible label would announce the label and lose the value it
+       exists to show, so the value joins the name from here instead of through aria-label. *@
+    @if (_RendersHiddenValueText)
+    {
+        <span id="@_valueTextId" class="bit-rtg-alb">@_ValueText</span>
     }
 
     <input @attributes="InputHtmlAttributes"

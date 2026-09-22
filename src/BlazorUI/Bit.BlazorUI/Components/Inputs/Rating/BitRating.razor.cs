@@ -5,11 +5,15 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Ratings show people’s opinions of a product, helping others make more informed purchasing decisions.
-/// It supports fractional values down to any precision, a live hover preview, clearing, per-item titles,
-/// a custom item template, and is fully operable from the keyboard.
+/// It supports fractional values down to any precision, a live hover preview, clearing, a label and a
+/// description, per-item icons and titles, a custom item template, a horizontal or vertical layout, and is
+/// fully operable from the keyboard.
 /// </summary>
 public partial class BitRating : BitInputBase<double>
 {
+    private string _labelId = default!;
+    private string _valueTextId = default!;
+    private string _descriptionId = default!;
     private double? _hoverValue;
     private ElementReference[] _itemRefs = [];
 
@@ -20,24 +24,60 @@ public partial class BitRating : BitInputBase<double>
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the rating component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple rating components through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitRatingParams.ParamName)]
+    public BitRatingParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
     /// Lets the current value be cleared, by clicking the item that is already selected or by pressing
     /// Delete or Backspace. Clearing sets the value to 0, so it also makes 0 a reachable value the same
     /// way <see cref="AllowZeroStars"/> does.
     /// </summary>
+    /// <remarks>
+    /// Since the hover preview is the value a click would commit, the items empty while the pointer rests
+    /// on the value that is already committed - which is what makes clearing discoverable with the pointer.
+    /// <see cref="OnHoverChange"/> reports that 0 for the same reason.
+    /// </remarks>
     [Parameter] public bool AllowClear { get; set; }
 
     /// <summary>
-    /// Allow the initial rating value be 0. Note that a value of 0 still won't be selectable by mouse or keyboard
-    /// unless <see cref="AllowClear"/> is also set.
+    /// Puts the unrated 0 in the range of the rating, so a value of 0 is kept instead of being pulled up to
+    /// the smallest step and the rating can start empty.
     /// </summary>
+    /// <remarks>
+    /// It makes 0 part of the scale rather than something the user can undo their way back to: the keys that
+    /// reach the ends of the range - <c>Home</c> and the <c>0</c> key - reach it, while the pointer always
+    /// commits at least one step and <c>Delete</c> stays behind <see cref="AllowClear"/>, which is the
+    /// parameter for clearing as an action.
+    /// </remarks>
     [Parameter] public bool AllowZeroStars { get; set; }
 
     /// <summary>
-    /// Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers.
-    /// Placeholder {0} is the current rating and placeholder {1} is the max: for example,
-    /// "Select {0} of {1} stars". (To set the label for the control as a whole, use GetAriaLabel or AriaLabel.)
+    /// Names each individual rating item - not the rating as a whole - for screen readers. Placeholder {0} is
+    /// the rating that item stands for, which is its one-based position, and placeholder {1} is the max: for
+    /// example, "Select {0} of {1} stars" names the third of five items "Select 3 of 5 stars".
     /// </summary>
+    /// <remarks>
+    /// Without it an item is named by its <see cref="ItemTitles"/> tooltip, and failing that by its position
+    /// in the scale, so an item is never left nameless. To name the rating as a whole use
+    /// <see cref="Label"/>, <see cref="BitComponentBase.AriaLabel"/>, <see cref="AriaLabelledBy"/> or
+    /// <see cref="GetAriaLabel"/> instead.
+    /// </remarks>
     [Parameter] public string? AriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// The id of an element that names the rating as a whole, for a name that is already written somewhere
+    /// on the page. It wins over every other source of the name, including the visible <see cref="Label"/>.
+    /// </summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
 
     /// <summary>
     /// If true, the rating automatically receives focus when the page renders
@@ -51,6 +91,19 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public BitRatingClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The hint shown under the items and pointed at by <c>aria-describedby</c>, for the instruction a row
+    /// of stars cannot give by itself - that half a star is selectable, say, or that clicking the current
+    /// one clears it. It describes the rating rather than naming it, so it is announced after the label.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Replaces the <see cref="Description"/> with custom content, which is still what describes the rating
+    /// for assistive technologies.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// The general color of the rating, applied to the filled part of the items.
     /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
     /// </summary>
@@ -58,9 +111,15 @@ public partial class BitRating : BitInputBase<double>
     public BitColor? Color { get; set; }
 
     /// <summary>
-    /// Optional callback to set the aria-label for rating control in readOnly mode. Also used as a fallback aria-label if AriaLabel parameter is not provided.
-    /// The first argument is the current value and the second one is the max.
+    /// Names the rating as a whole from its current value and the max, which arrive as the first and the
+    /// second argument. It is used whenever <see cref="BitComponentBase.AriaLabel"/> is not set, and like
+    /// that label it wins over the visible <see cref="Label"/>.
     /// </summary>
+    /// <remarks>
+    /// A read-only rating has to carry its value in its name, since its items are hidden behind that single
+    /// name - this is how to word it. An interactive one announces the value through a live region instead,
+    /// so there the callback only renames the group.
+    /// </remarks>
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
     /// <summary>
@@ -98,14 +157,46 @@ public partial class BitRating : BitInputBase<double>
     /// The provided <see cref="BitRatingItemContext"/> describes the item being rendered,
     /// including how much of it is filled.
     /// </summary>
+    /// <remarks>
+    /// The template draws the item and nothing else: the item goes on being the radio of the group, keeping
+    /// its hit area, its hover preview, its keyboard handling and its name, and the drawing is hidden from
+    /// assistive technologies as the built-in glyphs are - so a template that renders a number or a face does
+    /// not append it to the name of the item. Anything focusable is therefore out of place inside one.
+    /// </remarks>
     [Parameter] public RenderFragment<BitRatingItemContext>? ItemTemplate { get; set; }
 
     /// <summary>
     /// The native tooltips of the rating items, in order, shown when hovering over each one:
-    /// for example "Terrible", "Bad", "Normal", "Good", "Wonderful".
-    /// Items beyond the end of the list simply get no tooltip.
+    /// for example "Terrible", "Bad", "Normal", "Good", "Wonderful". They double as the accessible name of
+    /// each item unless <see cref="AriaLabelFormat"/> overrides it, so they say more about an item than its
+    /// position does. Items beyond the end of the list simply get no tooltip.
     /// </summary>
+    /// <remarks>
+    /// The items of a read-only or disabled rating take no pointer events, so their tooltips never appear
+    /// there: a read-only rating is announced as a single value rather than as a set of choices to describe.
+    /// </remarks>
     [Parameter] public IList<string>? ItemTitles { get; set; }
+
+    /// <summary>
+    /// The visible label of the rating, which also becomes its accessible name: a row of stars carries no
+    /// text of its own, so without a label - or an <see cref="BitComponentBase.AriaLabel"/> - the group is
+    /// announced without saying what is being rated. A required rating marks its label with an asterisk.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Where the label sits relative to the items: above them by default, and beside them with
+    /// <see cref="BitLabelPosition.Start"/> or <see cref="BitLabelPosition.End"/> for the compact
+    /// "Quality: 3 of 5" row.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
+
+    /// <summary>
+    /// Replaces the <see cref="Label"/> with custom content, which still names the rating for assistive
+    /// technologies the same way the plain label does.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Maximum rating, which is also the number of rendered items. Values below 1 are treated as 1.
@@ -116,6 +207,10 @@ public partial class BitRating : BitInputBase<double>
     /// Turns off the preview that follows the pointer over the items and shows the value
     /// that a click would commit.
     /// </summary>
+    /// <remarks>
+    /// Only the preview drawn by the component stops: <see cref="OnHoverChange"/> goes on reporting the
+    /// hovered value, which is what a page that draws a preview of its own needs.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool NoHoverPreview { get; set; }
 
@@ -129,9 +224,23 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public EventCallback<BitRatingChangeArgs> OnChanging { get; set; }
 
     /// <summary>
+    /// Callback for when the rating receives the focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when the focus leaves the rating.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
     /// Callback for when the previewed value changes, which is the value a click would commit.
     /// It receives null when the pointer leaves the rating and the preview ends.
     /// </summary>
+    /// <remarks>
+    /// It reports the hovered value whether or not the component draws the preview itself, so it keeps
+    /// working under <see cref="NoHoverPreview"/>.
+    /// </remarks>
     [Parameter] public EventCallback<double?> OnHoverChange { get; set; }
 
     /// <summary>
@@ -143,6 +252,11 @@ public partial class BitRating : BitInputBase<double>
     /// <remarks>
     /// A precision that does not divide an item evenly - 0.3, say - is rounded to the closest number of equal
     /// steps, so the items always end on a whole value, and an item is never split into more than 100 steps.
+    /// Anything at or above 1, and anything at or below 0, leaves the items whole.
+    /// <br />
+    /// It is also the floor of the scale: the smallest rating that can be given is a single step, so a
+    /// half-star rating reaches 0.5 without opening up the unrated 0 that <see cref="AllowZeroStars"/> and
+    /// <see cref="AllowClear"/> are for.
     /// </remarks>
     [Parameter] public double Precision { get; set; } = 1;
 
@@ -168,7 +282,7 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public string? SelectedIconName { get; set; }
 
     /// <summary>
-    /// Size of rating elements.
+    /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -219,6 +333,10 @@ public partial class BitRating : BitInputBase<double>
 
     protected override async Task OnInitializedAsync()
     {
+        _labelId = $"BitRating-{UniqueId}-label";
+        _valueTextId = $"BitRating-{UniqueId}-value";
+        _descriptionId = $"BitRating-{UniqueId}-description";
+
         SetDefaultValue();
 
         await base.OnInitializedAsync();
@@ -261,6 +379,18 @@ public partial class BitRating : BitInputBase<double>
 
         ClassBuilder.Register(() => Vertical ? "bit-rtg-vrt" : string.Empty);
 
+        // The asterisk is a property of an answer that is still expected, so a read-only or disabled
+        // rating - which is no longer asking anything - does not draw one.
+        ClassBuilder.Register(() => IsEnabled && ReadOnly is false && Required ? "bit-rtg-req" : string.Empty);
+
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Bottom => "bit-rtg-lbm",
+            BitLabelPosition.Start => "bit-rtg-lst",
+            BitLabelPosition.End => "bit-rtg-led",
+            _ => string.Empty
+        });
+
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-rtg-pri",
@@ -297,8 +427,11 @@ public partial class BitRating : BitInputBase<double>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRatingParams))]
     protected override void OnParametersSet()
     {
+        CascadingParameters?.UpdateParameters(this);
+
         var max = _Max;
 
         if (_itemRefs.Length != max)
@@ -308,7 +441,9 @@ public partial class BitRating : BitInputBase<double>
 
         // A rating turned read-only or disabled under the pointer stops receiving the mouseleave that would
         // normally end the preview, so a stale one would go on rendering in place of the committed value.
-        if (IsEnabled is false || ReadOnly || NoHoverPreview)
+        // NoHoverPreview is not one of these: it hides the preview rather than ending it, so the hovered
+        // value stays tracked for OnHoverChange and simply stops being what the items are drawn from.
+        if (IsEnabled is false || ReadOnly)
         {
             _hoverValue = null;
         }
@@ -367,9 +502,11 @@ public partial class BitRating : BitInputBase<double>
     private int _Max => Math.Max(Max, 1);
 
     /// <summary>
-    /// The smallest value the rating can hold. Both AllowZeroStars and AllowClear open up the unrated 0.
+    /// The smallest value the rating can hold. Both AllowZeroStars and AllowClear open up the unrated 0;
+    /// without them the floor is the smallest rating that can still be given, which is a single step -
+    /// a whole item at the default Precision, and the first half of the first one at a Precision of 0.5.
     /// </summary>
-    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : 1;
+    private double _MinValue => (AllowZeroStars || AllowClear) ? 0 : _Step;
 
     /// <summary>
     /// How many selectable steps each item is divided into, derived from the Precision.
@@ -395,9 +532,11 @@ public partial class BitRating : BitInputBase<double>
     private double _Step => 1d / _StepsPerItem;
 
     /// <summary>
-    /// The value the items are rendered from: the hovered one while a preview is active, the committed one otherwise.
+    /// The value the items are rendered from: the hovered one while a preview is active, the committed one
+    /// otherwise. A rating whose preview is turned off still tracks the hovered value for OnHoverChange,
+    /// so the choice of what to draw is made here rather than by stopping the tracking.
     /// </summary>
-    private double _DisplayValue => _hoverValue ?? CurrentValue;
+    private double _DisplayValue => (NoHoverPreview ? null : _hoverValue) ?? CurrentValue;
 
     /// <summary>
     /// The item that holds the single tab stop of the group. It follows the value - a fractional one lands
@@ -431,6 +570,90 @@ public partial class BitRating : BitInputBase<double>
             return _ValueText;
         }
     }
+
+    /// <summary>
+    /// Whether the rating draws a label of its own, which is also what makes it able to name itself.
+    /// </summary>
+    /// <remarks>
+    /// Only rendered when there is something to show, so its id is only worth referencing then: pointing
+    /// aria-labelledby at an element that is not there would leave the group without a name at all, since a
+    /// name given by reference wins over the aria-label beside it.
+    /// </remarks>
+    internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
+
+    /// <summary>
+    /// Whether the rating draws a description of its own, on the same terms as its label.
+    /// </summary>
+    internal bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// The value of an aria attribute the consumer splatted onto the component. Every aria attribute the
+    /// rating computes sits after the HtmlAttributes splat in the markup, so it is what ends up rendered no
+    /// matter what - and a null would even remove a splatted value. This is what the computed attributes
+    /// hand back rather than erasing what the page wrote.
+    /// </summary>
+    private string? _GetSplattedAttribute(string name)
+    {
+        HtmlAttributes.TryGetValue(name, out var value);
+
+        return value?.ToString();
+    }
+
+    /// <summary>
+    /// The elements that describe the rating, which is a splatted aria-describedby carried over rather than
+    /// replaced: both are kept, since aria-describedby is a space separated list of IDREFs.
+    /// </summary>
+    private string? _AriaDescribedBy
+    {
+        get
+        {
+            var splattedDescribedBy = _GetSplattedAttribute("aria-describedby");
+
+            if (HasDescription is false) return splattedDescribedBy;
+
+            return splattedDescribedBy.HasValue() ? $"{splattedDescribedBy} {_descriptionId}" : _descriptionId;
+        }
+    }
+
+    /// <summary>
+    /// The name of the rating as an inline string, which is only rendered when nothing names it by
+    /// reference. A name the page splatted is the last resort, so that writing aria-label on the component
+    /// works as it reads even though the component owns the attribute.
+    /// </summary>
+    private string? _AriaLabelAttribute => _AriaLabelledBy is null
+        ? (_AriaLabel ?? _GetSplattedAttribute("aria-label"))
+        : null;
+
+    /// <summary>
+    /// The element the name of the rating is read from, when it is read from the page rather than given as a
+    /// string: the explicit AriaLabelledBy, then the visible label. The two string forms - AriaLabel and the
+    /// GetAriaLabel callback - are deliberately allowed to win over the visible label, since aria-labelledby
+    /// would otherwise silently discard them.
+    /// </summary>
+    private string? _AriaLabelledBy
+    {
+        get
+        {
+            if (AriaLabelledBy.HasValue()) return AriaLabelledBy;
+
+            if (AriaLabel.HasValue() || GetAriaLabel is not null) return null;
+
+            if (HasLabel is false) return _GetSplattedAttribute("aria-labelledby");
+
+            return _RendersHiddenValueText ? $"{_labelId} {_valueTextId}" : _labelId;
+        }
+    }
+
+    /// <summary>
+    /// Whether the value joins the name of the rating from a hidden element of its own. A read-only rating is
+    /// a picture of a value whose items are hidden behind a single name, so naming it by its visible label
+    /// alone would leave the value it exists to show unannounced.
+    /// </summary>
+    private bool _RendersHiddenValueText => ReadOnly
+                                         && HasLabel
+                                         && AriaLabelledBy.HasNoValue()
+                                         && AriaLabel.HasNoValue()
+                                         && GetAriaLabel is null;
 
     /// <summary>
     /// The default format both the value text and the per-item labels fall back to.
@@ -581,7 +804,20 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task HandleOnHover(double value)
     {
-        if (IsEnabled is false || ReadOnly || NoHoverPreview) return;
+        if (IsEnabled is false || ReadOnly) return;
+
+        // The preview is the value a click would commit, and under AllowClear a click on the value that is
+        // already committed commits 0 instead - so that is the value the preview shows, rather than the one
+        // the pointer is over. It costs nothing and buys the one thing AllowClear otherwise lacks: with the
+        // row emptying under the pointer, clearing is discoverable without having to be described first.
+        if (AllowClear && value == CurrentValue)
+        {
+            value = 0;
+        }
+
+        // With the preview off and nobody listening there is nothing a hover could change, so the render
+        // it would cost is skipped entirely.
+        if (NoHoverPreview && OnHoverChange.HasDelegate is false) return;
 
         if (_hoverValue == value) return;
 
@@ -590,7 +826,26 @@ public partial class BitRating : BitInputBase<double>
         await OnHoverChange.InvokeAsync(value);
     }
 
-    private async Task HandleOnMouseLeave()
+    private async Task HandleOnFocusIn(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusIn.InvokeAsync(e);
+    }
+
+    private async Task HandleOnFocusOut(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnFocusOut.InvokeAsync(e);
+    }
+
+    private Task HandleOnMouseLeave() => EndPreview();
+
+    /// <summary>
+    /// Takes the preview down, which puts the items back to the committed value and reports the end of it.
+    /// </summary>
+    private async Task EndPreview()
     {
         if (_hoverValue is null) return;
 
@@ -610,14 +865,21 @@ public partial class BitRating : BitInputBase<double>
     {
         if (IsEnabled is false || ReadOnly) return;
 
+        // Every key this handler answers to is also half of a browser or system shortcut - Alt+ArrowLeft goes
+        // back, Ctrl+Home reaches the top of a page, Ctrl+digit switches tabs - so a held modifier hands the
+        // key back rather than silently spending it on the rating. Shift is the exception: it is the rating's
+        // own modifier, the one that turns a step into a whole item.
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
+
         var isRtl = Dir == BitDir.Rtl;
         var value = CurrentValue;
 
         // Holding Shift - and the Page keys, which need no modifier for it - moves by a whole item to the
         // next or previous one, so crossing a rating split into tenths costs five presses instead of fifty.
         var coarse = e.ShiftKey || e.Key is "PageUp" or "PageDown";
-        var up = coarse ? Math.Floor(value) + 1 : value + _Step;
-        var down = coarse ? Math.Ceiling(value) - 1 : value - _Step;
+        var step = coarse ? 1 : _Step;
+        var up = StepFrom(value, step, true);
+        var down = StepFrom(value, step, false);
 
         double? newValue = e.Key switch
         {
@@ -642,6 +904,30 @@ public partial class BitRating : BitInputBase<double>
     }
 
     /// <summary>
+    /// The next value up or down the grid a step of the given size lays over the scale.
+    /// </summary>
+    /// <remarks>
+    /// The move lands on that grid rather than adding the step to whatever the value happens to be, which
+    /// matters for a value the Precision never snapped: one bound from elsewhere at 4.3 on a half-star
+    /// scale moves to 4.5 and 4 instead of carrying its own remainder up and down a scale that cannot
+    /// express it. On a value already on the grid the two are the same thing.
+    /// </remarks>
+    private static double StepFrom(double value, double step, bool up)
+    {
+        var steps = value / step;
+
+        // A value that is exactly on the grid divides into a whole number of steps only to within the
+        // rounding of binary floating point, so the index is taken with a tolerance: without it the floor
+        // of a 2.9999999999 would move up to the step the value is already sitting on.
+        const double tolerance = 1e-4;
+
+        var index = up ? Math.Floor(steps + tolerance) + 1
+                       : Math.Ceiling(steps - tolerance) - 1;
+
+        return index * step;
+    }
+
+    /// <summary>
     /// The value a digit key jumps straight to, which is how a keyboard user reaches "4 of 5" in one press
     /// instead of four. A digit beyond the ends of the scale is held to them like any other value.
     /// </summary>
@@ -660,6 +946,17 @@ public partial class BitRating : BitInputBase<double>
 
     private async Task ChangeValue(double value)
     {
+        await CommitValue(value);
+
+        // Whatever became of it, the interaction that got here has spent the preview: keeping it would go
+        // on rendering the hovered value in place of the committed one, and a value an OnChanging refused
+        // or a one-way binding never took would be previewed as though it had landed. The pointer leaving
+        // is no longer the only way out of it, because on a touch device that never happens.
+        await EndPreview();
+    }
+
+    private async Task CommitValue(double value)
+    {
         if (InvalidValueBinding()) return;
 
         value = ClampValue(value);
@@ -673,15 +970,6 @@ public partial class BitRating : BitInputBase<double>
             await OnChanging.InvokeAsync(args);
 
             if (args.Cancel) return;
-        }
-
-        // The preview has served its purpose once a value lands, and keeping it would render the
-        // hovered value instead of the committed one until the pointer moves away.
-        if (_hoverValue is not null)
-        {
-            _hoverValue = null;
-
-            await OnHoverChange.InvokeAsync(null);
         }
 
         await SetCurrentValueAsync(value);
