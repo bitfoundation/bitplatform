@@ -48,7 +48,6 @@ Service registration is organized through `*ServiceCollectionExtensions.cs` and 
    
    // Session-based services (Singleton in Hybrid, Scoped in Server/WASM)
    services.AddSessioned<PubSubService>();
-   services.AddSessioned<PromptService>();
    services.AddSessioned<SnackBarService>();
    ```
 

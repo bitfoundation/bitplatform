@@ -15,6 +15,12 @@ public partial class UserSessionDto
     public bool Privileged { get; set; }
 
     /// <summary>
+    /// How this session signed in - Password, Email, Sms, Push, External (social) or WebAuthn. Easier to recognise a
+    /// session by than its IP. See <c>UserSession.AuthenticationMethod</c>.
+    /// </summary>
+    public string? AuthenticationMethod { get; set; }
+
+    /// <summary>
     /// Unix Time Seconds
     /// </summary>
     public long RenewedOn { get; set; }

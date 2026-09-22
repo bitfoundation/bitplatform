@@ -1,7 +1,7 @@
 {
     "mcpServers": {
         "bitplatform": {
-            "url": "https://bitplatform.dev/mcp?v=10.6.1"
+            "url": "https://bitplatform.dev/mcp?v=10.6.2"
         },
         "dev-mcp": {
             "url": "https://use-your-api-server-url-here.com/dev-mcp"
