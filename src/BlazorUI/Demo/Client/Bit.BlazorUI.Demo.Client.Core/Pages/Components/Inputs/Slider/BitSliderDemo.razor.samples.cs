@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Slider;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Slider;
 
 public partial class BitSliderDemo
 {
@@ -31,14 +31,28 @@ private BitSliderRangeValue ageBand = new(25, 45);";
     private readonly string example3RazorCode = @"
 <BitSlider Label=""Steps of one"" ShowMarks DefaultValue=""6"" />
 
-<BitSlider Label=""Rating"" ShowMarks ShowMarkLabels Max=""5"" DefaultValue=""3"" />
+<BitSlider Label=""Rating"" ShowMarkLabels Max=""5"" DefaultValue=""3"" />
 
-<BitSlider Label=""Budget"" ShowMarks ShowMarkLabels
+<BitSlider Label=""Budget"" ShowMarkLabels
            Min=""0"" Max=""1000"" Step=""10"" MarkStep=""200""
            ValueFormat=""C0""
            DefaultValue=""400"" />
 
 <BitSlider Label=""Quality"" Max=""4"" Marks=""qualityMarks"" DefaultValue=""2"" ShowValue=""false"" />
+
+<BitSlider Label=""Load"" ShowMarkLabels Marks=""loadMarks""
+           Max=""100"" Step=""5""
+           ValueFormat=""0'%'""
+           DefaultValue=""45"" />
+
+<BitSlider Label=""How was it?"" ShowValue=""false""
+           Max=""4""
+           AriaValueText=""GetMoodText""
+           DefaultValue=""3"">
+    <MarkLabelTemplate Context=""mark"">
+        <BitIcon IconName=""@GetMoodIcon(mark.Value)"" Size=""BitSize.Small"" />
+    </MarkLabelTemplate>
+</BitSlider>
 
 <BitSlider Label=""Storage"" RestrictToMarks
            Min=""0"" Max=""2000"" Step=""1""
@@ -47,14 +61,8 @@ private BitSliderRangeValue ageBand = new(25, 45);";
            @bind-Value=""storageValue"" />
 <BitLabel>Value: @storageValue GB</BitLabel>
 
-<BitSlider Label=""Working hours"" IsRanged ShowMarks ShowMarkLabels
-           Min=""0"" Max=""24"" Step=""1"" MarkStep=""6""
-           ValueFormat=""0'h'""
-           DefaultLowerValue=""9""
-           DefaultUpperValue=""17"" />
-
 <BitSlider Label=""Shift"" IsRanged RestrictToMarks MinRange=""4""
-           ShowMarks ShowMarkLabels
+           ShowMarkLabels
            Min=""0"" Max=""24"" Step=""1"" MarkStep=""4""
            ValueFormat=""0'h'""
            DefaultLowerValue=""8""
@@ -69,6 +77,31 @@ private readonly List<BitSliderMark> qualityMarks =
     new(3, ""High""),
     new(4, ""Lossless"")
 ];
+
+// A mark with no label of its own is labelled with its value while ShowMarkLabels is on. A Style
+// reaches both the tick and the label, so one threshold can be picked out from the rest.
+private readonly List<BitSliderMark> loadMarks =
+[
+    new(0),
+    new(25),
+    new(50),
+    new(75),
+    new(90, ""limit"") { Style = ""background-color: tomato; color: tomato;"" },
+    new(100)
+];
+
+private static readonly string[] moodWords = [""Awful"", ""Poor"", ""Fine"", ""Good"", ""Great""];
+
+private static string GetMoodText(double value) => moodWords[(int)Math.Clamp(value, 0, 4)];
+
+private static string GetMoodIcon(double value) => value switch
+{
+    <= 0 => BitIconName.Sad,
+    <= 1 => BitIconName.EmojiDisappointed,
+    <= 2 => BitIconName.EmojiNeutral,
+    <= 3 => BitIconName.Emoji,
+    _ => BitIconName.Emoji2
+};
 
 private readonly List<BitSliderMark> storageMarks =
 [
@@ -93,7 +126,7 @@ private double storageValue = 256;";
 
 <BitSlider Label=""Marks"" IsVertical ShowMarks ShowMarkLabels MarkStep=""2"" DefaultValue=""6"" />
 
-<BitSlider Label=""Taller"" IsVertical Style=""--bit-sld-length: 18rem"" DefaultValue=""8"" />";
+<BitSlider Label=""Taller"" IsVertical Style=""--bit-Slider-length: 18rem"" DefaultValue=""8"" />";
 
     private readonly string example5RazorCode = @"
 <BitSlider Label=""Balance"" Min=""-5"" Max=""5"" DefaultValue=""3"" IsOriginFromZero />
@@ -366,6 +399,21 @@ private void HandleInvalidSubmit()
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => focusableSlider!.FocusUpperAsync()"">Focus the upper thumb</BitButton>
 </BitStack>
 
+<BitSlider Required
+           Label=""Monthly budget""
+           AriaDescription=""In thousands of euros. The plan has to cover at least twenty.""
+           Min=""0"" Max=""100"" Step=""5""
+           DefaultValue=""40"" />
+
+<BitSlider IsRanged
+           Label=""Delivery window""
+           LowerAriaLabel=""Earliest""
+           UpperAriaLabel=""Latest""
+           AriaDescription=""Both ends are days from today.""
+           Max=""30""
+           DefaultLowerValue=""5""
+           DefaultUpperValue=""14"" />
+
 <BitSlider IsRanged Max=""10"" DefaultLowerValue=""3"" DefaultUpperValue=""7"">
     <LabelTemplate>
         <span class=""template-label"">
@@ -387,6 +435,34 @@ private static string GetQualityText(double value)
 }";
 
     private readonly string example14RazorCode = @"
+<BitParams Parameters=""@sliderParams"">
+    <BitSlider Label=""Compression"" DefaultValue=""40"" />
+
+    <BitSlider Label=""Sharpening"" DefaultValue=""70"" />
+
+    <BitSlider Label=""Noise reduction"" Color=""BitColor.Warning"" ShowMarkLabels DefaultValue=""25"" />
+</BitParams>
+
+
+<BitSlider Label=""Untouched"" DefaultValue=""4"" />";
+
+    private readonly string example14CsharpCode = @"
+private readonly BitSliderParams[] sliderParams =
+[
+    new()
+    {
+        Min = 0,
+        Max = 100,
+        Step = 5,
+        MarkStep = 25,
+        ShowMarks = true,
+        Size = BitSize.Small,
+        Color = BitColor.Info,
+        ValueFormat = ""0'%'"",
+    }
+];";
+
+    private readonly string example15RazorCode = @"
 <BitSlider Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""6"" />
@@ -407,7 +483,7 @@ private static string GetQualityText(double value)
 <BitSlider Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""6"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitSlider Size=""BitSize.Small"" ShowMarks DefaultValue=""6"" />
 
 <BitSlider Size=""BitSize.Medium"" ShowMarks DefaultValue=""6"" />
@@ -418,7 +494,7 @@ private static string GetQualityText(double value)
 <BitSlider Size=""BitSize.Medium"" IsVertical DefaultValue=""6"" />
 <BitSlider Size=""BitSize.Large"" IsVertical DefaultValue=""6"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -441,9 +517,6 @@ private static string GetQualityText(double value)
 <BitSlider DefaultValue=""6"" Label=""Style"" Style=""padding: 0.5rem 1rem; border-radius: 0.5rem; box-shadow: tomato 0 0 1rem;"" />
 <BitSlider DefaultValue=""6"" Label=""Class"" Class=""custom-class"" />
 
-<BitSlider DefaultValue=""6"" Label=""Chunky"" Style=""--bit-sld-thumb: 2rem; --bit-sld-rail: 1rem;"" />
-<BitSlider DefaultValue=""6"" Label=""Hairline"" Style=""--bit-sld-thumb: 0.75rem; --bit-sld-rail: 0.125rem;"" />
-
 <BitSlider DefaultValue=""6""
            Label=""Custom styles""
            Styles=""@(new() { Label = ""font-weight: 900; font-size: 1.25rem;"",
@@ -461,9 +534,28 @@ private static string GetQualityText(double value)
            DefaultUpperValue=""7""
            Styles=""@(new() { Thumb = ""border-radius: 0.25rem;"",
                              LowerThumb = ""border-color: mediumseagreen;"",
-                             UpperThumb = ""border-color: orangered;"" })"" />";
+                             UpperThumb = ""border-color: orangered;"" })"" />
 
-    private readonly string example17RazorCode = @"
+
+<BitSlider DefaultValue=""6"" Label=""Chunky"" Style=""--bit-Slider-thumb-size: 2rem; --bit-Slider-rail-size: 1rem;"" />
+<BitSlider DefaultValue=""6"" Label=""Hairline"" Style=""--bit-Slider-thumb-size: 0.75rem; --bit-Slider-rail-size: 0.125rem;"" />
+<BitSlider DefaultValue=""6"" Label=""Squared off"" Style=""--bit-Slider-rail-size: 0.75rem; --bit-Slider-rail-radius: 0; --bit-Slider-thumb-radius: 0.25rem;"" />
+
+<BitSlider DefaultValue=""6"" ShowMarks Label=""Its own accent""
+           ThumbLabel=""BitSliderThumbLabel.On""
+           Style=""--bit-Slider-color: rebeccapurple; --bit-Slider-hover-color: mediumpurple; --bit-Slider-active-color: indigo; --bit-Slider-focus-color: rebeccapurple; --bit-Slider-rail-color: lavender; --bit-Slider-mark-color: mediumpurple; --bit-Slider-thumb-label-radius: 0.25rem;"" />
+
+<BitSlider DefaultValue=""6"" Label=""A lifted thumb""
+           Style=""--bit-Slider-thumb-size: 1.5rem; --bit-Slider-thumb-border-width: 0.25rem; --bit-Slider-thumb-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 30%);"" />
+
+
+<div style=""--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;"">
+    <BitSlider Label=""Bass"" DefaultValue=""4"" />
+    <BitSlider Label=""Middle"" DefaultValue=""6"" />
+    <BitSlider Label=""Treble"" DefaultValue=""8"" />
+</div>";
+
+    private readonly string example18RazorCode = @"
 <BitSlider Dir=""BitDir.Rtl"" Label=""اسلایدر ساده"" DefaultValue=""4"" />
 
 <BitSlider Dir=""BitDir.Rtl"" Label=""با علامت‌ها"" ShowMarks ShowMarkLabels Max=""5"" DefaultValue=""3"" />

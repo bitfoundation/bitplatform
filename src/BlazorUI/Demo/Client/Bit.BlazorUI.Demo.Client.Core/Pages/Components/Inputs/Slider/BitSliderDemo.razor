@@ -1,4 +1,4 @@
-@page "/components/slider"
+﻿@page "/components/slider"
 
 <PageOutlet Url="components/slider"
             Title="Slider"
@@ -6,8 +6,9 @@
 
 <DemoPage Name="Slider"
           SecondaryNames="@(["Range"])"
-          Description="BitSlider turns a number into a distance you can point at: drag the thumb, press the rail to send it there, or step it with the keyboard, and watch the fill follow. Give it two thumbs and it selects a range instead, with a minimum and a maximum distance to keep them apart, an option to stop them crossing, another to let one push the other along, and one more that makes the band between them a handle you can slide the whole range by. The fill does not have to start at the near end - attach it to zero, to any origin you like, invert it so that it highlights what lies beyond the value, or drop it altogether when the value is a position rather than a quantity. Marks can be drawn at every step or at values you choose, with labels under them, and can be made the only values the user is allowed to land on. A floating label can ride along with the thumb, on hover or always, carrying your own markup if plain text is not enough. It runs horizontally or vertically, takes any theme color and three sizes, and - because it is built on native range inputs - it comes with the whole slider keyboard, touch dragging, form submission and EditForm validation already working, with the larger Page and Shift jumps pinned to a distance you name rather than left to the browser."
+          Description="BitSlider turns a number into a distance you can point at: drag the thumb, press the rail to send it there, or step it with the keyboard. A second thumb turns it into a range, with distances to keep the two apart, an option to stop them crossing or to let one push the other, and a band to slide the whole range by. The fill can grow from either end or from an origin of your own, or be dropped altogether; marks can be drawn, labelled, and made the only values the user may land on; and a floating label can ride along with the thumb. It runs horizontally or vertically, in three sizes and any theme color, and - because it is built on native range inputs - touch dragging, form posting, EditForm validation and the whole slider keyboard come with it."
           Parameters="componentParameters"
+          CssVariables="componentCssVariables"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Inputs/Slider/BitSlider.razor"
@@ -15,21 +16,16 @@
 
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
-            Left unbound like the first one below, the slider keeps its own state with no binding or event handler
-            involved, and <b>DefaultValue</b> only picks where that state starts. <b>Min</b> and <b>Max</b> set the
-            scale - 0 to 10 unless you say otherwise - and <b>Step</b> is the distance between two values the user
-            can land on, which is what turns a continuous slider into one that snaps. Disabling it greys the whole
-            control out and takes it out of the tab order, while <b>ReadOnly</b> keeps it at full contrast and in
-            the tab order but refuses every change: the value is still there to be read and announced, just not to
-            be moved. Notice the last one still shows and announces its value even though no drag, press or key
-            can reach a different one.
+            <b>Min</b>, <b>Max</b> and <b>Step</b> set the scale and the distance between two values the user can
+            land on - 0 to 10 stepping by 1 unless you say otherwise. Left unbound the slider keeps its own state,
+            and <b>DefaultValue</b> only picks where that state starts. <b>IsEnabled="false"</b> greys it out and
+            takes it out of the tab order; <b>ReadOnly</b> keeps it at full contrast, focusable and announced, and
+            refuses every change.
         </div>
         <div>
             The thumb answers the pointer three ways: drag it, press the rail anywhere to send it there and carry
-            straight on dragging, or step it with the keyboard. A move that arrives in one jump - a press on the
-            rail, a key, a value changed somewhere else on the page - is eased into rather than teleported to,
-            while a thumb held under the pointer follows it exactly, since a thumb that lags behind the finger
-            dragging it is worse than one that never eases at all.
+            straight on dragging, or step it with the keyboard. A value that arrives in one jump is eased into; a
+            thumb held under the pointer follows it exactly and takes the accent's pressed shade while it does.
         </div>
         <br />
         <div class="example-box">
@@ -52,19 +48,16 @@
 
     <DemoExample Title="Range" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
         <div>
-            <b>IsRanged</b> gives the slider a second thumb, so what it selects is a span rather than a point -
-            a price bracket, an age band, the hours a shift covers. The two ends are <b>LowerValue</b> and
-            <b>UpperValue</b>, each bindable on its own, and <b>RangeValue</b> carries both at once for the common
-            case where they travel together. <b>DefaultLowerValue</b> and <b>DefaultUpperValue</b> are their
-            unbound counterparts. By default the thumbs may cross - drag the lower one past the upper and they
-            simply trade places - which the
-            <a href="components/slider#example7"><b>Range constraints</b></a> section below shows how to prevent.
+            <b>IsRanged</b> gives the slider a second thumb, so it selects a span rather than a point - a price
+            bracket, an age band, the hours a shift covers. The ends are <b>LowerValue</b> and <b>UpperValue</b>,
+            each bindable on its own, with <b>RangeValue</b> carrying both at once and <b>DefaultLowerValue</b> /
+            <b>DefaultUpperValue</b> as their unbound counterparts.
         </div>
         <div>
-            Both thumbs are grabbed and dragged the way a single one is, and the rail between them is divided
-            between the two at their midpoint: press it anywhere and the nearer thumb comes to meet you, then
-            keeps following the pointer as if you had grabbed it. The keyboard reaches them as two tab stops, in
-            a fixed order regardless of which thumb is visually where.
+            The rail is divided between the two thumbs at their midpoint: press it anywhere and the nearer thumb
+            comes to meet you, then keeps following the pointer as if you had grabbed it. The keyboard reaches them
+            as two tab stops in a fixed order. By default the thumbs may cross -
+            <a href="components/slider#example7"><b>Range constraints</b></a> shows how to stop them.
         </div>
         <br />
         <div class="example-box">
@@ -88,49 +81,65 @@
 
     <DemoExample Title="Marks" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
-            Marks turn a bare rail into a scale you can read without moving anything. <b>ShowMarks</b> draws one at
-            every <b>Step</b>, and <b>MarkStep</b> widens that interval for the sliders where a mark per step would
-            be a solid line - a 0 to 1000 slider wants its marks every 100, not every 1. <b>ShowMarkLabels</b>
-            writes each generated mark's own value underneath it, formatted exactly the way the value labels are.
-            For anything beyond a regular series, hand <b>Marks</b> a list of <b>BitSliderMark</b>: each one has a
-            value, an optional label, and its own class and style - which is how a scale gets named stops
-            ("Low", "Medium", "High") instead of numbers, or how one particular threshold gets painted red. Marks
-            the fill has reached are drawn in the contrasting color so they stay legible on top of it, and marks
-            outside the Min..Max range are simply skipped.
+            <b>ShowMarks</b> draws a tick at every <b>Step</b>. <b>MarkStep</b> widens that interval for a scale
+            too fine to mark at each one - a 0 to 1000 slider wants its marks every 100 - and <b>ShowMarkLabels</b>
+            writes each tick's value underneath, formatted the way the value labels are. Each of those asks for
+            the marks on its own, so <b>ShowMarks</b> is only needed when nothing else has.
         </div>
         <div>
-            <b>RestrictToMarks</b> goes one step further and makes the marks the only values the user can pick, so
-            the thumb jumps from one to the next instead of stopping in between. That is what turns an irregular
-            scale - a set of named tiers, or a series that grows by tens and then by hundreds - into something the
-            pointer and the keyboard can both land on exactly. It constrains only what the user can pick: a value
-            bound from elsewhere is still drawn where it actually is.
+            For anything beyond a regular series, hand <b>Marks</b> a list of <b>BitSliderMark</b> - a value, an
+            optional label, its own class and style. That is how a scale gets named stops ("Low", "Medium",
+            "High") instead of numbers, or one threshold gets painted red; a mark left without a label takes its
+            own value while <b>ShowMarkLabels</b> is on. Marks the fill has reached are repainted so they stay
+            legible on top of it, and marks outside Min..Max are skipped.
         </div>
         <div>
-            The pointer and the keyboard are treated as the different things they are. A drag lands on the mark
-            nearest to where the pointer actually is, so the thumb follows the hand and settles as it passes each
-            halfway point. An arrow key is a request to move on, so it always reaches the next mark along, however
-            short a <b>Step</b> is against the gap between them - without that, a Step of 1 on a scale marked
-            every 64 would round straight back and the arrow keys would do nothing at all. On a ranged slider a
-            snapped move is still held against the thumb beside it: it lands on the outermost mark the
-            <a href="components/slider#example7"><b>range constraints</b></a> leave room for rather than stepping
-            through the other end and dragging it along.
+            <b>MarkLabelTemplate</b> replaces the text under every mark with markup of your own, handed the mark
+            it belongs to - a row of faces, an icon per tier, a value over a caption. It asks for the marks like
+            the other two. They are decoration and hidden from screen readers either way, so a scale labelled
+            only by pictures still needs
+            <a href="components/slider#example13"><b>AriaValueText</b></a> to say what it is on.
+        </div>
+        <div>
+            <b>RestrictToMarks</b> makes the marks the only values the user can pick, which is what turns an
+            irregular scale into something the pointer and the keyboard can both land on exactly. A drag lands on
+            the mark nearest the pointer; an arrow key always reaches the next one along, however short a
+            <b>Step</b> is against the gap between them. On a range a snapped move still stops at the outermost
+            mark the <a href="components/slider#example7"><b>constraints</b></a> leave room for. It governs only
+            what the user can pick - a value bound from elsewhere is always drawn where it actually is.
         </div>
         <br />
         <div class="example-box">
             <div>ShowMarks:</div>
             <BitSlider Label="Steps of one" ShowMarks DefaultValue="6" />
             <br />
-            <div>ShowMarks with labels:</div>
-            <BitSlider Label="Rating" ShowMarks ShowMarkLabels Max="5" DefaultValue="3" />
+            <div>ShowMarkLabels, which asks for the marks as well:</div>
+            <BitSlider Label="Rating" ShowMarkLabels Max="5" DefaultValue="3" />
             <br />
             <div>MarkStep, for a scale too fine to mark at every step:</div>
-            <BitSlider Label="Budget" ShowMarks ShowMarkLabels
+            <BitSlider Label="Budget" ShowMarkLabels
                        Min="0" Max="1000" Step="10" MarkStep="200"
                        ValueFormat="C0"
                        DefaultValue="400" />
             <br />
             <div>Named stops through Marks:</div>
             <BitSlider Label="Quality" Max="4" Marks="qualityMarks" DefaultValue="2" ShowValue="false" />
+            <br />
+            <div>Marks of your own: the unlabelled ones take their value, and one carries a style of its own:</div>
+            <BitSlider Label="Load" ShowMarkLabels Marks="loadMarks"
+                       Max="100" Step="5"
+                       ValueFormat="0'%'"
+                       DefaultValue="45" />
+            <br />
+            <div>MarkLabelTemplate, a scale whose stops are faces:</div>
+            <BitSlider Label="How was it?" ShowValue="false"
+                       Max="4"
+                       AriaValueText="GetMoodText"
+                       DefaultValue="3">
+                <MarkLabelTemplate Context="mark">
+                    <BitIcon IconName="@GetMoodIcon(mark.Value)" Size="BitSize.Small" />
+                </MarkLabelTemplate>
+            </BitSlider>
             <br />
             <div>RestrictToMarks, on an irregular scale (drag it, or use the arrow keys):</div>
             <BitSlider Label="Storage" RestrictToMarks
@@ -140,16 +149,9 @@
                        @bind-Value="storageValue" />
             <BitLabel>Value: @storageValue GB</BitLabel>
             <br />
-            <div>A ranged slider with marks:</div>
-            <BitSlider Label="Working hours" IsRanged ShowMarks ShowMarkLabels
-                       Min="0" Max="24" Step="1" MarkStep="6"
-                       ValueFormat="0'h'"
-                       DefaultLowerValue="9"
-                       DefaultUpperValue="17" />
-            <br />
-            <div>RestrictToMarks on a range that has to keep its ends four apart:</div>
+            <div>On a range, restricted to the marks and keeping its ends four apart:</div>
             <BitSlider Label="Shift" IsRanged RestrictToMarks MinRange="4"
-                       ShowMarks ShowMarkLabels
+                       ShowMarkLabels
                        Min="0" Max="24" Step="1" MarkStep="4"
                        ValueFormat="0'h'"
                        DefaultLowerValue="8"
@@ -159,13 +161,11 @@
 
     <DemoExample Title="Vertical" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>IsVertical</b> stands the slider upright and fills it from the bottom up, so that "more" is up -
-            the same direction the <b>ArrowUp</b> key already means. Everything follows: the marks and their
-            labels run up the side, the floating thumb label moves beside the thumb rather than above it, and the
-            value labels stack instead of flanking. A vertical slider has no length of its own to inherit from the
-            line it sits on, so it is given one through the <b>--bit-sld-length</b> CSS variable, which you can
-            change per instance or globally. It is the shape to reach for when the value is naturally a height -
-            a level, a gain, a temperature - or when there is a column of room and no row.
+            <b>IsVertical</b> stands the slider upright and fills it from the bottom up, so "more" is up - the
+            direction <b>ArrowUp</b> already means. The marks, their labels and the floating thumb label follow,
+            and the value labels stack instead of flanking. An upright slider has no length of its own to inherit,
+            so it takes one from the <b>--bit-Slider-length</b> CSS variable, per instance or globally. Reach for
+            it when the value is naturally a height - a level, a gain, a temperature.
         </div>
         <br />
         <div class="example-box row">
@@ -179,31 +179,24 @@
 
             <BitSlider Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
 
-            <BitSlider Label="Taller" IsVertical Style="--bit-sld-length: 18rem" DefaultValue="8" />
+            <BitSlider Label="Taller" IsVertical Style="--bit-Slider-length: 18rem" DefaultValue="8" />
         </div>
     </DemoExample>
 
     <DemoExample Title="Fill, origin & inversion" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            The filled part of the track normally grows out of the near end, which reads as "how much" - but a
-            value that can go both ways reads better as a distance from somewhere in the middle.
-            <b>IsOriginFromZero</b> attaches the fill to zero, so a negative value fills to the left of it and a
-            positive one to the right, and a tick marks where zero actually sits - which is only the middle of the
-            track when the scale happens to be symmetric around it, as the -2..8 example below shows.
-            <b>Origin</b> is the same idea with any anchor you like: a target, a baseline, last month's figure.
-            Both are held inside the Min..Max range, and both are about the single value: a ranged slider already
-            has two ends of its own to fill between, so neither the origin nor its tick appears on one.
-            <b>Inverted</b> instead moves the origin to the far end, so the fill highlights what lies beyond the
-            value rather than what lies before it - "how much is left" instead of "how much is used". An inverted
-            <i>range</i> flips inside out too, highlighting the two outer segments and leaving the span between the
-            thumbs bare, which is how an excluded band is drawn.
+            The fill normally grows out of the near end, which reads as "how much". <b>IsOriginFromZero</b> anchors
+            it to zero instead, so a negative value fills one way and a positive one the other, with a tick where
+            zero actually sits - only the middle of the track on a scale symmetric around it, as the -2..8 example
+            shows. <b>Origin</b> is the same idea with any anchor: a target, a baseline, last month's figure. Both
+            are held inside Min..Max, and both are about the single value - a range already has two ends of its own
+            to fill between.
         </div>
         <div>
-            <b>NoFill</b> goes the other way and removes the bar altogether, leaving a bare rail with a thumb
-            somewhere on it. That is the honest picture for a value with no sense of accumulation - a hue, a
-            seek point, a position along a scale - where a growing bar would suggest a quantity that is not
-            there. It also stops the marks from being repainted as "reached", since with no fill nothing has
-            been.
+            <b>Inverted</b> moves the origin to the far end, so the fill shows what is left rather than what is
+            used; an inverted <i>range</i> fills the two outer segments instead, which is how an excluded band is
+            drawn. <b>NoFill</b> removes the bar altogether for a value with no sense of accumulation - a hue, a
+            seek point - and with it the repainting of the marks the fill would have reached.
         </div>
         <br />
         <div class="example-box">
@@ -236,19 +229,17 @@
 
     <DemoExample Title="Thumb label" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
-            <b>ThumbLabel</b> puts the value on the thumb itself instead of - or as well as - beside the track.
-            <b>Auto</b> shows it only while the slider is hovered, dragged or focused, so it appears exactly when
-            the value is being changed and stays out of the way the rest of the time; <b>On</b> keeps it there
-            permanently, which suits a slider whose value is the point of the screen. It follows the thumb of a
-            ranged slider on both ends, is formatted by the same <b>ValueFormat</b> the other labels use, and moves
-            beside the thumb rather than above it once the slider stands upright. Pair it with
-            <b>ShowValue="false"</b> to keep the row compact.
+            <b>ThumbLabel</b> puts the value on the thumb. <b>Auto</b> shows it only while the slider is hovered,
+            dragged or focused; <b>On</b> keeps it there permanently. It follows both ends of a range and takes the
+            same <b>ValueFormat</b> the other labels do. A horizontal slider holds the room the label rises into
+            open above its track - <b>--bit-Slider-thumb-label-room</b> - so an Auto label appearing mid-drag never
+            lands on the caption; an upright one puts the label beside the thumb, on the side the mark labels do
+            not take. Pair it with <b>ShowValue="false"</b> to keep the row compact.
         </div>
         <div>
-            When the label needs to be more than text, <b>ThumbLabelTemplate</b> replaces its content with markup
-            of your own, built from the value that thumb stands for - an icon that changes with the level, a unit
-            set in its own type, a second line. It is handed the value as its context, so the same template serves
-            both ends of a range, and it only renders while <b>ThumbLabel</b> is asking for the label at all.
+            <b>ThumbLabelTemplate</b> replaces its content with markup of your own - an icon that changes with the
+            level, a unit in its own type. It is handed the value that thumb stands for, so one template serves
+            both ends of a range.
         </div>
         <br />
         <div class="example-box">
@@ -286,38 +277,24 @@
 
     <DemoExample Title="Range constraints" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            Left alone, the two thumbs of a ranged slider are free: they can meet on a single value and they can
-            cross over each other. Three parameters tighten that. <b>MinRange</b> is the smallest distance they are
-            allowed to be apart, which is what keeps a range from collapsing onto one value - and since any
-            distance to hold makes crossing meaningless, it stops them crossing too. <b>MaxRange</b> is the
-            largest, so a thumb dragged far enough to stretch the range past it simply stops there.
-            <b>NoSwap</b> asks for the ordering alone: the thumbs stay on their own sides but may still meet.
-            A pair of starting values that does not already satisfy the constraints is widened or narrowed
-            until it does - and reported back to whatever the range is bound to, so the slider never opens in a
-            state it would refuse to be put into and never silently disagrees with the value behind it. Limits
-            that contradict each other resolve rather than lock up: a negative MinRange is no distance at all,
-            and a MaxRange below the MinRange is held up to it.
+            <b>MinRange</b> is the smallest distance the two thumbs may be apart, which keeps a range from
+            collapsing onto a single value; <b>MaxRange</b> is the largest, so a thumb stretching the range past
+            it stops there; <b>NoSwap</b> asks for the ordering alone. Any of the three also stops the thumbs
+            crossing. A starting pair that does not satisfy them is widened or narrowed until it does and
+            reported back to whatever the range is bound to, and limits that contradict each other resolve
+            rather than lock up.
         </div>
         <div>
-            <b>Pushable</b> changes what happens at the moment the two thumbs meet: instead of the moving one
-            stopping against the other, it carries the other along. That is what turns a constrained range into
-            something you can slide bodily across the scale from either end - a fixed-width window over a
-            timeline, a band that keeps its shape while it moves - rather than a pair you have to drag one thumb
-            at a time. The pushed thumb stops at the end of the scale and the pushing one comes to rest beside
-            it, so a range can be pushed all the way into a corner and pulled back out again. Pushing and
-            crossing are opposites, so a pushable slider keeps its thumbs on their own sides, and it has nothing
-            to do until there is a MinRange to keep or a NoSwap ordering to hold.
+            <b>Pushable</b> changes what happens when the thumbs meet: the moving one carries the other along
+            instead of stopping against it, so a constrained range slides bodily across the scale from either
+            end rather than a thumb at a time. The pushed thumb stops at the end of the scale and the pushing
+            one rests beside it. It has nothing to do until there is a MinRange to keep or a NoSwap to hold.
         </div>
         <div>
             All of them are enforced by the browser rather than corrected afterwards - the constraint is pushed
             into the bounds of the underlying input - so a thumb never moves somewhere it will be pulled back
-            from, on the pointer or on the keyboard, and that holds for a move snapped onto a mark by
-            <a href="components/slider#example3"><b>RestrictToMarks</b></a> as much as for a plain one. And
-            whatever the constraints are, a press on the bare rail
-            still moves the thumb nearest to it: the rail is divided between the two thumbs at their midpoint,
-            so every point of it belongs to the one you would expect it to - unless
-            <a href="components/slider#example8"><b>DraggableTrack</b></a> has given the band between them a job
-            of its own.
+            from, by pointer or by key, and that holds for a move snapped onto a
+            <a href="components/slider#example3"><b>mark</b></a> too.
         </div>
         <br />
         <div class="example-box">
@@ -349,28 +326,22 @@
 
     <DemoExample Title="Draggable band" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
-            <b>DraggableTrack</b> makes the filled band between the two thumbs a handle in its own right: press
-            it anywhere and the whole range travels with the pointer, keeping the width it had. That is the move
-            a user is usually thinking of when they nudge a price bracket upwards or push a span of hours later
-            in the day - one gesture rather than dragging one end and then chasing the other with it. The band
-            comes to rest when its leading end reaches the end of the scale - or, on a scale the marks are the
-            only values of, on the outermost mark that still leaves room for its width - and because the two
-            thumbs never change their distance while it travels, every range constraint is satisfied the whole
-            way along.
+            <b>DraggableTrack</b> makes the filled band a handle in its own right: press it and the whole range
+            travels with the pointer, keeping the width it had - one gesture instead of dragging one end and then
+            chasing it with the other. It comes to rest when its leading end reaches the end of the scale, or the
+            outermost mark that still leaves room for its width, and since the thumbs never change their distance
+            on the way, every range constraint holds throughout.
         </div>
         <div>
-            Only the rail strictly between the two thumbs takes the drag, so the thumbs themselves are still
-            grabbed and moved individually - and a band squeezed down to less than a thumb's width simply has
-            nothing to take hold of, which is what stops a range dragged shut from being impossible to open up
-            again. The trade is that a press on the band no longer sends the nearer thumb there: the band gets
-            it instead. The rail outside the thumbs is untouched and still moves the thumb nearest to it.
+            Only the rail strictly between the thumbs takes the drag, so the thumbs stay grabbable and a band
+            squeezed below a thumb's width has nothing to take hold of - which is what keeps a range dragged shut
+            from being impossible to open again. The trade is that a press on the band no longer sends the nearer
+            thumb there.
         </div>
         <div>
-            Dragging the band reports through <b>OnRangeChange</b> and <b>OnRangeChangeEnd</b> like any other
-            move, and it pairs naturally with <b>MinRange</b> and <b>MaxRange</b> - a band held to a fixed width
-            by setting both to the same number is a window you can only slide, which is exactly what a
-            fixed-length selection over a timeline wants. It is a pointer gesture, so the keyboard reaches the
-            two ends the way it always did, one thumb at a time.
+            It reports through <b>OnRangeChange</b> and <b>OnRangeChangeEnd</b> like any other move; set
+            <b>MinRange</b> and <b>MaxRange</b> to the same number for a fixed-width window. It is a pointer
+            gesture, so the keyboard still reaches the two ends one thumb at a time.
         </div>
         <br />
         <div class="example-box">
@@ -402,15 +373,15 @@
     <DemoExample Title="Value display" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>ValueFormat</b> is an ordinary .NET numeric format string, applied to every label the slider draws -
-            the ones beside the track, the ones under the marks and the floating one on the thumb - and rendered in
-            the culture of the user, so a decimal separator comes out the way that user writes it. That covers
-            currency (<b>C0</b>), percentages, fixed decimals and custom patterns alike. When the number is not what
-            the value <i>means</i>, reach for <b>GetValueText</b> instead: it builds each label from the value
-            itself, which is how minutes become "12:30", bytes become "1.5 MB", and a step index becomes the word it
-            stands for. <b>ShowValue</b> turns the labels beside the track off entirely, for a slider whose value is
-            already written somewhere else or is shown on the thumb instead. And <b>LabelTemplate</b> replaces the
-            plain text <b>Label</b> with whatever markup you like, for a caption that needs an icon, a unit or a
-            second line.
+            beside the track, under the marks and on the thumb - and rendered in the culture of the user. When the
+            number is not what the value <i>means</i>, <b>GetValueText</b> builds each label from the value itself:
+            minutes as "12:30", bytes as "1.5 MB", a step index as the word it stands for. <b>ShowValue="false"</b>
+            drops the labels beside the track, and <b>LabelTemplate</b> replaces the plain <b>Label</b> with markup
+            of your own.
+        </div>
+        <div>
+            The labels are set in tabular figures and hold open the width of the longest text the scale reads, so
+            the track keeps its length as the value crosses from 9 to 10 instead of resizing under the thumb.
         </div>
         <br />
         <div class="example-box">
@@ -443,13 +414,12 @@
 
     <DemoExample Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>@("@bind-Value")</b> is the usual two-way binding, and every change the user makes lands in your
-            field immediately. Handing <b>Value</b> over one-way instead makes the slider follow that value and
-            refuse to change it on its own, which is what you want when something else owns the number - the first
-            pair below is driven entirely by the rating next to it. A ranged slider has three bindings to choose
-            from: <b>@("@bind-LowerValue")</b> and <b>@("@bind-UpperValue")</b> separately, or
-            <b>@("@bind-RangeValue")</b> for both at once - whichever you use, all of them are kept in step, so a
-            slider bound only by RangeValue still reports through LowerValueChanged.
+            <b>@("@bind-Value")</b> is the usual two-way binding. Handing <b>Value</b> over one-way instead makes
+            the slider follow that value and refuse to change it on its own, for when something else owns the
+            number - the first pair below is driven entirely by the rating beside it. A range has three bindings:
+            <b>@("@bind-LowerValue")</b> and <b>@("@bind-UpperValue")</b> separately, or
+            <b>@("@bind-RangeValue")</b> for both at once. All three are kept in step, so a slider bound only by
+            RangeValue still reports through LowerValueChanged.
         </div>
         <br />
         <div class="example-box">
@@ -471,18 +441,15 @@
 
     <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
-            <b>OnChange</b> fires on every individual step, which is what keeps a live preview in sync with the
-            thumb. <b>OnChangeEnd</b> fires once, when the interaction that changed the value ends - the pointer is
-            released, or the keyboard change is committed - and that is where anything expensive belongs: a query,
-            a save, a request. A ranged slider has the same pair under the names <b>OnRangeChange</b> and
-            <b>OnRangeChangeEnd</b>, both handed a <b>BitSliderRangeValue</b> carrying both ends. Drag the sliders
+            <b>OnChange</b> fires on every step, which is what keeps a live preview in sync with the thumb.
+            <b>OnChangeEnd</b> fires once, when the interaction ends, and that is where anything expensive belongs:
+            a query, a save, a request. A range has the same pair as <b>OnRangeChange</b> and
+            <b>OnRangeChangeEnd</b>, each handed a <b>BitSliderRangeValue</b> carrying both ends. Drag the sliders
             below and watch how much more often the first counter moves than the second.
         </div>
         <div>
-            <b>OnFocusIn</b> and <b>OnFocusOut</b> fire as a thumb takes and gives up the keyboard focus, which is
-            where a hint, a live description or a highlight of the thing the slider controls belongs. A ranged
-            slider reports through both from either of its two thumbs, so tabbing from one to the other fires an
-            out and then an in.
+            <b>OnFocusIn</b> and <b>OnFocusOut</b> fire as a thumb takes and gives up the focus. A range reports
+            through both from either thumb, so tabbing from one to the other fires an out and then an in.
         </div>
         <br />
         <div class="example-box">
@@ -517,19 +484,17 @@
     <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             Inside an <b>EditForm</b> the slider is a form field like any other: it joins the EditContext, reports
-            its changes to it, and repaints its track and thumb in the error color while the value is invalid.
-            A slider always holds some number, so the interesting annotation is usually a <b>Range</b> narrower
-            than the Min..Max the slider itself allows - "pick at least four" - which is what the example below
-            asks for. <b>Required</b> announces that expectation to assistive technologies ahead of the failure
-            rather than leaving the error message to be the first mention of it, and <b>Name</b> makes the slider
-            readable by a plain form post, since the value travels in a real range input.
+            every move to it, and repaints its track and thumb in the error color while the value is invalid. Since
+            a slider always holds some number, the interesting annotation is usually a <b>Range</b> narrower than
+            the scale itself allows. <b>Required</b> announces that expectation ahead of the failure instead of
+            leaving the error message to be the first mention of it, and <b>Name</b> makes the value readable by a
+            plain form post.
         </div>
         <div>
-            A ranged slider joins in the same way, through <b>@("@bind-RangeValue")</b>: the pair it selects is
-            one field of the model rather than two, so it carries its own annotation - a minimum width, a legal
-            band, whatever the rule is - reports every move of a thumb to the EditContext, and repaints itself
-            the moment the pair stops satisfying it. The second form below asks for a span of at least 20; drag
-            the thumbs together and the error comes back without waiting for another submit.
+            A range joins through <b>@("@bind-RangeValue")</b>: the pair is one field of the model rather than two,
+            so it carries its own annotation and repaints the moment the pair stops satisfying it. The second form
+            below asks for a span of at least 20 - drag the thumbs together and the error comes back without
+            waiting for another submit.
         </div>
         <br />
         <div class="example-box">
@@ -571,46 +536,42 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            Every thumb is a real range input, so the whole slider keyboard is there without asking:
-            <b>ArrowRight</b> / <b>ArrowUp</b> raise the value by one Step and <b>ArrowLeft</b> / <b>ArrowDown</b>
-            lower it, <b>PageUp</b> / <b>PageDown</b> move in larger jumps, and <b>Home</b> / <b>End</b> go to the
-            ends of the scale. A ranged slider is two tab stops, in a fixed order regardless of which thumb is
-            visually where, exactly as the WAI-ARIA multi-thumb pattern prescribes. Each thumb announces the
-            bounds it can actually reach rather than the ends of the scale, so a constrained range tells a
-            screen reader user where the thumb beside it has stopped them - while a read-only slider, whose
-            bounds are a way of refusing the change rather than a description of the value, still announces the
-            whole scale.
+            Every thumb is a real range input, so the whole slider keyboard is there without asking: the arrows
+            move by a <b>Step</b>, <b>PageUp</b> / <b>PageDown</b> jump further, and <b>Home</b> / <b>End</b> go to
+            the ends of the scale. A range is two tab stops in a fixed order, as the WAI-ARIA multi-thumb pattern
+            prescribes, and each thumb announces the bounds it can actually reach - so a constrained range tells a
+            screen reader user where the thumb beside it has stopped them. A read-only slider is the exception:
+            its bounds refuse the change rather than describe the value, so it announces the whole scale.
         </div>
         <div>
-            <b>LargeStep</b> names how far those larger jumps go. Left alone they are whatever the browser makes
-            of a Page key - every engine measures it differently, and none of them makes anything of Shift at all
-            - which is fine on a short scale and hopeless on a long one, where crossing a thousand values a step
-            at a time is not a keyboard anyone can use. Setting it pins <b>PageUp</b> / <b>PageDown</b> to that
-            distance and gives an arrow key held with <b>Shift</b> the same reach, while leaving the rest of the
-            keyboard exactly as it was: the arrows still move by a Step, Home and End still go to the ends. A jump
-            is held inside the same bounds every other move is - the ends of the scale, and the thumb beside it on
-            a constrained range - and lands on a mark like every other move while <b>RestrictToMarks</b> is on.
+            <b>LargeStep</b> names how far those larger jumps go. Left alone they are whatever the browser makes of
+            a Page key - every engine measures it differently and none makes anything of Shift - which is hopeless
+            on a long scale. Setting it pins the Page keys to that distance and gives <b>Shift</b> with an arrow the
+            same reach, leaving the rest of the keyboard as it was. A jump is held inside the same bounds every
+            other move is, and lands on a mark while <b>RestrictToMarks</b> is on.
         </div>
         <div>
-            Give the slider a name: <b>Label</b> is used as one when nothing else is set, <b>AriaLabel</b> overrides
-            it, and <b>LowerAriaLabel</b> / <b>UpperAriaLabel</b> name the two ends of a range apart from each other
-            - without them a screen reader announces the same name twice and the user cannot tell which thumb they
-            are on. Where the thumbs are free to cross, the two names travel with the values rather than staying
-            on the thumbs they started on, so the one announced as the minimum is always the one that actually
-            holds it. <b>AriaValueText</b> is what a thumb announces in place of its number, for the many scales whose
-            numbers are not what they mean: it turns 2 into "Medium" or 750 into "12:30". It is the spoken
-            counterpart of <a href="components/slider#example9"><b>GetValueText</b></a>, and falls back to it when
-            only the visible form is given - so a slider that already shows "12:30" announces "12:30" without being
-            told twice. <b>AutoFocus</b> hands the slider the focus as the page renders, and <b>FocusAsync</b>
-            does it from code at any moment after that - with <b>FocusUpperAsync</b> beside it for the other
-            thumb of a range, which the single tab stop FocusAsync is pointed at cannot reach. The two inputs
-            are also there as <b>SliderInputElement</b> and <b>UpperSliderInputElement</b> for anything the
-            component does not do for you.
+            <b>Label</b> names the slider when nothing else does, <b>AriaLabel</b> overrides it, and
+            <b>LowerAriaLabel</b> / <b>UpperAriaLabel</b> name the two ends of a range apart - without them a screen
+            reader announces the same name twice and the user cannot tell which thumb they are on. Where the thumbs
+            may cross, the names travel with the values, so the one announced as the minimum always holds it. A
+            slider captioned only by a <b>LabelTemplate</b> points both thumbs at that caption instead.
+            <b>AriaValueText</b> is what a thumb announces in place of its number - 2 as "Medium", 750 as "12:30" -
+            and falls back to <a href="components/slider#example9"><b>GetValueText</b></a> when only the visible
+            form is given. <b>AutoFocus</b>, <b>FocusAsync</b> and <b>FocusUpperAsync</b> place the focus, and the
+            two inputs are there as <b>SliderInputElement</b> and <b>UpperSliderInputElement</b>.
         </div>
         <div>
-            When there is no text to name a thumb with at all - a slider captioned only by a <b>LabelTemplate</b> -
-            both thumbs are pointed at that caption instead, so the name a sighted reader sees is the name a screen
-            reader announces, on the upper thumb of a range as much as on the lower one.
+            <b>AriaDescription</b> carries what a name has no room for - a unit, a rule - into a hidden element
+            every thumb points at through <b>aria-describedby</b>, so it is announced after the name and the value;
+            an id you pointed the inputs at yourself, a validation message among them, is kept alongside it rather
+            than replaced. A range is wrapped in a labelled <b>group</b>, as the multi-thumb pattern asks.
+            <b>Required</b> is announced through <b>aria-required</b> and marked with the usual asterisk. The
+            labels the slider draws - the value beside the track, the text under a mark - are left out of the
+            accessibility tree, since the thumb beside them announces the same value and a reader given both would
+            say every number twice. Each thumb's grab area is at least 24px across whatever size it is drawn at,
+            meeting the minimum pointer target of WCAG 2.2, and a drag answers with the accent's pressed shade the
+            way a keyboard focus answers with a ring.
         </div>
         <br />
         <div class="example-box">
@@ -652,6 +613,23 @@
                 <BitButton Variant="BitVariant.Outline" OnClick="() => focusableSlider!.FocusUpperAsync()">Focus the upper thumb</BitButton>
             </BitStack>
             <br />
+            <div>AriaDescription and Required (inspect aria-describedby, or listen):</div>
+            <BitSlider Required
+                       Label="Monthly budget"
+                       AriaDescription="In thousands of euros. The plan has to cover at least twenty."
+                       Min="0" Max="100" Step="5"
+                       DefaultValue="40" />
+            <br />
+            <div>A range in a labelled group (inspect the role and the aria-labelledby of the root):</div>
+            <BitSlider IsRanged
+                       Label="Delivery window"
+                       LowerAriaLabel="Earliest"
+                       UpperAriaLabel="Latest"
+                       AriaDescription="Both ends are days from today."
+                       Max="30"
+                       DefaultLowerValue="5"
+                       DefaultUpperValue="14" />
+            <br />
             <div>A range captioned only by a LabelTemplate (inspect the aria-labelledby of each thumb):</div>
             <BitSlider IsRanged Max="10" DefaultLowerValue="3" DefaultUpperValue="7">
                 <LabelTemplate>
@@ -664,15 +642,47 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
-            <b>Color</b> picks the theme color the filled part of the track and the thumbs are painted in, with
-            <b>Primary</b> as the default. The unfilled part of the rail deliberately stays neutral whichever color
-            is chosen, so it keeps reading as "not reached yet" rather than as a second, dimmer accent. The semantic
-            colors - <b>Success</b>, <b>Warning</b>, <b>Error</b> and friends - tie the slider to what its value
-            means, while the <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on
-            non-default surfaces like the inverted panel below. Since Color is an ordinary parameter it can be
-            computed from the bound value itself, which is how a slider turns from green to red as it climbs.
+            <b>BitParams</b> carries a <b>BitSliderParams</b> down to every slider under it, so a panel, a form or a
+            page sets the shared scale, marks and look once instead of on every slider. What it carries is a default
+            and not an override: a slider that writes a parameter for itself keeps its own value and takes from the
+            cascade only what it left unset.
+        </div>
+        <div>
+            Everything a group can share is on the params object - the scale and the step, the marks, the color and
+            the size, the accessible names of the two ends of a range - together with the <b>ReadOnly</b>,
+            <b>Required</b> and <b>NoValidate</b> every input inherits, which is what makes a whole section of a
+            form read-only in one place. What each slider holds of its own is not: a value, a default value, a
+            name, the templates and the event callbacks stay on the markup.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitParams Parameters="@sliderParams">
+                <div>Takes the scale, the step, the marks, the color and the size from the cascade:</div>
+                <BitSlider Label="Compression" DefaultValue="40" />
+                <br />
+                <div>So does this one, without repeating any of it:</div>
+                <BitSlider Label="Sharpening" DefaultValue="70" />
+                <br />
+                <div>Its own Color and ShowMarkLabels, the cascaded rest:</div>
+                <BitSlider Label="Noise reduction" Color="BitColor.Warning" ShowMarkLabels DefaultValue="25" />
+            </BitParams>
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Outside the cascade, and back to the defaults:</div>
+            <BitSlider Label="Untouched" DefaultValue="4" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Color</b> picks the theme color the fill and the thumbs are painted in, with <b>Primary</b> as the
+            default; the rail stays neutral whichever is chosen, so it keeps reading as "not reached yet" rather
+            than as a second, dimmer accent. The semantic colors tie the slider to what its value means, while the
+            <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on non-default surfaces
+            like the inverted panel below. Each brings its own hover, pressed and focus shades with it.
         </div>
         <br />
         <div class="example-box">
@@ -704,12 +714,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            <b>Size</b> scales the track, the thumbs and the labels together, from the <b>Small</b> that fits into a
-            dense settings panel to the <b>Large</b> that carries the main control on a page. <b>Medium</b> is the
-            default. A larger size also means a larger thumb to grab, which matters most on touch and on the
-            fine-grained scales where a mis-grab costs the most.
+            <b>Size</b> scales the track, the thumbs and the labels together, from the <b>Small</b> that fits a
+            dense settings panel to the <b>Large</b> that carries the main control on a page; <b>Medium</b> is the
+            default. Whichever it is, the grab area stays at least 24px across, so even a Small slider is usable
+            with a finger.
         </div>
         <br />
         <div class="example-box">
@@ -731,19 +741,15 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
         <div>
-            <b>Style</b> and <b>Class</b> reach the root element, which is enough for the framing around the slider
-            and for the CSS variables it is built on: <b>--bit-sld-thumb</b> is the size of the thumbs,
-            <b>--bit-sld-rail</b> the thickness of the track, <b>--bit-sld-length</b> the length of a vertical one,
-            and <b>--bit-sld-clr-rail</b> the color of the part the fill has not reached. <b>Styles</b> and
-            <b>Classes</b> go a level deeper and address the parts by name - <b>Root</b>, <b>Label</b>,
-            <b>Container</b>, <b>SliderBox</b>, <b>Track</b>, <b>Fill</b>, <b>Thumb</b> (with <b>LowerThumb</b> and
-            <b>UpperThumb</b> for the two ends of a range), the underlying inputs (<b>ValueInput</b>,
-            <b>LowerValueInput</b>, <b>UpperValueInput</b> and the <b>TrackInput</b> a draggable band adds),
-            <b>Mark</b>, <b>MarkLabel</b>, <b>ThumbLabel</b>, <b>OriginFromZero</b> and the value labels - so the
-            fill can be given a gradient, the thumbs a shape of their own, or the two ends of a range two
-            different colors, without leaving the component.
+            <b>Style</b> and <b>Class</b> reach the root element. <b>Styles</b> and <b>Classes</b> go a level
+            deeper and address the parts by name - <b>Root</b>, <b>Label</b>, <b>Container</b>, <b>SliderBox</b>,
+            <b>Track</b>, <b>Fill</b>, <b>Thumb</b> (with <b>LowerThumb</b> and <b>UpperThumb</b> for the two ends
+            of a range), the underlying inputs (<b>ValueInput</b>, <b>LowerValueInput</b>, <b>UpperValueInput</b>
+            and the <b>TrackInput</b> a draggable band adds), <b>Mark</b>, <b>MarkLabel</b>, <b>ThumbLabel</b>,
+            <b>OriginFromZero</b> and the value labels - so the fill can take a gradient, the thumbs a shape of
+            their own, or the two ends of a range two different colors.
         </div>
         <br />
         <div class="example-box">
@@ -751,10 +757,6 @@
             <BitSlider DefaultValue="6" Label="Style" Style="padding: 0.5rem 1rem; border-radius: 0.5rem; box-shadow: tomato 0 0 1rem;" />
             <br />
             <BitSlider DefaultValue="6" Label="Class" Class="custom-class" />
-            <br /><br />
-            <div>The CSS variables:</div>
-            <BitSlider DefaultValue="6" Label="Chunky" Style="--bit-sld-thumb: 2rem; --bit-sld-rail: 1rem;" />
-            <BitSlider DefaultValue="6" Label="Hairline" Style="--bit-sld-thumb: 0.75rem; --bit-sld-rail: 0.125rem;" />
             <br /><br />
             <div>Styles & Classes:</div>
             <BitSlider DefaultValue="6"
@@ -776,14 +778,46 @@
                                          LowerThumb = "border-color: mediumseagreen;",
                                          UpperThumb = "border-color: orangered;" })" />
         </div>
+        <br /><br />
+        <div>
+            For what no parameter and no part covers, the slider reads a set of
+            <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root: the geometry of the thumb
+            and the rail, every color of every state, the type of the labels, the room the mark labels and the
+            floating one are given, and the look of that floating label. They
+            inherit, so a value on <code>:root</code> or any ancestor re-skins every slider below it while one on
+            <b>Style</b> re-skins that instance alone, and anything left unset falls back to the theme token beside
+            it - which is how a reshaped slider still follows the Material or Cupertino preset.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>The geometry - the thumb, the rail and their corners:</div>
+            <BitSlider DefaultValue="6" Label="Chunky" Style="--bit-Slider-thumb-size: 2rem; --bit-Slider-rail-size: 1rem;" />
+            <BitSlider DefaultValue="6" Label="Hairline" Style="--bit-Slider-thumb-size: 0.75rem; --bit-Slider-rail-size: 0.125rem;" />
+            <BitSlider DefaultValue="6" Label="Squared off" Style="--bit-Slider-rail-size: 0.75rem; --bit-Slider-rail-radius: 0; --bit-Slider-thumb-radius: 0.25rem;" />
+            <br />
+            <div>The colors, the marks and the floating label:</div>
+            <BitSlider DefaultValue="6" ShowMarks Label="Its own accent"
+                       ThumbLabel="BitSliderThumbLabel.On"
+                       Style="--bit-Slider-color: rebeccapurple; --bit-Slider-hover-color: mediumpurple; --bit-Slider-active-color: indigo; --bit-Slider-focus-color: rebeccapurple; --bit-Slider-rail-color: lavender; --bit-Slider-mark-color: mediumpurple; --bit-Slider-thumb-label-radius: 0.25rem;" />
+            <BitSlider DefaultValue="6" Label="A lifted thumb"
+                       Style="--bit-Slider-thumb-size: 1.5rem; --bit-Slider-thumb-border-width: 0.25rem; --bit-Slider-thumb-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 30%);" />
+        </div>
+        <br />
+        <div>Set once on an ancestor, inherited by every slider inside it:</div>
+        <br />
+        <div class="example-box" style="--bit-Slider-color: seagreen; --bit-Slider-hover-color: mediumseagreen; --bit-Slider-focus-color: seagreen; --bit-Slider-rail-size: 0.125rem; --bit-Slider-thumb-size: 0.875rem; --bit-Slider-font-weight: 400;">
+            <BitSlider Label="Bass" DefaultValue="4" />
+            <BitSlider Label="Middle" DefaultValue="6" />
+            <BitSlider Label="Treble" DefaultValue="8" />
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Setting <b>Dir</b> to <b>Rtl</b> mirrors the whole slider: the scale starts on the right, the fill grows
-            leftwards from it, the marks and their labels are laid out from that same edge, and the arrow keys follow
-            - ArrowLeft raises the value because that is the direction the scale runs in. A vertical slider is
-            deliberately left alone by this, since up means more in both directions of reading.
+            leftwards from it, the marks and their labels follow that edge, and <b>ArrowLeft</b> raises the value
+            because that is the direction the scale now runs in. A vertical slider is deliberately left alone, since
+            up means more in both directions of reading.
         </div>
         <br />
         <div dir="rtl">

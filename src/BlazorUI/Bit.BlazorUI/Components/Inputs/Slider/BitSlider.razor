@@ -12,10 +12,17 @@
     var fillStart = _FillStart;
     var fillEnd = _FillEnd;
     var marks = _Marks;
-    var hasMarkLabels = marks.Exists(m => m.Label.HasValue());
+    @* A template labels every mark; without one only the marks that carry a label of their own are labelled,
+       and a slider with none of either draws no row at all. *@
+    var hasMarkLabels = MarkLabelTemplate is not null || marks.Exists(m => m.Label.HasValue());
     var labelId = $"{_Id}-label";
     var inputId = $"{_Id}-input";
     var hasLabel = Label.HasValue() || LabelTemplate is not null;
+
+    @* What the thumbs are described by: the description this slider renders - one element for the whole slider
+       rather than one per thumb, since what it says is about the slider and not about either end of it - joined
+       with whatever the caller has already pointed the inputs at. *@
+    var describedBy = GetDescribedBy();
     var showThumbLabel = ThumbLabel is not null and not BitSliderThumbLabel.Off;
     var valueText = GetDisplayValue(value);
     var lowerText = GetDisplayValue(lower);
@@ -103,10 +110,14 @@
     <div class="bit-sld-cnt @Classes?.Container" style="@Styles?.Container">
 
         @* The leading value label: the lower end of a range, and - once the slider stands upright and the
-           labels stack instead of flanking it - the upper end, since that is the one that belongs on top. *@
+           labels stack instead of flanking it - the upper end, since that is the one that belongs on top.
+
+           Every value label is kept out of the accessibility tree: the thumb beside it already announces the
+           same value, and the pair read one after the other is the number said twice. *@
         @if (ShowValue && IsRanged)
         {
-            <span style="@(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
+            <span aria-hidden="true"
+                  style="@GetValueLabelStyle(IsVertical ? Styles?.UpperValueLabel : Styles?.LowerValueLabel)"
                   class="bit-sld-vlb @(IsVertical ? Classes?.UpperValueLabel : Classes?.LowerValueLabel)">
                 @(IsVertical ? upperText : lowerText)
             </span>
@@ -240,6 +251,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(lowerAriaMin)"
                            aria-valuemax="@ToInvariant(lowerAriaMax)"
@@ -268,6 +280,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(upperAriaMin)"
                            aria-valuemax="@ToInvariant(upperAriaMax)"
@@ -289,10 +302,14 @@
 
                            It is not a tab stop and announces nothing: it selects nothing the two thumbs do
                            not already carry, and a third slider in the tab order announcing the same lower
-                           value again would be noise rather than a way through. *@
+                           value again would be noise rather than a way through. Pressing it does focus it,
+                           as pressing any input does, so the focus is handed back to the lower thumb as soon
+                           as the gesture ends - left on an element outside the accessibility tree it would
+                           go on moving the whole range on every arrow key with nothing to announce it. *@
                         <input @oninput="HandleOnTrackInput"
                                @onchange="HandleOnTrackChange"
-                               @onpointerdown="_onPointerDown"
+                               @onpointerdown="_onTrackPointerDown"
+                               @onpointerup="_onTrackPointerUp"
                                type="range"
                                tabindex="-1"
                                aria-hidden="true"
@@ -327,6 +344,7 @@
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(min)"
                            aria-valuemax="@ToInvariant(max)"
@@ -344,12 +362,19 @@
                 <div class="bit-sld-mks">
                     @foreach (var mark in marks)
                     {
-                        @if (mark.Label.HasValue())
+                        @if (MarkLabelTemplate is not null || mark.Label.HasValue())
                         {
                             <span aria-hidden="true"
                                   style="@GetPointStyle(GetPercent(mark.Value));@mark.Style;@Styles?.MarkLabel"
                                   class="bit-sld-mlb @mark.Class @Classes?.MarkLabel">
-                                @mark.Label
+                                @if (MarkLabelTemplate is not null)
+                                {
+                                    @MarkLabelTemplate(mark)
+                                }
+                                else
+                                {
+                                    @mark.Label
+                                }
                             </span>
                         }
                     }
@@ -364,15 +389,24 @@
         {
             @if (IsRanged)
             {
-                <span style="@(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
+                <span aria-hidden="true"
+                      style="@GetValueLabelStyle(IsVertical ? Styles?.LowerValueLabel : Styles?.UpperValueLabel)"
                       class="bit-sld-vlb @(IsVertical ? Classes?.LowerValueLabel : Classes?.UpperValueLabel)">
                     @(IsVertical ? lowerText : upperText)
                 </span>
             }
             else
             {
-                <span style="@Styles?.ValueLabel" class="bit-sld-vlb @Classes?.ValueLabel">@valueText</span>
+                <span aria-hidden="true" style="@GetValueLabelStyle(Styles?.ValueLabel)" class="bit-sld-vlb @Classes?.ValueLabel">@valueText</span>
             }
         }
     </div>
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the text has to live in an element of its own. It is
+           removed from the page visually and left in the accessibility tree, and sits outside the label so it
+           never leaks into the accessible name of either thumb. *@
+        <span id="@DescriptionId" class="bit-sld-dsc">@AriaDescription</span>
+    }
 </div>
