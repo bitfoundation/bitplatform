@@ -428,7 +428,7 @@
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+        color: var(--bit-FileUpload-disabled-color, #{$clr-fg-dis});
         background-color: transparent;
     }
 

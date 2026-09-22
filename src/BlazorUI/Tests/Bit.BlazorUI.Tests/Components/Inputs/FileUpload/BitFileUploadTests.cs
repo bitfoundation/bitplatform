@@ -2991,13 +2991,24 @@ public class BitFileUploadTests : BunitTestContext
 
         Assert.HasCount(2, removeButtons);
 
+        var focusCountBeforeRemove = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        // the item of b.txt is keyed, so its button survives the removal as the same element - and the
+        // reference id of an element is written into the markup by the render that captured it, never
+        // again by the renders it lives through. so the button is picked up before the click.
+        var remainingRemoveButton = com.FindAll(".bit-upl-itm .bit-upl-usi[aria-label='Remove b.txt']")[0];
+
         await com.Find(".bit-upl-itm .bit-upl-usi[aria-label='Remove a.txt']").ClickAsync(new());
 
         // the removed file leaves the list, and the focus is handed to the item that takes its place
         // rather than being dropped on the document body with the button that was pressed.
         Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
         Assert.HasCount(1, com.FindAll(".bit-upl-itm"));
-        Context.JSInterop.VerifyInvoke("Blazor._internal.domWrapper.focus");
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(focusCountBeforeRemove + 1, focused.Count);
+        focused[^1].Arguments[0].ShouldBeElementReferenceTo(remainingRemoveButton);
     }
 
     [TestMethod]
